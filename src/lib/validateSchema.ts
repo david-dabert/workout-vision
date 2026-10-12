@@ -19,6 +19,7 @@ export const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'workoutId',
   // The counting core's result screen writes these; reading them back keeps the arm and the app's own count.
   'source', 'arm', 'repDetails', 'repDetailsVersion', 'corrected',
+  'symmetry', 'smoothness', 'consistency', 'formChecks',
   // The front-view left/right comparison (counting/symmetry.ts), kept for the report.
   'sides',
   // The measured angle over the set, compact, for the report's wave (components/experience/wave.js).

@@ -20,7 +20,7 @@ const alphaOf = v => Math.max(0, Math.min(1, ((v ?? 0) - (SEEN - FADE / 2)) / FA
  * { ox, oy, w, h } in the context's units; u: the width of a line of 1 at the screen's scale;
  * trails: for each lit side, the path its moving end has drawn (replay-smooth.js trailAt), or none.
  */
-export function drawSkeleton(ctx, lm, box, sides, def, u = 1, trails = null) {
+export function drawSkeleton(ctx, lm, box, sides, def, u = 1, trailsOrTrajectory = null, extraTrajectory = null) {
   const at = k => [box.ox + lm[k].x * box.w, box.oy + lm[k].y * box.h];
   const alpha = k => (lm[k] ? alphaOf(lm[k].visibility) : 0);
   const line = (pts, width, colour) => {
@@ -29,6 +29,10 @@ export function drawSkeleton(ctx, lm, box, sides, def, u = 1, trails = null) {
   };
   ctx.save();
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+  const trails = Array.isArray(trailsOrTrajectory) && Array.isArray(trailsOrTrajectory[0]) ? trailsOrTrajectory : null;
+  const trajectory = (Array.isArray(trailsOrTrajectory) && trailsOrTrajectory.length > 0 && !Array.isArray(trailsOrTrajectory[0])) ? trailsOrTrajectory : extraTrajectory;
+
   // The path of the lit limb's end over the last moment, under the bones: a thin gold line that thins and fades
   // with age, so the eye reads the rep's arc.
   for (const trail of trails || []) {
@@ -39,6 +43,32 @@ export function drawSkeleton(ctx, lm, box, sides, def, u = 1, trails = null) {
       line([[box.ox + a.x * box.w, box.oy + a.y * box.h], [box.ox + b.x * box.w, box.oy + b.y * box.h]], 1 + 3 * fresh, LAMP);
     }
   }
+
+  // Draw bar path trajectory trail if provided
+  if (trajectory && trajectory.length > 1) {
+    ctx.save();
+    for (let i = 1; i < trajectory.length; i++) {
+      const p0 = trajectory[i - 1], p1 = trajectory[i];
+      const x0 = box.ox + p0.x * box.w, y0 = box.oy + p0.y * box.h;
+      const x1 = box.ox + p1.x * box.w, y1 = box.oy + p1.y * box.h;
+      ctx.lineWidth = 2 * u;
+      ctx.strokeStyle = rgba(RGB.lampHi, p1.alpha ?? 0.6);
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x1, y1);
+      ctx.stroke();
+    }
+    const last = trajectory[trajectory.length - 1];
+    const lx = box.ox + last.x * box.w, ly = box.oy + last.y * box.h;
+    ctx.fillStyle = LAMP;
+    ctx.shadowColor = rgba(RGB.lampHi, 0.8);
+    ctx.shadowBlur = 6 * u;
+    ctx.beginPath();
+    ctx.arc(lx, ly, 3 * u, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
   const bones = BONES.map(([a, b]) => [Math.min(alpha(a), alpha(b)), a, b]).filter(([o]) => o > 0);
   for (const [o, a, b] of bones) { ctx.globalAlpha = o; line([at(a), at(b)], 4, SHADE); }
   for (const [o, a, b] of bones) { ctx.globalAlpha = o; line([at(a), at(b)], 2, BONE); }
@@ -68,6 +98,21 @@ export function drawSkeleton(ctx, lm, box, sides, def, u = 1, trails = null) {
     ctx.globalAlpha = o * 0.5;
     ctx.lineWidth = 1.25 * u; ctx.strokeStyle = LAMP;
     ctx.beginPath(); ctx.arc(pts[1][0], pts[1][1], 9 * u, 0, Math.PI * 2); ctx.stroke();
+
+    // Subtle biomechanical angle arc at the active joint
+    const dxA = pts[0][0] - pts[1][0], dyA = pts[0][1] - pts[1][1];
+    const dxB = pts[2][0] - pts[1][0], dyB = pts[2][1] - pts[1][1];
+    const thA = Math.atan2(dyA, dxA);
+    const thB = Math.atan2(dyB, dxB);
+    let diff = thB - thA;
+    while (diff < -Math.PI) diff += 2 * Math.PI;
+    while (diff > Math.PI) diff -= 2 * Math.PI;
+    const anticlockwise = diff < 0;
+    ctx.strokeStyle = rgba(RGB.lampHi, 0.6);
+    ctx.lineWidth = 1.4 * u;
+    ctx.beginPath();
+    ctx.arc(pts[1][0], pts[1][1], 14 * u, thA, thB, anticlockwise);
+    ctx.stroke();
   }
   ctx.restore();
 }

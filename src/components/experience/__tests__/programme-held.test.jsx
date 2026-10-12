@@ -23,7 +23,7 @@ async function render(lang, held) {
   vi.stubGlobal('localStorage', { getItem: k => (k === 'wv_lang' ? lang : refused()), setItem: refused, removeItem: refused });
   vi.stubGlobal('location', { href: 'https://david-dabert.github.io/workout-vision/#programme' });
   const { LanguageProvider } = await import('../../../lib/LanguageContext');
-  const { default: Programme } = await import('../Programme');
+  const { default: Programme } = await import('../Programme.jsx');
   return renderToStaticMarkup(<LanguageProvider><Programme payload={null} held={held} onHold={() => {}} onClose={() => {}} onStart={() => {}} /></LanguageProvider>);
 }
 

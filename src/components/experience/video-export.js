@@ -4,7 +4,7 @@
 // Safari on iPhone offers from iOS 14.5, in MP4 with H.264). Nothing is sent anywhere: the file goes
 // to the share sheet only when the user taps it there.
 import { liftDefinition } from '../../lib/counting/core';
-import { poseAt } from './replay-track';
+import { poseAt, repAt, trajectoryAt } from './replay-track';
 import { drawSkeleton, litSides, trailPoints, LAMP } from './replay-draw';
 import { steadyFrames, trailAt } from './replay-smooth';
 import { overlayLines } from './replay-labels';
@@ -94,7 +94,12 @@ export function exportSetVideo({ file, result, lift, fr = false, saved = null, o
       ctx.drawImage(video, 0, 0, W, H);
       drawn += 1; drawnT = Math.max(drawnT, t);
       const lm = poseAt(frames, times, t);
-      if (lm) drawSkeleton(ctx, lm, { ox: 0, oy: 0, w: W, h: H }, sides, def, u, trailPoints(def, sides).map(k => trailAt(frames, times, t, k, lm[k])));
+      if (lm) {
+        const trails = trailPoints(def, sides).map(k => trailAt(frames, times, t, k, lm[k]));
+        const curRep = repAt(reps, t);
+        const traj = trajectoryAt(frames, times, t, curRep >= 0 ? reps[curRep] : null, lift, def, result.arm);
+        drawSkeleton(ctx, lm, { ox: 0, oy: 0, w: W, h: H }, sides, def, u, trails, traj);
+      }
       if (reps.length) {
         // The reps begun so far, as the replay's chip shows them: "3 / 8"; after a correction, a second
         // line says both counts, so the video explains itself away from the app (replay-labels.js).

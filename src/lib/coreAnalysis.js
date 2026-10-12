@@ -10,6 +10,8 @@ import { specGuidedCount } from './counting/sgc';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './extractionConfig';
 
 import { OFFERED, isOffered } from './offer';
+import { analyzeBilateralSymmetry } from './symmetry';
+import { analyzeMovementQuality } from './smoothness';
 
 // Every offered exercise: the lifts of LIFT TIERS and every countable exercise of the guide (offer.js).
 export const APPROVED_LIFTS = OFFERED;
@@ -355,7 +357,24 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     // A refused set may carry PSC's proposal; a counted one carries its body check (neither changes the count).
     const sorted = [...poseMs].sort((a, b) => a - b), at = q => (sorted.length ? Math.round(sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] * 10) / 10 : null);
     const pose = { delegate: init?.delegate ?? null, renderer: init?.renderer ?? null, msMedian: at(0.5), msP90: at(0.9), samples: sorted.length };
-    const result = withSensitivity(withBodyCheck(withProposal({ ...summarizeCount(worldLandmarks, timestamps, lift), exercise: lift, metadata: { ...metadata, pose }, imageLandmarks, worldLandmarks, timestamps }, lift), lift), lift);
+
+    const countSummary = summarizeCount(worldLandmarks, timestamps, lift);
+    const symmetry = analyzeBilateralSymmetry(worldLandmarks, timestamps, lift, countSummary.reps);
+    const quality = analyzeMovementQuality(worldLandmarks, timestamps, lift, countSummary.reps, countSummary.arm);
+
+    const mergedSummary = {
+      ...countSummary,
+      symmetry,
+      smoothness: quality?.smoothness ?? null,
+      consistency: quality?.consistency ?? null,
+      formChecks: quality?.formChecks ?? null,
+      exercise: lift,
+      metadata: { ...metadata, pose },
+      imageLandmarks,
+      worldLandmarks,
+      timestamps,
+    };
+    const result = withSensitivity(withBodyCheck(withProposal(mergedSummary, lift), lift), lift);
     // Local diagnostic event: tests observe actual app output, never inject landmarks.
     window.dispatchEvent(new CustomEvent('wv:core-result', { detail: result }));
     return result;

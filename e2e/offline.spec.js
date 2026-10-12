@@ -101,6 +101,10 @@ test('choosing a lift keeps the decoder WASM for an analysis made offline', asyn
     }
   });
   await page.locator('.altar').first().click();
+  const filmBtn = page.locator('.btn-line', { hasText: /Filmer|Film/ });
+  if (await filmBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await filmBtn.click();
+  }
   await expect.poll(() => page.evaluate(async () => {
     for (const name of await caches.keys()) {
       if (!name.startsWith('wv-wasm-')) continue;

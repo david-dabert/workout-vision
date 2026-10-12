@@ -4,7 +4,7 @@ import { exerciseName } from './exercise-info';
 import { liftDefinition } from '../../lib/counting/core';
 import { decimal } from './report-sheet';
 import { partialIn } from './tempo';
-import { poseAt, repAt, phaseAt, into, keyedTime } from './replay-track';
+import { poseAt, repAt, phaseAt, into, keyedTime, angleAt, trajectoryAt } from './replay-track';
 import { drawSkeleton, litSides, trailPoints } from './replay-draw';
 import { steadyFrames, trailAt } from './replay-smooth';
 import { canExport, exportSetVideo } from './video-export';
@@ -24,6 +24,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   const { lang } = useT(), fr = lang === 'fr';
   const videoRef = useRef(null), canvasRef = useRef(null), backRef = useRef(null), lineRef = useRef(null);
   const drag = useRef(null);
+  const lastVibrateRep = useRef(-1);
   const [url, setUrl] = useState(null);
   const [playing, setPlaying] = useState(false);
   const [slow, setSlow] = useState(false);
@@ -33,7 +34,8 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   // A refused set shows no reps here either: the result said it could not count them.
   const times = result.timestamps || [], reps = (!result.refused && result.reps) || [];
   // The skeleton drawn is the model's, steadied for the eye once per set (replay-smooth.js); the count never reads it.
-  const frames = useMemo(() => steadyFrames(result.imageLandmarks || [], times), [result]); // eslint-disable-line react-hooks/exhaustive-deps
+  const frames = useMemo(() => (steadyFrames ? steadyFrames(result.imageLandmarks || [], times) : (result.imageLandmarks || [])), [result]); // eslint-disable-line react-hooks/exhaustive-deps
+  const smoothedAngles = result.smoothedAngles || [];
   const def = liftDefinition(lift);
   const sides = litSides(def, result.arm);
   const meta = result.metadata || {};
@@ -121,7 +123,9 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       const vw = video.videoWidth || fw, vh = video.videoHeight || fh;
       const s = Math.min(cw / vw, ch / vh);
       const trails = trailPoints(def, sides).map(k => trailAt(frames, times, t, k, lm[k]));
-      drawSkeleton(ctx, lm, { ox: (cw - vw * s) / 2, oy: (ch - vh * s) / 2, w: vw * s, h: vh * s }, sides, def, 1, trails);
+      const curRep = repAt(reps, t);
+      const traj = trajectoryAt(frames, times, t, curRep >= 0 ? reps[curRep] : null, lift, def, result.arm);
+      drawSkeleton(ctx, lm, { ox: (cw - vw * s) / 2, oy: (ch - vh * s) / 2, w: vw * s, h: vh * s }, sides, def, 1, trails, traj);
     };
     // The screen's words follow the video about ten times a second, and at once when it stops.
     const tell = (t, force) => {
@@ -207,7 +211,13 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
     const d = drag.current;
     if (!d || (!d.moved && Math.abs(e.clientX - d.x) < 6)) return;
     if (!d.moved) { d.moved = true; videoRef.current.pause(); }
-    seekTo(timeAt(e.clientX));
+    const t = timeAt(e.clientX);
+    seekTo(t);
+    const hit = repAt(reps, t);
+    if (hit !== lastVibrateRep.current) {
+      lastVibrateRep.current = hit;
+      if (hit >= 0) navigator.vibrate?.(5);
+    }
   }
   function up(e) {
     const d = drag.current;
@@ -229,6 +239,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
     const t = keyedTime(e.key, reps, now, length);
     if (t === null) return;
     e.preventDefault();
+    navigator.vibrate?.(5);
     seekTo(t);
   }
 
@@ -237,6 +248,8 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   const begun = reps.filter(r => r.startTime <= now).length;
   // The phase word follows the unvalidated phase boundaries: hidden with the measures (measures.js).
   const phase = MEASURES_SHOWN && current >= 0 ? phaseAt(reps[current], now, def?.first) : null;
+  const isTransition = current >= 0 && !phase && !reps[current]?.clipped;
+  const curAngle = angleAt ? angleAt(smoothedAngles, times, now) : null;
   let head = '', detail;
   if (current >= 0) {
     const r = reps[current];
@@ -259,7 +272,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
         ? (fr ? 'Cette série n’a pas pu être comptée.' : 'This set could not be counted.')
         : (fr ? 'Aucune répétition comptée dans cette vidéo.' : 'No rep counted in this video.');
   }
-  const phaseWord = { concentric: fr ? 'Concentrique' : 'Concentric', eccentric: fr ? 'Excentrique' : 'Eccentric' }[phase] || NB;
+  const phaseWord = { concentric: fr ? 'Concentrique' : 'Concentric', eccentric: fr ? 'Excentrique' : 'Eccentric' }[phase] || (isTransition ? (fr ? 'Inflexion' : 'Turn') : NB);
 
   return <div className={`wv-experience${leaving ? ' is-leaving' : ''}`}>
     <section className="screen is-active replay-screen" aria-label={`${fr ? 'Revoir la série' : 'Replay of the set'} · ${liftName}`}><div className="wrap">
@@ -282,6 +295,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
           {reps.length > 0 && <div className={`rp-chip${phaseWord === NB ? ' is-idle' : ''}`} aria-hidden="true">
             <span className="rp-count"><span className="rp-n">{begun}</span><span className="rp-of">/{NB}{reps.length}</span></span>
             <span className="rp-phase">{phaseWord}</span>
+            {curAngle !== null && <span className="rp-angle">{Math.round(curAngle)}°</span>}
           </div>}
           {broken && <p className="rp-broken" role="alert">{fr ? 'Cette vidéo ne se lit pas dans ce navigateur.' : 'This video does not play in this browser.'}</p>}
         </div>

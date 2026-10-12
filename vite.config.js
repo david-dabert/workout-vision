@@ -58,7 +58,7 @@ export default defineConfig({
   resolve: {
     alias: Object.fromEntries(['html2canvas', 'canvg', 'dompurify'].map(m => [m, resolve(__dirname, 'src/lib/jspdf-optional-stub.js')])),
   },
-  base: process.env.VITE_BASE || '/workout-vision/',
+  base: process.env.VERCEL ? '/' : (process.env.VITE_BASE || '/workout-vision/'),
   server: {
     // This computer only. npm run dev:lan (WV_LAN=1) serves the network too, for a phone on the same Wi-Fi
     // (audit of 6 October, action 18).

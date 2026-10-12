@@ -178,8 +178,10 @@ export default function History({ onClose }) {
                   <span className="hist-meta"><span>{[time(w), seconds ? `${seconds}\u00A0s` : '', arm].filter(Boolean).map((part, i) => <span key={i}>{part}</span>)}</span></span>
                   <span className="sr">{fr ? `${w.reps} ${w.reps > 1 ? 'répétitions' : 'répétition'}` : `${w.reps} ${w.reps === 1 ? 'rep' : 'reps'}`}</span>
                 </span>
-                {(fixed || byHand || repsBest.has(w.id)) && <span className="hist-tags">
+                {(fixed || byHand || repsBest.has(w.id) || w.symmetry?.symmetryScore != null || w.consistency?.score != null) && <span className="hist-tags">
                   {repsBest.has(w.id) && <span className="hist-tag is-best">{fr ? 'Record' : 'Best'}</span>}
+                  {w.symmetry?.symmetryScore != null && <span className="hist-tag">{w.symmetry.symmetryScore}% sym.</span>}
+                  {w.consistency?.score != null && <span className="hist-tag">{w.consistency.score}% {fr ? 'rég.' : 'const.'}</span>}
                   {fixed && <span className="hist-tag">{fr ? 'Corrigé' : 'Corrected'}</span>}
                   {byHand && <span className="hist-tag">{proposed ? (fr ? 'Proposition confirmée' : 'Proposal confirmed') : fr ? 'Saisi à la main' : 'Typed by hand'}</span>}
                 </span>}
@@ -217,6 +219,7 @@ export default function History({ onClose }) {
     </div>
     {report && <Report lift={report.exercise || report.exerciseKey} count={report.reps} counted={countedBy(report)} arm={report.arm}
       date={setTime(report)} source={report.source} afterRefusal={!!report.afterRefusal} proposed={report.source === 'manual' && Number.isFinite(report.proposal?.reps) && report.proposal.reps === report.reps} reps={report.repDetailsVersion === 2 ? report.repDetails : null}
-      setId={report.id} sides={report.sides ?? null} planned={report.planned ?? null} wave={report.repDetailsVersion === 2 ? report.wave ?? null : null} leaving={leaving} onBack={closeReport} />}
+      setId={report.id} sides={report.sides ?? null} planned={report.planned ?? null} wave={report.repDetailsVersion === 2 ? report.wave ?? null : null}
+      symmetry={report.symmetry} smoothness={report.smoothness} consistency={report.consistency} formChecks={report.formChecks} leaving={leaving} onBack={closeReport} />}
   </>;
 }

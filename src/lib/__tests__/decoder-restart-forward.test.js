@@ -2,6 +2,7 @@
 // forward in time after the restart.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('web-demuxer', () => ({
+  AVLogLevel: { quiet: 0 },
   WebDemuxer: class {
     async load() {}
     async getMediaInfo() { return { duration: 4, streams: [{ codec_type_string: 'video', width: 640, height: 480, rotation: 0 }] }; }

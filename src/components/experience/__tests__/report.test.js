@@ -301,6 +301,59 @@ describe('rep details', () => {
     expect(s.summary).toEqual([]);
   });
 
+  it('formats bilateral symmetry in summary when symmetry data is provided', () => {
+    const sym = { symmetryScore: 92, asymmetryPct: 8, dominantSide: 'right', romDiffDeg: 6, status: 'balanced' };
+    const s = reportSheet({ ...base, reps, first: 'concentric', symmetry: sym });
+    expect(s.summary.join('\n')).toContain('Symétrie bilatérale');
+    expect(s.summary.join('\n')).toContain('92');
+    expect(s.summary.join('\n')).toContain('Équilibrée');
+
+    const sEn = reportSheet({ ...base, lang: 'en', reps, first: 'concentric', symmetry: { ...sym, status: 'mild_asymmetry', dominantSide: 'left', romDiffDeg: 14 } });
+    expect(sEn.summary.join('\n')).toContain('Bilateral symmetry');
+    expect(sEn.summary.join('\n')).toContain('Left dominant (+14°)');
+  });
+
+  it('formats form consistency and movement smoothness in summary', () => {
+    const consistency = { score: 88, rating: 'high', avgDeviationDeg: 6.2, mostInconsistentRep: 4 };
+    const smoothness = { avgSparc: -1.75, quality: 'very_smooth' };
+    const s = reportSheet({ ...base, reps, first: 'concentric', consistency, smoothness });
+    expect(s.summary.join('\n')).toContain('Régularité de forme');
+    expect(s.summary.join('\n')).toContain('88');
+    expect(s.summary.join('\n')).toContain('Très régulier');
+    expect(s.summary.join('\n')).toContain('Fluidité');
+    expect(s.summary.join('\n')).toContain('-1.75 SPARC');
+    expect(s.summary.join('\n')).toContain('Très fluide');
+
+    const sEn = reportSheet({ ...base, lang: 'en', reps, first: 'concentric', consistency, smoothness });
+    expect(sEn.summary.join('\n')).toContain('Form consistency');
+    expect(sEn.summary.join('\n')).toContain('High consistency');
+    expect(sEn.summary.join('\n')).toContain('Smoothness');
+    expect(sEn.summary.join('\n')).toContain('Very smooth');
+  });
+
+  it('formats biomechanical form checks (squat depth, knee valgus, lockout) in summary', () => {
+    const formChecks = {
+      squatDepth: { allParallel: true, parallelRate: 1.0, count: 5, total: 5 },
+      kneeValgus: { detected: false, valgusRate: 0, count: 0, total: 5 },
+      lockout: { fullLockout: true, lockoutRate: 1.0, count: 5, total: 5 },
+    };
+    const sFr = reportSheet({ ...base, reps, first: 'concentric', formChecks });
+    expect(sFr.summary.join('\n')).toContain('Profondeur (squat)');
+    expect(sFr.summary.join('\n')).toContain('100 % à la parallèle');
+    expect(sFr.summary.join('\n')).toContain('Alignement des genoux');
+    expect(sFr.summary.join('\n')).toContain('Parfait (aucun valgus)');
+    expect(sFr.summary.join('\n')).toContain('Verrouillage articulaire');
+    expect(sFr.summary.join('\n')).toContain('Complet (100 %)');
+
+    const sEn = reportSheet({ ...base, lang: 'en', reps, first: 'concentric', formChecks });
+    expect(sEn.summary.join('\n')).toContain('Squat depth');
+    expect(sEn.summary.join('\n')).toContain('100% parallel depth');
+    expect(sEn.summary.join('\n')).toContain('Knee tracking');
+    expect(sEn.summary.join('\n')).toContain('Clean (no valgus collapse)');
+    expect(sEn.summary.join('\n')).toContain('Joint lockout');
+    expect(sEn.summary.join('\n')).toContain('Complete lockout (100%)');
+  });
+
   it('runs a long table onto the next page', async () => {
     const pdfText = async blob => Buffer.from(await blob.arrayBuffer()).toString('latin1');
     const many = Array.from({ length: 16 }, (_, i) => rep(i * 3, 1.9, 90, 0.8, 1.0));

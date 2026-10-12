@@ -437,7 +437,7 @@ export async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, on
  */
 export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidth, onFrame, onProgress, options = {}) {
   const { signal, startFrame = 0 } = options;
-  const { WebDemuxer } = await import('web-demuxer');
+  const { WebDemuxer, AVLogLevel } = await import('web-demuxer');
 
   const wasmUrl = new URL('web-demuxer.wasm', new URL(import.meta.env.BASE_URL || '/', location.origin)).href;
   const demuxer = new WebDemuxer({ wasmFilePath: wasmUrl });
@@ -451,6 +451,9 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
 
     await demuxer.load(file);
+    if (AVLogLevel?.AV_LOG_ERROR !== undefined) {
+      await demuxer.setLogLevel(AVLogLevel.AV_LOG_ERROR);
+    }
     const mediaInfo = await demuxer.getMediaInfo();
     const videoStream = mediaInfo.streams.find(s => s.codec_type_string === 'video');
     if (!videoStream) throw new Error('No video track found in file');
@@ -736,11 +739,14 @@ export class FrozenReadError extends Error {
  */
 async function inspectVideo(file) {
   try {
-    const { WebDemuxer } = await import('web-demuxer');
+    const { WebDemuxer, AVLogLevel } = await import('web-demuxer');
     const wasmUrl = new URL('web-demuxer.wasm', new URL(import.meta.env.BASE_URL || '/', location.origin)).href;
     const demuxer = new WebDemuxer({ wasmFilePath: wasmUrl });
     try {
       await demuxer.load(file);
+      if (AVLogLevel?.AV_LOG_ERROR !== undefined) {
+        await demuxer.setLogLevel(AVLogLevel.AV_LOG_ERROR);
+      }
       const info = await demuxer.getMediaInfo();
       const video = info.streams.find(s => s.codec_type_string === 'video');
       if (!video) return null;

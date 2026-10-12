@@ -59,6 +59,10 @@ export function savedSet({ result, lift, n, corrected, sides = null, manual = fa
     ...(result.sensitivity ? { sensitivity: { moved: !!result.sensitivity.moved, counts: result.sensitivity.counts } } : {}),
     // Rep details measured with step 3c's boundaries; older sets' details are not shown.
     repDetailsVersion: 2,
+    symmetry: result.symmetry ?? null,
+    smoothness: result.smoothness ?? null,
+    consistency: result.consistency ?? null,
+    formChecks: result.formChecks ?? null,
     // The measured angle over the set, compact, for the report's wave (wave.js).
     wave: flagged ? null : compactWave(waveAngles(result), result.timestamps),
   });

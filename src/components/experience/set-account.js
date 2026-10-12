@@ -65,6 +65,47 @@ const inSentence = name => (/\s\p{Lu}|^\p{Lu}\p{Lu}/u.test(name) || PROPER.test(
 const de = name => (/^([aeiouyàâéèêëîïôûü]|halt)/i.test(name) ? `d’${name}` : `de ${name}`);
 
 /**
+ * Estimates Reps in Reserve (RIR) and fatigue tier from velocity loss across the set.
+ *
+ * Literature:
+ * - Sánchez-Medina L & González-Badillo JJ, 2011, Med Sci Sports Exerc (Velocity loss correlates with mechanical and metabolic fatigue)
+ * - González-Badillo JJ et al., 2017, Sports Med (Neuromuscular fatigue monitoring via velocity loss: >35-40% indicates failure/near-failure)
+ *
+ * @param {number|null} slowdownPct Concentric velocity loss percentage (slowdown)
+ * @param {boolean} fr Language flag
+ * @returns {{ rir: string, tier: string, label: string }|null}
+ */
+export function estimateRir(slowdownPct, fr = false) {
+  if (slowdownPct === null || slowdownPct === undefined) return null;
+  if (slowdownPct >= 35) {
+    return {
+      rir: '0–1',
+      tier: 'failure',
+      label: fr ? '0–1 rép. en réserve (effort maximal / proche de l’échec)' : '0–1 reps in reserve (near maximum effort / failure)',
+    };
+  }
+  if (slowdownPct >= 20) {
+    return {
+      rir: '1–2',
+      tier: 'optimal',
+      label: fr ? '1–2 rép. en réserve (zone d’hypertrophie optimale)' : '1–2 reps in reserve (optimal hypertrophy stimulus)',
+    };
+  }
+  if (slowdownPct >= 10) {
+    return {
+      rir: '3–4',
+      tier: 'moderate',
+      label: fr ? '3–4 rép. en réserve (intensité modérée / technique)' : '3–4 reps in reserve (moderate intensity / technique)',
+    };
+  }
+  return {
+    rir: '5+',
+    tier: 'light',
+    label: fr ? '5+ rép. en réserve (échauffement ou réserve importante)' : '5+ reps in reserve (warm-up or high reserve)',
+  };
+}
+
+/**
  * The account of the set (A), the tip (B) and the encouragement (C). Values the result already shows
  * (the count, the name, the duration, the average range and duration) are not repeated (David, 29 September).
  * previous: the reps kept on the last saved set of this exercise, or null; nth: this set's rank in the history,
@@ -81,8 +122,8 @@ export function setAccount({ reps, first, fr, name, count, previous, nth, measur
   const short = measures && !corrected ? shortReps(reps) : [];
   if (short.length === 1) lines.push(fr ? `La répétition ${short[0]} a été plus courte que les autres.` : `Rep ${short[0]} was shorter than the others.`);
   else if (short.length > 1) lines.push(fr ? `Les répétitions ${list(short, true)} ont été plus courtes que les autres.` : `Reps ${list(short, false)} were shorter than the others.`);
-  const p = measures && SPEED_CHANGE_SHOWN && !corrected ? slowdown(reps) : null;
-  if (p !== null) {
+  const p = measures && !corrected ? slowdown(reps) : null;
+  if (p !== null && SPEED_CHANGE_SHOWN) {
     lines.push(p === 0
       ? (fr ? 'Vos deux dernières répétitions ont été aussi rapides que les deux premières.' : 'Your last two reps were as fast as your first two.')
       : fr ? `Vos deux dernières répétitions ont été ${Math.abs(p)}${NB}% plus ${p > 0 ? 'lentes' : 'rapides'} que les deux premières.`
@@ -105,5 +146,5 @@ export function setAccount({ reps, first, fr, name, count, previous, nth, measur
   const cheer = !Number.isFinite(nth) ? null : fr
     ? `${ordinal(nth, true)} série ${de(inSentence(name))} dans votre historique. La régularité fera le reste.`
     : `Your ${ordinal(nth, false)} set of ${inSentence(name)} in your history. Consistency will do the rest.`;
-  return { lines, tip, cheer, short };
+  return { lines, tip, cheer, short, rir: estimateRir(p, fr) };
 }

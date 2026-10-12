@@ -135,7 +135,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {object} [o.planned]  the coach's target, for a set filmed from a programme (programme.js, plannedOf)
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, symmetry = null, smoothness = null, consistency = null, formChecks = null }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -183,6 +183,63 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     // Left against right, for a set filmed from the front (sides-line.js): the two ranges, then what a gap means.
     const lr = sidesLines(sides, fr, lift);
     if (lr) summary.push(lr.line, lr.note);
+
+    // Bilateral symmetry (when both limbs were visible and measured)
+    if (symmetry && symmetry.symmetryScore != null) {
+      const statusLabel = symmetry.status === 'balanced'
+        ? (fr ? 'Équilibrée' : 'Balanced')
+        : symmetry.dominantSide === 'left'
+        ? (fr ? `Gauche dominante (+${symmetry.romDiffDeg}°)` : `Left dominant (+${symmetry.romDiffDeg}°)`)
+        : (fr ? `Droite dominante (+${symmetry.romDiffDeg}°)` : `Right dominant (+${symmetry.romDiffDeg}°)`);
+      summary.push((fr ? 'Symétrie bilatérale' : 'Bilateral symmetry') + colon + `${symmetry.symmetryScore}${NBSP}% (${statusLabel})`);
+    }
+
+    // Form consistency (DTW)
+    if (consistency && consistency.score != null) {
+      const consistencyLabel = consistency.rating === 'high'
+        ? (fr ? 'Très régulier' : 'High consistency')
+        : consistency.rating === 'moderate'
+        ? (fr ? 'Régulier' : 'Moderate consistency')
+        : (fr ? 'Irrégulier' : 'Inconsistent');
+      summary.push((fr ? 'Régularité de forme' : 'Form consistency') + colon + `${consistency.score}${NBSP}% (${consistencyLabel})`);
+    }
+
+    // Movement smoothness (SPARC)
+    if (smoothness && smoothness.avgSparc != null) {
+      const smoothnessLabel = smoothness.quality === 'very_smooth'
+        ? (fr ? 'Très fluide' : 'Very smooth')
+        : smoothness.quality === 'smooth'
+        ? (fr ? 'Fluide' : 'Smooth')
+        : smoothness.quality === 'moderate'
+        ? (fr ? 'Modérée' : 'Moderate')
+        : (fr ? 'Saccadée' : 'Jerky');
+      summary.push((fr ? 'Fluidité' : 'Smoothness') + colon + `${smoothness.avgSparc} SPARC (${smoothnessLabel})`);
+    }
+
+    // Biomechanical form checks (depth, knee valgus, lockout)
+    if (formChecks) {
+      if (formChecks.squatDepth) {
+        const d = formChecks.squatDepth;
+        const depthText = d.allParallel
+          ? (fr ? '100 % à la parallèle' : '100% parallel depth')
+          : (fr ? `${d.count}/${d.total} à la parallèle (${Math.round(d.parallelRate * 100)} %)` : `${d.count}/${d.total} parallel (${Math.round(d.parallelRate * 100)}%)`);
+        summary.push((fr ? 'Profondeur (squat)' : 'Squat depth') + colon + depthText);
+      }
+      if (formChecks.kneeValgus) {
+        const v = formChecks.kneeValgus;
+        const valgusText = !v.detected
+          ? (fr ? 'Parfait (aucun valgus)' : 'Clean (no valgus collapse)')
+          : (fr ? `Valgus détecté (${v.count}/${v.total} rép.)` : `Valgus collapse detected (${v.count}/${v.total} reps)`);
+        summary.push((fr ? 'Alignement des genoux' : 'Knee tracking') + colon + valgusText);
+      }
+      if (formChecks.lockout) {
+        const l = formChecks.lockout;
+        const lockoutText = l.fullLockout
+          ? (fr ? 'Complet (100 %)' : 'Complete lockout (100%)')
+          : (fr ? `${l.count}/${l.total} avec extension complète (${Math.round(l.lockoutRate * 100)} %)` : `${l.count}/${l.total} full lockout (${Math.round(l.lockoutRate * 100)}%)`);
+        summary.push((fr ? 'Verrouillage articulaire' : 'Joint lockout') + colon + lockoutText);
+      }
+    }
 
     // Previous set comparison.
     if (previousSet && previousSet.reps?.length) {
@@ -257,6 +314,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     columns,
     rows,
     summary,
+    symmetry: symmetry ?? null,
     shortRepNote: hasShort ? (fr ? '▾ amplitude courte' : '▾ short rep') : '',
     // The measured angle over the set (wave.js), as the set kept it; with the measures only (measures.js).
     wave: shown && wave?.t?.length > 1 && allReps.length ? { t: wave.t, a: wave.a, reps: allReps, rest: liftDefinition(lift)?.rest ?? 'low', first: liftFirst, jointWord: jointName(joint, fr), reference: referenceBand(lift, { joint: liftDefinition(lift)?.joint }) } : null,

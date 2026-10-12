@@ -711,6 +711,80 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // The account (A) and the tip (B); the cheer (C) and the notes, which a beginner finds open.
   const plain = <>
     {account.lines.map(l => <p key={l} className="acc-line">{l}</p>)}
+    {account.rir && <p className="acc-line acc-rir" data-testid="acc-rir">
+      <b>{fr ? 'Effort estimé (RIR)' : 'Estimated effort (RIR)'} :</b> {account.rir.label}.
+    </p>}
+    {result.symmetry && (
+      <p className="acc-line acc-symmetry" data-testid="acc-symmetry">
+        <b>{fr ? 'Symétrie bilatérale' : 'Bilateral symmetry'} :</b> {result.symmetry.symmetryScore} % ({
+          result.symmetry.status === 'balanced'
+            ? (fr ? 'Équilibrée' : 'Balanced')
+            : (fr ? `${result.symmetry.dominantSide === 'left' ? 'Gauche dominante' : 'Droite dominante'} (+${result.symmetry.romDiffDeg}°)`
+                  : `${result.symmetry.dominantSide === 'left' ? 'Left dominant' : 'Right dominant'} (+${result.symmetry.romDiffDeg}°)`)
+        }).
+      </p>
+    )}
+    {result.consistency && (
+      <p className="acc-line acc-consistency" data-testid="acc-consistency">
+        <b>{fr ? 'Régularité' : 'Form consistency'} :</b> {result.consistency.score} % ({
+          result.consistency.rating === 'high'
+            ? (fr ? 'très régulier' : 'high consistency')
+            : result.consistency.rating === 'moderate'
+            ? (fr ? 'régulier' : 'moderate consistency')
+            : (fr ? 'irrégulier' : 'inconsistent')
+        }).
+      </p>
+    )}
+    {result.smoothness && (
+      <p className="acc-line acc-smoothness" data-testid="acc-smoothness">
+        <b>{fr ? 'Fluidité (SPARC)' : 'Smoothness (SPARC)'} :</b> {result.smoothness.avgSparc} ({
+          result.smoothness.quality === 'very_smooth'
+            ? (fr ? 'très fluide' : 'very smooth')
+            : result.smoothness.quality === 'smooth'
+            ? (fr ? 'fluide' : 'smooth')
+            : result.smoothness.quality === 'moderate'
+            ? (fr ? 'modérée' : 'moderate')
+            : (fr ? 'saccadée' : 'jerky')
+        }).
+      </p>
+    )}
+    {result.formChecks && (
+      <>
+        {result.formChecks.squatDepth && (
+          <p className="acc-line acc-squat-depth" data-testid="acc-squat-depth">
+            <b>{fr ? 'Profondeur (squat)' : 'Squat depth'} :</b> {
+              result.formChecks.squatDepth.allParallel
+                ? (fr ? '100 % à la parallèle' : '100% parallel depth')
+                : (fr
+                    ? `${result.formChecks.squatDepth.count}/${result.formChecks.squatDepth.total} à la parallèle (${Math.round(result.formChecks.squatDepth.parallelRate * 100)} %)`
+                    : `${result.formChecks.squatDepth.count}/${result.formChecks.squatDepth.total} reps reached parallel (${Math.round(result.formChecks.squatDepth.parallelRate * 100)}%)`)
+            }
+          </p>
+        )}
+        {result.formChecks.kneeValgus && (
+          <p className="acc-line acc-knee-valgus" data-testid="acc-knee-valgus">
+            <b>{fr ? 'Alignement des genoux' : 'Knee tracking'} :</b> {
+              !result.formChecks.kneeValgus.detected
+                ? (fr ? 'Parfait (aucun valgus détecté)' : 'Clean (no valgus collapse detected)')
+                : (fr
+                    ? `Valgus détecté sur ${result.formChecks.kneeValgus.count}/${result.formChecks.kneeValgus.total} répétition(s)`
+                    : `Valgus collapse detected on ${result.formChecks.kneeValgus.count}/${result.formChecks.kneeValgus.total} rep(s)`)
+            }
+          </p>
+        )}
+        {result.formChecks.lockout && (
+          <p className="acc-line acc-lockout" data-testid="acc-lockout">
+            <b>{fr ? 'Verrouillage articulaire' : 'Lockout consistency'} :</b> {
+              result.formChecks.lockout.fullLockout
+                ? (fr ? 'Complet sur chaque répétition (100 %)' : 'Complete on all reps (100%)')
+                : (fr
+                    ? `${result.formChecks.lockout.count}/${result.formChecks.lockout.total} avec extension complète (${Math.round(result.formChecks.lockout.lockoutRate * 100)} %)`
+                    : `${result.formChecks.lockout.count}/${result.formChecks.lockout.total} reps with full extension (${Math.round(result.formChecks.lockout.lockoutRate * 100)}%)`)
+            }
+          </p>
+        )}
+      </>
+    )}
     <p className="acc-tip">{account.tip}</p>
   </>;
   const more = <>

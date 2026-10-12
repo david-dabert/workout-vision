@@ -303,6 +303,10 @@ export interface WorkoutRecord {
   choice?: { rule: string; offered: number[]; picked: 'main' | 'alt' | 'typed' } | null;
   /** The sensitivity check's recounts of a counted set (coreAnalysis.js withSensitivity). */
   sensitivity?: { moved: boolean; counts: (number | null)[] } | null;
+  symmetry?: unknown;
+  smoothness?: unknown;
+  consistency?: unknown;
+  formChecks?: unknown;
 }
 
 export interface RepCounterDiagnostics {
