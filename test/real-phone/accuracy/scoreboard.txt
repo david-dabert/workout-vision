@@ -37,13 +37,13 @@ KNOWN CATASTROPHIC  sets-07oct-video/pendulum_squat_7.json.gz  label 7  now 14
    sets-07oct-video/pendulum_squat_7.json.gz  label 7  before 14 (catastrophic)  now 14 (catastrophic)
    sets-07oct-video/seated_dumbbell_curl_10.json.gz  label 10  before 10 (exact)  now 10 (exact)
    sets-07oct-video/sissy_squat_5_5011.json.gz  label 5  before refused (refused)  now refused (refused)  (proposal 5)
--> sets-07oct-video/sissy_squat_7_5006.json.gz  label 7  before 4 (catastrophic)  now 5 (off -2)
+   sets-07oct-video/sissy_squat_7_5006.json.gz  label 7  before 5 (off -2)  now 5 (off -2)
    sets-07oct-video/sissy_squat_7_5008.json.gz  label 7  before refused (refused)  now refused (refused)
    sets-07oct-video/sissy_squat_9_5007.json.gz  label 9  before 9 (exact)  now 9 (exact)
    sets-07oct-video/standing_barbell_curl_8.json.gz  label 8  before refused (refused)  now refused (refused)  (proposal 8)
 
-Real video, VIDEO mode (the same videos read in VIDEO mode, which the app does not use: measured, decides nothing): of the 14 sets in the baseline, 3 exact now, 2 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused; 3 refused of 14.
-Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 14 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 1 gained, 0 lost, McNemar p = 1.00; exact-rate change +7.1 points, 95 % interval [0.0, +21.4].
+Real video, VIDEO mode (the same videos read in VIDEO mode, which the app does not use: measured, decides nothing): of the 14 sets in the baseline, 3 exact now, 3 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused; 3 refused of 14.
+Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 14 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
    sets-09oct-video-mode/barbell_squat_9_a.json.gz  label 9  before 7 (off -2)  now 7 (off -2)
    sets-09oct-video-mode/barbell_squat_9_b.json.gz  label 9  before 10 (off +1)  now 10 (off +1)
    sets-09oct-video-mode/behind_neck_chin_up_5.json.gz  label 5  before 4 (off -1)  now 4 (off -1)
@@ -54,7 +54,7 @@ Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the
    sets-09oct-video-mode/pendulum_squat_7.json.gz  label 7  before 8 (off +1)  now 8 (off +1)
    sets-09oct-video-mode/seated_dumbbell_curl_10.json.gz  label 10  before 10 (exact)  now 10 (exact)
    sets-09oct-video-mode/sissy_squat_5_5011.json.gz  label 5  before refused (refused)  now refused (refused)  (proposal 4)
--> sets-09oct-video-mode/sissy_squat_7_5006.json.gz  label 7  before 6 (off -1)  now 7 (exact)
+   sets-09oct-video-mode/sissy_squat_7_5006.json.gz  label 7  before 7 (exact)  now 7 (exact)
    sets-09oct-video-mode/sissy_squat_7_5008.json.gz  label 7  before refused (refused)  now refused (refused)
    sets-09oct-video-mode/sissy_squat_9_5007.json.gz  label 9  before 9 (exact)  now 9 (exact)
    sets-09oct-video-mode/standing_barbell_curl_8.json.gz  label 8  before refused (refused)  now refused (refused)  (proposal 6)

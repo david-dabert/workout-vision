@@ -15,12 +15,12 @@ import { filmView } from '../../components/experience/exercise-info';
 // Step 2 (PLAN.md, GROWTH): every countable exercise of the guide but the walking lunge, 183 (181, and since 2 October the standing and lying barbell curls),
 // and since 3 October 179, without the four floor exercises counted on both sides in profile (offer.js, WITHDRAWN, third audit C21);
 // 181 the same day with the behind-the-neck press and the wall ball (the barbell jump squat is in the guide but not yet counted, NOT_YET_COUNTED;
-// the sandbag lunge, a walking lunge, is not offered); 182 on 5 October with the machine seated back extension; the
-// prone Y raise, countable since 8 October (core.ts, LiftDefinition.lift), is not offered yet (NOT_YET_COUNTED);
+// the sandbag lunge, a walking lunge, is not offered); 182 on 5 October with the machine seated back extension; 183
+// on 12 October with the prone Y raise offered;
 // Beta marks the exercises with evidence and Experimental all the others, so that the label stays true.
 describe('the exercises the app offers', () => {
   // David's decision of 29 September: the walking lunge is not offered, since the lifter walks out of a fixed frame; nor, since 3 October, the sandbag lunge.
-  it('are the countable exercises of the guide but the walking and sandbag lunges and the four withdrawn and the jump squat and the prone Y raise, 182, the lifts of LIFT TIERS among them', () => {
+  it('are the countable exercises of the guide but the walking and sandbag lunges and the four withdrawn and the jump squat, 183, the lifts of LIFT TIERS among them', () => {
     const countable = catalogue.map(e => e.key).filter(k => families[k].joint);
     expect(countable).toHaveLength(190);
     // With the two fitness tests of 2 October (fitness-tests.js), Experimental like every exercise without evidence.

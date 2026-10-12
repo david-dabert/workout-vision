@@ -83,8 +83,8 @@ test('the page says it is for David\'s own sets, and where a set of anyone else 
 
 // Step 2 (PLAN.md, GROWTH): the collector offers the same exercises as the app, so that a set of any
 // of them can be collected, and the four floor exercises withdrawn from the app on 3 October (src/lib/offer.js,
-// WITHDRAWN, third audit C21), whose collected sets are what would bring them back: 182 (with the machine seated back extension of 5 October) + 4 + the barbell jump squat and the prone Y raise (8 October), in the guide but not yet counted (offer.js NOT_YET_COUNTED), = 188.
-test('the collector offers the 182 exercises the app counts, the 4 withdrawn, the jump squat and the prone Y raise, by their names in both languages', async ({ page }) => {
+// WITHDRAWN, third audit C21), whose collected sets are what would bring them back: 183 (with the machine seated back extension and prone Y raise) + 4 + the barbell jump squat, in the guide but not yet counted (offer.js NOT_YET_COUNTED), = 188.
+test('the collector offers the 183 exercises the app counts, the 4 withdrawn and the jump squat, by their names in both languages', async ({ page }) => {
   await open(page);
   await expect(page.locator('#lift option')).toHaveCount(188);
   await expect(page.locator('#lift option[value="prone_y_raise"]')).toHaveCount(1);
