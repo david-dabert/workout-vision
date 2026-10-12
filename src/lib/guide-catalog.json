@@ -1983,7 +1983,7 @@
     "key": "cable_kickback",
     "name": "Cable Kickback",
     "slug": "cable-kickback",
-    "category": "arms",
+    "category": "legs",
     "equipment": "Cable",
     "muscles": [
       "Glutes",

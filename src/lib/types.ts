@@ -310,6 +310,8 @@ export interface WorkoutRecord {
   kinetics?: unknown;
   compliance?: unknown;
   vbt?: unknown;
+  partialCount?: number;
+  partials?: unknown[];
 }
 
 export interface RepCounterDiagnostics {

@@ -50,7 +50,7 @@ soldier-bicep_curl-v90-plate                  39%   -      refused  6       6
 soldier-bicep_curl-v90-rack                   99%   -      7        5       6      
 soldier-bicep_curl_alternating-v0-clean       100%  -      14       10      10     x2 0.48
 soldier-bicep_curl_alternating-v0-dim         100%  -      18       10      10     x2 0.46
-soldier-bicep_curl_alternating-v0-person      100%  0      18       10      10     x2 0.48
+soldier-bicep_curl_alternating-v0-person      100%  0      19       10      10     x2 0.48
 soldier-bicep_curl_alternating-v0-rack        100%  -      10       10      10     x2 0.46
 soldier-bicep_curl_alternating-v90-clean      100%  -      refused  10      10     x2 0.47
 soldier-bicep_curl_alternating-v90-dim        100%  -      refused  5       10     -- 0.23

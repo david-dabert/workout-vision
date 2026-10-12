@@ -45,6 +45,8 @@ export const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'compliance',
   // Velocity-based training & sticking point localization (vbtEngine.js, 12 October 2026).
   'vbt',
+  // Partial repetition tracking & classification (Dr. Milo Wolf & Dr. Mike Israetel, 13 October 2026).
+  'partialCount', 'partials',
 ];
 
 const DEFAULTS: Partial<WorkoutRecord> = {

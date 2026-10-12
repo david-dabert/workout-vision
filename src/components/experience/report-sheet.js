@@ -135,7 +135,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {object} [o.planned]  the coach's target, for a set filmed from a programme (programme.js, plannedOf)
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, symmetry = null, smoothness = null, consistency = null, formChecks = null, rpe = null, pain = null, isometric = null, kinetics = null, compliance = null, vbt = null }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, symmetry = null, smoothness = null, consistency = null, formChecks = null, rpe = null, pain = null, isometric = null, kinetics = null, compliance = null, vbt = null, partialCount = 0, partials = null }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -178,6 +178,18 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
       summary.push(fr
         ? `Durée${colon}${sign}${decimal(Math.abs(diff), fr)}${NBSP}s du début à la fin`
         : `Duration${colon}${sign}${decimal(Math.abs(diff), false)}${NBSP}s from start to end`);
+    }
+
+    // Partial repetitions (lengthened & shortened partials)
+    if (partialCount > 0 && Array.isArray(partials) && partials.length > 0) {
+      const lengthened = partials.filter(p => p.partialType === 'lengthened').length;
+      const shortened = partials.filter(p => p.partialType === 'shortened').length;
+      const detail = lengthened > 0 && shortened > 0
+        ? ` (${lengthened} ${fr ? 'en étirement' : 'lengthened'}, ${shortened} ${fr ? 'en contraction' : 'shortened'})`
+        : lengthened > 0
+        ? ` (${lengthened} ${fr ? 'en étirement / lengthened' : 'lengthened partials'})`
+        : ` (${shortened} ${fr ? 'en contraction' : 'shortened'})`;
+      summary.push((fr ? 'Répétitions partielles' : 'Partial reps') + colon + `${partialCount}${detail}`);
     }
 
     // Left against right, for a set filmed from the front (sides-line.js): the two ranges, then what a gap means.
@@ -402,6 +414,8 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     summary,
     symmetry: symmetry ?? null,
     vbt: vbt ?? null,
+    partialCount: partialCount ?? 0,
+    partials: partials ?? null,
     shortRepNote: hasShort ? (fr ? '▾ amplitude courte' : '▾ short rep') : '',
     // The measured angle over the set (wave.js), as the set kept it; with the measures only (measures.js).
     wave: shown && wave?.t?.length > 1 && allReps.length ? { t: wave.t, a: wave.a, reps: allReps, rest: liftDefinition(lift)?.rest ?? 'low', first: liftFirst, jointWord: jointName(joint, fr), reference: referenceBand(lift, { joint: liftDefinition(lift)?.joint }) } : null,

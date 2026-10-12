@@ -106,7 +106,7 @@ describe('the lift of a limb against gravity', () => {
     const lifts = rawLifts.map(l => l + gaussian(rng, 2.0));
     // Simulate flickering wrist visibility around 0.5 and elbow lifting less than wrist
     const frames = lifts.map((l, i) => {
-      const f = prone(l, 1);
+      const f = prone(l, 1)!;
       // In real anatomy, humerus/elbow only lifts 1/3 as much as wrist
       const elLift = l * 0.35;
       const towards = 1, side = 1;

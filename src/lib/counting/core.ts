@@ -78,11 +78,17 @@ export interface RepDetail {
   meanSpeed: number;    // average frame-to-frame angular speed within the rep, degrees/second
   side?: 'left' | 'right' | 'both'; // both-sides lifts only: the side that did it
   clipped?: boolean;    // the video starts or ends inside this rep: counted, but its times are not whole
+  isPartial?: boolean;  // true when this repetition is a partial rep
+  partialType?: 'lengthened' | 'shortened'; // kinesiological classification (Dr. Milo Wolf / Dr. Mike Israetel)
+  romFraction?: number; // fraction of full repetition ROM achieved (e.g. 0.35 - 0.75)
 }
 
 export interface CountResult {
-  count: number;
-  reps: RepDetail[];
+  count: number;        // full repetitions counted
+  reps: RepDetail[];    // full repetitions list
+  partialCount?: number; // number of partial reps detected
+  totalCount?: number;  // count + partialCount
+  partials?: RepDetail[]; // partial repetitions list
   arm: 'left' | 'right' | 'both'; // the side tracked; 'both' for a both-sides lift
   confidence: number;   // 0–1
   angles: (number | null)[];          // raw angle per sample
@@ -434,7 +440,7 @@ export function countReps(
   // An exercise with no definition (no joint in the guide, or a key the core does not know) gets no
   // count: never another lift's (review of 29 September 2026).
   const def = liftDefinition(lift);
-  if (!def) return { count: 0, reps: [], arm: 'left', confidence: 0, angles: [], smoothedAngles: [], lowThreshold: 0, highThreshold: 0 };
+  if (!def) return { count: 0, reps: [], partialCount: 0, totalCount: 0, partials: [], arm: 'left', confidence: 0, angles: [], smoothedAngles: [], lowThreshold: 0, highThreshold: 0 };
   if (def.bothSides) return countBothSides(worldLandmarks, timestamps, def, tuning);
   const seen = selectSide(worldLandmarks, def.joint);
   if (def.together) {
@@ -500,7 +506,7 @@ function countSide(
   // 6. Compute thresholds from the set's own range
   const validAngles = smoothed.filter((a): a is number => a !== null);
   if (validAngles.length < 3) {
-    return { count: 0, reps: [], arm, confidence: 0, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: 0, highThreshold: 0 };
+    return { count: 0, reps: [], partialCount: 0, totalCount: 0, partials: [], arm, confidence: 0, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: 0, highThreshold: 0 };
   }
   const sorted = [...validAngles].sort((a, b) => a - b);
   const p = (pct: number) => sorted[Math.floor(sorted.length * pct / 100)];
@@ -509,7 +515,7 @@ function countSide(
   const range = pHigh - pLow;
 
   if (range < (def.minRangeDeg ?? MIN_ROM_DEGREES)) {
-    return { count: 0, reps: [], arm, confidence: 0, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: pLow, highThreshold: pHigh };
+    return { count: 0, reps: [], partialCount: 0, totalCount: 0, partials: [], arm, confidence: 0, angles: rawAngles, smoothedAngles: smoothed, lowThreshold: pLow, highThreshold: pHigh };
   }
 
   const scale = tuning.marginScale ?? 1;
@@ -528,6 +534,9 @@ function countSide(
   const seenAround = cleaned.map((_, i) => { for (let j = Math.max(0, i - halfSg); j <= Math.min(cleaned.length - 1, i + halfSg); j++) if ((cleaned[j] === null && bridged[j] !== null) || filled[j]) return false; return true; });
   const reps = placeBoundaries(cycles, smoothed, timestamps, lowThreshold, highThreshold, band, def, seenAround);
 
+  // Partial repetitions (lengthened and shortened partials):
+  const partials = detectPartialReps(smoothed, timestamps, lowThreshold, highThreshold, def, range, cycles, reps, seenAround);
+
   // 8. Confidence: fraction of samples with a detected pose on the tracked side. It is pose coverage, not certainty
   // that the count is right: a set seen throughout can still be miscounted (Astra's review of 5 October). Read it as
   // coverage; the field keeps its name for the sets already saved with it.
@@ -535,7 +544,19 @@ function countSide(
   const detectedSamples = rawAngles.filter(a => a !== null).length;
   const confidence = totalSamples > 0 ? detectedSamples / totalSamples : 0;
 
-  return { count: reps.length, reps, arm, confidence, angles: rawAngles, smoothedAngles: smoothed, lowThreshold, highThreshold };
+  return {
+    count: reps.length,
+    reps,
+    partialCount: partials.length,
+    totalCount: reps.length + partials.length,
+    partials,
+    arm,
+    confidence,
+    angles: rawAngles,
+    smoothedAngles: smoothed,
+    lowThreshold,
+    highThreshold,
+  };
 }
 
 /** Steps 1–5 of the count for one side: raw angle, outliers removed, dropouts bridged, smoothed. */
@@ -628,10 +649,33 @@ function countBothSides(worldLandmarks: WorldLandmarkFrame[], timestamps: number
     joined.push({ ...r });
   }
   joined.forEach((r, i) => { r.index = i + 1; });
+
+  const joinedPartials: RepDetail[] = [];
+  const allPartials = [
+    ...(left.partials || []).map(r => ({ ...r, side: 'left' as const })),
+    ...(right.partials || []).map(r => ({ ...r, side: 'right' as const })),
+  ].sort((a, b) => a.startTime - b.startTime);
+  for (const r of allPartials) {
+    const last = joinedPartials[joinedPartials.length - 1];
+    if (last && last.side !== 'both' && last.side !== r.side) {
+      const overlap = Math.min(last.endTime, r.endTime) - Math.max(last.startTime, r.startTime);
+      const shorter = Math.min(last.endTime - last.startTime, r.endTime - r.startTime);
+      if (overlap > TOGETHER_OVERLAP * shorter) {
+        last.side = 'both';
+        continue;
+      }
+    }
+    joinedPartials.push({ ...r });
+  }
+  joinedPartials.forEach((r, i) => { r.index = i + 1; });
+
   const primary = left.reps.length >= right.reps.length ? left : right;
   return {
     count: joined.length,
     reps: joined,
+    partialCount: joinedPartials.length,
+    totalCount: joined.length + joinedPartials.length,
+    partials: joinedPartials,
     arm: 'both',
     confidence: Math.min(left.confidence, right.confidence),
     angles: primary.angles,
@@ -922,6 +966,12 @@ function detectReps(
   const hiIdxs: number[] = [];
   let enteredAtWork = false;
   let head: Cycle | null = null;
+  // The rest end's extreme while waiting (the lowest angle for a lift that rests low, the highest otherwise), so a rep's
+  // range is read from where it left rest, not from the sample that crossed the rest threshold (12 October 2026). Read
+  // from that crossing, the range lost the stretch under the hysteresis band (THRESHOLD_MARGIN of the set's range, a
+  // quarter on the prone Y raise), so a rep the replay showed at 12.7 degrees failed a 10-degree floor
+  // (benchmark-catalogue.test.ts, depth); RepDetail.romDegrees was already read from the rest.
+  let restExtreme = restsLow ? Infinity : -Infinity;
   let firstSeen = -1;
   for (let i = 0; i < smoothed.length; i++) if (smoothed[i] !== null) { firstSeen = i; break; }
   // A cycle's moving time: its duration less the time it spent past the working threshold (two consecutive samples
@@ -948,10 +998,12 @@ function detectReps(
           state = 'inRep';
           repStartIdx = i;
           peakAngle = angle;
-          troughAngle = angle;
+          troughAngle = Number.isFinite(restExtreme) ? restExtreme : angle;
           crossIdx = angle >= highThreshold ? i : -1; // the entering sample may already be at the working end
           enteredAtWork = crossIdx === i;
           hiIdx = i;
+        } else {
+          restExtreme = Math.min(restExtreme, angle);
         }
       } else {
         if (angle > peakAngle) hiIdx = i;
@@ -969,8 +1021,10 @@ function detectReps(
             head = { enter: repStartIdx, complete: i }; // only its return is on video: judged after the loop
           }
           state = 'waiting';
+          restExtreme = angle;
         } else if (angle < lowThreshold) {
           state = 'waiting'; // back at rest without reaching the working end: not a rep
+          restExtreme = angle;
         }
       }
     } else {
@@ -978,11 +1032,13 @@ function detectReps(
         if (angle < highThreshold) {
           state = 'inRep';
           repStartIdx = i;
-          peakAngle = angle;
+          peakAngle = Number.isFinite(restExtreme) ? restExtreme : angle;
           troughAngle = angle;
           crossIdx = angle <= lowThreshold ? i : -1; // the entering sample may already be at the working end
           enteredAtWork = crossIdx === i;
           hiIdx = i;
+        } else {
+          restExtreme = Math.max(restExtreme, angle);
         }
       } else {
         if (angle < troughAngle) hiIdx = i;
@@ -1000,8 +1056,10 @@ function detectReps(
             head = { enter: repStartIdx, complete: i }; // only its return is on video: judged after the loop
           }
           state = 'waiting';
+          restExtreme = angle;
         } else if (angle > highThreshold) {
           state = 'waiting'; // back at rest without reaching the working end: not a rep
+          restExtreme = angle;
         }
       }
     }
@@ -1330,4 +1388,219 @@ function placeBoundaries(
     previousEnd = end;
   });
   return reps;
+}
+
+/**
+ * Detects partial repetitions (lengthened and shortened partials) outside full repetition cycles.
+ * Lengthened partials: excursions operating in the stretched / lengthened range of the movement
+ * (Dr. Milo Wolf & Dr. Mike Israetel hypertrophy/rehab literature; Kassiano et al., 2023; Pedrosa et al., 2022).
+ * Shortened partials: excursions operating in the contracted / lockout range.
+ */
+function detectPartialReps(
+  smoothed: (number | null)[],
+  timestamps: number[],
+  lowThreshold: number,
+  highThreshold: number,
+  def: LiftDefinition,
+  range: number,
+  fullCycles: Cycle[],
+  fullReps: RepDetail[],
+  seenAround: boolean[] = [],
+): RepDetail[] {
+  const restsLow = def.rest === 'low';
+  // Minimum partial ROM: at least 10 degrees and at least 32% of total set range
+  const minPartialRom = Math.max(10, 0.32 * range);
+  // Upper bound: below 92% of range (otherwise it is a near-full rep)
+  const maxPartialRom = range * 0.92;
+  const minPartialSec = 0.35; // minimum duration to filter out balance twitches / noise
+  const medianFullRom = fullReps.length > 0
+    ? [...fullReps.map(r => r.romDegrees)].sort((a, b) => a - b)[Math.floor(fullReps.length / 2)]
+    : range * 0.75;
+
+  // Mark all frames occupied by accepted full rep cycles
+  const occupied = new Uint8Array(smoothed.length);
+  for (const c of fullCycles) {
+    const from = Math.max(0, c.enter);
+    const to = Math.min(smoothed.length - 1, c.complete);
+    for (let i = from; i <= to; i++) occupied[i] = 1;
+  }
+
+  const partials: RepDetail[] = [];
+
+  // Helper to construct a RepDetail for a partial excursion
+  const addPartial = (startIdx: number, endIdx: number, peakIdx: number, partialType: 'lengthened' | 'shortened') => {
+    // Expand startIdx backwards to where the limb left rest
+    let realStart = startIdx;
+    while (realStart > 0 && !occupied[realStart - 1] && smoothed[realStart - 1] !== null
+      && (restsLow ? smoothed[realStart - 1]! <= lowThreshold : smoothed[realStart - 1]! >= highThreshold)) {
+      realStart--;
+    }
+    // Expand endIdx forwards to where the limb returns to rest
+    let realEnd = endIdx;
+    while (realEnd < smoothed.length - 1 && !occupied[realEnd + 1] && smoothed[realEnd + 1] !== null
+      && (restsLow ? smoothed[realEnd + 1]! <= lowThreshold : smoothed[realEnd + 1]! >= highThreshold)) {
+      realEnd++;
+    }
+
+    let lo = Infinity, hi = -Infinity;
+    for (let k = realStart; k <= realEnd; k++) {
+      const a = smoothed[k];
+      if (a !== null) {
+        if (a < lo) lo = a;
+        if (a > hi) hi = a;
+      }
+    }
+    const rom = hi - lo;
+    const dur = timestamps[realEnd] - timestamps[realStart];
+    if (rom < minPartialRom || rom > maxPartialRom || dur < minPartialSec) return;
+
+    let peak = 0, speedSum = 0, speedN = 0;
+    for (let k = realStart; k < realEnd; k++) {
+      const a0 = smoothed[k], a1 = smoothed[k + 1];
+      if (a0 === null || a1 === null || seenAround[k] === false || seenAround[k + 1] === false) continue;
+      const dt = timestamps[k + 1] - timestamps[k];
+      if (dt <= 0) continue;
+      const s = Math.abs(a1 - a0) / dt;
+      if (s > peak) peak = s;
+      speedSum += s;
+      speedN++;
+    }
+
+    const firstSec = timestamps[peakIdx] - timestamps[realStart];
+    const secondSec = timestamps[realEnd] - timestamps[peakIdx];
+    const romFrac = Math.min(0.95, Math.max(0.2, Math.round((rom / Math.max(1, medianFullRom)) * 100) / 100));
+
+    partials.push({
+      index: partials.length + 1,
+      startTime: timestamps[realStart],
+      endTime: timestamps[realEnd],
+      romDegrees: Math.round(rom * 10) / 10,
+      concentricSec: Math.max(0.1, def.first === 'concentric' ? firstSec : secondSec),
+      eccentricSec: Math.max(0.1, def.first === 'concentric' ? secondSec : firstSec),
+      peakSpeed: peak,
+      meanSpeed: speedN > 0 ? speedSum / speedN : 0,
+      isPartial: true,
+      partialType,
+      romFraction: romFrac,
+    });
+  };
+
+  // 1. Excursions leaving rest and returning without reaching working threshold
+  let inExcursion = false;
+  let exStart = -1;
+  let exExtremeIdx = -1;
+  let exExtremeVal = restsLow ? -Infinity : Infinity;
+
+  for (let i = 0; i < smoothed.length; i++) {
+    if (occupied[i]) {
+      if (inExcursion) {
+        inExcursion = false;
+        exStart = -1;
+      }
+      continue;
+    }
+    const a = smoothed[i];
+    if (a === null) continue;
+
+    if (restsLow) {
+      if (!inExcursion) {
+        if (a > lowThreshold) {
+          inExcursion = true;
+          exStart = i;
+          exExtremeIdx = i;
+          exExtremeVal = a;
+        }
+      } else {
+        if (a > exExtremeVal) {
+          exExtremeVal = a;
+          exExtremeIdx = i;
+        }
+        // If it crosses back below lowThreshold before reaching highThreshold
+        if (a <= lowThreshold) {
+          if (exExtremeVal < highThreshold) {
+            const pType = def.first === 'concentric' ? 'lengthened' : 'shortened';
+            addPartial(exStart, i, exExtremeIdx, pType);
+          }
+          inExcursion = false;
+          exStart = -1;
+        }
+      }
+    } else {
+      if (!inExcursion) {
+        if (a < highThreshold) {
+          inExcursion = true;
+          exStart = i;
+          exExtremeIdx = i;
+          exExtremeVal = a;
+        }
+      } else {
+        if (a < exExtremeVal) {
+          exExtremeVal = a;
+          exExtremeIdx = i;
+        }
+        // If it crosses back above highThreshold before reaching lowThreshold
+        if (a >= highThreshold) {
+          if (exExtremeVal > lowThreshold) {
+            const pType = def.first === 'concentric' ? 'lengthened' : 'shortened';
+            addPartial(exStart, i, exExtremeIdx, pType);
+          }
+          inExcursion = false;
+          exStart = -1;
+        }
+      }
+    }
+  }
+
+  // 2. Pulses in the deep stretch for eccentric-first lifts (e.g. squats, bench press, hack squat, RDLs)
+  if (def.first === 'eccentric') {
+    const stretchZone = restsLow ? highThreshold - 0.35 * range : lowThreshold + 0.35 * range;
+    let inStretch = false;
+    let pulseStart = -1;
+    let localTrough = restsLow ? -Infinity : Infinity;
+    let localPeak = restsLow ? Infinity : -Infinity;
+    let pState: 'descending' | 'rising' = 'descending';
+
+    for (let i = 1; i < smoothed.length; i++) {
+      const a = smoothed[i], prev = smoothed[i - 1];
+      if (a === null || prev === null) continue;
+      const inDeep = restsLow ? a >= stretchZone : a <= stretchZone;
+      if (!inDeep) {
+        inStretch = false;
+        pState = 'descending';
+        continue;
+      }
+      if (!inStretch) {
+        inStretch = true;
+        pulseStart = i;
+        localTrough = a;
+        localPeak = a;
+        pState = 'descending';
+      }
+
+      if (pState === 'descending') {
+        if (restsLow ? a > localTrough : a < localTrough) {
+          localTrough = a;
+        } else if (restsLow ? a < localTrough - 2 : a > localTrough + 2) {
+          // Began rising from bottom
+          pState = 'rising';
+          localPeak = a;
+        }
+      } else if (pState === 'rising') {
+        if (restsLow ? a < localPeak : a > localPeak) {
+          localPeak = a;
+        } else if (restsLow ? a > localPeak + 2 : a < localPeak - 2) {
+          // Reversal! Peaked and started descending again
+          const amp = Math.abs(localPeak - localTrough);
+          if (amp >= minPartialRom && timestamps[i] - timestamps[pulseStart] >= minPartialSec) {
+            addPartial(pulseStart, i, i, 'lengthened');
+            pulseStart = i;
+            localTrough = a;
+            pState = 'descending';
+          }
+        }
+      }
+    }
+  }
+
+  return partials;
 }

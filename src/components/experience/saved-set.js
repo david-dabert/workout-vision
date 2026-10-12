@@ -59,6 +59,8 @@ export function savedSet({ result, lift, n, corrected, sides = null, manual = fa
     ...(result.sensitivity ? { sensitivity: { moved: !!result.sensitivity.moved, counts: result.sensitivity.counts } } : {}),
     // Rep details measured with step 3c's boundaries; older sets' details are not shown.
     repDetailsVersion: 2,
+    partialCount: result.partialCount ?? 0,
+    partials: flagged ? [] : (result.partials ?? []),
     symmetry: result.symmetry ?? null,
     smoothness: result.smoothness ?? null,
     consistency: result.consistency ?? null,

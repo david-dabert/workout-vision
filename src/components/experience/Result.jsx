@@ -748,6 +748,23 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
         )}
       </>
     )}
+    {result.partialCount > 0 && (
+      <div className="acc-card acc-partials-card" data-testid="acc-partials">
+        <p className="acc-line acc-partials-line">
+          <b>{fr ? 'Répétitions partielles' : 'Partial reps'} :</b> {result.partialCount} {
+            result.partials?.some(p => p.partialType === 'lengthened')
+              ? (fr ? `(${result.partials.filter(p => p.partialType === 'lengthened').length} en étirement / lengthened)`
+                    : `(${result.partials.filter(p => p.partialType === 'lengthened').length} lengthened / stretch)`)
+              : ''
+          }
+        </p>
+        <p className="acc-hint-text text-muted">
+          {fr
+            ? 'Les répétitions partielles en étirement (lengthened partials) stimulent efficacement l’hypertrophie musculaire et le renforcement des amplitudes vulnérables.'
+            : 'Lengthened partial repetitions provide high mechanical tension in the stretched position, highly effective for muscle hypertrophy and joint conditioning (Dr. Milo Wolf, Dr. Mike Israetel).'}
+        </p>
+      </div>
+    )}
     {result.consistency && (
       <p className="acc-line acc-consistency" data-testid="acc-consistency">
         <b>{fr ? 'Régularité' : 'Form consistency'} :</b> {result.consistency.score} % ({
