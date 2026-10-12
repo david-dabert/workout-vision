@@ -250,6 +250,20 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
           : (fr ? `${l.count}/${l.total} avec extension complète (${Math.round(l.lockoutRate * 100)} %)` : `${l.count}/${l.total} full lockout (${Math.round(l.lockoutRate * 100)}%)`);
         summary.push((fr ? 'Verrouillage articulaire' : 'Joint lockout') + colon + lockoutText);
       }
+      if (formChecks.trapeziusHike) {
+        const th = formChecks.trapeziusHike;
+        const hikeText = !th.detected
+          ? (fr ? 'Parfait (épaules basses et stables)' : 'Clean (shoulders down and stable)')
+          : (fr ? `Haussement compensatoire (${th.count}/${th.total} rép.)` : `Trapezius hiking detected (${th.count}/${th.total} reps)`);
+        summary.push((fr ? 'Contrôle des trapèzes' : 'Shoulder tracking') + colon + hikeText);
+      }
+      if (formChecks.activeRom) {
+        const rom = formChecks.activeRom;
+        const romText = fr
+          ? `${rom.peakAngleDeg}° max (moyenne ${rom.avgAngleDeg}°)`
+          : `${rom.peakAngleDeg}° peak (avg ${rom.avgAngleDeg}°)`;
+        summary.push((fr ? 'Amplitude articulaire max' : 'Peak active ROM') + colon + romText);
+      }
     }
 
     // Mechanical Work & Joint Kinetics (Inverse Dynamics)

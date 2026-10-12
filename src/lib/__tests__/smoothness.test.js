@@ -4,6 +4,8 @@ import {
   computeSPARC,
   dtwDistance,
   analyzeMovementQuality,
+  detectTrapeziusHike,
+  detectShoulderRom,
 } from '../smoothness';
 
 describe('resampleSignal', () => {
@@ -176,4 +178,60 @@ describe('biomechanical form checks', () => {
     const res = analyzeMovementQuality(worldLandmarks, timestamps, 'squat', [reps[0], { ...reps[0], index: 2 }]);
     expect(res.formChecks?.kneeValgus?.detected).toBe(true);
   });
+
+  it('detects trapezius hiking when ear-to-shoulder vertical separation collapses', () => {
+    const timestamps = [0, 0.5, 1.0];
+    const worldLandmarks = [];
+    for (let i = 0; i < 3; i++) {
+      const frame = Array.from({ length: 33 }, () => ({ x: 0, y: 0, z: 0, visibility: 0.9 }));
+      // Ear at y = 0.2
+      frame[7] = { x: -0.1, y: 0.2, z: 0, visibility: 0.9 };
+      frame[8] = { x: 0.1, y: 0.2, z: 0, visibility: 0.9 };
+      // Neutral shoulder at y = 0.4 (dy = 0.20).
+      // At peak lift (index 1), shoulder rises to y = 0.25 (dy = 0.05, shrunk by 75% -> hiking!)
+      const shoulderY = i === 1 ? 0.25 : 0.40;
+      frame[11] = { x: -0.2, y: shoulderY, z: 0, visibility: 0.9 };
+      frame[12] = { x: 0.2, y: shoulderY, z: 0, visibility: 0.9 };
+      worldLandmarks.push(frame);
+    }
+    const reps = [{ index: 1, startTime: 0, endTime: 1.0 }];
+    const res = detectTrapeziusHike(worldLandmarks, timestamps, reps);
+    expect(res).not.toBeNull();
+    expect(res.detected).toBe(true);
+    expect(res.count).toBe(1);
+
+    // Verify analyzeMovementQuality integration for shoulder exercises
+    const quality = analyzeMovementQuality(worldLandmarks, timestamps, 'lateral_raise', [reps[0], { ...reps[0], index: 2 }]);
+    expect(quality.formChecks?.trapeziusHike?.detected).toBe(true);
+  });
+
+  it('measures active shoulder range of motion (ROM) in degrees', () => {
+    const timestamps = [0, 0.5, 1.0];
+    const worldLandmarks = [];
+    for (let i = 0; i < 3; i++) {
+      const frame = Array.from({ length: 33 }, () => ({ x: 0, y: 0, z: 0, visibility: 0.9 }));
+      // Hip at (0, 1, 0), Shoulder at (0, 0.5, 0)
+      frame[23] = { x: -0.1, y: 1.0, z: 0, visibility: 0.9 };
+      frame[24] = { x: 0.1, y: 1.0, z: 0, visibility: 0.9 };
+      frame[11] = { x: -0.1, y: 0.5, z: 0, visibility: 0.9 };
+      frame[12] = { x: 0.1, y: 0.5, z: 0, visibility: 0.9 };
+      // Arm hanging (elbow at y=0.8, x=-0.1) -> 0° angle
+      // At peak (index 1), elbow raised horizontally to x = -0.5, y = 0.5 -> 90° angle
+      const elbowX = i === 1 ? -0.5 : -0.1;
+      const elbowY = i === 1 ? 0.5 : 0.8;
+      frame[13] = { x: elbowX, y: elbowY, z: 0, visibility: 0.9 };
+      frame[14] = { x: -elbowX, y: elbowY, z: 0, visibility: 0.9 };
+      worldLandmarks.push(frame);
+    }
+    const reps = [{ index: 1, startTime: 0, endTime: 1.0 }];
+    const res = detectShoulderRom(worldLandmarks, timestamps, reps);
+    expect(res).not.toBeNull();
+    expect(res.peakAngleDeg).toBeGreaterThan(80);
+    expect(res.avgAngleDeg).toBeGreaterThan(80);
+
+    const quality = analyzeMovementQuality(worldLandmarks, timestamps, 'prone_y_raise', [reps[0], { ...reps[0], index: 2 }]);
+    expect(quality.formChecks?.activeRom).not.toBeNull();
+    expect(quality.formChecks.activeRom.peakAngleDeg).toBeGreaterThan(80);
+  });
 });
+

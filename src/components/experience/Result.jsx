@@ -807,6 +807,26 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
             }
           </p>
         )}
+        {result.formChecks.trapeziusHike && (
+          <p className="acc-line acc-trapezius-hike" data-testid="acc-trapezius-hike">
+            <b>{fr ? 'Contrôle des trapèzes' : 'Shoulder tracking'} :</b> {
+              !result.formChecks.trapeziusHike.detected
+                ? (fr ? 'Parfait (épaules basses et stables)' : 'Clean (shoulders down and stable)')
+                : (fr
+                    ? `Haussement compensatoire détecté sur ${result.formChecks.trapeziusHike.count}/${result.formChecks.trapeziusHike.total} répétition(s)`
+                    : `Trapezius hiking detected on ${result.formChecks.trapeziusHike.count}/${result.formChecks.trapeziusHike.total} rep(s)`)
+            }
+          </p>
+        )}
+        {result.formChecks.activeRom && (
+          <p className="acc-line acc-active-rom" data-testid="acc-active-rom">
+            <b>{fr ? 'Amplitude articulaire max' : 'Peak active ROM'} :</b> {
+              fr
+                ? `${result.formChecks.activeRom.peakAngleDeg}° (moyenne ${result.formChecks.activeRom.avgAngleDeg}°)`
+                : `${result.formChecks.activeRom.peakAngleDeg}° (avg ${result.formChecks.activeRom.avgAngleDeg}°)`
+            }
+          </p>
+        )}
         {result.formChecks.kneeValgus && !result.formChecks.kneeValgus.detected && (!result.kinetics || !result.kinetics.riskNote) && (
           <div className="acc-shield-card" data-testid="acc-confidence-shield">
             <span className="acc-shield-badge">{fr ? 'Exécution sécurisée' : 'Safe execution'}</span>

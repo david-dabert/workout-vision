@@ -274,7 +274,7 @@ export function analyzeMovementQuality(worldLandmarks, timestamps, lift, reps, a
   // Biomechanical form checks
   const lKey = String(lift || '').toLowerCase();
   const isSquat = lKey.includes('squat');
-  const isLower = isSquat || lKey.includes('press') || lKey.includes('thrust') || lKey.includes('lunge');
+  const isShoulder = lKey.includes('raise') || lKey.includes('shoulder') || lKey.includes('face_pull') || lKey.includes('y_raise') || lKey.includes('overhead') || lKey.includes('wall') || lKey.includes('arm');
   const formChecks = {};
 
   if (isSquat) {
@@ -282,6 +282,13 @@ export function analyzeMovementQuality(worldLandmarks, timestamps, lift, reps, a
     formChecks.kneeValgus = detectKneeValgus(worldLandmarks, timestamps, reps);
   }
   formChecks.lockout = detectLockout(worldLandmarks, timestamps, reps, lift);
+
+  if (isShoulder) {
+    const hike = detectTrapeziusHike(worldLandmarks, timestamps, reps);
+    if (hike) formChecks.trapeziusHike = hike;
+    const rom = detectShoulderRom(worldLandmarks, timestamps, reps);
+    if (rom) formChecks.activeRom = rom;
+  }
 
   return { smoothness, consistency, formChecks };
 }
@@ -408,6 +415,100 @@ export function detectLockout(worldLandmarks, timestamps, reps, lift) {
     fullLockout: lockoutCount === lockoutReps.length,
     count: lockoutCount,
     total: lockoutReps.length,
+  };
+}
+
+/**
+ * Detects parasitic trapezius hiking (shrugging shoulder toward ear) during arm/shoulder movements.
+ * Cools et al. 2007, Ludewig & Cook 2000.
+ */
+export function detectTrapeziusHike(worldLandmarks, timestamps, reps) {
+  if (!worldLandmarks?.length || !reps?.length) return null;
+  const hikeResults = [];
+
+  for (const r of reps) {
+    if (r.clipped) continue;
+    let baselineDy = null;
+    let minDy = Infinity;
+
+    for (let i = 0; i < timestamps.length; i++) {
+      const t = timestamps[i];
+      if (t >= r.startTime && t <= r.endTime) {
+        const lm = worldLandmarks[i];
+        if (!lm || !lm[11] || !lm[12] || !lm[7] || !lm[8]) continue;
+        const visL = (lm[11].visibility ?? 0) > 0.4 && (lm[7].visibility ?? 0) > 0.4;
+        const visR = (lm[12].visibility ?? 0) > 0.4 && (lm[8].visibility ?? 0) > 0.4;
+        if (!visL && !visR) continue;
+
+        // In MediaPipe, positive Y points downwards. Shoulder Y > Ear Y.
+        // dy = shoulder.y - ear.y (vertical separation)
+        const dyL = visL ? lm[11].y - lm[7].y : null;
+        const dyR = visR ? lm[12].y - lm[8].y : null;
+        const dy = dyL != null && dyR != null ? Math.min(dyL, dyR) : (dyL ?? dyR);
+
+        if (baselineDy === null && dy > 0) {
+          baselineDy = dy;
+        }
+        if (dy != null && dy < minDy) {
+          minDy = dy;
+        }
+      }
+    }
+
+    if (baselineDy !== null && Number.isFinite(minDy)) {
+      // If the ear-shoulder vertical gap shrinks by more than 22% during elevation, shoulder is hiked
+      const shrinkRatio = (baselineDy - minDy) / baselineDy;
+      hikeResults.push({ repIndex: r.index, hike: shrinkRatio >= 0.22 });
+    }
+  }
+
+  if (!hikeResults.length) return null;
+  const hikeCount = hikeResults.filter(h => h.hike).length;
+  return {
+    hikeRate: round(hikeCount / hikeResults.length, 2),
+    detected: hikeCount > 0,
+    count: hikeCount,
+    total: hikeResults.length,
+  };
+}
+
+/**
+ * Calculates active shoulder elevation/abduction range of motion (ROM) in degrees.
+ * Norkin & White 2016, Cools et al. 2007.
+ */
+export function detectShoulderRom(worldLandmarks, timestamps, reps) {
+  if (!worldLandmarks?.length || !reps?.length) return null;
+  const repRoms = [];
+
+  for (const r of reps) {
+    if (r.clipped) continue;
+    let maxAng = 0;
+
+    for (let i = 0; i < timestamps.length; i++) {
+      const t = timestamps[i];
+      if (t >= r.startTime && t <= r.endTime) {
+        const lm = worldLandmarks[i];
+        if (!lm || !lm[11] || !lm[12] || !lm[23] || !lm[24] || !lm[13] || !lm[14]) continue;
+        const angL = compute3DAngle(lm[23], lm[11], lm[13]);
+        const angR = compute3DAngle(lm[24], lm[12], lm[14]);
+        const curMax = Math.max(angL || 0, angR || 0);
+        if (curMax > maxAng) maxAng = curMax;
+      }
+    }
+
+    if (maxAng > 10) {
+      repRoms.push(Math.round(maxAng));
+    }
+  }
+
+  if (!repRoms.length) return null;
+  const peakAngleDeg = Math.max(...repRoms);
+  const avgAngleDeg = Math.round(repRoms.reduce((s, a) => s + a, 0) / repRoms.length);
+
+  return {
+    peakAngleDeg,
+    avgAngleDeg,
+    reps: repRoms,
   };
 }
 
