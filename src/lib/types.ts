@@ -307,6 +307,7 @@ export interface WorkoutRecord {
   smoothness?: unknown;
   consistency?: unknown;
   formChecks?: unknown;
+  kinetics?: unknown;
 }
 
 export interface RepCounterDiagnostics {

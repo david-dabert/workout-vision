@@ -135,7 +135,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {object} [o.planned]  the coach's target, for a set filmed from a programme (programme.js, plannedOf)
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, symmetry = null, smoothness = null, consistency = null, formChecks = null, rpe = null, pain = null, isometric = null }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, symmetry = null, smoothness = null, consistency = null, formChecks = null, rpe = null, pain = null, isometric = null, kinetics = null }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -249,6 +249,22 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
           ? (fr ? 'Complet (100 %)' : 'Complete lockout (100%)')
           : (fr ? `${l.count}/${l.total} avec extension complète (${Math.round(l.lockoutRate * 100)} %)` : `${l.count}/${l.total} full lockout (${Math.round(l.lockoutRate * 100)}%)`);
         summary.push((fr ? 'Verrouillage articulaire' : 'Joint lockout') + colon + lockoutText);
+      }
+    }
+
+    // Mechanical Work & Joint Kinetics (Inverse Dynamics)
+    if (kinetics) {
+      if (kinetics.totalWorkJoules > 0) {
+        summary.push((fr ? 'Travail mécanique total' : 'Total mechanical work') + colon + `${kinetics.totalWorkJoules}${NBSP}J`);
+      }
+      if (kinetics.maxL5S1ShearN > 0) {
+        summary.push((fr ? 'Cisaillement lombaire max (L5/S1)' : 'Peak lumbar shear (L5/S1)') + colon + `${kinetics.maxL5S1ShearN}${NBSP}N`);
+      }
+      if (kinetics.maxKneeShearN > 0) {
+        summary.push((fr ? 'Contrainte patellaire max' : 'Peak patellofemoral shear') + colon + `${kinetics.maxKneeShearN}${NBSP}N`);
+      }
+      if (kinetics.riskNote) {
+        summary.push((fr ? 'Alerte biomécanique' : 'Biomechanical cue') + colon + (fr ? kinetics.riskNote.textFr : kinetics.riskNote.textEn));
       }
     }
 

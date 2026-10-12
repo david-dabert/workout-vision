@@ -39,6 +39,8 @@ export const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'choice',
   // The sensitivity check's recounts of a counted set (coreAnalysis.js withSensitivity, 10 October 2026).
   'sensitivity',
+  // Joint kinetics and mechanical work (jointTorqueEngine.js, 12 October 2026).
+  'kinetics',
 ];
 
 const DEFAULTS: Partial<WorkoutRecord> = {
