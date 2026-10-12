@@ -33,7 +33,11 @@ export default function ExerciseProgress({ progress, name, fr, style }) {
             <Bars values={e.trend} />
             <span className="sr">{fr ? `Répétitions de vos ${e.trend.length} dernières séries${NB}: ${e.trend.join(', ')}.` : `Reps in your last ${e.trend.length} sets: ${e.trend.join(', ')}.`}</span>
           </span>
-          <span className="prog-meta">{bestLines(e.bests, fr).map((line, i) => <span key={i}>{line}</span>)}</span>
+          <span className="prog-meta">
+            {bestLines(e.bests, fr).map((line, i) => <span key={i}>{line}</span>)}
+            {e.symmetryAvg !== null && <span>{fr ? `Symétrie moy.${NB}: ${e.symmetryAvg}${NB}%` : `Mean symmetry: ${e.symmetryAvg}%`}</span>}
+            {e.vbtLossAvg !== null && <span>{fr ? `Perte vitesse moy.${NB}: ${e.vbtLossAvg}${NB}%` : `Mean velocity loss: ${e.vbtLossAvg}%`}</span>}
+          </span>
         </>}
     </li>)}</ul>
   </section>;

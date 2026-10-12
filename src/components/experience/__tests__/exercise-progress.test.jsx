@@ -22,6 +22,17 @@ describe('the progress block of the history', () => {
     expect(out).toContain('Reps in your last 2 sets: 8, 10.');
     expect(out).toContain(`Best: 10${NB}reps`);
   });
+  it('renders symmetry and VBT velocity loss averages when present', () => {
+    const a = set('a', 'squat', 8, { symmetry: { symmetryScore: 90 }, vbt: { velocityLossPercent: 12 } });
+    const b = set('b', 'squat', 10, { symmetry: { symmetryScore: 94 }, vbt: { velocityLossPercent: 18 } });
+    const outFr = html([a, b], true);
+    expect(outFr).toContain(`Symétrie moy.${NB}: 92${NB}%`);
+    expect(outFr).toContain(`Perte vitesse moy.${NB}: 15${NB}%`);
+
+    const outEn = html([a, b], false);
+    expect(outEn).toContain('Mean symmetry: 92%');
+    expect(outEn).toContain('Mean velocity loss: 15%');
+  });
   it('nothing at all without a set', () => {
     expect(html([], true)).toBe('');
   });

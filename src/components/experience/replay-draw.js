@@ -51,8 +51,17 @@ export function drawSkeleton(ctx, lm, box, sides, def, u = 1, trailsOrTrajectory
       const p0 = trajectory[i - 1], p1 = trajectory[i];
       const x0 = box.ox + p0.x * box.w, y0 = box.oy + p0.y * box.h;
       const x1 = box.ox + p1.x * box.w, y1 = box.oy + p1.y * box.h;
+
+      const dt = (p1.t && p0.t && p1.t > p0.t) ? p1.t - p0.t : 0.06;
+      const dist = Math.hypot(p1.x - p0.x, p1.y - p0.y);
+      const speed = dist / dt; // normalized speed per second
+
+      // Color-coded velocity dynamics along trajectory path
+      const color = speed > 0.2 ? RGB.lampHi : speed > 0.08 ? RGB.lamp : RGB.dustDeep;
+      const baseAlpha = p1.alpha ?? 0.6;
+
       ctx.lineWidth = 2 * u;
-      ctx.strokeStyle = rgba(RGB.lampHi, p1.alpha ?? 0.6);
+      ctx.strokeStyle = rgba(color, baseAlpha);
       ctx.beginPath();
       ctx.moveTo(x0, y0);
       ctx.lineTo(x1, y1);
@@ -61,11 +70,18 @@ export function drawSkeleton(ctx, lm, box, sides, def, u = 1, trailsOrTrajectory
     const last = trajectory[trajectory.length - 1];
     const lx = box.ox + last.x * box.w, ly = box.oy + last.y * box.h;
     ctx.fillStyle = LAMP;
-    ctx.shadowColor = rgba(RGB.lampHi, 0.8);
+    ctx.shadowColor = rgba(RGB.lampHi, 0.85);
     ctx.shadowBlur = 6 * u;
     ctx.beginPath();
-    ctx.arc(lx, ly, 3 * u, 0, Math.PI * 2);
+    ctx.arc(lx, ly, 3.5 * u, 0, Math.PI * 2);
     ctx.fill();
+    // Outer halo for load beacon
+    ctx.shadowBlur = 0;
+    ctx.lineWidth = 1 * u;
+    ctx.strokeStyle = rgba(RGB.lampHi, 0.6);
+    ctx.beginPath();
+    ctx.arc(lx, ly, 6.5 * u, 0, Math.PI * 2);
+    ctx.stroke();
     ctx.restore();
   }
 
