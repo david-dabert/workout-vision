@@ -38,6 +38,19 @@ describe('reportSheet', () => {
     expect(reportSheet({ ...base, lang: 'en', context: 'coach', partner: 'Luc' }).people).toEqual([['Training', 'With a coach'], ['Coach', 'Luc']]);
     expect(reportSheet({ ...base, context: 'friend', partner: 'Sam' }).people).toEqual([['Entraînement', 'En binôme'], ['Partenaire', 'Sam']]);
     expect(reportSheet({ ...base, lang: 'en', context: 'friend', partner: 'Sam' }).people).toEqual([['Training', 'With a friend'], ['Friend', 'Sam']]);
+    expect(reportSheet({ ...base, context: 'physio', partner: 'Dr. Dubois' }).people).toEqual([['Entraînement', 'Séance kiné'], ['Kinésithérapeute', 'Dr. Dubois']]);
+    expect(reportSheet({ ...base, lang: 'en', context: 'physio', partner: 'Dr. Dubois' }).people).toEqual([['Training', 'Physiotherapy'], ['Physiotherapist', 'Dr. Dubois']]);
+  });
+
+  it('formats physiotherapy clinical metrics (pain scale EVA and RPE) in summary', () => {
+    const reps = [{ startTime: 0, endTime: 2, romDegrees: 80, concentricSec: 1, eccentricSec: 1 }];
+    const frSheet = reportSheet({ ...base, pain: 2, rpe: 8, reps });
+    expect(frSheet.summary.some(line => line.includes('Échelle douleur (EVA)') && line.includes('2/10 (légère)'))).toBe(true);
+    expect(frSheet.summary.some(line => line.includes('Effort perçu (RPE)') && line.includes('8/10'))).toBe(true);
+
+    const enSheet = reportSheet({ ...base, lang: 'en', pain: 5, rpe: 9, reps });
+    expect(enSheet.summary.some(line => line.includes('Pain scale (VAS)') && line.includes('5/10 (moderate)'))).toBe(true);
+    expect(enSheet.summary.some(line => line.includes('Perceived exertion (RPE)') && line.includes('9/10'))).toBe(true);
   });
 
   it('gives the level in the user\'s words, and leaves it out when none was chosen', () => {

@@ -28,8 +28,10 @@ export function warmReportPdf() {
 export default function Report({ lift, count, counted, arm, date, source, afterRefusal = false, proposed = false, leaving, onBack, reps, setId, sides = null, wave = null, planned = null, symmetry = null, smoothness = null, consistency = null, formChecks = null }) {
   const { lang } = useT(), fr = lang === 'fr';
   const [name, setName] = useState('');
-  const [context, setContext] = useState(''); // '' | alone | friend | coach
+  const [context, setContext] = useState(''); // '' | alone | friend | coach | physio
   const [partner, setPartner] = useState('');
+  const [rpe, setRpe] = useState(null);
+  const [pain, setPain] = useState(null);
   // '' | beginner | intermediate | expert, prefilled from the level stored on this phone (level.js).
   // Empty until chosen here: the screen promises that only what the user fills in appears on the PDF,
   // so the level stored for the result screen is not written on the sheet by itself (review, 30 September).
@@ -63,7 +65,7 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
     loadSets().then(all => { if (live) setPrevious(previousOf(all)); }, () => { if (live) setPrevious(null); });
     return () => { live = false; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, afterRefusal, proposed, first, previousSet: previous ?? null, sides, lift, wave, planned, symmetry, smoothness, consistency, formChecks });
+  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, afterRefusal, proposed, first, previousSet: previous ?? null, sides, lift, wave, planned, symmetry, smoothness, consistency, formChecks, rpe, pain });
   const sheetRef = useRef(sheet);
   sheetRef.current = sheet;
 
@@ -147,14 +149,18 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
           placeholder={fr ? 'Prénom et nom' : 'First and last name'} value={name} onChange={e => setName(e.target.value)} onKeyDown={next(notesRef)} />
       </div>
       <Choice id="fWith" label={fr ? 'Entraînement' : 'Training'} value={context} onChange={v => { setContext(v); setPartner(''); }}
-        options={[['alone', fr ? 'En solo' : 'Alone'], ['friend', fr ? 'En binôme' : 'With a friend'], ['coach', fr ? 'Avec un coach' : 'With a coach']]} />
-      {(context === 'friend' || context === 'coach') && <div className="field fade-in">
-        <label htmlFor="fPartner">{context === 'coach' ? (fr ? 'Nom du coach' : 'Coach’s name') : (fr ? 'Nom du partenaire' : 'Friend’s name')}</label>
+        options={[['alone', fr ? 'En solo' : 'Alone'], ['friend', fr ? 'En binôme' : 'With a friend'], ['coach', fr ? 'Avec un coach' : 'With a coach'], ['physio', fr ? 'Séance kiné' : 'Physiotherapy']]} />
+      {(context === 'friend' || context === 'coach' || context === 'physio') && <div className="field fade-in">
+        <label htmlFor="fPartner">{context === 'physio' ? (fr ? 'Nom du kinésithérapeute' : 'Physiotherapist’s name') : context === 'coach' ? (fr ? 'Nom du coach' : 'Coach’s name') : (fr ? 'Nom du partenaire' : 'Friend’s name')}</label>
         <input id="fPartner" ref={partnerRef} type="text" autoComplete="off" autoCapitalize="words" autoCorrect="off" spellCheck={false} enterKeyHint="next" maxLength={NAME_MAX}
           placeholder={fr ? 'Prénom et nom' : 'First and last name'} value={partner} onChange={e => setPartner(e.target.value)} onKeyDown={next(notesRef)} />
       </div>}
       <Choice id="fLevel" label={fr ? 'Niveau' : 'Level'} value={level} onChange={setLevel}
         options={[['beginner', fr ? 'Débutant' : 'Beginner'], ['intermediate', fr ? 'Intermédiaire' : 'Intermediate'], ['expert', fr ? 'Confirmé' : 'Expert']]} />
+      <Choice id="fPain" label={fr ? 'Douleur ressentie (EVA)' : 'Pain level (VAS)'} value={pain === null ? '' : String(pain)} onChange={v => setPain(v === '' ? null : Number(v))}
+        options={[['0', '0'], ['2', '2'], ['4', '4'], ['6', '6'], ['8', '8']]} />
+      <Choice id="fRpe" label={fr ? 'Effort perçu (RPE)' : 'Perceived exertion (RPE)'} value={rpe === null ? '' : String(rpe)} onChange={v => setRpe(v === '' ? null : Number(v))}
+        options={[['6', '6'], ['7', '7'], ['8', '8'], ['9', '9'], ['10', '10']]} />
       <div className="field">
         <label htmlFor="fNotes">Notes</label>
         <textarea id="fNotes" ref={notesRef} rows="3" autoCapitalize="sentences" maxLength={NOTES_MAX}

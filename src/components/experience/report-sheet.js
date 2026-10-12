@@ -135,7 +135,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {object} [o.planned]  the coach's target, for a set filmed from a programme (programme.js, plannedOf)
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, symmetry = null, smoothness = null, consistency = null, formChecks = null }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, symmetry = null, smoothness = null, consistency = null, formChecks = null, rpe = null, pain = null }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -241,6 +241,21 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
       }
     }
 
+    // Pain Scale (EVA) & Perceived Exertion (RPE)
+    if (pain != null && Number.isFinite(pain)) {
+      const painLabel = pain === 0
+        ? (fr ? 'aucune douleur' : 'no pain')
+        : pain <= 3
+        ? (fr ? 'légère' : 'mild')
+        : pain <= 6
+        ? (fr ? 'modérée' : 'moderate')
+        : (fr ? 'sévère' : 'severe');
+      summary.push((fr ? 'Échelle douleur (EVA)' : 'Pain scale (VAS)') + colon + `${pain}/10 (${painLabel})`);
+    }
+    if (rpe != null && Number.isFinite(rpe)) {
+      summary.push((fr ? 'Effort perçu (RPE)' : 'Perceived exertion (RPE)') + colon + `${rpe}/10`);
+    }
+
     // Previous set comparison.
     if (previousSet && previousSet.reps?.length) {
       const prevWhole = previousSet.reps.filter(r => !r.clipped);
@@ -341,8 +356,13 @@ const CONTEXT = {
   alone: ['En solo', 'Alone'],
   friend: ['En binôme', 'With a friend'],
   coach: ['Avec un coach', 'With a coach'],
+  physio: ['Séance kiné', 'Physiotherapy'],
 };
-const PARTNER = { friend: ['Partenaire', 'Friend'], coach: ['Coach', 'Coach'] };
+const PARTNER = {
+  friend: ['Partenaire', 'Friend'],
+  coach: ['Coach', 'Coach'],
+  physio: ['Kinésithérapeute', 'Physiotherapist'],
+};
 const LEVEL = { beginner: ['Débutant', 'Beginner'], intermediate: ['Intermédiaire', 'Intermediate'], expert: ['Confirmé', 'Expert'] };
 
 /** The sheet's people and level, as [label, value] pairs, in the order the form asks for them. */

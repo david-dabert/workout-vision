@@ -21,7 +21,7 @@ export const EQUIPMENT = { Barbell: 'Barre', Bench: 'Banc', Bodyweight: 'Poids d
 const inZone = (e, zone) => !zone || e.muscles.some(m => MUSCLES[zone].includes(m));
 // Each exercise's words for the search (search-text.js), cut once: its names, equipment, zones and muscles.
 const WORDS = new Map(CATALOGUE.map(e => [e.key, searchWords([e.fr, e.name, ...e.aliases, e.equipment, EQUIPMENT[e.equipment], ...Object.keys(MUSCLES).filter(z => inZone(e, z)).flatMap(z => [ZONE_NAMES.fr[z], ZONE_NAMES.en[z]]), ...e.muscles].join(' '))]));
-const countedLift = e => (isOffered(e.key) ? e.key : undefined);
+const countedLift = e => e.key;
 
 function BodyMap() {
   const canvas = useRef(null);
@@ -115,10 +115,10 @@ export default function Guide({ onClose, onChoose, lift }) {
         <button className="item-btn press" aria-expanded={open === e.key} onClick={() => setOpen(open === e.key ? null : e.key)}>
           <Thumb exercise={e} />
           <span><span className="item-name">{fr ? e.fr : e.name}</span><span className="item-sub">{fr ? e.name : e.fr} · {fr ? EQUIPMENT[e.equipment] : e.equipment}</span></span>
-          <span className={`tag ${countedLift(e) ? 'on' : ''}`}>{countedLift(e) ? tierTag(tierOf(e.key), fr) : 'Guide'}</span>
+          <span className="tag on">{tierTag(tierOf(e.key) || 'experimental', fr)}</span>
         </button>
-        {open === e.key && <div className="guide-detail"><GuideFrames exercise={e} fr={fr} /><p>{countedLift(e) ? `${fr ? 'Compté' : 'Counted'} · ${tierLabel(tierOf(e.key), fr)}.` : (fr ? 'Guide uniquement. Cet exercice n’est pas compté.' : 'Guide only. This exercise is not counted.')}{e.similar ? (fr ? ' Dessin d’un mouvement proche.' : ' Drawing of a similar movement.') : ''}</p>
-          {countedLift(e) && <button className="btn-line press" onClick={() => onChoose(countedLift(e))}>{fr ? 'Filmer cet exercice' : 'Film this exercise'}</button>}
+        {open === e.key && <div className="guide-detail"><GuideFrames exercise={e} fr={fr} /><p>{`${fr ? 'Compté' : 'Counted'} · ${tierLabel(tierOf(e.key) || 'experimental', fr)}.`}{e.similar ? (fr ? ' Dessin d’un mouvement proche.' : ' Drawing of a similar movement.') : ''}</p>
+          <button className="btn-line press" onClick={() => onChoose(e.key)}>{fr ? 'Filmer cet exercice' : 'Film this exercise'}</button>
           <button className="btn-ghost is-s press" onClick={() => setOpen(null)}>{fr ? 'Fermer' : 'Close'}</button>
         </div>}
       </li>)}</ul>

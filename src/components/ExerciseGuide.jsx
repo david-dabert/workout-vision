@@ -192,7 +192,9 @@ function ExerciseDetail({ exercise, onClose, t, tExercise }) {
           {CATEGORY_LABELS[exercise.category] || ex?.category || ''}
         </span>
 
-        <p className={css.detailSecondary}>{['bicep_curl', 'lateral_raise', 'lat_pulldown'].includes(exercise.key) ? 'Compté / Counted' : 'Guide uniquement / Guide only'}</p>
+        <p className={css.detailSecondary}>
+          {t('counted') || 'Counted'} · {t('experimental') || 'Expérimental'}
+        </p>
 
         <button className={css.detailClose} onClick={onClose}>
           {t('close') || 'Close'}

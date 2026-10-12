@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { analyzeCoreVideo } from '../lib/coreAnalysis';
+import { analyzeUniversalVideo } from '../lib/universalKinematics';
+import { isOffered } from '../lib/offer';
 import Watch from './experience/Watch';
 import Result, { AnalysisError, AnalysisInterrupted, AnalysisIncomplete } from './experience/Result';
 import { watchInterruption, whenVisible, settleRun, holdScreenAwake, isInterruption } from '../lib/interruption';
@@ -85,8 +87,10 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
       release = watchInterruption(controller);
       if (mine()) track('analysis_start', { lift });
       wake = holdScreenAwake();
-      const output = await analyzeCoreVideo(file, lift, { signal: controller.signal, onProgress: p => { if (mine()) setProgress(p); }, onPhase, onLandmarks,
-        onDecoder: d => markCrash({ decoder: d }), onSource: source => markCrash({ source }) });
+      const output = isOffered(lift)
+        ? await analyzeCoreVideo(file, lift, { signal: controller.signal, onProgress: p => { if (mine()) setProgress(p); }, onPhase, onLandmarks,
+            onDecoder: d => markCrash({ decoder: d }), onSource: source => markCrash({ source }) })
+        : await analyzeUniversalVideo(file, lift, { signal: controller.signal, onProgress: p => { if (mine()) setProgress(p); }, onPhase, onLandmarks });
       markCrash({ phase: 'result', sample: output.timestamps?.length ?? samples, frame: output.metadata ? [output.metadata.width, output.metadata.height] : null, decoder: output.metadata?.method || null });
       // A beat at 100 %, then the result, as in the prototype; a run hidden meanwhile shows no count.
       setProgress(100);
