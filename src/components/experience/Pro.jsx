@@ -124,6 +124,10 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen }) {
             <span className="row-txt"><b>{c.templatePosture}</b><small>{c.templatePostureSub}</small></span>
             <Arrow />
           </button>
+          <button type="button" className="pro-template-card press" onClick={() => onTemplate('shoulder')} data-testid="template-shoulder">
+            <span className="row-txt"><b>{c.templateShoulder}</b><small>{c.templateShoulderSub}</small></span>
+            <Arrow />
+          </button>
           <button type="button" className="pro-template-card press" onClick={() => onTemplate('conditioning')} data-testid="template-conditioning">
             <span className="row-txt"><b>{c.templateConditioning}</b><small>{c.templateConditioningSub}</small></span>
             <Arrow />

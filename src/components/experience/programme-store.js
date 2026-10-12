@@ -38,6 +38,18 @@ export const createFromTemplate = (templateId, now = Date.now()) => {
       ],
     };
   }
+  if (templateId === 'shoulder') {
+    return {
+      ...newDraft(now),
+      title: 'Épaule & Fixateurs d’omoplate',
+      note: 'Épaules basses, sans hausser les trapèzes, tempo contrôlé.',
+      items: [
+        { ...newItem('prone_y_raise'), sets: 3, reps: 10, rest: 60, note: 'Pouces vers le plafond' },
+        { ...newItem('banded_face_pull'), sets: 3, reps: 12, rest: 60, note: 'Tirage haut, rotation externe' },
+        { ...newItem('wall_push_up'), sets: 3, reps: 10, rest: 60, note: 'Pousser le mur au sommet' },
+      ],
+    };
+  }
   if (templateId === 'conditioning') {
     return {
       ...newDraft(now),
