@@ -135,7 +135,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {object} [o.planned]  the coach's target, for a set filmed from a programme (programme.js, plannedOf)
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, symmetry = null, smoothness = null, consistency = null, formChecks = null, rpe = null, pain = null, isometric = null, kinetics = null, compliance = null }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, symmetry = null, smoothness = null, consistency = null, formChecks = null, rpe = null, pain = null, isometric = null, kinetics = null, compliance = null, vbt = null }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -273,6 +273,24 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
       summary.push((fr ? 'Certificat de conformité' : 'Compliance verification') + colon + `${compliance.certificateId}`);
     }
 
+    // Velocity-Based Training (VBT) & Sticking Point
+    if (vbt) {
+      if (vbt.velocityLossPercent != null) {
+        const zoneText = vbt.fatigueZone === 'low'
+          ? (fr ? 'réserve élevée' : 'high reserve')
+          : vbt.fatigueZone === 'optimal'
+          ? (fr ? 'stimulus optimal' : 'optimal stimulus')
+          : (fr ? 'fatigue haute' : 'high fatigue');
+        summary.push((fr ? 'Perte de vitesse (VBT)' : 'Velocity loss (VBT)') + colon + `${vbt.velocityLossPercent}${fr ? NBSP : ''}% (${zoneText}) · RIR ~${vbt.estimatedRir}`);
+      }
+      if (vbt.stickingAngleDeg != null) {
+        summary.push((fr ? 'Point de friction' : 'Sticking point') + colon + `${vbt.stickingAngleDeg}° (${fr ? `sur la rép.${NBSP}${vbt.slowestRepIndex}` : `on rep ${vbt.slowestRepIndex}`})`);
+      }
+      if (vbt.cueFr && vbt.cueEn) {
+        summary.push((fr ? 'Conseil VBT' : 'VBT coaching cue') + colon + (fr ? vbt.cueFr : vbt.cueEn));
+      }
+    }
+
     // Pain Scale (EVA) & Perceived Exertion (RPE)
     if (pain != null && Number.isFinite(pain)) {
       const painLabel = pain === 0
@@ -369,6 +387,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     rows,
     summary,
     symmetry: symmetry ?? null,
+    vbt: vbt ?? null,
     shortRepNote: hasShort ? (fr ? '▾ amplitude courte' : '▾ short rep') : '',
     // The measured angle over the set (wave.js), as the set kept it; with the measures only (measures.js).
     wave: shown && wave?.t?.length > 1 && allReps.length ? { t: wave.t, a: wave.a, reps: allReps, rest: liftDefinition(lift)?.rest ?? 'low', first: liftFirst, jointWord: jointName(joint, fr), reference: referenceBand(lift, { joint: liftDefinition(lift)?.joint }) } : null,

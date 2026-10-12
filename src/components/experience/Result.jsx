@@ -849,6 +849,22 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
         <b>{fr ? 'Certificat d’exécution' : 'Compliance seal'} :</b> {result.compliance.certificateId} ({fr ? 'Intégrité vérifiée' : 'Verified integrity'})
       </p>
     )}
+    {result.vbt && (
+      <>
+        <p className="acc-line acc-vbt" data-testid="acc-vbt">
+          <b>{fr ? 'Perte de vitesse (VBT)' : 'Velocity loss (VBT)'} :</b> {result.vbt.velocityLossPercent} % ({fr ? (result.vbt.fatigueZone === 'low' ? 'réserve élevée' : result.vbt.fatigueZone === 'optimal' ? 'stimulus optimal' : 'fatigue haute') : (result.vbt.fatigueZone === 'low' ? 'high reserve' : result.vbt.fatigueZone === 'optimal' ? 'optimal stimulus' : 'high fatigue')}) · RIR ~{result.vbt.estimatedRir}
+        </p>
+        {result.vbt.stickingAngleDeg && (
+          <p className="acc-line acc-sticking" data-testid="acc-sticking">
+            <b>{fr ? 'Point de friction' : 'Sticking point'} :</b> {result.vbt.stickingAngleDeg}° ({fr ? `sur la rép.${NB}${result.vbt.slowestRepIndex}` : `on rep ${result.vbt.slowestRepIndex}`})
+          </p>
+        )}
+        <div className="acc-advice-card" data-testid="acc-vbt-advice">
+          <span className="acc-advice-badge">{fr ? 'Coaching VBT' : 'VBT cue'}</span>
+          <p className="acc-advice-text">{fr ? result.vbt.cueFr : result.vbt.cueEn}</p>
+        </div>
+      </>
+    )}
     <p className="acc-tip">{account.tip}</p>
   </>;
   const more = <>

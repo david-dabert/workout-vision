@@ -43,6 +43,8 @@ export const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'kinetics',
   // Cryptographic compliance certificate (complianceEngine.js, 12 October 2026).
   'compliance',
+  // Velocity-based training & sticking point localization (vbtEngine.js, 12 October 2026).
+  'vbt',
 ];
 
 const DEFAULTS: Partial<WorkoutRecord> = {

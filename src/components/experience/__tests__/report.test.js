@@ -63,6 +63,27 @@ describe('reportSheet', () => {
     expect(enSheet.summary.some(line => line.includes('Isometric hold (TUT)') && line.includes('42.5') && line.includes('stability ±2.1°') && line.includes('breakdown at 38.0'))).toBe(true);
   });
 
+  it('formats Velocity-Based Training (VBT) and sticking point in summary', () => {
+    const vbt = {
+      velocityLossPercent: 18,
+      fatigueZone: 'optimal',
+      stickingAngleDeg: 92,
+      slowestRepIndex: 5,
+      estimatedRir: '1-2',
+      cueFr: 'Perte de vitesse de 18\u00A0% (ralentissement à 92°). Zone idéale de stimulation musculaire.',
+      cueEn: 'Optimal velocity loss of 18% (deceleration at 92°). Ideal stimulus zone.',
+    };
+    const frSheet = reportSheet({ ...base, vbt, reps: [{ startTime: 0, endTime: 2, romDegrees: 90, concentricSec: 1, eccentricSec: 1 }] });
+    expect(frSheet.summary.some(line => line.includes('Perte de vitesse (VBT)') && line.includes('18 % (stimulus optimal) · RIR ~1-2'))).toBe(true);
+    expect(frSheet.summary.some(line => line.includes('Point de friction') && line.includes('92° (sur la rép. 5)'))).toBe(true);
+    expect(frSheet.summary.some(line => line.includes('Conseil VBT') && line.includes('Zone idéale'))).toBe(true);
+
+    const enSheet = reportSheet({ ...base, lang: 'en', vbt, reps: [{ startTime: 0, endTime: 2, romDegrees: 90, concentricSec: 1, eccentricSec: 1 }] });
+    expect(enSheet.summary.some(line => line.includes('Velocity loss (VBT)') && line.includes('18% (optimal stimulus) · RIR ~1-2'))).toBe(true);
+    expect(enSheet.summary.some(line => line.includes('Sticking point') && line.includes('92° (on rep 5)'))).toBe(true);
+    expect(enSheet.summary.some(line => line.includes('VBT coaching cue') && line.includes('Ideal stimulus zone'))).toBe(true);
+  });
+
   it('gives the level in the user\'s words, and leaves it out when none was chosen', () => {
     expect(reportSheet({ ...base, level: 'beginner' }).people).toEqual([['Niveau', 'Débutant']]);
     expect(reportSheet({ ...base, level: 'intermediate' }).people).toEqual([['Niveau', 'Intermédiaire']]);

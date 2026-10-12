@@ -309,6 +309,7 @@ export interface WorkoutRecord {
   formChecks?: unknown;
   kinetics?: unknown;
   compliance?: unknown;
+  vbt?: unknown;
 }
 
 export interface RepCounterDiagnostics {

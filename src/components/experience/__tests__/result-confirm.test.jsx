@@ -210,6 +210,48 @@ describe('biomechanical symmetry and trunk stability in result', () => {
     expect(en).toContain('Safe execution');
     expect(en).toContain('Optimal joint tracking');
   });
+
+  it('renders VBT velocity loss, fatigue rating, RIR, sticking point angle, and coaching cue', async () => {
+    const vbtResult = {
+      ...nine,
+      vbt: {
+        velocityLossPercent: 22,
+        fatigueZone: 'high',
+        stickingAngleDeg: 94,
+        slowestRepIndex: 8,
+        estimatedRir: '0-1',
+        cueFr: 'Forte perte de vitesse (22\u00A0%). Ralentissement marqué à 94° sur la rép 8. Fin de série recommandée.',
+        cueEn: 'High velocity loss (22%). Pronounced sticking at 94° on rep 8. Rest recommended.',
+      },
+    };
+    const fr = await render('fr', vbtResult);
+    expect(fr).toContain('data-testid="acc-vbt"');
+    expect(fr).toContain('Perte de vitesse (VBT)');
+    expect(fr).toContain('22 %');
+    expect(fr).toContain('fatigue haute');
+    expect(fr).toContain('RIR ~0-1');
+    expect(fr).toContain('data-testid="acc-sticking"');
+    expect(fr).toContain('Point de friction');
+    expect(fr).toContain('94°');
+    expect(fr).toContain('sur la rép. 8');
+    expect(fr).toContain('data-testid="acc-vbt-advice"');
+    expect(fr).toContain('Coaching VBT');
+    expect(fr).toContain('Fin de série recommandée');
+
+    const en = await render('en', vbtResult);
+    expect(en).toContain('data-testid="acc-vbt"');
+    expect(en).toContain('Velocity loss (VBT)');
+    expect(en).toContain('22%');
+    expect(en).toContain('high fatigue');
+    expect(en).toContain('RIR ~0-1');
+    expect(en).toContain('data-testid="acc-sticking"');
+    expect(en).toContain('Sticking point');
+    expect(en).toContain('94°');
+    expect(en).toContain('on rep 8');
+    expect(en).toContain('data-testid="acc-vbt-advice"');
+    expect(en).toContain('VBT cue');
+    expect(en).toContain('Rest recommended');
+  });
 });
 
 
