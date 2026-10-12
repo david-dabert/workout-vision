@@ -19,7 +19,7 @@ describe('the list of every counted exercise', () => {
   it('holds the 182 offered exercises, each with its guide entry, and no fitness test', () => {
     // The same rows as ExerciseList.jsx's ENTRIES.
     const exercises = OFFERED.filter(k => !isTest(k));
-    expect(exercises).toHaveLength(182);
-    expect(exercises.map(guideExercise).filter(Boolean)).toHaveLength(182);
+    expect(exercises).toHaveLength(183);
+    expect(exercises.map(guideExercise).filter(Boolean)).toHaveLength(183);
   });
 });

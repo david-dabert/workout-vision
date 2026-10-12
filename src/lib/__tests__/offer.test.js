@@ -26,8 +26,8 @@ describe('the exercises the app offers', () => {
     // With the two fitness tests of 2 October (fitness-tests.js), Experimental like every exercise without evidence.
     expect(Object.keys(WITHDRAWN).sort()).toEqual(['banded_dead_bug', 'bird_dog', 'dead_bug', 'glute_bridge_march']);
     expect([...OFFERED].sort()).toEqual([...countable.filter(k => k !== 'walking_lunge' && k !== 'sandbag_lunge' && !Object.hasOwn(WITHDRAWN, k) && !Object.hasOwn(NOT_YET_COUNTED, k)), 'chair_stand_test', 'arm_curl_test'].sort());
-    expect(OFFERED).toHaveLength(184);
-    expect(isOffered('prone_y_raise')).toBe(false);
+    expect(OFFERED).toHaveLength(185);
+    expect(isOffered('prone_y_raise')).toBe(true);
     expect(isOffered('machine_seated_back_extension')).toBe(true);
     expect(isOffered('barbell_jump_squat')).toBe(false);
     for (const key of Object.keys(WITHDRAWN)) expect(isOffered(key), key).toBe(false);
