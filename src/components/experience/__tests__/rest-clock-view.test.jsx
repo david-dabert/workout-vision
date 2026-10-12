@@ -36,4 +36,17 @@ describe('the rest clock shared across a retried save', () => {
     const shared = restClock(); shared.start(Date.now() - 30000);
     expect(text(renderToStaticMarkup(<RestClock fr clock={shared} />))).toContain('0:30');
   });
+
+  it('marks rest as reached when current seconds meet or exceed targetSec', async () => {
+    const { restClock } = await import('../rest-clock');
+    const shared = restClock(); shared.start(Date.now() - 65000);
+    const htmlFr = renderToStaticMarkup(<RestClock fr clock={shared} targetSec={60} />);
+    expect(htmlFr).toContain('is-target-reached');
+    expect(htmlFr).toContain('Repos atteint');
+
+    const htmlEn = renderToStaticMarkup(<RestClock fr={false} clock={shared} targetSec={60} />);
+    expect(htmlEn).toContain('is-target-reached');
+    expect(htmlEn).toContain('Target rest reached');
+  });
 });
+

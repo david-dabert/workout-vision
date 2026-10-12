@@ -8,12 +8,13 @@ import Digits from './Digits';
  * and says nothing of how long to rest (rest-clock.js). The time is drawn on each whole second and
  * again the moment the page comes back into view, so a phone that slept shows the right time at once.
  */
-export default function RestClock({ fr, autoStart = false, clock: shared }) {
+export default function RestClock({ fr, autoStart = false, clock: shared, targetSec = null }) {
   // The result screen passes the set's one clock (started as the set is saved), so the card that shows
   // it after a failed save and the saved card show the same rest. Alone, autoStart starts its own.
   const [clock] = useState(() => { if (shared) return shared; const c = restClock(); if (autoStart) c.start(); return c; });
   const [running, setRunning] = useState(() => clock.running);
   const [, redraw] = useState(0);
+  const alerted = useRef(false);
   // The button that replaces the one tapped takes the focus, so the keyboard and screen readers stay in place.
   const buttonRef = useRef(null), moved = useRef(false);
   useEffect(() => { if (moved.current) buttonRef.current?.focus({ preventScroll: true }); }, [running]);
@@ -32,6 +33,15 @@ export default function RestClock({ fr, autoStart = false, clock: shared }) {
   // The screen stays awake while the rest runs, up to the cap (rest-clock.js, keepAwakeDuringRest).
   useEffect(() => (running ? keepAwakeDuringRest(clock, { hold: holdScreenAwake }) : undefined), [running, clock]);
 
+  const s = clock.seconds();
+  const targetReached = Boolean(targetSec && s >= targetSec);
+  useEffect(() => {
+    if (targetReached && !alerted.current) {
+      alerted.current = true;
+      navigator.vibrate?.([50, 80, 50]);
+    }
+  }, [targetReached]);
+
   function start() { navigator.vibrate?.(10); clock.start(); moved.current = true; setRunning(true); }
   function stop() { clock.stop(); moved.current = true; setRunning(false); }
 
@@ -41,9 +51,8 @@ export default function RestClock({ fr, autoStart = false, clock: shared }) {
       <span>{fr ? 'Lancer le repos' : 'Start rest'}</span>
     </button>;
   }
-  const s = clock.seconds();
   return <div className="rest-clock appear" data-testid="rest-clock">
-    <p className="eyebrow rest-label" id="rest-label">{fr ? 'Repos' : 'Rest'}</p>
+    <p className={`eyebrow rest-label${targetReached ? ' is-target-reached' : ''}`} id="rest-label">{fr ? (targetReached ? 'Repos atteint' : 'Repos') : (targetReached ? 'Target rest reached' : 'Rest')}</p>
     {/* A timer is not announced each second; its words are read when the reader reaches it. */}
     <p className="rest-time" role="timer" aria-labelledby="rest-label">
       <span aria-hidden="true"><Digits text={restText(s)} /></span><span className="sr">{restSpoken(s, fr)}</span>
@@ -51,3 +60,4 @@ export default function RestClock({ fr, autoStart = false, clock: shared }) {
     <button ref={buttonRef} type="button" className="text-btn press rest-stop" onClick={stop}>{fr ? 'Arrêter le repos' : 'Stop rest'}</button>
   </div>;
 }
+

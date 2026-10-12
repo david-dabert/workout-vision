@@ -697,7 +697,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
         <div ref={cardRef}>
           {step === 'saved' && <div className="saved appear" data-testid="saved-card">
             <p className="saved-msg">{proposal && trueN === proposal ? c.savedConfirmed(trueN) : fr ? `Merci. ${trueN} ${trueN > 1 ? 'répétitions enregistrées, saisies' : 'répétition enregistrée, saisie'} à la main.` : `Thank you. ${trueN} ${trueN === 1 ? 'rep' : 'reps'} saved, typed by hand.`}</p>
-            <div className="rest-slot" ref={restRef}><RestClock fr={fr} clock={rest} /></div>
+            <div className="rest-slot" ref={restRef}><RestClock fr={fr} clock={rest} targetSec={planned?.rest} /></div>
             <button className="btn-primary press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
             <button className="text-btn press" onClick={after(onChangeLift)} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
           </div>}
@@ -987,7 +987,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
             : (fr ? 'Merci. Série enregistrée sur votre téléphone.' : 'Thank you. Set saved on your phone.')}</p>
           {/* The rest begins as the set is saved: its clock runs at once, above the report and the
               challenge, since the next thing done on the bench is to rest (design pass, 29 September). */}
-          <div className="rest-slot" ref={restRef}><RestClock fr={fr} clock={rest} /></div>
+          <div className="rest-slot" ref={restRef}><RestClock fr={fr} clock={rest} targetSec={planned?.rest} /></div>
           {/* A gym session is several sets of one lift: the next set goes straight back to filming this lift, and
               changing lift is the quieter choice beside it (WP1.3 of docs/SPEC-production.md). Once saved, the next
               set is the one thing left to do (design pass of 4 October). */}
@@ -1017,7 +1017,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
 
       {saveError && <p role="alert" className="save-error">{saveError}</p>}
       {/* A set the phone could not save is still done: the rest runs all the same (review, 29 September). */}
-      {saveError && step !== 'saved' && <div className="rest-slot"><RestClock fr={fr} clock={rest} /></div>}
+      {saveError && step !== 'saved' && <div className="rest-slot"><RestClock fr={fr} clock={rest} targetSec={planned?.rest} /></div>}
     </div>,
     // Expert: the report's per-rep table, compact, under the question so the question stays in view.
     table: measured && table && <div key="table" className="lv-table-wrap" data-testid="level-table">
