@@ -32,7 +32,7 @@ export const createFromTemplate = (templateId, now = Date.now()) => {
       title: 'Posturologie & Mobilité',
       note: 'Contrôle lent, tempo 3-1-1, respiration fluide.',
       items: [
-        { ...newItem('prone_y_raise'), sets: 3, reps: 12, rest: 60, note: 'Pause 1 s en haut' },
+        { ...newItem('doorway_row'), sets: 3, reps: 12, rest: 60, note: 'Rapprochement des omoplates, dos droit' },
         { ...newItem('glute_bridge'), sets: 3, reps: 15, rest: 60, note: 'Alignement genoux-bassin' },
         { ...newItem('romanian_deadlift'), sets: 3, reps: 10, rest: 90, note: 'Dos neutre, flexion hanches' },
       ],
@@ -44,9 +44,9 @@ export const createFromTemplate = (templateId, now = Date.now()) => {
       title: 'Épaule & Fixateurs d’omoplate',
       note: 'Épaules basses, sans hausser les trapèzes, tempo contrôlé.',
       items: [
-        { ...newItem('prone_y_raise'), sets: 3, reps: 10, rest: 60, note: 'Pouces vers le plafond' },
         { ...newItem('banded_face_pull'), sets: 3, reps: 12, rest: 60, note: 'Tirage haut, rotation externe' },
-        { ...newItem('wall_push_up'), sets: 3, reps: 10, rest: 60, note: 'Pousser le mur au sommet' },
+        { ...newItem('wall_push_up'), sets: 3, reps: 10, rest: 60, note: 'Pousser le mur au sommet, contrôle scapulaire' },
+        { ...newItem('lateral_raise'), sets: 3, reps: 10, rest: 60, note: 'Plan scapulaire, monter à hauteur d’épaule' },
       ],
     };
   }

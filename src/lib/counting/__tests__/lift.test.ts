@@ -88,4 +88,42 @@ describe('the lift of a limb against gravity', () => {
     const res = countReps(frames, timestamps(frames.length, sps), 'prone_y_raise');
     expect(res.count).toBe(10);
   });
+
+  it('tests prone Y raise with hold at the peak and wobble', () => {
+    const sps = 15; // Target FPS for video mode
+    const path: any[] = [{ hold: -3, sec: 1.0 }];
+    for (let r = 0; r < 10; r++) {
+      path.push(
+        { to: 13, sec: 1.0 },
+        { to: 7, sec: 0.4 }, // mid-hold sag/tremor
+        { to: 13, sec: 0.4 }, // recovery at top
+        { to: -3, sec: 1.0 },
+        { hold: -3, sec: 0.8 },
+      );
+    }
+    const rng = seeded(42);
+    const rawLifts = sample(path, -3, sps);
+    const lifts = rawLifts.map(l => l + gaussian(rng, 2.0));
+    // Simulate flickering wrist visibility around 0.5 and elbow lifting less than wrist
+    const frames = lifts.map((l, i) => {
+      const f = prone(l, 1);
+      // In real anatomy, humerus/elbow only lifts 1/3 as much as wrist
+      const elLift = l * 0.35;
+      const towards = 1, side = 1;
+      const s = f[11];
+      const D = Math.PI / 180;
+      f[13] = {
+        x: s.x + towards * 0.29 * Math.cos(elLift * D) * Math.cos(45 * D),
+        y: s.y - 0.29 * Math.sin(elLift * D),
+        z: s.z + side * 0.29 * Math.cos(elLift * D) * Math.sin(45 * D),
+        visibility: 0.9,
+      };
+      // Wrist flickers above/below 0.5 threshold during video
+      const flicker = 0.5 + 0.15 * Math.sin(i * 1.7);
+      f[15] = { ...f[15], visibility: flicker };
+      return f;
+    });
+    const res = countReps(frames, timestamps(frames.length, sps), 'prone_y_raise');
+    expect(res.count).toBe(10);
+  });
 });

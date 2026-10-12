@@ -168,6 +168,10 @@ export interface LiftDefinition {
    * mismatchFloor).
    */
   minRangeDeg?: number;
+  /** Shortest plausible rep in seconds; MIN_REP_SEC when absent. */
+  minRepSec?: number;
+  /** Disables splitOverlongReps when true (e.g. for low-amplitude lifts with isometric pauses). */
+  noSplit?: boolean;
 }
 
 export const LIFTS = {
@@ -238,10 +242,10 @@ const PATTERNS = guidePatterns as Record<string, string>;
 // set and for each rep; the far arm's rest can pass it, so the better seen arm is counted, never the one with more reps.
 // No set held still from start to end was rendered. Source: measured on rendered sets only, no person filmed.
 // Status: experimental.
-const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRepRomDeg' | 'minRangeDeg' | 'together' | 'eitherSide' | 'togetherMinCorrelation'>> = {
+const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRepRomDeg' | 'minRangeDeg' | 'together' | 'eitherSide' | 'togetherMinCorrelation' | 'minRepSec' | 'noSplit'>> = {
   push_up: { thresholdMargin: 0.25, minRepRomDeg: 15 },
   front_raise: { together: true, eitherSide: false, togetherMinCorrelation: -Infinity },
-  prone_y_raise: { minRangeDeg: 10, minRepRomDeg: 10 },
+  prone_y_raise: { minRangeDeg: 10, minRepRomDeg: 10, minRepSec: 1.2, noSplit: true, thresholdMargin: 0.25 },
 };
 
 // Close variants counted as their parent (audit of 6 October 2026, action 6): the same elbow cycle with the hands,
@@ -470,9 +474,10 @@ function countSide(
 ): CountResult {
   // 1. Extract raw angle per sample
   const zw = setZWeight(worldLandmarks);
+  const liftEnd = def.lift ? chooseLiftEnd(worldLandmarks, def.joint, arm) : undefined;
   const rawAngles = worldLandmarks.map(wl => {
     if (!wl) return null;
-    return extractAngle(wl, def.joint, arm, zw, def.lift);
+    return extractAngle(wl, def.joint, arm, zw, def.lift, liftEnd);
   });
   // T1 (survey.ts, FILL_FROM_PARTNER, off): samples the counted side misses, filled from the other side's angle.
   // rawAngles stays as seen (coverage); `filled` marks the samples that were not.
@@ -515,7 +520,7 @@ function countSide(
   const highThreshold = pHigh - (def.rest === 'high' ? margin : workMargin);
 
   // 7. Detect reps via threshold crossings, then place their boundaries at the rest
-  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES);
+  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES, def.minRepSec ?? MIN_REP_SEC, !!def.noSplit);
   const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
   // Speeds are read only where every sample the smoothing used was seen, not filled in by the bridge: the jump
   // where a pose comes back after a short loss is no limb's speed (second audit, 3 October).
@@ -536,7 +541,8 @@ function countSide(
 /** Steps 1–5 of the count for one side: raw angle, outliers removed, dropouts bridged, smoothed. */
 export function sideAngles(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], def: LiftDefinition, arm: 'left' | 'right') {
   const zw = setZWeight(worldLandmarks);
-  const rawAngles = worldLandmarks.map(wl => (wl ? extractAngle(wl, def.joint, arm, zw, def.lift) : null));
+  const liftEnd = def.lift ? chooseLiftEnd(worldLandmarks, def.joint, arm) : undefined;
+  const rawAngles = worldLandmarks.map(wl => (wl ? extractAngle(wl, def.joint, arm, zw, def.lift, liftEnd) : null));
   const { values: filledAngles } = fillFromPartner(rawAngles, worldLandmarks, def, arm, zw);
   const sampleRate = estimateSampleRate(timestamps);
   const cleaned = removeOutliers(filledAngles, secToOddSamples(OUTLIER_WINDOW_SEC, sampleRate), OUTLIER_DEVIATION_DEG);
@@ -705,23 +711,23 @@ function vis(p: WorldLandmark): number {
   return p?.visibility ?? 0;
 }
 
+function chooseLiftEnd(worldLandmarks: WorldLandmarkFrame[], joint: Joint, arm: 'left' | 'right'): number {
+  const [, ie] = LIFT_POINTS[joint][arm];
+  const seen = worldLandmarks.filter(wl => wl && vis(wl[ie]) >= VIS_THRESHOLD).length;
+  // If the wrist/ankle is seen on at least 20% of frames, track it consistently for the whole set;
+  // otherwise fallback to elbow/knee consistently, preventing frame-to-frame sawtooth switching.
+  if (seen >= worldLandmarks.length * 0.2) return ie;
+  return joint === 'shoulder' ? (arm === 'left' ? L_ELBOW : R_ELBOW) : (arm === 'left' ? L_KNEE : R_KNEE);
+}
+
 // ─── Angle extraction ───
 
-function extractAngle(wl: WorldLandmark[], joint: Joint, arm: 'left' | 'right', zw = 1, lift = false): number | null {
+function extractAngle(wl: WorldLandmark[], joint: Joint, arm: 'left' | 'right', zw = 1, lift = false, liftEnd?: number): number | null {
   if (lift) {
-    const [iv, ie] = LIFT_POINTS[joint][arm];
-    if (vis(wl[iv]) < VIS_THRESHOLD) return null;
-    if (vis(wl[ie]) >= VIS_THRESHOLD) return liftAngleDeg(wl[iv], wl[ie]);
-    // Hand/foot cutoff fallback: when wrist or ankle is out of frame or occluded,
-    // measure the limb angle to the elbow or knee so prone raises and limb lifts still track reliably.
-    if (joint === 'shoulder') {
-      const mid = arm === 'left' ? L_ELBOW : R_ELBOW;
-      if (vis(wl[mid]) >= VIS_THRESHOLD) return liftAngleDeg(wl[iv], wl[mid]);
-    } else if (joint === 'hip') {
-      const mid = arm === 'left' ? L_KNEE : R_KNEE;
-      if (vis(wl[mid]) >= VIS_THRESHOLD) return liftAngleDeg(wl[iv], wl[mid]);
-    }
-    return null;
+    const [iv, defaultEnd] = LIFT_POINTS[joint][arm];
+    const target = liftEnd ?? defaultEnd;
+    if (vis(wl[iv]) < VIS_THRESHOLD || vis(wl[target]) < VIS_THRESHOLD) return null;
+    return liftAngleDeg(wl[iv], wl[target]);
   }
   const [ia, ib, ic] = JOINT_POINTS[joint][arm];
   const a = wl[ia], b = wl[ib], c = wl[ic];
@@ -745,7 +751,9 @@ function setZWeight(worldLandmarks: WorldLandmarkFrame[]): number {
 function fillFromPartner(raw: (number | null)[], worldLandmarks: WorldLandmarkFrame[], def: LiftDefinition, arm: 'left' | 'right', zw: number) {
   const none = { values: raw, filled: raw.map(() => false) };
   if (!fillOn() || def.bothSides || !raw.some(a => a === null)) return none;
-  const other = worldLandmarks.map(wl => (wl ? extractAngle(wl, def.joint, arm === 'left' ? 'right' : 'left', zw, def.lift) : null));
+  const otherArm = arm === 'left' ? 'right' : 'left';
+  const otherEnd = def.lift ? chooseLiftEnd(worldLandmarks, def.joint, otherArm) : undefined;
+  const other = worldLandmarks.map(wl => (wl ? extractAngle(wl, def.joint, otherArm, zw, def.lift, otherEnd) : null));
   const { a, b, r, n } = fitLine(other, raw);
   if (n < FILL_MIN_PAIRS || Math.abs(r) < fillMinR()) return none;
   const filled = raw.map((x, i) => x === null && other[i] !== null);
@@ -898,6 +906,8 @@ function detectReps(
   highThreshold: number,
   rest: 'high' | 'low',
   minRom: number = MIN_ROM_DEGREES,
+  minSec: number = MIN_REP_SEC,
+  noSplit: boolean = false,
 ): Cycle[] {
   const restsLow = rest === 'low';
   const cycles: Cycle[] = [];
@@ -951,10 +961,10 @@ function detectReps(
         if (angle < lowThreshold && crossIdx > -1) {
           const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
-          if (duration >= MIN_REP_SEC && bounded(repStartIdx, i) && rom >= minRom) {
+          if (duration >= minSec && bounded(repStartIdx, i) && rom >= minRom) {
             cycles.push({ enter: repStartIdx, complete: i });
             hiIdxs.push(hiIdx);
-          } else if (duration < MIN_REP_SEC && rom >= minRom && !cycles.length && !head
+          } else if (duration < minSec && rom >= minRom && !cycles.length && !head
             && repStartIdx === firstSeen && enteredAtWork) {
             head = { enter: repStartIdx, complete: i }; // only its return is on video: judged after the loop
           }
@@ -982,10 +992,10 @@ function detectReps(
         if (angle > highThreshold && crossIdx > -1) {
           const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
-          if (duration >= MIN_REP_SEC && bounded(repStartIdx, i) && rom >= minRom) {
+          if (duration >= minSec && bounded(repStartIdx, i) && rom >= minRom) {
             cycles.push({ enter: repStartIdx, complete: i });
             hiIdxs.push(hiIdx);
-          } else if (duration < MIN_REP_SEC && rom >= minRom && !cycles.length && !head
+          } else if (duration < minSec && rom >= minRom && !cycles.length && !head
             && repStartIdx === firstSeen && enteredAtWork) {
             head = { enter: repStartIdx, complete: i }; // only its return is on video: judged after the loop
           }
@@ -1012,7 +1022,7 @@ function detectReps(
 
   // T4 (survey.ts, SHAPE_EDGES, off): the set's own rep shape, from the reps accepted so far.
   const shape = shapeOn() ? repShape(cycles, smoothed, timestamps, lowThreshold, highThreshold, restsLow) : null;
-  splitOverlongReps(cycles, smoothed, timestamps, lowThreshold, highThreshold, restsLow, minRom, shape);
+  if (!noSplit) splitOverlongReps(cycles, smoothed, timestamps, lowThreshold, highThreshold, restsLow, minRom, shape);
   if (head && headCounts) cycles.unshift(head);
   // T4: a first rep the head rule refused counts when its return matches the end of the set's rep shape.
   else if (head && shape && shapePart('h') && shape.matches(head.enter, head.complete, 'end')) cycles.unshift(head);
@@ -1034,7 +1044,7 @@ function detectReps(
       if (a !== null && (restsLow ? a > mid : a < mid)) lastWorking = i;
     }
     const duration = timestamps[last] - timestamps[repStartIdx];
-    const whole = duration >= MIN_REP_SEC && bounded(repStartIdx, last) && peakAngle - troughAngle >= minRom;
+    const whole = duration >= minSec && bounded(repStartIdx, last) && peakAngle - troughAngle >= minRom;
     if (returned >= CUT_RETURN_SHARE && timestamps[last] - timestamps[lastWorking] <= RETURN_WINDOW_SEC && whole) {
       cycles.push({ enter: repStartIdx, complete: last, cut: true });
     } else if (shape && shapePart('c') && whole && returned > 0 && shape.matches(repStartIdx, last, 'start')) {
