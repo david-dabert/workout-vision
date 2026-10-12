@@ -114,6 +114,25 @@ export function drawSkeleton(ctx, lm, box, sides, def, u = 1, trailsOrTrajectory
     ctx.arc(pts[1][0], pts[1][1], 14 * u, thA, thB, anticlockwise);
     ctx.stroke();
   }
+
+  // Gravity plumb line (vertical reference line through base of support for lower body movements)
+  if (def && ['knee', 'hip'].includes(def.joint) && lm[27] && lm[28]) {
+    const oFoot = Math.min(alpha(27), alpha(28));
+    if (oFoot > 0.35) {
+      const midFootX = (at(27)[0] + at(28)[0]) / 2;
+      const groundY = Math.max(at(27)[1], at(28)[1]);
+      const topY = Math.min(at(11)[1], at(12)[1]) - 16 * u;
+      ctx.save();
+      ctx.setLineDash([3 * u, 5 * u]);
+      ctx.lineWidth = 1 * u;
+      ctx.strokeStyle = rgba(RGB.lampHi, 0.35 * oFoot);
+      ctx.beginPath();
+      ctx.moveTo(midFootX, groundY);
+      ctx.lineTo(midFootX, topY);
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
   ctx.restore();
 }
 
