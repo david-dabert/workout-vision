@@ -76,8 +76,18 @@
 /* Empty, it takes no room but stays a live region, so a message is announced. */
 .wv-experience .share-note:empty { margin: 0; }
 /* A message sits on the solid part of the bar, below its fade, never over the sheet. */
-.wv-experience .share-bar:has(.share-note:not(:empty)) { padding-top: 30px; }
 .wv-experience .share-bar .btn-primary.is-busy { opacity: 0.6; cursor: default; pointer-events: none; }
+.wv-experience .report-json-btn {
+  margin-top: var(--s-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: center;
+  font-size: var(--fs-caption);
+  color: var(--c-fg-muted);
+}
+.wv-experience .report-json-btn svg { width: 14px; height: 14px; color: var(--c-accent); }
+
 /* The wave on paper (RepWave.jsx, wave.js): the measured angle as a rule-coloured hairline, each rep in the
    count's colour, its return lighter, as the PDF draws it (report-pdf.js). */
 .wv-experience .sh-wave .wave { cursor: default; }

@@ -37,6 +37,8 @@
 /* A set may carry two tags, a record and a correction, one above the other. */
 .wv-experience .hist-tags { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
 .wv-experience .hist-tag.is-best { border-color: var(--c-accent); color: var(--c-accent); }
+.wv-experience .hist-tag.is-compliance { border-color: var(--lamp-hi); color: var(--lamp-hi); }
+
 /* Progress per exercise: the name, the last sets' reps as bars from zero, the bests in mono. */
 /* The name and its bars on one line, as a ledger; the records below across the full width, so no
    line runs under the bars on a narrow phone (design pass and review, 29 September). */

@@ -130,8 +130,41 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
     download(blob, fileName);
   }
 
+  function exportJson() {
+    const payload = {
+      lift,
+      date: when.toISOString(),
+      count,
+      counted: counted ?? count,
+      arm: arm ?? null,
+      metrics: {
+        symmetry: symmetry ?? null,
+        smoothness: smoothness ?? null,
+        consistency: consistency ?? null,
+        formChecks: formChecks ?? null,
+        kinetics: kinetics ?? null,
+        compliance: compliance ?? null,
+        isometric: isometric ?? null,
+      },
+      reps: reps || [],
+      planned: planned ?? null,
+      userContext: { name: name || null, context: context || null, partner: partner || null, level: level || null, notes: notes || null },
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const day = when.toISOString().slice(0, 10);
+    const fileName = `telemetrie-${lift}-${day}.json`;
+    const url = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement('a'), { href: url, download: fileName });
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    say(fr ? 'Téléchargement des données JSON lancé.' : 'JSON telemetry download started.');
+  }
+
   const next = target => e => { if (e.key === 'Enter') { e.preventDefault(); target.current?.focus(); } };
   const busy = status === 'preparing';
+
 
   return <div className={`wv-experience${leaving ? ' is-leaving' : ''}`}>
     <section ref={screenRef} className="screen is-active report-screen"><div className="wrap">
@@ -208,6 +241,10 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
           <span>{status === 'ready' ? (fr ? 'Partager le PDF' : 'Share the PDF')
             : busy ? (fr ? 'Préparation du PDF…' : 'Preparing the PDF…')
               : (fr ? 'Réessayer' : 'Try again')}</span>
+        </button>
+        <button type="button" className="text-btn press report-json-btn" onClick={exportJson} data-testid="report-export-json">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+          <span>{fr ? 'Données brutes (JSON)' : 'Raw telemetry (JSON)'}</span>
         </button>
       </div>
     </div></section>
