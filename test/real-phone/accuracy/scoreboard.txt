@@ -23,7 +23,7 @@ In the list (result-choices.js, measured, decides nothing): of the 15 sets that 
    landmarks/lateral_raise_10_front_mufhhbun.json.gz  label 10  before 10 (exact)  now 10 (exact)
    landmarks/overhead_press_10_front_mufhjkku.json.gz  label 10  before 9 (off -1)  now 9 (off -1)  (press: measured, decides nothing, PLAN.md)
 
-Real video, 7 October (label: David's count, R1; the built app's own read of each whole video): of the 14 sets in the baseline, 6 exact now, 6 before; 0 newly catastrophic, 1 known catastrophic (shown, gated on growth), 0 newly refused; 3 refused of 14.
+Real video, 7 October (label: David's count, R1; the built app's own read of each whole video): of the 14 sets in the baseline, 6 exact now, 6 before; 0 newly catastrophic, 2 known catastrophic (shown, gated on growth), 0 newly refused; 3 refused of 14.
 Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 14 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
 In the list (result-choices.js, measured, decides nothing): of the 14 sets that would decide, the number shown is exact on 8, the label is in [M, M + 1, M - 1] on 11.
    sets-07oct-video/barbell_squat_9_a.json.gz  label 9  before 9 (exact)  now 9 (exact)
@@ -37,12 +37,13 @@ KNOWN CATASTROPHIC  sets-07oct-video/pendulum_squat_7.json.gz  label 7  now 14
    sets-07oct-video/pendulum_squat_7.json.gz  label 7  before 14 (catastrophic)  now 14 (catastrophic)
    sets-07oct-video/seated_dumbbell_curl_10.json.gz  label 10  before 10 (exact)  now 10 (exact)
    sets-07oct-video/sissy_squat_5_5011.json.gz  label 5  before refused (refused)  now refused (refused)  (proposal 5)
-   sets-07oct-video/sissy_squat_7_5006.json.gz  label 7  before 5 (off -2)  now 5 (off -2)
+KNOWN CATASTROPHIC  sets-07oct-video/sissy_squat_7_5006.json.gz  label 7  now 4
+   sets-07oct-video/sissy_squat_7_5006.json.gz  label 7  before 4 (catastrophic)  now 4 (catastrophic)
    sets-07oct-video/sissy_squat_7_5008.json.gz  label 7  before refused (refused)  now refused (refused)
    sets-07oct-video/sissy_squat_9_5007.json.gz  label 9  before 9 (exact)  now 9 (exact)
    sets-07oct-video/standing_barbell_curl_8.json.gz  label 8  before refused (refused)  now refused (refused)  (proposal 8)
 
-Real video, VIDEO mode (the same videos read in VIDEO mode, which the app does not use: measured, decides nothing): of the 14 sets in the baseline, 3 exact now, 3 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused; 3 refused of 14.
+Real video, VIDEO mode (the same videos read in VIDEO mode, which the app does not use: measured, decides nothing): of the 14 sets in the baseline, 2 exact now, 2 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused; 3 refused of 14.
 Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 14 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
    sets-09oct-video-mode/barbell_squat_9_a.json.gz  label 9  before 7 (off -2)  now 7 (off -2)
    sets-09oct-video-mode/barbell_squat_9_b.json.gz  label 9  before 10 (off +1)  now 10 (off +1)
@@ -54,7 +55,7 @@ Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the
    sets-09oct-video-mode/pendulum_squat_7.json.gz  label 7  before 8 (off +1)  now 8 (off +1)
    sets-09oct-video-mode/seated_dumbbell_curl_10.json.gz  label 10  before 10 (exact)  now 10 (exact)
    sets-09oct-video-mode/sissy_squat_5_5011.json.gz  label 5  before refused (refused)  now refused (refused)  (proposal 4)
-   sets-09oct-video-mode/sissy_squat_7_5006.json.gz  label 7  before 7 (exact)  now 7 (exact)
+   sets-09oct-video-mode/sissy_squat_7_5006.json.gz  label 7  before 6 (off -1)  now 6 (off -1)
    sets-09oct-video-mode/sissy_squat_7_5008.json.gz  label 7  before refused (refused)  now refused (refused)
    sets-09oct-video-mode/sissy_squat_9_5007.json.gz  label 9  before 9 (exact)  now 9 (exact)
    sets-09oct-video-mode/standing_barbell_curl_8.json.gz  label 8  before refused (refused)  now refused (refused)  (proposal 6)

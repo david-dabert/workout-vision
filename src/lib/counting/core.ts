@@ -526,7 +526,7 @@ function countSide(
   const highThreshold = pHigh - (def.rest === 'high' ? margin : workMargin);
 
   // 7. Detect reps via threshold crossings, then place their boundaries at the rest
-  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES, def.minRepSec ?? MIN_REP_SEC, !!def.noSplit);
+  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES, def.minRepSec ?? MIN_REP_SEC, !!def.noSplit, !!def.lift);
   const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
   // Speeds are read only where every sample the smoothing used was seen, not filled in by the bridge: the jump
   // where a pose comes back after a short loss is no limb's speed (second audit, 3 October).
@@ -952,6 +952,7 @@ function detectReps(
   minRom: number = MIN_ROM_DEGREES,
   minSec: number = MIN_REP_SEC,
   noSplit: boolean = false,
+  isLift: boolean = false,
 ): Cycle[] {
   const restsLow = rest === 'low';
   const cycles: Cycle[] = [];
@@ -998,7 +999,7 @@ function detectReps(
           state = 'inRep';
           repStartIdx = i;
           peakAngle = angle;
-          troughAngle = Number.isFinite(restExtreme) ? restExtreme : angle;
+          troughAngle = isLift && Number.isFinite(restExtreme) ? restExtreme : angle;
           crossIdx = angle >= highThreshold ? i : -1; // the entering sample may already be at the working end
           enteredAtWork = crossIdx === i;
           hiIdx = i;
@@ -1032,7 +1033,7 @@ function detectReps(
         if (angle < highThreshold) {
           state = 'inRep';
           repStartIdx = i;
-          peakAngle = Number.isFinite(restExtreme) ? restExtreme : angle;
+          peakAngle = isLift && Number.isFinite(restExtreme) ? restExtreme : angle;
           troughAngle = angle;
           crossIdx = angle <= lowThreshold ? i : -1; // the entering sample may already be at the working end
           enteredAtWork = crossIdx === i;
