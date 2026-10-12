@@ -191,5 +191,25 @@ describe('biomechanical symmetry and trunk stability in result', () => {
     expect(en).toContain('Biomechanical cue');
     expect(en).toContain('dumbbell');
   });
+
+  it('renders safe execution confidence shield when knee tracking is clean and risk is zero', async () => {
+    const safeResult = {
+      ...nine,
+      formChecks: {
+        kneeValgus: { detected: false, count: 0, total: 6, valgusRate: 0 },
+        lockout: { fullLockout: true, count: 6, total: 6, lockoutRate: 1 },
+      },
+    };
+    const fr = await render('fr', safeResult);
+    expect(fr).toContain('data-testid="acc-confidence-shield"');
+    expect(fr).toContain('Exécution sécurisée');
+    expect(fr).toContain('Alignement articulaire optimal');
+
+    const en = await render('en', safeResult);
+    expect(en).toContain('data-testid="acc-confidence-shield"');
+    expect(en).toContain('Safe execution');
+    expect(en).toContain('Optimal joint tracking');
+  });
 });
+
 

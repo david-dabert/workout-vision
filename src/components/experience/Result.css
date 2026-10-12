@@ -329,3 +329,31 @@
   color: var(--c-fg);
 }
 
+/* Safe-to-Lift Confidence Shield */
+.wv-experience .acc-shield-card {
+  margin-top: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  background: var(--c-surface-raised);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.wv-experience .acc-shield-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--lamp-hi);
+}
+.wv-experience .acc-shield-text {
+  margin: 0;
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--c-fg);
+}
+
+

@@ -807,6 +807,16 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
             }
           </p>
         )}
+        {result.formChecks.kneeValgus && !result.formChecks.kneeValgus.detected && (!result.kinetics || !result.kinetics.riskNote) && (
+          <div className="acc-shield-card" data-testid="acc-confidence-shield">
+            <span className="acc-shield-badge">{fr ? 'Exécution sécurisée' : 'Safe execution'}</span>
+            <p className="acc-shield-text">
+              {fr
+                ? 'Alignement articulaire optimal et zéro contrainte excessive détectée.'
+                : 'Optimal joint tracking and zero excessive shear detected.'}
+            </p>
+          </div>
+        )}
       </>
     )}
     {result.kinetics && (
