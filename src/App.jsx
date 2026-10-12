@@ -46,6 +46,8 @@ const ExperienceFilm = lazyScreen(() => import('./components/experience/Film'));
 const History = lazyScreen(() => import('./components/experience/History'));
 // "À propos": why the app exists, reached from the foot of the choice.
 const About = lazyScreen(() => import('./components/experience/About'));
+// The WorkoutVision Manifesto: The Science, History, and Mechanics of Optimal Lifting
+const Manifesto = lazyScreen(() => import('./components/experience/Manifesto'));
 // Live counting (Film screen, "En direct"): the camera, the count as the set goes, then the same result.
 const LiveSession = lazyScreen(() => import('./components/LiveSession'));
 // Espace pro (6 October): the coach's programme builder, reached from the foot of the choice; and the client's
@@ -54,7 +56,7 @@ const Pro = lazyScreen(() => import('./components/experience/Pro'));
 const Programme = lazyScreen(() => import('./components/experience/Programme'));
 // A client's results, opened on the coach's phone from the link the client sent (#resultats=…, 9 October).
 const Results = lazyScreen(() => import('./components/experience/Results'));
-const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results };
+const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto };
 
 // Hidden, not deleted: lazy imports for features outside the core path
 // const ManualLog = safeLazy(() => import('./components/ManualLog'));
@@ -218,14 +220,17 @@ function AppInner() {
     const results = resultsPayloadOf(window.location.hash);
     key = `resultats:${results ?? ''}`;
     screen = <Results payload={results} onClose={() => go('dashboard')} onAdjust={r => { const start = draftFromResults(r); go('pro', () => setProStart(start)); }} />;
+  } else if (page === 'manifesto' || page === 'science') {
+    key = 'manifesto';
+    screen = <Manifesto onClose={() => go('dashboard')} onChoose={l => chooseLift(l)} />;
   } else if (page === 'about') {
     key = 'about';
-    screen = <About onClose={() => go('dashboard')} />;
+    screen = <About onClose={() => go('dashboard')} onManifesto={() => go('manifesto')} />;
   } else {
     // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
     // the old live capture (LiveCapture.jsx) and the dashboard; "live" without a lift, or in a build without VITE_LIVE, too. Every other page falls through to the choice of lift.
     key = 'choice';
-    screen = <Choice held={heldProgramme} onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro', () => setProStart(null))} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} />;
+    screen = <Choice held={heldProgramme} onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro', () => setProStart(null))} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} onManifesto={() => go('manifesto')} />;
   }
 
   // The screen on show, a breadcrumb of the crash log on the phone (crashLog.js); the analysis marks its phases itself.

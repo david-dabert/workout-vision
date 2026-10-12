@@ -19,3 +19,7 @@
 .wv-experience .about-signature { margin: var(--s-6) 0 0; font-family: var(--serif); font-style: italic; font-size: var(--fs-name); line-height: 1.2; color: var(--c-accent); }
 
 .wv-experience .about-photo video { display: block; width: 100%; height: auto; border-radius: var(--r-m); background: var(--well); border: 1px solid var(--c-rule); }
+
+.wv-experience .about-manifesto-action { margin-top: var(--s-6); display: flex; justify-content: center; }
+.wv-experience .about-manifesto-btn { padding: 12px 22px; font-size: 15px; font-weight: 500; color: var(--c-fg); background: var(--well); border: 1px solid var(--c-accent); border-radius: var(--r-pill); cursor: pointer; text-decoration: none; transition: background var(--d-ui), color var(--d-ui); }
+.wv-experience .about-manifesto-btn:hover { background: var(--c-accent); color: var(--ink); }

@@ -19,7 +19,7 @@ function Photo({ id, alt, caption, eager = false }) {
 const Paragraph = ({ lines }) => <p className="about-p">{lines.map(line => <span key={line} className="about-line">{line}</span>)}</p>;
 
 /** "À propos": why the app exists, in David's words (about-copy.js). */
-export default function About({ onClose }) {
+export default function About({ onClose, onManifesto }) {
   const { lang } = useT(), fr = lang === 'fr';
   const c = ABOUT[fr ? 'fr' : 'en'], [p1, p2, p3, p4, p5] = c.paragraphs;
   return <div className="wv-experience">
@@ -42,6 +42,11 @@ export default function About({ onClose }) {
         <DemoVideos fr={fr} />
         <Paragraph lines={p5} />
         <p className="about-signature">{c.signature}</p>
+        {onManifesto && <div className="about-manifesto-action">
+          <button type="button" className="about-manifesto-btn press" onClick={onManifesto} data-testid="about-manifesto-btn">
+            {fr ? 'Lire le Manifeste WorkoutVision' : 'Read the WorkoutVision Manifesto'}
+          </button>
+        </div>}
       </div>
     </div></section>
   </div>;

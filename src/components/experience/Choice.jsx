@@ -90,7 +90,7 @@ function LiftCard({ children, onClick, label, describedBy, cardRef }) {
   </button>;
 }
 
-export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, onProgramme, held = null }) {
+export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, onProgramme, onManifesto, held = null }) {
   const { lang, tExercise } = useT(), fr = lang === 'fr';
   const railRef = useRef(null), dotsRef = useRef(null), cards = useRef([]);
   // The guide's names load after the choice; until then a set of an exercise without a card is not
@@ -190,6 +190,12 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{pro.choiceRow}</b><small>{pro.choiceRowSub}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
+        {/* The WorkoutVision Manifesto: The Science, History, and Mechanics of Optimal Lifting */}
+        {onManifesto && <button className="row-link press" onClick={onManifesto} data-testid="choice-manifesto">
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /><path d="M9 7h6M9 11h4" /></svg></span>
+          <span className="row-txt"><b>{fr ? 'Le Manifeste WorkoutVision' : 'The WorkoutVision Manifesto'}</b><small>{fr ? 'La science, l’histoire et la mécanique du mouvement' : 'The science, history, and mechanics of optimal lifting'}</small></span>
+          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+        </button>}
         {/* Before the long list of every exercise, where it is read on the first scroll, not after 181 rows. */}
         <UsageNote fr={fr} />
         <CollectSwitched fr={fr} />
@@ -197,8 +203,11 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
         {/* Installing the app (Install.jsx): a quiet row at the foot of the list, never once the app is installed. */}
         <InstallRow fr={fr} />
         <p className="foot">{fr ? 'Chaque comptage reste à confirmer\u00A0: ces mouvements sont en bêta ou expérimentaux.' : 'Every count is yours to confirm: these movements are Beta or Experimental.'}</p>
-        {/* Why the app exists, in David's words (About.jsx). */}
-        {onAbout && <button type="button" className="about-link press" onClick={onAbout} data-testid="about-link">{ABOUT[fr ? 'fr' : 'en'].link}</button>}
+        <div className="choice-foot-links">
+          {/* Why the app exists, in David's words (About.jsx). */}
+          {onAbout && <button type="button" className="about-link press" onClick={onAbout} data-testid="about-link">{ABOUT[fr ? 'fr' : 'en'].link}</button>}
+          {onManifesto && <button type="button" className="about-link press" onClick={onManifesto} data-testid="manifesto-link">{fr ? 'Le Manifeste' : 'Manifesto'}</button>}
+        </div>
       </div>
     </section>
   </div>;

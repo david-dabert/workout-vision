@@ -1,0 +1,402 @@
+/* The WorkoutVision Manifesto (Manifesto.jsx): Editorial and scientific reader. */
+
+.wv-experience .manifesto-screen {
+  padding-bottom: var(--s-7);
+}
+
+.wv-experience .manifesto-screen .wrap {
+  padding-bottom: var(--s-7);
+}
+
+/* Reading Progress Indicator at top */
+.wv-experience .manifesto-progress-container {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--hair-2);
+  z-index: 40;
+}
+
+.wv-experience .manifesto-progress-bar {
+  height: 100%;
+  background: var(--c-accent);
+  transition: width 0.1s ease-out;
+}
+
+/* Header & Reader Bar */
+.wv-experience .manifesto-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+}
+
+.wv-experience .manifesto-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.wv-experience .manifesto-tool-btn {
+  background: var(--well);
+  border: 1px solid var(--c-rule);
+  color: var(--c-fg);
+  border-radius: var(--r-pill);
+  font-size: 13px;
+  font-family: var(--mono);
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.wv-experience .manifesto-tool-btn:hover {
+  border-color: var(--c-accent);
+  color: var(--c-accent);
+}
+
+/* Hero section */
+.wv-experience .manifesto-header {
+  margin-top: var(--s-4);
+  text-align: left;
+}
+
+.wv-experience .manifesto-badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--c-accent);
+  margin-bottom: var(--s-2);
+}
+
+.wv-experience .manifesto-title {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(34px, 8.8vw, 48px);
+  line-height: 1.04;
+  letter-spacing: -0.015em;
+  color: var(--c-fg);
+  text-wrap: balance;
+}
+
+.wv-experience .manifesto-subtitle {
+  margin: var(--s-2) 0 0;
+  font-size: clamp(16px, 4.2vw, 19px);
+  line-height: 1.4;
+  color: var(--bone-2);
+  text-wrap: balance;
+}
+
+.wv-experience .manifesto-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin-top: var(--s-3);
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.05em;
+  color: var(--c-fg-muted);
+}
+
+/* Table of contents pills */
+.wv-experience .manifesto-toc {
+  margin-top: var(--s-5);
+  padding: var(--s-3);
+  background: var(--well);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-m);
+}
+
+.wv-experience .manifesto-toc-title {
+  margin: 0 0 var(--s-2);
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+.wv-experience .manifesto-toc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.wv-experience .manifesto-toc-link {
+  display: block;
+  text-decoration: none;
+  font-size: 14px;
+  color: var(--bone-2);
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--hair-2);
+  transition: color var(--d-ui);
+}
+
+.wv-experience .manifesto-toc-link:hover {
+  color: var(--c-accent);
+}
+
+/* Article Body */
+.wv-experience .manifesto-body {
+  margin-top: var(--s-6);
+  font-size: var(--manifesto-font-size, 17px);
+  line-height: 1.75;
+  color: var(--bone-2);
+}
+
+.wv-experience .manifesto-lead {
+  margin: 0 0 var(--s-5);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(24px, 6vw, 32px);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--c-fg);
+  text-wrap: balance;
+  border-left: 2px solid var(--c-accent);
+  padding-left: var(--s-3);
+}
+
+.wv-experience .manifesto-p {
+  margin: var(--s-4) 0 0;
+}
+
+.wv-experience .manifesto-p.dropcap::first-letter {
+  font-family: var(--serif);
+  font-size: 3.4em;
+  float: left;
+  line-height: 0.8;
+  margin-right: 8px;
+  margin-top: 4px;
+  color: var(--c-accent);
+}
+
+/* Chapters */
+.wv-experience .manifesto-chapter {
+  margin-top: var(--s-7);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--c-rule);
+}
+
+.wv-experience .manifesto-chapter-num {
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--c-accent);
+  display: block;
+  margin-bottom: var(--s-1);
+}
+
+.wv-experience .manifesto-chapter-title {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(26px, 6.5vw, 34px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--c-fg);
+  text-wrap: balance;
+}
+
+.wv-experience .manifesto-section {
+  margin-top: var(--s-5);
+}
+
+.wv-experience .manifesto-section-title {
+  font-family: var(--serif);
+  font-size: 21px;
+  color: var(--c-fg);
+  margin: var(--s-4) 0 var(--s-2);
+}
+
+/* Figure / Pioneer cards */
+.wv-experience .manifesto-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-3);
+  margin-top: var(--s-4);
+}
+
+.wv-experience .manifesto-card {
+  padding: var(--s-4);
+  background: var(--well);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-m);
+}
+
+.wv-experience .manifesto-card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--s-2);
+}
+
+.wv-experience .manifesto-card-name {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--c-fg);
+}
+
+.wv-experience .manifesto-card-role {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--c-accent);
+  text-transform: uppercase;
+}
+
+.wv-experience .manifesto-card-dates {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--c-fg-muted);
+}
+
+.wv-experience .manifesto-card-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--bone-2);
+}
+
+/* Mathematical and Formula Callouts */
+.wv-experience .manifesto-formula-box {
+  margin-top: var(--s-3);
+  padding: var(--s-3);
+  background: var(--basalt);
+  border: 1px solid var(--hair-2);
+  border-radius: var(--r-s);
+}
+
+.wv-experience .manifesto-formula-code {
+  display: block;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--c-accent);
+  text-align: center;
+  margin-bottom: 4px;
+  overflow-x: auto;
+  padding: 4px 0;
+}
+
+.wv-experience .manifesto-formula-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--c-fg-muted);
+  text-align: center;
+}
+
+/* Principle / Rule Cards */
+.wv-experience .manifesto-rule {
+  margin-top: var(--s-5);
+  padding: var(--s-4);
+  background: var(--well);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-m);
+}
+
+.wv-experience .manifesto-rule-num {
+  font-family: var(--serif);
+  font-size: 32px;
+  color: var(--c-accent);
+  line-height: 1;
+  display: block;
+  margin-bottom: var(--s-1);
+}
+
+.wv-experience .manifesto-rule-title {
+  margin: 0 0 var(--s-2);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--c-fg);
+}
+
+.wv-experience .manifesto-rule-desc {
+  margin: 0 0 var(--s-3);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--bone-2);
+}
+
+.wv-experience .manifesto-rule-app {
+  margin: 0;
+  padding: var(--s-3);
+  background: var(--basalt);
+  border-left: 2px solid var(--c-accent);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--c-fg);
+}
+
+.wv-experience .manifesto-rule-action {
+  margin-top: var(--s-3);
+  display: flex;
+}
+
+.wv-experience .manifesto-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--c-accent);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: var(--r-pill);
+  border: none;
+  cursor: pointer;
+  transition: opacity var(--d-ui);
+}
+
+.wv-experience .manifesto-action-btn:hover {
+  opacity: 0.9;
+}
+
+/* Conclusion Block */
+.wv-experience .manifesto-conclusion {
+  margin-top: var(--s-7);
+  padding: var(--s-5) var(--s-4);
+  background: var(--well);
+  border: 1px solid var(--c-accent);
+  border-radius: var(--r-m);
+  text-align: center;
+}
+
+.wv-experience .manifesto-creed {
+  margin: var(--s-4) 0 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(22px, 5.5vw, 28px);
+  color: var(--c-accent);
+  line-height: 1.25;
+}
+
+/* Bottom CTA */
+.wv-experience .manifesto-footer-cta {
+  margin-top: var(--s-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.wv-experience .manifesto-main-btn {
+  width: 100%;
+  max-width: 340px;
+  padding: 14px 20px;
+  background: var(--c-accent);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: var(--r-pill);
+  border: none;
+  cursor: pointer;
+  text-align: center;
+}
