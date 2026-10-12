@@ -74,4 +74,18 @@ describe('the lift of a limb against gravity', () => {
     const frames = Array.from({ length: n }, (_, i) => prone(-3 + gaussian(rng, 2), 1, -3 + 6 * Math.sin((2 * Math.PI * i) / sps / 1.5), 0.7));
     expect(countReps(frames, timestamps(n, sps), 'prone_y_raise').count).toBe(0);
   });
+
+  it('counts prone Y raise accurately even when wrists/hands are out of frame by falling back to elbows', () => {
+    const sps = 30;
+    const lifts = sample(cycles({ rest: -3, work: 13, firstSec: 1.2, secondSec: 0.8 }), -3, sps);
+    // Both wrists completely occluded (vis = 0.1, hands out of frame / beyond camera boundary)
+    const frames = lifts.map(l => {
+      const f = prone(l, 1)!;
+      f[15] = { ...f[15], visibility: 0.1 }; // left wrist out of frame
+      f[16] = { ...f[16], visibility: 0.1 }; // right wrist out of frame
+      return f;
+    });
+    const res = countReps(frames, timestamps(frames.length, sps), 'prone_y_raise');
+    expect(res.count).toBe(10);
+  });
 });

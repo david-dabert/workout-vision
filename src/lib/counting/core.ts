@@ -710,7 +710,18 @@ function vis(p: WorldLandmark): number {
 function extractAngle(wl: WorldLandmark[], joint: Joint, arm: 'left' | 'right', zw = 1, lift = false): number | null {
   if (lift) {
     const [iv, ie] = LIFT_POINTS[joint][arm];
-    return vis(wl[iv]) < VIS_THRESHOLD || vis(wl[ie]) < VIS_THRESHOLD ? null : liftAngleDeg(wl[iv], wl[ie]);
+    if (vis(wl[iv]) < VIS_THRESHOLD) return null;
+    if (vis(wl[ie]) >= VIS_THRESHOLD) return liftAngleDeg(wl[iv], wl[ie]);
+    // Hand/foot cutoff fallback: when wrist or ankle is out of frame or occluded,
+    // measure the limb angle to the elbow or knee so prone raises and limb lifts still track reliably.
+    if (joint === 'shoulder') {
+      const mid = arm === 'left' ? L_ELBOW : R_ELBOW;
+      if (vis(wl[mid]) >= VIS_THRESHOLD) return liftAngleDeg(wl[iv], wl[mid]);
+    } else if (joint === 'hip') {
+      const mid = arm === 'left' ? L_KNEE : R_KNEE;
+      if (vis(wl[mid]) >= VIS_THRESHOLD) return liftAngleDeg(wl[iv], wl[mid]);
+    }
+    return null;
   }
   const [ia, ib, ic] = JOINT_POINTS[joint][arm];
   const a = wl[ia], b = wl[ib], c = wl[ic];
