@@ -8,6 +8,7 @@ import { openCamera, closeCamera, cameraProblem, canOpenCamera } from '../../lib
 import { voiceWanted, setVoiceWanted, canSpeak, unlockSpeech, say, buzz, hush } from '../../lib/liveVoice';
 import { holdScreenAwake } from '../../lib/interruption';
 import { drawSkeleton, litSides } from './replay-draw';
+import { playLockoutCue } from '../../lib/audioCueEngine';
 import './Live.css';
 
 /** The countdown before a live set, in seconds: time to step back from the phone. Status: convention (UNSOURCED). */
@@ -109,6 +110,7 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
       onPreview: ({ body: b, ms }) => { setBody(b); previews.current += 1; if (previews.current >= SPEED_SAMPLES) setSlow(ms > SLOW_MS); },
       onCount: c => { setLive(c); shown.current = nextShown(shown.current, c.count); },
       onRep: n => {
+        playLockoutCue();
         buzz();
         if (voiceRef.current) say(n, lang);
         if (!REDUCED()) setPulse(p => p + 1);

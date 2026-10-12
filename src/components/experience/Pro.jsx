@@ -4,7 +4,7 @@ import { PRO } from './pro-copy';
 import { exerciseName, guideExercise } from './exercise-info';
 import { Thumb } from './Guide';
 import { LIMITS, MAX_PAYLOAD, encodeProgramme, plainPayload, programmeLink, programmeOf, fixItem, programmable } from './programme';
-import { MAX_DRAFTS, isEmptyDraft, loadDrafts, saveDraft, removeDraft, newDraft, newItem } from './programme-store';
+import { MAX_DRAFTS, isEmptyDraft, loadDrafts, saveDraft, removeDraft, newDraft, newItem, createFromTemplate } from './programme-store';
 import { useCondensingTopbar } from './topbar';
 // The form's fields are the report's (Report.css: .field), so the two forms read alike.
 import './Report.css';
@@ -72,6 +72,13 @@ export default function Pro({ onClose, start = null }) {
     if (d && !isEmptyDraft(d)) setKept(saveDraft(d));
   };
   const create = () => { const d = newDraft(); setDrafts(list => [d, ...list]); setKept(true); setFocusWho(false); setOpenId(d.id); };
+  const createTemplate = templateId => {
+    const d = createFromTemplate(templateId);
+    setDrafts(list => [d, ...list]);
+    setKept(saveDraft(d));
+    setFocusWho(false);
+    setOpenId(d.id);
+  };
   // A deletion makes room: a draft the phone refused for want of it ('full') is kept now, as the message promised.
   const remove = id => {
     removeDraft(id);
@@ -88,10 +95,10 @@ export default function Pro({ onClose, start = null }) {
     setPicking(false);
   }} />;
   if (open) return <Editor key={open.id} c={c} fr={fr} lang={lang} draft={open} kept={kept} rebuilt={open.id === rebuiltId} focusWho={focusWho} onChange={update} onPick={() => { setFocusWho(false); setPicking(true); }} onBack={back} onDuplicate={duplicate} onDelete={() => remove(open.id)} />;
-  return <List c={c} fr={fr} drafts={drafts.filter(d => !isEmptyDraft(d))} onClose={onClose} onCreate={create} onOpen={show} />;
+  return <List c={c} fr={fr} drafts={drafts.filter(d => !isEmptyDraft(d))} onClose={onClose} onCreate={create} onTemplate={createTemplate} onOpen={show} />;
 }
 
-function List({ c, fr, drafts, onClose, onCreate, onOpen }) {
+function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen }) {
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [fr]);
   const day = t => new Date(t).toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short' });
@@ -109,6 +116,19 @@ function List({ c, fr, drafts, onClose, onCreate, onOpen }) {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
           <span>{c.newProgramme}</span>
         </button>
+      </div>
+      <div className="pro-templates" data-reveal style={{ '--i': 2.5 }}>
+        <h2 className="section-head">{c.templatesHead}</h2>
+        <div className="pro-template-grid">
+          <button type="button" className="pro-template-card press" onClick={() => onTemplate('posture')} data-testid="template-posture">
+            <span className="row-txt"><b>{c.templatePosture}</b><small>{c.templatePostureSub}</small></span>
+            <Arrow />
+          </button>
+          <button type="button" className="pro-template-card press" onClick={() => onTemplate('conditioning')} data-testid="template-conditioning">
+            <span className="row-txt"><b>{c.templateConditioning}</b><small>{c.templateConditioningSub}</small></span>
+            <Arrow />
+          </button>
+        </div>
       </div>
       {drafts.length > 0 && <div data-reveal style={{ '--i': 3 }}>
         <h2 className="section-head">{c.draftsHead}</h2>

@@ -64,6 +64,7 @@ export function savedSet({ result, lift, n, corrected, sides = null, manual = fa
     consistency: result.consistency ?? null,
     formChecks: result.formChecks ?? null,
     kinetics: result.kinetics ?? null,
+    compliance: result.compliance ?? null,
     // The measured angle over the set, compact, for the report's wave (wave.js).
     wave: flagged ? null : compactWave(waveAngles(result), result.timestamps),
   });

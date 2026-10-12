@@ -809,6 +809,36 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
         )}
       </>
     )}
+    {result.kinetics && (
+      <>
+        {result.kinetics.totalWorkJoules > 0 && (
+          <p className="acc-line acc-work" data-testid="acc-work">
+            <b>{fr ? 'Travail mécanique' : 'Mechanical work'} :</b> {result.kinetics.totalWorkJoules} J
+          </p>
+        )}
+        {result.kinetics.maxL5S1ShearN > 0 && (
+          <p className="acc-line acc-l5s1" data-testid="acc-l5s1">
+            <b>{fr ? 'Cisaillement lombaire max' : 'Peak lumbar shear'} :</b> {result.kinetics.maxL5S1ShearN} N
+          </p>
+        )}
+        {result.kinetics.maxKneeShearN > 0 && (
+          <p className="acc-line acc-knee-shear" data-testid="acc-knee-shear">
+            <b>{fr ? 'Contrainte patellaire max' : 'Peak patellofemoral shear'} :</b> {result.kinetics.maxKneeShearN} N
+          </p>
+        )}
+        {result.kinetics.riskNote && (
+          <div className="acc-advice-card" data-testid="acc-kinetics-advice">
+            <span className="acc-advice-badge">{fr ? 'Alerte biomécanique' : 'Biomechanical cue'}</span>
+            <p className="acc-advice-text">{fr ? result.kinetics.riskNote.textFr : result.kinetics.riskNote.textEn}</p>
+          </div>
+        )}
+      </>
+    )}
+    {result.compliance && result.compliance.verified && (
+      <p className="acc-line acc-compliance" data-testid="acc-compliance">
+        <b>{fr ? 'Certificat d’exécution' : 'Compliance seal'} :</b> {result.compliance.certificateId} ({fr ? 'Intégrité vérifiée' : 'Verified integrity'})
+      </p>
+    )}
     <p className="acc-tip">{account.tip}</p>
   </>;
   const more = <>

@@ -13,6 +13,7 @@ import { OFFERED, isOffered } from './offer';
 import { analyzeAsymmetryAndTrunk } from './asymmetryCoaching';
 import { analyzeMovementQuality } from './smoothness';
 import { analyzeSetKinetics } from './jointTorqueEngine';
+import { generateComplianceProof } from './complianceEngine';
 
 // Every offered exercise: the lifts of LIFT TIERS and every countable exercise of the guide (offer.js).
 export const APPROVED_LIFTS = OFFERED;
@@ -363,6 +364,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     const symmetry = analyzeAsymmetryAndTrunk(worldLandmarks, timestamps, lift, countSummary.reps);
     const quality = analyzeMovementQuality(worldLandmarks, timestamps, lift, countSummary.reps, countSummary.arm);
     const kinetics = analyzeSetKinetics(worldLandmarks, timestamps, lift, countSummary.reps);
+    const compliance = await generateComplianceProof({ exercise: lift, reps: countSummary.count, duration: metadata?.duration, timestamps, worldLandmarks });
 
     const mergedSummary = {
       ...countSummary,
@@ -371,6 +373,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       consistency: quality?.consistency ?? null,
       formChecks: quality?.formChecks ?? null,
       kinetics: kinetics ?? null,
+      compliance: compliance ?? null,
       exercise: lift,
       metadata: { ...metadata, pose },
       imageLandmarks,

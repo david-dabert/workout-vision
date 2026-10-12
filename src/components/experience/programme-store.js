@@ -23,6 +23,35 @@ const newId = () => `d${Date.now().toString(36)}${Math.random().toString(36).sli
 export const newDraft = (now = Date.now()) => ({ id: newId(), updatedAt: now, title: '', who: '', note: '', items: [] });
 /** A new item of a draft, at the default target. */
 export const newItem = key => ({ key, ...DEFAULT_ITEM });
+
+/** Creates a pre-populated draft from a biomechanically balanced template. */
+export const createFromTemplate = (templateId, now = Date.now()) => {
+  if (templateId === 'posture') {
+    return {
+      ...newDraft(now),
+      title: 'Posturologie & Mobilité',
+      note: 'Contrôle lent, tempo 3-1-1, respiration fluide.',
+      items: [
+        { ...newItem('prone_y_raise'), sets: 3, reps: 12, rest: 60, note: 'Pause 1 s en haut' },
+        { ...newItem('glute_bridge'), sets: 3, reps: 15, rest: 60, note: 'Alignement genoux-bassin' },
+        { ...newItem('romanian_deadlift'), sets: 3, reps: 10, rest: 90, note: 'Dos neutre, flexion hanches' },
+      ],
+    };
+  }
+  if (templateId === 'conditioning') {
+    return {
+      ...newDraft(now),
+      title: 'Renforcement & Équilibre',
+      note: 'Échauffement articulaire 5 min au préalable.',
+      items: [
+        { ...newItem('squat'), sets: 3, reps: 10, rest: 90, note: 'Descendre à la parallèle' },
+        { ...newItem('push_up'), sets: 3, reps: 10, rest: 60, note: 'Corps gainé' },
+        { ...newItem('bicep_curl'), sets: 3, reps: 12, rest: 60, note: 'Sans élan du buste' },
+      ],
+    };
+  }
+  return newDraft(now);
+};
 /** A draft with nothing in it yet: not kept until something is (Pro.jsx). */
 export const isEmptyDraft = d => !String(d.title ?? '').trim() && !String(d.who ?? '').trim() && !String(d.note ?? '').trim() && !d.items?.length;
 

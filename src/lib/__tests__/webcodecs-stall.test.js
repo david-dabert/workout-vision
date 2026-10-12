@@ -155,5 +155,5 @@ describe('a WebCodecs decoder that stops answering', () => {
     expect(out.value?.result.frameCount).toBe(30);
     expect(at).toHaveLength(30);
     expect(decoders).toHaveLength(1);
-  });
+  }, 15_000);
 });

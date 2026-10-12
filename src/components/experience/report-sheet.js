@@ -135,7 +135,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {object} [o.planned]  the coach's target, for a set filmed from a programme (programme.js, plannedOf)
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, symmetry = null, smoothness = null, consistency = null, formChecks = null, rpe = null, pain = null, isometric = null, kinetics = null }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, symmetry = null, smoothness = null, consistency = null, formChecks = null, rpe = null, pain = null, isometric = null, kinetics = null, compliance = null }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -266,6 +266,11 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
       if (kinetics.riskNote) {
         summary.push((fr ? 'Alerte biomécanique' : 'Biomechanical cue') + colon + (fr ? kinetics.riskNote.textFr : kinetics.riskNote.textEn));
       }
+    }
+
+    // Cryptographic Compliance Verification
+    if (compliance && compliance.verified) {
+      summary.push((fr ? 'Certificat de conformité' : 'Compliance verification') + colon + `${compliance.certificateId}`);
     }
 
     // Pain Scale (EVA) & Perceived Exertion (RPE)

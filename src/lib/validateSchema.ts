@@ -41,6 +41,8 @@ export const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'sensitivity',
   // Joint kinetics and mechanical work (jointTorqueEngine.js, 12 October 2026).
   'kinetics',
+  // Cryptographic compliance certificate (complianceEngine.js, 12 October 2026).
+  'compliance',
 ];
 
 const DEFAULTS: Partial<WorkoutRecord> = {
