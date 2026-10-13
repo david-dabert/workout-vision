@@ -122,3 +122,6 @@
   color: var(--lamp-hi);
   border-color: var(--lamp-line);
 }
+@media (max-height: 600px) {
+  .wv-experience .portal-nav { display: none; }
+}

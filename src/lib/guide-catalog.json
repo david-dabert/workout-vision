@@ -17,7 +17,10 @@
       "bench press",
       "bench",
       "développé couché",
-      "DC"
+      "DC",
+      "developpe couche",
+      "dc",
+      "developpe couche barre"
     ]
   },
   {
@@ -35,7 +38,11 @@
     "aliases": [
       "incline bench press",
       "développé incliné",
-      "incline bench press"
+      "incline bench press",
+      "developpe incline",
+      "di",
+      "incline bench",
+      "developpe incline barre"
     ]
   },
   {
@@ -89,7 +96,11 @@
     "aliases": [
       "decline bench press",
       "développé décliné",
-      "decline bench press"
+      "decline bench press",
+      "developpe decline",
+      "dd",
+      "decline bench",
+      "developpe decline barre"
     ]
   },
   {
@@ -107,7 +118,10 @@
     "aliases": [
       "machine chest press",
       "presse pectoraux machine",
-      "machine chest press"
+      "machine chest press",
+      "presse pecs machine",
+      "developpe couche machine",
+      "chest press machine"
     ]
   },
   {
@@ -126,7 +140,13 @@
       "pec deck",
       "pec deck",
       "butterfly",
-      "écarté machine"
+      "écarté machine",
+      "machine fly",
+      "ecarte machine",
+      "pec dec",
+      "fly machine",
+      "papillon",
+      "machine ecartes"
     ]
   },
   {
@@ -143,7 +163,16 @@
     "aliases": [
       "cable fly",
       "écarté poulie",
-      "cable fly"
+      "cable fly",
+      "vis a vis",
+      "vis-a-vis",
+      "ecarte poulie",
+      "poulie vis a vis",
+      "poulie vis-a-vis",
+      "cable crossover",
+      "crossover",
+      "cable flyes",
+      "cable chest fly"
     ]
   },
   {
@@ -161,7 +190,10 @@
     "aliases": [
       "push-up",
       "pompe",
-      "push up"
+      "push up",
+      "pompes",
+      "pompe classique",
+      "pushups"
     ]
   },
   {
@@ -200,7 +232,10 @@
       "développé militaire",
       "military press",
       "développé épaules",
-      "shoulder press"
+      "shoulder press",
+      "ohp",
+      "developpe militaire",
+      "developpe barre epaules"
     ]
   },
   {
@@ -217,7 +252,10 @@
     "aliases": [
       "dumbbell seated shoulder press",
       "développé épaules assis haltères",
-      "seated dumbbell press"
+      "seated dumbbell press",
+      "developpe epaules assis",
+      "developpe militaire assis",
+      "seated overhead dumbbell"
     ]
   },
   {
@@ -234,7 +272,10 @@
     "aliases": [
       "arnold press",
       "développé arnold",
-      "arnold press"
+      "arnold press",
+      "arnold",
+      "developpe arnold",
+      "presse arnold"
     ]
   },
   {
@@ -255,7 +296,11 @@
       "élévation latérale",
       "side raise",
       "élévations latérales",
-      "latérales"
+      "latérales",
+      "elevations laterales",
+      "elevation laterale",
+      "laterales halteres",
+      "el"
     ]
   },
   {
@@ -272,7 +317,10 @@
     "aliases": [
       "cable lateral raise",
       "élévation latérale à la poulie",
-      "cable lateral raise"
+      "cable lateral raise",
+      "elevation laterale poulie",
+      "elevation laterale a la poulie",
+      "cable lateral raises"
     ]
   },
   {
@@ -289,7 +337,10 @@
     "aliases": [
       "front raise",
       "élévation frontale",
-      "front raise"
+      "front raise",
+      "elevations frontales",
+      "elevation frontale",
+      "frontales halteres"
     ]
   },
   {
@@ -307,7 +358,11 @@
       "rear delt fly",
       "oiseau deltoïde postérieur",
       "rear delt fly",
-      "oiseau"
+      "oiseau",
+      "oiseau halteres",
+      "deltoides posterieurs",
+      "arriere depaule",
+      "rear delt flyes"
     ]
   },
   {
@@ -324,7 +379,11 @@
     "aliases": [
       "reverse pec deck",
       "oiseau à la machine",
-      "reverse pec deck"
+      "reverse pec deck",
+      "oiseau machine",
+      "reverse fly",
+      "arriere depaule machine",
+      "oiseau deltoides"
     ]
   },
   {
@@ -342,7 +401,11 @@
     "aliases": [
       "face pull",
       "face pull",
-      "face pull"
+      "face pull",
+      "facepull",
+      "tirage visage",
+      "face pull poulie",
+      "facepulls"
     ]
   },
   {
@@ -360,7 +423,9 @@
     "aliases": [
       "upright row",
       "rowing menton",
-      "upright row"
+      "upright row",
+      "tirage menton",
+      "tirage au menton"
     ]
   },
   {
@@ -398,7 +463,13 @@
       "soulevé de terre roumain",
       "romanian deadlift",
       "sdt roumain",
-      "rdl"
+      "rdl",
+      "stiff leg deadlift",
+      "stiff-legged deadlift",
+      "jambes tendues",
+      "souleve de terre jambes tendues",
+      "souleve jambes tendues",
+      "romanian dead lift"
     ]
   },
   {
@@ -416,7 +487,10 @@
     "aliases": [
       "barbell row",
       "rowing barre",
-      "barbell row"
+      "barbell row",
+      "rowing buste penche",
+      "bent over row",
+      "rowing yates"
     ]
   },
   {
@@ -434,7 +508,9 @@
     "aliases": [
       "t-bar row",
       "rowing t-bar",
-      "t bar row"
+      "t bar row",
+      "rowing barre t",
+      "tbar row"
     ]
   },
   {
@@ -452,7 +528,11 @@
     "aliases": [
       "dumbbell bent over row",
       "rowing buste penché haltères",
-      "dumbbell bent over row"
+      "dumbbell bent over row",
+      "rowing bucheron",
+      "bucheron",
+      "rowing deux halteres",
+      "rowing halteres"
     ]
   },
   {
@@ -469,7 +549,14 @@
     "aliases": [
       "one-arm dumbbell row",
       "rowing haltère à un bras",
-      "one arm dumbbell row"
+      "one arm dumbbell row",
+      "rowing bucheron",
+      "bucheron",
+      "rowing haltere",
+      "rowing un bras",
+      "rowing haltere 1 bras",
+      "single arm dumbbell row",
+      "kroc row"
     ]
   },
   {
@@ -487,7 +574,11 @@
     "aliases": [
       "chest supported row",
       "rowing poitrine appuyée",
-      "chest supported row"
+      "chest supported row",
+      "rowing sur banc",
+      "rowing poitrine appuyee",
+      "seal row",
+      "chest support row"
     ]
   },
   {
@@ -505,7 +596,13 @@
     "aliases": [
       "seated cable row",
       "rowing assis",
-      "seated row"
+      "seated row",
+      "tirage horizontal",
+      "rowing poulie basse",
+      "cable row",
+      "tirage poulie basse",
+      "low row",
+      "seated cable rows"
     ]
   },
   {
@@ -522,7 +619,10 @@
     "aliases": [
       "machine row",
       "rowing à la machine",
-      "machine row"
+      "machine row",
+      "rowing machine",
+      "tirage horizontal machine",
+      "machine dos rowing"
     ]
   },
   {
@@ -541,7 +641,11 @@
       "tirage vertical",
       "lat pulldown",
       "tirage poitrine",
-      "pulldown"
+      "pulldown",
+      "tirage nuque",
+      "tirage dos",
+      "poulie haute",
+      "tirage poulie haute"
     ]
   },
   {
@@ -558,7 +662,10 @@
     "aliases": [
       "close-grip lat pulldown",
       "tirage vertical prise serrée",
-      "close grip lat pulldown"
+      "close grip lat pulldown",
+      "tirage vertical prise serree",
+      "tirage poitrine prise serree",
+      "tirage triangle"
     ]
   },
   {
@@ -575,7 +682,13 @@
     "aliases": [
       "straight-arm pulldown",
       "tirage bras tendus à la poulie",
-      "straight arm pulldown"
+      "straight arm pulldown",
+      "pullover",
+      "pull over",
+      "pull-over",
+      "pullover poulie",
+      "pull over poulie",
+      "tirage bras tendus"
     ]
   },
   {
@@ -593,7 +706,13 @@
     "aliases": [
       "pull-up",
       "traction",
-      "pull up"
+      "pull up",
+      "traction pronation",
+      "tractions pronation",
+      "traction prise pronation",
+      "traction dos",
+      "pullup",
+      "pullups"
     ]
   },
   {
@@ -644,7 +763,12 @@
     "aliases": [
       "chin-up",
       "traction supination",
-      "chin up"
+      "chin up",
+      "tractions supination",
+      "traction prise supination",
+      "traction biceps",
+      "chinup",
+      "chinups"
     ]
   },
   {
@@ -661,7 +785,10 @@
     "aliases": [
       "barbell shrug",
       "haussement d'épaules",
-      "shrug"
+      "shrug",
+      "shrugs",
+      "trapezes",
+      "haussement depaules"
     ]
   },
   {
@@ -715,7 +842,10 @@
     "aliases": [
       "hack squat",
       "hack squat",
-      "hack squat"
+      "hack squat",
+      "hacksquat",
+      "squat hack",
+      "machine hack squat"
     ]
   },
   {
@@ -734,7 +864,11 @@
       "leg press",
       "presse à cuisses",
       "leg press",
-      "leg press machine"
+      "leg press machine",
+      "presse a cuisses",
+      "presse cuisses",
+      "legpress",
+      "presse 45"
     ]
   },
   {
@@ -752,7 +886,11 @@
     "aliases": [
       "bulgarian split squat",
       "squat bulgare",
-      "bulgarian split squat"
+      "bulgarian split squat",
+      "fente bulgare",
+      "split squat bulgare",
+      "fentes bulgares",
+      "squats bulgares"
     ]
   },
   {
@@ -808,7 +946,10 @@
     "aliases": [
       "step-up",
       "step-up",
-      "step up"
+      "step up",
+      "montee de marche",
+      "montee sur banc",
+      "step up banc"
     ]
   },
   {
@@ -824,7 +965,10 @@
     "aliases": [
       "leg extension",
       "extension de jambe machine",
-      "leg extension"
+      "leg extension",
+      "extensions jambes",
+      "quadriceps machine",
+      "leg extensions"
     ]
   },
   {
@@ -841,7 +985,9 @@
     "aliases": [
       "leg curl",
       "curl de jambe machine",
-      "leg curl"
+      "leg curl",
+      "ischios machine",
+      "curl jambes"
     ]
   },
   {
@@ -858,7 +1004,9 @@
     "aliases": [
       "seated leg curl",
       "leg curl assis",
-      "seated leg curl"
+      "seated leg curl",
+      "ischios assis",
+      "seated curl"
     ]
   },
   {
@@ -877,7 +1025,12 @@
       "hip thrust",
       "hip thrust",
       "pont de hanches chargé",
-      "barbell hip thrust"
+      "barbell hip thrust",
+      "releve de bassin",
+      "hip thrust barre",
+      "hip thrust machine",
+      "poussee de hanche",
+      "thrust fessier"
     ]
   },
   {
@@ -894,7 +1047,11 @@
     "aliases": [
       "glute bridge",
       "pont fessier",
-      "glute bridge"
+      "glute bridge",
+      "releve de bassin",
+      "pont fessiers",
+      "bridge",
+      "pont au sol"
     ]
   },
   {
@@ -912,7 +1069,10 @@
     "aliases": [
       "good morning",
       "good morning",
-      "good morning"
+      "good morning",
+      "good morning barre",
+      "bonjour barre",
+      "chaine posterieure dos"
     ]
   },
   {
@@ -928,7 +1088,9 @@
     "aliases": [
       "standing calf raise",
       "mollets debout",
-      "standing calf raise"
+      "standing calf raise",
+      "extensions mollets debout",
+      "mollets machine debout"
     ]
   },
   {
@@ -944,7 +1106,9 @@
     "aliases": [
       "seated calf raise",
       "mollets assis",
-      "seated calf raise"
+      "seated calf raise",
+      "extensions mollets assis",
+      "machine mollets assis"
     ]
   },
   {
@@ -981,7 +1145,10 @@
     "aliases": [
       "hammer curl",
       "curl marteau",
-      "hammer curl"
+      "hammer curl",
+      "prise marteau",
+      "marteau",
+      "hammer curls"
     ]
   },
   {
@@ -998,7 +1165,14 @@
     "aliases": [
       "preacher curl",
       "curl au pupitre",
-      "preacher curl"
+      "preacher curl",
+      "larry scott",
+      "curl larry scott",
+      "pupitre",
+      "curl pupitre",
+      "banc pupitre",
+      "banc larry scott",
+      "preacher bench curl"
     ]
   },
   {
@@ -1048,7 +1222,10 @@
     "aliases": [
       "wrist curl",
       "curl poignet",
-      "wrist curl"
+      "wrist curl",
+      "curl poignets",
+      "avant bras curl",
+      "flexion poignet"
     ]
   },
   {
@@ -1065,7 +1242,12 @@
     "aliases": [
       "tricep pushdown",
       "poussée triceps poulie",
-      "tricep pushdown"
+      "tricep pushdown",
+      "pushdown",
+      "tirage triceps",
+      "extension poulie",
+      "triceps corde",
+      "triceps barre"
     ]
   },
   {
@@ -1082,7 +1264,12 @@
     "aliases": [
       "overhead tricep extension",
       "extension triceps au-dessus de la tête",
-      "overhead tricep extension"
+      "overhead tricep extension",
+      "french press",
+      "extension nuque",
+      "triceps nuque",
+      "extension triceps nuque",
+      "triceps au dessus de la tete"
     ]
   },
   {
@@ -1100,7 +1287,10 @@
       "skull crusher",
       "barre au front",
       "skull crusher",
-      "barre au front"
+      "barre au front",
+      "skullcrusher",
+      "casse-crane",
+      "french press barre"
     ]
   },
   {
@@ -1118,7 +1308,11 @@
     "aliases": [
       "close-grip bench press",
       "développé couché prise serrée",
-      "close grip bench press"
+      "close grip bench press",
+      "dc prise serree",
+      "developpe couche prise serree",
+      "close grip bench",
+      "triceps developpe"
     ]
   },
   {
@@ -1136,7 +1330,10 @@
     "aliases": [
       "dip",
       "dips",
-      "dip"
+      "dip",
+      "barres paralleles",
+      "dips triceps",
+      "dips pectoraux"
     ]
   },
   {
@@ -1170,7 +1367,11 @@
     "aliases": [
       "plank",
       "planche",
-      "plank"
+      "plank",
+      "gainage",
+      "gainage ventral",
+      "planche abdominale",
+      "core plank"
     ]
   },
   {
@@ -1187,7 +1388,10 @@
     "aliases": [
       "side plank",
       "planche latérale",
-      "side plank"
+      "side plank",
+      "gainage lateral",
+      "gainage cote",
+      "planche cote"
     ]
   },
   {
@@ -1204,7 +1408,11 @@
     "aliases": [
       "hanging leg raise",
       "relevé de jambes suspendu",
-      "hanging leg raise"
+      "hanging leg raise",
+      "releve de jambes",
+      "releve de jambes suspendu",
+      "abdos barre",
+      "hanging legs"
     ]
   },
   {
@@ -1220,7 +1428,11 @@
     "aliases": [
       "cable crunch",
       "crunch à la poulie",
-      "cable crunch"
+      "cable crunch",
+      "crunch poulie",
+      "crunch a la poulie",
+      "crunch a genoux",
+      "abdos poulie"
     ]
   },
   {
@@ -1237,7 +1449,11 @@
     "aliases": [
       "ab wheel rollout",
       "roue abdominale",
-      "ab wheel"
+      "ab wheel",
+      "roulette abdo",
+      "roulette a abdos",
+      "roulette abdominale",
+      "ab roller"
     ]
   },
   {
@@ -1340,7 +1556,11 @@
     "aliases": [
       "dumbbell fly",
       "écarté haltères",
-      "dumbbell fly"
+      "dumbbell fly",
+      "ecarte halteres",
+      "ecartes halteres",
+      "dumbbell flyes",
+      "pullover haltere"
     ]
   },
   {
@@ -1429,7 +1649,10 @@
     "aliases": [
       "chest dip",
       "dips buste penché",
-      "chest dip"
+      "chest dip",
+      "dips pecs",
+      "dips buste penche",
+      "dips pectoraux"
     ]
   },
   {
@@ -1464,7 +1687,10 @@
     "aliases": [
       "machine shoulder press",
       "développé épaules à la machine",
-      "machine shoulder press"
+      "machine shoulder press",
+      "presse epaules machine",
+      "developpe epaules machine",
+      "shoulder press machine"
     ]
   },
   {
@@ -1482,7 +1708,10 @@
     "aliases": [
       "standing dumbbell press",
       "développé épaules debout haltères",
-      "standing dumbbell press"
+      "standing dumbbell press",
+      "developpe debout halteres",
+      "developpe epaules debout",
+      "dumbbell ohp"
     ]
   },
   {
@@ -1536,7 +1765,9 @@
     "aliases": [
       "machine lateral raise",
       "élévations latérales à la machine",
-      "machine lateral raise"
+      "machine lateral raise",
+      "elevations laterales machine",
+      "machine elevations laterales"
     ]
   },
   {
@@ -1622,7 +1853,9 @@
     "aliases": [
       "pendlay row",
       "rowing pendlay",
-      "pendlay row"
+      "pendlay row",
+      "pendlay",
+      "rowing sol"
     ]
   },
   {
@@ -1781,7 +2014,15 @@
     "aliases": [
       "back extension",
       "extension du dos",
-      "back extension"
+      "back extension",
+      "banc a lombaires",
+      "banc lombaire",
+      "banc a lombaire",
+      "hyperextension",
+      "extensions lombaires",
+      "lombaires",
+      "hyperextensions",
+      "lower back extension"
     ]
   },
   {
@@ -1798,7 +2039,10 @@
     "aliases": [
       "dumbbell shrug",
       "haussement d’épaules haltères",
-      "dumbbell shrug"
+      "dumbbell shrug",
+      "shrugs halteres",
+      "trapezes halteres",
+      "shrug haltere"
     ]
   },
   {
@@ -1816,7 +2060,10 @@
     "aliases": [
       "goblet squat",
       "goblet squat",
-      "goblet squat"
+      "goblet squat",
+      "squat gobelet",
+      "squat kettlebell",
+      "squat avec haltere"
     ]
   },
   {
@@ -1869,7 +2116,9 @@
     "aliases": [
       "sumo deadlift",
       "soulevé sumo",
-      "sumo deadlift"
+      "sumo deadlift",
+      "souleve sumo",
+      "terre sumo"
     ]
   },
   {
@@ -1887,7 +2136,10 @@
     "aliases": [
       "trap bar deadlift",
       "soulevé de terre à la trap bar",
-      "trap bar deadlift"
+      "trap bar deadlift",
+      "trap bar",
+      "hex bar deadlift",
+      "souleve trap bar"
     ]
   },
   {
@@ -1904,7 +2156,10 @@
     "aliases": [
       "lying leg curl",
       "leg curl allongé",
-      "lying leg curl"
+      "lying leg curl",
+      "leg curl allonge",
+      "ischios allonge",
+      "lying curl"
     ]
   },
   {
@@ -1922,7 +2177,10 @@
     "aliases": [
       "nordic hamstring curl",
       "leg curl nordique",
-      "nordic hamstring curl"
+      "nordic hamstring curl",
+      "nordic curl",
+      "nordic hamstrings",
+      "curl nordique"
     ]
   },
   {
@@ -1958,7 +2216,10 @@
     "aliases": [
       "reverse lunge",
       "fente arrière",
-      "reverse lunge"
+      "reverse lunge",
+      "fente arriere",
+      "fentes arrieres",
+      "reverse lunges"
     ]
   },
   {
@@ -1993,7 +2254,10 @@
     "aliases": [
       "cable kickback",
       "extension de hanche à la poulie",
-      "cable kickback"
+      "cable kickback",
+      "kickback fessier",
+      "kickback poulie",
+      "extension fessier poulie"
     ]
   },
   {
@@ -2010,7 +2274,10 @@
     "aliases": [
       "hip abduction machine",
       "abduction de hanches à la machine",
-      "hip abduction machine"
+      "hip abduction machine",
+      "abducteurs machine",
+      "machine fessiers abducteurs",
+      "ecarteur cuisses"
     ]
   },
   {
@@ -2170,7 +2437,10 @@
     "aliases": [
       "cable pull-through",
       "extension de hanche à la poulie entre les jambes",
-      "cable pull through"
+      "cable pull through",
+      "pull through",
+      "pull through poulie",
+      "extension hanche poulie"
     ]
   },
   {
@@ -2239,7 +2509,10 @@
     "aliases": [
       "hip adduction machine",
       "adduction de hanches à la machine",
-      "hip adduction machine"
+      "hip adduction machine",
+      "adducteurs machine",
+      "machine adducteurs",
+      "serre cuisses"
     ]
   },
   {
@@ -2312,7 +2585,9 @@
     "aliases": [
       "heel-elevated goblet squat",
       "goblet squat talons surélevés",
-      "heel elevated goblet squat"
+      "heel elevated goblet squat",
+      "squat talons sureleves",
+      "goblet squat talons hauts"
     ]
   },
   {
@@ -2364,7 +2639,7 @@
       "Glutes",
       "Core"
     ],
-    "fr": "Fente statique pied avant surélevé",
+    "fr": "Fente statique pied avant surélevé",
     "aliases": [
       "front-foot elevated split squat",
       "fente statique pied avant surélevé",
@@ -2538,7 +2813,12 @@
       "lower back machine",
       "extension lombaire assise à la machine",
       "extension lombaire assise",
-      "machine à lombaires"
+      "machine à lombaires",
+      "machine lombaires",
+      "banc lombaire",
+      "banc a lombaires",
+      "lombaires machine",
+      "hyperextension machine"
     ],
     "noDrawing": true,
     "how": {
@@ -2669,7 +2949,10 @@
     "aliases": [
       "incline dumbbell curl",
       "curl incliné haltères",
-      "incline dumbbell curl"
+      "incline dumbbell curl",
+      "curl incline",
+      "curl sur banc incline",
+      "curl incline halteres"
     ]
   },
   {
@@ -2686,7 +2969,9 @@
     "aliases": [
       "concentration curl",
       "curl concentration",
-      "concentration curl"
+      "concentration curl",
+      "curl concentre",
+      "curl assis coude genou"
     ]
   },
   {
@@ -2703,7 +2988,9 @@
     "aliases": [
       "ez-bar curl",
       "curl barre ez",
-      "ez bar curl"
+      "ez bar curl",
+      "curl barre coudee",
+      "ez bar biceps"
     ]
   },
   {
@@ -2723,7 +3010,8 @@
       "standing barbell curl",
       "curl barre",
       "curl barre debout",
-      "curl barre droite"
+      "curl barre droite",
+      "barbell bicep curl"
     ]
   },
   {
@@ -2759,7 +3047,10 @@
     "aliases": [
       "spider curl",
       "spider curl",
-      "spider curl"
+      "spider curl",
+      "curl spider",
+      "spider curls",
+      "curl pupitre inverse"
     ]
   },
   {
@@ -2793,7 +3084,9 @@
     "aliases": [
       "drag curl",
       "curl glissé",
-      "drag curl"
+      "drag curl",
+      "curl glisse",
+      "drag curls"
     ]
   },
   {
@@ -2810,7 +3103,11 @@
     "aliases": [
       "rope tricep pushdown",
       "extension triceps à la corde",
-      "rope tricep pushdown"
+      "rope tricep pushdown",
+      "triceps corde",
+      "extension corde",
+      "pushdown corde",
+      "corde triceps"
     ]
   },
   {
@@ -2827,7 +3124,10 @@
     "aliases": [
       "two dumbbell skullcrusher",
       "barre au front avec deux haltères",
-      "dumbbell skull crusher"
+      "dumbbell skull crusher",
+      "barre au front halteres",
+      "halteres au front",
+      "skullcrusher halteres"
     ]
   },
   {
@@ -2861,7 +3161,11 @@
     "aliases": [
       "dumbbell overhead tricep extension",
       "extension triceps au-dessus de la tête avec haltère",
-      "dumbbell overhead tricep extension"
+      "dumbbell overhead tricep extension",
+      "french press",
+      "extension nuque haltere",
+      "triceps nuque haltere",
+      "french press haltere"
     ]
   },
   {
@@ -2947,7 +3251,10 @@
     "aliases": [
       "farmer carry",
       "marche du fermier",
-      "farmer carry"
+      "farmer carry",
+      "farmers walk",
+      "marche fermier",
+      "marche avec charges"
     ]
   },
   {
@@ -2996,7 +3303,11 @@
     "aliases": [
       "russian twist",
       "rotation russe",
-      "russian twist"
+      "russian twist",
+      "torsion russe",
+      "twist russe",
+      "abdos russes",
+      "russian twists"
     ]
   },
   {
@@ -3013,7 +3324,11 @@
     "aliases": [
       "bicycle crunch",
       "crunch pédalage",
-      "bicycle crunch"
+      "bicycle crunch",
+      "crunch pedalo",
+      "crunch pedale",
+      "crunch bicyclette",
+      "pedalage abdos"
     ]
   },
   {
@@ -3031,7 +3346,10 @@
     "aliases": [
       "mountain climber",
       "mountain climber",
-      "mountain climber"
+      "mountain climber",
+      "grimpeur",
+      "mountain climbers",
+      "course au sol"
     ]
   },
   {
@@ -3083,7 +3401,10 @@
     "aliases": [
       "pallof press",
       "pallof press",
-      "pallof press"
+      "pallof press",
+      "presse pallof",
+      "pallof",
+      "anti-rotation poulie"
     ]
   },
   {
@@ -3100,7 +3421,10 @@
     "aliases": [
       "cable woodchop",
       "rotation diagonale à la poulie",
-      "cable woodchop"
+      "cable woodchop",
+      "bucheron poulie",
+      "rotation bucheron",
+      "woodchopper"
     ]
   },
   {
@@ -3170,7 +3494,10 @@
     "aliases": [
       "captain's chair knee raise",
       "relevé de genoux à la chaise romaine",
-      "captains chair knee raise"
+      "captains chair knee raise",
+      "chaise romaine",
+      "chaise romaine abdos",
+      "releve genoux chaise romaine"
     ]
   },
   {
@@ -3457,7 +3784,9 @@
     "aliases": [
       "diamond push-up",
       "pompe diamant",
-      "diamond push up"
+      "diamond push up",
+      "pompes diamant",
+      "pompes triceps diamant"
     ]
   },
   {
@@ -3703,7 +4032,10 @@
     "aliases": [
       "handstand push-up",
       "pompes en équilibre sur les mains",
-      "handstand push up"
+      "handstand push up",
+      "hspu",
+      "pompes poirier",
+      "pompes ATR"
     ]
   },
   {
@@ -3871,7 +4203,11 @@
     "aliases": [
       "dead hang",
       "suspension passive",
-      "dead hang"
+      "dead hang",
+      "suspension",
+      "suspension barre",
+      "deadhang",
+      "suspension active"
     ]
   },
   {
@@ -4023,7 +4359,10 @@
     "aliases": [
       "pistol squat",
       "squat pistol",
-      "pistol squat"
+      "pistol squat",
+      "pistol",
+      "squat une jambe",
+      "squat sur un pied"
     ]
   },
   {
@@ -4080,7 +4419,9 @@
     "aliases": [
       "cossack squat",
       "squat cosaque",
-      "cossack squat"
+      "cossack squat",
+      "cossack",
+      "fente cosaque"
     ]
   },
   {
@@ -4098,7 +4439,9 @@
     "aliases": [
       "sissy squat",
       "sissy squat",
-      "sissy squat"
+      "sissy squat",
+      "sissysquat",
+      "squat sissy"
     ]
   },
   {
@@ -4117,7 +4460,9 @@
     "aliases": [
       "forward lunge",
       "fente avant",
-      "forward lunge"
+      "forward lunge",
+      "fentes avants",
+      "forward lunges"
     ]
   },
   {
@@ -4155,7 +4500,10 @@
     "aliases": [
       "curtsy lunge",
       "fente croisée",
-      "curtsy lunge"
+      "curtsy lunge",
+      "fente croisee",
+      "fente reverence",
+      "curtsey lunge"
     ]
   },
   {
@@ -5095,7 +5443,10 @@
     "aliases": [
       "dragon flag",
       "dragon flag",
-      "dragon flag"
+      "dragon flag",
+      "drapeau du dragon",
+      "dragonflag",
+      "abdos dragon"
     ]
   },
   {
