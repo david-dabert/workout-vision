@@ -102,3 +102,33 @@
 .wv-experience .pro-template-card small { font-size: var(--fs-caption); color: var(--c-fg-muted); }
 .wv-experience .pro-template-card:hover { border-color: var(--lamp-line); }
 
+/* Mode toggle between workout programmes and Coach Business OS */
+.wv-experience .pro-mode-nav {
+  display: flex;
+  gap: var(--s-2);
+  margin-top: var(--s-4);
+  margin-bottom: var(--s-4);
+  padding: 4px;
+  background: var(--basalt);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-s);
+}
+.wv-experience .pro-mode-pill {
+  flex: 1;
+  padding: 8px 12px;
+  font-family: var(--sans);
+  font-size: var(--fs-caption);
+  font-weight: 500;
+  color: var(--bone-2);
+  border-radius: var(--r-paper);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--d-fast) var(--ease);
+  text-align: center;
+}
+.wv-experience .pro-mode-pill.is-active {
+  background: var(--well);
+  color: var(--lamp-hi);
+  border-color: var(--lamp-line);
+}

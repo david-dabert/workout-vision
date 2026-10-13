@@ -10,8 +10,8 @@ import { useCondensingTopbar } from './topbar';
 import './Report.css';
 import './Pro.css';
 
-// The searchable list of every exercise the app counts, the choice's own (ExerciseList.jsx), to pick from.
 const ExerciseList = lazy(() => import('./ExerciseList'));
+const CoachSuite = lazy(() => import('../coaches/CoachSuite'));
 
 // The programme's PDF (jsPDF and the app's fonts) loads apart, once, as the report's does (Report.jsx), and is warmed
 // as soon as a programme is open, so the share happens within the tap.
@@ -94,11 +94,21 @@ export default function Pro({ onClose, start = null }) {
     if (open.items.length < LIMITS.items) update({ ...open, items: [...open.items, newItem(key)] });
     setPicking(false);
   }} />;
+  const [proTab, setProTab] = useState('programmes'); // 'programmes' | 'business'
+  const handleAddPhysio = (key) => {
+    const d = newDraft();
+    d.title = fr ? 'Protocole Rééducation' : 'Rehab Protocol';
+    d.items = [newItem(key)];
+    setDrafts(list => [d, ...list]);
+    setKept(saveDraft(d));
+    setOpenId(d.id);
+  };
+
   if (open) return <Editor key={open.id} c={c} fr={fr} lang={lang} draft={open} kept={kept} rebuilt={open.id === rebuiltId} focusWho={focusWho} onChange={update} onPick={() => { setFocusWho(false); setPicking(true); }} onBack={back} onDuplicate={duplicate} onDelete={() => remove(open.id)} />;
-  return <List c={c} fr={fr} drafts={drafts.filter(d => !isEmptyDraft(d))} onClose={onClose} onCreate={create} onTemplate={createTemplate} onOpen={show} />;
+  return <List c={c} fr={fr} drafts={drafts.filter(d => !isEmptyDraft(d))} onClose={onClose} onCreate={create} onTemplate={createTemplate} onOpen={show} proTab={proTab} onSetProTab={setProTab} onAddPhysio={handleAddPhysio} />;
 }
 
-function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen }) {
+function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, onSetProTab, onAddPhysio }) {
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [fr]);
   const day = t => new Date(t).toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short' });
@@ -111,39 +121,67 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen }) {
       <p className="eyebrow pro-eyebrow" data-reveal style={{ '--i': 0 }}>{c.eyebrow}</p>
       <h1 className="title" data-reveal style={{ '--i': 0 }}>{c.title}</h1>
       <p className="sub pro-sub" data-reveal style={{ '--i': 1 }}>{c.sub}</p>
-      <div className="actions" data-reveal style={{ '--i': 2 }}>
-        <button type="button" className="btn-primary press" onClick={onCreate} data-testid="pro-new">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-          <span>{c.newProgramme}</span>
+
+      <div className="pro-mode-nav" data-reveal style={{ '--i': 1.5 }}>
+        <button
+          type="button"
+          className={`pro-mode-pill press ${proTab === 'programmes' ? 'is-active' : ''}`}
+          onClick={() => onSetProTab('programmes')}
+          data-testid="tab-pro-programmes"
+        >
+          {fr ? '📋 Programmes & Fiches' : '📋 Workout Programmes'}
+        </button>
+        <button
+          type="button"
+          className={`pro-mode-pill press ${proTab === 'business' ? 'is-active' : ''}`}
+          onClick={() => onSetProTab('business')}
+          data-testid="tab-pro-business"
+        >
+          {fr ? '💼 Espace Coach Business' : '💼 Coach Business OS'}
         </button>
       </div>
-      <div className="pro-templates" data-reveal style={{ '--i': 2.5 }}>
-        <h2 className="section-head">{c.templatesHead}</h2>
-        <div className="pro-template-grid">
-          <button type="button" className="pro-template-card press" onClick={() => onTemplate('posture')} data-testid="template-posture">
-            <span className="row-txt"><b>{c.templatePosture}</b><small>{c.templatePostureSub}</small></span>
-            <Arrow />
-          </button>
-          <button type="button" className="pro-template-card press" onClick={() => onTemplate('shoulder')} data-testid="template-shoulder">
-            <span className="row-txt"><b>{c.templateShoulder}</b><small>{c.templateShoulderSub}</small></span>
-            <Arrow />
-          </button>
-          <button type="button" className="pro-template-card press" onClick={() => onTemplate('conditioning')} data-testid="template-conditioning">
-            <span className="row-txt"><b>{c.templateConditioning}</b><small>{c.templateConditioningSub}</small></span>
-            <Arrow />
-          </button>
-        </div>
-      </div>
-      {drafts.length > 0 && <div data-reveal style={{ '--i': 3 }}>
-        <h2 className="section-head">{c.draftsHead}</h2>
-        <ul className="pro-drafts">{drafts.map(d => <li key={d.id}>
-          <button type="button" className="pro-draft press" onClick={() => onOpen(d.id)}>
-            <span className="row-txt"><b>{d.title.trim() || c.untitled}</b><small>{[d.who.trim(), c.draftMeta(d.items.length, day(d.updatedAt))].filter(Boolean).join(' · ')}</small></span>
-            <Arrow />
-          </button>
-        </li>)}</ul>
-      </div>}
-      <p className="foot pro-foot" data-reveal style={{ '--i': 4 }}>{c.users} {c.privacy}</p>
+
+      {proTab === 'business' ? (
+        <Suspense fallback={<div aria-busy="true" />}>
+          <CoachSuite onAddToProgramme={onAddPhysio} />
+        </Suspense>
+      ) : (
+        <>
+          <div className="actions" data-reveal style={{ '--i': 2 }}>
+            <button type="button" className="btn-primary press" onClick={onCreate} data-testid="pro-new">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+              <span>{c.newProgramme}</span>
+            </button>
+          </div>
+          <div className="pro-templates" data-reveal style={{ '--i': 2.5 }}>
+            <h2 className="section-head">{c.templatesHead}</h2>
+            <div className="pro-template-grid">
+              <button type="button" className="pro-template-card press" onClick={() => onTemplate('posture')} data-testid="template-posture">
+                <span className="row-txt"><b>{c.templatePosture}</b><small>{c.templatePostureSub}</small></span>
+                <Arrow />
+              </button>
+              <button type="button" className="pro-template-card press" onClick={() => onTemplate('shoulder')} data-testid="template-shoulder">
+                <span className="row-txt"><b>{c.templateShoulder}</b><small>{c.templateShoulderSub}</small></span>
+                <Arrow />
+              </button>
+              <button type="button" className="pro-template-card press" onClick={() => onTemplate('conditioning')} data-testid="template-conditioning">
+                <span className="row-txt"><b>{c.templateConditioning}</b><small>{c.templateConditioningSub}</small></span>
+                <Arrow />
+              </button>
+            </div>
+          </div>
+          {drafts.length > 0 && <div data-reveal style={{ '--i': 3 }}>
+            <h2 className="section-head">{c.draftsHead}</h2>
+            <ul className="pro-drafts">{drafts.map(d => <li key={d.id}>
+              <button type="button" className="pro-draft press" onClick={() => onOpen(d.id)}>
+                <span className="row-txt"><b>{d.title.trim() || c.untitled}</b><small>{[d.who.trim(), c.draftMeta(d.items.length, day(d.updatedAt))].filter(Boolean).join(' · ')}</small></span>
+                <Arrow />
+              </button>
+            </li>)}</ul>
+          </div>}
+          <p className="foot pro-foot" data-reveal style={{ '--i': 4 }}>{c.users} {c.privacy}</p>
+        </>
+      )}
     </div></section>
   </div>;
 }

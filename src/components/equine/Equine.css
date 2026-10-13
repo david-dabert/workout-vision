@@ -364,3 +364,152 @@
   stroke: var(--bio-cyan, #D4A76A);
   margin-bottom: 10px;
 }
+
+.equine-video-wrapper {
+  position: relative;
+  width: 100%;
+  background: #000;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.equine-video-hud {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  background: rgba(8, 8, 11, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hud-marker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.hud-withers {
+  color: var(--bio-cyan, #D4A76A);
+}
+
+.hud-withers .hud-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--bio-cyan, #D4A76A);
+  box-shadow: 0 0 8px #D4A76A;
+}
+
+.hud-sacrum {
+  color: var(--bio-green, #5DB87A);
+}
+
+.hud-sacrum .hud-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--bio-green, #5DB87A);
+  box-shadow: 0 0 8px #5DB87A;
+}
+
+.hud-phase-badge {
+  font-size: 10.5px;
+  color: rgba(232, 230, 225, 0.7);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.equine-pill-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(212, 167, 106, 0.12);
+  color: var(--bio-cyan, #D4A76A);
+  border: 1px solid rgba(212, 167, 106, 0.25);
+}
+
+.equine-clinical-card,
+.equine-legal-card {
+  background: var(--depth-1, #0f0f13);
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 24px;
+}
+
+.clinical-card-header,
+.legal-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.clinical-badge,
+.legal-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(212, 167, 106, 0.15);
+  color: var(--bio-cyan, #D4A76A);
+  border: 1px solid rgba(212, 167, 106, 0.3);
+}
+
+.clinical-card-header h3,
+.legal-card-header h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary, #e8e6e1);
+  margin: 0;
+}
+
+.clinical-card-body p,
+.equine-legal-card p {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-secondary, rgba(232, 230, 225, 0.7));
+  margin: 0 0 16px 0;
+}
+
+.clinical-points-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.clinical-point-tile {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.point-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--bio-cyan, #D4A76A);
+}
+
+.point-desc {
+  font-size: 12px;
+  color: var(--text-secondary, rgba(232, 230, 225, 0.55));
+  line-height: 1.45;
+}
+

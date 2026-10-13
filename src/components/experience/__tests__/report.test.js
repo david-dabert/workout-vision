@@ -84,6 +84,28 @@ describe('reportSheet', () => {
     expect(enSheet.summary.some(line => line.includes('VBT coaching cue') && line.includes('Ideal stimulus zone'))).toBe(true);
   });
 
+  it('formats occupational ergonomics and NIOSH spinal compressive load in summary', () => {
+    const ergo = {
+      estimatedL5S1CompressionNewtons: 2850,
+      liftingIndexLI: 1.45,
+      riskCategory: 'moderate',
+      recommendations: ['Rapprocher la charge du corps pour limiter le bras de levier.'],
+    };
+    const reps = [{ startTime: 0, endTime: 2, romDegrees: 90, concentricSec: 1, eccentricSec: 1 }];
+    const frSheet = reportSheet({ ...base, ergonomics: ergo, reps });
+    expect(frSheet.summary.some(line => line.includes('Compression spinale (L5/S1 NIOSH)') && line.includes('2850') && line.includes('vigilance modérée') && line.includes('LI 1.45'))).toBe(true);
+    expect(frSheet.summary.some(line => line.includes('Recommandation ergonomique') && line.includes('Rapprocher la charge'))).toBe(true);
+
+    const enSheet = reportSheet({
+      ...base,
+      lang: 'en',
+      ergonomics: { ...ergo, riskCategory: 'high', estimatedL5S1CompressionNewtons: 3650, recommendations: ['Bring load closer.'] },
+      reps,
+    });
+    expect(enSheet.summary.some(line => line.includes('Spinal compression (L5/S1 NIOSH)') && line.includes('3650') && line.includes('high risk'))).toBe(true);
+    expect(enSheet.summary.some(line => line.includes('Ergonomic guideline') && line.includes('Bring load closer.'))).toBe(true);
+  });
+
   it('gives the level in the user\'s words, and leaves it out when none was chosen', () => {
     expect(reportSheet({ ...base, level: 'beginner' }).people).toEqual([['Niveau', 'Débutant']]);
     expect(reportSheet({ ...base, level: 'intermediate' }).people).toEqual([['Niveau', 'Intermédiaire']]);

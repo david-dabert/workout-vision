@@ -116,6 +116,19 @@ export default function CoachFinder({ onClose }) {
           </p>
         </div>
 
+        {/* Network Onboarding Beta Banner */}
+        <div className="coach-beta-banner" data-testid="coach-beta-banner">
+          <div className="beta-banner-tag">
+            <span className="beta-dot" />
+            <span>{fr ? 'Bêta Publique • Réseau en Déploiement' : 'Public Beta • Network Onboarding'}</span>
+          </div>
+          <p>
+            {fr
+              ? 'L’algorithme géospatial de matching et le partage chiffré de télémétrie sont opérationnels. Le registre des kinésithérapeutes du sport et entraîneurs certifiés est en cours d’intégration progressive.'
+              : 'Local proximity matching and encrypted telemetry sharing are active. The verified registry of sports physiotherapists and strength coaches is actively onboarding practitioners.'}
+          </p>
+        </div>
+
         {/* Real Telemetry Attachment Indicator */}
         <div className="coach-telemetry-badge">
           <div className="telemetry-badge-dot" />

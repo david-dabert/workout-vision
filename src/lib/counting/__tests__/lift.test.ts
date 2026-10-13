@@ -126,4 +126,31 @@ describe('the lift of a limb against gravity', () => {
     const res = countReps(frames, timestamps(frames.length, sps), 'prone_y_raise');
     expect(res.count).toBe(10);
   });
+
+  it('counts prone Y raise without freezing when arms shift from forward Y to backward/swimmer/T wings on fatigued later reps', () => {
+    const sps = 30;
+    const path: any[] = [{ hold: -3, sec: 1.0 }];
+    // First 4 reps: clean standard overhead Y (-3 rest, 13 peak)
+    for (let r = 0; r < 4; r++) {
+      path.push(
+        { to: 13, sec: 1.1 },
+        { to: -3, sec: 1.0 },
+        { hold: -3, sec: 0.8 },
+      );
+    }
+    // Next 4 reps: fatigued lifter shifts arms back towards T/wings/swimmer where floor rest shifts up by 3 degrees (-0.5 rest, 11 peak)
+    for (let r = 0; r < 4; r++) {
+      path.push(
+        { to: 11, sec: 1.1 },
+        { to: -0.5, sec: 1.0 },
+        { hold: -0.5, sec: 0.8 },
+      );
+    }
+    const rawLifts = sample(path, -3, sps);
+    const frames = rawLifts.map(l => prone(l, 1));
+    const res = countReps(frames, timestamps(frames.length, sps), 'prone_y_raise');
+    // All 8 reps must be registered without dropping the fatigued later reps
+    expect(res.count).toBe(8);
+  });
 });
+

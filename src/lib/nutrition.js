@@ -411,3 +411,30 @@ export async function fetchBarcodeNutrition(barcode) {
     return null;
   }
 }
+
+/**
+ * Calculates client adherence compliance rate over recent logged days.
+ * @param {Array<{ date: string, adherent: boolean, actualCalories?: number, actualProteinGrams?: number }>} logs
+ * @returns {{ daysLogged: number, adherentDays: number, complianceRatePct: number, status: 'excellent' | 'good' | 'needs_attention' }}
+ */
+export function calculateAdherenceScore(logs) {
+  if (!logs || logs.length === 0) {
+    return { daysLogged: 0, adherentDays: 0, complianceRatePct: 100, status: 'good' };
+  }
+
+  const daysLogged = logs.length;
+  const adherentDays = logs.filter(l => l.adherent).length;
+  const complianceRatePct = Math.round((adherentDays / daysLogged) * 100);
+
+  let status = 'good';
+  if (complianceRatePct >= 85) status = 'excellent';
+  else if (complianceRatePct < 60) status = 'needs_attention';
+
+  return {
+    daysLogged,
+    adherentDays,
+    complianceRatePct,
+    status,
+  };
+}
+

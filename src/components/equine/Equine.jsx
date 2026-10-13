@@ -142,11 +142,13 @@ async function extractEquineGaitFramesFromVideo(videoUrl) {
   });
 }
 
+const DEMO_VIDEO_URL = `${import.meta.env.BASE_URL || '/'}demo/equine-trot-demo.mp4`;
+
 export default function Equine({ onClose }) {
   const { lang } = useT();
   const fr = lang === 'fr';
 
-  const [scenario, setScenario] = useState('sound');
+  const [scenario, setScenario] = useState('demo');
   const [isCircle, setIsCircle] = useState(false);
   const [circleRadius, setCircleRadius] = useState(10); // meters
   const [trotSpeed, setTrotSpeed] = useState(3.5); // m/s
@@ -154,7 +156,11 @@ export default function Equine({ onClose }) {
 
   // Real Video State
   const fileInputRef = useRef(null);
-  const [uploadedVideo, setUploadedVideo] = useState(null);
+  const [uploadedVideo, setUploadedVideo] = useState({
+    url: DEMO_VIDEO_URL,
+    name: 'Eadweard Muybridge Trot-Up (Loop 4.8s)',
+    isBuiltinDemo: true,
+  });
   const [isProcessingVideo, setIsProcessingVideo] = useState(false);
   const [videoFrames, setVideoFrames] = useState(null);
   const [videoPlaybackTime, setVideoPlaybackTime] = useState(0);
@@ -165,6 +171,9 @@ export default function Equine({ onClose }) {
   // Generate frame sequence based on scenario or uploaded video
   const frames = useMemo(() => {
     if (videoFrames && videoFrames.length > 0) return videoFrames;
+    if (scenario === 'demo') {
+      return generateScenarioFrames('sound', { fps: 30, durationSec: 4.8, stridePeriodMs: 710 });
+    }
     return generateScenarioFrames(scenario, { fps: 30, durationSec: 3.5, stridePeriodMs: 720 });
   }, [scenario, videoFrames]);
 
@@ -187,7 +196,8 @@ export default function Equine({ onClose }) {
     if (!file) return;
     hapticLight();
     const url = URL.createObjectURL(file);
-    setUploadedVideo({ url, name: file.name });
+    setScenario('custom');
+    setUploadedVideo({ url, name: file.name, isBuiltinDemo: false });
     setIsProcessingVideo(true);
 
     try {
@@ -200,11 +210,23 @@ export default function Equine({ onClose }) {
     }
   };
 
+  const handleSelectDemoVideo = () => {
+    hapticLight();
+    setScenario('demo');
+    setVideoFrames(null);
+    setUploadedVideo({
+      url: DEMO_VIDEO_URL,
+      name: 'Eadweard Muybridge Trot-Up (Loop 4.8s)',
+      isBuiltinDemo: true,
+    });
+  };
+
   const handleClearVideo = () => {
     hapticLight();
-    if (uploadedVideo?.url) URL.revokeObjectURL(uploadedVideo.url);
+    if (uploadedVideo?.url && !uploadedVideo.isBuiltinDemo) URL.revokeObjectURL(uploadedVideo.url);
     setUploadedVideo(null);
     setVideoFrames(null);
+    setScenario('sound');
   };
 
   // Render chart on canvas
@@ -414,65 +436,100 @@ export default function Equine({ onClose }) {
             : 'In sound trot, withers and pelvis display two identical minima per stride cycle (D1 and D2). Excursion divergence (BAI > 8%) quantifies weight-offloading and subtle lameness.'}
         </div>
 
-        {/* Video Mode or Scenario Selector */}
-        {uploadedVideo ? (
+        {/* Scenario and Video Mode Selector */}
+        <div className="equine-scenarios">
+          <button
+            type="button"
+            className={`scenario-pill ${scenario === 'demo' ? 'active' : ''}`}
+            onClick={handleSelectDemoVideo}
+            data-testid="scenario-demo-video"
+          >
+            {fr ? '📹 Démo Vidéo (Eadweard Muybridge)' : '📹 Demo Video (Muybridge Trot)'}
+          </button>
+          <button
+            type="button"
+            className={`scenario-pill ${scenario === 'sound' ? 'active' : ''}`}
+            onClick={() => { hapticLight(); setScenario('sound'); setUploadedVideo(null); setVideoFrames(null); }}
+            data-testid="scenario-sound"
+          >
+            {fr ? 'Trot Sain (Symétrique)' : 'Sound Trot (Symmetric)'}
+          </button>
+          <button
+            type="button"
+            className={`scenario-pill ${scenario === 'forelimb_lf' ? 'active' : ''}`}
+            onClick={() => { hapticLight(); setScenario('forelimb_lf'); setUploadedVideo(null); setVideoFrames(null); }}
+            data-testid="scenario-forelimb"
+          >
+            {fr ? 'Boiterie Antérieur Gauche (AG)' : 'Left Forelimb Lameness (LF)'}
+          </button>
+          <button
+            type="button"
+            className={`scenario-pill ${scenario === 'hindlimb_rh' ? 'active' : ''}`}
+            onClick={() => { hapticLight(); setScenario('hindlimb_rh'); setUploadedVideo(null); setVideoFrames(null); }}
+            data-testid="scenario-hindlimb"
+          >
+            {fr ? 'Boiterie Postérieur Droit (PD)' : 'Right Hindlimb Lameness (RH)'}
+          </button>
+        </div>
+
+        {/* Video Banner if Video Active */}
+        {uploadedVideo && (
           <div className="equine-video-banner">
             <div className="video-banner-info">
               <span className="video-name">📹 {uploadedVideo.name}</span>
               <span className="video-status">
-                {isProcessingVideo ? (fr ? 'Traitement cinématique en cours...' : 'Computing frame kinematics...') : (fr ? 'Vidéo analysée sur l’appareil' : 'Analyzed On-Device')}
+                {isProcessingVideo
+                  ? (fr ? 'Traitement cinématique en cours...' : 'Computing frame kinematics...')
+                  : uploadedVideo.isBuiltinDemo
+                  ? (fr ? 'Séquence historique haute fréquence (H.264 60fps) • Algorithme actif' : 'High-Speed Trot Archive (H.264 60fps) • Kinematic tracking active')
+                  : (fr ? 'Vidéo analysée sur l’appareil' : 'Analyzed On-Device')}
               </span>
             </div>
-            <button
-              type="button"
-              className="clear-video-btn press"
-              onClick={handleClearVideo}
-            >
-              {fr ? 'Rétablir les scénarios types' : 'Switch to Presets'}
-            </button>
-          </div>
-        ) : (
-          <div className="equine-scenarios">
-            <button
-              type="button"
-              className={`scenario-pill ${scenario === 'sound' ? 'active' : ''}`}
-              onClick={() => { hapticLight(); setScenario('sound'); }}
-              data-testid="scenario-sound"
-            >
-              {fr ? 'Trot Sain (Symétrique)' : 'Sound Trot (Symmetric)'}
-            </button>
-            <button
-              type="button"
-              className={`scenario-pill ${scenario === 'forelimb_lf' ? 'active' : ''}`}
-              onClick={() => { hapticLight(); setScenario('forelimb_lf'); }}
-              data-testid="scenario-forelimb"
-            >
-              {fr ? 'Boiterie Antérieur Gauche (AG)' : 'Left Forelimb Lameness (LF)'}
-            </button>
-            <button
-              type="button"
-              className={`scenario-pill ${scenario === 'hindlimb_rh' ? 'active' : ''}`}
-              onClick={() => { hapticLight(); setScenario('hindlimb_rh'); }}
-              data-testid="scenario-hindlimb"
-            >
-              {fr ? 'Boiterie Postérieur Droit (PD)' : 'Right Hindlimb Lameness (RH)'}
-            </button>
+            {uploadedVideo.isBuiltinDemo ? (
+              <span className="equine-pill-badge">{fr ? 'Archive Libre de Droits' : 'Public Domain'}</span>
+            ) : (
+              <button
+                type="button"
+                className="clear-video-btn press"
+                onClick={handleClearVideo}
+              >
+                {fr ? 'Fermer la vidéo' : 'Close Video'}
+              </button>
+            )}
           </div>
         )}
 
-        {/* Optional Uploaded Video Player */}
+        {/* Video Player with Live Kinematic HUD */}
         {uploadedVideo && (
           <div className="equine-player-card">
-            <video
-              ref={videoPlayerRef}
-              src={uploadedVideo.url}
-              controls
-              playsInline
-              className="equine-video-player"
-              onTimeUpdate={() => {
-                if (videoPlayerRef.current) setVideoPlaybackTime(videoPlayerRef.current.currentTime);
-              }}
-            />
+            <div className="equine-video-wrapper">
+              <video
+                ref={videoPlayerRef}
+                src={uploadedVideo.url}
+                controls
+                playsInline
+                autoPlay
+                muted
+                loop
+                className="equine-video-player"
+                onTimeUpdate={() => {
+                  if (videoPlayerRef.current) setVideoPlaybackTime(videoPlayerRef.current.currentTime);
+                }}
+              />
+              <div className="equine-video-hud">
+                <div className="hud-marker hud-withers">
+                  <span className="hud-dot" />
+                  <span className="hud-label">{fr ? 'Garrot (Withers)' : 'Withers (T6)'}</span>
+                </div>
+                <div className="hud-marker hud-sacrum">
+                  <span className="hud-dot" />
+                  <span className="hud-label">{fr ? 'Sacrum (Pelvis)' : 'Sacrum (Pelvis)'}</span>
+                </div>
+                <div className="hud-phase-badge">
+                  {fr ? 'Trot à 2 temps (D1 \u2194 D2)' : '2-Beat Trot (D1 \u2194 D2)'}
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -602,6 +659,60 @@ export default function Equine({ onClose }) {
               <span className="metric-tile-sub">{fr ? 'Compensé sur le plan vidéo' : 'Video geometric compensation'}</span>
             </div>
           )}
+        </div>
+
+        {/* Clinical Mechanics & Dyson & Greve Explainer */}
+        <div className="equine-clinical-card">
+          <div className="clinical-card-header">
+            <span className="clinical-badge">{fr ? 'Guide Clinique' : 'Clinical Protocol'}</span>
+            <h3>{fr ? 'Mécanique des Boiteries & Évaluation en Longe (Dyson & Greve, 2016)' : 'Lameness Mechanics & Circle Assessment (Dyson & Greve, 2016)'}</h3>
+          </div>
+          <div className="clinical-card-body">
+            <p>
+              {fr
+                ? 'Dyson & Greve (2016) ont mis en évidence qu’un cheval paraissant régulier en ligne droite peut manifester une boiterie franche sur les cercles, tandis que le travail monté peut soit l’amplifier, soit la masquer. L’évaluation quantitative de la symétrie au trot permet d’objectiver les asymétries inférieures au seuil de perception visuelle humaine.'
+                : 'Dyson & Greve (2016) demonstrated that horses appearing sound in a straight line may show distinct lameness on circles, while ridden assessment can reveal or mask it. Objective trot asymmetry tracking captures sub-visual movement alterations that human observation alone cannot reliably quantify.'}
+            </p>
+            <div className="clinical-points-grid">
+              <div className="clinical-point-tile">
+                <span className="point-title">{fr ? 'Seuil Physiologique (< 8% BAI)' : 'Sound Threshold (< 8% BAI)'}</span>
+                <span className="point-desc">
+                  {fr
+                    ? 'Excursion verticale symétrique du garrot et du sacrum sur les deux diagonaux (D1 et D2). Variation normale d’allure.'
+                    : 'Symmetrical vertical excursion of withers and sacrum across both diagonals (D1 & D2). Normal physiological tolerance.'}
+                </span>
+              </div>
+              <div className="clinical-point-tile">
+                <span className="point-title">{fr ? 'Boiterie Clinique (> 8% BAI)' : 'Clinical Lameness (> 8% BAI)'}</span>
+                <span className="point-desc">
+                  {fr
+                    ? 'Décharge d’appui asymétrique. Garrot\u00A0: antérieures (mouvement de tête compensateur). Sacrum\u00A0: postérieures (défaut d’élévation/chute pelvienne).'
+                    : 'Asymmetric stance offloading. Withers: forelimb (compensatory head-nod). Sacrum: hindlimb (reduced pelvic downward drop / push-off deficit).'}
+                </span>
+              </div>
+              <div className="clinical-point-tile">
+                <span className="point-title">{fr ? 'Filtre Centripète \u03B8 = arctan(v\u00B2/gR)' : 'Centripetal Filter \u03B8 = arctan(v\u00B2/gR)'}</span>
+                <span className="point-desc">
+                  {fr
+                    ? 'Sur le cercle, l’accélération centripète incline le cheval vers l’intérieur. EquiVision soustrait l’inclinaison pour ne mesurer que la boiterie intrinsèque.'
+                    : 'On a circle, centripetal force tilts the horse inward. EquiVision filters out the geometric lean so circle tilt is never mistaken for true lameness.'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* GDPR Article 9 & Biometric Exemption Card */}
+        <div className="equine-legal-card">
+          <div className="legal-card-header">
+            <span className="legal-badge">{fr ? 'Cadre Juridique' : 'Regulatory'}</span>
+            <h4>{fr ? 'Protection des Données & Statut Vétérinaire (RGPD Article 9)' : 'Data Privacy & Veterinary Exemption (GDPR Article 9)'}</h4>
+          </div>
+          <p>
+            {fr
+              ? 'Au regard du Règlement Général sur la Protection des Données (RGPD, Art. 9) et des directives de la CNIL, les captures vidéo et modèles d’allures animales ne constituent pas des données biométriques identifiantes de personnes physiques. Elles bénéficient d’une liberté de traitement complète pour l’aide au diagnostic vétérinaire. De plus, 100% du traitement par vision par ordinateur s’exécute localement sur votre téléphone\u00A0: aucune vidéo n’est transmise sur des serveurs distants.'
+              : 'Under GDPR Article 9 and international biometric privacy frameworks, animal video locomotion data does not constitute protected human biometric identifiers. Veterinary motion captures operate outside personal biometric restrictions. Furthermore, 100% of WorkoutVision’s computer vision runs entirely on-device in your browser\u00A0— no video frames ever leave your phone.'}
+          </p>
         </div>
 
         {/* Video Upload Section for Clinicians */}

@@ -116,6 +116,19 @@ export default function GymBuddy({ onClose }) {
           </p>
         </div>
 
+        {/* Network Onboarding Beta Banner */}
+        <div className="buddy-beta-banner" data-testid="buddy-beta-banner">
+          <div className="beta-banner-tag">
+            <span className="beta-dot" />
+            <span>{fr ? 'Bêta Publique • Déploiement en Salle' : 'Public Beta • Gym Rollout'}</span>
+          </div>
+          <p>
+            {fr
+              ? 'Le moteur de calcul de parité des charges et de compatibilité des formats d’entraînement est opérationnel. L’adhésion des partenaires par salle (Basic-Fit, Fitness Park, etc.) est en cours de déploiement public.'
+              : 'Working weight parity matching and training split compatibility are operational. Partner registration across gym facilities (Basic-Fit, Fitness Park, etc.) is rolling out in public beta.'}
+          </p>
+        </div>
+
         {/* User Compound Profile Bar */}
         <div className="buddy-user-compounds-card">
           <div className="compounds-header">
