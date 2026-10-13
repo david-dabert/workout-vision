@@ -56,7 +56,12 @@ const Pro = lazyScreen(() => import('./components/experience/Pro'));
 const Programme = lazyScreen(() => import('./components/experience/Programme.jsx'));
 // A client's results, opened on the coach's phone from the link the client sent (#resultats=…, 9 October).
 const Results = lazyScreen(() => import('./components/experience/Results'));
-const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto };
+const Equine = lazyScreen(() => import('./components/equine/Equine.jsx'));
+const CoachFinder = lazyScreen(() => import('./components/coaches/CoachFinder.jsx'));
+const GymBuddy = lazyScreen(() => import('./components/buddies/GymBuddy.jsx'));
+const Ergonomics = lazyScreen(() => import('./components/ergonomics/Ergonomics.jsx'));
+const Chat = lazyScreen(() => import('./components/chat/Chat.jsx'));
+const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto, equine: Equine, veterinary: Equine, coaches: CoachFinder, coach: CoachFinder, physio: CoachFinder, buddies: GymBuddy, buddy: GymBuddy, ergonomics: Ergonomics, workplace: Ergonomics, chat: Chat };
 
 // Hidden, not deleted: lazy imports for features outside the core path
 // const ManualLog = safeLazy(() => import('./components/ManualLog'));
@@ -226,11 +231,26 @@ function AppInner() {
   } else if (page === 'about') {
     key = 'about';
     screen = <About onClose={() => go('dashboard')} onManifesto={() => go('manifesto')} />;
+  } else if (page === 'equine' || page === 'veterinary') {
+    key = 'equine';
+    screen = <Equine onClose={() => go('dashboard')} />;
+  } else if (page === 'coaches' || page === 'coach' || page === 'physio') {
+    key = 'coaches';
+    screen = <CoachFinder onClose={() => go('dashboard')} />;
+  } else if (page === 'buddies' || page === 'buddy') {
+    key = 'buddies';
+    screen = <GymBuddy onClose={() => go('dashboard')} />;
+  } else if (page === 'ergonomics' || page === 'workplace') {
+    key = 'ergonomics';
+    screen = <Ergonomics onClose={() => go('dashboard')} />;
+  } else if (page === 'chat') {
+    key = 'chat';
+    screen = <Chat onClose={() => go('dashboard')} />;
   } else {
     // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
     // the old live capture (LiveCapture.jsx) and the dashboard; "live" without a lift, or in a build without VITE_LIVE, too. Every other page falls through to the choice of lift.
     key = 'choice';
-    screen = <Choice held={heldProgramme} onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro', () => setProStart(null))} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} onManifesto={() => go('manifesto')} />;
+    screen = <Choice held={heldProgramme} onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro', () => setProStart(null))} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} onManifesto={() => go('manifesto')} onEquine={() => go('equine')} onCoaches={() => go('coaches')} onBuddies={() => go('buddies')} onErgonomics={() => go('ergonomics')} onChat={() => go('chat')} />;
   }
 
   // The screen on show, a breadcrumb of the crash log on the phone (crashLog.js); the analysis marks its phases itself.

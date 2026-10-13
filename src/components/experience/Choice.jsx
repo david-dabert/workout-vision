@@ -90,7 +90,7 @@ function LiftCard({ children, onClick, label, describedBy, cardRef }) {
   </button>;
 }
 
-export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, onProgramme, onManifesto, held = null }) {
+export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, onProgramme, onManifesto, onEquine, onCoaches, onBuddies, onErgonomics, onChat, held = null }) {
   const { lang, tExercise } = useT(), fr = lang === 'fr';
   const railRef = useRef(null), dotsRef = useRef(null), cards = useRef([]);
   // The guide's names load after the choice; until then a set of an exercise without a card is not
@@ -196,6 +196,30 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{fr ? 'Le Manifeste WorkoutVision' : 'The WorkoutVision Manifesto'}</b><small>{fr ? 'La science, l’histoire et la mécanique du mouvement' : 'The science, history, and mechanics of optimal lifting'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
+        {/* Equine Veterinary Gait Analysis */}
+        {onEquine && <button className="row-link press" onClick={onEquine} data-testid="choice-equine">
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M8 12l3 3 5-5" /></svg></span>
+          <span className="row-txt"><b>{fr ? 'EquiVision\u00A0: Allures & Vétérinaire' : 'EquiVision: Veterinary Locomotion'}</b><small>{fr ? 'Cinématique objective du trot et asymétries en longe' : 'Objective trot kinematics & circle lunge symmetry'}</small></span>
+          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+        </button>}
+        {/* Coach & Physio Matcher */}
+        {onCoaches && <button className="row-link press" onClick={onCoaches} data-testid="choice-coaches">
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M6 20v-2a6 6 0 0 1 12 0v2" /></svg></span>
+          <span className="row-txt"><b>{fr ? 'Trouver un Coach ou Kinésithérapeute' : 'Find a Sports Coach or Physio'}</b><small>{fr ? 'Recherche locale et partage de profil biomécanique' : 'Local matching & movement telemetry sharing'}</small></span>
+          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+        </button>}
+        {/* Gym Buddy Matcher */}
+        {onBuddies && <button className="row-link press" onClick={onBuddies} data-testid="choice-buddies">
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg></span>
+          <span className="row-txt"><b>{fr ? 'Partenaires de Salle (Gym Buddy)' : 'Find a Gym Buddy / Partner'}</b><small>{fr ? 'Compatibilité de créneaux et parade sécurisée' : 'Schedule compatibility & safe spotting'}</small></span>
+          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+        </button>}
+        {/* Industrial Ergonomics & NIOSH */}
+        {onErgonomics && <button className="row-link press" onClick={onErgonomics} data-testid="choice-ergonomics">
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg></span>
+          <span className="row-txt"><b>{fr ? 'Ergonomie au Travail & Équation NIOSH' : 'Occupational Ergonomics & NIOSH'}</b><small>{fr ? 'Risque vertébral L5/S1 et conformité des charges' : 'L5/S1 spinal load & lifting index assessment'}</small></span>
+          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+        </button>}
         {/* Before the long list of every exercise, where it is read on the first scroll, not after 181 rows. */}
         <UsageNote fr={fr} />
         <CollectSwitched fr={fr} />
@@ -207,6 +231,11 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           {/* Why the app exists, in David's words (About.jsx). */}
           {onAbout && <button type="button" className="about-link press" onClick={onAbout} data-testid="about-link">{ABOUT[fr ? 'fr' : 'en'].link}</button>}
           {onManifesto && <button type="button" className="about-link press" onClick={onManifesto} data-testid="manifesto-link">{fr ? 'Le Manifeste' : 'Manifesto'}</button>}
+          {onCoaches && <button type="button" className="about-link press" onClick={onCoaches} data-testid="coaches-link">{fr ? 'Coaches & Kinés' : 'Find Coach'}</button>}
+          {onEquine && <button type="button" className="about-link press" onClick={onEquine} data-testid="equine-link">{fr ? 'Allures Équines' : 'Equine AI'}</button>}
+          {onBuddies && <button type="button" className="about-link press" onClick={onBuddies} data-testid="buddies-link">{fr ? 'Gym Buddy' : 'Gym Buddy'}</button>}
+          {onErgonomics && <button type="button" className="about-link press" onClick={onErgonomics} data-testid="ergo-link">{fr ? 'Ergonomie' : 'Ergonomics'}</button>}
+          {onChat && <button type="button" className="about-link press" onClick={onChat} data-testid="chat-link">{fr ? 'Chat P2P' : 'P2P Chat'}</button>}
         </div>
       </div>
     </section>
