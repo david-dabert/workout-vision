@@ -85,5 +85,8 @@ __pycache__/
 journey/
 smoke-shots/
 
-# The About page's demonstration clips: re-encoded for the web, sound and metadata removed (6 October).
+# The About page and Sports demonstration clips: re-encoded for the web, sound and metadata removed
 !public/demo/*.mp4
+!public/demo/**/*.mp4
+!public/demo/**/*.jpg
+!public/demo/**/*.png

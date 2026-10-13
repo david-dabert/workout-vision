@@ -62,7 +62,7 @@ const CoachFinder = lazyScreen(() => import('./components/coaches/CoachFinder.js
 const GymBuddy = lazyScreen(() => import('./components/buddies/GymBuddy.jsx'));
 const Ergonomics = lazyScreen(() => import('./components/ergonomics/Ergonomics.jsx'));
 const Chat = lazyScreen(() => import('./components/chat/Chat.jsx'));
-const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto, equine: Equine, veterinary: Equine, sports: SportsBiomechanics, golf: SportsBiomechanics, tennis: SportsBiomechanics, padel: SportsBiomechanics, cycling: SportsBiomechanics, coaches: CoachFinder, coach: CoachFinder, physio: CoachFinder, buddies: GymBuddy, buddy: GymBuddy, ergonomics: Ergonomics, workplace: Ergonomics, chat: Chat };
+const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto, equine: Equine, veterinary: Equine, sports: SportsBiomechanics, golf: SportsBiomechanics, tennis: SportsBiomechanics, padel: SportsBiomechanics, cycling: SportsBiomechanics, baseball: SportsBiomechanics, rowing: SportsBiomechanics, skiing: SportsBiomechanics, swimming: SportsBiomechanics, coaches: CoachFinder, coach: CoachFinder, physio: CoachFinder, buddies: GymBuddy, buddy: GymBuddy, ergonomics: Ergonomics, workplace: Ergonomics, chat: Chat };
 
 // Hidden, not deleted: lazy imports for features outside the core path
 // const ManualLog = safeLazy(() => import('./components/ManualLog'));
@@ -235,7 +235,7 @@ function AppInner() {
   } else if (page === 'equine' || page === 'veterinary') {
     key = 'equine';
     screen = <Equine onClose={() => go('dashboard')} />;
-  } else if (page === 'sports' || page === 'golf' || page === 'tennis' || page === 'padel' || page === 'cycling') {
+  } else if (page === 'sports' || page === 'golf' || page === 'tennis' || page === 'padel' || page === 'cycling' || page === 'baseball' || page === 'rowing' || page === 'skiing' || page === 'swimming') {
     key = 'sports';
     screen = <SportsBiomechanics onClose={() => go('dashboard')} onOpenEquine={() => go('equine')} />;
   } else if (page === 'coaches' || page === 'coach' || page === 'physio') {
