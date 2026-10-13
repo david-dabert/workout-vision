@@ -108,3 +108,107 @@ export async function removeClientWorkout(clientId, workoutId) {
   const key = `${clientId}__${workoutId}`;
   await clientWorkoutStore.removeItem(key);
 }
+
+// ---------------------------------------------------------------------------
+// Client Session Tracking & Carnet (10-Pack) Credits
+// ---------------------------------------------------------------------------
+const clientSessionStore = localforage.createInstance({ name: 'workoutVision', storeName: 'coachClientSessions' });
+const clientMealStore = localforage.createInstance({ name: 'workoutVision', storeName: 'coachClientMeals' });
+const livreRecettesStore = localforage.createInstance({ name: 'workoutVision', storeName: 'coachLivreRecettes' });
+
+/**
+ * Log a personal training session for a client.
+ * @param {string} clientId
+ * @param {{ date: string, type: string, durationMin: number, notes?: string, coachRating?: number }} session
+ */
+export async function logClientSession(clientId, session) {
+  const id = `session_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  const item = { id, clientId, timestamp: Date.now(), ...session };
+  await clientSessionStore.setItem(id, item);
+  return item;
+}
+
+/**
+ * Get all sessions delivered to a client, sorted chronologically descending.
+ * @param {string} clientId
+ */
+export async function getClientSessions(clientId) {
+  const sessions = [];
+  await clientSessionStore.iterate((value) => {
+    if (value.clientId === clientId) {
+      sessions.push(value);
+    }
+  });
+  return sessions.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+}
+
+/**
+ * Save client carnet (session pack credits).
+ * @param {string} clientId
+ * @param {{ totalPurchased: number, completedCount: number, pricePerPack: number }} carnet
+ */
+export async function saveClientCarnet(clientId, carnet) {
+  await coachStore.setItem(`carnet_${clientId}`, carnet);
+}
+
+/**
+ * Get client carnet.
+ * @param {string} clientId
+ */
+export async function getClientCarnet(clientId) {
+  return (await coachStore.getItem(`carnet_${clientId}`)) || { totalPurchased: 10, completedCount: 0, pricePerPack: 500 };
+}
+
+// ---------------------------------------------------------------------------
+// Client Nutrition & Meal Logging
+// ---------------------------------------------------------------------------
+
+/**
+ * Log a meal entry (Vision Plate or Barcode) for a client.
+ * @param {string} clientId
+ * @param {object} mealEntry
+ */
+export async function logClientMeal(clientId, mealEntry) {
+  const id = `meal_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  const item = { id, clientId, timestamp: Date.now(), ...mealEntry };
+  await clientMealStore.setItem(id, item);
+  return item;
+}
+
+/**
+ * Get all logged meals for a client.
+ * @param {string} clientId
+ */
+export async function getClientMeals(clientId) {
+  const meals = [];
+  await clientMealStore.iterate((value) => {
+    if (value.clientId === clientId) {
+      meals.push(value);
+    }
+  });
+  return meals.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+}
+
+// ---------------------------------------------------------------------------
+// French Legal Livre des Recettes (Invoices Received)
+// ---------------------------------------------------------------------------
+
+/**
+ * Add an invoice entry to the official Livre des Recettes.
+ * @param {object} entry
+ */
+export async function saveLivreRecettesEntry(entry) {
+  const id = `recette_${entry.invoiceNumber || Date.now()}`;
+  await livreRecettesStore.setItem(id, entry);
+}
+
+/**
+ * Get all entries from the Livre des Recettes.
+ */
+export async function getLivreRecettesEntries() {
+  const entries = [];
+  await livreRecettesStore.iterate((value) => {
+    entries.push(value);
+  });
+  return entries.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+}
