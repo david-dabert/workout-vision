@@ -1,9 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import {
   findCompatibleBuddies,
   ACTIVE_BUDDIES_POOL,
 } from '../../lib/buddies';
+import { useSets } from '../experience/sets';
+import { hapticLight } from '../../lib/haptics';
 import './GymBuddy.css';
 
 const SPLIT_FILTERS = [
@@ -16,23 +18,66 @@ const SPLIT_FILTERS = [
 export default function GymBuddy({ onClose }) {
   const { lang } = useT();
   const fr = lang === 'fr';
+  const sets = useSets();
 
   const [activeSplit, setActiveSplit] = useState('all');
   const [connectedId, setConnectedId] = useState(null);
+
+  // Derive initial compound working weights from logged sets
+  const derivedInitial = useMemo(() => {
+    let bench = 90;
+    let squat = 120;
+    let deadlift = 140;
+
+    if (sets && sets.length) {
+      for (const s of sets) {
+        const k = (s.exercise || s.exerciseKey || '').toLowerCase();
+        const w = s.weight || s.weightKg || s.loadKg || 0;
+        if (w > 0) {
+          if ((k.includes('bench') || k.includes('chest_press')) && w > bench) bench = w;
+          if (k.includes('squat') && w > squat) squat = w;
+          if ((k.includes('deadlift') || k.includes('rdl')) && w > deadlift) deadlift = w;
+        }
+      }
+    }
+    return { bench, squat, deadlift };
+  }, [sets]);
+
+  const [benchKg, setBenchKg] = useState(derivedInitial.bench);
+  const [squatKg, setSquatKg] = useState(derivedInitial.squat);
+
+  useEffect(() => {
+    if (derivedInitial.bench !== 90) setBenchKg(derivedInitial.bench);
+    if (derivedInitial.squat !== 120) setSquatKg(derivedInitial.squat);
+  }, [derivedInitial]);
 
   const matches = useMemo(() => {
     return findCompatibleBuddies(
       {
         split: activeSplit === 'all' ? undefined : activeSplit,
-        userCompounds: { benchPressKg: 90, squatKg: 120 },
+        userCompounds: { benchPressKg: benchKg, squatKg },
       },
       ACTIVE_BUDDIES_POOL
     );
-  }, [activeSplit]);
+  }, [activeSplit, benchKg, squatKg]);
 
   const handleConnect = (buddy) => {
+    hapticLight();
     setConnectedId(buddy.id);
-    setTimeout(() => setConnectedId(null), 3000);
+    setTimeout(() => {
+      // Seamlessly navigate to encrypted P2P chat room with training partner
+      window.location.hash = `#chat?peer=${buddy.id}&name=${encodeURIComponent(buddy.name)}&gym=${encodeURIComponent(buddy.facility)}`;
+    }, 700);
+  };
+
+  const adjustBench = (delta) => {
+    hapticLight();
+    setBenchKg(b => Math.max(20, Math.min(260, b + delta)));
+  };
+
+  const adjustSquat = (delta) => {
+    hapticLight();
+    setSquatKg(s => Math.max(20, Math.min(320, s + delta)));
   };
 
   return (
@@ -42,7 +87,11 @@ export default function GymBuddy({ onClose }) {
         <button
           type="button"
           className="buddy-back-btn press"
-          onClick={onClose || (() => { window.location.hash = ''; })}
+          onClick={() => {
+            hapticLight();
+            if (onClose) onClose();
+            else window.location.hash = '';
+          }}
           data-testid="buddy-back-btn"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -67,6 +116,35 @@ export default function GymBuddy({ onClose }) {
           </p>
         </div>
 
+        {/* User Compound Profile Bar */}
+        <div className="buddy-user-compounds-card">
+          <div className="compounds-header">
+            <span>{fr ? 'Mes Charges de Travail (Calcul de Parité)' : 'My Working Weights (Parity Engine)'}</span>
+            <span className="compounds-source-tag">
+              {sets && sets.length > 0 ? (fr ? 'Synchronisé avec l’historique' : 'Synced with Logs') : (fr ? 'Réglage Manuel' : 'Manual Tuner')}
+            </span>
+          </div>
+          <div className="compounds-steppers-row">
+            <div className="compound-stepper">
+              <span className="stepper-label">{fr ? 'Développé Couché\u00A0:' : 'Bench Press:'}</span>
+              <div className="stepper-controls">
+                <button type="button" className="stepper-btn" onClick={() => adjustBench(-5)}>-</button>
+                <span className="stepper-val">{benchKg} kg</span>
+                <button type="button" className="stepper-btn" onClick={() => adjustBench(5)}>+</button>
+              </div>
+            </div>
+
+            <div className="compound-stepper">
+              <span className="stepper-label">Squat\u00A0:</span>
+              <div className="stepper-controls">
+                <button type="button" className="stepper-btn" onClick={() => adjustSquat(-5)}>-</button>
+                <span className="stepper-val">{squatKg} kg</span>
+                <button type="button" className="stepper-btn" onClick={() => adjustSquat(5)}>+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Split Filters */}
         <div className="buddy-filters">
           {SPLIT_FILTERS.map(f => (
@@ -74,7 +152,10 @@ export default function GymBuddy({ onClose }) {
               key={f.id}
               type="button"
               className={`buddy-filter-btn ${activeSplit === f.id ? 'active' : ''}`}
-              onClick={() => setActiveSplit(f.id)}
+              onClick={() => {
+                hapticLight();
+                setActiveSplit(f.id);
+              }}
               data-testid={`filter-${f.id}`}
             >
               {fr ? f.labelFr : f.labelEn}
@@ -116,7 +197,7 @@ export default function GymBuddy({ onClose }) {
                   data-testid={`connect-buddy-${buddy.id}`}
                 >
                   {connectedId === buddy.id
-                    ? (fr ? '✓ Demande de parade envoyée !' : '✓ Spotter Request Sent!')
+                    ? (fr ? '✓ Connexion P2P en cours...' : '✓ Connecting via P2P...')
                     : (fr ? 'Proposer une séance' : 'Request Training Session')}
                 </button>
               </div>

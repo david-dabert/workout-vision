@@ -134,3 +134,94 @@ export function calculateRebaScore(angles: {
 
   return { rebaScore: total, actionLevel };
 }
+
+export interface SkeletalLandmark {
+  x: number;
+  y: number;
+  z?: number;
+  visibility?: number;
+}
+
+/**
+ * Extracts NIOSH lifting variables (H, V, A) directly from a 33-point MediaPipe pose landmark array.
+ * Uses anatomical proportional scaling to estimate real-world metric values.
+ */
+export function extractNioshParametersFromLandmarks(
+  landmarks: SkeletalLandmark[],
+  userHeightCm = 175
+): {
+  horizontalDistanceCm: number;
+  verticalOriginCm: number;
+  asymmetryAngleDeg: number;
+} {
+  if (!landmarks || landmarks.length < 29) {
+    return {
+      horizontalDistanceCm: 35,
+      verticalOriginCm: 75,
+      asymmetryAngleDeg: 0,
+    };
+  }
+
+  // 11/12 = Shoulders, 15/16 = Wrists, 23/24 = Hips, 27/28 = Ankles
+  const leftShoulder = landmarks[11];
+  const rightShoulder = landmarks[12];
+  const leftWrist = landmarks[15];
+  const rightWrist = landmarks[16];
+  const leftHip = landmarks[23];
+  const rightHip = landmarks[24];
+  const leftAnkle = landmarks[27];
+  const rightAnkle = landmarks[28];
+
+  const midShoulder = {
+    x: (leftShoulder.x + rightShoulder.x) / 2,
+    y: (leftShoulder.y + rightShoulder.y) / 2,
+  };
+  const midWrist = {
+    x: (leftWrist.x + rightWrist.x) / 2,
+    y: (leftWrist.y + rightWrist.y) / 2,
+    z: ((leftWrist.z || 0) + (rightWrist.z || 0)) / 2,
+  };
+  const midHip = {
+    x: (leftHip.x + rightHip.x) / 2,
+    y: (leftHip.y + rightHip.y) / 2,
+    z: ((leftHip.z || 0) + (rightHip.z || 0)) / 2,
+  };
+  const midAnkle = {
+    x: (leftAnkle.x + rightAnkle.x) / 2,
+    y: (leftAnkle.y + rightAnkle.y) / 2,
+    z: ((leftAnkle.z || 0) + (rightAnkle.z || 0)) / 2,
+  };
+
+  // Shoulder to ankle span in normalized image coordinate space (typically ~78% of stature)
+  const verticalBodySpan = Math.abs(midAnkle.y - midShoulder.y);
+  const pxToCm = (userHeightCm * 0.78) / Math.max(0.2, verticalBodySpan);
+
+  // Vertical Origin (V): height of hands (midWrist) from the ankle floor line
+  const rawVerticalCm = (midAnkle.y - midWrist.y) * pxToCm;
+  const verticalOriginCm = Math.round(Math.max(10, Math.min(160, rawVerticalCm)));
+
+  // Horizontal Reach (H): distance between midWrist and midAnkle in the horizontal ground/depth plane
+  const dx = Math.abs(midWrist.x - midAnkle.x) * pxToCm;
+  const dz = Math.abs((midWrist.z || 0) - (midAnkle.z || 0)) * pxToCm * 0.8;
+  const rawHorizontalCm = Math.sqrt(dx * dx + dz * dz) + 20; // 20cm base offset from ankle center to neutral hand reach
+  const horizontalDistanceCm = Math.round(Math.max(25, Math.min(63, rawHorizontalCm)));
+
+  // Asymmetry Angle (A): rotational twist between hips and shoulders in the transverse plane
+  const hipVectorX = rightHip.x - leftHip.x;
+  const hipVectorZ = (rightHip.z || 0) - (leftHip.z || 0);
+  const shoulderVectorX = rightShoulder.x - leftShoulder.x;
+  const shoulderVectorZ = (rightShoulder.z || 0) - (leftShoulder.z || 0);
+
+  const hipAngle = Math.atan2(hipVectorZ, hipVectorX);
+  const shoulderAngle = Math.atan2(shoulderVectorZ, shoulderVectorX);
+  let twistDeg = Math.round(Math.abs(shoulderAngle - hipAngle) * (180 / Math.PI));
+  if (twistDeg > 90) twistDeg = 180 - twistDeg;
+  const asymmetryAngleDeg = Math.max(0, Math.min(90, twistDeg));
+
+  return {
+    horizontalDistanceCm,
+    verticalOriginCm,
+    asymmetryAngleDeg,
+  };
+}
+

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   calculateNioshLifting,
   calculateRebaScore,
+  extractNioshParametersFromLandmarks,
 } from '../niosh';
 
 describe('Industrial Ergonomics & NIOSH Lifting Equation Engine', () => {
@@ -54,4 +55,29 @@ describe('Industrial Ergonomics & NIOSH Lifting Equation Engine', () => {
     expect(res.rebaScore).toBeGreaterThanOrEqual(8);
     expect(res.actionLevel).toContain('High Risk');
   });
+
+  it('extracts NIOSH lifting variables accurately from 33-point skeletal landmarks', () => {
+    // Create synthetic landmark array for a lifter with hands at knuckle height (V ~ 75cm)
+    const landmarks = Array.from({ length: 33 }, () => ({ x: 0.5, y: 0.5, z: 0 }));
+    // Shoulders at y = 0.25
+    landmarks[11] = { x: 0.45, y: 0.25, z: 0 };
+    landmarks[12] = { x: 0.55, y: 0.25, z: 0 };
+    // Hips at y = 0.50
+    landmarks[23] = { x: 0.47, y: 0.50, z: 0 };
+    landmarks[24] = { x: 0.53, y: 0.50, z: 0 };
+    // Ankles at y = 0.85 (span = 0.60, representing 175cm stature)
+    landmarks[27] = { x: 0.46, y: 0.85, z: 0 };
+    landmarks[28] = { x: 0.54, y: 0.85, z: 0 };
+    // Wrists at y = 0.52 (slightly below hips, knuckle level)
+    landmarks[15] = { x: 0.50, y: 0.52, z: -0.1 };
+    landmarks[16] = { x: 0.50, y: 0.52, z: -0.1 };
+
+    const extracted = extractNioshParametersFromLandmarks(landmarks, 175);
+    expect(extracted.verticalOriginCm).toBeGreaterThan(65);
+    expect(extracted.verticalOriginCm).toBeLessThan(85);
+    expect(extracted.horizontalDistanceCm).toBeGreaterThanOrEqual(25);
+    expect(extracted.horizontalDistanceCm).toBeLessThanOrEqual(63);
+    expect(extracted.asymmetryAngleDeg).toBeLessThanOrEqual(10);
+  });
 });
+

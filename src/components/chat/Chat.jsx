@@ -1,21 +1,46 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import {
   createChatInvitationUrl,
 } from '../../lib/p2p';
+import { useSets } from '../experience/sets';
+import { hapticLight, hapticTap } from '../../lib/haptics';
 import './Chat.css';
+
+function getHashParams() {
+  try {
+    if (typeof window === 'undefined') return {};
+    const hash = window.location.hash || '';
+    const qIdx = hash.indexOf('?');
+    if (qIdx === -1) return {};
+    const params = new URLSearchParams(hash.slice(qIdx + 1));
+    return {
+      peer: params.get('peer'),
+      name: params.get('name') ? decodeURIComponent(params.get('name')) : null,
+      title: params.get('title') ? decodeURIComponent(params.get('title')) : null,
+      gym: params.get('gym') ? decodeURIComponent(params.get('gym')) : null,
+    };
+  } catch {
+    return {};
+  }
+}
 
 export default function Chat({ onClose }) {
   const { lang } = useT();
   const fr = lang === 'fr';
+  const sets = useSets();
+
+  const hashParams = useMemo(() => getHashParams(), []);
+  const peerDisplayName = hashParams.name || (fr ? 'Coach Julien, DPT' : 'Coach Julien, DPT');
+  const peerSubtitle = hashParams.title || hashParams.gym || (fr ? 'Kinésithérapeute du Sport' : 'Sports Physical Therapist');
 
   const [messages, setMessages] = useState([
     {
       id: 'm1',
       sender: 'peer',
-      senderName: 'Coach Julien',
+      senderName: peerDisplayName,
       text: fr
-        ? 'Bonjour ! J’ai bien reçu ton invitation. Partage-moi ta dernière série pour que je regarde la symétrie et les partielles étirées.'
+        ? `Bonjour\u00A0! J’ai bien reçu ton invitation. Partage-moi ta dernière série pour que je regarde la symétrie et les partielles étirées.`
         : 'Hey! I connected to your private session. Share your latest set so I can review your symmetry and lengthened partials.',
       timestamp: Date.now() - 60000,
     },
@@ -24,8 +49,15 @@ export default function Chat({ onClose }) {
   const [inputVal, setInputVal] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
 
+  // Extract latest real set from IndexedDB if available
+  const latestSet = useMemo(() => {
+    if (!sets || !sets.length) return null;
+    return sets[0];
+  }, [sets]);
+
   const handleSend = () => {
     if (!inputVal.trim()) return;
+    hapticTap();
     setMessages(prev => [
       ...prev,
       {
@@ -40,20 +72,33 @@ export default function Chat({ onClose }) {
   };
 
   const handleAttachTelemetry = () => {
+    hapticLight();
+    const exName = latestSet?.exercise || latestSet?.exerciseKey || (fr ? 'Développé Couché (Barre)' : 'Barbell Bench Press');
+    const reps = latestSet?.reps ?? 8;
+    const form = latestSet?.formScore || latestSet?.score || (latestSet?.confidence ? Math.round(latestSet.confidence * 100) : 92);
+    const sym = latestSet?.symmetry || latestSet?.bioAnalysis?.symmetry || (latestSet?.bilateralSymmetry ? Math.round(latestSet.bilateralSymmetry * 100) : 95);
+    const partials = latestSet?.partialReps || latestSet?.lengthenedPartials || latestSet?.partialCount || 2;
+
     setMessages(prev => [
       ...prev,
       {
         id: `m_tele_${Date.now()}`,
         sender: 'self',
         senderName: 'You',
-        text: fr ? 'Voici le bilan biomécanique de ma dernière série :' : 'Here is the biomechanical summary of my latest set:',
+        text: fr
+          ? latestSet
+            ? 'Voici le bilan biomécanique de ma dernière série enregistrée sur l’appareil\u00A0:'
+            : 'Voici un aperçu de télémétrie biomécanique de démonstration\u00A0:'
+          : latestSet
+            ? 'Here is the verified biomechanical summary of my latest on-device set:'
+            : 'Here is a demonstration biomechanical telemetry summary:',
         attachment: {
           type: 'telemetry_card',
-          exerciseName: fr ? 'Développé Couché (Barre)' : 'Barbell Bench Press',
-          repsCounted: 8,
-          formScore: 92,
-          symmetryIndexPct: 95,
-          lengthenedPartialsCount: 2,
+          exerciseName: exName,
+          repsCounted: reps,
+          formScore: form,
+          symmetryIndexPct: sym,
+          lengthenedPartialsCount: partials,
           timestamp: Date.now(),
         },
         timestamp: Date.now(),
@@ -62,6 +107,7 @@ export default function Chat({ onClose }) {
   };
 
   const handleCopyInvite = () => {
+    hapticLight();
     const url = createChatInvitationUrl(window.location.href, 'Athlete');
     navigator.clipboard.writeText(url).then(() => {
       setCopiedLink(true);
@@ -76,7 +122,11 @@ export default function Chat({ onClose }) {
         <button
           type="button"
           className="chat-back-btn press"
-          onClick={onClose || (() => { window.location.hash = ''; })}
+          onClick={() => {
+            hapticLight();
+            if (onClose) onClose();
+            else window.location.hash = '';
+          }}
           data-testid="chat-back-btn"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -86,7 +136,7 @@ export default function Chat({ onClose }) {
         </button>
 
         <div className="chat-topbar-info">
-          <span className="chat-peer-name">Coach Julien, DPT</span>
+          <span className="chat-peer-name">{peerDisplayName}</span>
           <span className="chat-encryption-status">
             ● {fr ? 'Chiffré de bout en bout (P2P)' : 'End-to-End Encrypted (P2P)'}
           </span>
@@ -159,7 +209,7 @@ export default function Chat({ onClose }) {
           <input
             type="text"
             className="chat-input"
-            placeholder={fr ? 'Écrire un message privé...' : 'Write an encrypted message...'}
+            placeholder={fr ? 'Écrire un message chiffré...' : 'Write an encrypted message...'}
             value={inputVal}
             onChange={e => setInputVal(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') handleSend(); }}

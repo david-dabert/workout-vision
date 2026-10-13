@@ -4,6 +4,8 @@ import {
   findNearestCoaches,
   VERIFIED_COACH_REGISTRY,
 } from '../../lib/coaches';
+import { useSets } from '../experience/sets';
+import { hapticLight } from '../../lib/haptics';
 import './CoachFinder.css';
 
 const CITIES = [
@@ -25,10 +27,25 @@ const SPECIALTY_FILTERS = [
 export default function CoachFinder({ onClose }) {
   const { lang } = useT();
   const fr = lang === 'fr';
+  const sets = useSets();
 
   const [selectedCity, setSelectedCity] = useState(CITIES[0]);
   const [activeFilter, setActiveFilter] = useState('all');
   const [copiedId, setCopiedId] = useState(null);
+
+  // Extract latest real workout set telemetry if available
+  const latestTelemetry = useMemo(() => {
+    if (!sets || !sets.length) return null;
+    const s = sets[0];
+    return {
+      exerciseName: s.exercise || s.exerciseKey || (fr ? 'Développé Couché' : 'Bench Press'),
+      reps: s.reps ?? 8,
+      partialReps: s.partialReps || s.lengthenedPartials || s.partialCount || 0,
+      formScore: s.formScore || s.score || (s.confidence ? Math.round(s.confidence * 100) : 92),
+      symmetry: s.symmetry || s.bioAnalysis?.symmetry || (s.bilateralSymmetry ? Math.round(s.bilateralSymmetry * 100) : 96),
+      timestamp: s.createdAt || s.date || Date.now(),
+    };
+  }, [sets, fr]);
 
   // Compute matched coaches
   const matches = useMemo(() => {
@@ -46,12 +63,21 @@ export default function CoachFinder({ onClose }) {
   }, [selectedCity, activeFilter]);
 
   const handleShareTelemetry = (coach) => {
-    // Generate private client movement card fragment link
-    const telemetryUrl = `${window.location.origin}${window.location.pathname}#programme=telemetry_share&coach=${coach.id}&t=${Date.now()}`;
+    hapticLight();
+    const teleParams = latestTelemetry
+      ? `&ex=${encodeURIComponent(latestTelemetry.exerciseName)}&reps=${latestTelemetry.reps}&partials=${latestTelemetry.partialReps}&form=${latestTelemetry.formScore}&sym=${latestTelemetry.symmetry}`
+      : '&demo=1';
+    const telemetryUrl = `${window.location.origin}${window.location.pathname}#programme=telemetry_share&coach=${coach.id}${teleParams}&t=${Date.now()}`;
     navigator.clipboard.writeText(telemetryUrl).then(() => {
       setCopiedId(coach.id);
       setTimeout(() => setCopiedId(null), 2500);
     });
+  };
+
+  const handleConnectCoach = (coach) => {
+    hapticLight();
+    // Seamlessly navigate to P2P encrypted chat with the selected coach
+    window.location.hash = `#chat?peer=${coach.id}&name=${encodeURIComponent(coach.name)}&title=${encodeURIComponent(coach.title)}`;
   };
 
   return (
@@ -61,7 +87,11 @@ export default function CoachFinder({ onClose }) {
         <button
           type="button"
           className="coach-back-btn press"
-          onClick={onClose || (() => { window.location.hash = ''; })}
+          onClick={() => {
+            hapticLight();
+            if (onClose) onClose();
+            else window.location.hash = '';
+          }}
           data-testid="coach-back-btn"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -86,6 +116,22 @@ export default function CoachFinder({ onClose }) {
           </p>
         </div>
 
+        {/* Real Telemetry Attachment Indicator */}
+        <div className="coach-telemetry-badge">
+          <div className="telemetry-badge-dot" />
+          {latestTelemetry ? (
+            <span>
+              {fr ? 'Dernière série liée\u00A0: ' : 'Linked Set Telemetry: '}
+              <b>{latestTelemetry.exerciseName}</b> ({latestTelemetry.reps} reps
+              {latestTelemetry.partialReps > 0 ? ` + ${latestTelemetry.partialReps} ${fr ? 'partielles' : 'partials'}` : ''}) • {latestTelemetry.formScore}% {fr ? 'forme' : 'form'} • {latestTelemetry.symmetry}% {fr ? 'symétrie' : 'symmetry'}
+            </span>
+          ) : (
+            <span>
+              {fr ? 'Télémétrie prête\u00A0: Enregistrez une série pour joindre vos vidéos et biomécanique en 1-clic.' : 'Telemetry Ready: Record a set to attach on-device form scores and angles.'}
+            </span>
+          )}
+        </div>
+
         {/* City Presets */}
         <div className="coach-city-selector">
           {CITIES.map(city => (
@@ -93,7 +139,10 @@ export default function CoachFinder({ onClose }) {
               key={city.name}
               type="button"
               className={`city-pill ${selectedCity.name === city.name ? 'active' : ''}`}
-              onClick={() => setSelectedCity(city)}
+              onClick={() => {
+                hapticLight();
+                setSelectedCity(city);
+              }}
               data-testid={`city-${city.name.toLowerCase()}`}
             >
               {city.name}
@@ -108,7 +157,10 @@ export default function CoachFinder({ onClose }) {
               key={f.id}
               type="button"
               className={`filter-chip ${activeFilter === f.id ? 'active' : ''}`}
-              onClick={() => setActiveFilter(f.id)}
+              onClick={() => {
+                hapticLight();
+                setActiveFilter(f.id);
+              }}
               data-testid={`filter-${f.id}`}
             >
               {fr ? f.labelFr : f.labelEn}
@@ -143,7 +195,7 @@ export default function CoachFinder({ onClose }) {
               <div className="coach-card-footer">
                 <div className="coach-rate">
                   {coach.hourlyRate} {coach.currency} <span>/ {fr ? 'séance' : 'session'}</span>
-                  <div style={{ fontSize: '12px', color: '#f59e0b', marginTop: '2px' }}>
+                  <div style={{ fontSize: '12px', color: '#D4A76A', marginTop: '2px' }}>
                     ★ {coach.rating.toFixed(2)} ({coach.reviewCount} {fr ? 'avis' : 'reviews'})
                   </div>
                 </div>
@@ -160,7 +212,7 @@ export default function CoachFinder({ onClose }) {
                   <button
                     type="button"
                     className="coach-book-btn press"
-                    onClick={() => alert(fr ? `Contacter ${coach.name} via Workout Vision.` : `Contact ${coach.name} via Workout Vision.`)}
+                    onClick={() => handleConnectCoach(coach)}
                   >
                     {fr ? 'Contacter' : 'Connect'}
                   </button>
