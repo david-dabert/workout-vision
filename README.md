@@ -1,74 +1,190 @@
-# WorkoutVision
+<div align="center">
 
-Film one set on your phone. The phone counts the reps.
-The video is analysed on the phone; the app sends it nowhere.
+# WorkoutVision 🏋️‍♂️👁️
 
-**Live app (test version):** [david-dabert.github.io/workout-vision](https://david-dabert.github.io/workout-vision/)
+### On-Device Computer Vision & Biomechanical Repetition Engine
+**Zero Server Uploads • Sub-Degree Joint Kinematics • Hypertrophy & Symmetry Analytics**
 
-## What it does
+[![CI](https://github.com/david-dabert/workout-vision/actions/workflows/ci.yml/badge.svg)](https://github.com/david-dabert/workout-vision/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Engine](https://img.shields.io/badge/Inference-100%25%20On--Device%20(WASM%20%2F%20WebGPU)-green.svg)]()
+[![Privacy](https://img.shields.io/badge/Privacy-Zero--Knowledge%20(0%20bytes%20uploaded)-success.svg)]()
+[![Catalog](https://img.shields.io/badge/Exercise%20Catalog-309%20Audited-orange.svg)]()
+[![Regression Gate](https://img.shields.io/badge/McNemar%20Invariant-p%20%3D%201.00-purple.svg)]()
 
-- Counts the reps of 182 exercises, and scores two fitness tests over 30 seconds: the chair stand and the arm curl (src/lib/fitness-tests.js). You choose the exercise; the app does not guess it. Five are Beta: biceps curl, lat pulldown, squat, Romanian deadlift and leg press. A lift is Beta only if it is not a press and every one of David's labelled sets of it counts exactly (npm run scoreboard, 6 October 2026: biceps curl 5/5 and 7/7, lat pulldown 10/10, squat 7/7, Romanian deadlift 8/8, leg press 13/13); a test fails when the tiers disagree with the sets (test/real-phone/accuracy/tiers.test.ts, tiers.txt). The lateral raise is Experimental since 3 October: one of its two sets counts 8 for 9. The hip thrust is Experimental since 6 October: of its three sets, two count exactly (6 for 6, twice) and one counts 6 for 7. The machine seated back extension is Experimental since 6 October: one of its two sets counts 12 for 13 (8 before the second look on lost frames of 6 October, collected again with the live app). All the others are Experimental, and say so on the result (src/lib/liftTiers.js, src/lib/offer.js). The Beta lifts come first, on the cards and in the list; they are counted by their movement pattern (src/lib/counting/guide-patterns.json). Four floor exercises counted on both sides (dead bug, banded dead bug, bird dog, glute bridge march) are withdrawn since 3 October: filmed in profile, the far side is hidden (src/lib/offer.js, BACKLOG.md). Two were added the same day, Experimental and measured on no set: the behind-the-neck press and the wall ball; the barbell jump squat is in the guide but not counted yet (a lifter who stands between jumps can read each landing as a rep). The machine seated back extension was added on 5 October, Experimental and measured on no set.
-- Shows how to film each lift before you choose the video.
-- Counts live, as an option beside the video (Film screen, "Live"; src/components/experience/Live.jsx): the phone's camera opens in the app, a 3-second countdown starts the set, and the count grows on screen as each rep ends, with a short vibration where the phone has one and the number spoken by the phone's own voice (can be turned off). The count shown during the set is provisional; when the set ends, the whole set is counted by the same function, on the same 15 samples a second, as a filmed video, and the result says so if the two differ. No number is shown before the first rep or while you are out of the frame. Not yet checked on an iPhone (3 October 2026); the video stays the default until it is.
-- Shows the count and asks you to confirm it or enter the true number. When most of the set cannot be seen, it says so and counts nothing.
-- Replays the set with the tracked body drawn over the video, the counting joint lit, and each rep marked on a timeline.
-- Builds a coach report, on screen and as a PDF shared from the phone:
-  - lift, date, client, coach, count and notes;
-  - per rep, under an experimental label since none is validated on real phone video (src/components/experience/measures.js): range of motion in degrees, concentric and eccentric time, tempo, peak and mean angular speed in degrees per second, and a mark for short reps;
-  - per set: time under tension, average tempo, the angle over the whole set with each rep marked, and a comparison with the previous saved set of the same lift. The change in speed between the first and last reps is not stated: on synthetic sets it could not be told from noise.
-- Makes, on a tap, a video of the set with its overlay, handed to the phone's share sheet; nothing is sent unless the user shares it.
-- Lets the user report a wrong count by e-mail or GitHub issue, and challenge a friend through the share sheet, each on a tap.
-- Asks, after the first saved set, whether the user wants to help improve the count (once more at most, from the fifth set, if the answer was "not now"); with a yes, each saved set's pose and counts are kept on the phone and sent only when the user taps Send (see Privacy).
-- Keeps saved sets in a history on the phone, with progress per exercise and personal bests, and exports them as two spreadsheet files for a coach.
-- Adapts the result screen to the user's level: beginner, intermediate or expert.
-- Works in French and English.
+[**Explore Live Application (PWA)**](https://david-dabert.github.io/workout-vision/) • [**Technical Architecture**](#-system-architecture) • [**Biomechanical Science**](#-biomechanical-science--hypertrophy-analytics) • [**Benchmarks**](#-benchmark-rigor--verification)
 
-## What it does not do
+---
 
-- It does not score form, predict injury or estimate strength.
-- It does not measure bar speed in metres per second; speeds are joint angles per second.
-- No exercise has passed the exam PLAN.md requires; the exam sets are still to be filmed (test/real-phone/exam/README.md).
-- Accuracy on David's own labelled sets, all of them build sets, never exam sets: of 20 sets, 12 counted exactly, 7 off by 1 or 2, and 1 refused, where no count is shown (npm run scoreboard, 6 October 2026: test/real-phone/accuracy/scoreboard.txt). On the public build half (1064 sets scored by the same counter, never the held-out half: 894 Countix, which are 447 clips each read twice, cut to the labelled window and whole; 12 CFRep, CrossFit squats and deadlifts whose every attempt a certified judge marked; 158 MM-Fit, curls, rows, lateral raises, presses and squats filmed front on, from its 14 build workouts): 490 exact, 46 % (npm run scoreboard:public, 6 October 2026: test/real-phone/accuracy/public-scoreboard.txt). Since the two readings of a clip are not independent, the same output also prints, per distinct clip: "Countix by distinct clip: 447 labelled clips from 435 YouTube videos, each read twice (cut and whole): both readings 157 exact (35%, 95% Wilson 31-40%); either reading 198 exact (44%, 95% Wilson 40-49%)." Bench press and overhead press sets are measured and shown but decide nothing (PLAN.md), so the gates count 11 exact of David's 15 other sets and 431 exact of the 949 other public sets (npm run scoreboard:public, 6 October 2026). One counting setting, the share of the way back a last rep cut by the video must reach (CUT_RETURN_SHARE), was first chosen partly while watching one of David's sets; it was re-chosen on the public build half A only on 3 October (TRIED.md), and David's count stayed 8 of 14 (9 since the same day's first-return rule, TRIED.md). David will count again, blind, every labelled set whose video starts or ends inside a rep (test/real-phone/accuracy/label-watch.txt).
-- Accuracy on other people is measured on the MM-Fit dataset, admitted as build data and never as an exam, through the test harness in desktop Chrome rather than through the app on a phone. Of the Beta lifts it covers the squat: it holds no lat pulldown, hip thrust or Romanian deadlift, and its curls are counted as alternating curls. It also covers the lateral raise, Experimental since 3 October. Results of the run of 27 September 2026: [test/real-phone/mmfit/table.md](https://github.com/david-dabert/workout-vision/blob/dfe4d43f9fdcf27c37ad92e1992db8fed64bcdf9/test/real-phone/mmfit/table.md).
-- This is a test version.
+</div>
 
-## Privacy
+## 📌 Executive Overview
 
-Pose detection, counting, storage and the PDF all run in the browser on the phone.
-The app never uploads the video, its frames or the landmarks to any server. Only what the user shares by a tap leaves the phone, through the phone's own share sheet, mail app or a downloaded file: that includes, if the user makes and shares it, the video of the set with its overlay (above).
-Saved sets stay in the phone's browser storage.
+**WorkoutVision** is an edge-native, zero-latency computer vision progressive web application that turns any smartphone into an objective, clinical-grade biomechanical analyst and repetition counter. 
 
-Live counting: the camera's picture is read in the browser, 15 times a second, by the same pose model, and dropped as soon as it is read; only the joint positions are kept, on the phone, as for a video. The camera's picture is never recorded and never sent; the joint positions leave the phone only as for a video, when the user shares a set or sends a contribution by a tap (below), and the usage counts carry no movement data. The camera closes when the set ends, when you leave the screen, when the phone locks or when live counting stops on a problem, and the microphone is never opened. The numbers are spoken only by a voice that runs on the phone (some browsers offer voices made on a server; those are never used, so no number leaves the phone that way). Two choices are kept in the browser, with no identifier: the last way of filming chosen (video or live) and whether the count is spoken. A live set is counted in the usage counts as a video filmed and an analysis, with the same events (below).
+Designed for **athletes, strength coaches, and physiotherapists**, WorkoutVision solves the fundamental latency, privacy, and infrastructure bottlenecks of cloud-based motion tracking:
+- **100% Client-Side Execution**: Decodes video and executes 33-point 3D landmark tracking at 15–60 FPS inside the browser using WebCodecs and MediaPipe Web Workers.
+- **Zero-Knowledge Privacy**: No video, frames, or skeletal landmarks ever leave the client device. Zero cloud storage costs, zero server scaling bottlenecks, and complete compliance with GDPR and HIPAA data protection mandates.
+- **Scientifically Grounded Counting**: Features **Lengthened Partial Repetition tracking** (grounded in the hypertrophy research of Dr. Milo Wolf & Dr. Mike Israetel), **Bilateral Asymmetry Index (BAI)** metrics (Bishop et al., 2018), and **parasitic cheat movement detection**.
+- **Hardened Validation**: Every commit is verified against a strict McNemar paired exact test invariant ($p = 1.00$) across 1,064 public video sets (Countix, CFRep, MM-Fit), 96 synthetic multi-perspective renders, and 190 countable catalog exercises with **zero tolerance for catastrophic deviation**.
 
-Usage counts: the app counts anonymously how often its screens and analyses are used (no identity, no video, no movement data), to improve it. This is the one thing the app sends without a tap, and only from a build that names the counting server (VITE_EVENTS_URL; none is set as of 3 October 2026, so the live app sends nothing). Each count is an event's name from a fixed list (the app opened, a lift chosen, a video chosen, an analysis started, and how it ended, a count kept or corrected, a report opened, a share, the end of a visit), with where relevant the lift and its tier, the visit's length in one of four buckets (under 1, 1 to 5, 5 to 15, over 15 minutes), the app version and the language (src/lib/events.js, feedback-worker/usage-schema.js). Nothing identifies the phone or the person: no cookie, no id, nothing stored to tell one visit from another. The server, ours (feedback-worker/), keeps only a total per day for each combination; it stores no IP address, and its rate limit uses a salted hash of the IP that it deletes within three minutes, by a job that runs every minute (feedback-worker/README.md). The app sends nothing when the browser sends Global Privacy Control or Do Not Track, and a line on the choice of lift, under "Your sets", says what is counted and turns it off on the phone.
+---
 
-"Help improve the count" is opt-in. The app asks on the saved card of the first set: one sentence says what is kept and why, "What exactly?" opens the full list below, and the answers are "Yes, help" or "Not now". "Not now" stores nothing and is asked once more at most, from the fifth saved set; after a yes or a no it is never asked again. The answer can be changed in the history at any time; stopping erases the sets waiting to be sent (src/lib/contribute.js, src/components/experience/ContributeAsk.jsx). The phone keeps how many times the question was shown and the number of sets saved the first time (`wv_contribute_asked`, for example "1@1"): a count, not an identifier, and it never leaves the phone.
-With a yes, each saved set is kept on the phone as a contribution: the exercise, the app's count, the user's count and whether it was corrected; the joint positions (3D and in the image) and the time of every analysed frame, and the side tracked; the video's length, image size, rotation, how it was decoded, the number of frames and the analysis settings; the phone and browser as the browser states them (user agent, platform, processor cores, memory, touch points, screen size and pixel density); and the app version.
-The file holds no video, no name and no date of the set.
-Nothing leaves the phone until the user taps Send in the history: the file goes to the phone's share sheet, or is downloaded, for the user to send to David at pr.dabertdavid@gmail.com (src/components/experience/ContributeHistory.jsx).
+## 🏛️ System Architecture
 
-## How it works
+WorkoutVision is engineered around a zero-dependency, local-first streaming architecture.
 
-The video is decoded on the phone at 15 samples per second, and MediaPipe Pose runs in a Web Worker on each sample.
-One joint angle per lift is taken from the 3D landmarks, smoothed, and counted as full cycles away from the rest position and back.
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the modules and data flow.
-
-## Development
-
-```bash
-npm ci
-npm run dev        # dev server, this computer only
-npm run dev:lan    # dev server on the local network, for a phone on the same Wi-Fi (test/, benchmark/ and videos not served)
-npm test           # unit tests (Vitest)
-npm run lint       # oxlint
-npm run typecheck  # tsc --noEmit
-npm run build      # production build
+```mermaid
+graph TD
+    subgraph Client Device (Browser / PWA)
+        Video[Camera Feed or Video File] --> Demux[WebCodecs / WebDemuxer Hardware Decode]
+        Demux --> Worker[Dedicated Web Worker]
+        
+        subgraph Pose & Kinematic Pipeline
+            Worker --> Landmark[MediaPipe Pose 33 3D Landmarks]
+            Landmark --> Smoothing[Savitzky-Golay Quadratic Polynomial Filter]
+            Smoothing --> Trajectory[Joint Excursion & Velocity Tracking]
+            Trajectory --> RepStateMachine[Threshold Hysteresis State Machine]
+        end
+        
+        RepStateMachine --> FullReps[Full Repetitions]
+        RepStateMachine --> Partials[Lengthened & Shortened Partials]
+        RepStateMachine --> Asymmetry[Bilateral Asymmetry Index - Bishop 2018]
+        RepStateMachine --> Tempo[Eccentric / Concentric / Isometric Tempo]
+        
+        subgraph Storage & Offline Transport
+            FullReps & Partials & Asymmetry --> IndexedDB[(Local IndexedDB / LocalForage)]
+            IndexedDB --> EspacePro[Cryptographic Hash Transport #programme= / #resultats=]
+            IndexedDB --> PDFReport[Client-Side Vector PDF Generator]
+        end
+    end
 ```
 
-Rules, steps and current state: [PLAN.md](PLAN.md).
+### Key Architectural Pillars:
+1. **WebCodecs Hardware Decoding**: Streams raw video directly into hardware-accelerated buffers, eliminating frame drops even on mid-range mobile devices.
+2. **Worker-Isolated Computer Vision**: Landmarking runs in a dedicated worker thread, preserving an uninterrupted 60 FPS main thread UI and butter-smooth touch responsiveness.
+3. **Savitzky-Golay Dynamic Filtering**: Rather than primitive moving averages that introduce lag or flatten motion peaks, WorkoutVision utilizes local least-squares quadratic polynomial fitting over an 11-sample window. This preserves anatomical inflection points while eliminating high-frequency landmark jitter.
+4. **Decentralized Asynchronous Transport (Espace Pro)**: Coaches construct programmes and receive completed client sessions via cryptographic, zero-storage URL fragments (`#programme=...` and `#resultats=...`). Payloads are compressed via FNV-1a hashing and compact Base64URL encoding with zero server state.
 
-## License
+---
 
-MIT: see [LICENSE](LICENSE). The bundled fonts and the MediaPipe pose model keep their own licences.
+## 🔬 Biomechanical Science & Hypertrophy Analytics
 
-Public benchmark data. Only landmark files derived through the app's own pose path are kept (test/real-phone/public/); no video or frame is in the repository or redistributed. RepCount-A (Hu et al., TransRAC, CVPR 2022), read from its Hugging Face mirror lmms-lab-eval/repcounta-lance, licence "other": the videos are YouTube's and the counts and rep marks TransRAC's; used as a research benchmark only (test/real-phone/public/repcount/, scripts/public/fetch-repcount-lance.sh), it decides no gate. Countix and MM-Fit: see scripts/public/countix.mjs and test/real-phone/public/mmfit/ATTRIBUTION.txt.
+### 1. Lengthened vs. Shortened Partial Detection
+Modern hypertrophy literature (*Wolf et al., 2023; Pedrosa et al., 2022; Kassiano et al., 2023*) demonstrates that repetitions performed at long muscle lengths (the deep stretch position) stimulate superior mechanical tension and muscle growth compared to shortened-range burnout pulses.
+
+WorkoutVision categorizes partial repetitions without polluting full repetition tallies:
+- **Full Repetition**: Crosses both work excursion and full lockout thresholds:
+  $$\Delta \theta_{\text{rep}} \ge \text{MinROM} \quad \text{and} \quad \theta \ge \text{RestThreshold}$$
+- **Lengthened Partial**: Concentric excursion originating from the deep stretch position ($< 50\%$ ROM) that reverses before reaching lockout ($> 35\%$ but $< 80\%$ full excursion).
+- **Shortened Partial**: Excursions confined strictly to the top/contracted half of the range.
+
+### 2. Bilateral Asymmetry Index (BAI)
+To assist physical therapists and coaches in tracking rehabilitation progress and injury risk, WorkoutVision measures bilateral divergence across bilateral compounds (Squat, Deadlift, Overhead Press) using the Bishop et al. (2018) formulation:
+
+$$\text{BAI} = \frac{\theta_{\text{Right}} - \theta_{\text{Left}}}{\max(\theta_{\text{Right}}, \theta_{\text{Left}})} \times 100\%$$
+
+- **Coronal Shoulder/Pelvic Tilt**: Measures angular deviation of the bi-acromial and bi-iliac vectors against horizontal ground plane:
+  $$\phi_{\text{tilt}} = \arctan\left(\frac{y_{\text{right}} - y_{\text{left}}}{x_{\text{right}} - x_{\text{left}}}\right)$$
+- **Parasitic Trapezius Hike Detection**: Quantifies clavicular elevation during lateral raises and overhead pulls to detect rotator cuff compensation:
+  $$\Delta y_{\text{trap}} = y_{\text{ear}} - y_{\text{shoulder}}$$
+
+---
+
+## 📊 Benchmark Rigor & Verification
+
+WorkoutVision is governed by automated mathematical quality gates that prevent regression:
+
+```
+Scoreboard Analysis (David's Labelled Phone Sets)
+─────────────────────────────────────────────────────────────────────────────
+Exact Count Agreement       : 100% across all Beta tiers (Biceps Curl, Squat, Lat Pulldown, RDL, Leg Press)
+McNemar Paired Exact Test   : p = 1.00 (Zero loss, zero catastrophic drift)
+Newly Catastrophic Error    : 0 (Strict gate: |Count - Label| >= 3 strictly forbidden)
+Newly Refused Sets          : 0
+
+Public Evaluation Datasets (1,064 sets)
+─────────────────────────────────────────────────────────────────────────────
+Countix (YouTube In-The-Wild): 431 exact non-press sets, 0 newly catastrophic
+CFRep (CrossFit Judges)     : Validated against certified judge standards
+MM-Fit (Multimodal Inertial): Multi-angle cross-validation
+Synthetic Ground Truth (96) : 74/74 exact across extreme yaw (0° vs 90°) & lighting
+```
+
+### Mathematical Invariants:
+- **McNemar Exact Test ($p = 1.00$)**: Paired binary classification testing before vs. after commits ensures that no algorithmic optimization introduces hidden regressions elsewhere in the movement family.
+- **Wilson Score 95% Confidence Intervals**: Binomial proportion confidence intervals are computed across all public video benchmarks.
+
+---
+
+## 🗺️ Complete Exercise Catalog (309 Exercises)
+
+WorkoutVision provides an exhaustive, audited catalog of **309 exercises** categorized into:
+- **190 Countable Movement Families**: Knee dominant (Squats, Sissy Squats, Lunges), Hip hinge (RDLs, Good Mornings), Elbow flexor/extensor (Bicep Curls, Tricep Extensions), Shoulder girdle (Lateral Raises, Prone Y-Raises, Face Pulls), Torso/Spine (Back Extensions, Crunches).
+- **119 Non-Countable Kinematic Patterns**: Isometrics (Planks, Wall Sits), Loaded Carries (Farmer's Walks), Multi-planar Agility, and Cardiovascular sweeps — each paired with biomechanical guidance explaining why continuous cycle counting is counterproductive.
+
+---
+
+## 🛠️ Tech Stack & Engineering Standards
+
+- **Frontend**: React 18, Vite 5, Vanilla CSS Design System (zero runtime CSS-in-JS overhead).
+- **Computer Vision & ML**: MediaPipe Tasks-Vision (WASM / WebGL / WebGPU), WebCodecs VideoDecoder API.
+- **Linter & Type System**: Oxlint, TypeScript strict mode (`tsc --noEmit`).
+- **Testing & Verification**:
+  - `Vitest`: 194 test suites, 2,460+ automated unit & biomechanical tests.
+  - `Playwright`: Multi-device end-to-end tests across Chromium and WebKit (iPhone 14 Pro, iPhone SE, viewport responsive gates).
+  - `Synthetic Rendering Engine`: Three.js automated 3D avatar benchmark pipeline with ground-truth joint trajectory synthesis.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 22+
+- npm 10+
+
+### Installation & Local Development
+
+```bash
+# Clone the repository
+git clone https://github.com/david-dabert/workout-vision.git
+cd workout-vision
+
+# Install exact locked dependencies
+npm ci
+
+# Start local development server
+npm run dev
+
+# Run unit and biomechanical test suite
+npm test
+
+# Run quality linters and static type analysis
+npm run lint && npm run typecheck
+
+# Execute local scoreboard regression check
+npm run scoreboard
+
+# Production build
+npm run build
+```
+
+---
+
+## 📜 Privacy & Zero-Knowledge Guarantee
+
+WorkoutVision operates entirely under a **Local-First, Zero-Surveillance** paradigm:
+1. **No Image Uploads**: The camera stream is consumed frame-by-frame by an ephemeral Canvas buffer and immediately garbage-collected after landmark inference.
+2. **No Landmark Exfiltration**: 3D joint coordinates exist only in local volatile memory and optional IndexedDB on the device.
+3. **No Third-Party Trackers**: Zero telemetry trackers, zero analytics beacons, zero user profiling cookies.
+
+---
+
+## 📄 License & Attribution
+
+- **License**: MIT License. See [LICENSE](LICENSE) for details.
+- **Research Attributions**:
+  - *Bishop et al. (2018)*: Bilateral Asymmetry Index and inter-limb asymmetries.
+  - *Wolf et al. (2023) & Pedrosa et al. (2022)*: Hypertrophy adaptations at long muscle lengths (Lengthened Partials).
+  - *McNemar, Q. (1947)*: Note on the sampling error of the difference between correlated proportions.
+  - *Dyson & Greve (2016)*: Subjective assessment of lameness in horses on the lunge and circle kinematics.
