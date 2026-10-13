@@ -35,6 +35,8 @@ describe('EquiVision Equine Gait UI Component', () => {
       expect(html).toContain('data-testid="scenario-forelimb"');
       expect(html).toContain('data-testid="scenario-hindlimb"');
       expect(html).toContain('data-testid="toggle-circle"');
+      expect(html).toContain('data-testid="btn-mode-analyzed"');
+      expect(html).toContain('data-testid="btn-download-equine-video"');
       expect(html).toContain('Savitzky-Golay quadratic');
       expect(html).toContain('Dyson & Greve, 2016');
     });

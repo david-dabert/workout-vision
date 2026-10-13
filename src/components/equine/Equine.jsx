@@ -143,12 +143,14 @@ async function extractEquineGaitFramesFromVideo(videoUrl) {
 }
 
 const DEMO_VIDEO_URL = `${import.meta.env.BASE_URL || '/'}demo/equine-trot-demo.mp4`;
+const ANALYZED_VIDEO_URL = `${import.meta.env.BASE_URL || '/'}demo/workoutvision-equine-analyzed-demo.mp4`;
 
 export default function Equine({ onClose }) {
   const { lang } = useT();
   const fr = lang === 'fr';
 
   const [scenario, setScenario] = useState('demo');
+  const [videoMode, setVideoMode] = useState('analyzed'); // 'analyzed' | 'raw'
   const [isCircle, setIsCircle] = useState(false);
   const [circleRadius, setCircleRadius] = useState(10); // meters
   const [trotSpeed, setTrotSpeed] = useState(3.5); // m/s
@@ -502,10 +504,41 @@ export default function Equine({ onClose }) {
         {/* Video Player with Live Kinematic HUD */}
         {uploadedVideo && (
           <div className="equine-player-card">
+            <div className="equine-player-header-row">
+              <span className="player-file-name">📹 {uploadedVideo.name}</span>
+              <div className="player-actions-right">
+                <div className="player-mode-switch">
+                  <button
+                    type="button"
+                    className={`mode-btn ${videoMode === 'analyzed' ? 'active' : ''}`}
+                    onClick={() => { hapticLight(); setVideoMode('analyzed'); }}
+                    data-testid="btn-mode-analyzed"
+                  >
+                    {fr ? '✨ Analysée' : '✨ Analyzed'}
+                  </button>
+                  <button
+                    type="button"
+                    className={`mode-btn ${videoMode === 'raw' ? 'active' : ''}`}
+                    onClick={() => { hapticLight(); setVideoMode('raw'); }}
+                    data-testid="btn-mode-raw"
+                  >
+                    {fr ? 'Brute' : 'Raw'}
+                  </button>
+                </div>
+                <a
+                  href={ANALYZED_VIDEO_URL}
+                  download="workoutvision-equine-analyzed-demo.mp4"
+                  className="download-analyzed-btn press"
+                  data-testid="btn-download-equine-video"
+                >
+                  📥 {fr ? 'Télécharger (MP4)' : 'Download (MP4)'}
+                </a>
+              </div>
+            </div>
             <div className="equine-video-wrapper">
               <video
                 ref={videoPlayerRef}
-                src={uploadedVideo.url}
+                src={videoMode === 'analyzed' && uploadedVideo.isBuiltinDemo ? ANALYZED_VIDEO_URL : uploadedVideo.url}
                 controls
                 playsInline
                 autoPlay
@@ -516,19 +549,21 @@ export default function Equine({ onClose }) {
                   if (videoPlayerRef.current) setVideoPlaybackTime(videoPlayerRef.current.currentTime);
                 }}
               />
-              <div className="equine-video-hud">
-                <div className="hud-marker hud-withers">
-                  <span className="hud-dot" />
-                  <span className="hud-label">{fr ? 'Garrot (Withers)' : 'Withers (T6)'}</span>
+              {videoMode === 'raw' && (
+                <div className="equine-video-hud">
+                  <div className="hud-marker hud-withers">
+                    <span className="hud-dot" />
+                    <span className="hud-label">{fr ? 'Garrot (Withers)' : 'Withers (T6)'}</span>
+                  </div>
+                  <div className="hud-marker hud-sacrum">
+                    <span className="hud-dot" />
+                    <span className="hud-label">{fr ? 'Sacrum (Pelvis)' : 'Sacrum (Pelvis)'}</span>
+                  </div>
+                  <div className="hud-phase-badge">
+                    {fr ? 'Trot à 2 temps (D1 \u2194 D2)' : '2-Beat Trot (D1 \u2194 D2)'}
+                  </div>
                 </div>
-                <div className="hud-marker hud-sacrum">
-                  <span className="hud-dot" />
-                  <span className="hud-label">{fr ? 'Sacrum (Pelvis)' : 'Sacrum (Pelvis)'}</span>
-                </div>
-                <div className="hud-phase-badge">
-                  {fr ? 'Trot à 2 temps (D1 \u2194 D2)' : '2-Beat Trot (D1 \u2194 D2)'}
-                </div>
-              </div>
+              )}
             </div>
           </div>
         )}
