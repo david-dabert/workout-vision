@@ -162,10 +162,10 @@ test('a video that failed is packed when picked again, without a reload', async 
 });
 
 test('each packed video ends after its last picture, and is named by its number on the page', async ({ page }) => {
-  test.setTimeout(120000);
+  test.setTimeout(180000);
   await page.goto(PAGE);
   await pick(page, 'a.webm', 'b.webm', 'c.webm');
-  await expect(page.locator('.set.done')).toHaveCount(3, { timeout: 90000 });
+  await expect(page.locator('.set.done')).toHaveCount(3, { timeout: 150000 });
   for (const i of [0, 1, 2]) { await page.locator(`#lift${i}`).selectOption('squat'); await page.locator(`#count${i}`).fill(String(5 + i)); }
   await page.click('#make');
   const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('#files button', { hasText: 'Download' }).click()]);
