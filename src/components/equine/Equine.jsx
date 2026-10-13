@@ -142,25 +142,57 @@ async function extractEquineGaitFramesFromVideo(videoUrl) {
   });
 }
 
-const DEMO_VIDEO_URL = `${import.meta.env.BASE_URL || '/'}demo/equine-trot-demo.mp4`;
-const ANALYZED_VIDEO_URL = `${import.meta.env.BASE_URL || '/'}demo/workoutvision-equine-analyzed-demo.mp4`;
+const MUYBRIDGE_RAW_URL = `${import.meta.env.BASE_URL || '/'}demo/equine-trot-demo.mp4`;
+const MUYBRIDGE_ANALYZED_URL = `${import.meta.env.BASE_URL || '/'}demo/workoutvision-equine-analyzed-demo.mp4`;
+const RIDDEN_RAW_URL = `${import.meta.env.BASE_URL || '/'}demo/workoutvision-ridden-dressage-raw.mp4`;
+const RIDDEN_ANALYZED_URL = `${import.meta.env.BASE_URL || '/'}demo/workoutvision-ridden-dressage-analyzed.mp4`;
+
+const DEMO_PRESETS = {
+  ridden: {
+    rawUrl: RIDDEN_RAW_URL,
+    analyzedUrl: RIDDEN_ANALYZED_URL,
+    nameEn: 'Ridden Dressage Trot in Arena (5.0s)',
+    nameFr: 'Équitation Montée en Carrière / Dressage (5.0s)',
+    licenseEn: 'Open CC-BY (Dressage Arena)',
+    licenseFr: 'Libre CC-BY (Dressage Carrière)',
+    downloadName: 'workoutvision-ridden-dressage-analyzed.mp4',
+    isCircle: true,
+    circleRadius: 12,
+    trotSpeed: 3.5,
+  },
+  muybridge: {
+    rawUrl: MUYBRIDGE_RAW_URL,
+    analyzedUrl: MUYBRIDGE_ANALYZED_URL,
+    nameEn: 'Eadweard Muybridge Trot-Up (4.8s)',
+    nameFr: 'Eadweard Muybridge Trot en Main (4.8s)',
+    licenseEn: 'Public Domain',
+    licenseFr: 'Domaine Public',
+    downloadName: 'workoutvision-equine-analyzed-demo.mp4',
+    isCircle: false,
+    circleRadius: 10,
+    trotSpeed: 3.5,
+  },
+};
 
 export default function Equine({ onClose }) {
   const { lang } = useT();
   const fr = lang === 'fr';
 
-  const [scenario, setScenario] = useState('demo');
+  const [scenario, setScenario] = useState('demo_ridden');
   const [videoMode, setVideoMode] = useState('analyzed'); // 'analyzed' | 'raw'
-  const [isCircle, setIsCircle] = useState(false);
-  const [circleRadius, setCircleRadius] = useState(10); // meters
+  const [isCircle, setIsCircle] = useState(true);
+  const [circleRadius, setCircleRadius] = useState(12); // meters
   const [trotSpeed, setTrotSpeed] = useState(3.5); // m/s
   const [copied, setCopied] = useState(false);
 
   // Real Video State
   const fileInputRef = useRef(null);
   const [uploadedVideo, setUploadedVideo] = useState({
-    url: DEMO_VIDEO_URL,
-    name: 'Eadweard Muybridge Trot-Up (Loop 4.8s)',
+    url: DEMO_PRESETS.ridden.rawUrl,
+    analyzedUrl: DEMO_PRESETS.ridden.analyzedUrl,
+    name: DEMO_PRESETS.ridden.nameEn,
+    license: DEMO_PRESETS.ridden.licenseEn,
+    downloadName: DEMO_PRESETS.ridden.downloadName,
     isBuiltinDemo: true,
   });
   const [isProcessingVideo, setIsProcessingVideo] = useState(false);
@@ -173,7 +205,10 @@ export default function Equine({ onClose }) {
   // Generate frame sequence based on scenario or uploaded video
   const frames = useMemo(() => {
     if (videoFrames && videoFrames.length > 0) return videoFrames;
-    if (scenario === 'demo') {
+    if (scenario === 'demo_ridden') {
+      return generateScenarioFrames('sound', { fps: 25, durationSec: 5.0, stridePeriodMs: 690 });
+    }
+    if (scenario === 'demo_muybridge' || scenario === 'demo') {
       return generateScenarioFrames('sound', { fps: 30, durationSec: 4.8, stridePeriodMs: 710 });
     }
     return generateScenarioFrames(scenario, { fps: 30, durationSec: 3.5, stridePeriodMs: 720 });
@@ -199,7 +234,14 @@ export default function Equine({ onClose }) {
     hapticLight();
     const url = URL.createObjectURL(file);
     setScenario('custom');
-    setUploadedVideo({ url, name: file.name, isBuiltinDemo: false });
+    setUploadedVideo({
+      url,
+      analyzedUrl: url,
+      name: file.name,
+      license: fr ? 'Fichier Personnel' : 'User Video',
+      downloadName: `analyzed-${file.name}`,
+      isBuiltinDemo: false,
+    });
     setIsProcessingVideo(true);
 
     try {
@@ -212,13 +254,34 @@ export default function Equine({ onClose }) {
     }
   };
 
-  const handleSelectDemoVideo = () => {
+  const handleSelectRiddenDemo = () => {
     hapticLight();
-    setScenario('demo');
+    setScenario('demo_ridden');
     setVideoFrames(null);
+    setIsCircle(true);
+    setCircleRadius(12);
     setUploadedVideo({
-      url: DEMO_VIDEO_URL,
-      name: 'Eadweard Muybridge Trot-Up (Loop 4.8s)',
+      url: DEMO_PRESETS.ridden.rawUrl,
+      analyzedUrl: DEMO_PRESETS.ridden.analyzedUrl,
+      name: fr ? DEMO_PRESETS.ridden.nameFr : DEMO_PRESETS.ridden.nameEn,
+      license: fr ? DEMO_PRESETS.ridden.licenseFr : DEMO_PRESETS.ridden.licenseEn,
+      downloadName: DEMO_PRESETS.ridden.downloadName,
+      isBuiltinDemo: true,
+    });
+  };
+
+  const handleSelectMuybridgeDemo = () => {
+    hapticLight();
+    setScenario('demo_muybridge');
+    setVideoFrames(null);
+    setIsCircle(false);
+    setCircleRadius(10);
+    setUploadedVideo({
+      url: DEMO_PRESETS.muybridge.rawUrl,
+      analyzedUrl: DEMO_PRESETS.muybridge.analyzedUrl,
+      name: fr ? DEMO_PRESETS.muybridge.nameFr : DEMO_PRESETS.muybridge.nameEn,
+      license: fr ? DEMO_PRESETS.muybridge.licenseFr : DEMO_PRESETS.muybridge.licenseEn,
+      downloadName: DEMO_PRESETS.muybridge.downloadName,
       isBuiltinDemo: true,
     });
   };
@@ -442,11 +505,19 @@ export default function Equine({ onClose }) {
         <div className="equine-scenarios">
           <button
             type="button"
-            className={`scenario-pill ${scenario === 'demo' ? 'active' : ''}`}
-            onClick={handleSelectDemoVideo}
+            className={`scenario-pill ${scenario === 'demo_ridden' ? 'active' : ''}`}
+            onClick={handleSelectRiddenDemo}
+            data-testid="scenario-demo-ridden"
+          >
+            {fr ? '🐎 Démo Équitation Montée (Dressage)' : '🐎 Demo Ridden Dressage (Arena)'}
+          </button>
+          <button
+            type="button"
+            className={`scenario-pill ${scenario === 'demo_muybridge' || scenario === 'demo' ? 'active' : ''}`}
+            onClick={handleSelectMuybridgeDemo}
             data-testid="scenario-demo-video"
           >
-            {fr ? '📹 Démo Vidéo (Eadweard Muybridge)' : '📹 Demo Video (Muybridge Trot)'}
+            {fr ? '🎞️ Trot en Main (Muybridge)' : '🎞️ Demo Trot-Up (Muybridge)'}
           </button>
           <button
             type="button"
@@ -483,12 +554,12 @@ export default function Equine({ onClose }) {
                 {isProcessingVideo
                   ? (fr ? 'Traitement cinématique en cours...' : 'Computing frame kinematics...')
                   : uploadedVideo.isBuiltinDemo
-                  ? (fr ? 'Séquence historique haute fréquence (H.264 60fps) • Algorithme actif' : 'High-Speed Trot Archive (H.264 60fps) • Kinematic tracking active')
+                  ? (fr ? 'Séquence vidéo avec détection garrot/sacrum & posture cavalier' : 'Video footage with withers/sacrum excursion & rider alignment')
                   : (fr ? 'Vidéo analysée sur l’appareil' : 'Analyzed On-Device')}
               </span>
             </div>
             {uploadedVideo.isBuiltinDemo ? (
-              <span className="equine-pill-badge">{fr ? 'Archive Libre de Droits' : 'Public Domain'}</span>
+              <span className="equine-pill-badge">{uploadedVideo.license}</span>
             ) : (
               <button
                 type="button"
@@ -526,8 +597,8 @@ export default function Equine({ onClose }) {
                   </button>
                 </div>
                 <a
-                  href={ANALYZED_VIDEO_URL}
-                  download="workoutvision-equine-analyzed-demo.mp4"
+                  href={uploadedVideo.analyzedUrl || uploadedVideo.url}
+                  download={uploadedVideo.downloadName || 'workoutvision-equine-analyzed.mp4'}
                   className="download-analyzed-btn press"
                   data-testid="btn-download-equine-video"
                 >
@@ -538,7 +609,7 @@ export default function Equine({ onClose }) {
             <div className="equine-video-wrapper">
               <video
                 ref={videoPlayerRef}
-                src={videoMode === 'analyzed' && uploadedVideo.isBuiltinDemo ? ANALYZED_VIDEO_URL : uploadedVideo.url}
+                src={videoMode === 'analyzed' && uploadedVideo.isBuiltinDemo ? (uploadedVideo.analyzedUrl || uploadedVideo.url) : uploadedVideo.url}
                 controls
                 playsInline
                 autoPlay

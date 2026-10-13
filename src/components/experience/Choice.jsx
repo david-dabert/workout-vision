@@ -90,7 +90,7 @@ function LiftCard({ children, onClick, label, describedBy, cardRef }) {
   </button>;
 }
 
-export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, onProgramme, onManifesto, onEquine, onCoaches, onBuddies, onErgonomics, onChat, held = null }) {
+export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, onProgramme, onManifesto, onEquine, onSports, onCoaches, onBuddies, onErgonomics, onChat, held = null }) {
   const { lang, tExercise } = useT(), fr = lang === 'fr';
   const railRef = useRef(null), dotsRef = useRef(null), cards = useRef([]);
   // The guide's names load after the choice; until then a set of an exercise without a card is not
@@ -202,6 +202,12 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{fr ? 'EquiVision\u00A0: Allures & Vétérinaire' : 'EquiVision: Veterinary Locomotion'}</b><small>{fr ? 'Cinématique objective du trot et asymétries en longe' : 'Objective trot kinematics & circle lunge symmetry'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
+        {/* Precision Sports Biomechanics (Golf, Tennis, Padel, Cycling) */}
+        {onSports && <button className="row-link press" onClick={onSports} data-testid="choice-sports">
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" /></svg></span>
+          <span className="row-txt"><b>{fr ? 'Sports de Précision\u00A0: Golf, Tennis & Padel' : 'Precision Sports: Golf, Tennis & Padel'}</b><small>{fr ? 'X-Factor, tempo 3:1, pose trophée et étude posturale' : 'X-Factor stretch, 3:1 tempo, trophy pose & bike fit'}</small></span>
+          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+        </button>}
         {/* Coach & Physio Matcher */}
         {onCoaches && <button className="row-link press" onClick={onCoaches} data-testid="choice-coaches">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M6 20v-2a6 6 0 0 1 12 0v2" /></svg></span>
@@ -233,6 +239,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           {onManifesto && <button type="button" className="about-link press" onClick={onManifesto} data-testid="manifesto-link">{fr ? 'Le Manifeste' : 'Manifesto'}</button>}
           {onCoaches && <button type="button" className="about-link press" onClick={onCoaches} data-testid="coaches-link">{fr ? 'Coaches & Kinés' : 'Find Coach'}</button>}
           {onEquine && <button type="button" className="about-link press" onClick={onEquine} data-testid="equine-link">{fr ? 'Allures Équines' : 'Equine AI'}</button>}
+          {onSports && <button type="button" className="about-link press" onClick={onSports} data-testid="sports-link">{fr ? 'Golf & Tennis' : 'Sports AI'}</button>}
           {onBuddies && <button type="button" className="about-link press" onClick={onBuddies} data-testid="buddies-link">{fr ? 'Gym Buddy' : 'Gym Buddy'}</button>}
           {onErgonomics && <button type="button" className="about-link press" onClick={onErgonomics} data-testid="ergo-link">{fr ? 'Ergonomie' : 'Ergonomics'}</button>}
           {onChat && <button type="button" className="about-link press" onClick={onChat} data-testid="chat-link">{fr ? 'Chat P2P' : 'P2P Chat'}</button>}
