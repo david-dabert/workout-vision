@@ -6,6 +6,8 @@ import {
   calculateTennisTrophyPose,
   calculatePadelBandeja,
   calculateBikeFitKneeAngle,
+  calculateBaseballPitchMechanics,
+  calculateRowingRhythm,
 } from '../kinematics';
 
 describe('Precision Sports Kinematics Engine', () => {
@@ -76,6 +78,33 @@ describe('Precision Sports Kinematics Engine', () => {
     it('identifies saddle too low (excessive flexion)', () => {
       const res = calculateBikeFitKneeAngle(42);
       expect(res.saddleHeightVerdict).toBe('too_low');
+    });
+  });
+
+  describe('Baseball & Overhead Throwing Kinematics', () => {
+    it('validates UCL-safe pitching mechanics at foot strike', () => {
+      const res = calculateBaseballPitchMechanics(92, 90);
+      expect(res.uclSafetyVerdict).toBe('optimal_safe');
+      expect(res.estimatedUclStressNm).toBe(52);
+    });
+
+    it('detects dropped elbow risk', () => {
+      const res = calculateBaseballPitchMechanics(72, 90);
+      expect(res.uclSafetyVerdict).toBe('dropped_elbow');
+      expect(res.estimatedUclStressNm).toBeGreaterThan(70);
+    });
+  });
+
+  describe('Rowing & Ergometer Rhythm Kinematics', () => {
+    it('validates 1:2 drive-to-recovery rhythm', () => {
+      const res = calculateRowingRhythm(600, 1200);
+      expect(res.rhythmRatio).toBe(2.0);
+      expect(res.verdict).toBe('optimal_ratio');
+    });
+
+    it('flags rushed slide ratio', () => {
+      const res = calculateRowingRhythm(600, 800);
+      expect(res.verdict).toBe('rushed_slide');
     });
   });
 });

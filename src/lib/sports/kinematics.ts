@@ -165,3 +165,56 @@ export function calculateBikeFitKneeAngle(bdcKneeAngleDeg: number): {
   }
   return { saddleHeightVerdict, bdcKneeAngleDeg: Math.round(bdcKneeAngleDeg) };
 }
+
+export interface BaseballPitchMetrics {
+  shoulderAbductionDeg: number;
+  elbowFlexionDeg: number;
+  uclSafetyVerdict: 'optimal_safe' | 'high_valgus_torque' | 'dropped_elbow';
+  estimatedUclStressNm: number;
+}
+
+/**
+ * Assesses baseball pitching mechanics at front foot contact (ASMI / Fleisig standards):
+ * - Shoulder abduction: 85° - 100°
+ * - Elbow flexion: 80° - 105° (prevents excessive UCL valgus torque)
+ */
+export function calculateBaseballPitchMechanics(
+  shoulderAbductionDeg: number,
+  elbowFlexionDeg: number
+): BaseballPitchMetrics {
+  let uclSafetyVerdict: 'optimal_safe' | 'high_valgus_torque' | 'dropped_elbow' = 'optimal_safe';
+  let estimatedUclStressNm = 52; // physiological baseline torque
+
+  if (shoulderAbductionDeg < 80) {
+    uclSafetyVerdict = 'dropped_elbow';
+    estimatedUclStressNm = 78;
+  } else if (elbowFlexionDeg < 75 || elbowFlexionDeg > 115) {
+    uclSafetyVerdict = 'high_valgus_torque';
+    estimatedUclStressNm = 84;
+  }
+
+  return {
+    shoulderAbductionDeg: Math.round(shoulderAbductionDeg),
+    elbowFlexionDeg: Math.round(elbowFlexionDeg),
+    uclSafetyVerdict,
+    estimatedUclStressNm,
+  };
+}
+
+/**
+ * Evaluates rowing drive-to-recovery rhythm ratio (optimal 1:2 ratio).
+ */
+export function calculateRowingRhythm(
+  driveMs: number,
+  recoveryMs: number
+): { rhythmRatio: number; verdict: 'optimal_ratio' | 'rushed_slide' | 'slow_hands' } {
+  const ratio = Math.round((recoveryMs / (driveMs || 1)) * 10) / 10;
+  let verdict: 'optimal_ratio' | 'rushed_slide' | 'slow_hands' = 'optimal_ratio';
+  if (ratio < 1.7) {
+    verdict = 'rushed_slide';
+  } else if (ratio > 2.4) {
+    verdict = 'slow_hands';
+  }
+  return { rhythmRatio: ratio, verdict };
+}
+

@@ -271,3 +271,73 @@
   color: var(--text-secondary, rgba(232, 230, 225, 0.75));
   margin: 0;
 }
+
+/* Video Player Card */
+.sports-video-card {
+  background: rgba(18, 18, 22, 0.7);
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.sports-video-player {
+  width: 100%;
+  max-height: 380px;
+  border-radius: 12px;
+  background: #000;
+  display: block;
+}
+
+.sports-video-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+/* ROI & Market Comparison Table */
+.roi-table-container {
+  overflow-x: auto;
+  margin-top: 14px;
+}
+
+.roi-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.roi-table th {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary, rgba(232, 230, 225, 0.6));
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.roi-table td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.roi-table tr.highlight {
+  background: rgba(93, 184, 122, 0.08);
+  font-weight: 600;
+  color: #5DB87A;
+}
+
+.roadmap-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary, rgba(232, 230, 225, 0.6));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  margin-left: 6px;
+}
+
