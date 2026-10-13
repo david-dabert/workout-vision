@@ -26,146 +26,16 @@ const SvgCheck = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="non
 const SvgTarget = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
 const SvgSkeleton = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><circle cx="12" cy="4" r="2"/><circle cx="6" cy="12" r="1.5"/><circle cx="18" cy="12" r="1.5"/><line x1="12" y1="6" x2="12" y2="15"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="12" y1="15" x2="8" y2="22"/><line x1="12" y1="15" x2="16" y2="22"/></svg>;
 const SvgAngle = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M21 21H3V3"/><path d="M19 5l-16 16"/><path d="M8 21a5 5 0 0 1 5-5"/></svg>;
-const SvgDownload = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
-const SvgLayers = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>;
-
-const BASE_URL = import.meta.env.BASE_URL || '/';
-
-const SPORTS_DEMO_DATA = {
-  golf: {
-    nameFr: 'Golf PGA Tour (X-Factor & Tempo 3:1)',
-    nameEn: 'PGA Tour Golf (X-Factor & 3:1 Tempo)',
-    analyzedUrl: `${BASE_URL}demo/sports/golf-analyzed.mp4`,
-    rawUrl: `${BASE_URL}demo/sports/golf-raw.mp4`,
-    posterUrl: `${BASE_URL}demo/sports/golf-poster.jpg`,
-    license: 'CC-BY Slow-Mo',
-    metrics: [
-      { labelFr: 'X-Factor', labelEn: 'X-Factor', val: '46.8°', verdict: 'optimal' },
-      { labelFr: 'Ratio Tempo', labelEn: 'Tempo Ratio', val: '3.02:1', verdict: 'optimal' },
-      { labelFr: 'Vitesse Club', labelEn: 'Clubhead Speed', val: '116.4 mph', verdict: 'optimal' },
-    ],
-    summaryFr: 'Analyse en ralenti cinématique montrant l’étirement maximal de 46.8° au sommet du backswing et le ratio de tempo standard PGA Tour de 3.02:1.',
-    summaryEn: 'Cinematic slow-motion quantification demonstrating peak 46.8° X-Factor stretch at top of backswing and PGA Tour standard 3.02:1 tempo.',
-  },
-  tennis: {
-    nameFr: 'Service Tennis Coupe Davis (Pose Trophée)',
-    nameEn: 'Davis Cup Tennis Serve (Trophy Pose)',
-    analyzedUrl: `${BASE_URL}demo/sports/tennis-analyzed.mp4`,
-    rawUrl: `${BASE_URL}demo/sports/tennis-raw.mp4`,
-    posterUrl: `${BASE_URL}demo/sports/tennis-poster.jpg`,
-    license: 'CC-BY Davis Cup',
-    metrics: [
-      { labelFr: 'Pose Trophée', labelEn: 'Trophy Pose', val: '94.6% Sound', verdict: 'optimal' },
-      { labelFr: 'Inclinaison Épaules', labelEn: 'Shoulder Tilt', val: '28.5°', verdict: 'optimal' },
-      { labelFr: 'Flexion Genou', labelEn: 'Knee Flexion', val: '116.2°', verdict: 'optimal' },
-    ],
-    summaryFr: 'Chaîne cinématique du service analysée en match officiel : alignement de l’axe d’épaules et flexion explosive du genou arrière.',
-    summaryEn: 'Official match serve kinetic chain tracking: vertical shoulder alignment axis and explosive rear knee flexion drive.',
-  },
-  padel: {
-    nameFr: 'Padel Nations Cup (Bandeja & Vitre)',
-    nameEn: 'Padel Nations Cup (Bandeja & Glass Control)',
-    analyzedUrl: `${BASE_URL}demo/sports/padel-analyzed.mp4`,
-    rawUrl: `${BASE_URL}demo/sports/padel-raw.mp4`,
-    posterUrl: `${BASE_URL}demo/sports/padel-poster.jpg`,
-    license: 'CC-BY Padel Cup',
-    metrics: [
-      { labelFr: 'Hauteur Contact', labelEn: 'Contact Height', val: '2.15 m', verdict: 'optimal' },
-      { labelFr: 'Contrôle Vitre', labelEn: 'Glass Control', val: '89.2%', verdict: 'optimal' },
-      { labelFr: 'Inclinaison', labelEn: 'Shoulder Tilt', val: '18.5°', verdict: 'optimal' },
-    ],
-    summaryFr: 'Bandeja en tournoi professionnel avec hauteur de frappe optimale de 2.15m et écrasement du rebond sur la vitre de fond.',
-    summaryEn: 'Professional tournament bandeja with optimal 2.15m contact height and 89.2% back-glass rebound suppression.',
-  },
-  baseball: {
-    nameFr: 'Lancer Baseball MLB (Protection Valgus UCL)',
-    nameEn: 'MLB Pitching (ASMI UCL Valgus Protection)',
-    analyzedUrl: `${BASE_URL}demo/sports/baseball-analyzed.mp4`,
-    rawUrl: `${BASE_URL}demo/sports/baseball-raw.mp4`,
-    posterUrl: `${BASE_URL}demo/sports/baseball-poster.jpg`,
-    license: 'CC-BY MLB Windup',
-    metrics: [
-      { labelFr: 'Stress UCL', labelEn: 'UCL Stress', val: '48.5 Nm', verdict: 'optimal' },
-      { labelFr: 'Abduction Épaule', labelEn: 'Shoulder Abd.', val: '92.4°', verdict: 'optimal' },
-      { labelFr: 'Flexion Coude', labelEn: 'Elbow Flexion', val: '89.8°', verdict: 'optimal' },
-    ],
-    summaryFr: 'Mécanique de lancer du pichet de ligue majeure : couple de valgus à 48.5 Nm (sécuritaire sous le seuil ASMI de 64 Nm).',
-    summaryEn: 'Major League pitching mechanics: valgus torque monitored at 48.5 Nm (safely below the ASMI 64 Nm injury limit).',
-  },
-  cycling: {
-    nameFr: 'Étude Posturale Cyclisme (Angle Genou PMB)',
-    nameEn: 'Cycling Bike Fit (BDC Knee Kinematics)',
-    analyzedUrl: `${BASE_URL}demo/sports/cycling-analyzed.mp4`,
-    rawUrl: `${BASE_URL}demo/sports/cycling-raw.mp4`,
-    posterUrl: `${BASE_URL}demo/sports/cycling-poster.jpg`,
-    license: 'CC-BY Track Cycling',
-    metrics: [
-      { labelFr: 'Genou PMB', labelEn: 'BDC Knee', val: '32.5°', verdict: 'optimal' },
-      { labelFr: 'Protocole Holmes', labelEn: 'Holmes Fit', val: 'Optimal', verdict: 'optimal' },
-      { labelFr: 'Drop Aéro', labelEn: 'Aero Drop', val: '38.2°', verdict: 'optimal' },
-    ],
-    summaryFr: 'Suivi de la trajectoire du pédalage en vélodrome : angle du genou au point mort bas (32.5°) validé selon le protocole Holmes.',
-    summaryEn: 'Track cycling pedaling stroke tracking: bottom dead center knee extension (32.5°) calibrated to Holmes Protocol.',
-  },
-  rowing: {
-    nameFr: 'Aviron Olympique (Ratio Propulsion 1:2)',
-    nameEn: 'Olympic Rowing (1:2 Rhythm Cadence)',
-    analyzedUrl: `${BASE_URL}demo/sports/rowing-analyzed.mp4`,
-    rawUrl: `${BASE_URL}demo/sports/rowing-raw.mp4`,
-    posterUrl: `${BASE_URL}demo/sports/rowing-poster.jpg`,
-    license: 'CC-BY Regattastrecke',
-    metrics: [
-      { labelFr: 'Ratio Rythme', labelEn: 'Rhythm Ratio', val: '1:2.02', verdict: 'optimal' },
-      { labelFr: 'Propulsion', labelEn: 'Drive Phase', val: '595 ms', verdict: 'optimal' },
-      { labelFr: 'Retour', labelEn: 'Recovery', val: '1202 ms', verdict: 'optimal' },
-    ],
-    summaryFr: 'Skiff individuel sur bassin olympique : séquençage cinétique et respect du ratio 1:2 entre propulsion et retour.',
-    summaryEn: 'Single scull on Olympic regatta course: kinetic stroke sequencing maintaining textbook 1:2 drive-to-recovery ratio.',
-  },
-  skiing: {
-    nameFr: 'Ski Alpin Carving & Force G',
-    nameEn: 'Alpine Skiing Carving & Radial G-Force',
-    analyzedUrl: `${BASE_URL}demo/sports/skiing-analyzed.mp4`,
-    rawUrl: `${BASE_URL}demo/sports/skiing-raw.mp4`,
-    posterUrl: `${BASE_URL}demo/sports/skiing-poster.jpg`,
-    license: 'CC-BY Alpine Titlis',
-    metrics: [
-      { labelFr: 'Angle Carres', labelEn: 'Edge Angle', val: '56.4°', verdict: 'optimal' },
-      { labelFr: 'Angulation', labelEn: 'Angulation', val: '24.8°', verdict: 'optimal' },
-      { labelFr: 'Force G', labelEn: 'Radial G-Force', val: '2.45 G', verdict: 'optimal' },
-    ],
-    summaryFr: 'Descente alpine en carving pur : inclinaison des carres à 56.4° et angulation des genoux absorbant 2.45 G de charge centrifuge.',
-    summaryEn: 'Alpine carving run: 56.4° ski edge incline and 24.8° knee angulation sustaining 2.45 G radial acceleration.',
-  },
-  swimming: {
-    nameFr: 'Natation 1500M Prise EVF & Roulis',
-    nameEn: 'Freestyle 1500M EVF Catch & Body Roll',
-    analyzedUrl: `${BASE_URL}demo/sports/swimming-analyzed.mp4`,
-    rawUrl: `${BASE_URL}demo/sports/swimming-raw.mp4`,
-    posterUrl: `${BASE_URL}demo/sports/swimming-poster.jpg`,
-    license: 'CC-BY World Swimming',
-    metrics: [
-      { labelFr: 'Coude EVF', labelEn: 'EVF Catch', val: '114.5°', verdict: 'optimal' },
-      { labelFr: 'Roulis Axial', labelEn: 'Body Roll', val: '42.0°', verdict: 'optimal' },
-      { labelFr: 'Propulsion', labelEn: 'Propulsion', val: '94 / 100', verdict: 'optimal' },
-    ],
-    summaryFr: 'Finale de nage libre 1500m : point fixe hydrodynamique en coude haut (EVF 114.5°) et coordination du roulis à 42°.',
-    summaryEn: '1500m freestyle final: early vertical forearm anchor (114.5°) and 42° body roll maximizing propulsion efficiency.',
-  },
-};
 
 export default function SportsBiomechanics({ onClose, onOpenEquine }) {
   const { lang } = useT();
   const fr = lang === 'fr';
 
-  const [activeSport, setActiveSport] = useState('golf'); // 'golf' | 'tennis' | 'padel' | 'cycling' | 'baseball' | 'rowing' | 'skiing' | 'swimming'
+  const [activeSport, setActiveSport] = useState('golf'); // 'golf' | 'tennis' | 'padel' | 'cycling' | 'baseball' | 'rowing'
   const [analysisMode, setAnalysisMode] = useState('landmarks'); // 'landmarks' | 'simulation'
   const [selectedPresetId, setSelectedPresetId] = useState('golf_tour_optimal');
   const [copied, setCopied] = useState(false);
-  const [demoVideoLayer, setDemoVideoLayer] = useState('analyzed'); // 'analyzed' | 'raw'
-  const demoVideoRef = useRef(null);
 
-  const currentDemo = useMemo(() => SPORTS_DEMO_DATA[activeSport] || null, [activeSport]);
   const availablePresets = useMemo(() => getLandmarkPresetsForSport(activeSport), [activeSport]);
   const currentPreset = useMemo(() => {
     return availablePresets.find(p => p.id === selectedPresetId) || availablePresets[0] || null;
@@ -640,81 +510,6 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
             {fr ? 'Natation (EVF Coude Haut)' : 'Swimming (EVF Catch)'}
           </button>
         </div>
-
-        {/* Interactive Tour Demo Video Player for Active Sport */}
-        {currentDemo && (
-          <div className="sports-demo-card" data-testid="sports-demo-player-card">
-            <div className="sports-demo-header">
-              <div className="sports-demo-title-group">
-                <span className="sports-demo-title">
-                  <SvgVideo />{fr ? currentDemo.nameFr : currentDemo.nameEn}
-                </span>
-                <span className="sports-badge">{currentDemo.license}</span>
-              </div>
-              <div className="sports-demo-actions">
-                <div className="sports-layer-toggle">
-                  <button
-                    type="button"
-                    className={`sports-layer-btn ${demoVideoLayer === 'analyzed' ? 'active' : ''}`}
-                    onClick={() => { hapticLight(); setDemoVideoLayer('analyzed'); }}
-                    data-testid="demo-view-analyzed"
-                  >
-                    <SvgLayers />{fr ? 'Analysée (HUD Tour)' : 'Analyzed (Tour HUD)'}
-                  </button>
-                  <button
-                    type="button"
-                    className={`sports-layer-btn ${demoVideoLayer === 'raw' ? 'active' : ''}`}
-                    onClick={() => { hapticLight(); setDemoVideoLayer('raw'); }}
-                    data-testid="demo-view-raw"
-                  >
-                    {fr ? 'Vidéo Brute' : 'Raw Video'}
-                  </button>
-                </div>
-                <a
-                  href={demoVideoLayer === 'analyzed' ? currentDemo.analyzedUrl : currentDemo.rawUrl}
-                  download={`workoutvision-${activeSport}-${demoVideoLayer}.mp4`}
-                  className="sports-download-link press"
-                  data-testid="demo-download-btn"
-                >
-                  <SvgDownload />{fr ? 'Télécharger MP4' : 'Download MP4'}
-                </a>
-              </div>
-            </div>
-
-            <div className="sports-demo-video-wrapper">
-              <video
-                key={`${activeSport}-${demoVideoLayer}`}
-                ref={demoVideoRef}
-                src={demoVideoLayer === 'analyzed' ? currentDemo.analyzedUrl : currentDemo.rawUrl}
-                poster={currentDemo.posterUrl}
-                controls
-                playsInline
-                autoPlay
-                muted
-                loop
-                className="sports-demo-video"
-              />
-              <div className={`sports-demo-badge ${demoVideoLayer}`}>
-                {demoVideoLayer === 'analyzed'
-                  ? (fr ? 'IA HUD Tour · 100% Sur l’Appareil' : 'Tour HUD · 100% On-Device')
-                  : (fr ? 'Vidéo Source Réelle' : 'Real Source Footage')}
-              </div>
-            </div>
-
-            <p className="sports-demo-summary">
-              {fr ? currentDemo.summaryFr : currentDemo.summaryEn}
-            </p>
-
-            <div className="sports-demo-metrics-strip">
-              {currentDemo.metrics.map((m, idx) => (
-                <div key={idx} className="sports-demo-metric-pill">
-                  <span className="lbl">{fr ? m.labelFr : m.labelEn}</span>
-                  <span className="val">{m.val}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Analysis Mode Toggle */}
         {availablePresets.length > 0 && (

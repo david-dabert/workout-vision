@@ -43,11 +43,6 @@ describe('SportsBiomechanics UI Component', () => {
       expect(html).toContain('data-testid="mode-landmarks"');
       expect(html).toContain('data-testid="mode-simulation"');
       expect(html).toContain('data-testid="sports-preset-section"');
-      expect(html).toContain('data-testid="sports-demo-player-card"');
-      expect(html).toContain('data-testid="demo-view-analyzed"');
-      expect(html).toContain('data-testid="demo-view-raw"');
-      expect(html).toContain('data-testid="demo-download-btn"');
-      expect(html).toContain('demo/sports/golf-analyzed.mp4');
       expect(html).toContain('X-Factor Stretch');
       expect(html).toContain('Tour Model');
     });
