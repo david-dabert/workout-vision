@@ -24,6 +24,9 @@ function warmProgrammePdf() {
 // The link that carries a payload, or 'too-long' when a link cannot carry it.
 const linkOf = payload => (payload.length <= MAX_PAYLOAD ? programmeLink(location.href, payload) : 'too-long');
 
+const SvgClipboard = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>;
+const SvgBriefcase = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>;
+
 // One share sheet per tap: a second tap within this time of the first is let go. A lock held until the share settles
 // left both share buttons dead for good when a share never settled. Status: convention, UNSOURCED.
 const SHARE_GAP_MS = 1000;
@@ -129,7 +132,7 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, on
           onClick={() => onSetProTab('programmes')}
           data-testid="tab-pro-programmes"
         >
-          {fr ? '📋 Programmes & Fiches' : '📋 Workout Programmes'}
+          <SvgClipboard />{fr ? 'Programmes & Fiches' : 'Workout Programmes'}
         </button>
         <button
           type="button"
@@ -137,7 +140,7 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, on
           onClick={() => onSetProTab('business')}
           data-testid="tab-pro-business"
         >
-          {fr ? '💼 Espace Coach Business' : '💼 Coach Business OS'}
+          <SvgBriefcase />{fr ? 'Espace Coach Business' : 'Coach Business OS'}
         </button>
       </div>
 

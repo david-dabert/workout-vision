@@ -677,7 +677,18 @@ function InsightsSection({ profile, workouts }) {
               {nextWorkoutData && (
                 <>
                   <span className={`insights-stat-value ${css.recoverySymbol}`}>
-                    {nextWorkoutData.estimatedRecovery === 'recovered' ? '✓' : nextWorkoutData.estimatedRecovery === 'partial' ? '~' : '✗'}
+                    {nextWorkoutData.estimatedRecovery === 'recovered' ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }} aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    ) : nextWorkoutData.estimatedRecovery === 'partial' ? (
+                      '~'
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle' }} aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    )}
                   </span>
                   <span className="insights-stat-label">{t('recovery')}</span>
                   <span className="insights-zone" style={{

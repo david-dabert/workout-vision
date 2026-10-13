@@ -7,6 +7,10 @@ import {
 import { hapticLight } from '../../lib/haptics';
 import './Equine.css';
 
+const SvgVideo = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>;
+const SvgCheck = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '5px' }}><polyline points="20 6 9 17 4 12"/></svg>;
+const SvgDownload = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
+
 /**
  * Generates synthetic frame sequence for equine trot biomechanics simulation.
  */
@@ -478,7 +482,7 @@ export default function Equine({ onClose }) {
           onClick={handleCopyReport}
           data-testid="equine-copy-report"
         >
-          {copied ? (fr ? '✓ Copié' : '✓ Copied') : (fr ? 'Copier le bilan' : 'Copy Report')}
+          {copied ? <><SvgCheck />{fr ? 'Copié' : 'Copied'}</> : (fr ? 'Copier le bilan' : 'Copy Report')}
         </button>
       </div>
 
@@ -509,7 +513,7 @@ export default function Equine({ onClose }) {
             onClick={handleSelectRiddenDemo}
             data-testid="scenario-demo-ridden"
           >
-            {fr ? '🐎 Démo Équitation Montée (Dressage)' : '🐎 Demo Ridden Dressage (Arena)'}
+            {fr ? 'Démo Dressage Monté (Arène)' : 'Demo Ridden Dressage (Arena)'}
           </button>
           <button
             type="button"
@@ -517,7 +521,7 @@ export default function Equine({ onClose }) {
             onClick={handleSelectMuybridgeDemo}
             data-testid="scenario-demo-video"
           >
-            {fr ? '🎞️ Trot en Main (Muybridge)' : '🎞️ Demo Trot-Up (Muybridge)'}
+            {fr ? 'Trot en Main (Muybridge)' : 'Demo Trot-Up (Muybridge)'}
           </button>
           <button
             type="button"
@@ -549,7 +553,7 @@ export default function Equine({ onClose }) {
         {uploadedVideo && (
           <div className="equine-video-banner">
             <div className="video-banner-info">
-              <span className="video-name">📹 {uploadedVideo.name}</span>
+              <span className="video-name"><SvgVideo />{uploadedVideo.name}</span>
               <span className="video-status">
                 {isProcessingVideo
                   ? (fr ? 'Traitement cinématique en cours...' : 'Computing frame kinematics...')
@@ -576,7 +580,7 @@ export default function Equine({ onClose }) {
         {uploadedVideo && (
           <div className="equine-player-card">
             <div className="equine-player-header-row">
-              <span className="player-file-name">📹 {uploadedVideo.name}</span>
+              <span className="player-file-name"><SvgVideo />{uploadedVideo.name}</span>
               <div className="player-actions-right">
                 <div className="player-mode-switch">
                   <button
@@ -585,7 +589,7 @@ export default function Equine({ onClose }) {
                     onClick={() => { hapticLight(); setVideoMode('analyzed'); }}
                     data-testid="btn-mode-analyzed"
                   >
-                    {fr ? '✨ Analysée' : '✨ Analyzed'}
+                    {fr ? 'Analysée' : 'Analyzed'}
                   </button>
                   <button
                     type="button"
@@ -602,7 +606,7 @@ export default function Equine({ onClose }) {
                   className="download-analyzed-btn press"
                   data-testid="btn-download-equine-video"
                 >
-                  📥 {fr ? 'Télécharger (MP4)' : 'Download (MP4)'}
+                  <SvgDownload />{fr ? 'Télécharger (MP4)' : 'Download (MP4)'}
                 </a>
               </div>
             </div>

@@ -425,7 +425,12 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
       {crashRecoveryMsg && (
         <div className={s.iosWarningBanner} role="alert">
           <p className={s.iosWarningText}>{crashRecoveryMsg}</p>
-          <button onClick={() => setCrashRecoveryMsg(null)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: '4px 8px' }}>✕</button>
+          <button onClick={() => setCrashRecoveryMsg(null)} aria-label="Fermer" style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: '4px 8px', display: 'inline-flex', alignItems: 'center' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
         </div>
       )}
 

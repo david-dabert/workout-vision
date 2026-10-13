@@ -48,7 +48,11 @@ export default function ExerciseList({ onChoose }) {
       <button className="item-btn press" onClick={() => onChoose(e.key)}>
         <Thumb exercise={e} />
         <span><span className="item-name">{name(e)}</span><span className="item-sub">{fr ? e.name : e.fr} · {keep(fr ? EQUIPMENT[e.equipment] : e.equipment)}</span></span>
-        {tierOf(e.key) === 'beta' && <span className="tag tier-tag tier-beta">{tierTag('beta', fr)}</span>}
+        {tierOf(e.key) === 'beta' ? (
+          <span className="tag tier-tag tier-beta">{tierTag('beta', fr)}</span>
+        ) : (
+          <span className="tag tier-tag tier-in-progress">{fr ? 'En développement' : 'In Progress'}</span>
+        )}
       </button>
     </li>)}</ul>
     {!list.length && <p className="empty">{fr ? 'Aucun exercice trouvé.' : 'No exercises found.'}</p>}

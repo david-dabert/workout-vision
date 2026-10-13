@@ -209,7 +209,8 @@ export default function CoachFinder({ onClose }) {
                 <div className="coach-rate">
                   {coach.hourlyRate} {coach.currency} <span>/ {fr ? 'séance' : 'session'}</span>
                   <div style={{ fontSize: '12px', color: '#D4A76A', marginTop: '2px' }}>
-                    ★ {coach.rating.toFixed(2)} ({coach.reviewCount} {fr ? 'avis' : 'reviews'})
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{ verticalAlign: 'middle', marginRight: '3px' }}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    {coach.rating.toFixed(2)} ({coach.reviewCount} {fr ? 'avis' : 'reviews'})
                   </div>
                 </div>
 
@@ -220,7 +221,7 @@ export default function CoachFinder({ onClose }) {
                     onClick={() => handleShareTelemetry(coach)}
                     data-testid={`share-telemetry-${coach.id}`}
                   >
-                    {copiedId === coach.id ? (fr ? '✓ Lien Copié' : '✓ Link Copied') : (fr ? 'Partager mon profil' : 'Share Telemetry Card')}
+                    {copiedId === coach.id ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: 'middle', marginRight: '4px' }}><polyline points="20 6 9 17 4 12"/></svg>{fr ? 'Lien Copié' : 'Link Copied'}</> : (fr ? 'Partager mon profil' : 'Share Telemetry Card')}
                   </button>
                   <button
                     type="button"

@@ -19,7 +19,11 @@ import {
   extractBaseballPitchFromLandmarks,
 } from '../../lib/sports/landmarkKinematics';
 import { hapticLight } from '../../lib/haptics';
-import './SportsBiomechanics.css';
+const SvgVideo = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>;
+const SvgCheck = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '5px' }}><polyline points="20 6 9 17 4 12"/></svg>;
+const SvgTarget = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
+const SvgSkeleton = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><circle cx="12" cy="4" r="2"/><circle cx="6" cy="12" r="1.5"/><circle cx="18" cy="12" r="1.5"/><line x1="12" y1="6" x2="12" y2="15"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="12" y1="15" x2="8" y2="22"/><line x1="12" y1="15" x2="16" y2="22"/></svg>;
+const SvgAngle = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M21 21H3V3"/><path d="M19 5l-16 16"/><path d="M8 21a5 5 0 0 1 5-5"/></svg>;
 
 export default function SportsBiomechanics({ onClose, onOpenEquine }) {
   const { lang } = useT();
@@ -297,7 +301,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
             onClick={() => fileInputRef.current?.click()}
             data-testid="sports-upload-btn"
           >
-            📹 {fr ? 'Analyser Vidéo' : 'Analyze Video'}
+            <SvgVideo />{fr ? 'Analyser Vidéo' : 'Analyze Video'}
           </button>
           <button
             type="button"
@@ -305,7 +309,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
             onClick={handleCopyReport}
             data-testid="sports-copy-report"
           >
-            {copied ? (fr ? '✓ Copié' : '✓ Copied') : (fr ? 'Copier Bilan' : 'Copy Report')}
+            {copied ? <><SvgCheck />{fr ? 'Copié' : 'Copied'}</> : (fr ? 'Copier Bilan' : 'Copy Report')}
           </button>
         </div>
       </div>
@@ -325,7 +329,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
         {uploadedVideo && (
           <div className="sports-video-card" data-testid="sports-uploaded-card">
             <div className="sports-video-header">
-              <span style={{ fontSize: '14px', fontWeight: 600 }}>📹 {uploadedVideo.name}</span>
+              <span style={{ fontSize: '14px', fontWeight: 600 }}><SvgVideo />{uploadedVideo.name}</span>
               <button
                 type="button"
                 className="sports-back-btn press"
@@ -345,7 +349,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
 
         {/* High Willingness-to-Pay / Hardware Replacement Banner */}
         <div className="market-value-card">
-          <h3>{fr ? '🎯 Alternative Portable aux Radars & Systèmes à 20\u00A0000\u00A0€' : '🎯 Portable Alternative to $20,000 Hardware Launch Monitors'}</h3>
+          <h3><SvgTarget />{fr ? 'Alternative Portable aux Radars & Systèmes à 20\u00A0000\u00A0€' : 'Portable Alternative to $20,000 Hardware Launch Monitors'}</h3>
           <p>
             {fr
               ? 'Les moniteurs de lancement (TrackMan, GCQuad) et les laboratoires 3D coûtent des dizaines de milliers d’euros. WorkoutVision apporte l’analyse cinématique de grade Tour directement sur votre smartphone en local.'
@@ -376,7 +380,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
                   <td>Bloc 4 caméras</td>
                 </tr>
                 <tr className="highlight">
-                  <td>✨ WorkoutVision Tour</td>
+                  <td>WorkoutVision Tour</td>
                   <td>0 € (Smartphone)</td>
                   <td>490 € / an (ou 49 €/mois)</td>
                   <td>100% Mobile & En Poche</td>
@@ -394,7 +398,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
             onClick={() => { hapticLight(); setActiveSport('golf'); }}
             data-testid="tab-golf"
           >
-            ⛳ {fr ? 'Golf (X-Factor & 3:1)' : 'Golf (X-Factor & 3:1)'}
+            {fr ? 'Golf (X-Factor & 3:1)' : 'Golf (X-Factor & 3:1)'}
           </button>
           <button
             type="button"
@@ -402,7 +406,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
             onClick={() => { hapticLight(); setActiveSport('tennis'); }}
             data-testid="tab-tennis"
           >
-            🎾 {fr ? 'Tennis (Pose Trophée)' : 'Tennis (Trophy Pose)'}
+            {fr ? 'Tennis (Pose Trophée)' : 'Tennis (Trophy Pose)'}
           </button>
           <button
             type="button"
@@ -410,7 +414,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
             onClick={() => { hapticLight(); setActiveSport('padel'); }}
             data-testid="tab-padel"
           >
-            🏸 {fr ? 'Padel (Bandeja)' : 'Padel (Bandeja)'}
+            {fr ? 'Padel (Bandeja)' : 'Padel (Bandeja)'}
           </button>
           <button
             type="button"
@@ -418,7 +422,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
             onClick={() => { hapticLight(); setActiveSport('baseball'); }}
             data-testid="tab-baseball"
           >
-            ⚾ {fr ? 'Baseball (Stress UCL)' : 'Baseball (UCL Stress)'}
+            {fr ? 'Baseball (Stress UCL)' : 'Baseball (UCL Stress)'}
           </button>
           <button
             type="button"
@@ -426,7 +430,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
             onClick={() => { hapticLight(); setActiveSport('cycling'); }}
             data-testid="tab-cycling"
           >
-            🚴 {fr ? 'Cyclisme (Bike Fit)' : 'Cycling (Bike Fit)'}
+            {fr ? 'Cyclisme (Bike Fit)' : 'Cycling (Bike Fit)'}
           </button>
           <button
             type="button"
@@ -434,7 +438,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
             onClick={() => { hapticLight(); setActiveSport('rowing'); }}
             data-testid="tab-rowing"
           >
-            🚣 {fr ? 'Aviron (Ratio 1:2)' : 'Rowing (1:2 Ratio)'}
+            {fr ? 'Aviron (Ratio 1:2)' : 'Rowing (1:2 Ratio)'}
           </button>
           {onOpenEquine && (
             <button
@@ -443,14 +447,14 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
               onClick={() => { hapticLight(); onOpenEquine(); }}
               data-testid="tab-equine-link"
             >
-              🐎 {fr ? 'Équitation (EquiVision)' : 'Equestrian (EquiVision)'}
+              {fr ? 'Équitation (EquiVision)' : 'Equestrian (EquiVision)'}
             </button>
           )}
           <span className="sports-tab-btn" style={{ opacity: 0.6, cursor: 'default' }}>
-            ⛷️ {fr ? 'Ski Alpin' : 'Alpine Skiing'} <span className="roadmap-pill">Bêta Q1</span>
+            {fr ? 'Ski Alpin' : 'Alpine Skiing'} <span className="roadmap-pill">Bêta Q1</span>
           </span>
           <span className="sports-tab-btn" style={{ opacity: 0.6, cursor: 'default' }}>
-            🏊 {fr ? 'Natation' : 'Swimming'} <span className="roadmap-pill">Bêta Q2</span>
+            {fr ? 'Natation' : 'Swimming'} <span className="roadmap-pill">Bêta Q2</span>
           </span>
         </div>
 
@@ -463,7 +467,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
               onClick={() => { hapticLight(); setAnalysisMode('landmarks'); }}
               data-testid="mode-landmarks"
             >
-              🦴 {fr ? 'Squelette Vectoriel 3D' : '3D Vector Skeleton'}
+              <SvgSkeleton />{fr ? 'Squelette Vectoriel 3D' : '3D Vector Skeleton'}
             </button>
             <button
               type="button"
@@ -471,7 +475,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
               onClick={() => { hapticLight(); setAnalysisMode('simulation'); }}
               data-testid="mode-simulation"
             >
-              📐 {fr ? 'Simulateur d’Angles' : 'Angle Simulator'}
+              <SvgAngle />{fr ? 'Simulateur d’Angles' : 'Angle Simulator'}
             </button>
           </div>
         )}
@@ -503,10 +507,10 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
               <div className="preset-card-top">
                 <span className={`preset-verdict-badge ${currentPreset.verdict}`}>
                   {currentPreset.verdict === 'optimal'
-                    ? (fr ? '✓ Modèle Optimale Tour' : '✓ Tour Gold Standard')
+                    ? <><SvgCheck />{fr ? 'Modèle Optimal Tour' : 'Tour Gold Standard'}</>
                     : currentPreset.verdict === 'warning'
-                    ? (fr ? '⚠️ Risque d’Inefficacité' : '⚠️ Sub-optimal Mechanics')
-                    : (fr ? '🚨 Risque Lésionnel Élevé' : '🚨 High Injury Risk')}
+                    ? (fr ? 'Risque d’Inefficacité' : 'Sub-optimal Mechanics')
+                    : (fr ? 'Risque Lésionnel Élevé' : 'High Injury Risk')}
                 </span>
                 <span className="preset-meta-text">{activeSport.toUpperCase()} 3D KINEMATICS</span>
               </div>
@@ -521,7 +525,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
         {activeSport === 'golf' && (
           <div className="sports-card" data-testid="card-golf-metrics">
             <div className="sports-card-header">
-              <h2>⛳ {fr ? 'Indicateurs PGA Tour' : 'PGA Tour Kinematic Markers'}</h2>
+              <h2>{fr ? 'Indicateurs PGA Tour' : 'PGA Tour Kinematic Markers'}</h2>
               <span className="metric-tag optimal">Tour Model</span>
             </div>
 
@@ -619,7 +623,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
         {activeSport === 'tennis' && (
           <div className="sports-card" data-testid="card-tennis-metrics">
             <div className="sports-card-header">
-              <h2>🎾 {fr ? 'Service & Chaîne Cinétique' : 'Serve Kinetic Chain & Trophy Pose'}</h2>
+              <h2>{fr ? 'Service & Chaîne Cinétique' : 'Serve Kinetic Chain & Trophy Pose'}</h2>
               <span className={`metric-tag ${tennisTrophy.isTrophyPoseSound ? 'optimal' : 'warning'}`}>
                 {tennisTrophy.isTrophyPoseSound ? 'Sound Pose' : 'Sub-Optimal'}
               </span>
@@ -672,7 +676,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
         {activeSport === 'padel' && (
           <div className="sports-card" data-testid="card-padel-metrics">
             <div className="sports-card-header">
-              <h2>🏸 {fr ? 'Bandeja & Contrôle de Rebond' : 'Bandeja Mechanics & Rebound Suppression'}</h2>
+              <h2>{fr ? 'Bandeja & Contrôle de Rebond' : 'Bandeja Mechanics & Rebound Suppression'}</h2>
               <span className="metric-tag optimal">{padelBandeja.verdict}</span>
             </div>
 
@@ -724,7 +728,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
         {activeSport === 'baseball' && (
           <div className="sports-card" data-testid="card-baseball-metrics">
             <div className="sports-card-header">
-              <h2>⚾ {fr ? 'Lancer & Prévention Valgus UCL' : 'Pitching Mechanics & UCL Torque Protection'}</h2>
+              <h2>{fr ? 'Lancer & Prévention Valgus UCL' : 'Pitching Mechanics & UCL Torque Protection'}</h2>
               <span className={`metric-tag ${baseballPitch.uclSafetyVerdict === 'optimal_safe' ? 'optimal' : 'warning'}`}>
                 {baseballPitch.uclSafetyVerdict}
               </span>
@@ -781,7 +785,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
         {activeSport === 'cycling' && (
           <div className="sports-card" data-testid="card-cycling-metrics">
             <div className="sports-card-header">
-              <h2>🚴 {fr ? 'Étude Posturale Bike Fit' : 'Bike Fit & Knee Kinematics'}</h2>
+              <h2>{fr ? 'Étude Posturale Bike Fit' : 'Bike Fit & Knee Kinematics'}</h2>
               <span className={`metric-tag ${bikeFit.saddleHeightVerdict === 'optimal' ? 'optimal' : 'warning'}`}>
                 {bikeFit.saddleHeightVerdict}
               </span>
@@ -820,7 +824,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
         {activeSport === 'rowing' && (
           <div className="sports-card" data-testid="card-rowing-metrics">
             <div className="sports-card-header">
-              <h2>🚣 {fr ? 'Régularité & Cadence Aviron' : 'Rowing Ergometer Rhythm Ratio'}</h2>
+              <h2>{fr ? 'Régularité & Cadence Aviron' : 'Rowing Ergometer Rhythm Ratio'}</h2>
               <span className={`metric-tag ${rowingRhythm.verdict === 'optimal_ratio' ? 'optimal' : 'warning'}`}>
                 {rowingRhythm.verdict}
               </span>

@@ -148,7 +148,7 @@ export default function Chat({ onClose }) {
           onClick={handleCopyInvite}
           data-testid="chat-copy-invite"
         >
-          {copiedLink ? (fr ? '✓ Copié' : '✓ Copied') : (fr ? 'Lien d’invitation' : 'Invite Link')}
+          {copiedLink ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: 'middle', marginRight: '4px' }}><polyline points="20 6 9 17 4 12"/></svg>{fr ? 'Copié' : 'Copied'}</> : (fr ? 'Lien d’invitation' : 'Invite Link')}
         </button>
       </div>
 
@@ -201,7 +201,8 @@ export default function Chat({ onClose }) {
             onClick={handleAttachTelemetry}
             data-testid="attach-telemetry-btn"
           >
-            📎 {fr ? 'Joindre ma dernière série' : 'Attach Last Set Telemetry'}
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: 'middle', marginRight: '5px' }}><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            {fr ? 'Joindre ma dernière série' : 'Attach Last Set Telemetry'}
           </button>
         </div>
 

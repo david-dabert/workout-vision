@@ -36,6 +36,23 @@ import {
 import { hapticLight, hapticTap } from '../../lib/haptics';
 import './CoachSuite.css';
 
+const SvgUsers = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+const SvgEuro = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M4 10h12M4 14h9M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12a7.9 7.9 0 0 0 7.8 8 7.7 7.7 0 0 0 5.2-2"/></svg>;
+const SvgSalad = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M7 12V7a5 5 0 0 1 10 0v5"/><path d="M12 7V4"/></svg>;
+const SvgStetho = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M4.5 3v5a3.5 3.5 0 0 0 7 0V3"/><path d="M8 11.5v3a4.5 4.5 0 0 0 9 0v-2"/><circle cx="17" cy="10.5" r="2"/></svg>;
+const SvgCheck = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '5px' }}><polyline points="20 6 9 17 4 12"/></svg>;
+const SvgClose = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+const SvgDoc = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>;
+const SvgCopy = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>;
+const SvgPrint = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>;
+const SvgDownload = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
+const SvgCamera = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>;
+const SvgBarcode = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M3 5v14M8 5v14M12 5v14M17 5v14M21 5v14"/></svg>;
+const SvgSave = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>;
+const SvgTarget = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
+const SvgBulb = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7z"/></svg>;
+const SvgVideo = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>;
+
 export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
   const { lang } = useT();
   const fr = lang === 'fr';
@@ -455,7 +472,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
           onClick={() => { hapticLight(); setActiveSubTab('clients'); }}
           data-testid="tab-clients"
         >
-          <span>👥 {fr ? 'Clients & Suivi (Carnets)' : 'Clients & Records (Packs)'}</span>
+          <span><SvgUsers />{fr ? 'Clients & Suivi (Carnets)' : 'Clients & Records (Packs)'}</span>
         </button>
         <button
           type="button"
@@ -463,7 +480,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
           onClick={() => { hapticLight(); setActiveSubTab('accounting'); }}
           data-testid="tab-accounting"
         >
-          <span>💶 {fr ? 'Comptabilité Freelance (Basic-Fit)' : 'Freelance Accounting & Invoicing'}</span>
+          <span><SvgEuro />{fr ? 'Comptabilité Freelance (Basic-Fit)' : 'Freelance Accounting & Invoicing'}</span>
         </button>
         <button
           type="button"
@@ -471,7 +488,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
           onClick={() => { hapticLight(); setActiveSubTab('nutrition'); }}
           data-testid="tab-nutrition"
         >
-          <span>🥗 {fr ? 'Vision Assiette & Nutrition' : 'Nutrition Vision & Macros'}</span>
+          <span><SvgSalad />{fr ? 'Vision Assiette & Nutrition' : 'Nutrition Vision & Macros'}</span>
         </button>
         <button
           type="button"
@@ -479,7 +496,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
           onClick={() => { hapticLight(); setActiveSubTab('physio'); }}
           data-testid="tab-physio"
         >
-          <span>🩺 {fr ? 'Kiné par Zone' : 'Physio by Joint'}</span>
+          <span><SvgStetho />{fr ? 'Kiné par Zone' : 'Physio by Joint'}</span>
         </button>
       </div>
 
@@ -510,7 +527,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
             <form className="add-client-card" onSubmit={handleSaveNewClient}>
               <div className="card-top-row">
                 <b>{fr ? 'Fiche Nouveau Client' : 'New Client Profile'}</b>
-                <button type="button" className="text-close-btn" onClick={() => setIsAddingClient(false)}>✕</button>
+                <button type="button" className="text-close-btn" onClick={() => setIsAddingClient(false)}><SvgClose /></button>
               </div>
               <div className="form-grid">
                 <div className="input-group">
@@ -734,7 +751,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                         setActiveSubTab('nutrition');
                       }}
                     >
-                      🥗 {fr ? 'Vision Assiette & Macros' : 'Macro Targets'}
+                      <SvgSalad />{fr ? 'Vision Assiette & Macros' : 'Macro Targets'}
                     </button>
                     <button
                       type="button"
@@ -744,7 +761,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                         setActiveSubTab('accounting');
                       }}
                     >
-                      💶 {fr ? 'Générer une Facture' : 'Create Invoice'}
+                      <SvgEuro />{fr ? 'Générer une Facture' : 'Create Invoice'}
                     </button>
                     <button
                       type="button"
@@ -755,7 +772,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                       }}
                       data-testid="btn-open-contract"
                     >
-                      📜 {fr ? 'Contrat de Coaching' : 'Coaching Contract'}
+                      <SvgDoc />{fr ? 'Contrat de Coaching' : 'Coaching Contract'}
                     </button>
                   </div>
 
@@ -769,7 +786,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                             {fr ? 'Conforme au Code civil (Art. 1101), Code du Sport (Art. L212-1) et clause d’annulation 24h.' : 'Compliant with French Sports Code, liability insurance, and 24h cancellation terms.'}
                           </p>
                         </div>
-                        <button type="button" className="text-close-btn" onClick={() => setShowContractModal(false)}>✕</button>
+                        <button type="button" className="text-close-btn" onClick={() => setShowContractModal(false)}><SvgClose /></button>
                       </div>
 
                       <div className="contract-controls-bar">
@@ -799,7 +816,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                           }}
                           data-testid="btn-copy-contract"
                         >
-                          {copiedContract ? (fr ? '✓ Contrat Copié' : '✓ Copied') : (fr ? '📋 Copier le Contrat' : 'Copy Text')}
+                          {copiedContract ? <><SvgCheck />{fr ? 'Contrat Copié' : 'Copied'}</> : <><SvgCopy />{fr ? 'Copier le Contrat' : 'Copy Text'}</>}
                         </button>
                         <button
                           type="button"
@@ -807,7 +824,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                           onClick={() => window.print()}
                           data-testid="btn-print-contract"
                         >
-                          🖨️ {fr ? 'Imprimer / PDF' : 'Print / PDF'}
+                          <SvgPrint />{fr ? 'Imprimer / PDF' : 'Print / PDF'}
                         </button>
                         <button
                           type="button"
@@ -858,11 +875,11 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
 
           {/* Legal Compliance Checklist Badge Bar */}
           <div className="compliance-badge-bar">
-            <span className="comp-badge">✓ {fr ? 'Mention "EI" Décret 2022-725' : 'EI Legal Name'}</span>
-            <span className="comp-badge">✓ {fr ? 'Carte Pro DRAJES' : 'Sports License'}</span>
-            <span className="comp-badge">✓ {fr ? 'Assurance RCP Pro' : 'Liability Insured'}</span>
-            <span className="comp-badge">✓ {fr ? 'TVA Art. 293 B' : 'TVA Exemption'}</span>
-            <span className="comp-badge">✓ {fr ? 'Pénalités & 40 € Art. D441-5' : 'Statutory Late Fee'}</span>
+            <span className="comp-badge"><SvgCheck />{fr ? 'Mention "EI" Décret 2022-725' : 'EI Legal Name'}</span>
+            <span className="comp-badge"><SvgCheck />{fr ? 'Carte Pro DRAJES' : 'Sports License'}</span>
+            <span className="comp-badge"><SvgCheck />{fr ? 'Assurance RCP Pro' : 'Liability Insured'}</span>
+            <span className="comp-badge"><SvgCheck />{fr ? 'TVA Art. 293 B' : 'TVA Exemption'}</span>
+            <span className="comp-badge"><SvgCheck />{fr ? 'Pénalités & 40 € Art. D441-5' : 'Statutory Late Fee'}</span>
           </div>
 
           {/* Interactive Accounting Tuner */}
@@ -944,7 +961,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
 
           {/* Break-Even Insight Banner */}
           <div className="break-even-banner">
-            <span className="be-icon">💡</span>
+            <span className="be-icon"><SvgBulb /></span>
             <div>
               <strong>{fr ? 'Seuil de Rentabilité Loyer\u00A0: ' : 'Rent Break-Even: '}</strong>
               <span>
@@ -973,7 +990,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   onClick={handleCopyInvoice}
                   data-testid="btn-copy-invoice"
                 >
-                  {copiedInvoice ? (fr ? '✓ Facture Copiée' : '✓ Copied') : (fr ? 'Copier le Texte' : 'Copy Text')}
+                  {copiedInvoice ? <><SvgCheck />{fr ? 'Facture Copiée' : 'Copied'}</> : (fr ? 'Copier le Texte' : 'Copy Text')}
                 </button>
                 <button
                   type="button"
@@ -981,7 +998,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   onClick={() => window.print()}
                   data-testid="btn-print-invoice"
                 >
-                  🖨️ {fr ? 'Imprimer / PDF' : 'Print / PDF'}
+                  <SvgPrint />{fr ? 'Imprimer / PDF' : 'Print / PDF'}
                 </button>
                 <button
                   type="button"
@@ -989,7 +1006,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   onClick={handleSaveToLivreRecettes}
                   data-testid="btn-save-recette"
                 >
-                  📥 {fr ? 'Enregistrer Recette' : 'Save Receipt'}
+                  <SvgDownload />{fr ? 'Enregistrer Recette' : 'Save Receipt'}
                 </button>
               </div>
             </div>
@@ -1114,7 +1131,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                 onClick={handleDownloadCsv}
                 data-testid="btn-download-csv"
               >
-                📥 {fr ? 'Télécharger le Livre des Recettes (CSV)' : 'Export Receipts (CSV)'}
+                <SvgDownload />{fr ? 'Télécharger le Livre des Recettes (CSV)' : 'Export Receipts (CSV)'}
               </button>
             </div>
 
@@ -1216,7 +1233,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                 className={`mode-btn ${nutritionSubMode === 'targets' ? 'active' : ''}`}
                 onClick={() => { hapticLight(); setNutritionSubMode('targets'); }}
               >
-                🎯 {fr ? 'Cibles Carence' : 'Macro Targets'}
+                <SvgTarget />{fr ? 'Cibles Carence' : 'Macro Targets'}
               </button>
               <button
                 type="button"
@@ -1224,7 +1241,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                 onClick={() => { hapticLight(); setNutritionSubMode('vision_plate'); }}
                 data-testid="btn-mode-vision"
               >
-                📸 {fr ? 'Vision Assiette' : 'Plate Vision'}
+                <SvgCamera />{fr ? 'Vision Assiette' : 'Plate Vision'}
               </button>
               <button
                 type="button"
@@ -1232,7 +1249,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                 onClick={() => { hapticLight(); setNutritionSubMode('barcode'); }}
                 data-testid="btn-mode-barcode"
               >
-                📦 {fr ? 'Scanner Code-Barres' : 'Barcode Scan'}
+                <SvgBarcode />{fr ? 'Scanner Code-Barres' : 'Barcode Scan'}
               </button>
             </div>
           </div>
@@ -1350,7 +1367,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   onClick={() => plateFileInputRef.current?.click()}
                   data-testid="btn-upload-plate"
                 >
-                  📸 {fr ? 'Prendre Photo de l’Assiette' : 'Upload Meal Photo'}
+                  <SvgCamera />{fr ? 'Prendre Photo de l’Assiette' : 'Upload Meal Photo'}
                 </button>
               </div>
 
@@ -1359,7 +1376,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   <canvas ref={plateCanvasRef} className="plate-canvas" width="240" height="240" />
                   {!plateImageSrc && (
                     <div className="canvas-placeholder" onClick={() => plateFileInputRef.current?.click()}>
-                      <span>🍽️</span>
+                      <span><SvgSalad /></span>
                       <p>{fr ? 'Cliquez pour charger la photo d’un repas' : 'Click to analyze a meal photo'}</p>
                     </div>
                   )}
@@ -1406,7 +1423,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                       style={{ width: '100%', marginTop: '10px' }}
                       data-testid="btn-save-vision-meal"
                     >
-                      💾 {fr ? `Enregistrer dans le journal de ${selectedClient ? selectedClient.name : 'Client'}` : 'Save Meal to Client Log'}
+                      <SvgSave />{fr ? `Enregistrer dans le journal de ${selectedClient ? selectedClient.name : 'Client'}` : 'Save Meal to Client Log'}
                     </button>
                   </div>
                 )}
@@ -1505,7 +1522,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                     style={{ width: '100%', marginTop: '12px' }}
                     data-testid="btn-save-barcode-meal"
                   >
-                    💾 {fr ? `Ajouter au journal de ${selectedClient ? selectedClient.name : 'Client'}` : 'Add to Client Log'}
+                    <SvgSave />{fr ? `Ajouter au journal de ${selectedClient ? selectedClient.name : 'Client'}` : 'Add to Client Log'}
                   </button>
                 </div>
               )}
@@ -1521,7 +1538,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   <div key={m.id} className="meal-history-card">
                     <div className="meal-h-left">
                       <span className="meal-source-tag">
-                        {m.source === 'vision_plate' ? '📸 Vision' : '📦 Scan'}
+                        {m.source === 'vision_plate' ? <><SvgCamera />Vision</> : <><SvgBarcode />Scan</>}
                       </span>
                       <strong>{m.title}</strong>
                       <span className="meal-date-str">{m.dateStr}</span>
@@ -1574,7 +1591,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                 <div className="physio-card-top">
                   <span className="physio-region-tag">{fr ? item.regionLabelFr : item.regionLabelEn}</span>
                   <span className="camera-view-tag">
-                    📹 {item.cameraView === 'side' ? (fr ? 'Vue Profil' : 'Side View') : (fr ? 'Vue Face' : 'Front View')}
+                    <SvgVideo />{item.cameraView === 'side' ? (fr ? 'Vue Profil' : 'Side View') : (fr ? 'Vue Face' : 'Front View')}
                   </span>
                 </div>
                 <h4 className="physio-ex-name">{fr ? item.nameFr : item.nameEn}</h4>

@@ -210,7 +210,7 @@ export default function GymBuddy({ onClose }) {
                   data-testid={`connect-buddy-${buddy.id}`}
                 >
                   {connectedId === buddy.id
-                    ? (fr ? '✓ Connexion P2P en cours...' : '✓ Connecting via P2P...')
+                    ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: 'middle', marginRight: '4px' }}><polyline points="20 6 9 17 4 12"/></svg>{fr ? 'Connexion P2P en cours...' : 'Connecting via P2P...'}</>
                     : (fr ? 'Proposer une séance' : 'Request Training Session')}
                 </button>
               </div>
