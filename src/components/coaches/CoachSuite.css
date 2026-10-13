@@ -1587,3 +1587,44 @@
   font-size: 11px;
   color: var(--text-secondary, rgba(232, 230, 225, 0.6));
 }
+
+/* ─── Legal Coaching Contract Modal ─── */
+.contract-modal-card {
+  background: var(--depth-1, #0f0f13);
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.12));
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.contract-controls-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--depth-2, #16161a);
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.contract-controls-bar select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.15));
+  color: #fff;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.contract-paper-preview {
+  background: #08080b;
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+  padding: 16px;
+  max-height: 280px;
+  overflow-y: auto;
+}

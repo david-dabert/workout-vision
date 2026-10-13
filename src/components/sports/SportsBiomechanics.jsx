@@ -10,6 +10,14 @@ import {
   calculateBaseballPitchMechanics,
   calculateRowingRhythm,
 } from '../../lib/sports/kinematics';
+import {
+  drawSportsBiomechanicsSkeleton,
+  getLandmarkPresetsForSport,
+  extractGolfKinematicsFromLandmarks,
+  extractTennisKinematicsFromLandmarks,
+  extractBikeFitKinematicsFromLandmarks,
+  extractBaseballPitchFromLandmarks,
+} from '../../lib/sports/landmarkKinematics';
 import { hapticLight } from '../../lib/haptics';
 import './SportsBiomechanics.css';
 
@@ -18,7 +26,21 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
   const fr = lang === 'fr';
 
   const [activeSport, setActiveSport] = useState('golf'); // 'golf' | 'tennis' | 'padel' | 'cycling' | 'baseball' | 'rowing'
+  const [analysisMode, setAnalysisMode] = useState('landmarks'); // 'landmarks' | 'simulation'
+  const [selectedPresetId, setSelectedPresetId] = useState('golf_tour_optimal');
   const [copied, setCopied] = useState(false);
+
+  const availablePresets = useMemo(() => getLandmarkPresetsForSport(activeSport), [activeSport]);
+  const currentPreset = useMemo(() => {
+    return availablePresets.find(p => p.id === selectedPresetId) || availablePresets[0] || null;
+  }, [availablePresets, selectedPresetId]);
+
+  useEffect(() => {
+    const presets = getLandmarkPresetsForSport(activeSport);
+    if (presets.length > 0) {
+      setSelectedPresetId(presets[0].id);
+    }
+  }, [activeSport]);
 
   // Real Video Upload State
   const fileInputRef = useRef(null);
@@ -92,6 +114,11 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
 
     ctx.fillStyle = '#08080b';
     ctx.fillRect(0, 0, width, height);
+
+    if (analysisMode === 'landmarks' && currentPreset) {
+      drawSportsBiomechanicsSkeleton(ctx, currentPreset.landmarks, activeSport, width, height);
+      return;
+    }
 
     const centerX = width / 2;
     const centerY = height / 2;
@@ -210,7 +237,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
       ctx.font = '12px -apple-system, sans-serif';
       ctx.fillText(`Rowing Rhythm: 1:${rowingRhythm.rhythmRatio} (${rowingRhythm.verdict})`, 20, 25);
     }
-  }, [activeSport, golfXFactor, tennisShoulderTilt, tennisKneeFlexion, padelContactHeight, padelShoulderTilt, padelBandeja, bdcKneeAngle, bikeFit, pelvisTurn, shoulderTurn, baseballPitch, rowingRhythm, rowingDriveMs, rowingRecoveryMs]);
+  }, [analysisMode, currentPreset, activeSport, golfXFactor, tennisShoulderTilt, tennisKneeFlexion, padelContactHeight, padelShoulderTilt, padelBandeja, bdcKneeAngle, bikeFit, pelvisTurn, shoulderTurn, baseballPitch, rowingRhythm, rowingDriveMs, rowingRecoveryMs]);
 
   const handleCopyReport = () => {
     hapticLight();
@@ -427,10 +454,68 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
           </span>
         </div>
 
+        {/* Analysis Mode Toggle */}
+        {availablePresets.length > 0 && (
+          <div className="sports-mode-bar" data-testid="sports-mode-bar">
+            <button
+              type="button"
+              className={`mode-pill ${analysisMode === 'landmarks' ? 'active' : ''}`}
+              onClick={() => { hapticLight(); setAnalysisMode('landmarks'); }}
+              data-testid="mode-landmarks"
+            >
+              🦴 {fr ? 'Squelette Vectoriel 3D' : '3D Vector Skeleton'}
+            </button>
+            <button
+              type="button"
+              className={`mode-pill ${analysisMode === 'simulation' ? 'active' : ''}`}
+              onClick={() => { hapticLight(); setAnalysisMode('simulation'); }}
+              data-testid="mode-simulation"
+            >
+              📐 {fr ? 'Simulateur d’Angles' : 'Angle Simulator'}
+            </button>
+          </div>
+        )}
+
         {/* Dynamic Canvas Angle Visualizer */}
         <div className="sports-canvas-container">
           <canvas ref={canvasRef} className="sports-canvas" />
         </div>
+
+        {/* 3D Landmark Presets Selector & Clinical Insights */}
+        {analysisMode === 'landmarks' && availablePresets.length > 0 && currentPreset && (
+          <div className="sports-preset-section" data-testid="sports-preset-section">
+            <div className="sports-preset-chips">
+              {availablePresets.map(preset => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  className={`preset-chip ${selectedPresetId === preset.id ? 'active' : ''} ${preset.verdict}`}
+                  onClick={() => { hapticLight(); setSelectedPresetId(preset.id); }}
+                  data-testid={`preset-${preset.id}`}
+                >
+                  <span className={`preset-dot ${preset.verdict}`} />
+                  {fr ? preset.nameFr : preset.nameEn}
+                </button>
+              ))}
+            </div>
+
+            <div className={`sports-preset-card ${currentPreset.verdict}`}>
+              <div className="preset-card-top">
+                <span className={`preset-verdict-badge ${currentPreset.verdict}`}>
+                  {currentPreset.verdict === 'optimal'
+                    ? (fr ? '✓ Modèle Optimale Tour' : '✓ Tour Gold Standard')
+                    : currentPreset.verdict === 'warning'
+                    ? (fr ? '⚠️ Risque d’Inefficacité' : '⚠️ Sub-optimal Mechanics')
+                    : (fr ? '🚨 Risque Lésionnel Élevé' : '🚨 High Injury Risk')}
+                </span>
+                <span className="preset-meta-text">{activeSport.toUpperCase()} 3D KINEMATICS</span>
+              </div>
+              <p className="preset-desc-text">
+                {fr ? currentPreset.descriptionFr : currentPreset.descriptionEn}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Sport Specific Metric Cards and Controls */}
         {activeSport === 'golf' && (

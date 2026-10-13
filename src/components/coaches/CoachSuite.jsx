@@ -20,6 +20,7 @@ import {
   exportLivreRecettesCsv,
   calculateCoachAnnualPl,
 } from '../../lib/accounting';
+import { generateCoachingContract } from '../../lib/coachContracts';
 import {
   getDailyTargets,
   calculateAdherenceScore,
@@ -57,6 +58,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
   // Client Session & Carnet Tracking
   const [clientCarnet, setClientCarnet] = useState({ totalPurchased: 10, completedCount: 0, pricePerPack: 500 });
   const [clientSessionsList, setClientSessionsList] = useState([]);
+  const [clientMealHistory, setClientMealHistory] = useState([]);
   const [isLoggingSession, setIsLoggingSession] = useState(false);
   const [sessionNotesInput, setSessionNotesInput] = useState('');
   const [sessionTypeInput, setSessionTypeInput] = useState('Coaching 1h (Plateau Musculation)');
@@ -168,6 +170,38 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
   const [livreEntries, setLivreEntries] = useState([]);
   const [showAnnualPl, setShowAnnualPl] = useState(false);
 
+  // Contract generator state
+  const [showContractModal, setShowContractModal] = useState(false);
+  const [contractPackage, setContractPackage] = useState('carnet_10');
+  const [copiedContract, setCopiedContract] = useState(false);
+
+  const generatedContract = useMemo(() => {
+    const pkgPrice = contractPackage === 'carnet_10' ? sessionPrice * 10 :
+      contractPackage === 'monthly_retainer' ? 350 :
+      contractPackage === 'biomech_pack' ? 60 : sessionPrice;
+
+    return generateCoachingContract({
+      contractNumber: `CTR-${new Date().getFullYear()}-${selectedClientId ? String(selectedClientId).slice(-4) : '001'}`,
+      coach: {
+        name: coachName,
+        siret: coachSiret,
+        address: 'France',
+        cartePro: coachCartePro,
+        rcpPro: coachRcpPro,
+        gymFacility: 'Basic-Fit',
+      },
+      client: {
+        name: selectedClient ? selectedClient.name : 'Client Particulier',
+        email: selectedClient?.email,
+        phone: selectedClient?.phone,
+      },
+      packageType: contractPackage,
+      sessionsCount: contractPackage === 'carnet_10' ? 10 : 1,
+      totalPriceEur: pkgPrice,
+      validityMonths: 6,
+    });
+  }, [selectedClient, selectedClientId, coachName, coachSiret, coachCartePro, coachRcpPro, contractPackage, sessionPrice]);
+
   // Load Livre des Recettes entries
   useEffect(() => {
     getLivreRecettesEntries().then(entries => {
@@ -209,7 +243,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
     }
 
     return generateFrenchInvoice({
-      invoiceNumber: `F-${new Date().getFullYear()}-00${Math.floor(Math.random() * 90) + 10}`,
+      invoiceNumber: `F-${new Date().getFullYear()}-${selectedClientId ? String(selectedClientId).slice(-4) : '001'}`,
       coach: {
         name: coachName,
         siret: coachSiret,
@@ -224,7 +258,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
       regime,
       items,
     });
-  }, [invoiceType, sessionPrice, coachName, coachSiret, coachCartePro, coachRcpPro, selectedClient, regime, fr]);
+  }, [invoiceType, sessionPrice, coachName, coachSiret, coachCartePro, coachRcpPro, selectedClient, selectedClientId, regime, fr]);
 
   const handleCopyInvoice = () => {
     hapticLight();
@@ -289,7 +323,6 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
   // ─── 3. Nutrition & Vision State ───
   const [nutritionGoal, setNutritionGoal] = useState('cut'); // 'cut' | 'maintain' | 'bulk'
   const [nutritionSubMode, setNutritionSubMode] = useState('targets'); // 'targets' | 'vision_plate' | 'barcode'
-  const [clientMealHistory, setClientMealHistory] = useState([]);
 
   // Vision Plate State
   const plateCanvasRef = useRef(null);
@@ -564,7 +597,11 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   <div
                     key={cl.id}
                     className={`client-item-card press ${selectedClientId === cl.id ? 'active' : ''}`}
-                    onClick={() => { hapticLight(); setSelectedClientId(cl.id); }}
+                    onClick={() => {
+                      hapticLight();
+                      setSelectedClientId(cl.id);
+                      if (onSelectClient) onSelectClient(cl);
+                    }}
                     data-testid={`client-${cl.id}`}
                   >
                     <div className="client-initials">
@@ -709,7 +746,79 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                     >
                       💶 {fr ? 'Générer une Facture' : 'Create Invoice'}
                     </button>
+                    <button
+                      type="button"
+                      className="quick-suite-btn press"
+                      onClick={() => {
+                        hapticLight();
+                        setShowContractModal(true);
+                      }}
+                      data-testid="btn-open-contract"
+                    >
+                      📜 {fr ? 'Contrat de Coaching' : 'Coaching Contract'}
+                    </button>
                   </div>
+
+                  {/* Contract Generator Modal Card */}
+                  {showContractModal && (
+                    <div className="contract-modal-card" data-testid="contract-modal">
+                      <div className="card-top-row">
+                        <div>
+                          <b>{fr ? 'Contrat de Prestation de Coaching Sportif' : 'Personal Training Agreement'}</b>
+                          <p style={{ margin: 0, fontSize: '12px', color: 'rgba(232, 230, 225, 0.6)' }}>
+                            {fr ? 'Conforme au Code civil (Art. 1101), Code du Sport (Art. L212-1) et clause d’annulation 24h.' : 'Compliant with French Sports Code, liability insurance, and 24h cancellation terms.'}
+                          </p>
+                        </div>
+                        <button type="button" className="text-close-btn" onClick={() => setShowContractModal(false)}>✕</button>
+                      </div>
+
+                      <div className="contract-controls-bar">
+                        <label>{fr ? 'Formule Souscrite\u00A0: ' : 'Package: '}</label>
+                        <select value={contractPackage} onChange={e => setContractPackage(e.target.value)}>
+                          <option value="carnet_10">{fr ? 'Carnet 10 Séances (Pack 10)' : '10-Session Pack'}</option>
+                          <option value="single_session">{fr ? 'Séance Individuelle (1h)' : 'Single Session (1h)'}</option>
+                          <option value="monthly_retainer">{fr ? 'Abonnement Mensuel Suivi Illimité' : 'Monthly Retainer'}</option>
+                          <option value="biomech_pack">{fr ? 'Bilan Biomécanique WorkoutVision' : 'Biomechanical Pack'}</option>
+                        </select>
+                      </div>
+
+                      <div className="contract-paper-preview">
+                        <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: '11.5px', color: 'rgba(232, 230, 225, 0.85)' }}>
+                          {generatedContract.contractText}
+                        </pre>
+                      </div>
+
+                      <div className="contract-modal-actions" style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          className="suite-action-btn press"
+                          onClick={() => {
+                            navigator.clipboard.writeText(generatedContract.contractText);
+                            setCopiedContract(true);
+                            setTimeout(() => setCopiedContract(false), 2500);
+                          }}
+                          data-testid="btn-copy-contract"
+                        >
+                          {copiedContract ? (fr ? '✓ Contrat Copié' : '✓ Copied') : (fr ? '📋 Copier le Contrat' : 'Copy Text')}
+                        </button>
+                        <button
+                          type="button"
+                          className="suite-action-btn press"
+                          onClick={() => window.print()}
+                          data-testid="btn-print-contract"
+                        >
+                          🖨️ {fr ? 'Imprimer / PDF' : 'Print / PDF'}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-cancel press"
+                          onClick={() => setShowContractModal(false)}
+                        >
+                          {fr ? 'Fermer' : 'Close'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -921,6 +1030,15 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   value={coachCartePro}
                   onChange={e => setCoachCartePro(e.target.value)}
                   placeholder="ED-75-..."
+                />
+              </div>
+              <div className="invoice-field">
+                <label>{fr ? 'Assurance RCP Pro' : 'Professional Liability'}</label>
+                <input
+                  type="text"
+                  value={coachRcpPro}
+                  onChange={e => setCoachRcpPro(e.target.value)}
+                  placeholder="MACSF, MAAF, etc."
                 />
               </div>
             </div>
