@@ -14,12 +14,13 @@ describe('Client Nutrition Target Engine', () => {
       'cut'
     );
 
-    expect(targets.bmr).toBe(1780);
-    expect(targets.tdee).toBe(2759);
-    expect(targets.calories).toBe(2259); // tdee - 500
-    expect(targets.protein).toBeLessThanOrEqual(200);
-    expect(targets.carbs).toBeGreaterThan(0);
-    expect(targets.fat).toBeGreaterThan(0);
+    expect(targets).not.toBeNull();
+    expect(targets!.bmr).toBe(1780);
+    expect(targets!.tdee).toBe(2759);
+    expect(targets!.calories).toBe(2259); // tdee - 500
+    expect(targets!.protein).toBeLessThanOrEqual(200);
+    expect(targets!.carbs).toBeGreaterThan(0);
+    expect(targets!.fat).toBeGreaterThan(0);
   });
 
   it('calculates lean surplus targets for bulk goal', () => {
@@ -34,8 +35,9 @@ describe('Client Nutrition Target Engine', () => {
       'bulk'
     );
 
-    expect(targets.calories).toBe(targets.tdee + 300);
-    expect(targets.protein).toBe(108); // 60 * 1.8
+    expect(targets).not.toBeNull();
+    expect(targets!.calories).toBe(targets!.tdee + 300);
+    expect(targets!.protein).toBe(108); // 60 * 1.8
   });
 
   it('computes compliance rate correctly from daily adherence logs', () => {

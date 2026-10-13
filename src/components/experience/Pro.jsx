@@ -59,6 +59,7 @@ export default function Pro({ onClose, start = null }) {
   // A draft is kept only once it holds something: "Nouveau programme", then Back, leaves no empty row and takes no
   // place (excellence hunt, 9 October 2026).
   const [kept, setKept] = useState(start ? start.kept : true);
+  const [proTab, setProTab] = useState('programmes'); // 'programmes' | 'business'
   const update = draft => {
     const next = { ...draft, updatedAt: Date.now() };
     setDrafts(list => [next, ...list.filter(d => d.id !== next.id)]);
@@ -94,7 +95,6 @@ export default function Pro({ onClose, start = null }) {
     if (open.items.length < LIMITS.items) update({ ...open, items: [...open.items, newItem(key)] });
     setPicking(false);
   }} />;
-  const [proTab, setProTab] = useState('programmes'); // 'programmes' | 'business'
   const handleAddPhysio = (key) => {
     const d = newDraft();
     d.title = fr ? 'Protocole Rééducation' : 'Rehab Protocol';
