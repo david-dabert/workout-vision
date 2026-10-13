@@ -9,6 +9,8 @@ import {
   calculateBikeFitKneeAngle,
   calculateBaseballPitchMechanics,
   calculateRowingRhythm,
+  calculateSkiingAngulation,
+  calculateSwimmingEvf,
 } from '../../lib/sports/kinematics';
 import {
   drawSportsBiomechanicsSkeleton,
@@ -75,6 +77,14 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
   const [rowingDriveMs, setRowingDriveMs] = useState(600);
   const [rowingRecoveryMs, setRowingRecoveryMs] = useState(1200);
 
+  // Skiing State
+  const [skiEdgeAngle, setSkiEdgeAngle] = useState(54);
+  const [skiKneeAngulation, setSkiKneeAngulation] = useState(24);
+
+  // Swimming State
+  const [swimElbowCatch, setSwimElbowCatch] = useState(115);
+  const [swimBodyRoll, setSwimBodyRoll] = useState(42);
+
   const canvasRef = useRef(null);
 
   // Calculations
@@ -87,6 +97,8 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
   const bikeFit = useMemo(() => calculateBikeFitKneeAngle(bdcKneeAngle), [bdcKneeAngle]);
   const baseballPitch = useMemo(() => calculateBaseballPitchMechanics(baseballShoulderAbduction, baseballElbowFlexion), [baseballShoulderAbduction, baseballElbowFlexion]);
   const rowingRhythm = useMemo(() => calculateRowingRhythm(rowingDriveMs, rowingRecoveryMs), [rowingDriveMs, rowingRecoveryMs]);
+  const skiing = useMemo(() => calculateSkiingAngulation(skiEdgeAngle, skiKneeAngulation), [skiEdgeAngle, skiKneeAngulation]);
+  const swimming = useMemo(() => calculateSwimmingEvf(swimElbowCatch, swimBodyRoll), [swimElbowCatch, swimBodyRoll]);
 
   const handleVideoUpload = (e) => {
     const file = e.target.files?.[0];
@@ -221,6 +233,35 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
       ctx.fillStyle = 'rgba(232, 230, 225, 0.7)';
       ctx.font = '12px -apple-system, sans-serif';
       ctx.fillText(`Shoulder: ${baseballPitch.shoulderAbductionDeg}° | Elbow: ${baseballPitch.elbowFlexionDeg}° (UCL: ${baseballPitch.estimatedUclStressNm} Nm)`, 20, 25);
+    } else if (activeSport === 'skiing') {
+      // Ski Carving Angulation vector
+      ctx.strokeStyle = skiing.verdict === 'optimal_carve' ? '#5DB87A' : '#D4A76A';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY - 50);
+      const kneeRad = ((90 - skiKneeAngulation) * Math.PI) / 180;
+      ctx.lineTo(centerX + 35 * Math.cos(kneeRad), centerY + 15);
+      const edgeRad = ((90 - skiEdgeAngle) * Math.PI) / 180;
+      ctx.lineTo(centerX + 35 * Math.cos(kneeRad) + 50 * Math.cos(edgeRad), centerY + 15 + 50 * Math.sin(edgeRad));
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(232, 230, 225, 0.7)';
+      ctx.font = '12px -apple-system, sans-serif';
+      ctx.fillText(`Ski Carving: ${skiEdgeAngle}° edge | ${skiing.gForceEst}G (${skiing.verdict})`, 20, 25);
+    } else if (activeSport === 'swimming') {
+      // Swimming EVF Catch vector
+      ctx.strokeStyle = swimming.verdict === 'optimal_evf' ? '#5DB87A' : '#D4A76A';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(centerX - 60, centerY - 10);
+      ctx.lineTo(centerX, centerY - 25);
+      const catchRad = (swimming.elbowCatchAngleDeg * Math.PI) / 180;
+      ctx.lineTo(centerX + 45 * Math.sin(catchRad), centerY - 25 + 45 * Math.cos(catchRad));
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(232, 230, 225, 0.7)';
+      ctx.font = '12px -apple-system, sans-serif';
+      ctx.fillText(`Swimming EVF: ${swimElbowCatch}° elbow | Roll: ${swimBodyRoll}° (${swimming.verdict})`, 20, 25);
     } else {
       // Rowing Drive / Recovery bar
       const totalCycle = (rowingDriveMs + rowingRecoveryMs) || 1;
@@ -241,7 +282,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
       ctx.font = '12px -apple-system, sans-serif';
       ctx.fillText(`Rowing Rhythm: 1:${rowingRhythm.rhythmRatio} (${rowingRhythm.verdict})`, 20, 25);
     }
-  }, [analysisMode, currentPreset, activeSport, golfXFactor, tennisShoulderTilt, tennisKneeFlexion, padelContactHeight, padelShoulderTilt, padelBandeja, bdcKneeAngle, bikeFit, pelvisTurn, shoulderTurn, baseballPitch, rowingRhythm, rowingDriveMs, rowingRecoveryMs]);
+  }, [analysisMode, currentPreset, activeSport, golfXFactor, tennisShoulderTilt, tennisKneeFlexion, padelContactHeight, padelShoulderTilt, padelBandeja, bdcKneeAngle, bikeFit, pelvisTurn, shoulderTurn, baseballPitch, rowingRhythm, rowingDriveMs, rowingRecoveryMs, skiing, swimming, skiEdgeAngle, skiKneeAngulation, swimElbowCatch, swimBodyRoll]);
 
   const handleCopyReport = () => {
     hapticLight();
@@ -253,6 +294,8 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
       (activeSport === 'cycling' ? `Bike Fit BDC Knee: ${bikeFit.bdcKneeAngleDeg}° | Verdict: ${bikeFit.saddleHeightVerdict}\n` : '') +
       (activeSport === 'baseball' ? `Pitching UCL Safety: ${baseballPitch.uclSafetyVerdict} | Shoulder: ${baseballPitch.shoulderAbductionDeg}° | Elbow: ${baseballPitch.elbowFlexionDeg}° | Stress: ${baseballPitch.estimatedUclStressNm} Nm\n` : '') +
       (activeSport === 'rowing' ? `Rowing Rhythm: 1:${rowingRhythm.rhythmRatio} (${rowingRhythm.verdict}) | Drive: ${rowingDriveMs}ms | Recovery: ${rowingRecoveryMs}ms\n` : '') +
+      (activeSport === 'skiing' ? `Ski Carving: ${skiing.edgeAngleDeg}° edge | Angulation: ${skiing.kneeAngulationDeg}° | G-Force: ${skiing.gForceEst}G (${skiing.verdict})\n` : '') +
+      (activeSport === 'swimming' ? `Swimming EVF: ${swimming.elbowCatchAngleDeg}° catch | Roll: ${swimming.bodyRollDeg}° | Propulsion: ${swimming.propulsionScore}/100 (${swimming.verdict})\n` : '') +
       `Processing: 100% On-Device Neural Vision | Zero Telemetry Leaks.`;
 
     navigator.clipboard.writeText(text).then(() => {
@@ -450,12 +493,22 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
               {fr ? 'Équitation (EquiVision)' : 'Equestrian (EquiVision)'}
             </button>
           )}
-          <span className="sports-tab-btn" style={{ opacity: 0.6, cursor: 'default' }}>
-            {fr ? 'Ski Alpin' : 'Alpine Skiing'} <span className="roadmap-pill">Bêta Q1</span>
-          </span>
-          <span className="sports-tab-btn" style={{ opacity: 0.6, cursor: 'default' }}>
-            {fr ? 'Natation' : 'Swimming'} <span className="roadmap-pill">Bêta Q2</span>
-          </span>
+          <button
+            type="button"
+            className={`sports-tab-btn ${activeSport === 'skiing' ? 'active' : ''}`}
+            onClick={() => { hapticLight(); setActiveSport('skiing'); }}
+            data-testid="tab-skiing"
+          >
+            {fr ? 'Ski Alpin (Carving)' : 'Alpine Skiing (Carving)'}
+          </button>
+          <button
+            type="button"
+            className={`sports-tab-btn ${activeSport === 'swimming' ? 'active' : ''}`}
+            onClick={() => { hapticLight(); setActiveSport('swimming'); }}
+            data-testid="tab-swimming"
+          >
+            {fr ? 'Natation (EVF Coude Haut)' : 'Swimming (EVF Catch)'}
+          </button>
         </div>
 
         {/* Analysis Mode Toggle */}
@@ -873,6 +926,120 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
                   step="50"
                   value={rowingRecoveryMs}
                   onChange={(e) => setRowingRecoveryMs(Number(e.target.value))}
+                  className="control-slider"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeSport === 'skiing' && (
+          <div className="sports-card" data-testid="card-skiing-metrics">
+            <div className="sports-card-header">
+              <h2>{fr ? 'Cinématique Carving & Angulation Ski' : 'Alpine Skiing Carving & Angulation'}</h2>
+              <span className={`metric-tag ${skiing.verdict === 'optimal_carve' ? 'optimal' : 'warning'}`}>
+                {skiing.verdict}
+              </span>
+            </div>
+
+            <div className="sports-metrics-grid">
+              <div className="metric-box">
+                <div className="metric-label">{fr ? 'Angle de Carres' : 'Edge Angle'}</div>
+                <div className="metric-val">{skiing.edgeAngleDeg}°</div>
+              </div>
+              <div className="metric-box">
+                <div className="metric-label">{fr ? 'Angulation Genoux' : 'Knee Angulation'}</div>
+                <div className="metric-val">{skiing.kneeAngulationDeg}°</div>
+              </div>
+              <div className="metric-box">
+                <div className="metric-label">{fr ? 'Force G Estimée' : 'Est. G-Force'}</div>
+                <div className="metric-val">{skiing.gForceEst} G</div>
+              </div>
+            </div>
+
+            <div className="controls-grid">
+              <div className="control-item">
+                <label>
+                  <span>{fr ? 'Angle de Carres' : 'Edge Angle'}:</span>
+                  <strong>{skiEdgeAngle}°</strong>
+                </label>
+                <input
+                  type="range"
+                  min="25"
+                  max="72"
+                  value={skiEdgeAngle}
+                  onChange={(e) => setSkiEdgeAngle(Number(e.target.value))}
+                  className="control-slider"
+                />
+              </div>
+              <div className="control-item">
+                <label>
+                  <span>{fr ? 'Angulation Genoux' : 'Knee Angulation'}:</span>
+                  <strong>{skiKneeAngulation}°</strong>
+                </label>
+                <input
+                  type="range"
+                  min="10"
+                  max="35"
+                  value={skiKneeAngulation}
+                  onChange={(e) => setSkiKneeAngulation(Number(e.target.value))}
+                  className="control-slider"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeSport === 'swimming' && (
+          <div className="sports-card" data-testid="card-swimming-metrics">
+            <div className="sports-card-header">
+              <h2>{fr ? 'Hydrodynamique & Prise d’Appui EVF' : 'Swimming Hydrodynamics & EVF Catch'}</h2>
+              <span className={`metric-tag ${swimming.verdict === 'optimal_evf' ? 'optimal' : 'warning'}`}>
+                {swimming.verdict}
+              </span>
+            </div>
+
+            <div className="sports-metrics-grid">
+              <div className="metric-box">
+                <div className="metric-label">{fr ? 'Angle Coude Haut (EVF)' : 'EVF Catch Angle'}</div>
+                <div className="metric-val">{swimming.elbowCatchAngleDeg}°</div>
+              </div>
+              <div className="metric-box">
+                <div className="metric-label">{fr ? 'Roulis Axial du Corps' : 'Body Roll Angle'}</div>
+                <div className="metric-val">{swimming.bodyRollDeg}°</div>
+              </div>
+              <div className="metric-box">
+                <div className="metric-label">{fr ? 'Score Propulsion' : 'Propulsion Score'}</div>
+                <div className="metric-val">{swimming.propulsionScore}/100</div>
+              </div>
+            </div>
+
+            <div className="controls-grid">
+              <div className="control-item">
+                <label>
+                  <span>{fr ? 'Flexion Coude EVF' : 'EVF Elbow Angle'}:</span>
+                  <strong>{swimElbowCatch}°</strong>
+                </label>
+                <input
+                  type="range"
+                  min="85"
+                  max="140"
+                  value={swimElbowCatch}
+                  onChange={(e) => setSwimElbowCatch(Number(e.target.value))}
+                  className="control-slider"
+                />
+              </div>
+              <div className="control-item">
+                <label>
+                  <span>{fr ? 'Roulis du Corps' : 'Body Roll'}:</span>
+                  <strong>{swimBodyRoll}°</strong>
+                </label>
+                <input
+                  type="range"
+                  min="20"
+                  max="65"
+                  value={swimBodyRoll}
+                  onChange={(e) => setSwimBodyRoll(Number(e.target.value))}
                   className="control-slider"
                 />
               </div>

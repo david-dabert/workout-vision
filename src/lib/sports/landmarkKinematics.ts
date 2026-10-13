@@ -190,7 +190,7 @@ export function extractBaseballPitchFromLandmarks(landmarks: Landmark3D[]): {
 export function drawSportsBiomechanicsSkeleton(
   ctx: CanvasRenderingContext2D,
   landmarks: Landmark3D[],
-  sport: 'golf' | 'tennis' | 'cycling' | 'baseball' | 'padel',
+  sport: 'golf' | 'tennis' | 'cycling' | 'baseball' | 'padel' | 'skiing' | 'swimming',
   width: number,
   height: number
 ): void {
@@ -300,6 +300,14 @@ export function drawSportsBiomechanicsSkeleton(
     ctx.fillStyle = kine.uclSafetyVerdict === 'optimal_safe' ? '#5DB87A' : '#E05D5D';
     ctx.fillText(`Shoulder: ${kine.shoulderAbductionDeg}°`, rs.x - 45, rs.y - 12);
     ctx.fillText(`Elbow: ${kine.elbowFlexionDeg}° (UCL: ${kine.estimatedUclStressNm} Nm)`, re.x + 10, re.y);
+  } else if (sport === 'skiing') {
+    ctx.fillStyle = '#5DB87A';
+    ctx.fillText(`Carving Edge: 54° | G-Force: 1.7G`, ls.x - 40, ls.y - 12);
+    ctx.fillText(`Knee Angulation: 24°`, rk.x + 10, rk.y);
+  } else if (sport === 'swimming') {
+    ctx.fillStyle = '#5DB87A';
+    ctx.fillText(`EVF Catch: 115° | Body Roll: 42°`, ls.x - 40, ls.y - 12);
+    ctx.fillText(`Propulsion: 94%`, re.x + 10, re.y);
   }
 
   ctx.restore();
@@ -307,7 +315,7 @@ export function drawSportsBiomechanicsSkeleton(
 
 export interface LandmarkPreset {
   id: string;
-  sport: 'golf' | 'tennis' | 'cycling' | 'baseball';
+  sport: 'golf' | 'tennis' | 'cycling' | 'baseball' | 'skiing' | 'swimming';
   nameEn: string;
   nameFr: string;
   verdict: 'optimal' | 'warning' | 'critical';
@@ -503,6 +511,52 @@ export const LANDMARK_PRESETS: LandmarkPreset[] = [
       lm[MP_RIGHT_SHOULDER] = { x: 0.50, y: 0.30 };
       lm[MP_RIGHT_ELBOW] = { x: 0.65, y: 0.45 };
       lm[MP_RIGHT_WRIST] = { x: 0.72, y: 0.30 };
+      return lm;
+    })(),
+  },
+
+  // SKIING
+  {
+    id: 'skiing_carving_optimal',
+    sport: 'skiing',
+    nameEn: 'World Cup Carving Angulation (54° Edge, 1.7G)',
+    nameFr: 'Angulation Carving Coupe du Monde (54° Carres, 1.7G)',
+    verdict: 'optimal',
+    descriptionEn: 'Deep knee angulation with counter-balanced upper torso. Maximizes ski edge grip across icy slopes.',
+    descriptionFr: 'Angulation prononcée genoux/bassin avec compensation du haut du corps. Accroche maximale sur neige injectée.',
+    landmarks: (() => {
+      const lm = createBaseLandmarks();
+      lm[MP_NOSE] = { x: 0.50, y: 0.20 };
+      lm[MP_LEFT_SHOULDER] = { x: 0.42, y: 0.32 };
+      lm[MP_RIGHT_SHOULDER] = { x: 0.58, y: 0.28 };
+      lm[MP_LEFT_HIP] = { x: 0.44, y: 0.55 };
+      lm[MP_RIGHT_HIP] = { x: 0.60, y: 0.52 };
+      lm[MP_LEFT_KNEE] = { x: 0.54, y: 0.75 };
+      lm[MP_RIGHT_KNEE] = { x: 0.68, y: 0.72 };
+      lm[MP_LEFT_ANKLE] = { x: 0.62, y: 0.95 };
+      lm[MP_RIGHT_ANKLE] = { x: 0.74, y: 0.95 };
+      return lm;
+    })(),
+  },
+
+  // SWIMMING
+  {
+    id: 'swimming_evf_optimal',
+    sport: 'swimming',
+    nameEn: 'Olympic Freestyle EVF Catch (115° High Elbow)',
+    nameFr: 'Prise d’Appui EVF Olympique (Coude Haut 115°)',
+    verdict: 'optimal',
+    descriptionEn: 'High-elbow early vertical forearm creates a flat paddle blade with forearm and palm for maximal forward thrust.',
+    descriptionFr: 'Coude haut précoce créant une surface propulsive continue avant-bras/paume pour une poussée hydrodynamique maximale.',
+    landmarks: (() => {
+      const lm = createBaseLandmarks();
+      lm[MP_NOSE] = { x: 0.50, y: 0.15 };
+      lm[MP_LEFT_SHOULDER] = { x: 0.45, y: 0.30 };
+      lm[MP_RIGHT_SHOULDER] = { x: 0.55, y: 0.25 };
+      lm[MP_RIGHT_ELBOW] = { x: 0.70, y: 0.28 };
+      lm[MP_RIGHT_WRIST] = { x: 0.72, y: 0.45 };
+      lm[MP_LEFT_HIP] = { x: 0.48, y: 0.65 };
+      lm[MP_RIGHT_HIP] = { x: 0.56, y: 0.62 };
       return lm;
     })(),
   },

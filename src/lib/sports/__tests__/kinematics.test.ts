@@ -8,6 +8,8 @@ import {
   calculateBikeFitKneeAngle,
   calculateBaseballPitchMechanics,
   calculateRowingRhythm,
+  calculateSkiingAngulation,
+  calculateSwimmingEvf,
 } from '../kinematics';
 
 describe('Precision Sports Kinematics Engine', () => {
@@ -105,6 +107,31 @@ describe('Precision Sports Kinematics Engine', () => {
     it('flags rushed slide ratio', () => {
       const res = calculateRowingRhythm(600, 800);
       expect(res.verdict).toBe('rushed_slide');
+    });
+  });
+
+  describe('Skiing & Swimming Kinematics', () => {
+    it('validates optimal carving edge angle and g-force', () => {
+      const res = calculateSkiingAngulation(54, 24);
+      expect(res.verdict).toBe('optimal_carve');
+      expect(res.gForceEst).toBeGreaterThan(1.5);
+    });
+
+    it('identifies under-angulated carving on ski slopes', () => {
+      const res = calculateSkiingAngulation(30, 15);
+      expect(res.verdict).toBe('under_angulated');
+    });
+
+    it('validates Olympic freestyle EVF catch and body roll', () => {
+      const res = calculateSwimmingEvf(115, 42);
+      expect(res.verdict).toBe('optimal_evf');
+      expect(res.propulsionScore).toBe(94);
+    });
+
+    it('flags dropped elbow in swimming catch', () => {
+      const res = calculateSwimmingEvf(85, 42);
+      expect(res.verdict).toBe('dropped_elbow');
+      expect(res.propulsionScore).toBeLessThan(70);
     });
   });
 });

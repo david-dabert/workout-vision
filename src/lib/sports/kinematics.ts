@@ -218,3 +218,36 @@ export function calculateRowingRhythm(
   return { rhythmRatio: ratio, verdict };
 }
 
+/**
+ * Evaluates alpine skiing carving lateral angulation and edge grip.
+ */
+export function calculateSkiingAngulation(
+  edgeAngleDeg: number,
+  kneeAngulationDeg: number
+): { edgeAngleDeg: number; kneeAngulationDeg: number; verdict: 'optimal_carve' | 'under_angulated' | 'excessive_banking'; gForceEst: number } {
+  let verdict: 'optimal_carve' | 'under_angulated' | 'excessive_banking' = 'optimal_carve';
+  if (edgeAngleDeg < 38) {
+    verdict = 'under_angulated';
+  } else if (edgeAngleDeg > 68) {
+    verdict = 'excessive_banking';
+  }
+  const gForceEst = Math.round((1 / Math.cos((Math.min(edgeAngleDeg, 75) * Math.PI) / 180)) * 10) / 10;
+  return { edgeAngleDeg: Math.round(edgeAngleDeg), kneeAngulationDeg: Math.round(kneeAngulationDeg), verdict, gForceEst };
+}
+
+/**
+ * Evaluates freestyle swimming Early Vertical Forearm (EVF) and body roll.
+ */
+export function calculateSwimmingEvf(
+  elbowCatchAngleDeg: number,
+  bodyRollDeg: number
+): { elbowCatchAngleDeg: number; bodyRollDeg: number; verdict: 'optimal_evf' | 'dropped_elbow' | 'flat_roll'; propulsionScore: number } {
+  let verdict: 'optimal_evf' | 'dropped_elbow' | 'flat_roll' = 'optimal_evf';
+  if (elbowCatchAngleDeg < 100) {
+    verdict = 'dropped_elbow';
+  } else if (bodyRollDeg < 35 || bodyRollDeg > 55) {
+    verdict = 'flat_roll';
+  }
+  const propulsionScore = verdict === 'optimal_evf' ? 94 : verdict === 'dropped_elbow' ? 62 : 71;
+  return { elbowCatchAngleDeg: Math.round(elbowCatchAngleDeg), bodyRollDeg: Math.round(bodyRollDeg), verdict, propulsionScore };
+}
