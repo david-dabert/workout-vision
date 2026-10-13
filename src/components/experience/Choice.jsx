@@ -123,31 +123,6 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
       <div className="choose-hero">
       <div className="wrap">
         <div className="topbar"><span className="brand-sm">WorkoutVision</span><span className="pill">{fr ? 'Version de test' : 'Test version'}</span></div>
-        <nav className="portal-nav" aria-label={fr ? 'Modules de la plateforme' : 'Platform Modules'}>
-          <button type="button" className="portal-pill is-active" aria-current="page">
-            {fr ? 'Force & Biomécanique' : 'Strength AI'}
-          </button>
-          {onEquine && (
-            <button type="button" className="portal-pill" onClick={onEquine} data-testid="portal-equine">
-              EquiVision™
-            </button>
-          )}
-          {onSports && (
-            <button type="button" className="portal-pill" onClick={onSports} data-testid="portal-sports">
-              {fr ? 'Sports Tour' : 'Sports Tour'}
-            </button>
-          )}
-          {onPro && (
-            <button type="button" className="portal-pill" onClick={onPro} data-testid="portal-pro">
-              {fr ? 'Espace Pro' : 'Coach OS'}
-            </button>
-          )}
-          {onManifesto && (
-            <button type="button" className="portal-pill" onClick={onManifesto} data-testid="portal-manifesto">
-              {fr ? 'Manifeste' : 'Manifesto'}
-            </button>
-          )}
-        </nav>
         <CrashNote fr={fr} />
         {last && <div className="welcome">
           <p className="welcome-l1">{fr ? 'Bon retour.' : 'Welcome back.'}</p>
