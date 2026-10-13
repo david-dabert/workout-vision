@@ -53,7 +53,7 @@ const LiveSession = lazyScreen(() => import('./components/LiveSession'));
 // Espace pro (6 October): the coach's programme builder, reached from the foot of the choice; and the client's
 // programme, opened from the coach's link (#programme=…) or from the choice once kept on the phone.
 const Pro = lazyScreen(() => import('./components/experience/Pro'));
-const Programme = lazyScreen(() => import('./components/experience/Programme'));
+const Programme = lazyScreen(() => import('./components/experience/Programme.jsx'));
 // A client's results, opened on the coach's phone from the link the client sent (#resultats=…, 9 October).
 const Results = lazyScreen(() => import('./components/experience/Results'));
 const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto };
