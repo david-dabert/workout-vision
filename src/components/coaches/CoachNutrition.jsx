@@ -207,7 +207,7 @@ function Barcode({ fr, t, client, onLogMeal }) {
           </div>
           <span className="office-label">{t.per100}</span>
           <div className="prod-macros-grid">
-            <div className="prod-m-box"><b>{p.per100.kcal != null ? num(p.per100.kcal, fr) : p.per100.kj != null ? num(p.per100.kj, fr) : '—'}</b><span>{p.per100.kcal != null ? t.kcal : p.per100.kj != null ? t.kj : `${t.kcal}\u00A0: ${t.notGiven}`}</span></div>
+            <div className="prod-m-box"><b>{p.per100.kcal != null ? num(p.per100.kcal, fr) : p.per100.kj != null ? num(p.per100.kj, fr) : t.notGiven}</b><span>{p.per100.kcal != null || p.per100.kj == null ? t.kcal : t.kj}</span></div>
             <div className="prod-m-box"><b>{value(p.per100.proteins, 'g')}</b><span>{t.proteins}</span></div>
             <div className="prod-m-box"><b>{value(p.per100.carbs, 'g')}</b><span>{t.carbs}</span></div>
             <div className="prod-m-box"><b>{value(p.per100.fat, 'g')}</b><span>{t.fat}</span></div>

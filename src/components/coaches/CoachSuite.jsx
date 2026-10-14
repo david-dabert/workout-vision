@@ -278,7 +278,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
               <div className="form-grid">
                 <div className="input-group">
                   <label htmlFor="nc-name">{fr ? 'Prénom & Nom' : 'Full Name'}</label>
-                  <input id="nc-name" type="text" required placeholder={fr ? 'ex : Alexandre Dupont' : 'e.g. Alex Smith'} value={newClient.name} onChange={setNew('name')} />
+                  <input id="nc-name" type="text" required placeholder={fr ? 'ex.\u00A0: Alexandre Dupont' : 'e.g. Alex Smith'} value={newClient.name} onChange={setNew('name')} />
                 </div>
                 <div className="input-group">
                   <label htmlFor="nc-age">{fr ? 'Âge & Sexe' : 'Age & Sex'}</label>
@@ -304,7 +304,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                 </div>
                 <div className="input-group">
                   <label htmlFor="nc-goals">{fr ? 'Objectifs' : 'Goals'}</label>
-                  <input id="nc-goals" type="text" placeholder={fr ? 'ex : Hypertrophie dorsaux, rééducation épaule' : 'e.g. back hypertrophy'} value={newClient.goals} onChange={setNew('goals')} />
+                  <input id="nc-goals" type="text" placeholder={fr ? 'ex.\u00A0: hypertrophie du dos, reprise après une blessure à l’épaule' : 'e.g. back hypertrophy'} value={newClient.goals} onChange={setNew('goals')} />
                 </div>
                 <div className="input-group full-width">
                   <label htmlFor="nc-notes">{fr ? 'Notes & Contraintes' : 'Coach Notes'}</label>
