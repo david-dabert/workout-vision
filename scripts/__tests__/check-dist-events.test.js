@@ -21,6 +21,12 @@ describe('a build pinned off', () => {
     const dir = site({ 'index.html': CSP, 'assets/a.js': 'const ENDPOINT="";fetch("https://example.org/data.json")' });
     expect(await findEventsUrls(dir)).toEqual([]);
   });
+  it('passes with the app page’s Open Food Facts origin, the barcode lookup, and nothing more', async () => {
+    const dir = site({ 'index.html': CSP.replace("blob:;", 'blob: https://world.openfoodfacts.org;'), 'check.html': CSP });
+    expect(await findEventsUrls(dir)).toEqual([]);
+    const more = site({ 'index.html': CSP.replace("blob:;", 'blob: https://world.openfoodfacts.org https://x.y.workers.dev;') });
+    expect(await findEventsUrls(more)).toContainEqual({ file: 'index.html', found: "connect-src 'self' blob: https://x.y.workers.dev" });
+  });
   it('fails on a worker address, a URL ending in /event, or a widened connect-src', async () => {
     const dir = site({
       'index.html': CSP.replace("blob:;", 'blob: https://x.y.workers.dev;'),
@@ -41,7 +47,7 @@ describe('a build pinned off', () => {
 describe('a build given an events URL (after D6)', () => {
   it('allows that origin only', async () => {
     const url = 'https://wv.dd.workers.dev/event';
-    const ok = site({ 'index.html': CSP.replace("blob:;", 'blob: https://wv.dd.workers.dev;'), 'assets/a.js': `const E="${url}";` });
+    const ok = site({ 'index.html': CSP.replace("blob:;", 'blob: https://world.openfoodfacts.org https://wv.dd.workers.dev;'), 'assets/a.js': `const E="${url}";` });
     expect(await findEventsUrls(ok, { url })).toEqual([]);
     const other = site({ 'assets/a.js': `const E="${url}";const F="https://other.dd.workers.dev/event";` });
     expect(await findEventsUrls(other, { url })).toEqual([{ file: 'assets/a.js', found: 'https://other.dd.workers.dev/event' }]);

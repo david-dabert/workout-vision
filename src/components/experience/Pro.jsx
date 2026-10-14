@@ -63,6 +63,8 @@ export default function Pro({ onClose, start = null }) {
   // place (excellence hunt, 9 October 2026).
   const [kept, setKept] = useState(start ? start.kept : true);
   const [proTab, setProTab] = useState('programmes'); // 'programmes' | 'business'
+  // The programme the strengthening tab's "Ajouter au programme" opened in this visit (handleAddPhysio).
+  const physioDraftId = useRef(null);
   const update = draft => {
     const next = { ...draft, updatedAt: Date.now() };
     setDrafts(list => [next, ...list.filter(d => d.id !== next.id)]);
@@ -98,10 +100,21 @@ export default function Pro({ onClose, start = null }) {
     if (open.items.length < LIMITS.items) update({ ...open, items: [...open.items, newItem(key)] });
     setPicking(false);
   }} />;
+  // "Ajouter au programme" from the strengthening tab (CoachSuite.jsx): the exercise joins the programme it opened
+  // earlier in this visit while it is still there and has room, rather than a new programme at every tap (PHY-1).
+  // Title: French awaiting David's approval (R10).
   const handleAddPhysio = (key) => {
+    const physio = drafts.find(x => x.id === physioDraftId.current);
+    if (physio && physio.items.length < LIMITS.items) {
+      const d = physio.items.some(it => it.key === key) ? physio : { ...physio, items: [...physio.items, newItem(key)] };
+      update(d);
+      setOpenId(d.id);
+      return;
+    }
     const d = newDraft();
-    d.title = fr ? 'Protocole Rééducation' : 'Rehab Protocol';
+    d.title = fr ? 'Renforcement par zone' : 'Strengthening by area';
     d.items = [newItem(key)];
+    physioDraftId.current = d.id;
     setDrafts(list => [d, ...list]);
     setKept(saveDraft(d));
     setOpenId(d.id);
@@ -113,7 +126,7 @@ export default function Pro({ onClose, start = null }) {
 
 function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, onSetProTab, onAddPhysio }) {
   const screenRef = useRef(null);
-  useCondensingTopbar(screenRef, [fr]);
+  useCondensingTopbar(screenRef, [fr, proTab]);
   const day = t => new Date(t).toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short' });
   return <div className="wv-experience">
     <section ref={screenRef} className="screen is-active pro-screen" data-testid="pro-screen"><div className="wrap">
@@ -122,25 +135,27 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, on
         <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
       </div>
       <p className="eyebrow pro-eyebrow" data-reveal style={{ '--i': 0 }}>{c.eyebrow}</p>
-      <h1 className="title" data-reveal style={{ '--i': 0 }}>{c.title}</h1>
-      <p className="sub pro-sub" data-reveal style={{ '--i': 1 }}>{c.sub}</p>
+      <h1 className="title" data-reveal style={{ '--i': 0 }}>{proTab === 'business' ? c.officeTitle : c.title}</h1>
+      <p className="sub pro-sub" data-reveal style={{ '--i': 1 }}>{proTab === 'business' ? c.officeSub : c.sub}</p>
 
       <div className="pro-mode-nav" data-reveal style={{ '--i': 1.5 }}>
         <button
           type="button"
           className={`pro-mode-pill press ${proTab === 'programmes' ? 'is-active' : ''}`}
+          aria-pressed={proTab === 'programmes'}
           onClick={() => onSetProTab('programmes')}
           data-testid="tab-pro-programmes"
         >
-          <SvgClipboard />{fr ? 'Programmes & Fiches' : 'Workout Programmes'}
+          <SvgClipboard />{c.programmesTab}
         </button>
         <button
           type="button"
           className={`pro-mode-pill press ${proTab === 'business' ? 'is-active' : ''}`}
+          aria-pressed={proTab === 'business'}
           onClick={() => onSetProTab('business')}
           data-testid="tab-pro-business"
         >
-          <SvgBriefcase />{fr ? 'Espace Coach Business' : 'Coach Business OS'}
+          <SvgBriefcase />{c.officeTab}
         </button>
       </div>
 

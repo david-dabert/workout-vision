@@ -244,3 +244,50 @@
 .wv-experience .coach-suite-container .prog-line { display: flex; align-items: baseline; gap: var(--s-2); font-size: var(--fs-caption); line-height: 1.45; color: var(--bone-2); }
 .wv-experience .coach-suite-container .prog-line .prog-badge { min-width: 7.5em; justify-content: center; }
 .wv-experience .coach-suite-container .add-to-prog-btn { width: 100%; }
+
+/* The office after the honesty pass of 14 October 2026 (CoachAccounting.jsx, the contract): what is missing before a
+   document can be made, a hint under a field, the issued invoices. Tokens only (raw-colours.test.js). */
+.wv-experience .coach-suite-container .office-flush { margin: 0; }
+.wv-experience .coach-suite-container .office-strong { margin: 0; font-size: var(--fs-body); font-weight: 500; line-height: 1.4; color: var(--c-fg); font-variant-numeric: tabular-nums; }
+.wv-experience .coach-suite-container .office-label { display: block; font-family: var(--mono); font-size: var(--fs-label); line-height: 1.4; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-fg-muted); }
+.wv-experience .coach-suite-container .office-hint { font-size: var(--fs-caption); line-height: 1.45; color: var(--lamp-hi); }
+.wv-experience .coach-suite-container .invoice-preview-sheet .office-hint { color: var(--paper-ash); margin: 10px 0 0; }
+.wv-experience .coach-suite-container [aria-invalid="true"] { border-color: var(--lamp-line-strong); }
+.wv-experience .coach-suite-container .office-missing { display: flex; flex-direction: column; gap: var(--s-2); padding: 14px 16px; border-radius: var(--r-s); border: 1px dashed var(--lamp-line); background: color-mix(in srgb, var(--lamp) 5%, transparent); }
+.wv-experience .coach-suite-container .office-missing ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.wv-experience .coach-suite-container .office-missing li { position: relative; padding-left: 16px; font-size: var(--fs-caption); line-height: 1.45; color: var(--bone-2); overflow-wrap: anywhere; }
+.wv-experience .coach-suite-container .office-missing li::before { content: ""; position: absolute; left: 2px; top: 0.55em; width: 6px; height: 6px; border-radius: 50%; background: var(--c-accent); }
+.wv-experience .coach-suite-container .office-missing li .comp-badge { margin-right: 6px; }
+.wv-experience .coach-suite-container .office-invoices { display: flex; flex-direction: column; gap: var(--s-2); }
+.wv-experience .coach-suite-container .office-invoice { display: flex; flex-direction: column; gap: var(--s-3); padding: 14px 16px; border-radius: var(--r-s); border: 1px solid var(--c-rule); }
+.wv-experience .coach-suite-container .office-invoice-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-2); }
+.wv-experience .coach-suite-container .office-num { color: var(--lamp-hi); }
+.wv-experience .coach-suite-container .office-invoice-line { margin: 0; font-size: var(--fs-caption); line-height: 1.5; color: var(--bone-2); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.wv-experience .coach-suite-container .office-invoice-line b { font-weight: 600; color: var(--c-fg); }
+.wv-experience .coach-suite-container .comp-badge.is-paid { border-color: var(--lamp-line); color: var(--lamp-hi); }
+.wv-experience .coach-suite-container :is(button, .btn-save):disabled { opacity: 0.45; cursor: default; }
+.wv-experience .coach-suite-container input[type="date"] { width: 100%; min-width: 0; min-height: 48px; padding: 0 14px; border-radius: var(--r-s); border: 1px solid var(--c-rule); background: var(--basalt); color: var(--c-fg); font: 400 16px/1.4 var(--sans); color-scheme: dark; }
+.wv-experience .coach-suite-container .sc-switch { margin: 0; }
+.wv-experience .coach-suite-container .office-hint.is-quiet { color: var(--c-fg-muted); margin: 6px 0 0; }
+/* A client in the list is a button (it selects): the card's look, the whole width, its words to the left. */
+.wv-experience .coach-suite-container button.client-item-card { width: 100%; text-align: left; font: inherit; color: inherit; background: none; }
+.wv-experience .coach-suite-container .client-item-card .client-card-sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wv-experience .coach-suite-container .carnet-status-card > .office-strong { margin: 0; }
+.wv-experience .coach-suite-container .carnet-action-bar .quick-suite-btn { flex: 1; }
+/* The barcode: its field (with its label) beside the button, aligned on the field's foot. */
+.wv-experience .coach-suite-container .barcode-input-bar { align-items: flex-end; }
+.wv-experience .coach-suite-container .office-grow { flex: 1; min-width: 0; }
+.wv-experience .coach-suite-container .office-end { justify-content: flex-end; }
+.wv-experience .coach-suite-container .office-end .suite-action-btn { width: 100%; }
+.wv-experience .coach-suite-container .office-link { color: var(--lamp-hi); text-decoration: underline; text-underline-offset: 3px; }
+.wv-experience .coach-suite-container .vision-plate-workbench > .office-flush { margin: 0; }
+.wv-experience .coach-suite-container .office-stack { display: flex; flex-direction: column; gap: var(--s-2); }
+/* A logged meal: its name and date, then what it holds, on one line under it at phone width. */
+.wv-experience .coach-suite-container .meal-history-card { flex-direction: column; align-items: stretch; gap: var(--s-2); }
+.wv-experience .coach-suite-container .meal-history-card .meal-h-right { flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: flex-start; gap: 4px 10px; text-align: left; }
+/* A file to check (a client saved before 14 October 2026): the badge beside the name. */
+.wv-experience .coach-suite-container .summary-client-name .comp-badge { margin-left: 8px; vertical-align: 1px; }
+.wv-experience .coach-suite-container .detail-meta .comp-badge { display: flex; width: fit-content; margin-top: 6px; }
+/* An invoice cancelled by a credit note: kept in the list, its line struck through, its badge naming the avoir. */
+.wv-experience .coach-suite-container .office-invoice.is-cancelled .office-invoice-line { text-decoration: line-through; text-decoration-color: var(--c-fg-muted); }
+.wv-experience .coach-suite-container .livre-header .section-subtext { margin-top: 4px; }

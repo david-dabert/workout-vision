@@ -4,7 +4,7 @@
 
 .wv-experience .buddy-screen .buddy-beta-tag { align-self: flex-start; white-space: normal; }
 
-/* The working weights: a label, then minus, the value in tabular figures, plus; 44 px keys. */
+/* The working weights: a label, then the field the person types the load in (14 October 2026: no value is assumed). */
 .wv-experience .buddy-steppers { display: flex; flex-direction: column; gap: var(--s-2); }
 .wv-experience .buddy-stepper { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); padding: 8px 8px 8px 16px; border-radius: var(--r-s); border: 1px solid var(--c-rule); }
 .wv-experience .buddy-stepper-label { font-size: var(--fs-body); color: var(--bone-2); }
@@ -16,10 +16,11 @@
 .wv-experience .buddy-card { gap: var(--s-3); padding: 18px; }
 .wv-experience .buddy-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
 .wv-experience .buddy-name-block { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.wv-experience .buddy-parity { flex: none; text-transform: none; letter-spacing: 0.02em; }
+.wv-experience .buddy-gap { margin: 0; font-variant-numeric: tabular-nums; }
 .wv-experience .buddy-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .wv-experience .buddy-stats .sc-metric { padding: 10px 12px; }
 .wv-experience .buddy-stats .sc-metric-value { font-size: 18px; }
 .wv-experience .buddy-bio { font-size: var(--fs-caption); line-height: 1.55; }
-.wv-experience .buddy-connect { height: 48px; border-radius: var(--r-s); }
-.wv-experience .buddy-connect svg { width: 15px; height: 15px; }
+.wv-experience .buddy-load { flex: none; width: 6.5em; height: 44px; padding: 0 12px; border-radius: var(--r-s); border: 1px solid var(--c-rule); background: var(--basalt); color: var(--c-fg); font: 600 17px/1 var(--sans); font-variant-numeric: tabular-nums; text-align: right; -webkit-appearance: none; appearance: none; outline: none; }
+.wv-experience .buddy-load:focus { border-color: var(--lamp-line-strong); }
+.wv-experience .buddy-fictional { align-self: flex-start; }

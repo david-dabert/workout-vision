@@ -38,3 +38,164 @@ describe('Coach Business OS & Suite Component', () => {
     });
   }
 });
+
+// Honesty pass of 14 October 2026 (wave 2B): the office prints no identity it was not given, and says what is missing.
+describe('the office after the honesty pass', () => {
+  async function renderAccounting(lang, profile = {}) {
+    vi.stubGlobal('localStorage', { getItem: () => null, setItem: () => {}, removeItem: () => {} });
+    const { default: CoachAccounting } = await import('./CoachAccounting');
+    return decode(renderToStaticMarkup(<CoachAccounting fr={lang === 'fr'} clients={[]} selectedClient={null} profile={profile} onSaveProfile={async () => {}} />));
+  }
+  it('shows no made-up SIRET, carte pro, insurer, brand or rate, and lists what the invoice lacks', async () => {
+    const html = await renderAccounting('fr');
+    expect(html).not.toMatch(/842 918 203|ED-75-2023|MACSF|Basic-Fit|Coach Thomas|21[.,]1|21[.,]3|Reste à Vivre|Conforme/);
+    expect(html).toContain('data-testid="inv-missing"');
+    expect(html).toContain('un SIRET valide (votre fiche)');
+    expect(html).not.toContain('data-testid="inv-preview"');
+    expect(html).toContain('25,6 %');
+    expect(html).toContain('Revenu estimé avant impôt');
+  });
+  it('previews the invoice once the coach’s file is complete, with no number before it is issued', async () => {
+    const html = await renderAccounting('fr', { name: 'Camille Martin', siret: '12345678901237', address: '1 rue de l’Exemple, 69001 Lyon', cartePro: '06912ED0001' });
+    // The client and the price are still missing: no preview yet.
+    expect(html).toContain('le nom du client');
+    expect(html).not.toContain('un SIRET valide');
+  });
+  it('says the simulator opens on an example, writes no default description, and warns the invoices live on this phone', async () => {
+    const html = await renderAccounting('fr');
+    expect(html).toContain('data-testid="acc-sim-tag">Exemple<');
+    expect(html).toContain('Valeurs d’exemple');
+    expect(html).not.toContain('(1 h)');
+    expect(html).toContain('placeholder="ex.\u00A0: séance de coaching individuel"');
+    expect(html).toContain('gardez le PDF de chaque facture et exportez le livre régulièrement');
+    expect(html).toContain('à confirmer');
+  });
+  it('the break-even line says what each session leaves after contributions, and after tax with the versement libératoire', async () => {
+    const { OFFICE } = await import('./office-copy');
+    expect(OFFICE.fr.breakEven(9, '600 €', '72,00 €', true)).toContain('vous laisse 72,00 € après cotisations et impôt.');
+    expect(OFFICE.fr.breakEven(9, '600 €', '74,20 €', false)).toContain('vous laisse 74,20 € après cotisations, avant impôt.');
+    expect(OFFICE.en.breakEven(9, '€600', '€72.00', true)).toContain('leaves you €72.00 after contributions and tax.');
+  });
+  for (const lang of ['en', 'fr']) {
+    it(`the clients tab promises no telemetry and counts no linked set (${lang})`, async () => {
+      const html = decode(await render(lang));
+      expect(html).not.toMatch(/télémétrie|telemetry|isoler ses séries/i);
+      expect(html).toContain(lang === 'fr' ? 'Aucun client pour l’instant.' : 'No client yet.');
+    });
+  }
+});
+
+describe('nutrition after the honesty pass (NUT-1 to NUT-7)', () => {
+  async function renderNutrition(props) {
+    vi.stubGlobal('localStorage', { getItem: () => null, setItem: () => {}, removeItem: () => {} });
+    const { default: CoachNutrition } = await import('./CoachNutrition');
+    return decode(renderToStaticMarkup(<CoachNutrition fr meals={[]} onLogMeal={async () => {}} onUpdateClient={async () => {}} {...props} />));
+  }
+  it('fills in nothing for a client: missing data are asked for, and no target is shown', async () => {
+    const html = await renderNutrition({ client: { id: 'c1', name: 'Alex', age: '', sex: '', weight: '', height: '', bodyTyped: true } });
+    expect(html).toContain('data-testid="needs-missing"');
+    expect(html).not.toMatch(/kcal\/j|75 kg|2[.,]5 g\/kg|Schoenfeld|Carence/);
+  });
+  it('waits for the coach’s activity level before an estimate', async () => {
+    const html = await renderNutrition({ client: { id: 'c1', name: 'Alex', age: '34', sex: 'female', weight: '62', height: '168', bodyTyped: true } });
+    expect(html).toContain('Choisissez son niveau d’activité');
+    expect(html).not.toContain('data-testid="needs"');
+  });
+  it('the plate photo shows no number and says it is not available', async () => {
+    const html = await renderNutrition({ client: null, initialMode: 'photo' });
+    expect(html).toContain('Pas encore disponible');
+    expect(html).not.toMatch(/\d+\s*kcal|Confiance|Élevée|équilibrée/);
+  });
+  it('the barcode starts empty, names no brand, and old photo meals show no number', async () => {
+    const html = await renderNutrition({ client: { id: 'c1', name: 'Alex' }, initialMode: 'barcode', meals: [{ id: 'm', source: 'vision_plate', title: 'Repas Détecté par Vision Assiette', calories: 1108, dateStr: '2026-10-13' }] });
+    expect(html).not.toMatch(/5060746500000|Optimum|Danone|Fleury|Taureau|officielles/);
+    expect(html).toContain('Seul le code-barres est envoyé.');
+    expect(html).not.toContain('1108');
+    expect(html).toContain('Ancienne estimation par photo, non fiable');
+  });
+});
+
+// Second review of 14 October 2026: what the first version left on the phone is kept, never shown as true.
+describe('records from before the honesty pass', () => {
+  async function renderNutrition(props) {
+    vi.stubGlobal('localStorage', { getItem: () => null, setItem: () => {}, removeItem: () => {} });
+    const { default: CoachNutrition } = await import('./CoachNutrition');
+    return decode(renderToStaticMarkup(<CoachNutrition fr meals={[]} onLogMeal={async () => {}} onUpdateClient={async () => {}} {...props} />));
+  }
+  // The meal the old screen logged by default: the hand-written cache's whey, under a barcode that fails its check digit.
+  const oldWhey = { id: 'm1', clientId: 'c1', source: 'barcode', mealType: 'snack', dateStr: '2026-10-10', title: 'Gold Standard 100% Whey (Optimum Nutrition)', calories: 120, proteinG: 24, carbsG: 3, fatG: 1.5, barcode: '5060746500000' };
+  const newMeal = { id: 'm2', clientId: 'c1', source: 'barcode', dateStr: '2026-10-14', title: 'Marque · Skyr nature', grams: 150, calories: 95, proteinG: 16.5, carbsG: 6, fatG: 0.3, barcode: '3017620422003' };
+  it('an old barcode meal shows no kcal or macro and never the Open Food Facts tag; a new one shows its own', async () => {
+    const html = await renderNutrition({ client: { id: 'c1', name: 'Alex', bodyTyped: true }, meals: [oldWhey, newMeal] });
+    const rows = html.split('data-testid="meal-row"').slice(1);
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toContain('Ancienne valeur, non vérifiée');
+    expect(rows[0]).not.toMatch(/Open Food Facts|kcal|\b120\b|24\u00A0g|1,5/);
+    expect(rows[1]).toContain('Open Food Facts');
+    expect(rows[1]).toContain('95\u00A0kcal');
+    expect(rows[1]).toContain('150\u00A0g • 16,5\u00A0g P • 6\u00A0g G • 0,3\u00A0g L');
+  });
+  it('in English the macros read P, C and F', async () => {
+    const { default: CoachNutrition } = await import('./CoachNutrition');
+    const html = decode(renderToStaticMarkup(<CoachNutrition fr={false} client={{ id: 'c1', name: 'Alex', bodyTyped: true }} meals={[newMeal]} onLogMeal={async () => {}} onUpdateClient={async () => {}} />));
+    expect(html).toContain('16.5\u00A0g P • 6\u00A0g C • 0.3\u00A0g F');
+  });
+  it('a client file from the first version is checked before any estimate: its pre-filled values are shown to confirm', async () => {
+    const html = await renderNutrition({ client: { id: 'c1', name: 'Alex', age: '34', sex: 'male', weight: '75', height: '175' } });
+    expect(html).toContain('data-testid="needs-check"');
+    expect(html).toContain('l’appli préremplissait le sexe (homme)');
+    expect(html).toContain('Confirmer ces valeurs');
+    expect(html).toContain('value="75"');
+    expect(html).not.toMatch(/kcal\/j|data-testid="needs"/);
+  });
+  // Final check of 14 October 2026: confirming an old file dropped every field the coach emptied, then kept the old
+  // value under bodyTyped: an erased pre-filled 75 kg came back as typed and reached a kcal figure.
+  it('confirming an old file with the weight and the sex erased keeps them empty, gives no estimate and asks for them', async () => {
+    const { bodyAsShown, shownBodyValue } = await import('./office-legacy');
+    const old = { id: 'c1', name: 'Alex', age: '30', sex: 'male', weight: '75', height: '175' };
+    const shown = { age: shownBodyValue(old, 'age'), sex: '', weight: '', height: shownBodyValue(old, 'height') };
+    const saved = bodyAsShown(old, shown);
+    expect(saved).toEqual({ id: 'c1', name: 'Alex', age: '30', sex: '', weight: '', height: '175', bodyTyped: true });
+    const html = await renderNutrition({ client: saved });
+    expect(html).toContain('data-testid="needs-missing"');
+    expect(html).toContain('id="nd-weight"');
+    expect(html).toContain('id="nd-sex"');
+    expect(html).not.toContain('id="nd-age"');
+    expect(html).not.toMatch(/kcal\/j|75 kg|value="75"/);
+    expect(bodyAsShown(old, { age: '30', sex: 'male', weight: ' 80 ', height: '175' })).toMatchObject({ weight: '80', sex: 'male', bodyTyped: true });
+    expect(shownBodyValue({ sex: 'other' }, 'sex')).toBe('');
+  });
+  it('the energy is given to the nearest 50 kcal', async () => {
+    const { estimateDailyNeeds, roundKcal } = await import('../../lib/nutrition');
+    const raw = estimateDailyNeeds({ age: '34', sex: 'female', weight: '62', height: '168' }, { activity: 'moderate' }).calories;
+    expect(raw % 50).not.toBe(0);
+    expect(roundKcal(raw) % 50).toBe(0);
+    expect(Math.abs(roundKcal(raw) - raw)).toBeLessThanOrEqual(25);
+    expect(roundKcal(2075)).toBe(2100);
+    expect(roundKcal(2074)).toBe(2050);
+  });
+});
+
+describe('the office’s words (second review, R10)', () => {
+  it('have no "&", no "(Pack)" and no Title Case label; the client screen takes its labels from the copy', async () => {
+    const { OFFICE } = await import('./office-copy');
+    const strings = Object.values(OFFICE.fr).filter(v => typeof v === 'string');
+    expect(strings.filter(v => /\s&\s|\(Pack\)/.test(v))).toEqual([]);
+    expect(strings.filter(v => /^[A-ZÉÂ][a-zéèêàâûôî’']+ (?:[A-ZÉ][a-zéèêàâ]+)(?: |$)/.test(v) && !/Open Food Facts|Mifflin/.test(v))).toEqual([]);
+    const fs = await import('node:fs');
+    const src = fs.readFileSync(new URL('./CoachSuite.jsx', import.meta.url), 'utf8');
+    expect(src).not.toMatch(/Nouveau Client|Prénom & Nom|Âge & Sexe|Notes & Contraintes|Carnet Coaching|Séance Livrée|Séances Livrées|Objectifs Déclarés|Observations & Pathologies|Enregistrer le Client|Vue Profil|Vue Face/);
+  });
+});
+
+describe('strengthening by area (PHY-1)', () => {
+  it('claims no treatment or validation: no rationale is left, the areas name no injury', async () => {
+    const { PHYSIO_CATALOG, PHYSIO_REGIONS } = await import('../../lib/physioCatalog');
+    const text = JSON.stringify([PHYSIO_CATALOG, PHYSIO_REGIONS]);
+    expect(text).not.toMatch(/clinicalRationale|LCA|ACL|Achille|valid|amnésie|conflit/i);
+    expect(PHYSIO_CATALOG.every(i => i.primaryMuscles.length > 0)).toBe(true);
+    // Second review: English fields for what English mode shows, and French names without English in brackets.
+    expect(PHYSIO_CATALOG.every(i => i.primaryMusclesEn.length === i.primaryMuscles.length && i.progressionEn && i.regressionEn)).toBe(true);
+    expect(PHYSIO_CATALOG.filter(i => /\(| [A-ZÉ][a-zé]/.test(i.nameFr)).map(i => i.nameFr)).toEqual(['Gainage ventral (planche)']);
+  });
+});

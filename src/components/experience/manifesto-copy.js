@@ -1,6 +1,25 @@
 /**
  * The WorkoutVision Manifesto: The Science, History, and Mechanics of Optimal Lifting
  * Bilingual: French and English.
+ *
+ * Honesty pass of 14 October 2026, wave 2B (MAN-2 to MAN-4, the em dashes of the English text). The conclusion's
+ * accuracy claim (MAN-1), the stimulus-to-fatigue injury claim and the 10 % / 15 % asymmetry rule (part of MAN-3) are
+ * rewritten on the branch honesty-pass (commit 1959f6e) and left as they are here, to keep the two changes apart.
+ * The claims changed here, with their source and status (R9); "not fetched" means not opened again on that day:
+ * - Blair: fitness strongly associated with lower all-cause mortality (Blair SN et al., JAMA 1989;262(17):2395-2401);
+ *   muscular strength likewise (Ruiz JR et al., BMJ 2008;337:a439). Literature, not fetched. "Definitive proof" is
+ *   gone: cohorts show association.
+ * - Layne Norton: PhD in nutritional sciences, University of Illinois, not a physician (biolayne.com, per the audit).
+ * - Mechanical tension as the main driver of hypertrophy: Wackerhage H et al., J Appl Physiol 2019;126(1):30-43 (a
+ *   review). Literature, not fetched. "Prove" became "indicate".
+ * - Repetition tempo (rule 02): similar hypertrophy for repetitions of 0.5 to 8 s (Schoenfeld BJ et al., Sports Med
+ *   2015;45(4):577-585, a meta-analysis). Literature, not fetched. A 2 to 3 s descent is an option, not a must.
+ * - Momentum unloading the muscle and loading the joints (rule 02, its body), full range and stretch (rule 01), line of
+ *   pull (rule 03), individual anatomy and joint pain (principle 3): convention, UNSOURCED. The app measures none of
+ *   them: the buttons only open the lift for filming.
+ * - The stimulus-to-fatigue ratio is a coaching idea (Israetel et al., Renaissance Periodization; convention): its
+ *   drawn "equation" is not shown (Manifesto.jsx).
+ * French lines changed here: awaiting David's approval (R10).
  */
 
 export const MANIFESTO = {
@@ -10,7 +29,7 @@ export const MANIFESTO = {
     subtitle: 'The Science, History, and Mechanics of Optimal Lifting',
     readTime: '8 min read',
     lead: 'Welcome to WorkoutVision. You are holding a blueprint designed to bridge the gap between academic exercise physiology and the gym floor.',
-    introP1: 'For decades, the fitness industry was dictated by dogmatic traditions, anecdotal hearsay, and unverified coaching lore. Today, we live in the era of science-based lifting—a discipline rooted in biomechanics, muscle protein synthesis, physics, and empirical data.',
+    introP1: 'For decades, the fitness industry was dictated by dogmatic traditions, anecdotal hearsay, and unverified coaching lore. Today, we live in the era of science-based lifting, a discipline rooted in biomechanics, muscle protein synthesis, physics, and empirical data.',
     introP2: 'This guide details the history of sports science, the giants who built the field, why evidence-based training yields superior results, and how to execute movements with surgical precision.',
 
     tocTitle: 'Table of Contents',
@@ -24,7 +43,7 @@ export const MANIFESTO = {
 
     chapter1: {
       number: 'Chapter 1',
-      title: 'The Evolution of Sports Science — A Historical Overview',
+      title: 'The Evolution of Sports Science: A Historical Overview',
       intro: 'Human movement has always been studied, but the systematic quantification of exercise is a remarkably recent development.',
       sections: [
         {
@@ -61,7 +80,7 @@ export const MANIFESTO = {
               name: 'Steven N. Blair',
               dates: '1939–2023',
               role: 'Lead Investigator, Aerobics Center Longitudinal Study (ACLS)',
-              desc: 'Through landmark epidemiological cohorts spanning over 80,000 person-years, Blair provided definitive proof that cardiorespiratory fitness and muscular strength are among the strongest independent predictors of all-cause mortality and longevity. Exercise transitioned from an optional athletic pursuit to a foundational pillar of preventative human medicine.',
+              desc: 'Through the Aerobics Center Longitudinal Study, Blair showed that cardiorespiratory fitness is strongly associated with lower all-cause mortality, independently of other risk factors (Blair et al., JAMA 1989), and later muscular strength too (Ruiz et al., BMJ 2008). Exercise moved from an optional athletic pursuit to a pillar of preventive medicine.',
             },
           ],
         },
@@ -90,7 +109,7 @@ export const MANIFESTO = {
             },
             {
               name: 'Dr. Layne Norton',
-              affiliation: 'Physician / PhD Nutritional Sciences',
+              affiliation: 'PhD, Nutritional Sciences (University of Illinois)',
               specialty: 'mTOR Signaling & Energy Balance',
               summary: 'Bridged the gap between cellular leucine sensing (mTORC1 activation) and practical nutritional programming, debunking dogmatic bro-science in favor of strict thermodynamic balance and evidence-based dietary adherence.',
             },
@@ -136,7 +155,7 @@ export const MANIFESTO = {
         },
         {
           title: '2. Mechanical Tension as the Primary Driver',
-          desc: 'Decades of cell biology and in-vivo human studies prove that mechanical tension—the physical elongation and contraction of muscle fibers under load acting on costameres and focal adhesions—is the primary catalyst for myofibrillar hypertrophy. Metabolic stress ("the burn") and muscle damage are secondary byproducts, not primary drivers.',
+          desc: 'Cell biology and human studies indicate that mechanical tension, the elongation and contraction of muscle fibers under load acting on costameres and focal adhesions, is the primary catalyst for myofibrillar hypertrophy. Metabolic stress ("the burn") and muscle damage are secondary byproducts, not primary drivers.',
           highlight: 'Chasing pure fatigue or soreness is a sub-optimal proxy for mechanical tension.',
         },
         {
@@ -159,7 +178,7 @@ export const MANIFESTO = {
 
     chapter4: {
       number: 'Chapter 4',
-      title: 'The Mechanics of Optimal Gains — Perfecting Execution',
+      title: 'The Mechanics of Optimal Gains: Perfecting Execution',
       intro: 'To maximize hypertrophic adaptation, an exercise must be executed with uncompromising fidelity to fundamental Newtonian physics and joint kinetics. Here is how modern sports science dictates surgical execution across movement profiles:',
       rules: [
         {
@@ -174,10 +193,9 @@ export const MANIFESTO = {
           num: '02',
           name: 'Eliminating Momentum (Inertial Leakage)',
           body: 'When a lifter bounces out of the hole or uses body English, they inject kinetic energy into the system. This produces a sudden spike in joint shear force while unloading the target muscle during the critical mid-range inflection point.',
-          // convention: no momentum, a lowering held back. The "2 to 3 seconds" eccentric and its cross-bridge reason are
-          // withdrawn: slowing the eccentric has not been shown to build more muscle (set-notes.js, source 3, literature;
-          // honesty pass, second round, 14 October 2026).
-          application: 'Start each rep from a controlled position, without momentum, and lower the load under control rather than letting it drop.',
+          // literature: Schoenfeld, Ogborn and Krieger 2015, Sports Med 45(4):577-585 (repetition duration and hypertrophy). The bare
+          // "2 to 3 seconds" rule is withdrawn (set-notes.js, source 3); it stays only as one option. French awaiting David's approval (R10).
+          application: 'Every repetition must begin from a controlled state or deliberate directional reversal. Controlling the lowering phase (for example 2 to 3 seconds) is one option: a meta-analysis found similar muscle growth for repetitions lasting 0.5 to 8 seconds (Schoenfeld et al. 2015).',
           liftKey: 'squat',
           liftLabel: 'Film a squat',
         },
@@ -185,7 +203,7 @@ export const MANIFESTO = {
           num: '03',
           name: 'Joint Alignment and Line of Pull',
           body: 'External resistance must act directly opposite to the muscle fibers’ architectural orientation. When joint motion deviates from the fascicle plane, rotational shear is transferred into ligaments and non-target synergists.',
-          application: 'On a Lat Pulldown, the humerus must track precisely in the plane of the latissimus dorsi fibers—pulling elbows down and slightly inward toward the front pockets, rather than flaring wide like an upper-back row.',
+          application: 'On a Lat Pulldown, the humerus must track precisely in the plane of the latissimus dorsi fibers: pulling elbows down and slightly inward toward the front pockets, rather than flaring wide like an upper-back row.',
           liftKey: 'lat_pulldown',
           liftLabel: 'Film a lat pulldown',
         },
@@ -264,7 +282,7 @@ export const MANIFESTO = {
               name: 'Steven N. Blair',
               dates: '1939–2023',
               role: 'Chercheur Principal, Aerobics Center Longitudinal Study (ACLS)',
-              desc: 'Grâce à l’étude ACLS portant sur des dizaines de milliers d’individus, Blair a apporté la preuve épidémiologique irréfutable que la capacité cardiorespiratoire et la force musculaire constituent les prédicteurs indépendants majeurs de la longévité. L’exercice physique est ainsi devenu un pilier fondamental de la médecine préventive moderne.',
+              desc: 'Avec l’étude ACLS, Blair a montré que la capacité cardiorespiratoire est fortement associée à une mortalité plus faible, indépendamment des autres facteurs de risque (Blair et al., JAMA 1989), puis la force musculaire aussi (Ruiz et al., BMJ 2008). L’exercice physique est ainsi devenu un pilier de la médecine préventive.',
             },
           ],
         },
@@ -306,7 +324,7 @@ export const MANIFESTO = {
               name: 'Dr. Mike Israetel',
               affiliation: 'Renaissance Periodization (RP)',
               specialty: 'Repères de Volume & Gestion de la Fatigue',
-              summary: 'A combiné son doctorat en physiologie sportive avec une méthodologie algorithmique claire\u00A0: Volume Minimal Efficace (MEV), Volume Adaptatif Maximal (MAV) et gestion systématique de la fatigue systémique (SFR).',
+              summary: 'A combiné son doctorat en physiologie sportive avec une méthodologie algorithmique claire\u00A0: Volume Minimal Efficace (MEV), Volume Adaptatif Maximal (MAV) et le rapport stimulus/fatigue (SFR).', // SFR: stimulus-to-fatigue ratio (second review, 14 October 2026); French awaiting David's approval (R10)
             },
             {
               name: 'Greg Nuckols',
@@ -339,7 +357,7 @@ export const MANIFESTO = {
         },
         {
           title: '2. La Tension Mécanique comme Moteur Principal',
-          desc: 'Des décennies de biologie cellulaire et d’études cliniques prouvent que la tension mécanique (l’étirement et la contraction sous charge captés par les mécanorécepteurs des costamères) est le stimulus primaire de l’hypertrophie. Le stress métabolique ("la brûlure") et les courbatures ne sont que des sous-produits secondaires.',
+          desc: 'La biologie cellulaire et les études chez l’humain indiquent que la tension mécanique (l’étirement et la contraction sous charge captés par les mécanorécepteurs des costamères) est le stimulus primaire de l’hypertrophie. Le stress métabolique ("la brûlure") et les courbatures ne sont que des sous-produits secondaires.',
           highlight: 'Rechercher la fatigue pure ou la douleur aiguë n’est pas un indicateur de croissance musculaire.',
         },
         {
@@ -373,8 +391,9 @@ export const MANIFESTO = {
           num: '02',
           name: 'Élimination de l’Élan (Fuite Inertielle)',
           body: 'Lorsqu’un pratiquant rebondit en bas ou utilise un balancement du buste, il injecte de l’énergie cinétique balistique. Cela décharge le muscle cible précisément au moment où la tension est la plus stimulante, tout en surchargeant les cartilages.',
-          // convention, as in English: the "2 à 3 secondes" are withdrawn (set-notes.js, source 3). Awaiting David's approval (R10).
-          application: 'Démarrez chaque répétition d’une position contrôlée, sans élan, et redescendez la charge en la retenant, sans la laisser tomber.',
+          // literature: Schoenfeld, Ogborn and Krieger 2015, Sports Med 45(4):577-585 (repetition duration and hypertrophy). The bare
+          // "2 to 3 seconds" rule is withdrawn (set-notes.js, source 3); it stays only as one option. French awaiting David's approval (R10).
+          application: 'Chaque répétition doit démarrer d’un point fixe sans impulsion parasite. Contrôler la descente (par exemple 2 à 3 secondes) est une option\u00A0: une méta-analyse a trouvé une prise de muscle comparable pour des répétitions de 0,5 à 8 secondes (Schoenfeld et al. 2015).',
           liftKey: 'squat',
           liftLabel: 'Filmer un squat',
         },
@@ -382,7 +401,7 @@ export const MANIFESTO = {
           num: '03',
           name: 'Alignement Articulaire et Ligne de Tirage',
           body: 'La résistance doit s’opposer directement au plan anatomique des faisceaux musculaires cibles. Tout désalignement disperse les forces sous forme de cisaillement articulaire.',
-          application: 'Au Tirage Poitrine (Lat Pulldown), l’humérus doit voyager exactement dans le plan des fibres du grand dorsal\u00A0: coudes tirés vers le bas et légèrement vers les poches, et non écartés vers l’arrière.',
+          application: 'Au tirage vertical, l’humérus doit voyager exactement dans le plan des fibres du grand dorsal\u00A0: coudes tirés vers le bas et légèrement vers les poches, et non écartés vers l’arrière.',
           liftKey: 'lat_pulldown',
           liftLabel: 'Filmer un tirage vertical',
         },

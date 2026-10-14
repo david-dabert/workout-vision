@@ -1,10 +1,11 @@
 /**
- * Gym Buddy & Training Partner Matchmaker Engine
+ * Gym Buddy (GymBuddy.jsx): a demo of partner matching, with fictional profiles in fictional gyms.
  *
- * Connects lifters by training facility, workout split, preferred schedule,
- * and strength parity for mutual spotting and shared progression.
- *
- * 100% on-device matching logic.
+ * Honesty pass of 14 October 2026 (BUD-1 to BUD-3 and the missed filter item): the profiles were placed at real,
+ * named clubs (Fitness Park République, Basic-Fit Bastille, Gymbox Bank, Equinox Nomad), and the screen promised a
+ * roll-out with those chains; they now train at "Salle exemple A" and the like, and are tagged as fictional. A split
+ * chosen now filters (a different split only lost points before). The parity comment said 20 %; the code uses 15 %.
+ * Nobody is put in touch with anybody: there is no such service. French of the profiles awaiting David's approval (R10).
  */
 
 export type TrainingSplit = 'ppl' | 'upper_lower' | 'bro_split' | 'full_body' | 'powerlifting';
@@ -20,7 +21,8 @@ export interface BuddyProfile {
   id: string;
   name: string;
   age: number;
-  facility: string; // e.g. "Fitness Park République"
+  facility: string; // a fictional gym, "Salle exemple A"
+  facilityEn: string; // the same in English, "Sample gym A"
   city: string;
   split: TrainingSplit;
   timeWindow: TimeWindow;
@@ -31,6 +33,8 @@ export interface BuddyProfile {
   bioFr: string;
   canSpotHeavy: boolean;
   isLookingForPartner: boolean;
+  /** Always true: no profile here is a real person. */
+  fictional: true;
 }
 
 export interface BuddySearchCriteria {
@@ -45,7 +49,7 @@ export interface BuddyMatchScore {
   facilityMatch: boolean;
   scheduleMatch: boolean;
   splitMatch: boolean;
-  strengthParityPct: number; // 0 - 100% (100 = identical working weights)
+  strengthParityPct: number | null; // 20 - 100 % (100 = within 15 %); null without the person's weights
   totalScore: number; // 0 - 100
 }
 
@@ -55,9 +59,10 @@ export interface BuddyMatchResult {
 }
 
 /**
- * Calculates strength parity between two lifters based on working compound weights.
- * Working weights within 20% give 100 parity; large differences drop down to allow
- * safe, convenient spotting without constant plate stripping.
+ * Strength parity between two lifters' working weights (bench and squat): 100 when their mean relative difference is
+ * within 15 %, then 100 × (1 − difference), never under 20. Status: convention (UNSOURCED; a comparison of two typed
+ * values, not a measure). Used only to order the demo's fictional profiles: the screen shows no percentage (second
+ * review of 14 October 2026: "65 % de parité" came from the UNSOURCED 15 % and 20), only the gap in kg.
  */
 export function calculateStrengthParity(c1: CompoundStats, c2: CompoundStats): number {
   const benchDiff = Math.abs(c1.benchPressKg - c2.benchPressKg) / Math.max(c1.benchPressKg, c2.benchPressKg, 1);
@@ -69,12 +74,14 @@ export function calculateStrengthParity(c1: CompoundStats, c2: CompoundStats): n
   return Math.max(20, Math.round((1 - meanDiff) * 100));
 }
 
-export const ACTIVE_BUDDIES_POOL: BuddyProfile[] = [
+/** Fictional profiles in fictional gyms, for the demo. */
+export const DEMO_BUDDY_PROFILES: BuddyProfile[] = [
   {
     id: 'buddy-01',
     name: 'Antoine D.',
     age: 26,
-    facility: 'Fitness Park République',
+    facility: 'Salle exemple A',
+    facilityEn: 'Sample gym A',
     city: 'Paris',
     split: 'ppl',
     timeWindow: 'evening',
@@ -82,15 +89,17 @@ export const ACTIVE_BUDDIES_POOL: BuddyProfile[] = [
     compounds: { benchPressKg: 100, squatKg: 130, deadliftKg: 160 },
     experienceYears: 4,
     bioEn: 'PPL lifter training at 6:30 PM. Looking for a reliable spotter on heavy bench & squat working sets.',
-    bioFr: 'Pratiquant PPL s’entraînant à 18h30. Cherche un partenaire régulier pour parer sur les séries lourdes.',
+    bioFr: 'S’entraîne en PPL vers 18\u00A0h\u00A030. Cherche un partenaire régulier pour parer sur les séries lourdes.',
     canSpotHeavy: true,
     isLookingForPartner: true,
+    fictional: true,
   },
   {
     id: 'buddy-02',
     name: 'Léa M.',
     age: 24,
-    facility: 'Fitness Park République',
+    facility: 'Salle exemple A',
+    facilityEn: 'Sample gym A',
     city: 'Paris',
     split: 'upper_lower',
     timeWindow: 'evening',
@@ -98,15 +107,17 @@ export const ACTIVE_BUDDIES_POOL: BuddyProfile[] = [
     compounds: { benchPressKg: 55, squatKg: 85, deadliftKg: 105 },
     experienceYears: 3,
     bioEn: 'Hypertrophy focused Upper/Lower split. Big emphasis on lengthened partials and tempo control.',
-    bioFr: 'Format Haut/Bas orienté hypertrophie. Focus sur les partielles étirées et le contrôle du tempo.',
+    bioFr: 'Programme haut du corps / bas du corps, pour l’hypertrophie. Travaille surtout les partielles en étirement et le tempo.',
     canSpotHeavy: true,
     isLookingForPartner: true,
+    fictional: true,
   },
   {
     id: 'buddy-03',
     name: 'Lucas B.',
     age: 29,
-    facility: 'Basic-Fit Bastille',
+    facility: 'Salle exemple B',
+    facilityEn: 'Sample gym B',
     city: 'Paris',
     split: 'powerlifting',
     timeWindow: 'morning',
@@ -114,41 +125,46 @@ export const ACTIVE_BUDDIES_POOL: BuddyProfile[] = [
     compounds: { benchPressKg: 120, squatKg: 160, deadliftKg: 200 },
     experienceYears: 6,
     bioEn: 'Early morning powerlifter (7:00 AM). RPE tracking and technical barbell work.',
-    bioFr: 'Powerlifter matinal (7h00). Travail technique à la barre et suivi RPE.',
+    bioFr: 'Force athlétique, le matin à 7\u00A0h. Travail technique à la barre, suivi au RPE.',
     canSpotHeavy: true,
     isLookingForPartner: true,
+    fictional: true,
   },
   {
     id: 'buddy-04',
     name: 'Sam T.',
     age: 27,
-    facility: 'Gymbox Bank',
-    city: 'London',
+    facility: 'Salle exemple C',
+    facilityEn: 'Sample gym C',
+    city: 'Lyon',
     split: 'ppl',
     timeWindow: 'evening',
     trainingDaysPerWeek: 5,
     compounds: { benchPressKg: 95, squatKg: 125, deadliftKg: 155 },
     experienceYears: 3,
     bioEn: 'After-work training partner needed for chest and leg days. High intensity, RPE 9-10.',
-    bioFr: 'Cherche partenaire après le travail pour séances pecs et jambes. Haute intensité.',
+    bioFr: 'Cherche un partenaire après le travail pour les séances pecs et jambes. Séances intenses.',
     canSpotHeavy: true,
     isLookingForPartner: true,
+    fictional: true,
   },
   {
     id: 'buddy-05',
     name: 'Emma W.',
     age: 25,
-    facility: 'Equinox Nomad',
-    city: 'New York',
+    facility: 'Salle exemple D',
+    facilityEn: 'Sample gym D',
+    city: 'Lyon',
     split: 'upper_lower',
     timeWindow: 'morning',
     trainingDaysPerWeek: 4,
     compounds: { benchPressKg: 60, squatKg: 90, deadliftKg: 110 },
     experienceYears: 4,
-    bioEn: 'Morning lifter (6:30 AM). Consistency and proper form first. Looking for motivation buddy.',
-    bioFr: 'Entraînement matinal (6h30). Priorité à la régularité et à la forme stricte.',
+    bioEn: 'Morning lifter (6:30 AM). Consistency and strict technique first. Looking for a motivation buddy.',
+    bioFr: 'Entraînement matinal (6\u00A0h\u00A030). Priorité à la régularité et à une technique stricte.',
     canSpotHeavy: true,
     isLookingForPartner: true,
+    fictional: true,
   },
 ];
 
@@ -157,7 +173,7 @@ export const ACTIVE_BUDDIES_POOL: BuddyProfile[] = [
  */
 export function findCompatibleBuddies(
   criteria: BuddySearchCriteria,
-  pool: BuddyProfile[] = ACTIVE_BUDDIES_POOL
+  pool: BuddyProfile[] = DEMO_BUDDY_PROFILES
 ): BuddyMatchResult[] {
   const { facility, city, split, timeWindow, userCompounds } = criteria;
   const results: BuddyMatchResult[] = [];
@@ -169,11 +185,11 @@ export function findCompatibleBuddies(
     const facilityMatch = facility ? buddy.facility.toLowerCase().includes(facility.toLowerCase()) : true;
     const scheduleMatch = timeWindow ? buddy.timeWindow === timeWindow : true;
     const splitMatch = split ? buddy.split === split : true;
+    // A split chosen filters: a partner on another split is not listed (the missed item of 14 October 2026).
+    if (!splitMatch) continue;
 
-    let strengthParityPct = 80; // default baseline if user hasn't specified
-    if (userCompounds) {
-      strengthParityPct = calculateStrengthParity(userCompounds, buddy.compounds);
-    }
+    // No parity without the person's own working weights: nothing is assumed for them.
+    const strengthParityPct = userCompounds ? calculateStrengthParity(userCompounds, buddy.compounds) : null;
 
     // Weighting:
     // Facility (35%), Schedule (30%), Split (20%), Strength Parity (15%)
@@ -181,7 +197,7 @@ export function findCompatibleBuddies(
     if (facilityMatch) score += 35;
     if (scheduleMatch) score += 30;
     if (splitMatch) score += 20;
-    score += (strengthParityPct / 100) * 15;
+    score += ((strengthParityPct ?? 0) / 100) * 15;
 
     results.push({
       buddy,

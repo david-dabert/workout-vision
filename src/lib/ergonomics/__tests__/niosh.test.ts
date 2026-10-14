@@ -1,83 +1,69 @@
 import { describe, it, expect } from 'vitest';
-import {
-  calculateNioshLifting,
-  calculateRebaScore,
-  extractNioshParametersFromLandmarks,
-} from '../niosh';
+import * as niosh from '../niosh';
+import { calculateNioshLifting, frequencyMultiplier, couplingMultiplier, extractNioshParametersFromLandmarks } from '../niosh';
 
-describe('Industrial Ergonomics & NIOSH Lifting Equation Engine', () => {
-  it('computes baseline safe lifting parameters at optimal geometry', () => {
-    // Optimal lift: H = 25 cm, V = 75 cm (knuckle height), D = 25 cm, A = 0 deg, Load = 15 kg
-    const result = calculateNioshLifting({
-      loadWeightKg: 15,
-      horizontalDistanceCm: 25,
-      verticalOriginCm: 75,
-      verticalTravelDistanceCm: 25,
-      asymmetryAngleDeg: 0,
-    });
+const base = { loadWeightKg: 15, horizontalDistanceCm: 25, verticalOriginCm: 75, verticalTravelDistanceCm: 25, asymmetryAngleDeg: 0 };
 
-    expect(result.horizontalMultiplierHM).toBe(1.0);
-    expect(result.verticalMultiplierVM).toBe(1.0);
-    expect(result.asymmetricMultiplierAM).toBe(1.0);
-    expect(result.recommendedWeightLimitKg).toBeCloseTo(23.0, 1);
-    expect(result.liftingIndexLI).toBeLessThan(1.0);
-    expect(result.riskCategory).toBe('safe');
-    expect(result.estimatedL5S1CompressionNewtons).toBeLessThan(2500);
+// Honesty pass of 14 October 2026 (ERG-1, ERG-3, ERG-4): the published equation and its domain, no invented L5/S1.
+describe('the revised NIOSH lifting equation (Waters et al. 1993)', () => {
+  it('gives LC = 23 kg at the reference lift, and a nominal LI below 1', () => {
+    const r = calculateNioshLifting(base);
+    expect(r.recommendedWeightLimitKg).toBe(23);
+    expect(r.liftingIndexLI).toBe(0.65);
+    expect(r.riskCategory).toBe('nominal');
   });
-
-  it('detects high ergonomic risk for extended reach and asymmetric twist', () => {
-    // High-risk lift: H = 50 cm (extended reach), V = 30 cm (deep bending), D = 60 cm, A = 45 deg twist, Load = 25 kg
-    const result = calculateNioshLifting({
-      loadWeightKg: 25,
-      horizontalDistanceCm: 50,
-      verticalOriginCm: 30,
-      verticalTravelDistanceCm: 60,
-      asymmetryAngleDeg: 45,
-    });
-
-    expect(result.horizontalMultiplierHM).toBe(0.5); // 25 / 50
-    expect(result.asymmetricMultiplierAM).toBeLessThan(0.9);
-    expect(result.recommendedWeightLimitKg).toBeLessThan(10.0);
-    expect(result.liftingIndexLI).toBeGreaterThan(2.5);
-    expect(result.riskCategory).not.toBe('safe');
-    expect(result.recommendations.length).toBeGreaterThan(0);
+  it('multiplies HM = 25/H, VM, DM, AM as published', () => {
+    const r = calculateNioshLifting({ loadWeightKg: 25, horizontalDistanceCm: 50, verticalOriginCm: 30, verticalTravelDistanceCm: 60, asymmetryAngleDeg: 45 });
+    expect(r.horizontalMultiplierHM).toBe(0.5);
+    expect(r.verticalMultiplierVM).toBe(0.865);
+    expect(r.distanceMultiplierDM).toBe(0.895);
+    expect(r.asymmetricMultiplierAM).toBe(0.856);
+    expect(r.recommendedWeightLimitKg).toBe(7.6);
+    expect(r.riskCategory).toBe('high');
+    expect(r.lowest).toBe('HM');
   });
-
-  it('evaluates REBA postural scores correctly', () => {
-    // Severe trunk and arm flexion
-    const res = calculateRebaScore({
-      trunkFlexionDeg: 65,
-      neckFlexionDeg: 25,
-      legsFlexionDeg: 30,
-      upperArmFlexionDeg: 50,
-    });
-
-    expect(res.rebaScore).toBeGreaterThanOrEqual(8);
-    expect(res.actionLevel).toContain('High Risk');
+  it('puts a reach beyond 63 cm, a height or travel beyond 175 cm, a twist beyond 135° outside the equation', () => {
+    for (const k of [{ horizontalDistanceCm: 65 }, { verticalOriginCm: 180 }, { verticalTravelDistanceCm: 180 }, { asymmetryAngleDeg: 140 }]) {
+      const r = calculateNioshLifting({ ...base, ...k });
+      expect(r.recommendedWeightLimitKg).toBe(0);
+      expect(r.liftingIndexLI).toBeNull();
+      expect(r.riskCategory).toBe('outside');
+      expect(r.outside.length).toBe(1);
+    }
   });
-
-  it('extracts NIOSH lifting variables accurately from 33-point skeletal landmarks', () => {
-    // Create synthetic landmark array for a lifter with hands at knuckle height (V ~ 75cm)
-    const landmarks = Array.from({ length: 33 }, () => ({ x: 0.5, y: 0.5, z: 0 }));
-    // Shoulders at y = 0.25
-    landmarks[11] = { x: 0.45, y: 0.25, z: 0 };
-    landmarks[12] = { x: 0.55, y: 0.25, z: 0 };
-    // Hips at y = 0.50
-    landmarks[23] = { x: 0.47, y: 0.50, z: 0 };
-    landmarks[24] = { x: 0.53, y: 0.50, z: 0 };
-    // Ankles at y = 0.85 (span = 0.60, representing 175cm stature)
-    landmarks[27] = { x: 0.46, y: 0.85, z: 0 };
-    landmarks[28] = { x: 0.54, y: 0.85, z: 0 };
-    // Wrists at y = 0.52 (slightly below hips, knuckle level)
-    landmarks[15] = { x: 0.50, y: 0.52, z: -0.1 };
-    landmarks[16] = { x: 0.50, y: 0.52, z: -0.1 };
-
-    const extracted = extractNioshParametersFromLandmarks(landmarks, 175);
-    expect(extracted.verticalOriginCm).toBeGreaterThan(65);
-    expect(extracted.verticalOriginCm).toBeLessThan(85);
-    expect(extracted.horizontalDistanceCm).toBeGreaterThanOrEqual(25);
-    expect(extracted.horizontalDistanceCm).toBeLessThanOrEqual(63);
-    expect(extracted.asymmetryAngleDeg).toBeLessThanOrEqual(10);
+  it('reads the frequency and coupling tables', () => {
+    expect(frequencyMultiplier(0.2, 'short', 50)).toBe(1);
+    expect(frequencyMultiplier(1, 'short', 50)).toBe(0.94);
+    expect(frequencyMultiplier(1, 'moderate', 50)).toBe(0.88);
+    expect(frequencyMultiplier(1, 'long', 50)).toBe(0.75);
+    expect(frequencyMultiplier(9, 'long', 50)).toBe(0);
+    expect(frequencyMultiplier(9, 'long', 80)).toBe(0.15);
+    expect(frequencyMultiplier(16, 'short', 80)).toBe(0);
+    expect(couplingMultiplier('fair', 50)).toBe(0.95);
+    expect(couplingMultiplier('fair', 80)).toBe(1);
+    expect(couplingMultiplier('poor', 80)).toBe(0.9);
+    const r = calculateNioshLifting({ ...base, frequencyLiftsPerMin: 4, duration: 'long', couplingQuality: 'poor' });
+    expect(r.frequencyMultiplierFM).toBe(0.45);
+    expect(r.recommendedWeightLimitKg).toBe(9.3);
+  });
+  it('offers no L5/S1 compression and no REBA score', () => {
+    expect('calculateRebaScore' in niosh).toBe(false);
+    expect('estimatedL5S1CompressionNewtons' in calculateNioshLifting(base)).toBe(false);
   });
 });
 
+describe('reading H, V and A from a pose (experimental, used by no screen)', () => {
+  it('returns null without a pose rather than fixed values', () => {
+    expect(extractNioshParametersFromLandmarks([], 175)).toBeNull();
+  });
+  it('scales a synthetic side pose by the person’s height', () => {
+    const landmarks = Array.from({ length: 33 }, () => ({ x: 0.5, y: 0.5, z: 0 }));
+    landmarks[11] = { x: 0.45, y: 0.25, z: 0 }; landmarks[12] = { x: 0.55, y: 0.25, z: 0 };
+    landmarks[23] = { x: 0.47, y: 0.50, z: 0 }; landmarks[24] = { x: 0.53, y: 0.50, z: 0 };
+    landmarks[27] = { x: 0.46, y: 0.85, z: 0 }; landmarks[28] = { x: 0.54, y: 0.85, z: 0 };
+    landmarks[15] = { x: 0.50, y: 0.52, z: -0.1 }; landmarks[16] = { x: 0.50, y: 0.52, z: -0.1 };
+    const e = extractNioshParametersFromLandmarks(landmarks, 175);
+    expect(e!.verticalOriginCm).toBeGreaterThan(65);
+    expect(e!.verticalOriginCm).toBeLessThan(85);
+  });
+});
