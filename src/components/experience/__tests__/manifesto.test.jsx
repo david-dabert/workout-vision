@@ -92,6 +92,7 @@ describe('the manifesto after the honesty pass', () => {
     expect(MANIFESTO.en.chapter4.rules.map(r => r.liftLabel)).toEqual(['Film a biceps curl', 'Film a squat', 'Film a lat pulldown']);
     const html = decode(await render('fr'));
     expect(html).not.toContain('Recrutement des Unités Motrices');
-    expect(html).toContain('Asym');
+    // The asymmetry index was withdrawn with the rest of the unjudged symmetry claims (honesty pass, wave 1).
+    expect(html).not.toContain('Asym');
   });
 });

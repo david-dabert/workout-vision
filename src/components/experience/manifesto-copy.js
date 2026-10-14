@@ -193,9 +193,9 @@ export const MANIFESTO = {
           num: '02',
           name: 'Eliminating Momentum (Inertial Leakage)',
           body: 'When a lifter bounces out of the hole or uses body English, they inject kinetic energy into the system. This produces a sudden spike in joint shear force while unloading the target muscle during the critical mid-range inflection point.',
-          // literature: Schoenfeld, Ogborn and Krieger 2015, Sports Med 45(4):577-585 (repetition duration and hypertrophy). The bare
+          // literature: Schoenfeld, Ogborn and Krieger 2015, Sports Med 45(4):577-585 (repetition duration and hypertrophy). The
           // "2 to 3 seconds" rule is withdrawn (set-notes.js, source 3); it stays only as one option. French awaiting David's approval (R10).
-          application: 'Every repetition must begin from a controlled state or deliberate directional reversal. Controlling the lowering phase (for example 2 to 3 seconds) is one option: a meta-analysis found similar muscle growth for repetitions lasting 0.5 to 8 seconds (Schoenfeld et al. 2015).',
+          application: 'Every repetition must begin from a controlled state or deliberate directional reversal. Controlling the lowering phase is one option: a meta-analysis found similar muscle growth for repetitions lasting 0.5 to 8 seconds (Schoenfeld et al. 2015).',
           liftKey: 'squat',
           liftLabel: 'Film a squat',
         },
@@ -393,7 +393,7 @@ export const MANIFESTO = {
           body: 'Lorsqu’un pratiquant rebondit en bas ou utilise un balancement du buste, il injecte de l’énergie cinétique balistique. Cela décharge le muscle cible précisément au moment où la tension est la plus stimulante, tout en surchargeant les cartilages.',
           // literature: Schoenfeld, Ogborn and Krieger 2015, Sports Med 45(4):577-585 (repetition duration and hypertrophy). The bare
           // "2 to 3 seconds" rule is withdrawn (set-notes.js, source 3); it stays only as one option. French awaiting David's approval (R10).
-          application: 'Chaque répétition doit démarrer d’un point fixe sans impulsion parasite. Contrôler la descente (par exemple 2 à 3 secondes) est une option\u00A0: une méta-analyse a trouvé une prise de muscle comparable pour des répétitions de 0,5 à 8 secondes (Schoenfeld et al. 2015).',
+          application: 'Chaque répétition doit démarrer d’un point fixe sans impulsion parasite. Contrôler la descente est une option\u00A0: une méta-analyse a trouvé une prise de muscle comparable pour des répétitions de 0,5 à 8 secondes (Schoenfeld et al. 2015).',
           liftKey: 'squat',
           liftLabel: 'Filmer un squat',
         },
