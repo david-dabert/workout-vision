@@ -20,7 +20,9 @@ export default function ScreenFade({ screenKey, children, viaTransition = false 
     // After a browser back or forward (the iOS swipe animates on its own), no second transition.
     // A View Transition animates the change itself (viaTransition, set by App): no fade layer on top of it.
     const fromHistory = viaTransition || performance.now() - (window.__wvHistoryNav || -1e9) < 250;
-    setLeaving(list => (fromHistory ? [] : [...list.filter(l => l.key !== prev.key && l.key !== screenKey), prev]));
+    // A screen shown without its entrance (returned to, or arrived at once) keeps it off as it leaves (.wv-still).
+    const still = prev.key === returned || prev.key === instant;
+    setLeaving(list => (fromHistory ? [] : [...list.filter(l => l.key !== prev.key && l.key !== screenKey), { ...prev, still }]));
     setInstant(fromHistory ? screenKey : null);
     setReturned(seen.current.has(screenKey) ? screenKey : null);
     seen.current.add(screenKey);
@@ -47,6 +49,6 @@ export default function ScreenFade({ screenKey, children, viaTransition = false 
   }, [leaving]);
   const layers = [...leaving.map(l => ({ ...l, out: true })), { key: screenKey, node: children, out: false }];
   return layers.map(l => (l.out
-    ? <div key={l.key} className="wv-leaving" aria-hidden="true" inert>{l.node}</div>
+    ? <div key={l.key} className={`wv-leaving${l.still ? ' wv-still' : ''}`} aria-hidden="true" inert>{l.node}</div>
     : <div key={l.key} ref={current} className={`wv-current${l.key === instant ? ' wv-instant' : ''}${l.key === returned && l.key !== instant ? ' wv-return' : ''}`}>{l.node}</div>));
 }
