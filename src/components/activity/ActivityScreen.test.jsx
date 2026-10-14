@@ -25,7 +25,7 @@ const tile = (html, key) => { const from = html.indexOf(`data-testid="activity-m
 
 describe('the activity screen', () => {
   for (const lang of ['fr', 'en']) {
-    it(`shows the volleyball demo in ${lang}: synthetic, badged, every number with its margin and its truth`, async () => {
+    it(`shows the volleyball demo in ${lang}: synthetic, badged, each measure with its margin, each count checked, beside its truth`, async () => {
       const html = decode(await withLang(lang, ({ default: ActivityScreen }) => <ActivityScreen activity="volleyball" onClose={() => {}} />));
       expect(html).toContain('data-testid="activity-screen"');
       expect(html).toContain('data-testid="demo-badge"');
@@ -35,6 +35,20 @@ describe('the activity screen', () => {
       for (const key of ['height', 'approach']) {
         expect(tile(html, key)).toContain('±');
         expect(tile(html, key)).toContain(`data-testid="activity-truth-${key}"`);
+      }
+      // The count has no margin: it is shown with its truth and an exact or wrong verdict.
+      expect(tile(html, 'jumps')).toContain('data-testid="activity-verdict-jumps"');
+      expect(tile(html, 'jumps')).toContain(lang === 'fr' ? 'compte exact' : 'count right');
+      // The caption no longer says every number has a margin.
+      expect(html).toContain(lang === 'fr' ? 'un compte avec sa vérification' : 'a count with its check');
+      // The table is three columns wide: the jump, then each measure with its truth and verdict in the same cell.
+      const head = html.slice(html.indexOf('<thead>'), html.indexOf('</thead>'));
+      expect(head.match(/<th /g)?.length).toBe(3);
+      // A number and its noun never part (R10 typography): "Saut 1", "60 images".
+      if (lang === 'fr') {
+        expect(html).toContain('Saut\u00A01');
+        expect(html).toContain('60\u00A0images par seconde');
+        expect(html).toContain('60\u00A0i/s');
       }
       // The knee check has no margin model yet: no number, and the reason.
       expect(tile(html, 'landing')).toContain(lang === 'fr' ? 'Pas de chiffre' : 'No number');

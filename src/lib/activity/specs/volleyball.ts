@@ -5,7 +5,7 @@ import type { ActivitySpec } from '../types';
  * from its flight time with the margin the sample rate allows, the last contact of a spike run-up where the samples
  * can time it, and a landing check from the front. Every number below carries its source and R9 status.
  *
- * French: every French line of this file was written on 13 or 14 October 2026 and awaits David's approval (R10).
+ * French: every French line of this file was written or reworded on 14 October 2026 and awaits David's approval (R10).
  *
  * MediaPipe pose indices: 23/24 hips, 25/26 knees, 27/28 ankles, 29/30 heels, 31/32 toes (foot index).
  */

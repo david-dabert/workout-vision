@@ -12,7 +12,8 @@
 .wv-experience .activity-screen .act-formula { margin-top: 2px; font-family: var(--mono); font-size: var(--fs-label); line-height: 1.5; letter-spacing: 0.04em; color: var(--c-fg-muted); overflow-wrap: anywhere; }
 .wv-experience .activity-screen .act-out { color: var(--lamp-hi); }
 
-/* Each event's table: the truth cell holds its value over its verdict. */
+/* Each event's table: a measure's cell holds its value, then its truth and its verdict, one line each, so three
+   columns fit the page's column at every width (five were cramped from 560 to 800 px, review of 14 October). */
 .wv-experience .activity-screen .sc-table td .act-in { font-size: var(--fs-caption); color: var(--c-fg-muted); }
 .wv-experience .activity-screen .sc-table td .act-in.act-out { color: var(--lamp-hi); }
 @media (min-width: 560px) {

@@ -9,9 +9,10 @@ import { ACTIVITY_COPY } from './activity-copy';
 import './ActivityScreen.css';
 
 // The activity screen (docs/VISION.md, "The screens"): any activity specification (src/lib/activity/types.ts) and the
-// engine's result on it, every value with its margin or the reason it is withheld (R8). ActivityView knows no sport:
-// it reads the specification's labels, formulas, R9 statuses and error notes. ActivityScreen runs a demonstration on
-// synthetic movement with known truth (src/lib/activity/demo.ts), so every number it shows sits beside its truth.
+// engine's result on it, every measure with its margin or the reason it is withheld (R8), every count with how it was
+// checked. ActivityView knows no sport: it reads the specification's labels, formulas, R9 statuses and error notes.
+// ActivityScreen runs a demonstration on synthetic movement with known truth (src/lib/activity/demo.ts), so every
+// number it shows sits beside its truth and its verdict: inside or outside the margin, a count exact or wrong.
 
 /** The demonstrations the screen can open, by page. */
 const DEMOS = { volleyball: volleyballDemo };
@@ -39,9 +40,10 @@ function MeasureTile({ m, spec, truth, lang }) {
   const value = !shown ? c.noNumber : isCount ? String(m.value) : `${fmt(m.value, d, fr)}${NBSP}±${NBSP}${fmtMargin(m.margin, d, fr)}`;
   const t = shown && truth ? truth.value : null;
   const inside = t !== null && (isCount ? t === m.value : Math.abs(m.value - t) <= m.margin);
+  const verdict = isCount ? (inside ? c.countRight : c.countWrong) : inside ? c.inside : c.outside;
   return <Metric wide label={m.label[lang]} value={value} unit={shown && !isCount ? m.unit : null} text={!shown} testId={`activity-measure-${m.key}`}>
     {t !== null ? <span className="act-truth" data-testid={`activity-truth-${m.key}`}>
-      {c.truth(isCount ? String(t) : withUnit(fmt(t, d, fr), m.unit))}{isCount ? null : <>, <span className={inside ? '' : 'act-out'}>{inside ? c.inside : c.outside}</span></>}
+      {c.truth(isCount ? String(t) : withUnit(fmt(t, d, fr), m.unit))}, <span className={inside ? '' : 'act-out'} data-testid={`activity-verdict-${m.key}`}>{verdict}</span>
     </span> : null}
     {reason ? <span className="act-reason" data-testid={`activity-refused-${m.key}`}>{reason}</span> : null}
     <span className="act-note">{m.error.note[lang]}</span>
@@ -49,7 +51,10 @@ function MeasureTile({ m, spec, truth, lang }) {
   </Metric>;
 }
 
-/** Each event's values, with their truths: one row per event of the activity's counted event. */
+/**
+ * Each event's values, with their truths: one row per event of the activity's counted event, one column per measure.
+ * A cell holds the value with its margin, then its truth and its verdict, so the table stays three columns wide.
+ */
 function EventTable({ result, spec, truth, lang }) {
   const fr = lang === 'fr', c = ACTIVITY_COPY[lang];
   const of = spec.measures.find(s => s.formula.kind === 'count')?.of ?? spec.measures[0]?.of;
@@ -63,7 +68,7 @@ function EventTable({ result, spec, truth, lang }) {
   return <section className="sc-section" data-testid="activity-events">
     <GroupHead title={c.eachHead} />
     <table className="sc-table">
-      <thead><tr><th scope="col">{c.eventCol}</th>{cols.map(m => [<th key={`${m.key}-v`} scope="col">{nameOf(m)}</th>, truth ? <th key={`${m.key}-t`} scope="col">{c.truthCol}</th> : null])}</tr></thead>
+      <thead><tr><th scope="col">{c.eventCol}</th>{cols.map(m => <th key={m.key} scope="col">{nameOf(m)}</th>)}</tr></thead>
       <tbody>
         {events.map((_, i) => <tr key={i}>
           <td>{c.event(i + 1)}</td>
@@ -71,18 +76,14 @@ function EventTable({ result, spec, truth, lang }) {
             const v = m.values.find(x => x.event === i), d = placesOf(m.unit);
             const t = truth?.[m.key]?.byEvent?.[i] ?? null;
             // Neither a value nor a truth: the measure does not apply to this event (a standing jump has no run-up).
-            if (!v && truth && t === null) {
-              return [<td key={`${m.key}-v`} className="act-na" aria-hidden="true">–</td>, <td key={`${m.key}-t`} className="act-na" aria-hidden="true">–</td>];
-            }
+            if (!v && truth && t === null) return <td key={m.key} className="act-na" aria-hidden="true">–</td>;
             // A value where the truth has none (a run-up read on a standing jump) is outside any margin.
             const inside = v && t !== null && Math.abs(v.value - t) <= v.margin;
-            return [
-              <td key={`${m.key}-v`} data-label={nameOf(m)}>{v ? withUnit(`${fmt(v.value, d, fr)}${NBSP}±${NBSP}${fmtMargin(v.margin, d, fr)}`, m.unit) : c.noNumber}</td>,
-              truth ? <td key={`${m.key}-t`} data-label={c.truthCol}>
-                <span>{t !== null ? withUnit(fmt(t, d, fr), m.unit) : c.none}</span>
-                {v ? <span className={`act-in${inside ? '' : ' act-out'}`}>{inside ? c.inside : c.outside}</span> : null}
-              </td> : null,
-            ];
+            return <td key={m.key} data-label={nameOf(m)}>
+              <span>{v ? withUnit(`${fmt(v.value, d, fr)}${NBSP}±${NBSP}${fmtMargin(v.margin, d, fr)}`, m.unit) : c.noNumber}</span>
+              {truth ? <span className="act-in">{c.truth(t !== null ? withUnit(fmt(t, d, fr), m.unit) : c.none)}</span> : null}
+              {truth && v ? <span className={`act-in${inside ? '' : ' act-out'}`}>{inside ? c.inside : c.outside}</span> : null}
+            </td>;
           })}
         </tr>)}
       </tbody>
