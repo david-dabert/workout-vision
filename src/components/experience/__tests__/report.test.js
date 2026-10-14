@@ -42,68 +42,42 @@ describe('reportSheet', () => {
     expect(reportSheet({ ...base, lang: 'en', context: 'physio', partner: 'Dr. Dubois' }).people).toEqual([['Training', 'Physiotherapy'], ['Physiotherapist', 'Dr. Dubois']]);
   });
 
-  it('formats physiotherapy clinical metrics (pain scale EVA and RPE) in summary', () => {
+  it('prints the person\'s own pain and effort as theirs, never graded, on every sheet (honesty audit, 14 October 2026)', () => {
     const reps = [{ startTime: 0, endTime: 2, romDegrees: 80, concentricSec: 1, eccentricSec: 1 }];
-    const frSheet = reportSheet({ ...base, pain: 2, rpe: 8, reps });
-    expect(frSheet.summary.some(line => line.includes('Échelle douleur (EVA)') && line.includes('2/10 (légère)'))).toBe(true);
-    expect(frSheet.summary.some(line => line.includes('Effort perçu (RPE)') && line.includes('8/10'))).toBe(true);
-
-    const enSheet = reportSheet({ ...base, lang: 'en', pain: 5, rpe: 9, reps });
-    expect(enSheet.summary.some(line => line.includes('Pain scale (VAS)') && line.includes('5/10 (moderate)'))).toBe(true);
-    expect(enSheet.summary.some(line => line.includes('Perceived exertion (RPE)') && line.includes('9/10'))).toBe(true);
+    const fr = reportSheet({ ...base, context: 'physio', pain: 7, rpe: 8, reps });
+    expect(fr.own).toEqual([['Douleur, selon vous', '7 sur 10'], ['Effort perçu (RPE), selon vous', '8 sur 10']]);
+    expect(reportSheet({ ...base, pain: 0, reps }).own).toEqual([['Douleur, selon vous', '0 sur 10']]);
+    expect(reportSheet({ ...base, lang: 'en', pain: 10, rpe: 6, reps }).own).toEqual([['Pain, as you rated it', '10 out of 10'], ['Perceived exertion (RPE), as you rated it', '6 out of 10']]);
+    // No grade of the answer ("légère", "sévère"), and nothing of it among the app's measures.
+    expect(JSON.stringify(fr)).not.toMatch(/légère|modérée|sévère|EVA/);
+    // A set with no measured rep (typed by hand after a refusal, flagged by the body check, saved before step 3c) keeps
+    // the answers: they were silently dropped before (audit, missed item on report-sheet.js:339).
+    for (const extra of [{ reps: [] }, { reps: null }, { reps: [], source: 'manual', afterRefusal: true, counted: null }, { reps, measures: false }]) {
+      expect(reportSheet({ ...base, pain: 6, rpe: 9, ...extra }).own).toEqual([['Douleur, selon vous', '6 sur 10'], ['Effort perçu (RPE), selon vous', '9 sur 10']]);
+    }
+    expect(reportSheet({ ...base, reps }).own).toEqual([]);
+    // The PDF sets them as labelled pairs, like the count's details.
+    expect(reportPdf(fr)).toBeInstanceOf(Blob);
   });
 
-  it('formats isometric hold metrics (TUT, stability, breakdown) in summary', () => {
-    const reps = [{ startTime: 0, endTime: 30, romDegrees: 15, concentricSec: 15, eccentricSec: 15 }];
-    const iso = { isHold: true, tutSeconds: 42.5, stabilityDeg: 2.1, breakdownTime: 38.0 };
-    const frSheet = reportSheet({ ...base, isometric: iso, reps });
-    expect(frSheet.summary.some(line => line.includes('Maintien isométrique (TUT)') && line.includes('42,5') && line.includes('stabilité ±2,1°') && line.includes('rupture à 38,0'))).toBe(true);
-
-    const enSheet = reportSheet({ ...base, lang: 'en', isometric: iso, reps });
-    expect(enSheet.summary.some(line => line.includes('Isometric hold (TUT)') && line.includes('42.5') && line.includes('stability ±2.1°') && line.includes('breakdown at 38.0'))).toBe(true);
-  });
-
-  it('formats Velocity-Based Training (VBT) and sticking point in summary', () => {
-    const vbt = {
-      velocityLossPercent: 18,
-      fatigueZone: 'optimal',
-      stickingAngleDeg: 92,
-      slowestRepIndex: 5,
-      estimatedRir: '1-2',
-      cueFr: 'Perte de vitesse de 18\u00A0% (ralentissement à 92°). Zone idéale de stimulation musculaire.',
-      cueEn: 'Optimal velocity loss of 18% (deceleration at 92°). Ideal stimulus zone.',
+  it('prints none of the withdrawn lines, whatever a caller passes (honesty audit, 14 October 2026)', () => {
+    const reps = [{ startTime: 0, endTime: 2, romDegrees: 90, concentricSec: 1, eccentricSec: 1 }, { startTime: 3, endTime: 5, romDegrees: 92, concentricSec: 1, eccentricSec: 1 }];
+    const withdrawn = {
+      symmetry: { symmetryScore: 82, status: 'notable_asymmetry', dominantSide: 'left', romDiffDeg: 22, trunkShift: { hasShift: true, maxTrunkTiltDeg: 7.5 }, coaching: { hasNotableAsymmetry: true, adviceFr: 'haltères', adviceEn: 'dumbbell' } },
+      consistency: { score: 88, rating: 'high' }, smoothness: { avgSparc: -1.75, quality: 'very_smooth' },
+      formChecks: { squatDepth: { allParallel: true }, kneeValgus: { detected: false }, lockout: { fullLockout: true } },
+      kinetics: { totalWorkJoules: 671, maxL5S1ShearN: 433.4, maxKneeShearN: 250.1 }, compliance: { verified: true, certificateId: 'WV-EB858634-9R' },
+      vbt: { velocityLossPercent: 18, fatigueZone: 'optimal', estimatedRir: '1-2', stickingAngleDeg: 92, slowestRepIndex: 5, cueFr: 'Zone idéale', cueEn: 'Ideal' },
+      ergonomics: { estimatedL5S1CompressionNewtons: 2850, liftingIndexLI: 1.45, riskCategory: 'moderate' }, spinalLoad: { compressionN: 3650 },
+      isometric: { isHold: true, tutSeconds: 42.5, stabilityDeg: 2.1 }, partialCount: 13, partials: [{ partialType: 'lengthened' }],
     };
-    const frSheet = reportSheet({ ...base, vbt, reps: [{ startTime: 0, endTime: 2, romDegrees: 90, concentricSec: 1, eccentricSec: 1 }] });
-    expect(frSheet.summary.some(line => line.includes('Perte de vitesse (VBT)') && line.includes('18 % (stimulus optimal) · RIR ~1-2'))).toBe(true);
-    expect(frSheet.summary.some(line => line.includes('Point de friction') && line.includes('92° (sur la rép. 5)'))).toBe(true);
-    expect(frSheet.summary.some(line => line.includes('Conseil VBT') && line.includes('Zone idéale'))).toBe(true);
-
-    const enSheet = reportSheet({ ...base, lang: 'en', vbt, reps: [{ startTime: 0, endTime: 2, romDegrees: 90, concentricSec: 1, eccentricSec: 1 }] });
-    expect(enSheet.summary.some(line => line.includes('Velocity loss (VBT)') && line.includes('18% (optimal stimulus) · RIR ~1-2'))).toBe(true);
-    expect(enSheet.summary.some(line => line.includes('Sticking point') && line.includes('92° (on rep 5)'))).toBe(true);
-    expect(enSheet.summary.some(line => line.includes('VBT coaching cue') && line.includes('Ideal stimulus zone'))).toBe(true);
-  });
-
-  it('formats occupational ergonomics and NIOSH spinal compressive load in summary', () => {
-    const ergo = {
-      estimatedL5S1CompressionNewtons: 2850,
-      liftingIndexLI: 1.45,
-      riskCategory: 'moderate',
-      recommendations: ['Rapprocher la charge du corps pour limiter le bras de levier.'],
-    };
-    const reps = [{ startTime: 0, endTime: 2, romDegrees: 90, concentricSec: 1, eccentricSec: 1 }];
-    const frSheet = reportSheet({ ...base, ergonomics: ergo, reps });
-    expect(frSheet.summary.some(line => line.includes('Compression spinale (L5/S1 NIOSH)') && line.includes('2850') && line.includes('vigilance modérée') && line.includes('LI 1.45'))).toBe(true);
-    expect(frSheet.summary.some(line => line.includes('Recommandation ergonomique') && line.includes('Rapprocher la charge'))).toBe(true);
-
-    const enSheet = reportSheet({
-      ...base,
-      lang: 'en',
-      ergonomics: { ...ergo, riskCategory: 'high', estimatedL5S1CompressionNewtons: 3650, recommendations: ['Bring load closer.'] },
-      reps,
-    });
-    expect(enSheet.summary.some(line => line.includes('Spinal compression (L5/S1 NIOSH)') && line.includes('3650') && line.includes('high risk'))).toBe(true);
-    expect(enSheet.summary.some(line => line.includes('Ergonomic guideline') && line.includes('Bring load closer.'))).toBe(true);
+    for (const lang of ['fr', 'en']) {
+      const s = JSON.stringify(reportSheet({ ...base, lang, reps, first: 'concentric', ...withdrawn }));
+      for (const word of ['Symétrie', 'symmetry', 'Régularité', 'consistency', 'SPARC', 'Fluidité', 'Smoothness', 'Profondeur', 'Squat depth', 'valgus', 'Verrouillage', 'lockout',
+        'Cisaillement', 'shear', 'Travail', 'work', 'NIOSH', 'Compression', 'Certificat', 'WV-EB858634', 'VBT', 'RIR', 'friction', 'Sticking', 'partielles', 'Partial reps', 'isométrique', 'Isometric', '433', '2850']) {
+        expect(s).not.toContain(word);
+      }
+    }
   });
 
   it('gives the level in the user\'s words, and leaves it out when none was chosen', () => {
@@ -365,86 +339,6 @@ describe('rep details', () => {
     const s = reportSheet(base);
     expect(s.rows).toEqual([]);
     expect(s.summary).toEqual([]);
-  });
-
-  it('formats bilateral symmetry in summary when symmetry data is provided', () => {
-    const sym = { symmetryScore: 92, asymmetryPct: 8, dominantSide: 'right', romDiffDeg: 6, status: 'balanced' };
-    const s = reportSheet({ ...base, reps, first: 'concentric', symmetry: sym });
-    expect(s.summary.join('\n')).toContain('Symétrie bilatérale');
-    expect(s.summary.join('\n')).toContain('92');
-    expect(s.summary.join('\n')).toContain('Équilibrée');
-
-    const sEn = reportSheet({ ...base, lang: 'en', reps, first: 'concentric', symmetry: { ...sym, status: 'mild_asymmetry', dominantSide: 'left', romDiffDeg: 14 } });
-    expect(sEn.summary.join('\n')).toContain('Bilateral symmetry');
-    expect(sEn.summary.join('\n')).toContain('Left dominant (+14°)');
-  });
-
-  it('formats trunk shift and balance coaching cues in summary when detected', () => {
-    const sym = {
-      symmetryScore: 82,
-      asymmetryPct: 18,
-      dominantSide: 'left',
-      romDiffDeg: 22,
-      status: 'notable_asymmetry',
-      trunkShift: { hasShift: true, maxTrunkTiltDeg: 7.5, direction: 'left' },
-      coaching: {
-        hasNotableAsymmetry: true,
-        adviceFr: 'Asymétrie notable (+22° côté gauche). Travail unilatéral avec haltères conseillé.',
-        adviceEn: 'Notable asymmetry detected (+22° on left side). Introduce unilateral dumbbell exercises.',
-      },
-    };
-    const sFr = reportSheet({ ...base, reps, first: 'concentric', symmetry: sym });
-    expect(sFr.summary.join('\n')).toContain('Décalage latéral du tronc');
-    expect(sFr.summary.join('\n')).toContain('7.5° (vers la gauche)');
-    expect(sFr.summary.join('\n')).toContain('Conseil d’équilibrage');
-    expect(sFr.summary.join('\n')).toContain('haltères');
-
-    const sEn = reportSheet({ ...base, lang: 'en', reps, first: 'concentric', symmetry: sym });
-    expect(sEn.summary.join('\n')).toContain('Lateral trunk shift');
-    expect(sEn.summary.join('\n')).toContain('7.5° (towards left)');
-    expect(sEn.summary.join('\n')).toContain('Balance coaching cue');
-    expect(sEn.summary.join('\n')).toContain('dumbbell');
-  });
-
-  it('formats form consistency and movement smoothness in summary', () => {
-    const consistency = { score: 88, rating: 'high', avgDeviationDeg: 6.2, mostInconsistentRep: 4 };
-    const smoothness = { avgSparc: -1.75, quality: 'very_smooth' };
-    const s = reportSheet({ ...base, reps, first: 'concentric', consistency, smoothness });
-    expect(s.summary.join('\n')).toContain('Régularité de forme');
-    expect(s.summary.join('\n')).toContain('88');
-    expect(s.summary.join('\n')).toContain('Très régulier');
-    expect(s.summary.join('\n')).toContain('Fluidité');
-    expect(s.summary.join('\n')).toContain('-1.75 SPARC');
-    expect(s.summary.join('\n')).toContain('Très fluide');
-
-    const sEn = reportSheet({ ...base, lang: 'en', reps, first: 'concentric', consistency, smoothness });
-    expect(sEn.summary.join('\n')).toContain('Form consistency');
-    expect(sEn.summary.join('\n')).toContain('High consistency');
-    expect(sEn.summary.join('\n')).toContain('Smoothness');
-    expect(sEn.summary.join('\n')).toContain('Very smooth');
-  });
-
-  it('formats biomechanical form checks (squat depth, knee valgus, lockout) in summary', () => {
-    const formChecks = {
-      squatDepth: { allParallel: true, parallelRate: 1.0, count: 5, total: 5 },
-      kneeValgus: { detected: false, valgusRate: 0, count: 0, total: 5 },
-      lockout: { fullLockout: true, lockoutRate: 1.0, count: 5, total: 5 },
-    };
-    const sFr = reportSheet({ ...base, reps, first: 'concentric', formChecks });
-    expect(sFr.summary.join('\n')).toContain('Profondeur (squat)');
-    expect(sFr.summary.join('\n')).toContain('100 % à la parallèle');
-    expect(sFr.summary.join('\n')).toContain('Alignement des genoux');
-    expect(sFr.summary.join('\n')).toContain('Parfait (aucun valgus)');
-    expect(sFr.summary.join('\n')).toContain('Verrouillage articulaire');
-    expect(sFr.summary.join('\n')).toContain('Complet (100 %)');
-
-    const sEn = reportSheet({ ...base, lang: 'en', reps, first: 'concentric', formChecks });
-    expect(sEn.summary.join('\n')).toContain('Squat depth');
-    expect(sEn.summary.join('\n')).toContain('100% parallel depth');
-    expect(sEn.summary.join('\n')).toContain('Knee tracking');
-    expect(sEn.summary.join('\n')).toContain('Clean (no valgus collapse)');
-    expect(sEn.summary.join('\n')).toContain('Joint lockout');
-    expect(sEn.summary.join('\n')).toContain('Complete lockout (100%)');
   });
 
   it('runs a long table onto the next page', async () => {

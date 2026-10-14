@@ -73,16 +73,12 @@ export function exerciseProgress(sets) {
     const ordered = [...list].sort((a, b) => setTime(a) - setTime(b));
     const first = ordered.length === 1;
     const recent = ordered.slice(-TREND_SETS);
-    const syms = recent.map(w => w.symmetry?.symmetryScore).filter(s => typeof s === 'number' && Number.isFinite(s));
-    const symmetryAvg = syms.length ? Math.round(syms.reduce((a, b) => a + b, 0) / syms.length) : null;
-    const vbts = recent.map(w => w.vbt?.velocityLossPercent).filter(v => typeof v === 'number' && Number.isFinite(v));
-    const vbtLossAvg = vbts.length ? Math.round(vbts.reduce((a, b) => a + b, 0) / vbts.length) : null;
+    // No symmetry or velocity-loss average: those stored fields were never measured (honesty audit of 14 October 2026,
+    // CORE-16), and sets saved on 11-14 October still hold them; they are not read.
     out.push({
       key, sets: ordered, first,
       trend: first ? [] : recent.map(w => w.reps),
       bests: first ? null : bestsOf(ordered),
-      symmetryAvg,
-      vbtLossAvg,
     });
   }
   // An exercise with a single set has nothing to show yet: it comes after those with a trend (critic, 30 September).

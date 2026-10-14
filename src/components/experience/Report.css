@@ -26,6 +26,9 @@
 .wv-experience .report-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; border-radius: var(--r-s); background: var(--basalt); border: 1px solid var(--c-rule); }
 .wv-experience .report-seg button { min-height: 44px; padding: 4px 6px; border-radius: 11px; font-size: var(--fs-caption); font-weight: 500; line-height: 1.25; color: var(--bone-2); text-align: center; text-wrap: balance; }
 .wv-experience .report-seg button[aria-pressed="true"] { background: var(--c-accent); color: var(--c-on-accent); }
+/* A 0 to 10 scale (pain) or the effort scale: one key per value, six to a row, each 44 px tall and about 54 px wide at 390 px. */
+.wv-experience .report-seg.is-scale { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.wv-experience .report-seg.is-scale button { font-variant-numeric: tabular-nums; }
 /* The partner's field fades in where it stands: a field that rose into place would pass over the level below it (CI run 149). */
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 .wv-experience .fade-in { animation: fade-in var(--d-ui) var(--ease) both; }
@@ -120,6 +123,8 @@
    like the people above; the set's two figures are set like the count; footnotes are small; the experimental notice
    closes the sheet, as it closes every PDF page. */
 .wv-experience .sheet .sh-details { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* The person's own pain and effort: two answers, two columns, so their labels stand on one line. */
+.wv-experience .sheet .sh-own { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 /* A label that wraps ("COMPTÉ PAR L’APP") keeps the three values on one line, as in the PDF. */
 .wv-experience .sheet .sh-details > span { display: flex; flex-direction: column; justify-content: space-between; gap: 2px; }
 .wv-experience .sheet .sh-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding-top: 12px; border-top: 1px solid var(--paper-rule); }

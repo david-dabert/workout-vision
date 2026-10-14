@@ -25,7 +25,7 @@ export function warmReportPdf() {
  * count: the number the visitor confirmed or corrected; counted: what the app counted.
  * reps: the app's reps, when their details were measured with step 3c's boundaries.
  */
-export default function Report({ lift, count, counted, arm, date, source, afterRefusal = false, proposed = false, leaving, onBack, reps, setId, sides = null, wave = null, planned = null, symmetry = null, smoothness = null, consistency = null, formChecks = null, isometric = null, kinetics = null, compliance = null, vbt = null, ergonomics = null, spinalLoad = null }) {
+export default function Report({ lift, count, counted, arm, date, source, afterRefusal = false, proposed = false, leaving, onBack, reps, setId, sides = null, wave = null, planned = null }) {
   const { lang } = useT(), fr = lang === 'fr';
   const [name, setName] = useState('');
   const [context, setContext] = useState(''); // '' | alone | friend | coach | physio
@@ -65,7 +65,7 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
     loadSets().then(all => { if (live) setPrevious(previousOf(all)); }, () => { if (live) setPrevious(null); });
     return () => { live = false; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, afterRefusal, proposed, first, previousSet: previous ?? null, sides, lift, wave, planned, symmetry, smoothness, consistency, formChecks, rpe, pain, isometric, kinetics, compliance, vbt, ergonomics, spinalLoad });
+  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, afterRefusal, proposed, first, previousSet: previous ?? null, sides, lift, wave, planned, rpe, pain });
   const sheetRef = useRef(sheet);
   sheetRef.current = sheet;
 
@@ -130,37 +130,36 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
     download(blob, fileName);
   }
 
+  // The set as a file (honesty audit of 14 October 2026, CORE-15): every value says where it comes from, the app's count
+  // and its experimental per-rep measures apart from what the person confirmed or typed. No derived metric the app cannot
+  // measure (the withdrawn symmetry, consistency, SPARC, form checks, loads, certificate and VBT), no landmark. Its name
+  // says what it holds: the set's measures, not "raw telemetry".
   function exportJson() {
+    const app = counted ?? null;
+    const how = source === 'manual' && afterRefusal
+      ? (proposed ? 'proposed by the app, which could not count the set, then confirmed by the person' : 'typed by the person; the app could not count the set')
+      : app !== null && app !== count ? 'corrected by the person' : 'counted by the app, confirmed by the person';
     const payload = {
+      format: 'workoutvision-set-measures/1',
       lift,
       date: when.toISOString(),
-      count,
-      counted: counted ?? count,
-      arm: arm ?? null,
-      metrics: {
-        symmetry: symmetry ?? null,
-        smoothness: smoothness ?? null,
-        consistency: consistency ?? null,
-        formChecks: formChecks ?? null,
-        kinetics: kinetics ?? null,
-        compliance: compliance ?? null,
-        isometric: isometric ?? null,
-        vbt: vbt ?? null,
-      },
-      reps: reps || [],
-      planned: planned ?? null,
-      userContext: { name: name || null, context: context || null, partner: partner || null, level: level || null, notes: notes || null },
+      count: { value: count, source: how },
+      countedByApp: app !== null && !(source === 'manual' && afterRefusal) ? { value: app, source: 'counted by the app' } : null,
+      reps: { source: 'measured by the app on the video, experimental, not validated', values: reps || [] },
+      sides: sides ? { source: 'measured by the app, front view only, experimental', value: sides } : null,
+      planned: planned ? { source: 'the coach\'s programme', value: planned } : null,
+      person: { source: 'typed by the person on the report form', name: name || null, context: context || null, partner: partner || null, level: level || null, pain: pain ?? null, rpe: rpe ?? null, notes: notes || null },
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const day = when.toISOString().slice(0, 10);
-    const fileName = `telemetrie-${lift}-${day}.json`;
+    const fileName = `${fr ? 'mesures-serie' : 'set-measures'}-${lift}-${day}.json`;
     const url = URL.createObjectURL(blob);
     const a = Object.assign(document.createElement('a'), { href: url, download: fileName });
     document.body.appendChild(a);
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 10_000);
-    say(fr ? 'Téléchargement des données JSON lancé.' : 'JSON telemetry download started.');
+    say(fr ? 'Téléchargement des données JSON lancé.' : 'JSON download started.');
   }
 
   const next = target => e => { if (e.key === 'Enter') { e.preventDefault(); target.current?.focus(); } };
@@ -191,10 +190,12 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
       </div>}
       <Choice id="fLevel" label={fr ? 'Niveau' : 'Level'} value={level} onChange={setLevel}
         options={[['beginner', fr ? 'Débutant' : 'Beginner'], ['intermediate', fr ? 'Intermédiaire' : 'Intermediate'], ['expert', fr ? 'Confirmé' : 'Expert']]} />
-      <Choice id="fPain" label={fr ? 'Douleur ressentie (EVA)' : 'Pain level (VAS)'} value={pain === null ? '' : String(pain)} onChange={v => setPain(v === '' ? null : Number(v))}
-        options={[['0', '0'], ['2', '2'], ['4', '4'], ['6', '6'], ['8', '8']]} />
+      {/* The person's pain, 0 to 10, every value offered (honesty audit of 14 October 2026, CORE-20: it was 0, 2, 4, 6, 8
+          under a "VAS" label, then graded). Printed as given, as theirs. Awaiting David's approval of the words (R10). */}
+      <Choice id="fPain" label={fr ? 'Douleur ressentie, de 0 à 10' : 'Pain felt, from 0 to 10'} value={pain === null ? '' : String(pain)} onChange={v => setPain(v === '' ? null : Number(v))}
+        options={Array.from({ length: 11 }, (_, i) => [String(i), String(i)])} wrap />
       <Choice id="fRpe" label={fr ? 'Effort perçu (RPE)' : 'Perceived exertion (RPE)'} value={rpe === null ? '' : String(rpe)} onChange={v => setRpe(v === '' ? null : Number(v))}
-        options={[['6', '6'], ['7', '7'], ['8', '8'], ['9', '9'], ['10', '10']]} />
+        options={[['6', '6'], ['7', '7'], ['8', '8'], ['9', '9'], ['10', '10']]} wrap />
       <div className="field">
         <label htmlFor="fNotes">Notes</label>
         <textarea id="fNotes" ref={notesRef} rows="3" autoCapitalize="sentences" maxLength={NOTES_MAX}
@@ -216,6 +217,10 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
         {/* How the count was made, labelled like the people above (David's iPhone, 5 October: four grey sentences of equal weight). */}
         {sheet.details.length > 0 && <div className="sh-people sh-details">
           {sheet.details.map(([label, value]) => <span key={label}><em>{label}</em><span>{value}</span></span>)}
+        </div>}
+        {/* The person's own pain and effort, as they gave them: theirs, never graded, on every sheet. */}
+        {sheet.own.length > 0 && <div className="sh-people sh-details sh-own" data-testid="sh-own">
+          {sheet.own.map(([label, value]) => <span key={label}><em>{label}</em><span>{value}</span></span>)}
         </div>}
         {/* The set's two figures, set like the count, under it. */}
         {sheet.stats.length > 0 && <div className="sh-stats" data-testid="sh-stats">
@@ -245,7 +250,8 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
         </button>
         <button type="button" className="text-btn press report-json-btn" onClick={exportJson} data-testid="report-export-json">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-          <span>{fr ? 'Données brutes (JSON)' : 'Raw telemetry (JSON)'}</span>
+          {/* Awaiting David's approval of the words (R10). */}
+          <span>{fr ? 'Mesures de la série (JSON)' : 'Set measures (JSON)'}</span>
         </button>
       </div>
     </div></section>
@@ -253,10 +259,10 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
 }
 
 // One answer among a few, or none: a second tap on the chosen one clears it, since every answer is optional.
-function Choice({ id, label, value, onChange, options }) {
+function Choice({ id, label, value, onChange, options, wrap = false }) {
   return <div className="field">
     <span className="field-label" id={id}>{label}</span>
-    <div className="report-seg" role="group" aria-labelledby={id}>
+    <div className={`report-seg${wrap ? ' is-scale' : ''}`} role="group" aria-labelledby={id}>
       {options.map(([key, text]) => <button key={key} type="button" className="press" aria-pressed={value === key}
         onClick={() => onChange(value === key ? '' : key)}>{text}</button>)}
     </div>

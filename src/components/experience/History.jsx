@@ -178,17 +178,15 @@ export default function History({ onClose }) {
                   <span className="hist-meta"><span>{[time(w), seconds ? `${seconds}\u00A0s` : '', arm].filter(Boolean).map((part, i) => <span key={i}>{part}</span>)}</span></span>
                   <span className="sr">{fr ? `${w.reps} ${w.reps > 1 ? 'répétitions' : 'répétition'}` : `${w.reps} ${w.reps === 1 ? 'rep' : 'reps'}`}</span>
                 </span>
-                {(fixed || byHand || repsBest.has(w.id) || w.symmetry?.symmetryScore != null || w.consistency?.score != null || w.compliance?.verified) && <span className="hist-tags">
+                {/* Reps, records and corrections only: the symmetry, consistency and "Certifié" tags of sets saved on 11-14
+                    October are not read (honesty audit of 14 October 2026, CORE-16); the stored fields stay untouched. */}
+                {(fixed || byHand || repsBest.has(w.id)) && <span className="hist-tags">
                   {repsBest.has(w.id) && <span className="hist-tag is-best">{fr ? 'Record' : 'Best'}</span>}
-                  {w.symmetry?.symmetryScore != null && <span className="hist-tag">{w.symmetry.symmetryScore}% sym.</span>}
-                  {w.consistency?.score != null && <span className="hist-tag">{w.consistency.score}% {fr ? 'rég.' : 'const.'}</span>}
-                  {w.compliance?.verified && <span className="hist-tag is-compliance">{fr ? 'Certifié' : 'Verified'}</span>}
                   {fixed && <span className="hist-tag">{fr ? 'Corrigé' : 'Corrected'}</span>}
                   {byHand && <span className="hist-tag">{proposed ? (fr ? 'Proposition confirmée' : 'Proposal confirmed') : fr ? 'Saisi à la main' : 'Typed by hand'}</span>}
                 </span>}
               </button>
               {shown && <div className="hist-detail appear">
-                {w.compliance?.certificateId && <p className="hist-corr" data-testid="hist-compliance"><b>{fr ? 'Certificat d’exécution' : 'Compliance seal'} :</b> {w.compliance.certificateId}</p>}
                 {byHand && w.afterRefusal && <p className="hist-corr">{proposed
                   ? (fr ? 'Proposé par l’appli, qui n’a pas bien vu le mouvement, puis confirmé par vous.' : 'Proposed by the app, which did not see the movement clearly, then confirmed by you.')
                   : fr ? 'Saisi à la main : l’appli n’a pas pu compter cette série.' : 'Typed by hand: the app could not count this set.'}</p>}
@@ -222,6 +220,6 @@ export default function History({ onClose }) {
     {report && <Report lift={report.exercise || report.exerciseKey} count={report.reps} counted={countedBy(report)} arm={report.arm}
       date={setTime(report)} source={report.source} afterRefusal={!!report.afterRefusal} proposed={report.source === 'manual' && Number.isFinite(report.proposal?.reps) && report.proposal.reps === report.reps} reps={report.repDetailsVersion === 2 ? report.repDetails : null}
       setId={report.id} sides={report.sides ?? null} planned={report.planned ?? null} wave={report.repDetailsVersion === 2 ? report.wave ?? null : null}
-      symmetry={report.symmetry} smoothness={report.smoothness} consistency={report.consistency} formChecks={report.formChecks} kinetics={report.kinetics} compliance={report.compliance} vbt={report.vbt} leaving={leaving} onBack={closeReport} />}
+      leaving={leaving} onBack={closeReport} />}
   </>;
 }

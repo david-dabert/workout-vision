@@ -97,6 +97,8 @@ export function reportPdf(sheet) {
   };
   // How the count was made, labelled like the people (report-sheet.js, details).
   pairs(sheet.details || [], 3);
+  // The person's own pain and effort (report-sheet.js, own), labelled the same way.
+  pairs(sheet.own || [], 2);
   // The set's two figures, set like the count: a rule, two columns, a label in capitals over a serif value in gold.
   if (sheet.stats?.length) {
     const H = 1 + 12 + 13.5 + 4 + 26;
