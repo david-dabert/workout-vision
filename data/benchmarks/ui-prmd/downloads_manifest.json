@@ -1,0 +1,132 @@
+{
+  "dataset": "UI-PRMD",
+  "description": "University of Idaho - Physical Rehabilitation Movement Dataset",
+  "citation": "Vakanski, A., et al. (2018). A Data Set of Human Body Movements for Physical Rehabilitation Exercises. MDPI Data, 3(2), 17.",
+  "doi": "10.3390/data3020017",
+  "license": "Open Data Commons Public Domain Dedication and License (PDDL) v1.0",
+  "commercialUse": "Permitted (Public Domain)",
+  "downloadedAt": "2026-10-14T10:03:33.014493+00:00",
+  "totalFiles": 20,
+  "files": [
+    {
+      "filename": "m01_s01_e01_positions.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m01_s01_e01_positions.txt",
+      "fileSizeBytes": 46157,
+      "sha256": "e9b5ee265542bda8c25ebe300eb58b9f5a09f72c0aab7dfacd7f4ccbbaefa7ff"
+    },
+    {
+      "filename": "m01_s01_e01_angles.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m01_s01_e01_angles.txt",
+      "fileSizeBytes": 47611,
+      "sha256": "ea7c092e06c1efc5bfacf989547d703e6a85cf2e0c4b94bd1327138f229b4d7e"
+    },
+    {
+      "filename": "m02_s01_e01_positions.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m02_s01_e01_positions.txt",
+      "fileSizeBytes": 39309,
+      "sha256": "31f9f250ab00db148920ab2de04a37a88ab36328962407d27a7a7891b142376f"
+    },
+    {
+      "filename": "m02_s01_e01_angles.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m02_s01_e01_angles.txt",
+      "fileSizeBytes": 39799,
+      "sha256": "ee7303e46b34b0b640b5a3bd81ca1dbaefe1d837b26131d8b66ed0979b2abab0"
+    },
+    {
+      "filename": "m03_s01_e01_positions.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m03_s01_e01_positions.txt",
+      "fileSizeBytes": 35857,
+      "sha256": "d6a9989b823e863ba17d7fdb9f135e6cd920a19d970d914ace05e50aa8e5af18"
+    },
+    {
+      "filename": "m03_s01_e01_angles.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m03_s01_e01_angles.txt",
+      "fileSizeBytes": 36430,
+      "sha256": "662bd859c87a05e0ef7deefe1b7f6609a2228b8a4a7e5a7da6e3dc327366e65f"
+    },
+    {
+      "filename": "m04_s01_e01_positions.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m04_s01_e01_positions.txt",
+      "fileSizeBytes": 35340,
+      "sha256": "3a522cc05150c65075ce7c2f91a59753b0e4d6731123dcf2051eb95afd1dfacc"
+    },
+    {
+      "filename": "m04_s01_e01_angles.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m04_s01_e01_angles.txt",
+      "fileSizeBytes": 36750,
+      "sha256": "713b14b29a41b5ccef3e1ed38978e2f73c5df734f980958226aff24db7050d1b"
+    },
+    {
+      "filename": "m05_s01_e01_positions.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m05_s01_e01_positions.txt",
+      "fileSizeBytes": 50615,
+      "sha256": "ea30bbd49eae06fe3934254b01c9f45418b178cc64c4f302ca878151f4bbff10"
+    },
+    {
+      "filename": "m05_s01_e01_angles.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m05_s01_e01_angles.txt",
+      "fileSizeBytes": 52447,
+      "sha256": "1f5eeee29f8afeac2fb37739c91b91de162cbe3a135e19bd74e9d4619a332c9d"
+    },
+    {
+      "filename": "m06_s01_e01_positions.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m06_s01_e01_positions.txt",
+      "fileSizeBytes": 30399,
+      "sha256": "599ae88a3f36dfbf459d1777371f7e02ffc825c36ec82f9215773ab45ceab2c5"
+    },
+    {
+      "filename": "m06_s01_e01_angles.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m06_s01_e01_angles.txt",
+      "fileSizeBytes": 30765,
+      "sha256": "c1ae3237405e5555a401b768e02b60e302e31545b5d328013580854a852758cd"
+    },
+    {
+      "filename": "m07_s01_e01_positions.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m07_s01_e01_positions.txt",
+      "fileSizeBytes": 39838,
+      "sha256": "c5024a5b6739e9808d9c703b796af378e37786abb06f48ce3959611f3213cc4f"
+    },
+    {
+      "filename": "m07_s01_e01_angles.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m07_s01_e01_angles.txt",
+      "fileSizeBytes": 39612,
+      "sha256": "56fcaac3202e07d444499c44f55268ffd42020e3f0e61e2f488dee3ed8479b43"
+    },
+    {
+      "filename": "m08_s01_e01_positions.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m08_s01_e01_positions.txt",
+      "fileSizeBytes": 24799,
+      "sha256": "0c9cc6da94313609ca3ec57f0d81c90c3ac4fd5860afa89019f68878d871800b"
+    },
+    {
+      "filename": "m08_s01_e01_angles.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m08_s01_e01_angles.txt",
+      "fileSizeBytes": 25022,
+      "sha256": "46f9d925ed54dec0e1b2e1462bc8df65eec90df2de80580df53bbc1f49bf56f6"
+    },
+    {
+      "filename": "m09_s01_e01_positions.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m09_s01_e01_positions.txt",
+      "fileSizeBytes": 48812,
+      "sha256": "69ad569b0aebad30fdd06e20079f02b359514481f0bd32d51b65f2adccc79b2c"
+    },
+    {
+      "filename": "m09_s01_e01_angles.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m09_s01_e01_angles.txt",
+      "fileSizeBytes": 48472,
+      "sha256": "758147f81871160653aa1ddf1d6cb8fe7f01da4cf1d0abf8b5eafa3337861890"
+    },
+    {
+      "filename": "m10_s01_e01_positions.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m10_s01_e01_positions.txt",
+      "fileSizeBytes": 39383,
+      "sha256": "c4e20e0b159def4a5da0d6f859c554c11e438cb5a8487d61a6651b18c78ddae1"
+    },
+    {
+      "filename": "m10_s01_e01_angles.txt",
+      "url": "https://raw.githubusercontent.com/tejas1904/UI-PRMD-Visualize-python-port/master/data/m10_s01_e01_angles.txt",
+      "fileSizeBytes": 39235,
+      "sha256": "01a11c2d518ddbf78157f4b522938a942d685909d7bc0145bd24d080e218b483"
+    }
+  ]
+}

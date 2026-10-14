@@ -1,0 +1,66 @@
+{
+  "generatedAt": "2026-10-14T10:05:55.756Z",
+  "totalEvaluated": 5,
+  "results": [
+    {
+      "id": "uiprmd_m01_squat",
+      "movementCode": "m01",
+      "movementName": "Deep Squat",
+      "exercise": "squat",
+      "trueCount": 1,
+      "appCount": 1,
+      "refused": false,
+      "diff": 0,
+      "samples": 73,
+      "durationSec": 2.4
+    },
+    {
+      "id": "uiprmd_m03_lunge",
+      "movementCode": "m03",
+      "movementName": "Inline Lunge",
+      "exercise": "lunge",
+      "trueCount": 1,
+      "appCount": 1,
+      "refused": false,
+      "diff": 0,
+      "samples": 56,
+      "durationSec": 1.833
+    },
+    {
+      "id": "uiprmd_m05_chair_stand_test",
+      "movementCode": "m05",
+      "movementName": "Sit to Stand",
+      "exercise": "chair_stand_test",
+      "trueCount": 1,
+      "appCount": 1,
+      "refused": false,
+      "diff": 0,
+      "samples": 80,
+      "durationSec": 2.633
+    },
+    {
+      "id": "uiprmd_m07_lateral_raise",
+      "movementCode": "m07",
+      "movementName": "Standing Shoulder Abduction",
+      "exercise": "lateral_raise",
+      "trueCount": 1,
+      "appCount": 0,
+      "refused": false,
+      "diff": -1,
+      "samples": 63,
+      "durationSec": 2.067
+    },
+    {
+      "id": "uiprmd_m10_leg_extension",
+      "movementCode": "m10",
+      "movementName": "Seated Knee Extension",
+      "exercise": "leg_extension",
+      "trueCount": 1,
+      "appCount": 0,
+      "refused": false,
+      "diff": -1,
+      "samples": 62,
+      "durationSec": 2.033
+    }
+  ]
+}

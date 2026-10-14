@@ -1,0 +1,150 @@
+{
+  "dataset": "UI-PRMD",
+  "description": "University of Idaho Physical Rehabilitation Movement Dataset",
+  "citation": "Vakanski, A., et al. (2018). MDPI Data, 3(2), 17.",
+  "license": "ODC-PDDL v1.0",
+  "commercialUse": "Permitted",
+  "generatedAt": "2026-10-14T10:05:05.552678+00:00",
+  "totalSets": 5,
+  "totalSizeBytes": 126081,
+  "mappedExercises": {
+    "m01": {
+      "exercise": "squat",
+      "name": "Deep Squat",
+      "true_count": 1
+    },
+    "m03": {
+      "exercise": "lunge",
+      "name": "Inline Lunge",
+      "true_count": 1
+    },
+    "m05": {
+      "exercise": "chair_stand_test",
+      "name": "Sit to Stand",
+      "true_count": 1
+    },
+    "m07": {
+      "exercise": "lateral_raise",
+      "name": "Standing Shoulder Abduction",
+      "true_count": 1
+    },
+    "m10": {
+      "exercise": "leg_extension",
+      "name": "Seated Knee Extension",
+      "true_count": 1
+    }
+  },
+  "skippedMovements": {
+    "m02": {
+      "name": "Hurdle Step",
+      "reason": "No matching catalogue exercise"
+    },
+    "m04": {
+      "name": "Side Lunge",
+      "reason": "No matching catalogue exercise"
+    },
+    "m06": {
+      "name": "Standing Active Back Extension",
+      "reason": "No matching catalogue exercise"
+    },
+    "m08": {
+      "name": "Standing Shoulder Internal/External Rotation",
+      "reason": "No matching catalogue exercise"
+    },
+    "m09": {
+      "name": "Trunk Rotation",
+      "reason": "No matching catalogue exercise"
+    }
+  },
+  "skeletonMapping": {
+    "7": 11,
+    "8": 13,
+    "9": 15,
+    "11": 12,
+    "12": 14,
+    "13": 16,
+    "14": 23,
+    "15": 25,
+    "16": 27,
+    "18": 24,
+    "19": 26,
+    "20": 28
+  },
+  "sets": [
+    {
+      "id": "uiprmd_m01_squat",
+      "movementCode": "m01",
+      "movementName": "Deep Squat",
+      "exercise": "squat",
+      "trueCount": 1,
+      "samples": 73,
+      "durationSec": 2.4,
+      "file": "sets/uiprmd_m01_squat.json.gz",
+      "fileSizeBytes": 27621,
+      "sourceFiles": [
+        "m01_s01_e01_positions.txt",
+        "m01_s01_e01_angles.txt"
+      ]
+    },
+    {
+      "id": "uiprmd_m03_lunge",
+      "movementCode": "m03",
+      "movementName": "Inline Lunge",
+      "exercise": "lunge",
+      "trueCount": 1,
+      "samples": 56,
+      "durationSec": 1.833,
+      "file": "sets/uiprmd_m03_lunge.json.gz",
+      "fileSizeBytes": 21459,
+      "sourceFiles": [
+        "m03_s01_e01_positions.txt",
+        "m03_s01_e01_angles.txt"
+      ]
+    },
+    {
+      "id": "uiprmd_m05_chair_stand_test",
+      "movementCode": "m05",
+      "movementName": "Sit to Stand",
+      "exercise": "chair_stand_test",
+      "trueCount": 1,
+      "samples": 80,
+      "durationSec": 2.633,
+      "file": "sets/uiprmd_m05_chair_stand_test.json.gz",
+      "fileSizeBytes": 30351,
+      "sourceFiles": [
+        "m05_s01_e01_positions.txt",
+        "m05_s01_e01_angles.txt"
+      ]
+    },
+    {
+      "id": "uiprmd_m07_lateral_raise",
+      "movementCode": "m07",
+      "movementName": "Standing Shoulder Abduction",
+      "exercise": "lateral_raise",
+      "trueCount": 1,
+      "samples": 63,
+      "durationSec": 2.067,
+      "file": "sets/uiprmd_m07_lateral_raise.json.gz",
+      "fileSizeBytes": 23610,
+      "sourceFiles": [
+        "m07_s01_e01_positions.txt",
+        "m07_s01_e01_angles.txt"
+      ]
+    },
+    {
+      "id": "uiprmd_m10_leg_extension",
+      "movementCode": "m10",
+      "movementName": "Seated Knee Extension",
+      "exercise": "leg_extension",
+      "trueCount": 1,
+      "samples": 62,
+      "durationSec": 2.033,
+      "file": "sets/uiprmd_m10_leg_extension.json.gz",
+      "fileSizeBytes": 23040,
+      "sourceFiles": [
+        "m10_s01_e01_positions.txt",
+        "m10_s01_e01_angles.txt"
+      ]
+    }
+  ]
+}
