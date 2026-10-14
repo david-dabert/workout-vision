@@ -91,7 +91,8 @@
 .wv-experience .sc-metric-value.is-text { font-size: var(--fs-body); font-weight: 500; line-height: 1.35; letter-spacing: 0; color: var(--bone-2); }
 .wv-experience .sc-unit { font-weight: 500; font-size: 0.72em; color: var(--c-fg-muted); letter-spacing: 0; }
 .wv-experience .sc-metric-sub { font-size: var(--fs-caption); line-height: 1.4; color: var(--c-fg-muted); font-variant-numeric: tabular-nums; }
-.wv-experience .sc-metric .sc-tag { margin-top: 2px; white-space: normal; }
+/* Inside a value's tile, its verdict is a line of caption with its dot, not a pill: it reads with the value. */
+.wv-experience .sc-metric .sc-tag { margin-top: 2px; padding: 0; border: 0; border-radius: 0; white-space: normal; font-family: var(--sans); font-size: var(--fs-caption); line-height: 1.4; letter-spacing: 0; text-transform: none; }
 
 /* A slider: its label and value on one line, the track under them, 44 px to touch. */
 .wv-experience .sc-ranges { display: flex; flex-direction: column; gap: var(--s-2); }
