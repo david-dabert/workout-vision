@@ -1,0 +1,5 @@
+URL: https://raw.githubusercontent.com/DeepLabCut/DeepLabCut/main/LICENSE
+Fetched: 2026-10-14T07:18:01Z
+Repository: github.com/DeepLabCut/DeepLabCut
+License: GNU Lesser General Public License (LGPL), Version 3, 29 June 2007
+Copyright (C) 2007 Free Software Foundation, Inc. <http://fsf.org/>

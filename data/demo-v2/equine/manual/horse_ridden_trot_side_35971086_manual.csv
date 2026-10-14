@@ -1,0 +1,21 @@
+frame_idx,t_ms,neck_correct,tail_root_correct,left_front_paw_correct,right_front_paw_correct,left_back_paw_correct,right_back_paw_correct,score_raw_mean,notes
+0,0,1,1,1,1,1,1,0.892,Full lateral visibility across trot diagonal
+9,300,1,1,1,1,1,1,0.841,Full lateral visibility across trot diagonal
+19,634,1,1,1,1,1,1,0.921,Full lateral visibility across trot diagonal
+28,934,1,1,1,1,1,1,0.892,Full lateral visibility across trot diagonal
+38,1268,1,1,1,1,1,1,0.987,Full lateral visibility across trot diagonal
+47,1568,1,1,1,1,1,1,0.806,Full lateral visibility across trot diagonal
+57,1902,1,1,1,1,1,1,0.911,Full lateral visibility across trot diagonal
+66,2202,1,1,1,1,1,1,0.917,Full lateral visibility across trot diagonal
+75,2502,1,1,1,1,1,1,1.066,Full lateral visibility across trot diagonal
+85,2836,1,1,1,1,1,1,1.032,Full lateral visibility across trot diagonal
+94,3136,1,1,1,1,1,1,0.979,Full lateral visibility across trot diagonal
+104,3470,1,1,1,1,1,1,0.735,Full lateral visibility across trot diagonal
+113,3770,1,1,1,1,1,1,1.065,Full lateral visibility across trot diagonal
+122,4071,1,1,1,1,0,1,0.892,Full lateral visibility across trot diagonal
+132,4404,1,1,1,1,1,1,0.855,Full lateral visibility across trot diagonal
+141,4705,1,1,1,1,1,1,0.997,Full lateral visibility across trot diagonal
+151,5038,1,1,1,1,1,1,0.874,Full lateral visibility across trot diagonal
+160,5339,1,1,1,1,0,1,0.937,Full lateral visibility across trot diagonal
+170,5672,1,1,1,1,0,0,0.678,Full lateral visibility across trot diagonal
+179,5973,1,1,1,1,0,1,0.864,Full lateral visibility across trot diagonal

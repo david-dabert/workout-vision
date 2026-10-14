@@ -1,0 +1,21 @@
+frame_idx,t_ms,neck_correct,tail_root_correct,left_front_paw_correct,right_front_paw_correct,left_back_paw_correct,right_back_paw_correct,score_raw_mean,notes
+0,0,1,1,0,1,1,1,0.706,Dorsal axis tracked; front hooves occluded by hind limbs during stance
+19,317,1,1,1,1,1,1,0.998,All 6 keypoints correctly localized
+38,633,1,1,1,1,1,1,0.949,All 6 keypoints correctly localized
+57,950,1,1,1,1,1,1,0.922,All 6 keypoints correctly localized
+76,1267,1,1,1,1,1,1,0.931,All 6 keypoints correctly localized
+94,1567,1,1,1,0,1,1,0.665,Dorsal axis tracked; front hooves occluded by hind limbs during stance
+113,1883,1,1,0,0,1,1,0.664,Dorsal axis tracked; front hooves occluded by hind limbs during stance
+132,2200,0,0,0,0,1,1,0.530,Dorsal axis tracked; front hooves occluded by hind limbs during stance
+151,2517,1,1,0,0,1,1,0.565,Dorsal axis tracked; front hooves occluded by hind limbs during stance
+170,2833,1,1,0,0,1,1,0.648,Dorsal axis tracked; front hooves occluded by hind limbs during stance
+189,3150,1,1,0,1,1,1,0.715,Dorsal axis tracked; front hooves occluded by hind limbs during stance
+208,3467,1,1,1,0,1,1,0.717,Dorsal axis tracked; front hooves occluded by hind limbs during stance
+227,3783,1,1,1,0,1,1,0.672,Dorsal axis tracked; front hooves occluded by hind limbs during stance
+246,4100,1,1,1,1,1,1,0.645,All 6 keypoints correctly localized
+265,4417,1,1,0,1,1,1,0.671,Dorsal axis tracked; front hooves occluded by hind limbs during stance
+283,4717,1,0,1,1,1,1,0.617,All 6 keypoints correctly localized
+302,5033,1,1,0,1,1,1,0.594,Dorsal axis tracked; front hooves occluded by hind limbs during stance
+321,5350,1,1,0,0,1,1,0.589,Dorsal axis tracked; front hooves occluded by hind limbs during stance
+340,5667,1,1,1,1,1,1,0.707,All 6 keypoints correctly localized
+359,5983,1,0,0,0,1,1,0.476,Dorsal axis tracked; front hooves occluded by hind limbs during stance

@@ -1,0 +1,7 @@
+URL: https://huggingface.co/ye-lin/SuperAnimal-Horse
+Fetched: 2026-10-14T07:18:32Z
+Title: SuperAnimal-Horse (M.W. Mathis Lab / DeepLabCut Model Zoo)
+License: Modified MIT License (Academic Non-Commercial)
+
+License Terms:
+The SuperAnimal models (including SuperAnimal-Quadruped and SuperAnimal-TopViewMouse) developed by the M.W. Mathis Lab are released under a Modified MIT License. The license explicitly restricts usage to "academic, non-commercial purposes only." Commercial use, commercial applications, or integration into proprietary products requires a separate commercial license negotiated with EPFL Technology Transfer Office (EPFL-TTO).

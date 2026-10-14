@@ -1,0 +1,12 @@
+URL: https://doi.org/10.1111/j.2042-3306.2012.00571.x
+DOI: 10.1111/j.2042-3306.2012.00571.x
+Fetched: 2026-10-14T07:20:00Z
+Title: Comparison of an inertial sensor system of lameness quantification with subjective lameness evaluation
+Journal: Equine Veterinary Journal, 2012, Volume 44, Issue 6, Pages 652–656
+Authors: M. J. McCracken, J. Kramer, K. G. Keegan, M. Lopes, D. A. Wilson, S. K. Reed, A. LaCarrubba, M. Rasch
+
+Objective:
+To compare subjective evaluation of fore- and hindlimb lameness in horses with an inertial sensor system.
+
+Thresholds status:
+UNSOURCED (Specific millimetre asymmetry threshold values are not defined in the abstract; following Rule R8 and E1, thresholds are marked UNSOURCED in the review).

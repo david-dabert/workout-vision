@@ -1,0 +1,9 @@
+URL: https://www.mdpi.com/2076-2615/13/3/390
+DOI: 10.3390/ani13030390
+Fetched: 2026-10-14T07:18:52Z
+Title: Is Markerless More or Less? Comparing a Smartphone Computer Vision Method for Equine Lameness Assessment to Multi-Camera Motion Capture
+Journal: Animals 2023, 13(3), 390
+Authors: Felix Järemo Lawin, Marie Rhodin, Kevin Blom, Carl-Johan Westring, Emma Persson-Sjodin, Elin Hernlund
+
+Abstract:
+Objective gait analysis in horses has traditionally relied on optical motion capture systems (OMC) requiring reflective markers. Recent advances in computer vision enable markerless motion tracking using consumer smartphones (Sleip app). This study compared vertical displacement measurements of the head and pelvis derived from a markerless AI app on a single smartphone to simultaneous multi-camera OMC measurements in trotting horses. The trial mean difference between the smartphone-based markerless computer vision system and the multi-camera optical system was 2.2 mm (ranging from 0.0–8.7 mm for the head and 0.0–6.5 mm for the pelvis).
