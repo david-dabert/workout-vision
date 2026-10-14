@@ -1,0 +1,46 @@
+URL: https://www.has-sante.fr/jcms/p_3114420/fr/prise-en-charge-du-patient-presentant-une-lombalgie-commune
+Source: Haute Autorité de Santé (HAS) & NHS Guidelines — Lumbar Spine Active Rehabilitation
+Domain: Non-Specific Low Back Pain (Lombalgie commune) & Core Stability Protocols
+Fetched: 2026-10-14T07:35:00Z
+
+Summary of Standard Clinical Exercises:
+1. Pelvic Tilt:
+   - Starting Position: Supine on mat with knees bent, feet flat on floor, arms by sides.
+   - Movement: Tighten abdominal muscles to flatten lower back against floor (posterior pelvic tilt), hold 3–5 seconds, release to neutral lumbar lordosis.
+   - Prescription: 3 sets of 10–12 reps.
+   - Repetition Criteria: Measurable flattening of lumbar curve without lifting gluteal muscles off floor.
+2. Cat-Cow / Cat-Camel (Quadruped Spinal Flexion-Extension):
+   - Starting Position: Quadruped position on all fours, hands under shoulders, knees under hips.
+   - Movement: Exhale and round spine upward toward ceiling tucking head down (Cat), then inhale and gently arch back dropping belly toward floor lifting chest and head (Cow).
+   - Prescription: 2–3 sets of 10 cycles, slow rhythmic tempo (3s flexion, 3s extension).
+   - Repetition Criteria: Smooth segmental movement through entire vertebral column within comfortable range.
+3. Deadbug:
+   - Starting Position: Supine with arms reaching vertically toward ceiling and hips/knees bent to 90 degrees (tabletop position).
+   - Movement: Slowly lower opposite arm overhead and opposite leg toward floor until hovering just above ground while keeping lower back pressed into floor, return, alternate sides.
+   - Prescription: 3 sets of 8–10 reps per side.
+   - Repetition Criteria: Lumbar spine remains stabilized against floor throughout limb extension; no rib flare.
+4. McGill Curl-Up:
+   - Starting Position: Supine with one knee bent (foot flat) and other leg straight, hands placed under lumbar spine to monitor neutral lordosis.
+   - Movement: Lift only head and shoulders slightly off floor (3–5 cm) pivoting around thoracic spine, hold 7–8 seconds, lower head back down.
+   - Prescription: Pyramid sets (e.g., 5-3-1 reps with 8s isometric hold).
+   - Repetition Criteria: Cervical spine packed with chin neutral; zero motion in lumbar spine.
+5. Side Plank (Lateral Core Endurance):
+   - Starting Position: Side-lying on forearm with elbow directly below shoulder, knees bent (modified) or legs straight (advanced).
+   - Movement: Elevate hips off floor until body forms a straight line from shoulders to ankles/knees, hold statically.
+   - Prescription: 3–4 holds of 15–30 seconds per side.
+   - Repetition Criteria: Hips remain elevated in straight line without sagging or rotating forward/backward.
+6. Prone Press-Up (McKenzie Lumbar Extension Protocol):
+   - Starting Position: Lying face down (prone) with palms flat on floor beneath shoulders, like bottom of push-up.
+   - Movement: Keep hips, pelvis and legs completely relaxed and flat on floor; press through hands to extend elbows and arch upper back into lumbar extension, hold 2–3 seconds, lower.
+   - Prescription: 3 sets of 10 reps every 2 hours as indicated.
+   - Repetition Criteria: Pelvis remains in contact with floor during spinal extension.
+7. Knee to Chest Stretch (Single / Double):
+   - Starting Position: Supine on mat with knees bent.
+   - Movement: Draw one knee up toward chest grasping behind thigh or over shin, gently pull until mild stretch in lower back and glute, hold 20–30 seconds.
+   - Prescription: 3 holds of 20–30s per leg.
+   - Repetition Criteria: Static hold without head lifting off floor.
+8. Child's Pose (Prayer Stretch):
+   - Starting Position: Kneeling on mat, big toes touching, knees separated wide.
+   - Movement: Sit back on heels while reaching arms forward along floor, resting forehead on mat, breathing deeply.
+   - Prescription: 3 holds of 30–45 seconds.
+   - Repetition Criteria: Relaxed spinal elongation with hips sinking toward heels.

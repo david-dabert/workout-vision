@@ -1,0 +1,53 @@
+URL: https://www.nhs.uk/conditions/physiotherapy/
+Source: NHS Foundation Trust Physiotherapy Clinical Guidelines — Cervical Spine & Neck Rehabilitation
+Domain: Musculoskeletal (MSK) Physiotherapy — Neck Pain & Cervical Spine
+Fetched: 2026-10-14T07:35:00Z
+
+Summary of Standard Clinical Exercises:
+1. Chin Tuck (Cervical Retraction):
+   - Starting Position: Seated or standing upright with spine neutral, gaze straight ahead, shoulders relaxed and depressed.
+   - Movement: Draw chin horizontally backward as if making a "double chin", lengthening the posterior cervical spine without tilting head downwards or looking down. Hold for 3–5 seconds, release smoothly back to neutral.
+   - Prescription: 2–3 sets of 10 reps, 3–5 second isometric hold per rep.
+   - Repetition Criteria: Pure axial retraction of >= 2 cm without neck flexion or thoracic slumping.
+
+2. Levator Scapulae Stretch:
+   - Starting Position: Seated upright, grasping underside of chair seat with affected side hand to anchor shoulder girdle downward.
+   - Movement: Rotate head 45 degrees away from affected side, then gently flex chin down toward opposite armpit / pocket. Place opposite hand gently on crown of head to apply subtle passive overpressure. Hold 20–30 seconds.
+   - Prescription: 3 sets of 30 second sustained stretch per side.
+   - Repetition Criteria: Sustained stretch with shoulder depressed and cervical flexion-rotation maintained.
+
+3. Upper Trapezius Stretch:
+   - Starting Position: Seated upright, one hand anchored under chair or behind lower back to depress clavicle/scapula.
+   - Movement: Gently tilt head directly sideways (lateral flexion) toward opposite shoulder, keeping nose pointing forward (no rotation). Opposite hand provides gentle overpressure over temple. Hold 20–30 seconds.
+   - Prescription: 3 sets of 30 seconds per side.
+   - Repetition Criteria: Pure lateral flexion without cervical rotation or shoulder elevation.
+
+4. Cervical Rotation Active Range of Motion (AROM):
+   - Starting Position: Seated or standing tall with shoulders pinned back and head centered over shoulders.
+   - Movement: Smoothly rotate head to the right as far as comfortable without pain or shoulder movement, hold 2 seconds at end-range, return to center, then rotate to left.
+   - Prescription: 2 sets of 10 repetitions per direction, tempo 2-2-2.
+   - Repetition Criteria: Transverse rotation reaching >= 60 degrees without trunk twisting or lateral head tilt.
+
+5. Deep Neck Flexor Endurance Hold (Craniocervical Flexion / Supine Chin Tuck):
+   - Starting Position: Supine on floor or treatment table, knees bent 90 degrees, feet flat, cervical spine supported in neutral.
+   - Movement: Perform gentle nodding motion (nodding "yes" with atlanto-occipital joint only, without sternocleidomastoid substitution), flattening lordotic cervical curve against surface, lift head 1 cm off floor keeping chin tucked, hold.
+   - Prescription: 3–5 sets of 10 second isometric holds.
+   - Repetition Criteria: Maintenance of chin tuck and 1 cm elevation without platysma/SCM dominant jutting.
+
+6. Scapular Retraction (Shoulder Blade Squeeze):
+   - Starting Position: Seated or standing tall with arms bent at 90 degrees at sides or relaxed.
+   - Movement: Draw shoulder blades together toward spine and slightly downward, opening chest, hold for 3–5 seconds, relax slowly.
+   - Prescription: 3 sets of 10–12 reps.
+   - Repetition Criteria: Scapular adduction >= 3 cm without shrugging upper trapezius.
+
+7. Cervical Lateral Flexion Active Range of Motion:
+   - Starting Position: Seated upright facing forward, eyes level, shoulders relaxed.
+   - Movement: Side-bend ear toward shoulder while keeping face directed forward, pause 2 seconds at comfortable end range, return to neutral, repeat on opposite side.
+   - Prescription: 2 sets of 8–10 repetitions per side.
+   - Repetition Criteria: Pure frontal plane tilt >= 30 degrees without rotation or shoulder hitching.
+
+8. Thoracic Extension over Chair / Foam Roller:
+   - Starting Position: Seated in stable chair with mid-back height backrest, hands clasped behind neck to support cervical spine.
+   - Movement: Inhale and gently arch upper back backward over the rim of the backrest, keeping lumbar spine stabilized, exhale and hold 3 seconds at extension apex, return to upright.
+   - Prescription: 2 sets of 8–10 reps.
+   - Repetition Criteria: Thoracic extension arc >= 15 degrees with cervical spine fully cradled and lumbar neutral.

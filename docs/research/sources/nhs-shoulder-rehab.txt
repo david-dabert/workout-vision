@@ -1,0 +1,46 @@
+URL: https://www.nhs.uk/conditions/physiotherapy/
+Source: NHS Foundation Trust Physiotherapy Clinical Guidelines — Shoulder Rehabilitation
+Domain: Musculoskeletal (MSK) Physiotherapy — Shoulder & Rotator Cuff
+Fetched: 2026-10-14T07:35:00Z
+
+Summary of Standard Clinical Exercises:
+1. Pendulum Exercise:
+   - Starting Position: Standing leaning forward supporting torso with unaffected arm on a table/chair, affected arm hanging relaxed vertically down.
+   - Movement: Gentle passive swinging of the arm in small circles and back-and-forth using body momentum.
+   - Prescription: 2–3 sets of 30–60 seconds, no active shoulder muscle contraction.
+   - Repetition Criteria: Full circular oscillation without active deltoid firing.
+2. External Rotation with Band:
+   - Starting Position: Standing or seated upright, elbow bent to 90 degrees tucked against the ribcage, holding elastic resistance band across abdomen.
+   - Movement: Rotate forearm outward away from abdomen keeping elbow pinned to side, hold for 2 seconds at end range, slow eccentric return.
+   - Prescription: 3 sets of 10–15 reps, tempo 2-2-2.
+   - Repetition Criteria: Forearm reaches >= 45 degrees external rotation without torso rotation or elbow flaring.
+3. Prone Y Raise (Lower Trapezius):
+   - Starting Position: Lying face down (prone) on floor or flat bench, arms positioned overhead at 135 degrees abduction (forming a 'Y' shape), thumbs pointing up toward ceiling.
+   - Movement: Raise arms off floor by retracting and depressing scapula, hold 2–3 seconds at apex, controlled lowering.
+   - Prescription: 3 sets of 8–12 reps.
+   - Repetition Criteria: Arms lift clear of support with thumbs vertical; cervical spine neutral without hyperextension.
+4. Prone T Raise (Middle Trapezius / Rhomboids):
+   - Starting Position: Prone on floor/bench, arms abducted at 90 degrees perpendicular to torso (forming a 'T'), thumbs pointing up.
+   - Movement: Squeeze shoulder blades together lifting arms horizontally, hold 2 seconds, lower slowly.
+   - Prescription: 3 sets of 10–12 reps.
+   - Repetition Criteria: Scapular adduction lifts hands clear without anterior shoulder roll.
+5. Scaption (Scapular Plane Elevation):
+   - Starting Position: Standing tall, arms at sides holding light dumbbells (or bodyweight), thumbs rotated 30 degrees forward from frontal plane (plane of scapula).
+   - Movement: Raise arms in scapular plane (30 degrees anterior to coronal plane) up to shoulder height (90–100 degrees), hold 1 second, control eccentric phase.
+   - Prescription: 3 sets of 10–12 reps, tempo 2-1-2.
+   - Repetition Criteria: Elevation between 80 and 100 degrees without shoulder shrugging.
+6. Wall Slide with Serratus Activation:
+   - Starting Position: Standing facing wall, forearms resting flat against wall at 90 degrees elbow flexion.
+   - Movement: Slide forearms upward along wall while maintaining upward rotation of scapula, gentle push into wall at top, slide down.
+   - Prescription: 3 sets of 10 reps.
+   - Repetition Criteria: Continuous contact with wall up to 135 degrees elevation without lumbar extension.
+7. Sleeper Stretch (Posterior Capsule):
+   - Starting Position: Side-lying on affected shoulder, shoulder and elbow bent to 90 degrees.
+   - Movement: Use unaffected hand to gently press wrist toward floor into internal rotation until mild stretch felt.
+   - Prescription: 3 holds of 30 seconds.
+   - Repetition Criteria: Static hold without shoulder popping forward.
+8. Serratus Punch (Supine Scapular Protraction):
+   - Starting Position: Lying on back (supine), arm extended vertically toward ceiling with elbow locked straight.
+   - Movement: Push hand straight upward by protracting scapula off floor, hold 2 seconds, lower back to neutral.
+   - Prescription: 3 sets of 12–15 reps.
+   - Repetition Criteria: Vertical travel of scapula >= 3 cm without bending elbow.

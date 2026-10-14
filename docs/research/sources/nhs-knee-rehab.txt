@@ -1,0 +1,46 @@
+URL: https://www.nhs.uk/conditions/physiotherapy/
+Source: NHS Foundation Trust Knee Clinical Guidelines — Lower Limb Rehabilitation
+Domain: Knee Osteoarthritis & Ligamentous / Meniscal Rehabilitation
+Fetched: 2026-10-14T07:35:00Z
+
+Summary of Standard Clinical Exercises:
+1. Straight Leg Raise (SLR):
+   - Starting Position: Supine on mat, unaffected knee bent with foot flat on floor, affected leg extended straight.
+   - Movement: Dorsiflex ankle, tighten quadriceps locking knee in 0 degrees extension, lift leg to height of opposite knee (~45 degrees), hold 2–3 seconds, lower under control.
+   - Prescription: 3 sets of 10–15 reps, tempo 2-3-2.
+   - Repetition Criteria: Full knee extension (no extensor lag > 5 degrees) maintained throughout lift.
+2. Terminal Knee Extension (TKE):
+   - Starting Position: Standing facing anchor with resistance band looped behind affected knee, or seated with heel on floor.
+   - Movement: From slight flexion (20–30 degrees), push knee back into full terminal extension (0 degrees) contracting vastus medialis obliquus (VMO), hold 2–3 seconds.
+   - Prescription: 3 sets of 12–15 reps.
+   - Repetition Criteria: Attainment of 0 degrees extension with palpable VMO tension.
+3. Quad Sets (Isometric Quadriceps Contraction):
+   - Starting Position: Long sitting or supine with towel roll under knee or flat on floor.
+   - Movement: Tighten thigh muscles pushing back of knee firmly down into surface, pulling kneecap toward hip, hold 5 seconds, relax.
+   - Prescription: 3 sets of 10 holds, 5s hold per rep.
+   - Repetition Criteria: Continuous maximal isometric hold for specified duration.
+4. Standing / Prone Hamstring Curl:
+   - Starting Position: Standing upright holding chair for balance (or lying prone).
+   - Movement: Bend knee bringing heel toward buttocks to >= 90 degrees flexion, hold 1–2 seconds, lower slowly.
+   - Prescription: 3 sets of 10–12 reps.
+   - Repetition Criteria: Knee flexion reaches >= 90 degrees without hip flexing forward or lumbar arching.
+5. Wall Sit / Squat Hold:
+   - Starting Position: Standing with back against wall, feet shoulder-width apart and 40–50 cm forward of wall.
+   - Movement: Slide down wall until knees are bent to 45–60 degrees (progressing to 90 degrees), hold for target duration, slide up.
+   - Prescription: 3–4 holds of 20–45 seconds.
+   - Repetition Criteria: Thigh angle maintained within 5 degrees of target depth with knees tracking over second toe.
+6. Heel Slides (Active Assisted Knee Flexion):
+   - Starting Position: Supine on bed or mat with towel or slider under heel.
+   - Movement: Slide heel smoothly toward buttocks flexing knee to maximum comfortable angle, hold 3 seconds, slide back to full extension.
+   - Prescription: 3 sets of 10–12 reps.
+   - Repetition Criteria: Progressive increase in flexion angle to >= 90–110 degrees, followed by complete terminal extension.
+7. Step-Up / Step-Down:
+   - Starting Position: Standing in front of aerobic step (10–15 cm height).
+   - Movement: Place affected foot firmly on step, press through heel to elevate body until leg is straight, control descent tapping opposite foot lightly on floor.
+   - Prescription: 3 sets of 10 reps per leg, tempo 2-1-2.
+   - Repetition Criteria: Hip-knee-ankle alignment maintained with no dynamic knee valgus (knee caving inward).
+8. Short Arc Quad (SAQ):
+   - Starting Position: Supine with foam roller or bolster under knee (producing ~30 degrees knee flexion).
+   - Movement: Lift lower leg to straighten knee completely off bolster, hold 3 seconds, lower back to bolster.
+   - Prescription: 3 sets of 10–15 reps.
+   - Repetition Criteria: Full extension to 0 degrees achieved and held without hip hiking.
