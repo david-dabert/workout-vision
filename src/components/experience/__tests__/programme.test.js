@@ -16,9 +16,12 @@ import {
   programmeLink, programmeId, plannedOf, progressOf, toBase64url, targetText, cleanText,
   resultsOf, encodeResults, decodeResults, plainResultsPayload, resultsLink, resultsPayloadOf, RESULT_LIMITS,
   keptLetter, lastDayOf, dayWords, timeWords, RESULTS_DAYS_BACK,
+  SIDES, DEFAULT_HOLD, holdOf, sideOf, frequencyOf, filmable, guideOnly, knownExercise, programmable, fixItem, fixHold, fixTimes,
+  withKind, withSide, resultsSummary, fromBase64url,
 } from '../programme';
 import { programmePdf, programmeSheet, programmeFileName, programmeQr, packNow, QR_MAX_VERSION, QR_SIDE, QR_BLOCK_MAX, QR_MODULE_MIN } from '../programme-pdf';
-import { draftFromResults, isEmptyDraft, loadDrafts, saveDraft, newDraft, MAX_DRAFTS, keepReceived, loadReceived } from '../programme-store';
+import { draftFromResults, isEmptyDraft, loadDrafts, saveDraft, newDraft, newItem, HOLD_START, MAX_DRAFTS, keepReceived, loadReceived } from '../programme-store';
+import catalogue from '../../../lib/guide-catalog.json';
 import { reportSheet } from '../report-sheet';
 import { reportPdf } from '../report-pdf';
 import { savedSet } from '../saved-set';
@@ -510,10 +513,11 @@ describe('the copy of the programmes', () => {
     expect(PRO.fr.choiceRowSub).toBe('Pour les coachs et les kinésithérapeutes');
     expect(PRO.en.choiceRowSub).toBe('For coaches and physiotherapists');
   });
-  it('has the same keys in both languages', () => {
+  it('has the same keys in both languages, nested ones included', () => {
     const keys = o => Object.keys(o).sort();
     expect(keys(PRO.en)).toEqual(keys(PRO.fr));
     expect(keys(PRO.en.errors)).toEqual(keys(PRO.fr.errors));
+    for (const k of keys(PRO.fr)) if (PRO.fr[k] && typeof PRO.fr[k] === 'object') expect(keys(PRO.en[k]), k).toEqual(keys(PRO.fr[k]));
   });
 });
 
@@ -600,5 +604,193 @@ describe('an exercise withdrawn after the programme was sent', () => {
     const p = progressOf(withdrawn, 'p1', sets, now);
     expect([p.complete, p.total]).toEqual([1, 1]);
     expect(p.items.map(i => i.counted)).toEqual([true, false]);
+  });
+});
+
+// The exercise sheet (14 October 2026): a hold, a side and a frequency, each optional and absent by default, and any
+// exercise of the guide, whether the app counts it or not. Links issued before it: programme-compat.test.js.
+describe('the exercise sheet’s model', () => {
+  const memory = () => { const m = new Map(); return { getItem: k => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: k => m.delete(k) }; };
+  const sheet = {
+    title: 'Fiche du 14 octobre', who: 'Camille', note: '', frequency: { times: 3, per: 'week' },
+    items: [
+      { key: 'squat', sets: 3, reps: 10, rest: 90, note: '', side: 'each' },
+      { key: 'plank', sets: 3, reps: 10, rest: 45, note: 'Dos plat', holdSec: 45 },
+      { key: 'dead_bug', sets: 3, reps: 10, rest: 60, note: '' },
+      { key: 'childs_pose', sets: 1, reps: 1, rest: 0, note: '', holdSec: 60, side: 'left' },
+    ],
+  };
+
+  it('reads back holds, sides and the frequency, packed, plain, and packed within the tap', async () => {
+    for (const gzip of [true, false]) expect(await decodeProgramme(await encodeProgramme(sheet, { gzip }))).toEqual({ ok: true, programme: sheet });
+    expect(await decodeProgramme(packNow(sheet))).toEqual({ ok: true, programme: sheet });
+    expect(await decodeProgramme(plainPayload(sheet))).toEqual({ ok: true, programme: sheet });
+  });
+
+  it('writes its keys after the exercises, and none for a programme without them', () => {
+    const c = compact(sheet);
+    expect(Object.keys(c)).toEqual(['v', 't', 'w', 'x', 'f', 'h', 's']);
+    expect([c.f, c.h, c.s]).toEqual([[3, 'w'], [0, 45, 0, 60], 'ebbl']);
+    expect(Object.keys(compact({ ...sheet, note: 'n' }))).toEqual(['v', 't', 'w', 'n', 'x', 'f', 'h', 's']);
+    expect(Object.keys(compact(sample))).toEqual(['v', 't', 'w', 'n', 'x']);
+    // Defaults written out are the same programme, with the same id.
+    const explicit = { ...sample, items: sample.items.map(i => ({ ...i, holdSec: 0, side: 'both' })) };
+    expect(compact(explicit)).toEqual(compact(sample));
+    expect(programmeId(explicit)).toBe(programmeId(sample));
+    expect(compact({ ...sample, frequency: { times: 1, per: 'day' } }).f).toEqual([1, 'd']);
+    expect(programmeId({ ...sample, frequency: { times: 1, per: 'day' } })).not.toBe(programmeId(sample));
+  });
+
+  it('gives the defaults when absent, and brings a typed hold or frequency into bounds', () => {
+    expect(SIDES).toEqual(['both', 'left', 'right', 'each']);
+    expect(DEFAULT_HOLD).toBe(30);
+    expect([holdOf({}), holdOf({ holdSec: 0 }), holdOf({ holdSec: 45 }), holdOf(null)]).toEqual([0, 0, 45, 0]);
+    expect([sideOf({}), sideOf({ side: 'each' }), sideOf({ side: 'up' }), sideOf(null)]).toEqual(['both', 'each', 'both', 'both']);
+    expect(frequencyOf(sample)).toBeNull();
+    expect(frequencyOf({ frequency: { times: 3, per: 'week' } })).toEqual({ times: 3, per: 'week' });
+    for (const bad of [{ times: 0, per: 'week' }, { times: 15, per: 'day' }, { times: 2.5, per: 'day' }, { times: '3', per: 'week' }, { times: null, per: 'week' }, { times: 3, per: 'month' }, 'x']) {
+      expect(frequencyOf({ frequency: bad }), JSON.stringify(bad)).toBeNull();
+    }
+    // A hold and a side are written only when set, the hold clamped.
+    expect(fixItem({ key: 'plank', sets: 3, reps: 10, rest: 45, note: '', holdSec: 999, side: 'right' })).toEqual({ key: 'plank', sets: 3, reps: 10, rest: 45, note: '', holdSec: 300, side: 'right' });
+    expect(fixItem({ key: 'plank', sets: 3, reps: 10, rest: 45, note: '', holdSec: 0.4 }).holdSec).toBe(1);
+    for (const extra of [{ holdSec: 0, side: 'both' }, { holdSec: NaN, side: 'up' }, { holdSec: '45', side: 7 }, {}]) {
+      expect(fixItem({ key: 'squat', sets: 3, reps: 10, rest: 90, note: '', ...extra }), JSON.stringify(extra)).toEqual({ key: 'squat', sets: 3, reps: 10, rest: 90, note: '' });
+    }
+    expect([fixHold(''), fixHold('0'), fixHold('45'), fixHold('999')]).toEqual([30, 1, 45, 300]);
+    expect([fixTimes(''), fixTimes('abc'), fixTimes('0'), fixTimes('3'), fixTimes('99')]).toEqual([null, null, 1, 3, 14]);
+    // Reps or a hold: the reps stay for a switch back, a hold set before is kept.
+    const squat = { key: 'squat', sets: 3, reps: 12, rest: 90, note: '' };
+    expect(withKind(squat, 'hold')).toEqual({ ...squat, holdSec: DEFAULT_HOLD });
+    expect(withKind({ ...squat, holdSec: 45 }, 'hold').holdSec).toBe(45);
+    expect(withKind({ ...squat, holdSec: 45 }, 'reps')).toEqual({ ...squat, holdSec: 0 });
+    expect(fixItem(withKind({ ...squat, holdSec: 45 }, 'reps'))).toEqual(squat);
+    expect(withSide(squat, 'each').side).toBe('each');
+    expect(withSide(squat, 'up').side).toBe('both');
+  });
+
+  it('takes the frequency from a draft only when it is whole and in bounds', () => {
+    const draft = { title: 'A', who: '', note: '', items: [{ key: 'squat', sets: 3, reps: 10, rest: 90, note: '' }] };
+    expect(programmeOf(draft)).not.toHaveProperty('frequency');
+    expect(programmeOf({ ...draft, frequency: { times: null, per: 'week' } })).not.toHaveProperty('frequency');
+    expect(programmeOf({ ...draft, frequency: { times: 20, per: 'week' } })).not.toHaveProperty('frequency');
+    expect(programmeOf({ ...draft, frequency: { times: 2, per: 'day' } }).frequency).toEqual({ times: 2, per: 'day' });
+  });
+
+  it('refuses a damaged hold, side or frequency, never throwing; unknown keys stay ignored', () => {
+    const ok = { v: 1, t: 'a', x: [['squat', 3, 10, 90], ['plank', 3, 10, 45]] };
+    expect(fromCompact({ ...ok, h: [0, 45], s: 'eb', f: [3, 'w'], z: [1] }).ok).toBe(true);
+    const cases = [
+      [{ h: 45 }, 'malformed'], [{ h: [45] }, 'malformed'], [{ h: [0, 45, 0] }, 'malformed'], [{ h: 'x' }, 'malformed'], [{ h: null }, 'malformed'],
+      [{ h: [0, -1] }, 'bad-value'], [{ h: [0, 301] }, 'bad-value'], [{ h: [0, 4.5] }, 'bad-value'], [{ h: [0, '45'] }, 'bad-value'], [{ h: [0, null] }, 'bad-value'],
+      [{ s: ['e', 'b'] }, 'malformed'], [{ s: 'e' }, 'malformed'], [{ s: 'ebb' }, 'malformed'], [{ s: 'ex' }, 'malformed'], [{ s: 'EB' }, 'malformed'], [{ s: 3 }, 'malformed'],
+      [{ f: 3 }, 'malformed'], [{ f: [3] }, 'malformed'], [{ f: [3, 'm'] }, 'malformed'], [{ f: [3, 'w', 1] }, 'malformed'], [{ f: { times: 3 } }, 'malformed'],
+      [{ f: [0, 'w'] }, 'bad-value'], [{ f: [15, 'd'] }, 'bad-value'], [{ f: [2.5, 'd'] }, 'bad-value'], [{ f: ['3', 'w'] }, 'bad-value'],
+    ];
+    for (const [extra, error] of cases) {
+      let r;
+      expect(() => { r = fromCompact({ ...ok, ...extra }); }, JSON.stringify(extra)).not.toThrow();
+      expect(r, JSON.stringify(extra)).toEqual({ ok: false, error });
+    }
+  });
+
+  it('takes any exercise of the guide, and still refuses what is not one', () => {
+    for (const k of ['plank', 'side_plank', 'running', 'childs_pose', 'machine_seated_back_extension', 'squat', 'dead_bug']) expect(knownExercise(k), k).toBe(true);
+    for (const k of ['lunge', 'chair_stand_test', 'no_such_lift', '__proto__', 'constructor', '', 'Plank', null]) expect(knownExercise(k), String(k)).toBe(false);
+    expect(['plank', 'side_plank', 'running', 'childs_pose'].every(guideOnly)).toBe(true);
+    expect(['squat', 'dead_bug', 'machine_seated_back_extension', 'lunge', 'no_such_lift'].some(guideOnly)).toBe(false);
+    expect(catalogue.every(e => knownExercise(e.key))).toBe(true);
+    // 119 of the guide's 309 have never been counted (14 October 2026).
+    expect(catalogue.filter(e => guideOnly(e.key))).toHaveLength(119);
+    // Filmed: an exercise the app counts, set in reps.
+    expect([{ key: 'squat' }, { key: 'squat', holdSec: 30 }, { key: 'plank' }, { key: 'dead_bug' }].map(filmable)).toEqual([true, false, false, false]);
+    // The programme keeps them all.
+    expect(programmeOf({ title: 'A', who: '', note: '', items: sheet.items }).items.map(i => i.key)).toEqual(['squat', 'plank', 'dead_bug', 'childs_pose']);
+  });
+
+  it('leaves holds and the guide’s own exercises out of the day’s count', () => {
+    const id = programmeId(sheet), now = new Date(2026, 9, 14, 18, 0);
+    const sets = [0, 1, 2].map(m => ({ exercise: 'squat', reps: 10, createdAt: new Date(2026, 9, 14, 17, m).getTime(), planned: plannedOf(id, 0, sheet.items[0]) }));
+    const p = progressOf(sheet, id, sets, now);
+    expect(p.items.map(i => i.counted)).toEqual([true, false, false, false]);
+    expect([p.complete, p.total]).toEqual([1, 1]);
+    // A counted exercise set as a hold is not filmed either.
+    const held = { ...sheet, items: [{ ...sheet.items[0], holdSec: 30 }] };
+    expect(progressOf(held, programmeId(held), [], now).total).toBe(0);
+  });
+
+  it('sends the holds back to the coach, and sums only the sets the client films', async () => {
+    const now = new Date(2026, 9, 14, 18, 0);
+    const r = resultsOf(sheet, progressOf(sheet, 'p1', [], now), now);
+    expect(r.items.map(i => i.holdSec)).toEqual([undefined, 45, undefined, 60]);
+    for (const payload of [plainResultsPayload(r), await encodeResults(r)]) expect(await decodeResults(payload)).toEqual({ ok: true, results: r });
+    // No hold, no g: the results link of a programme without one is written as before.
+    const before = resultsOf(sample, progressOf(sample, 'p1', [], now), now);
+    expect(JSON.parse(new TextDecoder().decode(fromBase64url(plainResultsPayload(before).slice(1))))).not.toHaveProperty('g');
+    const forged = x => decodeResults('j' + b64(JSON.stringify(x)));
+    const ok = { v: 1, t: 'Séance', d: '2026-10-14', x: [['squat', 3, 10, [10]], ['plank', 3, 10, []]] };
+    expect(await forged({ ...ok, g: [0, 45] })).toEqual({ ok: true, results: { title: 'Séance', who: '', day: '2026-10-14', time: '', items: [
+      { key: 'squat', sets: 3, reps: 10, done: [10] }, { key: 'plank', sets: 3, reps: 10, done: [], holdSec: 45 }] } });
+    for (const [g, error] of [[45, 'malformed'], [[45], 'malformed'], [[0, 301], 'bad-value'], [[0, -1], 'bad-value'], [[0, 1.5], 'bad-value']]) {
+      expect(await forged({ ...ok, g }), JSON.stringify(g)).toEqual({ ok: false, error });
+    }
+    // The coach's header: the squat's three sets; the hold, the guide's own exercise and the squat set as a hold add
+    // none; the withdrawn dead bug keeps its place, as before.
+    expect(resultsSummary({ items: [
+      { key: 'squat', sets: 3, reps: 10, done: [10, 8, 10, 10] },
+      { key: 'plank', sets: 3, reps: 10, holdSec: 45, done: [] },
+      { key: 'childs_pose', sets: 1, reps: 1, done: [] },
+      { key: 'squat', sets: 2, reps: 10, holdSec: 30, done: [] },
+      { key: 'dead_bug', sets: 3, reps: 10, done: [10] },
+    ] })).toEqual({ planned: 6, done: 4, met: 3 });
+  });
+
+  it('starts the guide’s holds as a hold of 30 s, and every other exercise as before', () => {
+    expect(newItem('plank')).toEqual({ key: 'plank', sets: 3, reps: 10, rest: 90, note: '', holdSec: 30 });
+    expect(newItem('squat')).toEqual({ key: 'squat', sets: 3, reps: 10, rest: 90, note: '' });
+    const keys = new Set(catalogue.map(e => e.key));
+    expect(HOLD_START.size).toBe(12);
+    expect([...HOLD_START].filter(k => !keys.has(k))).toEqual([]);
+    // None of them is counted by the app (14 October 2026): each is done without filming.
+    expect([...HOLD_START].filter(programmable)).toEqual([]);
+  });
+
+  it('rebuilds a draft from results with their holds; a hold sent in reps stays in reps', () => {
+    vi.stubGlobal('localStorage', memory());
+    try {
+      const results = { title: 'Fiche', who: '', day: '2026-10-14', time: '', items: [
+        { key: 'plank', sets: 3, reps: 10, holdSec: 45, done: [] }, { key: 'side_plank', sets: 2, reps: 8, done: [] }, { key: 'squat', sets: 3, reps: 10, done: [] }] };
+      expect(draftFromResults(results).draft.items).toEqual([
+        { key: 'plank', sets: 3, reps: 10, rest: 90, note: '', holdSec: 45 },
+        { key: 'side_plank', sets: 2, reps: 8, rest: 90, note: '' },
+        { key: 'squat', sets: 3, reps: 10, rest: 90, note: '' },
+      ]);
+    } finally { vi.unstubAllGlobals(); }
+  });
+
+  it('says a hold, a side and a frequency as a coach does, and the usual target as before', () => {
+    for (const lang of ['fr', 'en']) {
+      const c = PRO[lang];
+      for (const [s, r, rest] of [[3, 10, 90], [4, 12, 0], [1, 1, 45], [10, 100, 600]]) {
+        expect(c.targetLine(s, r, rest, 0, 'both')).toBe(c.target(s, r, rest));
+        expect(c.targetLine(s, r, rest)).toBe(c.target(s, r, rest));
+      }
+    }
+    expect(PRO.fr.holdTarget(3, 45)).toBe(`3${NBSP}×${NBSP}45${NBSP}s`);
+    expect(PRO.fr.holdTarget(3, 90)).toBe(`3${NBSP}×${NBSP}1${NBSP}min${NBSP}30`);
+    expect(PRO.en.holdTarget(3, 90)).toBe(`3${NBSP}×${NBSP}1${NBSP}min${NBSP}30${NBSP}s`);
+    expect(PRO.fr.targetLine(3, 10, 60, 45, 'each')).toBe(`3${NBSP}×${NBSP}45${NBSP}s de maintien · chaque côté · récup. 1${NBSP}min`);
+    expect(PRO.en.targetLine(3, 10, 60, 45, 'each')).toBe(`3${NBSP}×${NBSP}45${NBSP}s hold · each side · rest 1${NBSP}min`);
+    expect(PRO.fr.targetLine(3, 10, 90, 0, 'left')).toBe(`3${NBSP}×${NBSP}10 · côté gauche · récup. 1${NBSP}min${NBSP}30`);
+    expect([PRO.fr.frequency(3, 'week'), PRO.fr.frequency(1, 'day')]).toEqual([`3${NBSP}fois par semaine`, `1${NBSP}fois par jour`]);
+    expect([PRO.en.frequency(1, 'day'), PRO.en.frequency(2, 'week'), PRO.en.frequency(3, 'week')]).toEqual(['Once a day', 'Twice a week', '3 times a week']);
+    expect(PRO.fr.pdfDetails(45, 45, 'each', false)).toBe(`Maintien · récup. 45${NBSP}s · chaque côté · sans filmer`);
+    expect(PRO.fr.pdfDetails(90, 0, 'each', true)).toBe(`Récup. 1${NBSP}min${NBSP}30 · chaque côté`);
+    expect(PRO.fr.pdfDetails(0, 0, 'both', false)).toBe('Sans récup. · sans filmer');
+    expect(PRO.en.pdfDetails(45, 45, 'each', false)).toBe(`Hold · rest 45${NBSP}s · each side · without filming`);
+    expect(PRO.fr.pdfCredit).toBe(`Dessins${NBSP}: Bryl Lim, workout-guide, CC BY-SA 4.0`);
+    expect(PRO.en.pdfCredit).toBe('Drawings: Bryl Lim, workout-guide, CC BY-SA 4.0');
+    // David's file holds every sample written out: no NaN, no undefined, no em dash.
+    for (const lang of ['fr', 'en']) for (const s of allStrings(lang)) expect(s, s).not.toMatch(/NaN|undefined|—/);
   });
 });

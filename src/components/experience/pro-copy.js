@@ -22,6 +22,13 @@ function restEn(s) {
   return r ? `${m}${NB}min${NB}${r}${NB}s` : `${m}${NB}min`;
 }
 
+// The exercise sheet (14 October 2026): the side an exercise is done on, in a target line (none for both at once),
+// and a sentence's first letter in capitals.
+const SIDE_FR = { left: 'côté gauche', right: 'côté droit', each: 'chaque côté' };
+const SIDE_EN = { left: 'left side', right: 'right side', each: 'each side' };
+const sideWords = (words, side) => (Object.hasOwn(words, side) ? [words[side]] : []);
+const capital = s => s.charAt(0).toLocaleUpperCase() + s.slice(1);
+
 export const PRO = {
   fr: {
     // The choice of lift (Choice.jsx): the coach's row and the client's.
@@ -99,6 +106,24 @@ export const PRO = {
     confirmYes: 'Supprimer',
     cancel: 'Annuler',
     pickBack: 'Retour au programme',
+    // The exercise sheet (14 October 2026): reps or a hold, the side, how often, and the exercises the app does not
+    // count. French awaiting David's approval (R10).
+    kindLabel: 'Objectif',
+    kindReps: 'Répétitions',
+    kindHold: 'Maintien',
+    hold: 'Maintien (s)',
+    holdLong: 'Durée du maintien en secondes',
+    sideLabel: 'Côté',
+    sideOptions: { both: 'Les deux', left: 'Gauche', right: 'Droite', each: 'Chaque côté' },
+    freqLabel: 'Fréquence (facultatif)',
+    freqTimesLong: 'Nombre de fois',
+    freqPerLabel: 'Par jour ou par semaine',
+    perOptions: { day: 'fois par jour', week: 'fois par semaine' },
+    notCountedTag: 'Non compté',
+    guideOnlyPro: `L’appli ne compte pas cet exercice${NB}: votre client le fera sans le filmer.`,
+    holdPro: `L’appli ne compte pas les maintiens${NB}: votre client le fera sans le filmer.`,
+    pickTitle: 'Tous les exercices du guide',
+    pickNote: `Les exercices marqués «${NB}Non compté${NB}» se font sans filmer${NB}: votre client filme les autres.`,
     // The programme's PDF (programme-pdf.js).
     pdfKicker: 'Programme',
     pdfWho: 'Pour',
@@ -108,6 +133,16 @@ export const PRO = {
     // The programme's QR code on its PDF (programme-pdf.js; French approved by David on 9 October, R10).
     pdfQrLabel: 'Ouvrir le programme',
     pdfFoot: 'Filmez chaque série avec votre téléphone : les répétitions sont comptées, et le rapport de séance montre le prévu à côté du compté.',
+    // The exercise sheet's PDF (14 October 2026; French awaiting David's approval, R10): the frequency, each exercise's
+    // details beside its target, the caption of a borrowed drawing, the foot when some exercises are done without
+    // filming, and the drawings' credit (CC BY-SA 4.0, as the task set it).
+    pdfFrequency: 'Fréquence',
+    pdfDetails: (rest, holdSec, side, filmed) => capital([
+      ...(holdSec > 0 ? ['maintien'] : []), rest ? `récup. ${restFr(rest)}` : restFr(rest), ...sideWords(SIDE_FR, side), ...(filmed ? [] : ['sans filmer']),
+    ].join(' · ')),
+    pdfSimilar: 'Dessin d’un mouvement proche',
+    pdfFootSome: `Filmez chaque série, sauf mention «${NB}sans filmer${NB}»${NB}: les répétitions sont comptées, et le rapport de séance montre le prévu à côté du compté.`,
+    pdfCredit: `Dessins${NB}: Bryl Lim, workout-guide, CC BY-SA 4.0`,
     fileName: 'programme',
     // The client's programme (Programme.jsx).
     clientEyebrow: 'Programme',
@@ -120,6 +155,17 @@ export const PRO = {
     film: name => `Filmer ${name}`,
     notCounted: `L’appli ne compte plus cet exercice${NB}: faites-le sans le filmer.`,
     notCountedPro: `L’appli ne compte plus cet exercice${NB}: votre client le fera sans le filmer.`,
+    // The exercise sheet in the client's programme (14 October 2026; French awaiting David's approval, R10).
+    guideOnly: `L’appli ne compte pas cet exercice${NB}: faites-le sans le filmer.`,
+    holdNotCounted: `L’appli ne compte pas les maintiens${NB}: faites-le sans le filmer.`,
+    sideText: SIDE_FR,
+    frequency: (n, per) => `${n}${NB}fois par ${per === 'day' ? 'jour' : 'semaine'}`,
+    holdTarget: (sets, s) => `${sets}${NB}×${NB}${restFr(s)}`,
+    // The target line of target(), with a hold and a side when set: the same words as target() without them.
+    targetLine: (sets, reps, rest, holdSec = 0, side = 'both') => [
+      holdSec > 0 ? `${sets}${NB}×${NB}${restFr(holdSec)} de maintien` : `${sets}${NB}×${NB}${reps}`,
+      ...sideWords(SIDE_FR, side), rest ? `récup. ${restFr(rest)}` : restFr(rest),
+    ].join(' · '),
     tapHint: 'Touchez un exercice pour le filmer. Chaque série enregistrée s’affiche ici, comptée, à côté de l’objectif.',
     sendBack: 'Après une série, « Rapport de séance » prépare un PDF à envoyer à votre coach.',
     clientPrivacy: 'Le programme et vos séries restent sur ce téléphone.',
@@ -257,6 +303,22 @@ export const PRO = {
     confirmYes: 'Delete',
     cancel: 'Cancel',
     pickBack: 'Back to the programme',
+    kindLabel: 'Target',
+    kindReps: 'Reps',
+    kindHold: 'Hold',
+    hold: 'Hold (s)',
+    holdLong: 'Hold time in seconds',
+    sideLabel: 'Side',
+    sideOptions: { both: 'Both', left: 'Left', right: 'Right', each: 'Each side' },
+    freqLabel: 'How often (optional)',
+    freqTimesLong: 'Number of times',
+    freqPerLabel: 'A day or a week',
+    perOptions: { day: 'times a day', week: 'times a week' },
+    notCountedTag: 'Not counted',
+    guideOnlyPro: 'The app does not count this exercise: your client will do it without filming it.',
+    holdPro: 'The app does not count holds: your client will do it without filming it.',
+    pickTitle: 'Every exercise in the guide',
+    pickNote: 'Exercises marked “Not counted” are done without filming: your client films the others.',
     pdfKicker: 'Programme',
     pdfWho: 'For',
     pdfCount: 'Exercises',
@@ -264,6 +326,13 @@ export const PRO = {
     pdfNote: 'Note',
     pdfQrLabel: 'Open the programme',
     pdfFoot: 'Film each set with your phone: the reps are counted, and the session report shows what was planned beside what was counted.',
+    pdfFrequency: 'Frequency',
+    pdfDetails: (rest, holdSec, side, filmed) => capital([
+      ...(holdSec > 0 ? ['hold'] : []), rest ? `rest ${restEn(rest)}` : restEn(rest), ...sideWords(SIDE_EN, side), ...(filmed ? [] : ['without filming']),
+    ].join(' · ')),
+    pdfSimilar: 'Drawing of a similar movement',
+    pdfFootSome: 'Film each set, unless marked “without filming”: the reps are counted, and the session report shows what was planned beside what was counted.',
+    pdfCredit: 'Drawings: Bryl Lim, workout-guide, CC BY-SA 4.0',
     fileName: 'programme',
     clientEyebrow: 'Programme',
     whoLine: who => `For ${who}`,
@@ -275,6 +344,15 @@ export const PRO = {
     film: name => `Film ${name}`,
     notCounted: 'The app no longer counts this exercise: do it without filming it.',
     notCountedPro: 'The app no longer counts this exercise: your client will do it without filming it.',
+    guideOnly: 'The app does not count this exercise: do it without filming it.',
+    holdNotCounted: 'The app does not count holds: do it without filming it.',
+    sideText: SIDE_EN,
+    frequency: (n, per) => `${n === 1 ? 'Once' : n === 2 ? 'Twice' : `${n} times`} a ${per === 'day' ? 'day' : 'week'}`,
+    holdTarget: (sets, s) => `${sets}${NB}×${NB}${restEn(s)}`,
+    targetLine: (sets, reps, rest, holdSec = 0, side = 'both') => [
+      holdSec > 0 ? `${sets}${NB}×${NB}${restEn(holdSec)} hold` : `${sets}${NB}×${NB}${reps}`,
+      ...sideWords(SIDE_EN, side), rest ? `rest ${restEn(rest)}` : restEn(rest),
+    ].join(' · '),
     tapHint: 'Tap an exercise to film it. Each set you save shows here, counted, beside the target.',
     sendBack: 'After a set, “Session report” prepares a PDF to send to your coach.',
     clientPrivacy: 'The programme and your sets stay on this phone.',
@@ -337,9 +415,17 @@ export const PRO = {
 
 /** Every string of PRO in one language, functions called with sample values, for the tests and for David's file. */
 export function allStrings(lang) {
-  const out = [];
+  const out = [], c = PRO[lang];
+  // The exercise sheet's words, called with the values they take (a hold, a side, a frequency), never with a date.
+  const samples = new Map([
+    [c.holdTarget, [[3, 45], [3, 90]]],
+    [c.frequency, [[3, 'week'], [1, 'day'], [2, 'week']]],
+    [c.pdfDetails, [[45, 45, 'each', false], [90, 0, 'both', true], [0, 0, 'left', false]]],
+    [c.targetLine, [[3, 10, 90, 45, 'each'], [3, 10, 90, 0, 'right'], [3, 10, 0]]],
+  ]);
   const walk = v => {
     if (typeof v === 'string') out.push(v);
+    else if (samples.has(v)) samples.get(v).forEach(args => walk(v(...args)));
     else if (typeof v === 'function') { const r = v.length >= 3 ? v(3, 10, 90) : v.length === 2 ? v(2, '6 oct.') : v.length === 1 ? v(v === PRO[lang].restText ? 90 : 'Camille') : v(); walk(r); }
     else if (Array.isArray(v)) v.forEach(walk);
     else if (v && typeof v === 'object') Object.values(v).forEach(walk);
