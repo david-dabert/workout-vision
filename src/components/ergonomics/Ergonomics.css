@@ -17,3 +17,13 @@
 .wv-experience .ergo-selects { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-3); }
 .wv-experience .ergo-select { display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-caption); color: var(--bone-2); }
 .wv-experience .ergo-select select { width: 100%; min-height: 48px; padding: 0 14px; border-radius: var(--r-s); border: 1px solid var(--c-rule); background: var(--basalt); color: var(--c-fg); font: 400 16px/1.4 var(--sans); }
+
+/* Second review (14 October 2026). The equation in two groups that stay whole (NioshProduct.jsx). A lift outside the
+   domain: the factor out of range and the total in the lamp, the total at body size since it is a sentence, not a kg.
+   The LI's verdict: its dot on the first line of a two-line verdict, not between the lines. */
+.wv-experience .ergo-equation > span { display: inline-block; white-space: nowrap; }
+.wv-experience .ergo-factors li.is-outside .ergo-factor-val, .wv-experience .ergo-factors li.is-outside .ergo-factor-name b { color: var(--lamp-hi); }
+.wv-experience .ergo-factors li.is-outside .ergo-factor-val { font-weight: 500; font-size: var(--fs-caption); }
+.wv-experience .ergo-equation.is-total.is-outside { font-size: var(--fs-body); line-height: 1.45; text-align: left; color: var(--lamp-hi); padding-top: var(--s-2); }
+.wv-experience .ergo-screen .sc-metric .sc-tag { align-items: flex-start; }
+.wv-experience .ergo-screen .sc-metric .sc-tag::before { margin-top: calc((1.4em - 6px) / 2); }
