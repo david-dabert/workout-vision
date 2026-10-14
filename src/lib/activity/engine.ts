@@ -2,8 +2,9 @@
  * The activity engine (docs/VISION.md, "The engine"): reads any activity specification (types.ts) on a pose read and
  * returns its events and measures, every value with its margin or the reason it is not shown (R8). Three layers:
  *
- * 1. Perception: the pose of every sample, as the app's pose model gives it (coreAnalysis.js, readPoses), and the body's
- *    own ruler: the ground line, the leg length, the camera view.
+ * 1. Perception: the pose of every sample, in the shape the app's pose model gives it (coreAnalysis.js,
+ *    analyzeCoreVideo: its imageLandmarks and timestamps; not yet wired to this engine), and the body's own ruler: the
+ *    ground line, the leg length, the camera view.
  * 2. The grammar: signals, then events (airborne phases, jumps as cycles of hip height that carry a flight, strides,
  *    landings), read by the kinds declared in the specification.
  * 3. Measures: each with its formula, unit, source, R9 status and margin, computed from the samples actually read.

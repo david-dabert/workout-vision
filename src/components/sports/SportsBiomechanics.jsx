@@ -236,7 +236,7 @@ const MARKET_ROWS = [
 ];
 const ArrowIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>;
 
-export default function SportsBiomechanics({ onClose, onOpenEquine }) {
+export default function SportsBiomechanics({ onClose, onOpenEquine, onOpenVolleyball }) {
   const { lang } = useT();
   const fr = lang === 'fr';
   // The title condenses into the topbar as the page scrolls under it (topbar.js), as on Guide, History and Pro.
@@ -711,6 +711,17 @@ export default function SportsBiomechanics({ onClose, onOpenEquine }) {
                   {fr ? t.fr : t.en}
                 </button>
               ))}
+              {/* Volleyball opens the activity engine's screen: its numbers are measured on synthetic jumps. */}
+              {onOpenVolleyball && (
+                <button
+                  type="button"
+                  className="sc-chip press"
+                  onClick={() => { hapticLight(); onOpenVolleyball(); }}
+                  data-testid="tab-volleyball-link"
+                >
+                  {fr ? 'Volley-ball' : 'Volleyball'}<ArrowIcon />
+                </button>
+              )}
               {onOpenEquine && (
                 <button
                   type="button"

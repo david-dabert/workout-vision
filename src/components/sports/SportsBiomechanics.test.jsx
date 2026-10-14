@@ -15,7 +15,7 @@ async function render(lang) {
   const { default: SportsBiomechanics } = await import('./SportsBiomechanics');
   return renderToStaticMarkup(
     <LanguageProvider>
-      <SportsBiomechanics onClose={() => {}} onOpenEquine={() => {}} />
+      <SportsBiomechanics onClose={() => {}} onOpenEquine={() => {}} onOpenVolleyball={() => {}} />
     </LanguageProvider>
   );
 }
@@ -38,6 +38,7 @@ describe('SportsBiomechanics UI Component', () => {
       expect(html).toContain('data-testid="tab-skiing"');
       expect(html).toContain('data-testid="tab-swimming"');
       expect(html).toContain('data-testid="tab-equine-link"');
+      expect(html).toContain('data-testid="tab-volleyball-link"');
       expect(html).toContain('data-testid="sports-demo-player-card"');
       expect(html).toContain('data-testid="sports-demo-player"');
       expect(html).toContain('data-testid="sports-demo-mode-analyzed"');

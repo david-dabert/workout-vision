@@ -66,6 +66,8 @@ export interface ErrorSpec { kind: 'sampling' | 'none'; note: Text }
 export interface MeasureSpec {
   key: string;
   label: Text;
+  /** The name of one event's value, when the label names the summary ('Best jump': each jump's 'Height'). */
+  each?: Text;
   /** The event the measure reads. */
   of: string;
   formula: FormulaSpec;

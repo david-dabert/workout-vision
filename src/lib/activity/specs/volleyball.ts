@@ -66,6 +66,7 @@ export const volleyball: ActivitySpec = {
     {
       key: 'height',
       label: { fr: 'Meilleur saut', en: 'Best jump' },
+      each: { fr: 'Hauteur', en: 'Height' },
       of: 'jump',
       formula: { kind: 'flightHeight' },
       formulaText: { fr: 'h = g·t²/8, t le temps d’envol', en: 'h = g·t²/8, t the flight time' },

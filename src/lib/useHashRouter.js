@@ -4,7 +4,7 @@ const VALID_PAGES = new Set([
   'dashboard', 'analyze', 'exercises', 'coach', 'log', 'history', 'rest', 'profile', 'validate', 'weekly',
   'film', 'prs', 'onboarding', 'live', 'about', 'pro', 'programme', 'resultats', 'manifesto', 'science',
   'equine', 'veterinary', 'sports', 'golf', 'tennis', 'padel', 'cycling', 'baseball', 'rowing', 'skiing', 'swimming', 'coaches', 'physio',
-  'buddies', 'buddy', 'ergonomics', 'workplace', 'chat',
+  'buddies', 'buddy', 'ergonomics', 'workplace', 'chat', 'volleyball',
 ]);
 
 function readHash() {
