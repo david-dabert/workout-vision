@@ -1,250 +1,41 @@
-/* P2P Encrypted Chat UI Styles */
+/* Chat (Chat.jsx): the experience's wrapper, topbar and tokens, with the showcase parts of Showcase.css
+   (design/SYSTEM.md). The peer's words in a hairline bubble, the visitor's in the lamp's tint; the field and the
+   attach chip stay at the foot of the screen on frosted glass, as the condensed topbar does at its head.
+   Status: convention (the app's design system; no measurement involved). */
 
-.chat-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: var(--void, #08080b);
-  color: var(--text-primary, #e8e6e1);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
+.wv-experience .chat-screen .wrap { min-height: 100%; padding-bottom: 0; }
+.wv-experience .chat-status { display: flex; align-items: center; gap: var(--s-2); }
+.wv-experience .chat-status::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--c-accent); flex: none; }
+.wv-experience .chat-screen .topbar .btn-ghost.is-s svg { width: 14px; height: 14px; }
 
-.chat-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  background: rgba(8, 8, 11, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-}
+/* The messages. */
+.wv-experience .chat-feed { display: flex; flex-direction: column; gap: var(--s-3); margin-top: var(--s-6); padding-bottom: var(--s-5); }
+.wv-experience .chat-bubble { display: flex; flex-direction: column; gap: var(--s-2); max-width: 86%; padding: 12px 14px 10px; border-radius: 18px; border: 1px solid var(--c-rule); }
+.wv-experience .chat-bubble-peer { align-self: flex-start; border-bottom-left-radius: 6px; background: color-mix(in srgb, var(--bone) 4%, transparent); }
+.wv-experience .chat-bubble-self { align-self: flex-end; border-bottom-right-radius: 6px; border-color: var(--lamp-line); background: color-mix(in srgb, var(--lamp) 12%, transparent); }
+.wv-experience .chat-text { margin: 0; font-size: var(--fs-body); line-height: 1.5; color: var(--c-fg); overflow-wrap: anywhere; }
+.wv-experience .chat-timestamp { align-self: flex-end; font-size: 11px; color: var(--c-fg-muted); font-variant-numeric: tabular-nums; }
 
-.chat-back-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: var(--text-primary, #e8e6e1);
-  padding: 8px 14px;
-  border-radius: 999px;
-  cursor: pointer;
-  font-size: 13.5px;
-  font-weight: 500;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
+/* The set attached to a message: its name, its count, its three values. */
+.wv-experience .chat-telemetry { display: flex; flex-direction: column; gap: var(--s-2); padding-top: var(--s-2); border-top: 1px solid var(--hair-0); }
+.wv-experience .chat-telemetry-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; }
+.wv-experience .chat-telemetry-name { font-weight: 600; font-size: var(--fs-caption); color: var(--c-fg); }
+.wv-experience .chat-telemetry-tags { display: flex; gap: 6px; }
+.wv-experience .chat-telemetry-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.wv-experience .chat-telemetry-grid .sc-metric { padding: 8px 10px; }
+.wv-experience .chat-telemetry-grid .sc-metric-value { font-size: 16px; }
 
-.chat-back-btn:hover {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.16);
+/* The foot: on glass, stuck to the bottom of the screen, reaching through the screen's bottom padding. */
+.wv-experience .chat-footer {
+  position: sticky; bottom: 0; z-index: 5; margin: auto calc(var(--gut) * -1) calc(-30px - env(safe-area-inset-bottom, 0px));
+  padding: 12px var(--gut) calc(14px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 10px;
+  background: color-mix(in srgb, var(--void) 86%, transparent); -webkit-backdrop-filter: blur(20px) saturate(1.2); backdrop-filter: blur(20px) saturate(1.2);
+  box-shadow: 0 -1px 0 var(--c-rule);
 }
-
-.chat-back-btn:active {
-  transform: scale(0.97);
-}
-
-.chat-topbar-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.chat-peer-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary, #e8e6e1);
-}
-
-.chat-encryption-status {
-  font-size: 11px;
-  color: var(--bio-green, #5DB87A);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.chat-content {
-  flex: 1;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 24px 20px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  overflow-y: auto;
-}
-
-.chat-bubble {
-  max-width: 78%;
-  padding: 14px 18px;
-  border-radius: 18px;
-  font-size: 14.5px;
-  line-height: 1.5;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  animation: fadeInBubble 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes fadeInBubble {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.chat-bubble-self {
-  align-self: flex-end;
-  background: linear-gradient(135deg, #D4A76A 0%, #C4956A 100%);
-  color: #08080b;
-  font-weight: 500;
-  border-bottom-right-radius: 4px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-}
-
-.chat-bubble-peer {
-  align-self: flex-start;
-  background: var(--depth-2, #161619);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  color: var(--text-primary, #e8e6e1);
-  border-bottom-left-radius: 4px;
-}
-
-.chat-timestamp {
-  font-size: 11px;
-  opacity: 0.65;
-  align-self: flex-end;
-}
-
-.telemetry-card-bubble {
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid rgba(212, 167, 106, 0.3);
-  border-radius: 14px;
-  padding: 14px;
-  margin-top: 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  color: var(--text-primary, #e8e6e1);
-}
-
-.telemetry-card-title {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: var(--bio-cyan, #D4A76A);
-  display: flex;
-  justify-content: space-between;
-}
-
-.telemetry-metrics-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-  font-size: 12px;
-}
-
-.telemetry-metric-item {
-  display: flex;
-  flex-direction: column;
-}
-
-.telemetry-metric-label {
-  color: var(--text-secondary, rgba(232, 230, 225, 0.55));
-  font-size: 11px;
-}
-
-.telemetry-metric-val {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary, #e8e6e1);
-  font-family: monospace;
-}
-
-.chat-footer {
-  position: sticky;
-  bottom: 0;
-  background: rgba(8, 8, 11, 0.9);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  padding: 12px 20px 24px;
-}
-
-.chat-quick-actions {
-  max-width: 800px;
-  margin: 0 auto 10px;
-  display: flex;
-  gap: 8px;
-}
-
-.quick-action-pill {
-  background: rgba(212, 167, 106, 0.1);
-  border: 1px solid rgba(212, 167, 106, 0.25);
-  color: var(--bio-cyan, #D4A76A);
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 12.5px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.quick-action-pill:hover {
-  background: rgba(212, 167, 106, 0.18);
-}
-
-.quick-action-pill:active {
-  transform: scale(0.97);
-}
-
-.chat-input-bar {
-  max-width: 800px;
-  margin: 0 auto;
-  display: flex;
-  gap: 10px;
-}
-
-.chat-input {
-  flex: 1;
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: 12px;
-  padding: 12px 16px;
-  color: var(--text-primary, #e8e6e1);
-  font-size: 14.5px;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-.chat-input:focus {
-  border-color: var(--bio-cyan, #D4A76A);
-}
-
-.chat-send-btn {
-  background: var(--bio-cyan, #D4A76A);
-  border: none;
-  color: #08080b;
-  font-weight: 600;
-  padding: 0 20px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.chat-send-btn:hover {
-  background: #E8BD7E;
-}
-
-.chat-send-btn:active {
-  transform: scale(0.97);
-}
+.no-glass .wv-experience .chat-footer { -webkit-backdrop-filter: none; backdrop-filter: none; background: color-mix(in srgb, var(--void) 94%, transparent); }
+.wv-experience .chat-attach { align-self: flex-start; }
+.wv-experience .chat-input-bar { display: flex; gap: var(--s-2); }
+.wv-experience .chat-input { flex: 1; min-width: 0; height: 48px; padding: 0 16px; border-radius: var(--r-m); border: 1px solid var(--c-rule); background: var(--basalt); color: var(--c-fg); font-size: 16px; outline: none; -webkit-appearance: none; appearance: none; }
+.wv-experience .chat-input::placeholder { color: var(--ash-2); }
+.wv-experience .chat-input:focus { border-color: var(--lamp-line-strong); }
+.wv-experience .chat-send-btn { flex: none; height: 48px; padding: 0 18px; border-radius: var(--r-m); background: var(--c-accent); color: var(--c-on-accent); font-weight: 600; font-size: var(--fs-body); }
