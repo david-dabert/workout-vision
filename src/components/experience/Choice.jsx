@@ -196,17 +196,18 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{fr ? 'Le Manifeste WorkoutVision' : 'The WorkoutVision Manifesto'}</b><small>{fr ? 'La science, l’histoire et la mécanique du mouvement' : 'The science, history, and mechanics of optimal lifting'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {/* EquiVision: a demo on a simulated horse; the app reads no horse from a video (honesty pass, 14 October 2026,
-            EQ-16). French of this row and of the footer links below awaiting David's approval (R10). */}
+        {/* EquiVision: a demo on a simulated horse; the app analyses no horse on a video (honesty pass, 14 October 2026,
+            EQ-16). Its icon is a curve, not a tick, which would read as "validated" or "sound". French of this row, of
+            the sports row and of the footer links below awaiting David's approval (R10). */}
         {onEquine && <button className="row-link press" onClick={onEquine} data-testid="choice-equine">
-          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M8 12l3 3 5-5" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'EquiVision\u00A0: le trot du cheval' : 'EquiVision: the horse’s trot'}</b><small>{fr ? 'Une démo sur un cheval simulé. L’appli ne lit pas encore votre cheval.' : 'A demo on a simulated horse. The app cannot read your horse yet.'}</small></span>
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12c2.2-6 4.4-6 6.6 0s4.4 6 6.6 0 4.4-6 6.6 0" /></svg></span>
+          <span className="row-txt"><b>{fr ? 'EquiVision\u00A0: le trot du cheval' : 'EquiVision: the horse’s trot'}</b><small>{fr ? 'Une démo sur un cheval simulé. L’appli n’analyse pas encore les vidéos de votre cheval.' : 'A demo on a simulated horse. The app does not analyse videos of your horse yet.'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {/* Precision sports: demonstration clips; the app reads none of these sports on a video yet (SP-25). */}
+        {/* Other sports: demonstration clips; the app analyses none of these sports on a video yet (SP-25). */}
         {onSports && <button className="row-link press" onClick={onSports} data-testid="choice-sports">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'Sports de précision' : 'Precision sports'}</b><small>{fr ? 'Golf, tennis, aviron et d’autres sports, en démo' : 'Golf, tennis, rowing and more, as demos'}</small></span>
+          <span className="row-txt"><b>{fr ? 'Autres sports' : 'Other sports'}</b><small>{fr ? 'Golf, tennis, aviron, ski et d’autres, en démo' : 'Golf, tennis, rowing, skiing and more, as demos'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Coach & Physio Matcher */}
