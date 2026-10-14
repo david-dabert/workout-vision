@@ -41,6 +41,20 @@
 .wv-experience .pro-add { margin-top: var(--s-4); }
 .wv-experience .pro-note { margin-top: var(--s-5); }
 
+/* The exercise sheet (14 October 2026): reps or a hold, and the side, as two choices in the numbers' own box; the
+   frequency, a number and a choice; a quiet tag under the name of an exercise the client does not film. */
+.wv-experience .pro-item-title { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; }
+.wv-experience .pro-tag { display: inline-block; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--c-fg-muted); border: 1px solid var(--hair-2); border-radius: var(--r-pill); padding: 2px 8px; }
+.wv-experience .pro-opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-2); margin-top: var(--s-2); }
+.wv-experience .pro-select { position: relative; display: block; min-width: 0; }
+.wv-experience .pro-select::after { content: ''; position: absolute; right: 14px; top: 50%; width: 7px; height: 7px; margin-top: -5px;
+  border-right: 1.5px solid var(--c-fg-muted); border-bottom: 1.5px solid var(--c-fg-muted); transform: rotate(45deg); pointer-events: none; }
+.wv-experience .pro-select select { width: 100%; height: 48px; padding: 0 32px 0 12px; border-radius: var(--r-s); background: var(--basalt);
+  border: 1px solid var(--c-rule); color: var(--c-fg); font-family: var(--sans); font-size: 16px; outline: none; -webkit-appearance: none; appearance: none; text-overflow: ellipsis; }
+.wv-experience .pro-select select:focus { border-color: var(--lamp-line-strong); }
+.wv-experience .pro-freq-row { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--s-2); }
+
 /* The two outputs: the PDF in gold, the link in a gold outline, the copy quiet beside it. */
 .wv-experience .pro-share { display: flex; flex-direction: column; gap: var(--s-3); margin-top: var(--s-6); padding-top: var(--s-5); border-top: 1px solid var(--c-rule); }
 .wv-experience .pro-status { margin: 0; min-height: 1.45em; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); text-wrap: balance; }
