@@ -454,7 +454,18 @@ export function countReps(
     // The knees do not move together: counted as eitherSide, below.
   }
   const mine = countSide(worldLandmarks, timestamps, def, seen, tuning);
-  if (!def.eitherSide && !def.together) return mine;
+  const countable = (r: CountResult) => r.angles.filter(a => a !== null).length >= worldLandmarks.length / 2;
+  if (!def.eitherSide && !def.together) {
+    // A still limb counts nothing. When the better seen side counts no rep and the other side, itself seen on at
+    // least half the samples, counts one or more, the other side counts: a one-arm curl or raise filmed from the
+    // front sees both arms alike, and the idle one, held still, read 0 (IntelliRehabDS, Zenodo record 4610859,
+    // review of PR #175 on 14 October 2026: on ird_s101_g00_stand, 6 elbow flexions, the elbow kept spanned 160 to
+    // 163 degrees while the other spanned 20 to 167). Only a count of 0 can change, so no set the app counts today
+    // moves. Source: UNSOURCED (no published rule). Status: experimental.
+    if (mine.count > 0) return mine;
+    const other = countSide(worldLandmarks, timestamps, def, seen === 'left' ? 'right' : 'left', tuning);
+    return other.count > 0 && countable(other) ? other : mine;
+  }
   // The side with more reps; on a tie, the better seen. A side seen in fewer than half the samples, which the count
   // refuses (summarizeCount), is never kept over one seen in more: its extra reps would turn a set the better side
   // counts into a refusal (3 October: a push-up seen 91 % on one elbow and 49 % on the other; a public pull-up
@@ -465,7 +476,6 @@ export function countReps(
   // refused although the other elbow, seen on every sample, counted the same 6). Measured on 3 October with
   // variant-eval: no count moved on David's sets, either public half or the synthetic sets.
   const other = countSide(worldLandmarks, timestamps, def, seen === 'left' ? 'right' : 'left', tuning);
-  const countable = (r: CountResult) => r.angles.filter(a => a !== null).length >= worldLandmarks.length / 2;
   const mineSeen = countable(mine), otherSeen = countable(other);
   if (mineSeen !== otherSeen) return otherSeen ? other : mine;
   return other.count > mine.count ? other : mine;
@@ -589,7 +599,8 @@ export function jointRange(worldLandmarks: WorldLandmarkFrame[], timestamps: num
       .filter((a): a is number => a !== null).sort((a, b) => a - b);
     return xs.length < 3 ? NaN : xs[Math.floor(xs.length * 0.95)] - xs[Math.floor(xs.length * 0.05)];
   };
-  if (!def.eitherSide && !def.together) return range(selectSide(worldLandmarks, def.joint));
+  // The side the count tracks, which is the other one when the better seen limb stays still (countReps).
+  if (!def.eitherSide && !def.together) return range(countReps(worldLandmarks, timestamps, lift).arm as 'left' | 'right');
   // An either-side or together lift can be counted on either side (countReps), so the larger of the two ranges:
   // a still, better seen limb beside a working one no longer warns beside a count (third audit, C03, 3 October).
   const both = [range('left'), range('right')].filter(x => !Number.isNaN(x));

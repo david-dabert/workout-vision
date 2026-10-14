@@ -69,8 +69,11 @@ describe('a two-sided exercise needs both sides in sight (FINDING-012)', () => {
 });
 
 describe('the side counted is the side that moves (FINDING-011)', () => {
-  // Expected to fail: the fix tried on 2 October cost 7 exact public sets and 19 off by 3 or more (TRIED.md).
-  it.fails('a still left arm slightly better seen does not take the count from the right arm curling', () => {
+  // The fix tried on 2 October (the larger range when both sides are seen about as well) cost 7 exact public sets
+  // and 19 off by 3 or more (TRIED.md). Since 14 October the other side counts only when the better seen side
+  // counts no rep (countReps): no exact set lost on any suite (variant-eval, 13 sets moved, each from 0 closer to
+  // its label).
+  it('a still left arm slightly better seen does not take the count from the right arm curling', () => {
     const a = sample(cycles({ rest: 165, work: 50, reps: 8, firstSec: 0.8, secondSec: 1, restSec: 0.6 }), 165, SPS);
     const ts = timestamps(a.length, SPS);
     const wl = a.map(x => {

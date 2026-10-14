@@ -39,3 +39,42 @@ describe('a one-limb exercise is counted on the working limb, even when the idle
     expect(result.arm).toBe(working);
   });
 });
+
+// A two-arm lift done one arm at a time (review of PR #175, 14 October 2026): the idle arm, better seen and still,
+// counts nothing, so the working arm counts. A set whose better seen arm counts reps keeps it.
+describe('a two-arm lift counts the working arm when the better seen arm stays still', () => {
+  it.each((['bicep_curl', 'lateral_raise'] as const).flatMap(key => (['left', 'right'] as Side[]).map(working => [key, working] as const)))('%s, working %s', (key, working) => {
+    const def = liftDefinition(key)!;
+    expect(def.eitherSide || def.together || def.bothSides, key).toBeFalsy();
+    const rest = def.rest === 'high' ? 170 : 20;
+    const work = def.rest === 'high' ? rest - 90 : rest + 90;
+    const sps = 30;
+    const moving = sample(cycles({ rest, work, firstSec: 1.2, secondSec: 0.8 }), rest, sps);
+    const rng = seeded(7);
+    const idle: Side = working === 'left' ? 'right' : 'left';
+    const frames = moving.map(a => {
+      const frame = jointFrame(def.joint, { [working]: a, [idle]: rest + (rng() - 0.5) })!;
+      for (const i of JOINT_POINTS[def.joint][working]) frame[i] = { ...frame[i], visibility: 0.8 };
+      return frame;
+    });
+    const result = countReps(frames, timestamps(moving.length, sps), key);
+    expect(result.count).toBe(10);
+    expect(result.arm).toBe(working);
+  });
+
+  it('keeps the better seen arm when it counts reps, even if the other counts more', () => {
+    const def = liftDefinition('bicep_curl')!;
+    const sps = 30;
+    const five = sample(cycles({ rest: 170, work: 80, firstSec: 2.4, secondSec: 1.6 }), 170, sps);
+    const ten = sample(cycles({ rest: 170, work: 80, firstSec: 1.2, secondSec: 0.8 }), 170, sps);
+    const n = Math.min(five.length, ten.length);
+    const frames = Array.from({ length: n }, (_, i) => {
+      const frame = jointFrame(def.joint, { left: five[i], right: ten[i] })!;
+      for (const j of JOINT_POINTS[def.joint].right) frame[j] = { ...frame[j], visibility: 0.8 };
+      return frame;
+    });
+    const result = countReps(frames, timestamps(n, sps), 'bicep_curl');
+    expect(result.arm).toBe('left');
+    expect(result.count).toBeGreaterThan(0);
+  });
+});

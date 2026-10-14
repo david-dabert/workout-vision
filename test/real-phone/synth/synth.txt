@@ -3,17 +3,17 @@ rendered at the app analysis size (360x640, 15 fps), each frame through the app 
 Truth from the skeleton joint positions with the counter three-point angles. Synthetic bodies are not people:
 these figures bound what the pipeline can do in clean conditions; they do not replace real-phone sets.
 
-all                    n  96  count exact  74 (77 %), off >= 3: 13  range error mean -29 deg (-30 %)  conc. -0.6 s  ecc. -0.6 s
+all                    n  96  count exact  75 (78 %), off >= 3: 10  range error mean -30 deg (-31 %)  conc. -0.6 s  ecc. -0.6 s
 lateral_raise          n  24  count exact  22 (92 %), off >= 3: 0  range error mean -8 deg (-10 %)  conc. -0.5 s  ecc. -0.6 s
 bicep_curl             n  24  count exact  20 (83 %), off >= 3: 2  range error mean -44 deg (-36 %)  conc. -0.6 s  ecc. -0.7 s
-overhead_press         n  24  count exact  14 (58 %), off >= 3: 7  range error mean -39 deg (-46 %)  conc. -0.8 s  ecc. -0.6 s
-squat                  n  24  count exact  18 (75 %), off >= 3: 4  range error mean -28 deg (-30 %)  conc. -0.6 s  ecc. -0.5 s
-view 0 deg             n  24  count exact  21 (88 %), off >= 3: 2  range error mean -37 deg (-36 %)  conc. -0.6 s  ecc. -0.6 s
+overhead_press         n  24  count exact  14 (58 %), off >= 3: 6  range error mean -39 deg (-46 %)  conc. -0.8 s  ecc. -0.6 s
+squat                  n  24  count exact  19 (79 %), off >= 3: 2  range error mean -32 deg (-33 %)  conc. -0.6 s  ecc. -0.5 s
+view 0 deg             n  24  count exact  22 (92 %), off >= 3: 0  range error mean -39 deg (-39 %)  conc. -0.6 s  ecc. -0.6 s
 view 30 deg            n  24  count exact  21 (88 %), off >= 3: 1  range error mean -25 deg (-27 %)  conc. -0.6 s  ecc. -0.6 s
-view 60 deg            n  24  count exact  19 (79 %), off >= 3: 4  range error mean -30 deg (-29 %)  conc. -0.6 s  ecc. -0.6 s
+view 60 deg            n  24  count exact  19 (79 %), off >= 3: 3  range error mean -30 deg (-29 %)  conc. -0.6 s  ecc. -0.6 s
 view 90 deg            n  24  count exact  13 (54 %), off >= 3: 6  range error mean -27 deg (-29 %)  conc. -0.7 s  ecc. -0.7 s
 michelle               n  48  count exact  41 (85 %), off >= 3: 5  range error mean -22 deg (-22 %)  conc. -0.6 s  ecc. -0.6 s
-soldier                n  48  count exact  33 (69 %), off >= 3: 8  range error mean -37 deg (-37 %)  conc. -0.6 s  ecc. -0.6 s
+soldier                n  48  count exact  34 (71 %), off >= 3: 5  range error mean -38 deg (-39 %)  conc. -0.6 s  ecc. -0.6 s
 
 At the view the filming guide asks for:
 lateral_raise (front)  n   6  count exact   6 (100 %), off >= 3: 0  range error mean -4 deg (-5 %)  conc. -0.4 s  ecc. -0.5 s
@@ -23,16 +23,16 @@ squat (side)           n   6  count exact   4 (67 %), off >= 3: 1  range error m
 all, guided view       n  24  count exact  20 (83 %), off >= 3: 2  range error mean -19 deg (-20 %)  conc. -0.5 s  ecc. -0.5 s
 
 Measure errors per view (printed, not gated): phase time relative error, time under tension error, range error.
-view  0 deg: conc. -46 %  ecc. -45 %  time under tension -37 % (mean absolute 37 %)  range -36 %
+view  0 deg: conc. -46 %  ecc. -45 %  time under tension -32 % (mean absolute 32 %)  range -39 %
 view 30 deg: conc. -45 %  ecc. -45 %  time under tension -30 % (mean absolute 30 %)  range -27 %
-view 60 deg: conc. -47 %  ecc. -48 %  time under tension -41 % (mean absolute 41 %)  range -29 %
+view 60 deg: conc. -48 %  ecc. -49 %  time under tension -40 % (mean absolute 40 %)  range -29 %
 view 90 deg: conc. -53 %  ecc. -54 %  time under tension -59 % (mean absolute 59 %)  range -29 %
 
 Measure errors split (printed, not gated): definition = app pipeline on the true angle vs truth; pose = app vs that.
-all                    range: definition   0 %  pose -30 %   conc.: definition -28 %  pose -27 %   ecc.: definition -29 %  pose -26 %
-view 0 deg             range: definition   2 %  pose -36 %   conc.: definition -28 %  pose -24 %   ecc.: definition -29 %  pose -23 %
+all                    range: definition   0 %  pose -31 %   conc.: definition -29 %  pose -27 %   ecc.: definition -29 %  pose -27 %
+view 0 deg             range: definition   1 %  pose -39 %   conc.: definition -29 %  pose -25 %   ecc.: definition -29 %  pose -23 %
 view 30 deg            range: definition   1 %  pose -27 %   conc.: definition -28 %  pose -24 %   ecc.: definition -29 %  pose -22 %
-view 60 deg            range: definition  -1 %  pose -28 %   conc.: definition -29 %  pose -26 %   ecc.: definition -29 %  pose -26 %
+view 60 deg            range: definition  -1 %  pose -29 %   conc.: definition -29 %  pose -26 %   ecc.: definition -29 %  pose -27 %
 view 90 deg            range: definition   0 %  pose -29 %   conc.: definition -28 %  pose -34 %   ecc.: definition -29 %  pose -36 %
 lateral_raise (front)  range: definition  -1 %  pose  -3 %   conc.: definition -27 %  pose  -8 %   ecc.: definition -32 %  pose  -7 %
 bicep_curl (side)      range: definition  -0 %  pose -24 %   conc.: definition -25 %  pose -28 %   ecc.: definition -30 %  pose -29 %
@@ -124,14 +124,14 @@ Each set: id, true reps, app count, range error (deg), conc./ecc. error (s), pos
   soldier-overhead_press-v30-a-10           8 10   -32   -0.9  -0.7   94 %  not-compared-lift  -22    -
   soldier-overhead_press-v30-a0             5  5   -46   -0.9  -0.6   63 %  not-compared-lift   -0    -
   soldier-overhead_press-v30-a20            7  9   -45   -0.7  -0.6   88 %  not-compared-lift    6    -
-  soldier-overhead_press-v60-a-10           5  0     -      -     -  100 %  not-compared-lift  -22    -
+  soldier-overhead_press-v60-a-10           5  7   -39   -0.9  -0.8  100 %  not-compared-lift  -22    -
   soldier-overhead_press-v60-a0             6  9   -57   -1.3  -0.8  100 %  not-compared-lift   -0    -
   soldier-overhead_press-v60-a20            8 13   -66   -0.9  -0.8  100 %  not-compared-lift    3    -
   soldier-overhead_press-v90-a-10           6  7   -49   -0.6  -0.7   90 %  not-compared-lift  -23    -
   soldier-overhead_press-v90-a0             7 12   -48   -1.0  -0.6   90 %  not-compared-lift   -0    -
   soldier-overhead_press-v90-a20            5  5   -54   -0.8  -0.9   91 %  not-compared-lift    2    -
-  soldier-squat-v0-a-10                     7  0     -      -     -  100 %  not-compared-lift  -11    -
-  soldier-squat-v0-a0                       8  0     -      -     -  100 %  not-compared-lift   -0    -
+  soldier-squat-v0-a-10                     7  6   -72   -0.7  -0.6  100 %  not-compared-lift  -11    -
+  soldier-squat-v0-a0                       8  8   -68   -0.7  -0.4  100 %  not-compared-lift   -0    -
   soldier-squat-v0-a20                      6  6   -58   -0.6  -0.3  100 %  not-compared-lift   19    -
   soldier-squat-v30-a-10                    8  8   -39   -0.5  -0.3   99 %  not-compared-lift  -11    -
   soldier-squat-v30-a0                      5  5   -32   -0.6  -0.3  100 %  not-compared-lift   -0    -
