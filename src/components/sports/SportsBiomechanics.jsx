@@ -26,6 +26,10 @@ const SPORTS = ['golf', 'tennis', 'padel', 'baseball', 'cycling', 'rowing', 'ski
 // The raw clip, as filmed. #t=0.1 shows its first frame on iOS when it does not play on its own (Reduce Motion).
 const clipUrl = s => `${BASE_URL}demo/sports/${s}-demo-raw.mp4#t=0.1`;
 
+// The muted attribute itself, not only React's property: iOS lets a clip play on its own only when it is muted, and
+// React writes muted as a property (status convention: WebKit's autoplay policy; to confirm on David's iPhone).
+const muteVideo = el => { if (el) { el.muted = true; el.setAttribute('muted', ''); } };
+
 const SvgVideo = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>;
 const ArrowIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>;
 
@@ -46,6 +50,24 @@ function RatioCalc({ kind, c, fr }) {
   const refText = golf ? `${ref}${NBSP}:${NBSP}1` : `1${NBSP}:${NBSP}${ref}`;
   const [la, lb] = golf ? [c.golfUpShort, c.golfDownShort] : [c.rowDriveShort, c.rowRecoveryShort];
   const ms = v => `${v}${NBSP}ms`;
+  // A segment narrower than its words keeps only its colour: no word is ever cut, and both durations stay on the
+  // sliders' lines below. The bar's width is measured; a word's width is estimated from the type, Geist Mono at
+  // 10.5 px with its tracking (about 7.2 px a character) for the name, 13 px figures (about 7.5 px) for the value, plus
+  // 10 px of padding each side (status convention: display only). Before the first measure every word shows.
+  const barRef = useRef(null);
+  const [barW, setBarW] = useState(0);
+  useEffect(() => {
+    const el = barRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(() => setBarW(el.clientWidth));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const fits = (share, text, perChar) => !barW || (barW - 3) * share >= text.length * perChar + 20;
+  const seg = (v, label, share) => <>
+    {fits(share, label, 7.2) ? <span>{label}</span> : null}
+    {fits(share, ms(v), 7.5) ? <b>{ms(v)}</b> : null}
+  </>;
   return (
     <section className="sc-section sports-calc" data-testid={`sports-calc-${kind}`}>
       <div className="sc-head">
@@ -53,9 +75,9 @@ function RatioCalc({ kind, c, fr }) {
         <span className="sc-head-tags"><span className="sc-tag">{c.calcTag}</span></span>
       </div>
       <p className="sc-caption">{c.fromSliders}</p>
-      <div className="sports-bar" role="img" aria-label={c.barLabel(`${la} ${ms(a)}`, `${lb} ${ms(b)}`)}>
-        <span className={`sports-bar-seg ${golf ? 'is-quiet' : 'is-lamp'}`} style={{ flexGrow: a }}><span>{la}</span><b>{ms(a)}</b></span>
-        <span className={`sports-bar-seg ${golf ? 'is-lamp' : 'is-quiet'}`} style={{ flexGrow: b }}><span>{lb}</span><b>{ms(b)}</b></span>
+      <div className="sports-bar" role="img" aria-label={c.barLabel(`${la} ${ms(a)}`, `${lb} ${ms(b)}`)} ref={barRef}>
+        <span className={`sports-bar-seg ${golf ? 'is-quiet' : 'is-lamp'}`} style={{ flexGrow: a }}>{seg(a, la, a / (a + b))}</span>
+        <span className={`sports-bar-seg ${golf ? 'is-lamp' : 'is-quiet'}`} style={{ flexGrow: b }}>{seg(b, lb, b / (a + b))}</span>
         <span className="sports-bar-ref" style={{ left: `${(refAt * 100).toFixed(2)}%` }} aria-hidden="true" />
       </div>
       <p className="sports-bar-mark" aria-hidden="true"><span style={{ left: `clamp(56px, ${(refAt * 100).toFixed(2)}%, calc(100% - 56px))` }}>{c.refMark(refText)}</span></p>
@@ -84,7 +106,8 @@ export function SportsOwnVideo({ c, video, onClose }) {
         <button type="button" className="btn-ghost is-s press" onClick={onClose} data-testid="sports-close-video">{c.close}</button>
       </div>
       <div className="sc-frame">
-        <video key={video.url} src={video.url} controls playsInline preload="metadata" data-testid="sports-own-video" />
+        {/* #t=0.1 shows the video's first frame on iOS before it plays, as for the demo clips. */}
+        <video key={video.url} src={`${video.url}#t=0.1`} controls playsInline preload="metadata" data-testid="sports-own-video" />
       </div>
       <div className="sc-card sports-own" role="status" data-testid="sports-own-statement">
         <h3 className="sports-own-title">{c.ownHead}</h3>
@@ -112,6 +135,17 @@ export default function SportsBiomechanics({ sport, onClose, onOpenEquine, onOpe
   const ownUrl = useRef(null);
   const [own, setOwn] = useState(null);
   useEffect(() => () => { if (ownUrl.current) URL.revokeObjectURL(ownUrl.current); }, []);
+
+  // A sport opened by its address can sit past the rail's edge: the rail scrolls itself (and only itself, never the
+  // page) so the selected chip is in view, centred when it can be.
+  const railRef = useRef(null);
+  useEffect(() => {
+    const rail = railRef.current, chip = rail?.querySelector('[aria-pressed="true"]');
+    if (!rail || !chip) return;
+    const r = rail.getBoundingClientRect(), k = chip.getBoundingClientRect();
+    const target = rail.scrollLeft + (k.left - r.left) - (r.width - k.width) / 2;
+    rail.scrollLeft = Math.max(0, Math.min(target, rail.scrollWidth - rail.clientWidth));
+  }, []);
   const handleOpen = e => {
     const file = e.target.files?.[0];
     e.target.value = ''; // the same file can be chosen again
@@ -157,7 +191,7 @@ export default function SportsBiomechanics({ sport, onClose, onOpenEquine, onOpe
 
           {/* The sports, one rail: names only, so a chip never promises a measure. */}
           <div className="sc-section sports-rail-section" data-reveal style={{ '--i': 3 }}>
-            <div className="sc-rail" role="group" aria-label={c.railLabel}>
+            <div className="sc-rail" role="group" aria-label={c.railLabel} ref={railRef}>
               {SPORTS.map(k => (
                 <button key={k} type="button" className="sc-chip press" aria-pressed={activeSport === k} onClick={() => { hapticLight(); setActiveSport(k); }} data-testid={`tab-${k}`}>
                   {c.sports[k].name}
@@ -184,7 +218,7 @@ export default function SportsBiomechanics({ sport, onClose, onOpenEquine, onOpe
               <DemoTag fr={fr} />
             </div>
             <div className="sc-frame">
-              <video key={activeSport} src={clipUrl(activeSport)} controls playsInline muted loop autoPlay={!reduced} preload="metadata" className="sports-demo-video" data-testid="sports-demo-player" />
+              <video key={activeSport} ref={muteVideo} src={clipUrl(activeSport)} controls playsInline muted loop autoPlay={!reduced} preload="metadata" className="sports-demo-video" data-testid="sports-demo-player" />
             </div>
             <p className="sc-frame-note is-quiet" data-testid="sports-demo-note">{sp.clip} {c.demoNote}</p>
           </section>

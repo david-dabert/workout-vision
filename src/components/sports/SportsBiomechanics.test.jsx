@@ -43,6 +43,10 @@ const FALSE_CLAIMS = [
   'ELITE', 'Élite', 'Sécuritaire', 'Copy Report', 'Copier', 'Télécharger', 'Download', 'Analyze Video', 'Analyser',
 ];
 
+// French that reads as translated, or claims too much (review of 14 October 2026): "lire" for analyse ("lire une
+// vidéo" is to play it), a heading about what phone video in general cannot do, a first-person button.
+const CALQUES_FR = ['ne lit ', 'lire ', ' lu ', 'Hors de portée', 'ma vidéo', 'Usage de coach', 'home trainer', 'ni l’un'];
+
 describe('the sports lab', () => {
   for (const lang of ['en', 'fr']) {
     for (const sport of SPORTS) {
@@ -57,6 +61,8 @@ describe('the sports lab', () => {
         expect(html).toContain('data-testid="demo-badge"');
         expect(html).toContain('data-testid="sports-reach"');
         for (const w of FALSE_CLAIMS) expect(t, `${sport} ${lang}: ${w}`).not.toContain(w);
+        if (lang === 'fr') for (const w of CALQUES_FR) expect(t, `${sport}: ${w}`).not.toContain(w);
+        expect(t).not.toContain(lang === 'fr' ? 'vidéo de téléphone' : 'Beyond a phone video');
       });
     }
 
@@ -82,7 +88,7 @@ describe('the sports lab', () => {
       const html = decode(renderToStaticMarkup(<mod.SportsOwnVideo c={SPORTS_COPY[lang]} video={{ url: 'blob:y', name: 'swing.mov' }} onClose={() => {}} />));
       const t = text(html);
       expect(html).toContain('data-testid="sports-own-statement"');
-      expect(html).toContain('src="blob:y"');
+      expect(html).toContain('src="blob:y#t=0.1"');
       expect(t).toContain('swing.mov');
       expect(t).not.toMatch(/\d/);
       expect(t).toContain(lang === 'fr' ? 'Pas de mesure sur votre vidéo' : 'No measurement on your video');
