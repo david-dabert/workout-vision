@@ -133,9 +133,12 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {Array} [o.previousSet.reps]
  * @param {Date} [o.previousSet.date]
  * @param {object} [o.planned]  the coach's target, for a set filmed from a programme (programme.js, plannedOf)
+ * @param {boolean} [o.proposed]  a refused set whose count is the app's proposal, confirmed as it stood
+ * @param {'psc'|'universal'|null} [o.proposedBy]  whose proposal: the core's on a refused set, or the universal engine's
+ *   for an exercise the core does not offer (universalProposal.js)
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, rpe = null, pain = null }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, proposedBy = null, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, rpe = null, pain = null }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -256,7 +259,11 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     // The coach's target beside the count, for a set filmed from a programme (Espace pro, 6 October): "Prévu : 3 × 10".
     planned: plannedLine(planned, fr),
     // A set the app refused and the person typed (WP1.6): said so where a correction would be.
-    corrected: source === 'manual' && afterRefusal && proposed
+    // A universal proposal says why the app proposed rather than counted: it does not count the exercise yet (awaiting
+    // David's approval of the words, R10).
+    corrected: source === 'manual' && afterRefusal && proposed && proposedBy === 'universal'
+      ? (fr ? 'Proposé par l’appli, qui ne compte pas encore cet exercice, puis confirmé à la main.' : 'Proposed by the app, which does not count this exercise yet, then confirmed by hand.')
+      : source === 'manual' && afterRefusal && proposed
       ? (fr ? 'Proposé par l’appli, qui n’a pas bien vu le mouvement, puis confirmé à la main.' : 'Proposed by the app, which did not see the movement clearly, then confirmed by hand.')
       : source === 'manual' && afterRefusal
       ? (fr ? 'Saisi à la main : l’appli n’a pas pu compter cette série.' : 'Typed by hand: the app could not count this set.')

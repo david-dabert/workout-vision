@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { shortReps, slowdown, setAccount, ordinal } from '../set-account';
 import { setTempo } from '../tempo';
 

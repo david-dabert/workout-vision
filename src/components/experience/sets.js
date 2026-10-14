@@ -88,6 +88,16 @@ export function countedBy(w) {
 }
 
 /**
+ * Whose proposal a set's count is: 'psc' (the core's, on a refused set) or 'universal' (the universal engine's, for an
+ * exercise the core does not offer, universalProposal.js), when the person confirmed it as it stood after a refusal;
+ * null for a count typed or changed by hand, or counted (saved-set.js; History.jsx and the report read this).
+ */
+export function proposedBy(w) {
+  if (w?.source !== 'manual' || !Number.isFinite(w.proposal?.reps) || w.proposal.reps !== w.reps) return null;
+  return w.proposal.by === 'universal' ? 'universal' : 'psc';
+}
+
+/**
  * Show the choice after at most `wait` ms, then publish any late storage result
  * so a slow first read cannot hide access to the visitor's saved sets.
  * undefined while waiting, null when storage has not answered or failed.

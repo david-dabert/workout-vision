@@ -3,6 +3,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { CHANNEL_POINTS, MIN_SEEN_SHARE, seenShare, universalAsProposal } from '../universalProposal';
 import { savedSet } from '../../components/experience/saved-set';
 import { RESULT } from '../../components/experience/result-copy';
+import { validateWorkout } from '../validateSchema';
+import { proposedBy } from '../../components/experience/sets';
+import { measuresFile, reportSheet } from '../../components/experience/report-sheet';
+
 
 // An exercise the core does not offer is read by the universal engine, whose number is never a counted result
 // (counting research of 14 October 2026: it gave David's prone Y raise 21 for 10, from wrists seen on 44-46 % of the
@@ -55,6 +59,41 @@ describe('the universal read is never a counted result', () => {
     const r = universalAsProposal(read(100, 80), 'bent_over_rear_delt_raise');
     const w = savedSet({ result: r, lift: 'bent_over_rear_delt_raise', n: 21, corrected: true, manual: true, proposal: 21 });
     expect(w).toMatchObject({ reps: 21, source: 'manual', machineResult: null, repDetails: [], proposal: { reps: 21, by: 'universal' } });
+  });
+});
+
+// The read path (second round of the honesty pass, 14 October 2026): every read of a stored set goes through
+// validateWorkout (storage.js), which dropped any proposal but PSC's, so a confirmed universal proposal came back as a
+// count typed by hand in the history, the report, the PDF and the JSON.
+describe('a confirmed universal proposal keeps its provenance once read back', () => {
+  const lift = 'bent_over_rear_delt_raise';
+  const stored = (n, proposal) => ({ id: 'u1', createdAt: 1760400000000, ...savedSet({ result: universalAsProposal(read(100, 80), lift), lift, n, corrected: true, manual: true, proposal, now: new Date('2026-10-14T10:00:00Z') }) });
+  it('the read keeps it, marked as the universal engine\'s; PSC\'s too; any other is dropped', () => {
+    const back = validateWorkout(stored(21, 21)).sanitized;
+    expect(back.proposal).toEqual({ reps: 21, by: 'universal' });
+    expect(proposedBy(back)).toBe('universal');
+    expect(validateWorkout({ ...stored(21, 21), proposal: { reps: 21, by: 'psc' } }).sanitized.proposal).toEqual({ reps: 21, by: 'psc' });
+    expect(validateWorkout({ ...stored(21, 21), proposal: { reps: 21, by: 'someone' } }).sanitized.proposal).toBeUndefined();
+  });
+  it('a number changed from the proposal is the person\'s own, typed', () => {
+    const back = validateWorkout(stored(9, 21)).sanitized;
+    expect(back.proposal).toEqual({ reps: 21, by: 'universal' });
+    expect(proposedBy(back)).toBeNull();
+  });
+  it('the report and its JSON say who proposed it and why the app proposed rather than counted', () => {
+    const back = validateWorkout(stored(21, 21)).sanitized;
+    const props = { source: back.source, afterRefusal: back.afterRefusal, proposed: proposedBy(back) !== null, proposedBy: proposedBy(back) };
+    const base = { lang: 'fr', date: new Date('2026-10-14T10:00:00Z'), notes: '', liftName: 'Oiseau', count: back.reps, counted: null, reps: [], lift, ...props };
+    const fr = reportSheet(base);
+    expect(fr.details).toContainEqual(['Saisie', 'proposée par l’appli, confirmée par la personne']);
+    expect(fr.corrected).toBe('Proposé par l’appli, qui ne compte pas encore cet exercice, puis confirmé à la main.');
+    expect(JSON.stringify(fr)).not.toMatch(/à la main, l’appli n’a pas pu compter|Saisi à la main/);
+    expect(reportSheet({ ...base, lang: 'en' }).corrected).toBe('Proposed by the app, which does not count this exercise yet, then confirmed by hand.');
+    const file = measuresFile({ fr: true, lift, date: base.date, count: back.reps, ...props });
+    expect(file.count).toEqual({ value: 21, source: 'proposé par l’appli, qui ne compte pas encore cet exercice, puis confirmé par la personne' });
+    expect(file.countedByApp).toBeNull();
+    expect(file.reps).toBeNull();
+    expect(measuresFile({ fr: false, lift, date: base.date, count: back.reps, ...props }).count.source).toBe('proposed by the app, which does not count this exercise yet, then confirmed by the person');
   });
 });
 
