@@ -144,6 +144,18 @@ describe('records from before the honesty pass', () => {
   });
 });
 
+describe('the office’s words (second review, R10)', () => {
+  it('have no "&", no "(Pack)" and no Title Case label; the client screen takes its labels from the copy', async () => {
+    const { OFFICE } = await import('./office-copy');
+    const strings = Object.values(OFFICE.fr).filter(v => typeof v === 'string');
+    expect(strings.filter(v => /\s&\s|\(Pack\)/.test(v))).toEqual([]);
+    expect(strings.filter(v => /^[A-ZÉÂ][a-zéèêàâûôî’']+ (?:[A-ZÉ][a-zéèêàâ]+)(?: |$)/.test(v) && !/Open Food Facts|Mifflin/.test(v))).toEqual([]);
+    const fs = await import('node:fs');
+    const src = fs.readFileSync(new URL('./CoachSuite.jsx', import.meta.url), 'utf8');
+    expect(src).not.toMatch(/Nouveau Client|Prénom & Nom|Âge & Sexe|Notes & Contraintes|Carnet Coaching|Séance Livrée|Séances Livrées|Objectifs Déclarés|Observations & Pathologies|Enregistrer le Client|Vue Profil|Vue Face/);
+  });
+});
+
 describe('strengthening by area (PHY-1)', () => {
   it('claims no treatment or validation: no rationale is left, the areas name no injury', async () => {
     const { PHYSIO_CATALOG, PHYSIO_REGIONS } = await import('../../lib/physioCatalog');

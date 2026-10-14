@@ -272,7 +272,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
               onClick={() => { hapticLight(); setIsAddingClient(true); }}
               data-testid="btn-add-client"
             >
-              + {fr ? 'Nouveau Client' : 'Add Client'}
+              + {t.addClient}
             </button>
           </div>
 
@@ -280,19 +280,19 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
           {isAddingClient && (
             <form className="add-client-card" onSubmit={handleSaveNewClient} data-testid="add-client-form">
               <div className="card-top-row">
-                <b>{fr ? 'Fiche Nouveau Client' : 'New Client Profile'}</b>
+                <b>{t.newClientHead}</b>
                 <button type="button" className="text-close-btn" onClick={() => setIsAddingClient(false)} aria-label={t.close}><SvgClose /></button>
               </div>
               <div className="form-grid">
                 <div className="input-group">
-                  <label htmlFor="nc-name">{fr ? 'Prénom & Nom' : 'Full Name'}</label>
-                  <input id="nc-name" type="text" required placeholder={fr ? 'ex.\u00A0: Alexandre Dupont' : 'e.g. Alex Smith'} value={newClient.name} onChange={setNew('name')} />
+                  <label htmlFor="nc-name">{t.fFullName}</label>
+                  <input id="nc-name" type="text" required placeholder={t.fFullNamePh} value={newClient.name} onChange={setNew('name')} />
                 </div>
                 <div className="input-group">
-                  <label htmlFor="nc-age">{fr ? 'Âge & Sexe' : 'Age & Sex'}</label>
+                  <label htmlFor="nc-age">{t.fAgeSex}</label>
                   <div className="inline-inputs">
-                    <input id="nc-age" type="number" inputMode="numeric" placeholder={fr ? 'Âge' : 'Age'} value={newClient.age} onChange={setNew('age')} />
-                    <select value={newClient.sex} onChange={setNew('sex')} aria-label={fr ? 'Sexe' : 'Sex'}>
+                    <input id="nc-age" type="number" inputMode="numeric" placeholder={t.fAge} value={newClient.age} onChange={setNew('age')} />
+                    <select value={newClient.sex} onChange={setNew('sex')} aria-label={t.fSex}>
                       <option value="">{t.sexUnknown}</option>
                       <option value="female">{fr ? 'Femme' : 'Female'}</option>
                       <option value="male">{fr ? 'Homme' : 'Male'}</option>
@@ -300,10 +300,10 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   </div>
                 </div>
                 <div className="input-group">
-                  <label htmlFor="nc-weight">{fr ? 'Poids (kg) & Taille (cm)' : 'Weight (kg) & Height (cm)'}</label>
+                  <label htmlFor="nc-weight">{t.fBody}</label>
                   <div className="inline-inputs">
-                    <input id="nc-weight" type="number" inputMode="decimal" placeholder={fr ? 'Poids (kg)' : 'Weight (kg)'} value={newClient.weight} onChange={setNew('weight')} />
-                    <input type="number" inputMode="numeric" placeholder={fr ? 'Taille (cm)' : 'Height (cm)'} aria-label={fr ? 'Taille (cm)' : 'Height (cm)'} value={newClient.height} onChange={setNew('height')} />
+                    <input id="nc-weight" type="number" inputMode="decimal" placeholder={t.fWeight} value={newClient.weight} onChange={setNew('weight')} />
+                    <input type="number" inputMode="numeric" placeholder={t.fHeight} aria-label={t.fHeight} value={newClient.height} onChange={setNew('height')} />
                   </div>
                 </div>
                 <div className="input-group">
@@ -311,21 +311,21 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   <input id="nc-address" type="text" placeholder={t.fAddressPh} value={newClient.address} onChange={setNew('address')} />
                 </div>
                 <div className="input-group">
-                  <label htmlFor="nc-goals">{fr ? 'Objectifs' : 'Goals'}</label>
-                  <input id="nc-goals" type="text" placeholder={fr ? 'ex.\u00A0: hypertrophie du dos, reprise après une blessure à l’épaule' : 'e.g. back hypertrophy'} value={newClient.goals} onChange={setNew('goals')} />
+                  <label htmlFor="nc-goals">{t.fGoals}</label>
+                  <input id="nc-goals" type="text" placeholder={t.fGoalsPh} value={newClient.goals} onChange={setNew('goals')} />
                 </div>
                 <div className="input-group full-width">
-                  <label htmlFor="nc-notes">{fr ? 'Notes & Contraintes' : 'Coach Notes'}</label>
-                  <textarea id="nc-notes" rows={2} placeholder={fr ? 'Antécédents articulaires, consignes spécifiques...' : 'Joint history, specific instructions...'} value={newClient.notes} onChange={setNew('notes')} />
+                  <label htmlFor="nc-notes">{t.fNotes}</label>
+                  <textarea id="nc-notes" rows={2} placeholder={t.fNotesPh} value={newClient.notes} onChange={setNew('notes')} />
                   <span className="office-hint is-quiet">{t.notesLocal}</span>
                 </div>
               </div>
               <div className="form-actions-row">
                 <button type="button" className="btn-cancel press" onClick={() => setIsAddingClient(false)}>
-                  {fr ? 'Annuler' : 'Cancel'}
+                  {t.cancel}
                 </button>
                 <button type="submit" className="btn-save press">
-                  {fr ? 'Enregistrer le Client' : 'Save Client'}
+                  {t.saveClient}
                 </button>
               </div>
             </form>
@@ -387,7 +387,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                         onClick={() => { hapticLight(); setConfirmDelete(true); }}
                         data-testid="btn-delete-client"
                       >
-                        {fr ? 'Supprimer' : 'Delete'}
+                        {t.deleteClient}
                       </button>
                     )}
                   </div>
@@ -396,8 +396,8 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                     <div className="office-missing" role="alertdialog" aria-label={t.deleteAsk(selectedClient.name)} data-testid="confirm-delete">
                       <p className="office-strong">{t.deleteAsk(selectedClient.name)}</p>
                       <div className="form-actions-row">
-                        <button type="button" className="btn-cancel press" onClick={() => setConfirmDelete(false)}>{fr ? 'Annuler' : 'Cancel'}</button>
-                        <button type="button" className="btn-save press" onClick={() => handleDeleteClient(selectedClient.id)} data-testid="btn-delete-yes">{fr ? 'Supprimer' : 'Delete'}</button>
+                        <button type="button" className="btn-cancel press" onClick={() => setConfirmDelete(false)}>{t.cancel}</button>
+                        <button type="button" className="btn-save press" onClick={() => handleDeleteClient(selectedClient.id)} data-testid="btn-delete-yes">{t.deleteClient}</button>
                       </div>
                     </div>
                   )}
@@ -408,16 +408,16 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                       <>
                         <div className="carnet-top-row">
                           <div>
-                            <span className="carnet-label">{fr ? 'Carnet Coaching (Pack)' : 'Coaching Pack Credits'}</span>
+                            <span className="carnet-label">{t.carnetLabel}</span>
                             <div className="carnet-fraction">
-                              <b>{Math.min(clientCarnet.completedCount, clientCarnet.totalPurchased)}</b> / {clientCarnet.totalPurchased} {fr ? 'séances effectuées' : 'sessions delivered'}
+                              <b>{Math.min(clientCarnet.completedCount, clientCarnet.totalPurchased)}</b> / {clientCarnet.totalPurchased} {t.carnetDoneCount}
                             </div>
                             {/* A pack saved before 14 October 2026 has no date: the first version wrote a pack of 10 at 500 € for any
                                 client whose session was logged. It is shown to check, its price not repeated. */}
                             <span className="client-card-sub">{clientCarnet.boughtOn ? t.carnetBought(paperDate(clientCarnet.boughtOn, fr), clientCarnet.pricePerPack ? euros(clientCarnet.pricePerPack, fr) : '') : t.carnetLegacy}</span>
                           </div>
                           <span className="carnet-remaining-badge">
-                            {carnetLeft} {fr ? 'restantes' : 'remaining'}
+                            {carnetLeft} {t.carnetLeft}
                           </span>
                         </div>
                         <div className="carnet-progress-bar">
@@ -446,7 +446,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                           <input id="cf-date" type="date" value={carnetForm.boughtOn} onChange={e => setCarnetForm(f => ({ ...f, boughtOn: e.target.value }))} />
                         </div>
                         <div className="form-actions-row">
-                          <button type="button" className="btn-cancel press" onClick={() => setCarnetForm(null)}>{fr ? 'Annuler' : 'Cancel'}</button>
+                          <button type="button" className="btn-cancel press" onClick={() => setCarnetForm(null)}>{t.cancel}</button>
                           <button type="button" className="btn-save press" onClick={handleSaveCarnet} data-testid="btn-save-carnet">{t.confirm}</button>
                         </div>
                       </div>
@@ -465,14 +465,14 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                         onClick={() => { hapticLight(); setIsLoggingSession(!isLoggingSession); }}
                         data-testid="btn-log-session"
                       >
-                        + {fr ? 'Décompter une Séance Livrée' : 'Log Delivered Session'}
+                        + {t.logSession}
                       </button>
                     </div>
 
                     {isLoggingSession && (
                       <div className="log-session-box">
-                        <label htmlFor="ls-type">{fr ? 'Type de Séance & Notes' : 'Session Notes'}</label>
-                        <input id="ls-type" type="text" value={sessionTypeInput} onChange={e => setSessionTypeInput(e.target.value)} placeholder={fr ? 'Coaching 1 h' : 'Coaching 1 h'} />
+                        <label htmlFor="ls-type">{t.sessionTypeNotes}</label>
+                        <input id="ls-type" type="text" value={sessionTypeInput} onChange={e => setSessionTypeInput(e.target.value)} placeholder={t.sessionTypePh} />
                         <div className="input-group">
                           <label htmlFor="ls-minutes">{t.sessionDuration}</label>
                           <select id="ls-minutes" value={sessionMinutes} onChange={e => setSessionMinutes(e.target.value)}>
@@ -483,15 +483,15 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                           rows={2}
                           value={sessionNotesInput}
                           onChange={e => setSessionNotesInput(e.target.value)}
-                          placeholder={fr ? 'Charge augmentée, excellente technique squat...' : 'Progression notes...'}
-                          aria-label={fr ? 'Notes' : 'Notes'}
+                          placeholder={t.sessionNotesPh}
+                          aria-label={t.sessionTypeNotes}
                         />
                         <div className="form-actions-row">
                           <button type="button" className="btn-cancel press" onClick={() => setIsLoggingSession(false)}>
-                            {fr ? 'Annuler' : 'Cancel'}
+                            {t.cancel}
                           </button>
                           <button type="button" className="btn-save press" onClick={handleLogDeliveredSession} data-testid="btn-confirm-session">
-                            {fr ? 'Confirmer la séance' : 'Confirm Session'}
+                            {t.confirmSession}
                           </button>
                         </div>
                       </div>
@@ -501,7 +501,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   {/* Past Sessions History */}
                   {clientSessionsList.length > 0 && (
                     <div className="session-history-block">
-                      <span className="detail-box-label">{fr ? 'Historique des Séances Livrées' : 'Delivered Session Log'}</span>
+                      <span className="detail-box-label">{t.sessionsHistory}</span>
                       <div className="session-cards-list">
                         {clientSessionsList.map(s => (
                           <div key={s.id} className="session-history-item">
@@ -518,11 +518,11 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
 
                   <div className="detail-cards-grid">
                     <div className="detail-box">
-                      <span className="detail-box-label">{fr ? 'Objectifs Déclarés' : 'Training Goals'}</span>
+                      <span className="detail-box-label">{t.goalsHead}</span>
                       <p>{selectedClient.goals || t.goalsNone}</p>
                     </div>
                     <div className="detail-box">
-                      <span className="detail-box-label">{fr ? 'Observations & Pathologies' : 'Coach Notes'}</span>
+                      <span className="detail-box-label">{t.notesHead}</span>
                       <p>{selectedClient.notes || t.notesNone}</p>
                       <p className="office-hint is-quiet">{t.notesLocal}</p>
                     </div>
@@ -663,18 +663,18 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                 <div className="physio-card-top">
                   <span className="physio-region-tag">{fr ? item.regionLabelFr : item.regionLabelEn}</span>
                   <span className="camera-view-tag">
-                    <SvgVideo />{item.cameraView === 'side' ? (fr ? 'Vue Profil' : 'Side View') : (fr ? 'Vue Face' : 'Front View')}
+                    <SvgVideo />{item.cameraView === 'side' ? t.viewSide : t.viewFront}
                   </span>
                 </div>
                 <h4 className="physio-ex-name">{fr ? item.nameFr : item.nameEn}</h4>
                 <p className="physio-rationale">{t.physioMuscles}{fr ? '\u00A0: ' : ': '}{item.primaryMuscles.join(', ')}</p>
                 <div className="physio-progression-box">
                   <div className="prog-line">
-                    <span className="prog-badge reg">{fr ? 'Régression' : 'Regression'}</span>
+                    <span className="prog-badge reg">{t.regression}</span>
                     <span>{item.regression}</span>
                   </div>
                   <div className="prog-line">
-                    <span className="prog-badge prog">{fr ? 'Progression' : 'Progression'}</span>
+                    <span className="prog-badge prog">{t.progression}</span>
                     <span>{item.progression}</span>
                   </div>
                 </div>

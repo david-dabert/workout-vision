@@ -237,11 +237,11 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           {/* Why the app exists, in David's words (About.jsx). */}
           {onAbout && <button type="button" className="about-link press" onClick={onAbout} data-testid="about-link">{ABOUT[fr ? 'fr' : 'en'].link}</button>}
           {onManifesto && <button type="button" className="about-link press" onClick={onManifesto} data-testid="manifesto-link">{fr ? 'Le Manifeste' : 'Manifesto'}</button>}
-          {onCoaches && <button type="button" className="about-link press" onClick={onCoaches} data-testid="coaches-link">{fr ? 'Coaches & Kinés' : 'Find Coach'}</button>}
+          {onCoaches && <button type="button" className="about-link press" onClick={onCoaches} data-testid="coaches-link">{fr ? 'Coachs et kinés (démo)' : 'Coaches (demo)'}</button>}{/* As their rows above say (second review, 14 October 2026); French awaiting David's approval (R10) */}
           {onEquine && <button type="button" className="about-link press" onClick={onEquine} data-testid="equine-link">{fr ? 'Allures Équines' : 'Equine AI'}</button>}
           {onSports && <button type="button" className="about-link press" onClick={onSports} data-testid="sports-link">{fr ? 'Golf & Tennis' : 'Sports AI'}</button>}
-          {onBuddies && <button type="button" className="about-link press" onClick={onBuddies} data-testid="buddies-link">{fr ? 'Gym Buddy' : 'Gym Buddy'}</button>}
-          {onErgonomics && <button type="button" className="about-link press" onClick={onErgonomics} data-testid="ergo-link">{fr ? 'Ergonomie' : 'Ergonomics'}</button>}
+          {onBuddies && <button type="button" className="about-link press" onClick={onBuddies} data-testid="buddies-link">{fr ? 'Partenaires de salle (démo)' : 'Gym partners (demo)'}</button>}
+          {onErgonomics && <button type="button" className="about-link press" onClick={onErgonomics} data-testid="ergo-link">{fr ? 'Calculateur NIOSH' : 'NIOSH calculator'}</button>}
           {onChat && <button type="button" className="about-link press" onClick={onChat} data-testid="chat-link">{fr ? 'Messagerie (démo)' : 'Messaging (demo)'}</button>}{/* HOME-1: no "P2P"; French awaiting David's approval (R10) */}
         </div>
       </div>

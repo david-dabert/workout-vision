@@ -31,6 +31,12 @@ export const PRO = {
     // The builder (Pro.jsx).
     eyebrow: 'Espace pro',
     title: 'Programmes',
+    // The two tabs, and the coach's office's own header (second review of 14 October 2026: the office was "Espace
+    // Coach Business" under a header about building a session). French awaiting David's approval (R10).
+    programmesTab: 'Programmes',
+    officeTab: 'Bureau du coach',
+    officeTitle: 'Bureau du coach',
+    officeSub: 'Vos clients, votre comptabilité, la nutrition et le renforcement par zone. Tout reste sur ce téléphone, sauf un code-barres que vous recherchez sur Open Food Facts.',
     sub: 'Composez une séance pour un client, puis envoyez-la en PDF ou en lien. Il l’ouvre dans l’appli et filme chaque série : ses répétitions sont comptées sur son téléphone.',
     users: 'Pour les coachs et les kinésithérapeutes.',
     privacy: 'Rien n’est envoyé : vos programmes restent sur ce téléphone jusqu’à ce que vous les partagiez.',
@@ -187,6 +193,10 @@ export const PRO = {
     programmeRow: 'Your programme',
     eyebrow: 'Pro',
     title: 'Programmes',
+    programmesTab: 'Programmes',
+    officeTab: 'Coach’s office',
+    officeTitle: 'Coach’s office',
+    officeSub: 'Your clients, your accounts, nutrition and strengthening by area. Everything stays on this phone, except a barcode you look up on Open Food Facts.',
     sub: 'Build a session for a client, then send it as a PDF or a link. They open it in the app and film each set: their reps are counted on their phone.',
     users: 'For coaches and physiotherapists.',
     privacy: 'Nothing is sent: your programmes stay on this phone until you share them.',

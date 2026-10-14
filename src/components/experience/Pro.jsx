@@ -135,25 +135,27 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, on
         <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
       </div>
       <p className="eyebrow pro-eyebrow" data-reveal style={{ '--i': 0 }}>{c.eyebrow}</p>
-      <h1 className="title" data-reveal style={{ '--i': 0 }}>{c.title}</h1>
-      <p className="sub pro-sub" data-reveal style={{ '--i': 1 }}>{c.sub}</p>
+      <h1 className="title" data-reveal style={{ '--i': 0 }}>{proTab === 'business' ? c.officeTitle : c.title}</h1>
+      <p className="sub pro-sub" data-reveal style={{ '--i': 1 }}>{proTab === 'business' ? c.officeSub : c.sub}</p>
 
       <div className="pro-mode-nav" data-reveal style={{ '--i': 1.5 }}>
         <button
           type="button"
           className={`pro-mode-pill press ${proTab === 'programmes' ? 'is-active' : ''}`}
+          aria-pressed={proTab === 'programmes'}
           onClick={() => onSetProTab('programmes')}
           data-testid="tab-pro-programmes"
         >
-          <SvgClipboard />{fr ? 'Programmes & Fiches' : 'Workout Programmes'}
+          <SvgClipboard />{c.programmesTab}
         </button>
         <button
           type="button"
           className={`pro-mode-pill press ${proTab === 'business' ? 'is-active' : ''}`}
+          aria-pressed={proTab === 'business'}
           onClick={() => onSetProTab('business')}
           data-testid="tab-pro-business"
         >
-          <SvgBriefcase />{fr ? 'Espace Coach Business' : 'Coach Business OS'}
+          <SvgBriefcase />{c.officeTab}
         </button>
       </div>
 
