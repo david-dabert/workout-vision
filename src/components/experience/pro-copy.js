@@ -124,7 +124,8 @@ export const PRO = {
     perOptions: { day: 'fois par jour', week: 'fois par semaine' },
     notCountedTag: 'Non compté',
     guideOnlyPro: `L’appli ne compte pas cet exercice${NB}: votre client le fera sans le filmer.`,
-    holdPro: `L’appli ne compte pas les maintiens${NB}: votre client le fera sans le filmer.`,
+    // A counted exercise set as a hold (review of 14 October 2026: "les maintiens… le fera" left "le" without its noun).
+    holdPro: `L’appli ne chronomètre pas ce maintien${NB}: votre client tiendra la position sans filmer.`,
     pickTitle: 'Tous les exercices du guide',
     pickNote: `Les exercices marqués «${NB}Non compté${NB}» se font sans filmer${NB}: votre client filme les autres.`,
     // The programme's PDF (programme-pdf.js).
@@ -137,14 +138,17 @@ export const PRO = {
     pdfFoot: 'Filmez chaque série avec votre téléphone : les répétitions sont comptées, et le rapport de séance montre le prévu à côté du compté.',
     // The exercise sheet's PDF (14 October 2026; French awaiting David's approval, R10): the frequency, each exercise's
     // details beside its target, the caption of a borrowed drawing, the foot when some exercises are done without
-    // filming, and the drawings' credit (CC BY-SA 4.0, as the task set it).
+    // filming, and the drawings' credit. The credit (CC BY-SA 4.0, section 3(a)(1)): Bryl Lim's line as the task set it;
+    // then, when the sheet prints a frame that adapts another creator's artwork (`after`, guide-sources.json: 76 first
+    // poses after Everkinetic), that creator; and that the drawings were changed for print (strokes recoloured in ink,
+    // laid on the paper, kept as JPEG: sheet-drawings.js). Review of 14 October 2026: the line named Bryl Lim alone.
     pdfFrequency: 'Fréquence',
     pdfDetails: (rest, holdSec, side, filmed) => capital([
       ...(holdSec > 0 ? ['maintien'] : []), rest ? `récup.${NB}${restFr(rest)}` : restFr(rest), ...sideWords(SIDE_FR, side), ...(filmed ? [] : ['sans filmer']),
     ].join(DETAIL_JOIN)),
     pdfSimilar: 'Dessin d’un mouvement proche',
     pdfFootSome: `Filmez chaque série, sauf mention «${NB}sans filmer${NB}»${NB}: les répétitions sont comptées, et le rapport de séance montre le prévu à côté du compté.`,
-    pdfCredit: `Dessins${NB}: Bryl Lim, workout-guide, CC BY-SA 4.0`,
+    pdfCredit: (after = []) => `Dessins${NB}: Bryl Lim, workout-guide, CC BY-SA 4.0. ${after.length ? `Certains d’après ${after.join(' et ')}, tous adaptés pour l’impression.` : 'Adaptés pour l’impression.'}`,
     fileName: 'programme',
     // The client's programme (Programme.jsx).
     clientEyebrow: 'Programme',
@@ -159,7 +163,7 @@ export const PRO = {
     notCountedPro: `L’appli ne compte plus cet exercice${NB}: votre client le fera sans le filmer.`,
     // The exercise sheet in the client's programme (14 October 2026; French awaiting David's approval, R10).
     guideOnly: `L’appli ne compte pas cet exercice${NB}: faites-le sans le filmer.`,
-    holdNotCounted: `L’appli ne compte pas les maintiens${NB}: faites-le sans le filmer.`,
+    holdNotCounted: `L’appli ne chronomètre pas ce maintien${NB}: tenez la position sans filmer.`,
     sideText: SIDE_FR,
     frequency: (n, per) => `${n}${NB}fois par ${per === 'day' ? 'jour' : 'semaine'}`,
     holdTarget: (sets, s) => `${sets}${NB}×${NB}${restFr(s)}`,
@@ -318,7 +322,7 @@ export const PRO = {
     perOptions: { day: 'times a day', week: 'times a week' },
     notCountedTag: 'Not counted',
     guideOnlyPro: 'The app does not count this exercise: your client will do it without filming it.',
-    holdPro: 'The app does not count holds: your client will do it without filming it.',
+    holdPro: 'The app does not time this hold: your client will hold the position without filming.',
     pickTitle: 'Every exercise in the guide',
     pickNote: 'Exercises marked “Not counted” are done without filming: your client films the others.',
     pdfKicker: 'Programme',
@@ -333,7 +337,7 @@ export const PRO = {
     ].join(DETAIL_JOIN)),
     pdfSimilar: 'Drawing of a similar movement',
     pdfFootSome: 'Film each set, unless marked “without filming”: the reps are counted, and the session report shows what was planned beside what was counted.',
-    pdfCredit: 'Drawings: Bryl Lim, workout-guide, CC BY-SA 4.0',
+    pdfCredit: (after = []) => `Drawings: Bryl Lim, workout-guide, CC BY-SA 4.0. ${after.length ? `Some after ${after.join(' and ')}, all adapted for print.` : 'Adapted for print.'}`,
     fileName: 'programme',
     clientEyebrow: 'Programme',
     whoLine: who => `For ${who}`,
@@ -346,7 +350,7 @@ export const PRO = {
     notCounted: 'The app no longer counts this exercise: do it without filming it.',
     notCountedPro: 'The app no longer counts this exercise: your client will do it without filming it.',
     guideOnly: 'The app does not count this exercise: do it without filming it.',
-    holdNotCounted: 'The app does not count holds: do it without filming it.',
+    holdNotCounted: 'The app does not time this hold: hold the position without filming.',
     sideText: SIDE_EN,
     frequency: (n, per) => `${n === 1 ? 'Once' : n === 2 ? 'Twice' : `${n} times`} a ${per === 'day' ? 'day' : 'week'}`,
     holdTarget: (sets, s) => `${sets}${NB}×${NB}${restEn(s)}`,
@@ -423,6 +427,7 @@ export function allStrings(lang) {
     [c.frequency, [[3, 'week'], [1, 'day'], [2, 'week']]],
     [c.pdfDetails, [[45, 45, 'each', false], [90, 0, 'both', true], [0, 0, 'left', false]]],
     [c.targetLine, [[3, 10, 90, 45, 'each'], [3, 10, 90, 0, 'right'], [3, 10, 0]]],
+    [c.pdfCredit, [[[]], [['Everkinetic']]]],
   ]);
   const walk = v => {
     if (typeof v === 'string') out.push(v);

@@ -97,6 +97,30 @@ describe('the exercise sheet in the builder', () => {
   });
 });
 
+// The coach's picker lists every exercise of the guide; it keeps the list's honesty line (what the app counts is
+// experimental unless marked Beta), then says why some are not counted (review of 14 October 2026).
+describe('the coach’s exercise picker', () => {
+  const NOTES = {
+    fr: ['Sauf mention Bêta, les exercices comptés sont expérimentaux\u00A0: nous apprenons encore à les compter.', 'Sauf mention Bêta, ces exercices sont expérimentaux\u00A0: nous apprenons encore à les compter.'],
+    en: ['Unless marked Beta, the exercises we count are experimental: we are still learning to count them.', 'Unless marked Beta, these exercises are experimental: we are still learning to count them.'],
+  };
+  async function list(lang, props) {
+    stubs(lang);
+    const { LanguageProvider } = await import('../../../lib/LanguageContext');
+    const { default: ExerciseList } = await import('../ExerciseList.jsx');
+    const html = renderToStaticMarkup(<LanguageProvider><ExerciseList onChoose={() => {}} {...props} /></LanguageProvider>);
+    return /<p class="all-note">(.*?)<\/p>/.exec(html)[1].replace(/<!-- -->/g, '');
+  }
+  for (const lang of ['fr', 'en']) {
+    it(`says the counted exercises are experimental, then what "not counted" means (${lang})`, async () => {
+      const c = PRO[lang], [all, counted] = NOTES[lang];
+      expect(await list(lang, { all: true, copy: { title: c.pickTitle, note: c.pickNote, tag: c.notCountedTag } })).toBe(`${all} ${c.pickNote}`);
+      // The choice's list, unchanged.
+      expect(await list(lang, {})).toBe(counted);
+    });
+  }
+});
+
 describe('the exercise sheet in the client’s programme', () => {
   for (const lang of ['fr', 'en']) {
     it(`films only what the app counts in reps, and shows the rest with its target and why (${lang})`, async () => {

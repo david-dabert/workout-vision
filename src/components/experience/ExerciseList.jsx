@@ -35,9 +35,23 @@ const MUSCLE_FR = {
 // Each exercise's words for the search (search-text.js), cut once: its names, equipment and muscles in both languages.
 const WORDS = new Map([...ENTRIES, ...ALL].map(e => [e.key, searchWords([e.fr, e.name, ...e.aliases, e.equipment, EQUIPMENT[e.equipment], ...e.muscles, ...e.muscles.map(m => MUSCLE_FR[m] || '')].join(' '))]));
 
+// The list's honesty line: unless marked Beta, what the app counts is experimental (R8). The coach's picker keeps it
+// (review of 14 October 2026: the picker had lost it with the exercise sheet), said of the counted exercises only,
+// since it lists the guide's others too; copy.note follows it there. EXPERIMENTAL_ALL: French awaiting David's
+// approval (R10).
+const EXPERIMENTAL = {
+  fr: 'Sauf mention Bêta, ces exercices sont expérimentaux\u00A0: nous apprenons encore à les compter.',
+  en: 'Unless marked Beta, these exercises are experimental: we are still learning to count them.',
+};
+const EXPERIMENTAL_ALL = {
+  fr: 'Sauf mention Bêta, les exercices comptés sont expérimentaux\u00A0: nous apprenons encore à les compter.',
+  en: 'Unless marked Beta, the exercises we count are experimental: we are still learning to count them.',
+};
+
 /**
  * all: every exercise of the guide (the coach's picker, Pro.jsx), each the app does not count tagged copy.tag, under
- * copy.title and copy.note; otherwise the exercises the app counts (the choice's list, Choice.jsx).
+ * copy.title, the honesty line (EXPERIMENTAL_ALL) and copy.note; otherwise the exercises the app counts (the choice's
+ * list, Choice.jsx), under the honesty line.
  */
 export default function ExerciseList({ onChoose, all = false, copy = null }) {
   const { lang } = useT(), fr = lang === 'fr';
@@ -50,7 +64,7 @@ export default function ExerciseList({ onChoose, all = false, copy = null }) {
     .sort((a, b) => (tierOf(b.key) === 'beta') - (tierOf(a.key) === 'beta') || name(a).localeCompare(name(b), fr ? 'fr' : 'en'));
   return <section className="all-exercises" aria-labelledby="all-exercises-title">
     <h2 id="all-exercises-title" className="all-title">{all && copy ? copy.title : fr ? 'Tous les exercices comptés' : 'Every exercise we count'}</h2>
-    <p className="all-note">{all && copy ? copy.note : fr ? 'Sauf mention Bêta, ces exercices sont expérimentaux\u00A0: nous apprenons encore à les compter.' : 'Unless marked Beta, these exercises are experimental: we are still learning to count them.'}</p>
+    <p className="all-note">{(all ? EXPERIMENTAL_ALL : EXPERIMENTAL)[fr ? 'fr' : 'en']}{all && copy?.note ? ` ${copy.note}` : ''}</p>
     <div className="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg><label className="sr" htmlFor="all-search">{fr ? 'Rechercher un exercice' : 'Search exercises'}</label>
       <input id="all-search" type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder={fr ? 'Nom, muscle, matériel…' : 'Name, muscle, equipment…'} /></div>
     <p className="list-head" role="status">{list.length} / {entries.length} {fr ? 'exercices' : 'exercises'}</p>

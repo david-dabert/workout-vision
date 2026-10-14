@@ -118,23 +118,31 @@ export function programmeOf(draft) {
 }
 
 /**
- * The compact form the link carries: { v: 1, t, w?, n?, x: [[key, sets, reps, rest, note?], ...], f?, h?, s? }.
+ * The compact form the link carries: { v: 1 or 2, t, w?, n?, x: [[key, sets, reps, rest, note?], ...], f?, h?, s? }.
  * The exercise sheet (14 October 2026) added three keys after x, each only when used, so a programme without them is
  * written byte for byte as before (programme-compat.test.js) and keeps its id: f, the frequency [times, 'd' or 'w'];
- * h, one hold in seconds per exercise (0 for reps); s, one letter per exercise for its side (b, l, r, e). The version
- * stays 1: an app of the day before reads such a link without them.
+ * h, one hold in seconds per exercise (0 for reps); s, one letter per exercise for its side (b, l, r, e).
+ * The version is 2 when the link carries h or s (SHEET_VERSION), else 1 as before. An app of before the sheet reads a
+ * v: 1 link and leaves out the keys it does not know: it would show a hold as reps to film, and "each side" would
+ * vanish, a target the coach never set (R8). A v: 2 link it refuses instead, as it refuses any link it cannot read.
+ * A frequency alone stays v: 1: an older app leaves it out and shows no wrong target.
  */
+export const SHEET_VERSION = 2;
 export function compact(p) {
-  const out = { v: 1, t: p.title };
+  const holds = p.items.some(i => holdOf(i) > 0), sides = p.items.some(i => sideOf(i) !== 'both');
+  const out = { v: holds || sides ? SHEET_VERSION : 1, t: p.title };
   if (p.who) out.w = p.who;
   if (p.note) out.n = p.note;
   out.x = p.items.map(i => (i.note ? [i.key, i.sets, i.reps, i.rest, i.note] : [i.key, i.sets, i.reps, i.rest]));
   const f = frequencyOf(p);
   if (f) out.f = [f.times, f.per === 'day' ? 'd' : 'w'];
-  if (p.items.some(i => holdOf(i) > 0)) out.h = p.items.map(holdOf);
-  if (p.items.some(i => sideOf(i) !== 'both')) out.s = p.items.map(i => SIDE_LETTER[sideOf(i)]).join('');
+  if (holds) out.h = p.items.map(holdOf);
+  if (sides) out.s = p.items.map(i => SIDE_LETTER[sideOf(i)]).join('');
   return out;
 }
+
+// The versions this app reads: 1, and 2 (a hold or a side, compact).
+const readable = v => v === 1 || v === SHEET_VERSION;
 
 /**
  * The compact form read back, every field checked: { ok: true, programme } or { ok: false, error }, error among
@@ -143,7 +151,7 @@ export function compact(p) {
  */
 export function fromCompact(raw) {
   const bad = error => ({ ok: false, error });
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || raw.v !== 1) return bad('malformed');
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !readable(raw.v)) return bad('malformed');
   const str = (v, max, opts) => {
     if (v === undefined) return '';
     if (typeof v !== 'string') return null;
@@ -438,9 +446,11 @@ export function resultsSummary(r) {
 // k?, g? }. h, the time of the latest set ("HH:MM"), and k, one string per exercise with one letter per set
 // (keptLetter), came on 9 October 2026 as keys of their own: a coach's app of the day before reads the link, without
 // them. g, one hold in seconds per exercise (0 for reps), came with the exercise sheet (14 October 2026), only when an
-// exercise holds, so the coach reads a hold as a hold and not as reps (R8).
+// exercise holds, so the coach reads a hold as a hold and not as reps (R8). With g the version is 2 (SHEET_VERSION), as
+// a programme's link with a hold: a coach's app of before the sheet refuses the link rather than show a hold as reps
+// missed.
 const compactResults = r => ({
-  v: 1, t: r.title, ...(r.who ? { w: r.who } : {}), d: r.day, ...(r.time ? { h: r.time } : {}),
+  v: r.items.some(i => holdOf(i) > 0) ? SHEET_VERSION : 1, t: r.title, ...(r.who ? { w: r.who } : {}), d: r.day, ...(r.time ? { h: r.time } : {}),
   x: r.items.map(i => [i.key, i.sets, i.reps, i.done]),
   ...(r.items.every(i => Array.isArray(i.kinds) && i.kinds.length === i.done.length) ? { k: r.items.map(i => i.kinds.join('')) } : {}),
   ...(r.items.some(i => holdOf(i) > 0) ? { g: r.items.map(holdOf) } : {}),
@@ -460,7 +470,7 @@ export async function encodeResults(r, { gzip: gzipIt = true } = {}) {
  */
 export function fromCompactResults(raw) {
   const bad = error => ({ ok: false, error });
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || raw.v !== 1) return bad('malformed');
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !readable(raw.v)) return bad('malformed');
   const str = (v, max) => (v === undefined ? '' : typeof v === 'string' && cleanText(v).length <= max ? cleanText(v) : null);
   const title = str(raw.t, LIMITS.title), who = str(raw.w, LIMITS.who);
   if (title === null || who === null) return bad('bad-value');

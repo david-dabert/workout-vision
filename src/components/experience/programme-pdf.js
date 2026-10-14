@@ -68,7 +68,8 @@ const NBSP = ' ';
  * Each row: its target (sets × reps, or sets × the hold), its details (rest, hold, side, and "without filming" for an
  * exercise the client does not film), whether it is filmed, its hold, its side, its drawing. The foot asks to film
  * each set when every exercise is filmed, each set but those marked when some are, and nothing when none is; the
- * drawings' credit goes with the foot when the sheet prints one.
+ * drawings' credit goes with the foot when the sheet prints one, naming the creator of any artwork a printed frame
+ * adapts (each frame's source, sheet-drawings.js).
  */
 export function programmeSheet(programme, { lang, date, drawings = new Map() }) {
   const fr = lang === 'fr', c = PRO[fr ? 'fr' : 'en'];
@@ -87,6 +88,8 @@ export function programmeSheet(programme, { lang, date, drawings = new Map() }) 
     };
   });
   const filmed = rows.filter(r => r.filmed).length;
+  const printed = rows.flatMap(r => (r.drawing ? [r.drawing.start, r.drawing.end] : [])).filter(Boolean);
+  const after = [...new Set(printed.map(f => f.source).filter(Boolean))].sort();
   return {
     fr,
     kicker: c.pdfKicker,
@@ -102,7 +105,7 @@ export function programmeSheet(programme, { lang, date, drawings = new Map() }) 
     qrLabel: c.pdfQrLabel,
     foot: filmed === rows.length ? c.pdfFoot : filmed ? c.pdfFootSome : '',
     similar: c.pdfSimilar,
-    credit: rows.some(r => r.drawing) ? c.pdfCredit : '',
+    credit: printed.length ? c.pdfCredit(after) : '',
   };
 }
 

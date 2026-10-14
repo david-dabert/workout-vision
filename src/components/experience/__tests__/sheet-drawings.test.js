@@ -11,7 +11,7 @@ vi.hoisted(() => {
   globalThis.window ??= { devicePixelRatio: 1 };
   globalThis.document ??= { createElement: () => any };
 });
-import { DRAWING_PX, JPEG_QUALITY, LOAD_TIMEOUT_MS, MAX_KEPT, drawingCache, sheetFrames } from '../sheet-drawings';
+import { DRAWING_PX, JPEG_QUALITY, LOAD_TIMEOUT_MS, MAX_KEPT, drawingCache, frameSource, sheetFrames } from '../sheet-drawings';
 import { LIMITS } from '../programme';
 import catalogue from '../../../lib/guide-catalog.json';
 import { DRAWING_8PX } from './fixtures/drawing-8px';
@@ -38,7 +38,8 @@ describe('the sheet’s drawings', () => {
     expect(cache.ready(['squat', 'plank'])).toBe(true);
     const of = cache.of(programmeOf(['squat', 'plank', 'squat']));
     expect([...of.keys()]).toEqual(['squat', 'plank']);
-    expect(of.get('squat')).toEqual({ start: { ...FAKE, alias: 'g-squat-1' }, end: { ...FAKE, alias: 'g-squat-3' }, similar: false });
+    // The squat's first pose adapts Everkinetic's artwork (the guide's manifest), its last is Bryl Lim's own.
+    expect(of.get('squat')).toEqual({ start: { ...FAKE, alias: 'g-squat-1', source: 'Everkinetic' }, end: { ...FAKE, alias: 'g-squat-3', source: null }, similar: false });
   });
 
   it('needs nothing for an exercise with no drawing, and gives it none', async () => {
@@ -64,7 +65,7 @@ describe('the sheet’s drawings', () => {
     expect(cache.ready(['squat', 'plank'])).toBe(true);
     const of = cache.of(programmeOf(['squat', 'plank']));
     expect(of.get('squat')).toBeNull();
-    expect(of.get('plank')).toEqual({ start: null, end: { ...FAKE, alias: 'g-plank-3' }, similar: false });
+    expect(of.get('plank')).toEqual({ start: null, end: { ...FAKE, alias: 'g-plank-3', source: null }, similar: false });
     // Kept as missing for the visit: not asked again.
     await cache.warm(['squat']);
     expect(load).toHaveBeenCalledTimes(4);
@@ -85,13 +86,19 @@ describe('the sheet’s drawings', () => {
   it('names a borrowed drawing by its own drawing, and says it shows a similar movement', async () => {
     const load = vi.fn(async () => FAKE);
     const cache = drawingCache({ load });
-    expect(sheetFrames('wall_ball')).toEqual({ urls: ['/guide/squat/frame-1.webp', '/guide/squat/frame-3.webp'], slug: 'squat', similar: true });
+    expect(sheetFrames('wall_ball')).toEqual({ urls: ['/guide/squat/frame-1.webp', '/guide/squat/frame-3.webp'], sources: ['Everkinetic', null], slug: 'squat', similar: true });
     await cache.warm(['wall_ball', 'squat']);
     // The wall ball borrows the squat's drawing: two frames in all.
     expect(load).toHaveBeenCalledTimes(2);
     const of = cache.of(programmeOf(['wall_ball', 'squat']));
-    expect(of.get('wall_ball')).toEqual({ start: { ...FAKE, alias: 'g-squat-1' }, end: { ...FAKE, alias: 'g-squat-3' }, similar: true });
+    expect(of.get('wall_ball')).toEqual({ start: { ...FAKE, alias: 'g-squat-1', source: 'Everkinetic' }, end: { ...FAKE, alias: 'g-squat-3', source: null }, similar: true });
     expect(of.get('squat').similar).toBe(false);
+  });
+
+  it('knows which frames adapt Everkinetic’s artwork, and no other', () => {
+    expect(['/guide/squat/frame-1.webp', '/guide/push-up/frame-1.webp', '/guide/glute-bridge/frame-1.webp'].map(frameSource)).toEqual(['Everkinetic', 'Everkinetic', 'Everkinetic']);
+    expect(['/guide/squat/frame-3.webp', '/guide/plank/frame-1.webp', '/guide/childs-pose/frame-1.webp', 'x', null, undefined].map(frameSource)).toEqual([null, null, null, null, null, null]);
+    expect(frameSource('/workout-vision/guide/squat/frame-1.webp')).toBe('Everkinetic');
   });
 
   it('never pushes a programme’s own frames out while warming it', async () => {

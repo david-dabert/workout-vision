@@ -9,6 +9,15 @@
 // which jsPDF embeds as it is, with nothing to decode within the tap.
 import { guideExercise } from './exercise-info';
 import { PAPER } from './palette';
+import SOURCES from './guide-sources.json';
+
+// Each frame that adapts another work, to that work's creator (guide-sources.json, from the guide's manifest).
+const SOURCE_OF = new Map(Object.entries(SOURCES).flatMap(([name, frames]) => frames.map(f => [f, name])));
+/** The creator of the work a frame adapts (its URL, …/guide/<slug>/frame-<n>.webp), or null for Bryl Lim's own. */
+export function frameSource(url) {
+  const m = /\/guide\/([^/]+)\/(frame-\d+)\.webp$/.exec(String(url));
+  return (m && SOURCE_OF.get(`${m[1]}/${m[2]}`)) || null;
+}
 
 // A frame's side in pixels: about 270 dpi for a drawing 64 pt wide on the A5 sheet. Status: convention, UNSOURCED.
 export const DRAWING_PX = 240;
@@ -22,14 +31,16 @@ export const LOAD_TIMEOUT_MS = 6000;
 export const MAX_KEPT = 96;
 
 /**
- * The frames the sheet prints for an exercise: { urls: [first pose, last pose], slug, similar }, slug the drawing's
- * own (a borrowed drawing's, for an exercise drawn with a similar movement, which `similar` says), or null for an
- * exercise with no drawing (the machine seated back extension) or unknown to the guide.
+ * The frames the sheet prints for an exercise: { urls: [first pose, last pose], sources, slug, similar }, sources the
+ * creator each frame adapts (frameSource: 'Everkinetic' or null), slug the drawing's own (a borrowed drawing's, for
+ * an exercise drawn with a similar movement, which `similar` says), or null for an exercise with no drawing (the
+ * machine seated back extension) or unknown to the guide.
  */
 export function sheetFrames(key) {
   const e = guideExercise(key);
   if (!e?.frames?.length) return null;
-  return { urls: [e.frames[0], e.frames.at(-1)], slug: e.drawing ?? e.slug, similar: !!e.similar };
+  const urls = [e.frames[0], e.frames.at(-1)];
+  return { urls, sources: urls.map(frameSource), slug: e.drawing ?? e.slug, similar: !!e.similar };
 }
 
 /**
@@ -63,7 +74,8 @@ export async function loadForPaper(url) {
  * warm(keys): loads each frame of those exercises once, however often it is asked; a frame that fails, comes back
  * empty, or takes longer than `timeout` is kept as null for the visit (left out of the sheet). ready(keys): whether
  * every frame of those exercises has settled, at once. of(programme): at once, a Map from each exercise of the
- * programme to { start, end, similar }, each frame { data, format, alias } or null, or to null when it has no frame.
+ * programme to { start, end, similar }, each frame { data, format, alias, source } or null, or to null when it has no
+ * frame; source, the creator of the work it adapts (sheetFrames), whom the sheet credits with it.
  * The alias (g-<drawing>-<frame>) lets jsPDF embed a frame once, for an exercise twice in the programme or a drawing
  * two exercises borrow.
  */
@@ -101,7 +113,7 @@ export function drawingCache({ load = loadForPaper, timeout = LOAD_TIMEOUT_MS, m
       if (!f) return [key, null];
       const [start, end] = f.urls.map((url, i) => {
         const v = done.get(url), frame = /frame-(\d+)\.webp$/.exec(url)?.[1] ?? String(i + 1);
-        return v ? { ...v, alias: `g-${f.slug}-${frame}` } : null;
+        return v ? { ...v, alias: `g-${f.slug}-${frame}`, source: f.sources[i] } : null;
       });
       return [key, start || end ? { start, end, similar: f.similar } : null];
     })),
