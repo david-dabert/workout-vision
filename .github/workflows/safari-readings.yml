@@ -26,6 +26,9 @@ jobs:
       - run: npx playwright install chromium
       - run: npm install --no-save selenium-webdriver@4
       - run: sudo safaridriver --enable
+      # The pose model downloaded and checked before the server starts: the dev server's own copy races the first read
+      # (run 1 of 14 October: "Pose model integrity mismatch" in Chromium, a failed model fetch in Safari).
+      - run: node scripts/copy-models.js
       - name: Serve the app
         run: |
           npx vite --port 5173 --strictPort > vite.log 2>&1 &
