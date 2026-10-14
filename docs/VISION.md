@@ -74,8 +74,9 @@ level ℓ, read with the foot's speed v there:
 
 - a touchdown: the foot arrives at speed, so ℓ/v;
 - a takeoff: the toes leave the ground at zero vertical speed and accelerate. If their speed rises no slower than
-  uniformly to the body's within 40 ms (an assumption, not measured on a filmed foot), the time lies between ℓ/v and
-  √(2ℓ·0.04 s/v); the middle is taken and half the range goes into the margin.
+  uniformly to the body's within 40 ms (an assumption, not measured on a filmed foot), the time lies between ℓ/v (the
+  limit of a toe that leaves at full speed) and √(2ℓ·0.04 s/v), or ℓ/v + 20 ms when ℓ lies beyond the v·20 ms the toe
+  covers while it speeds up; the middle is taken and half the range goes into the margin.
 
 The speed is a least-squares slope of the samples within 1/30 s of the crossing. It never reads the top of the flight
 (a sample the next one shows to be the top is dropped), and it is never taken under the chord from the top to the
@@ -88,30 +89,37 @@ Each measure turns events into a value with a formula, and states its margin.
 
 | Measure (volleyball) | Formula | R9 status | Error model |
 |---|---|---|---|
-| Jumps | count of jump events | experimental | none: exact on the synthetic jumps of 15 cm and more, not yet on a filmed person |
-| Best jump | h = v₀²/2g, v₀ = (g·t²/2 − Δ)/t: the flight-time method (Bosco et al. 1983) corrected for a landing Δ lower than the takeoff | experimental (the correction is ours) | sampling |
-| Last contact time (mean) | takeoff minus the touchdown of the last stride, averaged over the jumps measured | experimental | sampling |
+| Jumps | count of jump events | experimental | none: exact on the synthetic jumps of 15 cm and more, smaller ones may be missed, not yet measured on a filmed person |
+| Best jump | h = v₀²/2g, v₀ = g·(t_top − t_takeoff), the same as v₀ = (g·t²/2 − Δ)/t: the flight-time method (Bosco et al. 1983) corrected for a landing Δ lower than the takeoff | experimental (the correction is ours) | sampling |
+| Last contact time (mean) | takeoff minus the touchdown of the last stride, averaged over the run-ups measured (the screen says over how many of those detected) | experimental | sampling |
 | Knees on landing | knee gap over ankle gap at the landing's lowest point, from the front | experimental | none |
 
-The flight-time method assumes the body lands as it took off; a landing with the hip lower lengthens the flight and
-overstates h (on the synthetic jumps, 5 to 8 cm lower read 4.8 to 5.3 cm high). The engine reads Δ on the parabola of
+The flight-time method assumes the body lands as it took off; a landing with the hip lower by Δ lengthens the flight
+and overstates h by about Δ/2 (exactly Δ/2 − Δ²/(2g·t²)): 2.4 to 4 cm for a hip landing 5 to 8 cm lower, on the exact
+flight time (volleyball.test.ts, "corrects a landing lower than the takeoff"). The engine reads Δ on the parabola of
 the hip's flight. On that parabola v₀ = (g·t²/2 − Δ)/t reduces to g times the time from the takeoff to the hip's top,
 so the touchdown's own error cancels: the height's margin is the takeoff's plus the top's (three standard errors of the
 fit). A body leaves the ground fully extended on its toes and cannot land more extended, so the interval is capped by
-g·t²/8 from above. The hip is taken for the body's centre of mass in the air: on a filmed person the arms and legs
-move it, which level 1 does not measure.
+g·t²/8 from above. The cap is also a check: when it leaves less than a tenth of the interval, or lies below it, the two
+readings of the jump disagree and its height is refused; and it never makes the margin smaller than the flight-time
+method's own. The hip is taken for the body's centre of mass in the air: on a filmed person the arms and legs move the
+centre of mass relative to the hip, which the margin does not cover (measured on the generator below).
 
 The sampling margin of a contact is half the spacing of its two samples, plus the correction's own uncertainty: half
-the takeoff's range (above), or a quarter of ℓ/v at a touchdown; two standard errors of the speed read; and one noise
-standard deviation over the speed (at a takeoff, over the slowest speed the toe can have at the crossing). The noise
-term does not shrink with the frame rate. A run-up's margin is the sum of the takeoff's and the last touchdown's.
+the takeoff's range (above), or a quarter of ℓ/v at a touchdown; the speed read, which is the speed some milliseconds
+after a takeoff's crossing and so lower (the toe slows by at most g over that time, g in leg lengths of at least
+0.5 m); two standard errors of the speed read; and one noise standard deviation over the speed (at a takeoff, over the
+slowest speed the toe can have at the crossing). The noise term does not shrink with the frame rate. A run-up's margin
+is the sum of the takeoff's and the last touchdown's.
 
 A measure is refused, with its reason, when:
 
 - its events are not in the video (no jump, no whole jump from takeoff to the top, no run-up);
 - its view is wrong (the knee check reads from the front only);
 - its margin would exceed a quarter of the value (a height or a run-up timing at a low frame rate);
-- the best jump would be named while a jump is not measured;
+- the flight time and the hip's curve disagree on a jump's height (the cap above);
+- the best jump cannot be named: a jump is not measured and could be the best (one whose interval lies wholly below
+  a measured jump's cannot); each jump's measured height is still shown in the table;
 - the frame rate is under 20 a second for a run-up (a stride's flight spans fewer than 2 samples);
 - the foot rises too briefly before the takeoff to tell a step from noise, or the last stride's touchdown cannot be
   timed;
@@ -128,9 +136,9 @@ A number enters a screen only after it has been measured against known truth. Th
    toes leave and touch the ground at instants known exactly, sampled at any rate and phase, with seeded Gaussian
    noise on every point. It models a countermovement, heels rising before the toes leave, a toe-off whose speed rises
    from zero (0 to 40 ms), a touchdown with the hip lower than at takeoff (0 to 8 cm), a run-up of short strides with
-   a last contact of any length, landings absorbed by hips and knees, and knees coming in on landing. It does not
-   model the pose model's errors, the arms, a hip that is not the centre of mass, perspective or a moving camera.
-   This level measures the engine alone.
+   a last contact of any length, landings absorbed by hips and knees, knees coming in on landing, and, on request, a
+   hip that moves relative to the centre of mass in the air. It does not model the pose model's errors, the arms,
+   perspective or a moving camera. This level measures the engine alone.
 2. **Rendered bodies** (test/real-phone/synth/). Two rigged bodies (three.js examples' Michelle and Soldier) posed
    frame by frame, rendered at the app's analysis size (360x640, 15 frames a second), and read by the app's own pose
    detection. 96 sets today, counted by core.ts against the skeleton's truth (npm run synth). This level adds the
@@ -141,40 +149,61 @@ A number enters a screen only after it has been measured against known truth. Th
 
 Volleyball is at level 1. Measured on 14 October 2026 by src/lib/activity/__tests__/volleyball-heldout.test.ts
 (npx vitest run, verbose reporter). The engine's constants were set on tuning runs (seeds 1 to 300 per rate, noise 0.5
-to 1.5 px, flights 0.40 to 0.80 s, drop 0 to 5 cm, toe-offs 0 to 30 ms, last contact 0.30 s). The tables below are
-held-out runs, first run after the constants were frozen: seeds 200001 to 200300 per rate, each a standing jump and a
-jump after a three-stride run-up (600 jumps per rate), noise 0 to 2 px, flights 0.25 to 1.00 s, drop 0 to 8 cm,
-toe-offs 0 to 40 ms, last contacts 0.20 to 0.50 s, on a 360x640 frame.
+to 1.5 px, flights 0.40 to 0.80 s, drop 0 to 5 cm, toe-offs 0 to 30 ms, last contact 0.30 s, at 15, 30, 60, 120 and
+240 a second). The first held-out set (seeds 200001 to 200300) became development runs when the second review of the
+same day changed the engine. The tables below are the second held-out set, first run after those changes were frozen:
+seeds 400001 to 400300 per rate, each a standing jump and a jump after a three-stride run-up (600 jumps per rate),
+noise 0 to 2 px, flights 0.25 to 1.00 s, drop 0 to 8 cm, toe-offs 0 to 40 ms, last contacts 0.20 to 0.50 s, on a
+360x640 frame, at nine rates, four of them (20, 24, 25 and 50 a second) never tuned on.
 
 | Rate | Count exact | Heights shown | Inside the margin | Bias | Mean stated margin |
 |---|---|---|---|---|---|
-| 15/s | 558 of 600 (502 of 502 at 15 cm and up) | 237 | 237 of 237 | +3.30 cm | ±17.17 cm |
-| 30/s | 559 of 600 (502 of 502) | 370 | 370 of 370 | +1.04 cm | ±10.40 cm |
-| 60/s | 565 of 600 (498 of 498) | 430 | 430 of 430 | +0.53 cm | ±7.66 cm |
-| 120/s | 569 of 600 (504 of 504) | 501 | 501 of 501 | +0.83 cm | ±5.70 cm |
-| 240/s | 561 of 600 (494 of 494) | 521 | 521 of 521 | +0.74 cm | ±4.77 cm |
+| 15/s | 557 of 600 (501 of 501 at 15 cm and up) | 179 | 179 of 179 | +2.22 cm | ±19.23 cm |
+| 20/s | 566 of 600 (502 of 502) | 297 | 297 of 297 | +1.55 cm | ±14.89 cm |
+| 24/s | 577 of 600 (511 of 511) | 324 | 324 of 324 | +0.70 cm | ±12.89 cm |
+| 25/s | 578 of 600 (518 of 518) | 343 | 343 of 343 | +0.68 cm | ±12.31 cm |
+| 30/s | 561 of 600 (487 of 487) | 344 | 344 of 344 | +0.84 cm | ±10.99 cm |
+| 50/s | 573 of 600 (492 of 492) | 414 | 414 of 414 | +0.64 cm | ±8.37 cm |
+| 60/s | 568 of 600 (505 of 505) | 428 | 428 of 428 | +0.56 cm | ±7.68 cm |
+| 120/s | 561 of 600 (499 of 499) | 481 | 481 of 481 | +0.75 cm | ±5.76 cm |
+| 240/s | 572 of 600 (491 of 491) | 506 | 506 of 506 | +0.76 cm | ±4.92 cm |
 
 | Rate | Run-ups timed | Inside the margin | Mean stated margin |
 |---|---|---|---|
 | 15/s | 0 of 300 (refused for the rate) | | |
-| 30/s | 190 of 300 | 190 of 190 | ±61.8 ms |
-| 60/s | 213 of 300 | 213 of 213 | ±42.2 ms |
-| 120/s | 222 of 300 | 222 of 222 | ±31.1 ms |
-| 240/s | 233 of 300 | 233 of 233 | ±26.3 ms |
+| 20/s | 39 of 300 | 39 of 39 | ±83.9 ms |
+| 24/s | 113 of 300 | 113 of 113 | ±73.7 ms |
+| 25/s | 135 of 300 | 135 of 135 | ±71.6 ms |
+| 30/s | 176 of 300 | 176 of 176 | ±62.2 ms |
+| 50/s | 228 of 300 | 228 of 228 | ±47.3 ms |
+| 60/s | 221 of 300 | 221 of 221 | ±42.2 ms |
+| 120/s | 232 of 300 | 232 of 232 | ±32.1 ms |
+| 240/s | 233 of 300 | 233 of 233 | ±27.1 ms |
 
-The count misses jumps whose hip barely rises (minRise): every jump of 15 cm and more was counted. A height not shown
-was refused with its reason (a margin over a quarter of the value) or belongs to a jump not counted; a run-up not
-timed was refused with its reason (the rate, the feet too noisy to read strides, a margin over a quarter).
+The count may miss jumps whose hip barely rises (minRise): every jump of 15 cm and more was counted, and 56 to 81 of
+the 82 to 113 smaller ones per rate were counted too. A height not shown was refused with its reason (a margin over a
+quarter of the value) or belongs to a jump not counted; a run-up not timed was refused with its reason (the rate, the
+feet too noisy to read strides, a step too brief to read, a margin over a quarter).
 
-The bias is one-sided and known. The takeoff's correction is the middle of the range a toe-off of 0 to 40 ms allows:
-at 1 px, a toe that leaves at full speed reads +1.19 to +1.85 cm high, one that takes 40 ms −1.10 to −1.55 cm low
-(30 to 240 a second). Across noise levels of 0 to 2 px the mean bias stays between +0.58 and +1.52 cm, under half the
-stated margin in every case. The margin covers it; it is not removed, since the toe-off is not known.
+The bias is set by the toe-off, which the video does not show. The takeoff's correction is the middle of the range a
+toe-off of 0 to 40 ms allows, so a toe that leaves at full speed (the fast end) reads high and one that takes 40 ms
+reads near zero. With the hip landing 5 to 8 cm lower, at 1 px, the fast end reads +2.80 to +3.18 cm high (expected
+from first principles +2.63 to +3.03: the takeoff early by half the range, times v₀) and the slow end −0.20 to +0.09 cm
+(30 to 240 a second). Over the whole toe-off range the mean bias stays positive, +0.73 to +1.18 cm at every noise
+level from 0 to 2 px (30 to 240 a second). The margin covers both ends; the bias is not removed, since the toe-off is
+not known. With no noise and the toes leaving at full speed, every takeoff and every height was inside its margin
+(worst 0.98 of the margin at 60 and 240 a second).
+
+The hip is the generator's centre of mass unless asked otherwise. Moving the hip relative to it over the flight, at 60
+and 240 a second: 1 cm down or up keeps every height inside its margin (bias +0.27 to +1.08 cm); 3 cm down too (bias
+−0.64 to −0.70 cm); 3 cm up puts 2 of 234 heights outside at 60 a second and 13 of 274 at 240 (bias +1.71 to
++1.73 cm). The screen's note says that this error is not in the margin.
 
 These margins are not a hard bound: the test requires at least 99 values in 100 inside. The demo on the screen runs
 the same engine on one fixed seed (src/lib/activity/demo.ts): four jumps, two of them after a three-stride run-up,
-noise 1 px. Its test checks, at every rate the screen offers, that each value shown on that seed holds its truth
-inside its margin, and that the count is exact.
+toes reaching the body's speed 20 ms after they leave the ground (the middle of the range), noise 1 px. Its test
+checks, at every rate the screen offers, that each value shown on that seed holds its truth inside its margin, and
+that the count is exact.
 
 What level 1 cannot say: how far the pose model moves a foot point at a contact on a real video. That error comes on
 top of these margins. Volleyball's numbers become claims only at level 2 and, for real use, at level 3.
@@ -191,8 +220,8 @@ top of these margins. Volleyball's numbers become claims only at level 2 and, fo
   step).
 - A margin is rounded up at the precision shown, never down to zero.
 - R13, as CLAUDE.md states it: "Numbers in the README, the site and any external document come only from the latest
-  scoreboard output, with its date." Proposed to David, not a rule: allow a committed test's output, with its date,
-  for numbers measured outside the scoreboard (the error tables of the truth lab above).
+  scoreboard output, with its date." A proposal to put to David (not yet put to him), not a rule: allow a committed
+  test's output, with its date, for numbers measured outside the scoreboard (the error tables of the truth lab above).
 
 ## The screens
 
@@ -234,7 +263,7 @@ in the same cell. The volleyball entry sits in the sports rail, beside the link 
 
 ## Roadmap
 
-These phases are the vision's; they are not the build phases of DIRECTIVES.md Part 3.
+This phase is the vision's; it is not a build phase of DIRECTIVES.md Part 3.
 
 **Phase 1: the engine and volleyball.** The engine's three layers, the specification format, synthetic jumps with
 known truth, the volleyball specification and its tests, and the generic activity screen with its demo. Done when
@@ -242,13 +271,9 @@ every value the demo shows is inside its stated margin at every rate it offers (
 at least 99 values in 100 inside their margin (volleyball-heldout.test.ts), and David has confirmed the screen and its
 French on his iPhone.
 
-**Phase 2: four sports on rendered bodies.** Golf, baseball, tennis and volleyball, each on rendered bodies (truth lab
-level 2) read by the app's own pose detection, each measure measured against the skeleton's truth before it is shown.
-The fixed values of today's sports demos are replaced by measured ones, or withheld. A sport enters a screen only with
-its error table.
+**Later.** Golf, baseball and tennis on rendered bodies (truth lab level 2), and the coach's office (accounting,
+nutrition, client records), are not phases of this roadmap: their ideas wait in BACKLOG.md, 14 October 2026, until
+David opens them as a step (R7).
 
-**Later.** The coach's office (accounting, nutrition, client records) is not a phase of this roadmap: its ideas wait
-in BACKLOG.md, 14 October 2026, until David opens them as a step (R7).
-
-Every phase keeps the rules above: no measure without its margin, no count without its check, no claim without the
+Any later phase keeps the rules above: no measure without its margin, no count without its check, no claim without the
 output that proves it, French approved by David before release.

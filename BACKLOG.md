@@ -368,9 +368,9 @@ Notes for the discussion:
 
 ## 14 October 2026: the coach's office (moved from docs/VISION.md, its former phase 3), ideas, not decisions
 
-Source: ordered by David in conversation, 13-14 October 2026 (relayed to the session of 14 October; the order itself is
-not recorded in the repository). Moved here from the vision's roadmap after the honesty review of PR #161, since no
-current phase covers it (STATE.md: accuracy; R7).
+Source: ordered by David in conversation, 13-14 October 2026 (relayed to the session of 14 October; recorded in PLAN.md
+as that session understood it, his own words awaited). Moved here from the vision's roadmap after the honesty review
+of PR #161, since no current phase covers it (STATE.md: accuracy; R7).
 
 - Accounting from sourced rates: URSSAF contribution rates, each with its source and date, nothing computed from an
   unsourced rate.
@@ -380,3 +380,17 @@ current phase covers it (STATE.md: accuracy; R7).
 - Client records and progress: each client's sets, programmes and results over time.
 - Why not now: outside the current phase; each item would need its own sources, its own error model (R8, R9) and
   David's opening of the step.
+
+## 14 October 2026: golf, baseball and tennis on rendered bodies (moved from docs/VISION.md, its former phase 2), ideas, not decisions
+
+Source: the roadmap of docs/VISION.md as written on 14 October 2026 (PLAN.md, David's order of 13-14 October). Moved here
+after the second honesty review of PR #166 the same day, since no current phase covers it (STATE.md: accuracy; R7).
+
+- Golf, baseball and tennis, each declared as an activity specification (src/lib/activity/types.ts) and measured on
+  rendered bodies (truth lab level 2: test/real-phone/synth/) read by the app's own pose detection, each measure
+  against the skeleton's truth before it is shown.
+- The fixed values of today's sports demos (src/components/sports/SportsBiomechanics.jsx) replaced by measured ones,
+  or withheld. A sport enters a screen only with its error table.
+- Volleyball on rendered bodies too, before any filmed jump.
+- Why not now: outside the current phase; volleyball is still at level 1, and its screen and French await David's
+  check on his iPhone.
