@@ -1,0 +1,32 @@
+{
+  "id": 16632575,
+  "width": 720,
+  "height": 1280,
+  "duration": 5.3,
+  "url": "https://www.pexels.com/video/a-young-man-practising-golf-16632575/",
+  "user": {
+    "id": 546629264,
+    "name": "Joseph Harney",
+    "url": "https://www.pexels.com/@joseph-harney-546629264/"
+  },
+  "video_files": [
+    {
+      "id": 24890123,
+      "quality": "hd",
+      "file_type": "video/mp4",
+      "width": 720,
+      "height": 1280,
+      "fps": 60.0,
+      "link": "https://www.pexels.com/video/16632575/download"
+    }
+  ],
+  "video_pictures": [
+    {
+      "id": 3198021,
+      "picture": "https://images.pexels.com/videos/16632575/pictures/preview-0.jpg",
+      "nr": 0
+    }
+  ],
+  "retrieved_utc": "2026-10-14T06:30:00Z",
+  "license": "Pexels License (free for commercial and personal use, no attribution required)"
+}
