@@ -46,14 +46,19 @@ function MeasureTile({ m, spec, truth, lang }) {
       {c.truth(isCount ? String(t) : withUnit(fmt(t, d, fr), m.unit))}, <span className={inside ? '' : 'act-out'} data-testid={`activity-verdict-${m.key}`}>{verdict}</span>
     </span> : null}
     {reason ? <span className="act-reason" data-testid={`activity-refused-${m.key}`}>{reason}</span> : null}
+    {shown && m.scope ? <span className="act-reason" data-testid={`activity-scope-${m.key}`}>{m.scope[lang]}</span> : null}
     <span className="act-note">{m.error.note[lang]}</span>
-    <span className="act-formula">{m.formulaText[lang]} · {c.status[m.status]}</span>
+    {/* The status keeps to its dot: a no-break space, so it never sits alone on the last line. */}
+    <span className="act-formula">{m.formulaText[lang]} ·{NBSP}{c.status[m.status]}</span>
   </Metric>;
 }
 
 /**
  * Each event's values, with their truths: one row per event of the activity's counted event, one column per measure.
- * A cell holds the value with its margin, then its truth and its verdict, so the table stays three columns wide.
+ * A cell holds the value with its margin, then its truth and its verdict, so the table stays three columns wide. A
+ * measure whose summary is refused (the best jump cannot be named) still has its column: the engine keeps each value
+ * it measured. At phone width a measure that does not apply to an event takes no room in its card, unless no measure
+ * applies to it, so a card never holds its title alone.
  */
 function EventTable({ result, spec, truth, lang }) {
   const fr = lang === 'fr', c = ACTIVITY_COPY[lang];
@@ -70,22 +75,26 @@ function EventTable({ result, spec, truth, lang }) {
     <table className="sc-table">
       <thead><tr><th scope="col">{c.eventCol}</th>{cols.map(m => <th key={m.key} scope="col">{nameOf(m)}</th>)}</tr></thead>
       <tbody>
-        {events.map((_, i) => <tr key={i}>
-          <td>{c.event(i + 1)}</td>
-          {cols.map(m => {
-            const v = m.values.find(x => x.event === i), d = placesOf(m.unit);
-            const t = truth?.[m.key]?.byEvent?.[i] ?? null;
-            // Neither a value nor a truth: the measure does not apply to this event (a standing jump has no run-up).
-            if (!v && truth && t === null) return <td key={m.key} className="act-na" aria-hidden="true">–</td>;
-            // A value where the truth has none (a run-up read on a standing jump) is outside any margin.
-            const inside = v && t !== null && Math.abs(v.value - t) <= v.margin;
-            return <td key={m.key} data-label={nameOf(m)}>
-              <span>{v ? withUnit(`${fmt(v.value, d, fr)}${NBSP}±${NBSP}${fmtMargin(v.margin, d, fr)}`, m.unit) : c.noNumber}</span>
-              {truth ? <span className="act-in">{c.truth(t !== null ? withUnit(fmt(t, d, fr), m.unit) : c.none)}</span> : null}
-              {truth && v ? <span className={`act-in${inside ? '' : ' act-out'}`}>{inside ? c.inside : c.outside}</span> : null}
-            </td>;
-          })}
-        </tr>)}
+        {events.map((_, i) => {
+          // Neither a value nor a truth: the measure does not apply to this event (a standing jump has no run-up).
+          const na = m => !m.values.some(x => x.event === i) && truth && (truth?.[m.key]?.byEvent?.[i] ?? null) === null;
+          const none = cols.every(na);
+          return <tr key={i} className={none ? 'act-none' : undefined}>
+            <td>{c.event(i + 1)}</td>
+            {cols.map(m => {
+              const v = m.values.find(x => x.event === i), d = placesOf(m.unit);
+              const t = truth?.[m.key]?.byEvent?.[i] ?? null;
+              if (na(m)) return <td key={m.key} className="act-na" data-label={nameOf(m)}>{none ? c.notApplicable : <span aria-hidden="true">–</span>}</td>;
+              // A value where the truth has none (a run-up read on a standing jump) is outside any margin.
+              const inside = v && t !== null && Math.abs(v.value - t) <= v.margin;
+              return <td key={m.key} data-label={nameOf(m)}>
+                <span>{v ? withUnit(`${fmt(v.value, d, fr)}${NBSP}±${NBSP}${fmtMargin(v.margin, d, fr)}`, m.unit) : c.noNumber}</span>
+                {truth ? <span className="act-in">{c.truth(t !== null ? withUnit(fmt(t, d, fr), m.unit) : c.none)}</span> : null}
+                {truth && v ? <span className={`act-in${inside ? '' : ' act-out'}`}>{inside ? c.inside : c.outside}</span> : null}
+              </td>;
+            })}
+          </tr>;
+        })}
       </tbody>
     </table>
   </section>;

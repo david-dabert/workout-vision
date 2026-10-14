@@ -20,9 +20,11 @@
   .wv-experience .activity-screen .sc-table td > span { display: block; }
   .wv-experience .activity-screen .sc-table td.act-na { color: var(--c-fg-muted); }
 }
-/* At phone width each event is a card: a measure that does not apply to it takes no room there. */
+/* At phone width each event is a card: a measure that does not apply to it takes no room there, unless none applies
+   (the card then says so rather than holding its title alone). */
 @media (max-width: 559px) {
-  .wv-experience .activity-screen .sc-table td.act-na { display: none; }
+  .wv-experience .activity-screen .sc-table tr:not(.act-none) td.act-na { display: none; }
+  .wv-experience .activity-screen .sc-table td.act-na { color: var(--c-fg-muted); }
 }
 
 /* How to film: numbered steps in the body's type. */

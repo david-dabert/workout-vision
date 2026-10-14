@@ -2,10 +2,12 @@ import type { ActivitySpec } from '../types';
 
 /**
  * Volleyball, the first activity declared as data (docs/VISION.md): jumps counted as training load, each jump's height
- * from its flight time with the margin the sample rate allows, the last contact of a spike run-up where the samples
- * can time it, and a landing check from the front. Every number below carries its source and R9 status.
+ * from the hip's rise to the top of its flight (the flight-time method corrected for the landing) with the margin the
+ * samples allow, the last contact of a spike run-up where the samples can time it, and a landing check from the front.
+ * Every number below carries its source and R9 status.
  *
- * French: every French line of this file was written or reworded on 14 October 2026 and awaits David's approval (R10).
+ * French: every French line of this file was written or reworded on 14 October 2026 and awaits David's approval (R10);
+ * the lines marked "second review" were reworded again the same day.
  *
  * MediaPipe pose indices: 23/24 hips, 25/26 knees, 27/28 ankles, 29/30 heels, 31/32 toes (foot index).
  */
@@ -62,7 +64,9 @@ export const volleyball: ActivitySpec = {
       status: 'experimental',
       error: {
         kind: 'none',
-        note: { fr: 'Exact sur les sauts de synthèse de 15\u00A0cm et plus (les plus petits ne sont pas comptés)\u00A0; pas encore mesuré sur une personne filmée.', en: 'Exact on the synthetic jumps of 15 cm and more (smaller ones are not counted); not yet measured on a filmed person.' },
+        // French: second review (14 October 2026), awaiting David's approval (R10). Smaller jumps are not refused: about
+        // half of those under 15 cm were counted on the held-out runs, so "may be missed", not "are not counted".
+        note: { fr: 'Exact sur les sauts de synthèse de 15\u00A0cm et plus\u00A0; les plus petits peuvent être manqués\u00A0; pas encore mesuré sur une personne filmée.', en: 'Exact on the synthetic jumps of 15 cm and more; smaller ones may be missed; not yet measured on a filmed person.' },
       },
     },
     {
@@ -74,14 +78,17 @@ export const volleyball: ActivitySpec = {
         kind: 'flightHeight',
         maxRelError: { value: 0.25, source: 'UNSOURCED: as for the run-up, a height known to more than a quarter of itself says nothing a coach can use', status: 'experimental' },
       },
-      formulaText: { fr: 'h = v₀²/2g avec v₀ = (g·t²/2 − Δ)/t\u00A0: t le temps de vol, Δ l’écart de hauteur de la hanche entre décollage et réception', en: 'h = v₀²/2g with v₀ = (g·t²/2 − Δ)/t: t the flight time, Δ how much lower the hip lands than it took off' },
+      // French: second review (14 October 2026), awaiting David's approval (R10). The formula as the engine computes it
+      // (v₀ from the time to the hip's top), then the flight-time form it is equal to.
+      formulaText: { fr: 'h = v₀²/2g, v₀ = g·(t_sommet − t_décollage) la vitesse au décollage, t_sommet le sommet de la courbe de la hanche. Revient à v₀ = (g·t²/2 − Δ)/t, t le temps de vol, Δ l’écart de hauteur de la hanche entre décollage et réception.', en: 'h = v₀²/2g, v₀ = g·(t_top − t_takeoff) the takeoff speed, t_top the top of the hip\'s curve. The same as v₀ = (g·t²/2 − Δ)/t, t the flight time, Δ how much lower the hip lands than it took off.' },
       unit: 'cm',
       summary: 'max',
       source: 'Flight-time method, h = g·t²/8 (literature): Bosco, Luhtanen & Komi, Eur J Appl Physiol 1983;50:273-282. A phone video\'s flight time agrees with a force plate\'s flight time: Balsalobre-Fernández, Glaister & Lockey, J Sports Sci 2015;33(15):1574-1579. The method assumes the body lands as it took off; a lower landing lengthens t and overstates h. The correction for it is ours (experimental): Δ is read on the parabola of the hip\'s flight, which reduces the height to the rise from the takeoff to the top of the hip; it takes the hip for the body\'s centre of mass in the air, not yet measured on a filmed person.',
       status: 'experimental',
       error: {
         kind: 'sampling',
-        note: { fr: 'Le décollage tombe entre deux images, et les points du corps bougent un peu d’une image à l’autre\u00A0: la marge tient compte des deux. Une réception plus basse que le décollage est corrigée par la courbe de la hanche.', en: 'The takeoff falls between two frames, and the body points jitter a little from frame to frame: the margin covers both. A landing lower than the takeoff is corrected from the hip\'s curve.' },
+        // French: second review (14 October 2026), awaiting David's approval (R10).
+        note: { fr: 'Le décollage tombe entre deux images, la vitesse des orteils au décollage ne se voit pas, et les points du corps bougent un peu d’une image à l’autre\u00A0: la marge tient compte des trois. Une réception plus basse que le décollage est corrigée par la courbe de la hanche, prise pour le centre de gravité\u00A0: si les bras ou les jambes le déplacent par rapport à la hanche en l’air, cette erreur n’est pas dans la marge.', en: 'The takeoff falls between two frames, the toes\' speed as they leave the ground is not seen, and the body points jitter a little from frame to frame: the margin covers all three. A landing lower than the takeoff is corrected from the hip\'s curve, taken for the centre of mass: if the arms or legs move it relative to the hip in the air, that error is not in the margin.' },
       },
     },
     {
@@ -95,14 +102,17 @@ export const volleyball: ActivitySpec = {
         maxRelError: { value: 0.25, source: 'UNSOURCED: a time known to more than a quarter of itself says nothing a coach can use', status: 'experimental' },
         minRate: { value: 20, source: 'UNSOURCED: a run-up stride\'s flight lasts about 0.1 s on the synthetic run-ups (not yet measured on filmed ones), so under 20 samples a second it spans fewer than the stride\'s 2 samples', status: 'experimental' },
       },
-      formulaText: { fr: 't = décollage − pose du dernier appui', en: 't = takeoff − touchdown of the last step' },
+      // French: second review (14 October 2026), awaiting David's approval (R10).
+      formulaText: { fr: 't = décollage − moment où le pied se repose au dernier appui', en: 't = takeoff − the moment the foot comes down on the last step' },
       unit: 's',
       summary: 'mean',
       source: 'UNSOURCED: coaching convention, the rhythm of the last steps of a spike run-up',
       status: 'experimental',
       error: {
         kind: 'sampling',
-        note: { fr: 'Deux contacts, chacun entre deux images\u00A0: fiable à partir d’environ 60\u00A0images par seconde.', en: 'Two contacts, each between two frames: reliable from about 60 frames a second.' },
+        // French: second review (14 October 2026), awaiting David's approval (R10). What was measured: inside its margin
+        // from 20 a second (volleyball-heldout.test.ts), the margin widening as the rate falls.
+        note: { fr: 'Deux contacts, chacun entre deux images\u00A0: plus la cadence est basse, plus la marge est large\u00A0; aucune valeur sous 20\u00A0images par seconde.', en: 'Two contacts, each between two frames: the lower the frame rate, the wider the margin; no value under 20 frames a second.' },
       },
     },
     {

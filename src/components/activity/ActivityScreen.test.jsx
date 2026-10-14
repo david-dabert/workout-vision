@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { runActivity } from '../../lib/activity/engine';
 import { volleyball } from '../../lib/activity/specs/volleyball';
 import { syntheticJumps } from '../../lib/activity/synthetic';
+import { volleyballDemo } from '../../lib/activity/demo';
 
 vi.mock('./ActivityScreen.css', () => ({}));
 afterEach(() => { vi.unstubAllGlobals(); vi.resetModules(); });
@@ -54,10 +55,32 @@ describe('the activity screen', () => {
       expect(tile(html, 'landing')).toContain(lang === 'fr' ? 'Pas de chiffre' : 'No number');
       expect(tile(html, 'landing')).not.toMatch(/\d,\d|\d\.\d\d/);
       expect(html).toContain('data-testid="activity-events"');
-      // R10: no em dash in the copy.
+      // R10: no em dash in the copy. The status keeps to its dot (never alone on the formula's last line).
       expect(html).not.toContain('—');
+      expect(html).toContain(lang === 'fr' ? '·\u00A0Expérimental' : '·\u00A0Experimental');
+      // What the count's note and the demo's noise say is what was measured.
+      expect(tile(html, 'jumps')).toContain(lang === 'fr' ? 'les plus petits peuvent être manqués' : 'smaller ones may be missed');
+      expect(html).not.toContain(lang === 'fr' ? 'comme sur une vraie vidéo' : 'as on a real video');
+      // The run-up's mean says what it was taken over.
+      expect(tile(html, 'approach')).toContain(lang === 'fr' ? 'Moyenne sur 2\u00A0élans.' : 'Mean of 2 run-ups.');
     });
   }
+
+  it('keeps each jump\'s height in the table when the best jump cannot be named, and never leaves a card holding its title alone', async () => {
+    for (const rate of [15, 20, 30, 60, 240]) {
+      const { result, truth } = volleyballDemo.run(rate);
+      const html = decode(await withLang('fr', ({ ActivityView }) => <ActivityView spec={volleyball} result={result} truth={truth} demo />));
+      const rows = html.includes('<tbody>') ? html.slice(html.indexOf('<tbody>'), html.indexOf('</tbody>')).split('<tr').slice(1) : [];
+      // A row is a card at phone width: either it holds a cell that is not "does not apply", or it says none applies.
+      for (const row of rows) expect(row.includes('class="act-none"') || /<td(?! class="act-na")[^>]*data-label/.test(row), `rate ${rate}: ${row}`).toBe(true);
+      if (rate === 20) {
+        expect(tile(html, 'height')).toContain('Hauteur mesurée sur 2\u00A0sauts sur 4');
+        const table = html.slice(html.indexOf('data-testid="activity-events"'));
+        expect(table).toContain('<th scope="col">Hauteur</th>');
+        expect(table.match(/±/g)?.length).toBe(2);
+      }
+    }
+  });
 
   it('shows no number at all, and the reason, when the engine refuses the read', async () => {
     const read = syntheticJumps({ jumps: [{ flight: 0.6 }], rate: 30 });

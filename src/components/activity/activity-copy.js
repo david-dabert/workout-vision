@@ -1,8 +1,9 @@
 // The words of the activity screen (ActivityScreen.jsx), register vous (R10), French typography as in the rest of the
 // app: typographic apostrophes, a no-break space before a colon and between a number and its noun or unit, no em dash.
 // Status of every French line below: written on 14 October 2026, reworded the same day after the honesty
-// review of PR #161, awaiting David's approval (R10). The names, taglines, formulas, error notes and refusals of an
-// activity live in its specification (src/lib/activity/specs) and its engine, with the same status.
+// review of PR #161, awaiting David's approval (R10); `made` and `notApplicable` reworded or added after the second
+// review the same day, with the same status. The names, taglines, formulas, error notes and refusals of an activity
+// live in its specification (src/lib/activity/specs) and its engine, with the same status.
 const NB = '\u00A0';
 
 export const ACTIVITY_COPY = {
@@ -14,7 +15,7 @@ export const ACTIVITY_COPY = {
     rateHead: 'Cadence de la vidéo',
     rate: r => `${r}${NB}i/s`,
     rateGroup: 'Images par seconde',
-    made: (n, k, r) => `${n}${NB}sauts, dont ${k} avec trois pas d’élan, lus à ${r}${NB}images par seconde. Chaque point du corps bouge d’environ un pixel, comme sur une vraie vidéo.`,
+    made: (n, k, r) => `${n}${NB}sauts, dont ${k} avec trois pas d’élan, analysés à ${r}${NB}images par seconde. Chaque point du corps bouge d’environ un pixel${NB}: un bruit choisi pour la démo, pas encore mesuré sur une vraie vidéo.`,
     resultsHead: 'Ce que l’appli mesure',
     noNumber: 'Pas de chiffre',
     noMargin: 'Pas encore de marge d’erreur établie pour cette mesure, donc pas de chiffre.',
@@ -24,6 +25,7 @@ export const ACTIVITY_COPY = {
     countRight: 'compte exact',
     countWrong: 'compte faux',
     none: 'Aucune',
+    notApplicable: 'Sans objet',
     honest: 'Une mesure s’affiche avec sa marge d’erreur, un compte avec sa vérification. Quand l’appli ne peut pas mesurer, elle le dit, et dit pourquoi.',
     eachHead: 'Saut par saut',
     eventCol: 'Saut',
@@ -40,7 +42,7 @@ export const ACTIVITY_COPY = {
     rateHead: 'Video frame rate',
     rate: r => `${r} fps`,
     rateGroup: 'Frames per second',
-    made: (n, k, r) => `${n} jumps, ${k} of them after a three-step run-up, read at ${r} frames a second. Every body point moves by about a pixel, as on a real video.`,
+    made: (n, k, r) => `${n} jumps, ${k} of them after a three-step run-up, analysed at ${r} frames a second. Every body point moves by about a pixel: a noise chosen for the demo, not yet measured on a real video.`,
     resultsHead: 'What the app measures',
     noNumber: 'No number',
     noMargin: 'No margin of error established for this measure yet, so no number.',
@@ -50,6 +52,7 @@ export const ACTIVITY_COPY = {
     countRight: 'count right',
     countWrong: 'count wrong',
     none: 'None',
+    notApplicable: 'Not applicable',
     honest: 'A measure is shown with its margin of error, a count with its check. When the app cannot measure, it says so, and says why.',
     eachHead: 'Jump by jump',
     eventCol: 'Jump',
