@@ -365,3 +365,18 @@ Notes for the discussion:
 - Much already exists: the sleeping stage without particles (design pass), the Geist numeral (C1), no number at low confidence (R8, C4), the correction treated as the count.
 - Haptics through navigator.vibrate: as far as known, Safari on iPhone ignores the Vibration API; to verify before anything is designed on it.
 - The confirmation rate is measurable: the usage counts record sets kept and corrected (feedback-worker/usage-schema.js).
+
+## 14 October 2026: EquiVision and the sports lab after the honesty pass (deferred, R7)
+
+The honesty pass left both screens as labelled demos: nothing is analysed on a visitor's video. Deferred:
+- A real reading of a horse: a vision model that finds the head, withers, pelvis and hooves (or tap-to-track markers
+  placed by the person), then an agreement study against inertial sensors or motion capture before one millimetre is
+  shown (equine-copy.js, "Pour analyser un vrai cheval").
+- Real reads for the sports where a phone video could measure something: rowing stroke rate and drive to recovery
+  ratio, cycling cadence and knee bend at the bottom of the stroke, golf tempo (sports-copy.js, "later" lists). Each
+  needs its own labelled clips and a scoreboard before a number is shown (R2, R8).
+- The demonstration clips: replace the third-party footage (broadcast tennis with TennisOne and adidas marks, the
+  "PERSONAL SWIMMING" watermark, the "Slow Motion of Drive Phase" title card, a pro-team baseball uniform, spectators
+  in the ridden clip) with footage David owns or properly attributed clips, and add a credits file in public/demo.
+- The painted "analysed" files and HUD posters in public/demo (left out of the built site since 14 October,
+  scripts/omit-painted-demos.js): removing them from the repository needs David's approval (R5).
