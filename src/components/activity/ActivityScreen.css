@@ -1,0 +1,29 @@
+/* The activity screen (ActivityScreen.jsx): the experience's wrapper, topbar and tokens, with the showcase parts of
+   Showcase.css (design/SYSTEM.md). Only what is the screen's own is here; no colour literal (tokens only).
+   Status: convention (the app's design system; no measurement involved). */
+
+/* The synthetic notice opens the page, a step closer to the title than a section. */
+.wv-experience .activity-screen .act-card-title { margin: 0; font-family: var(--serif); font-weight: 400; font-size: var(--fs-name); line-height: 1.1; color: var(--c-fg); }
+
+/* Inside a measure's tile: its truth, its reason when withheld, its error note and its formula with its R9 status. */
+.wv-experience .activity-screen .act-truth { font-size: var(--fs-caption); line-height: 1.45; color: var(--bone-2); font-variant-numeric: tabular-nums; }
+.wv-experience .activity-screen .act-reason { font-size: var(--fs-caption); line-height: 1.45; color: var(--bone-2); text-wrap: pretty; }
+.wv-experience .activity-screen .act-note { font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); text-wrap: pretty; }
+.wv-experience .activity-screen .act-formula { margin-top: 2px; font-family: var(--mono); font-size: var(--fs-label); line-height: 1.5; letter-spacing: 0.04em; color: var(--c-fg-muted); overflow-wrap: anywhere; }
+.wv-experience .activity-screen .act-out { color: var(--lamp-hi); }
+
+/* Each event's table: the truth cell holds its value over its verdict. */
+.wv-experience .activity-screen .sc-table td .act-in { font-size: var(--fs-caption); color: var(--c-fg-muted); }
+.wv-experience .activity-screen .sc-table td .act-in.act-out { color: var(--lamp-hi); }
+@media (min-width: 560px) {
+  .wv-experience .activity-screen .sc-table td > span { display: block; }
+  .wv-experience .activity-screen .sc-table td.act-na { color: var(--c-fg-muted); }
+}
+/* At phone width each event is a card: a measure that does not apply to it takes no room there. */
+@media (max-width: 559px) {
+  .wv-experience .activity-screen .sc-table td.act-na { display: none; }
+}
+
+/* How to film: numbered steps in the body's type. */
+.wv-experience .activity-screen .act-steps { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: var(--s-2); }
+.wv-experience .activity-screen .act-steps li::marker { color: var(--c-fg-muted); }

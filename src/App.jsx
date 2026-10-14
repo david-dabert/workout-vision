@@ -62,7 +62,9 @@ const CoachFinder = lazyScreen(() => import('./components/coaches/CoachFinder.js
 const GymBuddy = lazyScreen(() => import('./components/buddies/GymBuddy.jsx'));
 const Ergonomics = lazyScreen(() => import('./components/ergonomics/Ergonomics.jsx'));
 const Chat = lazyScreen(() => import('./components/chat/Chat.jsx'));
-const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto, equine: Equine, veterinary: Equine, sports: SportsBiomechanics, golf: SportsBiomechanics, tennis: SportsBiomechanics, padel: SportsBiomechanics, cycling: SportsBiomechanics, baseball: SportsBiomechanics, rowing: SportsBiomechanics, skiing: SportsBiomechanics, swimming: SportsBiomechanics, coaches: CoachFinder, coach: CoachFinder, physio: CoachFinder, buddies: GymBuddy, buddy: GymBuddy, ergonomics: Ergonomics, workplace: Ergonomics, chat: Chat };
+// The activity engine's screen (docs/VISION.md): volleyball on synthetic jumps, opened from the sports rail.
+const Activity = lazyScreen(() => import('./components/activity/ActivityScreen.jsx'));
+const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto, equine: Equine, veterinary: Equine, sports: SportsBiomechanics, golf: SportsBiomechanics, tennis: SportsBiomechanics, padel: SportsBiomechanics, cycling: SportsBiomechanics, baseball: SportsBiomechanics, rowing: SportsBiomechanics, skiing: SportsBiomechanics, swimming: SportsBiomechanics, coaches: CoachFinder, coach: CoachFinder, physio: CoachFinder, buddies: GymBuddy, buddy: GymBuddy, ergonomics: Ergonomics, workplace: Ergonomics, chat: Chat, volleyball: Activity };
 
 // Hidden, not deleted: lazy imports for features outside the core path
 // const ManualLog = safeLazy(() => import('./components/ManualLog'));
@@ -237,7 +239,10 @@ function AppInner() {
     screen = <Equine onClose={() => go('dashboard')} />;
   } else if (page === 'sports' || page === 'golf' || page === 'tennis' || page === 'padel' || page === 'cycling' || page === 'baseball' || page === 'rowing' || page === 'skiing' || page === 'swimming') {
     key = 'sports';
-    screen = <SportsBiomechanics onClose={() => go('dashboard')} onOpenEquine={() => go('equine')} />;
+    screen = <SportsBiomechanics onClose={() => go('dashboard')} onOpenEquine={() => go('equine')} onOpenVolleyball={() => go('volleyball')} />;
+  } else if (page === 'volleyball') {
+    key = 'volleyball';
+    screen = <Activity activity="volleyball" onClose={() => go('sports')} />;
   } else if (page === 'coaches' || page === 'coach' || page === 'physio') {
     key = 'coaches';
     screen = <CoachFinder onClose={() => go('dashboard')} />;
