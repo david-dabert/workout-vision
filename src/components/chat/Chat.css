@@ -42,3 +42,4 @@
 .wv-experience .chat-input::placeholder { color: var(--ash-2); }
 .wv-experience .chat-input:focus { border-color: var(--lamp-line-strong); }
 .wv-experience .chat-send-btn { flex: none; height: 48px; padding: 0 18px; border-radius: var(--r-m); background: var(--c-accent); color: var(--c-on-accent); font-weight: 600; font-size: var(--fs-body); }
+.wv-experience .chat-attach:disabled { opacity: 0.45; cursor: default; }

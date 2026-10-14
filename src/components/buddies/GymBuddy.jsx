@@ -10,7 +10,8 @@ import './GymBuddy.css';
 // Gym Buddy, a demo (honesty pass of 14 October 2026, BUD-1 to BUD-3 and the missed filter item): fictional profiles
 // in fictional gyms, a split that filters, the person's working weights typed by hand (saved sets carry no load, so
 // "synchronisé avec l'historique" showed the code's 90 and 120 kg), and no "Proposer une séance": it sent the person
-// to the home screen through a "Connexion P2P" that does not exist. French awaiting David's approval (R10).
+// to the home screen through a "Connexion P2P" that does not exist. Second review: no parity percentage, the gap in
+// kg instead; bios in French typography; English gym names. French awaiting David's approval (R10).
 
 const SPLIT_FILTERS = [
   { id: 'all', en: 'All splits', fr: 'Tous formats' },
@@ -30,7 +31,7 @@ const COPY = {
     bench: 'Développé couché (kg)',
     squat: 'Squat (kg)',
     typeLoads: 'Indiquez vos charges pour les comparer.',
-    parity: v => `${v}\u202F% de parité`,
+    gap: (b, sq) => `Par rapport à vos charges\u00A0: DC ${b}, squat ${sq}`,
     fictional: 'Profil fictif',
     none: 'Aucun profil fictif pour ce format.',
     split: 'Format d’entraînement',
@@ -47,7 +48,7 @@ const COPY = {
     bench: 'Bench press (kg)',
     squat: 'Squat (kg)',
     typeLoads: 'Enter your weights to compare them.',
-    parity: v => `${v}% parity`,
+    gap: (b, sq) => `Against your weights: bench ${b}, squat ${sq}`,
     fictional: 'Fictional profile',
     none: 'No fictional profile for this split.',
     split: 'Training split',
@@ -75,6 +76,12 @@ export default function GymBuddy({ onClose }) {
     userCompounds: typed ? { benchPressKg: benchKg, squatKg } : undefined,
   }, DEMO_BUDDY_PROFILES), [activeSplit, typed, benchKg, squatKg]);
   const splitLabel = SPLIT_FILTERS.find(f => f.id === activeSplit)?.[fr ? 'fr' : 'en'] ?? '';
+  // Their working weight minus yours, in kg: arithmetic on two typed values, no score (second review of 14 October
+  // 2026: "65 % de parité" came from an UNSOURCED plateau and floor, matcher.ts).
+  const kgGap = (theirs, yours) => {
+    const d = Math.round((theirs - yours) * 10) / 10;
+    return `${d > 0 ? '+' : d < 0 ? '−' : '±'}${num(Math.abs(d), fr)}\u00A0kg`;
+  };
 
   return (
     <div className="wv-experience">
@@ -122,14 +129,13 @@ export default function GymBuddy({ onClose }) {
             <GroupHead title={splitLabel}><DemoTag fr={fr} /></GroupHead>
             {matches.length === 0 ? <p className="sc-caption" data-testid="buddy-none">{c.none}</p> : (
               <div className="buddy-list">
-                {matches.map(({ buddy, score }) => (
+                {matches.map(({ buddy }) => (
                   <article key={buddy.id} className="sc-card buddy-card" data-testid={`buddy-card-${buddy.id}`}>
                     <div className="buddy-card-head">
                       <div className="buddy-name-block">
                         <h2 className="sc-name">{buddy.name}, {buddy.age}</h2>
-                        <p className="sc-caption">{buddy.facility} · {buddy.city}</p>
+                        <p className="sc-caption">{fr ? buddy.facility : buddy.facilityEn} · {buddy.city}</p>
                       </div>
-                      {score.strengthParityPct != null && <span className="sc-tag is-on buddy-parity">{c.parity(score.strengthParityPct)}</span>}
                     </div>
                     <span className="sc-tag buddy-fictional">{c.fictional}</span>
                     <div className="buddy-stats">
@@ -137,6 +143,7 @@ export default function GymBuddy({ onClose }) {
                       <Metric label="Squat" value={num(buddy.compounds.squatKg, fr)} unit="kg" />
                       {buddy.compounds.deadliftKg && <Metric label={c.deadliftShort} value={num(buddy.compounds.deadliftKg, fr)} unit="kg" />}
                     </div>
+                    {typed && <p className="sc-caption buddy-gap" data-testid={`buddy-gap-${buddy.id}`}>{c.gap(kgGap(buddy.compounds.benchPressKg, benchKg), kgGap(buddy.compounds.squatKg, squatKg))}</p>}
                     <p className="sc-text buddy-bio">{fr ? buddy.bioFr : buddy.bioEn}</p>
                   </article>
                 ))}

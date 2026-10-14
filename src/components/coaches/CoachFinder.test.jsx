@@ -32,7 +32,7 @@ describe('the coach finder', () => {
       expect(html).toContain('data-testid="coach-finder-screen"');
       expect(html).toContain('data-testid="city-paris"');
       expect(html).toContain('data-testid="filter-rehab"');
-      expect(html).toContain('Coach exemple A');
+      expect(html).toContain(lang === 'fr' ? 'Coach exemple A' : 'Sample coach A');
       expect(html).toContain(lang === 'fr' ? 'Profil fictif' : 'Fictional profile');
       expect(html).toContain('data-testid="demo-badge"');
       expect(html).toContain('data-testid="send-to-coach"');

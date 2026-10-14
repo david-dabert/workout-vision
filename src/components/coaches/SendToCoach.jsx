@@ -27,13 +27,16 @@ const COPY = {
 export default function SendToCoach({ onHistory }) {
   const { lang } = useT();
   const c = COPY[lang === 'fr' ? 'fr' : 'en'];
+  // useSets: undefined while the phone's sets load, null when storage has not answered; only a list says whether there
+  // is a set (second review of 14 October 2026: "Aucune série" flashed on a phone that has sets, while they loaded).
   const sets = useSets();
-  const line = lastSetLine(sets, lang);
+  const known = Array.isArray(sets);
+  const line = known ? lastSetLine(sets, lang) : null;
   return (
     <div className="sc-card send-coach" data-testid="send-to-coach">
       <p className="sc-name send-coach-head">{c.head}</p>
       <p className="sc-text send-coach-how">{c.how}</p>
-      <p className="sc-caption" data-testid="last-set-line">{line ? c.last(line) : c.none}</p>
+      {known && <p className="sc-caption" data-testid="last-set-line">{line ? c.last(line) : c.none}</p>}
       <button
         type="button"
         className="btn-line press"

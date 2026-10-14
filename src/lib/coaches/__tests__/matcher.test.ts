@@ -9,6 +9,7 @@ describe('the coach directory demo', () => {
     for (const p of DEMO_COACH_PROFILES) {
       expect(p.fictional).toBe(true);
       expect(p.name).toMatch(/exemple [A-Z]$/);
+      expect(p.nameEn).toMatch(/^Sample (coach|physio|trainer) [A-Z]$/);
       expect(Object.keys(p)).not.toEqual(expect.arrayContaining(['rating']));
     }
     expect(JSON.stringify(DEMO_COACH_PROFILES)).not.toMatch(/rating|review|credential|RAMP|NAVP|FCCA|DPT|CSCS|Dr\.|hourlyRate|organization/i);

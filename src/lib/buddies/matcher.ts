@@ -22,6 +22,7 @@ export interface BuddyProfile {
   name: string;
   age: number;
   facility: string; // a fictional gym, "Salle exemple A"
+  facilityEn: string; // the same in English, "Sample gym A"
   city: string;
   split: TrainingSplit;
   timeWindow: TimeWindow;
@@ -60,7 +61,8 @@ export interface BuddyMatchResult {
 /**
  * Strength parity between two lifters' working weights (bench and squat): 100 when their mean relative difference is
  * within 15 %, then 100 × (1 − difference), never under 20. Status: convention (UNSOURCED; a comparison of two typed
- * values, not a measure).
+ * values, not a measure). Used only to order the demo's fictional profiles: the screen shows no percentage (second
+ * review of 14 October 2026: "65 % de parité" came from the UNSOURCED 15 % and 20), only the gap in kg.
  */
 export function calculateStrengthParity(c1: CompoundStats, c2: CompoundStats): number {
   const benchDiff = Math.abs(c1.benchPressKg - c2.benchPressKg) / Math.max(c1.benchPressKg, c2.benchPressKg, 1);
@@ -79,6 +81,7 @@ export const DEMO_BUDDY_PROFILES: BuddyProfile[] = [
     name: 'Antoine D.',
     age: 26,
     facility: 'Salle exemple A',
+    facilityEn: 'Sample gym A',
     city: 'Paris',
     split: 'ppl',
     timeWindow: 'evening',
@@ -86,7 +89,7 @@ export const DEMO_BUDDY_PROFILES: BuddyProfile[] = [
     compounds: { benchPressKg: 100, squatKg: 130, deadliftKg: 160 },
     experienceYears: 4,
     bioEn: 'PPL lifter training at 6:30 PM. Looking for a reliable spotter on heavy bench & squat working sets.',
-    bioFr: 'Pratiquant PPL s’entraînant à 18h30. Cherche un partenaire régulier pour parer sur les séries lourdes.',
+    bioFr: 'S’entraîne en PPL vers 18\u00A0h\u00A030. Cherche un partenaire régulier pour parer sur les séries lourdes.',
     canSpotHeavy: true,
     isLookingForPartner: true,
     fictional: true,
@@ -96,6 +99,7 @@ export const DEMO_BUDDY_PROFILES: BuddyProfile[] = [
     name: 'Léa M.',
     age: 24,
     facility: 'Salle exemple A',
+    facilityEn: 'Sample gym A',
     city: 'Paris',
     split: 'upper_lower',
     timeWindow: 'evening',
@@ -103,7 +107,7 @@ export const DEMO_BUDDY_PROFILES: BuddyProfile[] = [
     compounds: { benchPressKg: 55, squatKg: 85, deadliftKg: 105 },
     experienceYears: 3,
     bioEn: 'Hypertrophy focused Upper/Lower split. Big emphasis on lengthened partials and tempo control.',
-    bioFr: 'Format Haut/Bas orienté hypertrophie. Focus sur les partielles étirées et le contrôle du tempo.',
+    bioFr: 'Programme haut du corps / bas du corps, pour l’hypertrophie. Travaille surtout les partielles en étirement et le tempo.',
     canSpotHeavy: true,
     isLookingForPartner: true,
     fictional: true,
@@ -113,6 +117,7 @@ export const DEMO_BUDDY_PROFILES: BuddyProfile[] = [
     name: 'Lucas B.',
     age: 29,
     facility: 'Salle exemple B',
+    facilityEn: 'Sample gym B',
     city: 'Paris',
     split: 'powerlifting',
     timeWindow: 'morning',
@@ -120,7 +125,7 @@ export const DEMO_BUDDY_PROFILES: BuddyProfile[] = [
     compounds: { benchPressKg: 120, squatKg: 160, deadliftKg: 200 },
     experienceYears: 6,
     bioEn: 'Early morning powerlifter (7:00 AM). RPE tracking and technical barbell work.',
-    bioFr: 'Powerlifter matinal (7h00). Travail technique à la barre et suivi RPE.',
+    bioFr: 'Force athlétique, le matin à 7\u00A0h. Travail technique à la barre, suivi au RPE.',
     canSpotHeavy: true,
     isLookingForPartner: true,
     fictional: true,
@@ -130,6 +135,7 @@ export const DEMO_BUDDY_PROFILES: BuddyProfile[] = [
     name: 'Sam T.',
     age: 27,
     facility: 'Salle exemple C',
+    facilityEn: 'Sample gym C',
     city: 'Lyon',
     split: 'ppl',
     timeWindow: 'evening',
@@ -137,7 +143,7 @@ export const DEMO_BUDDY_PROFILES: BuddyProfile[] = [
     compounds: { benchPressKg: 95, squatKg: 125, deadliftKg: 155 },
     experienceYears: 3,
     bioEn: 'After-work training partner needed for chest and leg days. High intensity, RPE 9-10.',
-    bioFr: 'Cherche partenaire après le travail pour séances pecs et jambes. Haute intensité.',
+    bioFr: 'Cherche un partenaire après le travail pour les séances pecs et jambes. Séances intenses.',
     canSpotHeavy: true,
     isLookingForPartner: true,
     fictional: true,
@@ -147,6 +153,7 @@ export const DEMO_BUDDY_PROFILES: BuddyProfile[] = [
     name: 'Emma W.',
     age: 25,
     facility: 'Salle exemple D',
+    facilityEn: 'Sample gym D',
     city: 'Lyon',
     split: 'upper_lower',
     timeWindow: 'morning',

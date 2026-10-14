@@ -24,7 +24,6 @@ const COPY = {
     none: 'Aucun message.',
     attach: 'Joindre ma dernière série',
     attached: line => `Ma dernière série\u00A0: ${line}.`,
-    noSet: 'Aucune série sur ce téléphone pour l’instant.',
     label: 'Message',
     placeholder: 'Écrire un message',
     add: 'Ajouter',
@@ -37,7 +36,6 @@ const COPY = {
     none: 'No message.',
     attach: 'Attach my last set',
     attached: line => `My last set: ${line}.`,
-    noSet: 'No set on this phone yet.',
     label: 'Message',
     placeholder: 'Write a message',
     add: 'Add',
@@ -63,10 +61,13 @@ export default function Chat({ onClose, onHistory }) {
     add(inputVal.trim());
     setInputVal('');
   };
+  // Only a set the phone holds can be attached: the button waits for the sets to load and stays off without one (second
+  // review of 14 October 2026: with no set, it posted the empty-state sentence as a message).
+  const line = Array.isArray(sets) ? lastSetLine(sets, lang) : null;
   const handleAttach = () => {
+    if (!line) return;
     hapticLight();
-    const line = lastSetLine(sets, lang);
-    add(line ? c.attached(line) : c.noSet);
+    add(c.attached(line));
   };
   const time = (t) => t.toLocaleTimeString(fr ? 'fr-FR' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
 
@@ -96,7 +97,7 @@ export default function Chat({ onClose, onHistory }) {
           </div>
 
           <div className="chat-footer">
-            <button type="button" className="sc-chip press chat-attach" onClick={handleAttach} data-testid="attach-telemetry-btn">{c.attach}</button>
+            <button type="button" className="sc-chip press chat-attach" onClick={handleAttach} disabled={!line} aria-disabled={!line || undefined} data-testid="attach-telemetry-btn">{c.attach}</button>
             <div className="chat-input-bar">
               <label className="sr" htmlFor="chat-input">{c.label}</label>
               <input

@@ -16,7 +16,7 @@
 .wv-experience .buddy-card { gap: var(--s-3); padding: 18px; }
 .wv-experience .buddy-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
 .wv-experience .buddy-name-block { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.wv-experience .buddy-parity { flex: none; text-transform: none; letter-spacing: 0.02em; }
+.wv-experience .buddy-gap { margin: 0; font-variant-numeric: tabular-nums; }
 .wv-experience .buddy-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .wv-experience .buddy-stats .sc-metric { padding: 10px 12px; }
 .wv-experience .buddy-stats .sc-metric-value { font-size: 18px; }

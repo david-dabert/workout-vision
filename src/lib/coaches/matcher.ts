@@ -24,6 +24,8 @@ export interface DemoCoachProfile {
   id: string;
   /** A placeholder that reads as one: "Coach exemple A". */
   name: string;
+  /** The same in English: "Sample coach A". */
+  nameEn: string;
   roleFr: string;
   roleEn: string;
   specialties: CoachSpecialty[];
@@ -54,17 +56,17 @@ const BIO = {
 
 /** Fictional placeholders, two or three a city, so the demo shows what the directory will look like. */
 export const DEMO_COACH_PROFILES: DemoCoachProfile[] = [
-  { id: 'demo-paris-a', name: 'Coach exemple A', ...COACH, ...BIO.coach, specialties: ['hypertrophy', 'strength'], city: 'Paris', fictional: true },
-  { id: 'demo-paris-b', name: 'Kiné exemple B', ...PHYSIO, ...BIO.physio, specialties: ['rehab'], city: 'Paris', fictional: true },
-  { id: 'demo-paris-c', name: 'Préparateur exemple C', ...PREP, ...BIO.prep, specialties: ['strength'], city: 'Paris', fictional: true },
-  { id: 'demo-lyon-a', name: 'Coach exemple D', ...COACH, ...BIO.coach, specialties: ['hypertrophy'], city: 'Lyon', fictional: true },
-  { id: 'demo-lyon-b', name: 'Kiné exemple E', ...PHYSIO, ...BIO.physio, specialties: ['rehab'], city: 'Lyon', fictional: true },
-  { id: 'demo-marseille-a', name: 'Coach exemple F', ...COACH, ...BIO.coach, specialties: ['hypertrophy', 'strength'], city: 'Marseille', fictional: true },
-  { id: 'demo-marseille-b', name: 'Kiné exemple G', ...PHYSIO, ...BIO.physio, specialties: ['rehab'], city: 'Marseille', fictional: true },
-  { id: 'demo-bordeaux-a', name: 'Préparateur exemple H', ...PREP, ...BIO.prep, specialties: ['strength'], city: 'Bordeaux', fictional: true },
-  { id: 'demo-bordeaux-b', name: 'Kiné exemple I', ...PHYSIO, ...BIO.physio, specialties: ['rehab'], city: 'Bordeaux', fictional: true },
-  { id: 'demo-lille-a', name: 'Coach exemple J', ...COACH, ...BIO.coach, specialties: ['hypertrophy'], city: 'Lille', fictional: true },
-  { id: 'demo-lille-b', name: 'Kiné exemple K', ...PHYSIO, ...BIO.physio, specialties: ['rehab'], city: 'Lille', fictional: true },
+  { id: 'demo-paris-a', name: 'Coach exemple A', nameEn: 'Sample coach A', ...COACH, ...BIO.coach, specialties: ['hypertrophy', 'strength'], city: 'Paris', fictional: true },
+  { id: 'demo-paris-b', name: 'Kiné exemple B', nameEn: 'Sample physio B', ...PHYSIO, ...BIO.physio, specialties: ['rehab'], city: 'Paris', fictional: true },
+  { id: 'demo-paris-c', name: 'Préparateur exemple C', nameEn: 'Sample trainer C', ...PREP, ...BIO.prep, specialties: ['strength'], city: 'Paris', fictional: true },
+  { id: 'demo-lyon-a', name: 'Coach exemple D', nameEn: 'Sample coach D', ...COACH, ...BIO.coach, specialties: ['hypertrophy'], city: 'Lyon', fictional: true },
+  { id: 'demo-lyon-b', name: 'Kiné exemple E', nameEn: 'Sample physio E', ...PHYSIO, ...BIO.physio, specialties: ['rehab'], city: 'Lyon', fictional: true },
+  { id: 'demo-marseille-a', name: 'Coach exemple F', nameEn: 'Sample coach F', ...COACH, ...BIO.coach, specialties: ['hypertrophy', 'strength'], city: 'Marseille', fictional: true },
+  { id: 'demo-marseille-b', name: 'Kiné exemple G', nameEn: 'Sample physio G', ...PHYSIO, ...BIO.physio, specialties: ['rehab'], city: 'Marseille', fictional: true },
+  { id: 'demo-bordeaux-a', name: 'Préparateur exemple H', nameEn: 'Sample trainer H', ...PREP, ...BIO.prep, specialties: ['strength'], city: 'Bordeaux', fictional: true },
+  { id: 'demo-bordeaux-b', name: 'Kiné exemple I', nameEn: 'Sample physio I', ...PHYSIO, ...BIO.physio, specialties: ['rehab'], city: 'Bordeaux', fictional: true },
+  { id: 'demo-lille-a', name: 'Coach exemple J', nameEn: 'Sample coach J', ...COACH, ...BIO.coach, specialties: ['hypertrophy'], city: 'Lille', fictional: true },
+  { id: 'demo-lille-b', name: 'Kiné exemple K', nameEn: 'Sample physio K', ...PHYSIO, ...BIO.physio, specialties: ['rehab'], city: 'Lille', fictional: true },
 ];
 
 /** The profiles of a city, those of a specialty only when one is chosen; [] when none matches. */

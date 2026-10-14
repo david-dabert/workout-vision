@@ -36,5 +36,12 @@ describe('the messaging demo', () => {
       expect(html).toContain(lang === 'fr' ? 'Aucun message n’est envoyé.' : 'No message is sent.');
       expect(html).not.toMatch(/chiffr|encrypt|P2P|Coach Julien|DPT|vérifié|verified|Invitation|invitation|Score de Forme|Form Score|\[object Object\]/);
     });
+    // Second review of 14 October 2026: while the sets load, no "no set" line, and nothing to attach.
+    it(`says nothing about the last set until the sets have loaded, and attaches none before (${lang})`, async () => {
+      const html = decode(await render(lang));
+      expect(html).not.toContain('data-testid="last-set-line"');
+      expect(html).not.toMatch(/Aucune série|No set on this phone/);
+      expect(html).toMatch(/<button[^>]*disabled=""[^>]*data-testid="attach-telemetry-btn"/);
+    });
   }
 });

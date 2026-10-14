@@ -30,7 +30,9 @@ describe('the gym buddy demo', () => {
       expect(html).toContain('data-testid="gym-buddy-screen"');
       expect(html).toContain('data-testid="filter-ppl"');
       expect(html).toContain('data-testid="demo-badge"');
-      expect(html).toContain('Salle exemple A');
+      expect(html).toContain(lang === 'fr' ? 'Salle exemple A' : 'Sample gym A');
+      // Second review: French typography and words in the bios (18 h 30, 7 h; no "Powerlifter", no "Focus").
+      if (lang === 'fr') expect(html).not.toMatch(/\d+h\d|\dh00|Powerlifter|Focus/);
       expect(html).toContain(lang === 'fr' ? 'Saisi à la main' : 'Typed by hand');
       expect(html).not.toMatch(/Basic-Fit|Fitness Park|Gymbox|Equinox|P2P|Synchronis|Synced|déploiement|rolling out|Proposer une séance|Request Training|créneau|schedule|parité|parity/i);
     });

@@ -96,9 +96,9 @@ export default function CoachFinder({ onClose, onHistory }) {
                 {profiles.map(p => (
                   <article key={p.id} className="sc-card coach-card" data-testid={`coach-card-${p.id}`}>
                     <div className="coach-card-head">
-                      <span className="coach-avatar" aria-hidden="true">{initials(p.name)}</span>
+                      <span className="coach-avatar" aria-hidden="true">{initials(fr ? p.name : p.nameEn)}</span>
                       <div className="coach-name-block">
-                        <h2 className="sc-name">{p.name}</h2>
+                        <h2 className="sc-name">{fr ? p.name : p.nameEn}</h2>
                         <p className="sc-caption">{fr ? p.roleFr : p.roleEn} · {p.city}</p>
                       </div>
                       <span className="sc-tag coach-fictional">{c.fictional}</span>
