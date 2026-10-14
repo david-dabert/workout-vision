@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Cardio Machine Ergometer: dynamic cycle drive phase -->
+  <circle cx="24" cy="22" r="3.5"/>
+  <line x1="24" y1="25.5" x2="26" y2="38"/>
+  <path d="M 26 38 L 38 36 L 42 46"/>
+  <path d="M 24 28 L 36 28"/>
+  <circle cx="42" cy="46" r="6"/>
+  <path d="M 16 38 L 10 38 M 13 35 L 10 38 L 13 41"/>
+</svg>

@@ -1,0 +1,2732 @@
+[
+  {
+    "id": "ab_crunch_machine",
+    "file": "ab_crunch_machine.svg",
+    "name_en": "Ab Crunch Machine",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "ab_wheel",
+    "file": "ab_wheel.svg",
+    "name_en": "Ab Wheel Rollout",
+    "position_shown": "Isometric horizontal bridge (flat neutral spine, horizontal stabilization arrow)"
+  },
+  {
+    "id": "ab_wheel_rollout",
+    "file": "ab_wheel_rollout.svg",
+    "name_en": "Ab Wheel Rollout",
+    "position_shown": "Isometric horizontal bridge (flat neutral spine, horizontal stabilization arrow)"
+  },
+  {
+    "id": "abductor_machine",
+    "file": "abductor_machine.svg",
+    "name_en": "Abductor Machine",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "active_hang",
+    "file": "active_hang.svg",
+    "name_en": "Active Hang",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "adductor_machine",
+    "file": "adductor_machine.svg",
+    "name_en": "Adductor Machine",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "archer_push_up",
+    "file": "archer_push_up.svg",
+    "name_en": "Archer Push-up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "arm_circles",
+    "file": "arm_circles.svg",
+    "name_en": "Arm Circles",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "arnold_press",
+    "file": "arnold_press.svg",
+    "name_en": "Arnold Press",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "assault_bike",
+    "file": "assault_bike.svg",
+    "name_en": "Assault Bike",
+    "position_shown": "Ergometer drive phase (leg drive & arm pull, propulsion arrow)"
+  },
+  {
+    "id": "assisted_chin_up",
+    "file": "assisted_chin_up.svg",
+    "name_en": "Assisted Chin-up",
+    "position_shown": "Top concentric hold (chin over bar, elbows down, upward pull arrow)"
+  },
+  {
+    "id": "assisted_dip",
+    "file": "assisted_dip.svg",
+    "name_en": "Assisted Dip",
+    "position_shown": "Bottom dip depth (elbows flexed at 90°, upward drive arrow)"
+  },
+  {
+    "id": "assisted_pistol_squat",
+    "file": "assisted_pistol_squat.svg",
+    "name_en": "Assisted Pistol Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "assisted_pull_up",
+    "file": "assisted_pull_up.svg",
+    "name_en": "Assisted Pull-up",
+    "position_shown": "Top concentric hold (chin over bar, elbows down, upward pull arrow)"
+  },
+  {
+    "id": "back_extension",
+    "file": "back_extension.svg",
+    "name_en": "Back Extension",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "back_extension_45",
+    "file": "back_extension_45.svg",
+    "name_en": "45-Degree Back Extension",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "back_lever",
+    "file": "back_lever.svg",
+    "name_en": "Back Lever",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "band_chest_press",
+    "file": "band_chest_press.svg",
+    "name_en": "Band Chest Press",
+    "position_shown": "Chest touch inflection point (bar on lower sternum, upward drive arrow)"
+  },
+  {
+    "id": "band_clamshell",
+    "file": "band_clamshell.svg",
+    "name_en": "Band Clamshell",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "band_deadlift",
+    "file": "band_deadlift.svg",
+    "name_en": "Band Deadlift",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "band_face_pull",
+    "file": "band_face_pull.svg",
+    "name_en": "Band Face Pull",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "band_good_morning",
+    "file": "band_good_morning.svg",
+    "name_en": "Band Good Morning",
+    "position_shown": "End-range hip hinge (bar below knees, flat back, hip extension arc arrow)"
+  },
+  {
+    "id": "band_hip_thrust",
+    "file": "band_hip_thrust.svg",
+    "name_en": "Band Hip Thrust",
+    "position_shown": "Peak hip extension lockout (knees at 90°, horizontal torso, upward drive arrow)"
+  },
+  {
+    "id": "band_lateral_raise",
+    "file": "band_lateral_raise.svg",
+    "name_en": "Band Lateral Raise",
+    "position_shown": "Peak abduction position (arms at 90° horizontal, upward arc arrow)"
+  },
+  {
+    "id": "band_pull_apart",
+    "file": "band_pull_apart.svg",
+    "name_en": "Band Pull-Apart",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "band_row",
+    "file": "band_row.svg",
+    "name_en": "Band Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "band_squat",
+    "file": "band_squat.svg",
+    "name_en": "Band Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "banded_clamshell",
+    "file": "banded_clamshell.svg",
+    "name_en": "Banded Clamshell",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "banded_dead_bug",
+    "file": "banded_dead_bug.svg",
+    "name_en": "Banded Dead Bug",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "banded_donkey_kick",
+    "file": "banded_donkey_kick.svg",
+    "name_en": "Banded Donkey Kick",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "banded_face_pull",
+    "file": "banded_face_pull.svg",
+    "name_en": "Banded Face Pull",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "banded_fire_hydrant",
+    "file": "banded_fire_hydrant.svg",
+    "name_en": "Banded Fire Hydrant",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "banded_frog_pump",
+    "file": "banded_frog_pump.svg",
+    "name_en": "Banded Frog Pump",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "banded_glute_bridge",
+    "file": "banded_glute_bridge.svg",
+    "name_en": "Banded Glute Bridge",
+    "position_shown": "Peak hip extension lockout (knees at 90°, horizontal torso, upward drive arrow)"
+  },
+  {
+    "id": "banded_hip_thrust",
+    "file": "banded_hip_thrust.svg",
+    "name_en": "Banded Hip Thrust",
+    "position_shown": "Peak hip extension lockout (knees at 90°, horizontal torso, upward drive arrow)"
+  },
+  {
+    "id": "banded_kickback",
+    "file": "banded_kickback.svg",
+    "name_en": "Banded Kickback",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "banded_lat_pulldown",
+    "file": "banded_lat_pulldown.svg",
+    "name_en": "Banded Lat Pulldown",
+    "position_shown": "Contracted pulldown position (bar at upper chest, downward pull arrow)"
+  },
+  {
+    "id": "banded_lateral_walk",
+    "file": "banded_lateral_walk.svg",
+    "name_en": "Banded Lateral Walk",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "banded_monster_walk",
+    "file": "banded_monster_walk.svg",
+    "name_en": "Banded Monster Walk",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "banded_pallof_press",
+    "file": "banded_pallof_press.svg",
+    "name_en": "Banded Pallof Press",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "banded_row",
+    "file": "banded_row.svg",
+    "name_en": "Banded Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "banded_seated_hip_abduction",
+    "file": "banded_seated_hip_abduction.svg",
+    "name_en": "Banded Seated Hip Abduction",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "banded_squat",
+    "file": "banded_squat.svg",
+    "name_en": "Banded Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "banded_standing_hip_abduction",
+    "file": "banded_standing_hip_abduction.svg",
+    "name_en": "Banded Standing Hip Abduction",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "banded_woodchop",
+    "file": "banded_woodchop.svg",
+    "name_en": "Banded Woodchop",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "barbell_curl",
+    "file": "barbell_curl.svg",
+    "name_en": "Standing Barbell Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "barbell_glute_bridge",
+    "file": "barbell_glute_bridge.svg",
+    "name_en": "Barbell Glute Bridge",
+    "position_shown": "Peak hip extension lockout (knees at 90°, horizontal torso, upward drive arrow)"
+  },
+  {
+    "id": "barbell_jump_squat",
+    "file": "barbell_jump_squat.svg",
+    "name_en": "Barbell Jump Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "barbell_row",
+    "file": "barbell_row.svg",
+    "name_en": "Barbell Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "battle_rope",
+    "file": "battle_rope.svg",
+    "name_en": "Battle Rope",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "battle_ropes",
+    "file": "battle_ropes.svg",
+    "name_en": "Battle Ropes",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "bear_crawl",
+    "file": "bear_crawl.svg",
+    "name_en": "Bear Crawl",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "bear_plank",
+    "file": "bear_plank.svg",
+    "name_en": "Bear Plank",
+    "position_shown": "Isometric horizontal bridge (flat neutral spine, horizontal stabilization arrow)"
+  },
+  {
+    "id": "behind_the_neck_press",
+    "file": "behind_the_neck_press.svg",
+    "name_en": "Behind-the-Neck Press",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "belt_squat",
+    "file": "belt_squat.svg",
+    "name_en": "Belt Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "bench_dip",
+    "file": "bench_dip.svg",
+    "name_en": "Bench Dip",
+    "position_shown": "Bottom dip depth (elbows flexed at 90°, upward drive arrow)"
+  },
+  {
+    "id": "bench_press",
+    "file": "bench_press.svg",
+    "name_en": "Bench Press",
+    "position_shown": "Chest touch inflection point (bar on lower sternum, upward drive arrow)"
+  },
+  {
+    "id": "bent_over_rear_delt_raise",
+    "file": "bent_over_rear_delt_raise.svg",
+    "name_en": "Bent-Over Rear Delt Raise",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "bent_over_row",
+    "file": "bent_over_row.svg",
+    "name_en": "Bent-Over Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "bicep_curl",
+    "file": "bicep_curl.svg",
+    "name_en": "Bicep Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "bicycle_crunch",
+    "file": "bicycle_crunch.svg",
+    "name_en": "Bicycle Crunch",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "bird_dog",
+    "file": "bird_dog.svg",
+    "name_en": "Bird Dog",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "bodyweight_squat",
+    "file": "bodyweight_squat.svg",
+    "name_en": "Bodyweight Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "box_jump",
+    "file": "box_jump.svg",
+    "name_en": "Box Jump",
+    "position_shown": "Explosive triple extension (jump propulsion, vertical drive arrow)"
+  },
+  {
+    "id": "box_squat",
+    "file": "box_squat.svg",
+    "name_en": "Box Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "broad_jump",
+    "file": "broad_jump.svg",
+    "name_en": "Broad Jump",
+    "position_shown": "Explosive triple extension (jump propulsion, vertical drive arrow)"
+  },
+  {
+    "id": "bulgarian_split_squat",
+    "file": "bulgarian_split_squat.svg",
+    "name_en": "Bulgarian Split Squat",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "burpee",
+    "file": "burpee.svg",
+    "name_en": "Burpee",
+    "position_shown": "Explosive triple extension (jump propulsion, vertical drive arrow)"
+  },
+  {
+    "id": "butterfly_stretch",
+    "file": "butterfly_stretch.svg",
+    "name_en": "Butterfly Stretch",
+    "position_shown": "Wide chest fly stretch (arms abducted, inward adduction arc arrow)"
+  },
+  {
+    "id": "cable_crossover",
+    "file": "cable_crossover.svg",
+    "name_en": "Cable Crossover",
+    "position_shown": "Wide chest fly stretch (arms abducted, inward adduction arc arrow)"
+  },
+  {
+    "id": "cable_crunch",
+    "file": "cable_crunch.svg",
+    "name_en": "Cable Crunch",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "cable_curl",
+    "file": "cable_curl.svg",
+    "name_en": "Cable Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "cable_fly",
+    "file": "cable_fly.svg",
+    "name_en": "Cable Fly",
+    "position_shown": "Wide chest fly stretch (arms abducted, inward adduction arc arrow)"
+  },
+  {
+    "id": "cable_front_raise",
+    "file": "cable_front_raise.svg",
+    "name_en": "Cable Front Raise",
+    "position_shown": "Peak abduction position (arms at 90° horizontal, upward arc arrow)"
+  },
+  {
+    "id": "cable_hip_abduction",
+    "file": "cable_hip_abduction.svg",
+    "name_en": "Cable Hip Abduction",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "cable_hip_adduction",
+    "file": "cable_hip_adduction.svg",
+    "name_en": "Cable Hip Adduction",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "cable_hip_extension",
+    "file": "cable_hip_extension.svg",
+    "name_en": "Cable Hip Extension",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "cable_kickback",
+    "file": "cable_kickback.svg",
+    "name_en": "Cable Kickback",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "cable_lateral_raise",
+    "file": "cable_lateral_raise.svg",
+    "name_en": "Cable Lateral Raise",
+    "position_shown": "Peak abduction position (arms at 90° horizontal, upward arc arrow)"
+  },
+  {
+    "id": "cable_pallof_hold",
+    "file": "cable_pallof_hold.svg",
+    "name_en": "Cable Pallof Hold",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "cable_pull_through",
+    "file": "cable_pull_through.svg",
+    "name_en": "Cable Pull-Through",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "cable_rear_delt_fly",
+    "file": "cable_rear_delt_fly.svg",
+    "name_en": "Cable Rear Delt Fly",
+    "position_shown": "Wide chest fly stretch (arms abducted, inward adduction arc arrow)"
+  },
+  {
+    "id": "cable_reverse_fly",
+    "file": "cable_reverse_fly.svg",
+    "name_en": "Cable Reverse Fly",
+    "position_shown": "Wide chest fly stretch (arms abducted, inward adduction arc arrow)"
+  },
+  {
+    "id": "cable_row_single",
+    "file": "cable_row_single.svg",
+    "name_en": "Single-Arm Cable Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "cable_shrug",
+    "file": "cable_shrug.svg",
+    "name_en": "Cable Shrug",
+    "position_shown": "Peak abduction position (arms at 90° horizontal, upward arc arrow)"
+  },
+  {
+    "id": "cable_standing_hip_abduction",
+    "file": "cable_standing_hip_abduction.svg",
+    "name_en": "Cable Standing Hip Abduction",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "cable_standing_hip_adduction",
+    "file": "cable_standing_hip_adduction.svg",
+    "name_en": "Cable Standing Hip Adduction",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "cable_tricep_pushdown",
+    "file": "cable_tricep_pushdown.svg",
+    "name_en": "Cable Tricep Pushdown",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "cable_woodchop",
+    "file": "cable_woodchop.svg",
+    "name_en": "Cable Woodchop",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "calf_raise",
+    "file": "calf_raise.svg",
+    "name_en": "Calf Raise",
+    "position_shown": "Peak plantarflexion (heels elevated high, upward drive arrow)"
+  },
+  {
+    "id": "captains_chair_knee_raise",
+    "file": "captains_chair_knee_raise.svg",
+    "name_en": "Captain's Chair Knee Raise",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "cat_cow_stretch",
+    "file": "cat_cow_stretch.svg",
+    "name_en": "Cat-Cow Stretch",
+    "position_shown": "Terminal stretch elongation (musculoskeletal hold, elongation arrow)"
+  },
+  {
+    "id": "chair_dip",
+    "file": "chair_dip.svg",
+    "name_en": "Chair Dip",
+    "position_shown": "Bottom dip depth (elbows flexed at 90°, upward drive arrow)"
+  },
+  {
+    "id": "chest_dip",
+    "file": "chest_dip.svg",
+    "name_en": "Chest Dip",
+    "position_shown": "Bottom dip depth (elbows flexed at 90°, upward drive arrow)"
+  },
+  {
+    "id": "chest_supported_row",
+    "file": "chest_supported_row.svg",
+    "name_en": "Chest Supported Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "childs_pose",
+    "file": "childs_pose.svg",
+    "name_en": "Child's Pose",
+    "position_shown": "Terminal stretch elongation (musculoskeletal hold, elongation arrow)"
+  },
+  {
+    "id": "chin_up",
+    "file": "chin_up.svg",
+    "name_en": "Chin-up",
+    "position_shown": "Top concentric hold (chin over bar, elbows down, upward pull arrow)"
+  },
+  {
+    "id": "clamshell",
+    "file": "clamshell.svg",
+    "name_en": "Clamshell",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "clean_and_jerk",
+    "file": "clean_and_jerk.svg",
+    "name_en": "Clean and Jerk",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "clean_and_press",
+    "file": "clean_and_press.svg",
+    "name_en": "Clean and Press",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "clean_pull",
+    "file": "clean_pull.svg",
+    "name_en": "Clean Pull",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "close_grip_bench",
+    "file": "close_grip_bench.svg",
+    "name_en": "Close-Grip Bench Press",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "close_grip_bench_press",
+    "file": "close_grip_bench_press.svg",
+    "name_en": "Close-Grip Bench Press",
+    "position_shown": "Chest touch inflection point (bar on lower sternum, upward drive arrow)"
+  },
+  {
+    "id": "close_grip_lat_pulldown",
+    "file": "close_grip_lat_pulldown.svg",
+    "name_en": "Close-Grip Lat Pulldown",
+    "position_shown": "Contracted pulldown position (bar at upper chest, downward pull arrow)"
+  },
+  {
+    "id": "close_grip_pull_up",
+    "file": "close_grip_pull_up.svg",
+    "name_en": "Close Grip Pull-Up",
+    "position_shown": "Top concentric hold (chin over bar, elbows down, upward pull arrow)"
+  },
+  {
+    "id": "close_grip_push_up",
+    "file": "close_grip_push_up.svg",
+    "name_en": "Close-Grip Push-Up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "commando_pull_up",
+    "file": "commando_pull_up.svg",
+    "name_en": "Commando Pull-up",
+    "position_shown": "Top concentric hold (chin over bar, elbows down, upward pull arrow)"
+  },
+  {
+    "id": "concentration_curl",
+    "file": "concentration_curl.svg",
+    "name_en": "Concentration Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "copenhagen_plank",
+    "file": "copenhagen_plank.svg",
+    "name_en": "Copenhagen Plank",
+    "position_shown": "Isometric horizontal bridge (flat neutral spine, horizontal stabilization arrow)"
+  },
+  {
+    "id": "cossack_squat",
+    "file": "cossack_squat.svg",
+    "name_en": "Cossack Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "crab_walk",
+    "file": "crab_walk.svg",
+    "name_en": "Crab Walk",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "cross_body_curl",
+    "file": "cross_body_curl.svg",
+    "name_en": "Cross-Body Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "cross_body_shoulder_stretch",
+    "file": "cross_body_shoulder_stretch.svg",
+    "name_en": "Cross-Body Shoulder Stretch",
+    "position_shown": "Terminal stretch elongation (musculoskeletal hold, elongation arrow)"
+  },
+  {
+    "id": "crunch",
+    "file": "crunch.svg",
+    "name_en": "Crunch",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "curtsy_lunge",
+    "file": "curtsy_lunge.svg",
+    "name_en": "Curtsy Lunge",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "cycling",
+    "file": "cycling.svg",
+    "name_en": "Cycling",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "dead_bug",
+    "file": "dead_bug.svg",
+    "name_en": "Dead Bug",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "dead_hang",
+    "file": "dead_hang.svg",
+    "name_en": "Dead Hang",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "deadlift",
+    "file": "deadlift.svg",
+    "name_en": "Deadlift",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "decline_bench_press",
+    "file": "decline_bench_press.svg",
+    "name_en": "Decline Bench Press",
+    "position_shown": "Decline chest touch position (upward pressing arrow)"
+  },
+  {
+    "id": "decline_crunch",
+    "file": "decline_crunch.svg",
+    "name_en": "Decline Crunch",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "decline_dumbbell_press",
+    "file": "decline_dumbbell_press.svg",
+    "name_en": "Decline Dumbbell Press",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "decline_push_up",
+    "file": "decline_push_up.svg",
+    "name_en": "Decline Push-up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "decline_sit_up",
+    "file": "decline_sit_up.svg",
+    "name_en": "Decline Sit-Up",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "deficit_push_down",
+    "file": "deficit_push_down.svg",
+    "name_en": "Deficit Push-Down",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "deficit_push_up",
+    "file": "deficit_push_up.svg",
+    "name_en": "Deficit Push-Up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "deficit_reverse_lunge",
+    "file": "deficit_reverse_lunge.svg",
+    "name_en": "Deficit Reverse Lunge",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "depth_jump",
+    "file": "depth_jump.svg",
+    "name_en": "Depth Jump",
+    "position_shown": "Explosive triple extension (jump propulsion, vertical drive arrow)"
+  },
+  {
+    "id": "devil_press",
+    "file": "devil_press.svg",
+    "name_en": "Devil Press",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "diamond_push_up",
+    "file": "diamond_push_up.svg",
+    "name_en": "Diamond Push-up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "dip",
+    "file": "dip.svg",
+    "name_en": "Dip",
+    "position_shown": "Bottom dip depth (elbows flexed at 90°, upward drive arrow)"
+  },
+  {
+    "id": "donkey_calf_raise",
+    "file": "donkey_calf_raise.svg",
+    "name_en": "Donkey Calf Raise",
+    "position_shown": "Peak plantarflexion (heels elevated high, upward drive arrow)"
+  },
+  {
+    "id": "donkey_kick",
+    "file": "donkey_kick.svg",
+    "name_en": "Donkey Kick",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "doorway_chest_stretch",
+    "file": "doorway_chest_stretch.svg",
+    "name_en": "Doorway Chest Stretch",
+    "position_shown": "Terminal stretch elongation (musculoskeletal hold, elongation arrow)"
+  },
+  {
+    "id": "doorway_row",
+    "file": "doorway_row.svg",
+    "name_en": "Doorway Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "drag_curl",
+    "file": "drag_curl.svg",
+    "name_en": "Drag Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "dragon_flag",
+    "file": "dragon_flag.svg",
+    "name_en": "Dragon Flag",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "dumbbell_bench_press",
+    "file": "dumbbell_bench_press.svg",
+    "name_en": "Dumbbell Bench Press",
+    "position_shown": "Chest touch inflection point (bar on lower sternum, upward drive arrow)"
+  },
+  {
+    "id": "dumbbell_bent_over_row",
+    "file": "dumbbell_bent_over_row.svg",
+    "name_en": "Dumbbell Bent Over Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "dumbbell_clean",
+    "file": "dumbbell_clean.svg",
+    "name_en": "Dumbbell Clean",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "dumbbell_curtsy_lunge",
+    "file": "dumbbell_curtsy_lunge.svg",
+    "name_en": "Dumbbell Curtsy Lunge",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "dumbbell_fly",
+    "file": "dumbbell_fly.svg",
+    "name_en": "Dumbbell Fly",
+    "position_shown": "Wide chest fly stretch (arms abducted, inward adduction arc arrow)"
+  },
+  {
+    "id": "dumbbell_glute_bridge",
+    "file": "dumbbell_glute_bridge.svg",
+    "name_en": "Dumbbell Glute Bridge",
+    "position_shown": "Peak hip extension lockout (knees at 90°, horizontal torso, upward drive arrow)"
+  },
+  {
+    "id": "dumbbell_hip_thrust",
+    "file": "dumbbell_hip_thrust.svg",
+    "name_en": "Dumbbell Hip Thrust",
+    "position_shown": "Peak hip extension lockout (knees at 90°, horizontal torso, upward drive arrow)"
+  },
+  {
+    "id": "dumbbell_lateral_lunge",
+    "file": "dumbbell_lateral_lunge.svg",
+    "name_en": "Dumbbell Lateral Lunge",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "dumbbell_overhead_press",
+    "file": "dumbbell_overhead_press.svg",
+    "name_en": "Dumbbell Overhead Press (Standing)",
+    "position_shown": "Front rack shoulder position (bar at collarbone, upward press arrow)"
+  },
+  {
+    "id": "dumbbell_overhead_tricep_extension",
+    "file": "dumbbell_overhead_tricep_extension.svg",
+    "name_en": "Dumbbell Overhead Tricep Extension",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "dumbbell_pullover",
+    "file": "dumbbell_pullover.svg",
+    "name_en": "Dumbbell Pullover",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "dumbbell_romanian_deadlift",
+    "file": "dumbbell_romanian_deadlift.svg",
+    "name_en": "Dumbbell Romanian Deadlift",
+    "position_shown": "End-range hip hinge (bar below knees, flat back, hip extension arc arrow)"
+  },
+  {
+    "id": "dumbbell_shrug",
+    "file": "dumbbell_shrug.svg",
+    "name_en": "Dumbbell Shrug",
+    "position_shown": "Peak abduction position (arms at 90° horizontal, upward arc arrow)"
+  },
+  {
+    "id": "dumbbell_side_bend",
+    "file": "dumbbell_side_bend.svg",
+    "name_en": "Dumbbell Side Bend",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "dumbbell_skull_crusher",
+    "file": "dumbbell_skull_crusher.svg",
+    "name_en": "Two Dumbbell Skullcrusher",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "dumbbell_snatch",
+    "file": "dumbbell_snatch.svg",
+    "name_en": "Dumbbell Snatch",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "dumbbell_sumo_deadlift",
+    "file": "dumbbell_sumo_deadlift.svg",
+    "name_en": "Dumbbell Sumo Deadlift",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "dumbbell_sumo_squat",
+    "file": "dumbbell_sumo_squat.svg",
+    "name_en": "Dumbbell Sumo Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "elliptical",
+    "file": "elliptical.svg",
+    "name_en": "Elliptical",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "explosive_push_up",
+    "file": "explosive_push_up.svg",
+    "name_en": "Explosive Push-up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "external_rotation",
+    "file": "external_rotation.svg",
+    "name_en": "External Rotation",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "ez_bar_curl",
+    "file": "ez_bar_curl.svg",
+    "name_en": "EZ-Bar Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "face_pull",
+    "file": "face_pull.svg",
+    "name_en": "Face Pull",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "farmer_carry",
+    "file": "farmer_carry.svg",
+    "name_en": "Farmer Carry",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "farmers_walk",
+    "file": "farmers_walk.svg",
+    "name_en": "Upright posture",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "fast_feet",
+    "file": "fast_feet.svg",
+    "name_en": "Fast Feet",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "feet_elevated_pike_push_up",
+    "file": "feet_elevated_pike_push_up.svg",
+    "name_en": "Feet-Elevated Pike Push-up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "fire_hydrant",
+    "file": "fire_hydrant.svg",
+    "name_en": "Fire Hydrant",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "flat_dumbbell_press",
+    "file": "flat_dumbbell_press.svg",
+    "name_en": "Flat Dumbbell Press",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "floor_press",
+    "file": "floor_press.svg",
+    "name_en": "Floor Press",
+    "position_shown": "Chest touch inflection point (bar on lower sternum, upward drive arrow)"
+  },
+  {
+    "id": "flutter_kick",
+    "file": "flutter_kick.svg",
+    "name_en": "Flutter Kick",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "forward_lunge",
+    "file": "forward_lunge.svg",
+    "name_en": "Forward Lunge",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "frog_pump",
+    "file": "frog_pump.svg",
+    "name_en": "Frog Pump",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "front_foot_elevated_split_squat",
+    "file": "front_foot_elevated_split_squat.svg",
+    "name_en": "Front-Foot Elevated Split Squat",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "front_lever",
+    "file": "front_lever.svg",
+    "name_en": "Front Lever",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "front_raise",
+    "file": "front_raise.svg",
+    "name_en": "Front Raise",
+    "position_shown": "Peak abduction position (arms at 90° horizontal, upward arc arrow)"
+  },
+  {
+    "id": "front_squat",
+    "file": "front_squat.svg",
+    "name_en": "Front Squat",
+    "position_shown": "Bottom squat inflection (upright trunk, front-loaded weight, upward drive arrow)"
+  },
+  {
+    "id": "glute_bridge",
+    "file": "glute_bridge.svg",
+    "name_en": "Glute Bridge",
+    "position_shown": "Peak hip extension lockout (knees at 90°, horizontal torso, upward drive arrow)"
+  },
+  {
+    "id": "glute_bridge_march",
+    "file": "glute_bridge_march.svg",
+    "name_en": "Glute Bridge March",
+    "position_shown": "Peak hip extension lockout (knees at 90°, horizontal torso, upward drive arrow)"
+  },
+  {
+    "id": "glute_focused_back_extension",
+    "file": "glute_focused_back_extension.svg",
+    "name_en": "Glute-Focused Back Extension",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "glute_ham_raise",
+    "file": "glute_ham_raise.svg",
+    "name_en": "Glute-Ham Raise",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "goblet_squat",
+    "file": "goblet_squat.svg",
+    "name_en": "Goblet Squat",
+    "position_shown": "Bottom squat inflection (upright trunk, front-loaded weight, upward drive arrow)"
+  },
+  {
+    "id": "good_morning",
+    "file": "good_morning.svg",
+    "name_en": "Good Morning",
+    "position_shown": "End-range hip hinge (bar below knees, flat back, hip extension arc arrow)"
+  },
+  {
+    "id": "hack_squat",
+    "file": "hack_squat.svg",
+    "name_en": "Hack Squat",
+    "position_shown": "Leg press inflection (knees flexed, upward sled drive arrow)"
+  },
+  {
+    "id": "half_burpee",
+    "file": "half_burpee.svg",
+    "name_en": "Half Burpee",
+    "position_shown": "Explosive triple extension (jump propulsion, vertical drive arrow)"
+  },
+  {
+    "id": "half_kneeling_pallof_press",
+    "file": "half_kneeling_pallof_press.svg",
+    "name_en": "Half-Kneeling Pallof Press",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "hammer_curl",
+    "file": "hammer_curl.svg",
+    "name_en": "Hammer Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "hamstring_stretch",
+    "file": "hamstring_stretch.svg",
+    "name_en": "Hamstring Stretch",
+    "position_shown": "Terminal stretch elongation (musculoskeletal hold, elongation arrow)"
+  },
+  {
+    "id": "hand_release_push_up",
+    "file": "hand_release_push_up.svg",
+    "name_en": "Hand-Release Push-Up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "handstand_push_up",
+    "file": "handstand_push_up.svg",
+    "name_en": "Handstand Push-up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "hang_clean",
+    "file": "hang_clean.svg",
+    "name_en": "Hang Clean",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "hang_snatch",
+    "file": "hang_snatch.svg",
+    "name_en": "Hang Snatch",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "hanging_knee_raise",
+    "file": "hanging_knee_raise.svg",
+    "name_en": "Hanging Knee Raise",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "hanging_leg_raise",
+    "file": "hanging_leg_raise.svg",
+    "name_en": "Hanging Leg Raise",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "heel_elevated_goblet_squat",
+    "file": "heel_elevated_goblet_squat.svg",
+    "name_en": "Heel-Elevated Goblet Squat",
+    "position_shown": "Bottom squat inflection (upright trunk, front-loaded weight, upward drive arrow)"
+  },
+  {
+    "id": "heel_elevated_squat",
+    "file": "heel_elevated_squat.svg",
+    "name_en": "Heel Elevated Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "heel_tap",
+    "file": "heel_tap.svg",
+    "name_en": "Heel Tap",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "high_knees",
+    "file": "high_knees.svg",
+    "name_en": "High Knees",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "hiking",
+    "file": "hiking.svg",
+    "name_en": "Hiking",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "hindu_push_up",
+    "file": "hindu_push_up.svg",
+    "name_en": "Hindu Push-up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "hip_abduction_machine",
+    "file": "hip_abduction_machine.svg",
+    "name_en": "Hip Abduction Machine",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "hip_adduction_machine",
+    "file": "hip_adduction_machine.svg",
+    "name_en": "Hip Adduction Machine",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "hip_airplane",
+    "file": "hip_airplane.svg",
+    "name_en": "Hip Airplane",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "hip_thrust",
+    "file": "hip_thrust.svg",
+    "name_en": "Hip Thrust",
+    "position_shown": "Peak hip extension lockout (knees at 90°, horizontal torso, upward drive arrow)"
+  },
+  {
+    "id": "hollow_body_hold",
+    "file": "hollow_body_hold.svg",
+    "name_en": "Hollow Body Hold",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "hollow_rock",
+    "file": "hollow_rock.svg",
+    "name_en": "Hollow Rock",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "inchworm",
+    "file": "inchworm.svg",
+    "name_en": "Inchworm",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "incline_bench_press",
+    "file": "incline_bench_press.svg",
+    "name_en": "Incline Bench Press",
+    "position_shown": "Incline chest touch position (bar at upper chest, upward pressing arrow)"
+  },
+  {
+    "id": "incline_cable_fly",
+    "file": "incline_cable_fly.svg",
+    "name_en": "Incline Cable Fly",
+    "position_shown": "Wide chest fly stretch (arms abducted, inward adduction arc arrow)"
+  },
+  {
+    "id": "incline_dumbbell_curl",
+    "file": "incline_dumbbell_curl.svg",
+    "name_en": "Incline Dumbbell Curl",
+    "position_shown": "Incline chest touch position (bar at upper chest, upward pressing arrow)"
+  },
+  {
+    "id": "incline_dumbbell_press",
+    "file": "incline_dumbbell_press.svg",
+    "name_en": "Incline Dumbbell Press",
+    "position_shown": "Incline chest touch position (bar at upper chest, upward pressing arrow)"
+  },
+  {
+    "id": "incline_dumbbell_row",
+    "file": "incline_dumbbell_row.svg",
+    "name_en": "Incline Dumbbell Row",
+    "position_shown": "Incline chest touch position (bar at upper chest, upward pressing arrow)"
+  },
+  {
+    "id": "incline_push_up",
+    "file": "incline_push_up.svg",
+    "name_en": "Incline Push-up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "internal_rotation",
+    "file": "internal_rotation.svg",
+    "name_en": "Internal Rotation",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "inverted_row",
+    "file": "inverted_row.svg",
+    "name_en": "Inverted Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "jefferson_curl",
+    "file": "jefferson_curl.svg",
+    "name_en": "Jefferson Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "jm_press",
+    "file": "jm_press.svg",
+    "name_en": "JM Press",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "jump_rope",
+    "file": "jump_rope.svg",
+    "name_en": "Jump Rope",
+    "position_shown": "Explosive triple extension (jump propulsion, vertical drive arrow)"
+  },
+  {
+    "id": "jump_squat",
+    "file": "jump_squat.svg",
+    "name_en": "Jump Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "jumping_jack",
+    "file": "jumping_jack.svg",
+    "name_en": "Jumping Jack",
+    "position_shown": "Explosive triple extension (jump propulsion, vertical drive arrow)"
+  },
+  {
+    "id": "kettlebell_clean",
+    "file": "kettlebell_clean.svg",
+    "name_en": "Kettlebell Clean",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "kettlebell_deadlift",
+    "file": "kettlebell_deadlift.svg",
+    "name_en": "Kettlebell Deadlift",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "kettlebell_goblet_squat",
+    "file": "kettlebell_goblet_squat.svg",
+    "name_en": "Kettlebell Goblet Squat",
+    "position_shown": "Bottom squat inflection (upright trunk, front-loaded weight, upward drive arrow)"
+  },
+  {
+    "id": "kettlebell_press",
+    "file": "kettlebell_press.svg",
+    "name_en": "Kettlebell Press",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "kettlebell_romanian_deadlift",
+    "file": "kettlebell_romanian_deadlift.svg",
+    "name_en": "Kettlebell Romanian Deadlift",
+    "position_shown": "End-range hip hinge (bar below knees, flat back, hip extension arc arrow)"
+  },
+  {
+    "id": "kettlebell_row",
+    "file": "kettlebell_row.svg",
+    "name_en": "Kettlebell Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "kettlebell_snatch",
+    "file": "kettlebell_snatch.svg",
+    "name_en": "Kettlebell Snatch",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "kettlebell_swing",
+    "file": "kettlebell_swing.svg",
+    "name_en": "Kettlebell Swing",
+    "position_shown": "Dynamic hip drive (explosive extension, upward arc arrow)"
+  },
+  {
+    "id": "kettlebell_windmill",
+    "file": "kettlebell_windmill.svg",
+    "name_en": "Kettlebell Windmill",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "kickback",
+    "file": "kickback.svg",
+    "name_en": "Tricep Kickback",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "kipping_pull_up",
+    "file": "kipping_pull_up.svg",
+    "name_en": "Kipping Pull-Up",
+    "position_shown": "Top concentric hold (chin over bar, elbows down, upward pull arrow)"
+  },
+  {
+    "id": "knee_push_up",
+    "file": "knee_push_up.svg",
+    "name_en": "Knee Push-up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "kneeling_hip_flexor_stretch",
+    "file": "kneeling_hip_flexor_stretch.svg",
+    "name_en": "Kneeling Hip Flexor Stretch",
+    "position_shown": "Terminal stretch elongation (musculoskeletal hold, elongation arrow)"
+  },
+  {
+    "id": "l_sit",
+    "file": "l_sit.svg",
+    "name_en": "L-Sit Hold",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "l_sit_hold",
+    "file": "l_sit_hold.svg",
+    "name_en": "L-Sit Hold",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "l_sit_pull_up",
+    "file": "l_sit_pull_up.svg",
+    "name_en": "L-Sit Pull-up",
+    "position_shown": "Top concentric hold (chin over bar, elbows down, upward pull arrow)"
+  },
+  {
+    "id": "landmine_press",
+    "file": "landmine_press.svg",
+    "name_en": "Landmine Press",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "landmine_romanian_deadlift",
+    "file": "landmine_romanian_deadlift.svg",
+    "name_en": "Landmine Romanian Deadlift",
+    "position_shown": "End-range hip hinge (bar below knees, flat back, hip extension arc arrow)"
+  },
+  {
+    "id": "landmine_squat",
+    "file": "landmine_squat.svg",
+    "name_en": "Landmine Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "lat_pulldown",
+    "file": "lat_pulldown.svg",
+    "name_en": "Lat Pulldown",
+    "position_shown": "Contracted pulldown position (bar at upper chest, downward pull arrow)"
+  },
+  {
+    "id": "lateral_lunge",
+    "file": "lateral_lunge.svg",
+    "name_en": "Lateral Lunge",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "lateral_raise",
+    "file": "lateral_raise.svg",
+    "name_en": "Lateral Raise",
+    "position_shown": "Peak abduction position (arms at 90° horizontal, upward arc arrow)"
+  },
+  {
+    "id": "lateral_shuffle",
+    "file": "lateral_shuffle.svg",
+    "name_en": "Lateral Shuffle",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "leg_curl",
+    "file": "leg_curl.svg",
+    "name_en": "Leg Curl",
+    "position_shown": "Hamstring peak flexion (heels curled toward glutes, flexion arc arrow)"
+  },
+  {
+    "id": "leg_extension",
+    "file": "leg_extension.svg",
+    "name_en": "Leg Extension",
+    "position_shown": "Terminal knee extension (lower leg extended, upward arc arrow)"
+  },
+  {
+    "id": "leg_press",
+    "file": "leg_press.svg",
+    "name_en": "Leg Press",
+    "position_shown": "Leg press inflection (knees flexed, upward sled drive arrow)"
+  },
+  {
+    "id": "leg_press_calf_raise",
+    "file": "leg_press_calf_raise.svg",
+    "name_en": "Leg Press Calf Raise",
+    "position_shown": "Leg press inflection (knees flexed, upward sled drive arrow)"
+  },
+  {
+    "id": "leg_swings_stretch",
+    "file": "leg_swings_stretch.svg",
+    "name_en": "Leg Swings",
+    "position_shown": "Dynamic hip drive (explosive extension, upward arc arrow)"
+  },
+  {
+    "id": "lunge",
+    "file": "lunge.svg",
+    "name_en": "Walking Lunge",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "lying_barbell_curl",
+    "file": "lying_barbell_curl.svg",
+    "name_en": "Lying Barbell Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "lying_bicep_curl",
+    "file": "lying_bicep_curl.svg",
+    "name_en": "Lying Bicep Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "lying_hamstring_walkout",
+    "file": "lying_hamstring_walkout.svg",
+    "name_en": "Lying Hamstring Walkout",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "lying_leg_curl",
+    "file": "lying_leg_curl.svg",
+    "name_en": "Lying Leg Curl",
+    "position_shown": "Hamstring peak flexion (heels curled toward glutes, flexion arc arrow)"
+  },
+  {
+    "id": "lying_leg_raise",
+    "file": "lying_leg_raise.svg",
+    "name_en": "Lying Leg Raise",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "machine_chest_press",
+    "file": "machine_chest_press.svg",
+    "name_en": "Machine Chest Press",
+    "position_shown": "Chest touch inflection point (bar on lower sternum, upward drive arrow)"
+  },
+  {
+    "id": "machine_curl",
+    "file": "machine_curl.svg",
+    "name_en": "Machine Bicep Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "machine_fly",
+    "file": "machine_fly.svg",
+    "name_en": "Pec Deck Fly",
+    "position_shown": "Wide chest fly stretch (arms abducted, inward adduction arc arrow)"
+  },
+  {
+    "id": "machine_glute_kickback",
+    "file": "machine_glute_kickback.svg",
+    "name_en": "Machine Glute Kickback",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "machine_lateral_raise",
+    "file": "machine_lateral_raise.svg",
+    "name_en": "Machine Lateral Raise",
+    "position_shown": "Peak abduction position (arms at 90° horizontal, upward arc arrow)"
+  },
+  {
+    "id": "machine_rear_delt_fly",
+    "file": "machine_rear_delt_fly.svg",
+    "name_en": "Machine Rear Delt Fly (Reverse Pec Deck)",
+    "position_shown": "Wide chest fly stretch (arms abducted, inward adduction arc arrow)"
+  },
+  {
+    "id": "machine_row",
+    "file": "machine_row.svg",
+    "name_en": "Machine Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "machine_seated_back_extension",
+    "file": "machine_seated_back_extension.svg",
+    "name_en": "Machine Seated Back Extension",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "machine_shoulder_press",
+    "file": "machine_shoulder_press.svg",
+    "name_en": "Machine Shoulder Press",
+    "position_shown": "Front rack shoulder position (bar at collarbone, upward press arrow)"
+  },
+  {
+    "id": "machine_tricep_extension",
+    "file": "machine_tricep_extension.svg",
+    "name_en": "Machine Tricep Extension",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "man_maker",
+    "file": "man_maker.svg",
+    "name_en": "Man Maker",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "meadows_row",
+    "file": "meadows_row.svg",
+    "name_en": "Meadows Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "mountain_climber",
+    "file": "mountain_climber.svg",
+    "name_en": "Mountain Climber",
+    "position_shown": "Explosive triple extension (jump propulsion, vertical drive arrow)"
+  },
+  {
+    "id": "muscle_up",
+    "file": "muscle_up.svg",
+    "name_en": "Muscle-Up",
+    "position_shown": "Top concentric hold (chin over bar, elbows down, upward pull arrow)"
+  },
+  {
+    "id": "negative_pull_up",
+    "file": "negative_pull_up.svg",
+    "name_en": "Negative Pull-up",
+    "position_shown": "Top concentric hold (chin over bar, elbows down, upward pull arrow)"
+  },
+  {
+    "id": "neutral_grip_pull_up",
+    "file": "neutral_grip_pull_up.svg",
+    "name_en": "Neutral-Grip Pull-up",
+    "position_shown": "Top concentric hold (chin over bar, elbows down, upward pull arrow)"
+  },
+  {
+    "id": "nordic_curl",
+    "file": "nordic_curl.svg",
+    "name_en": "Nordic Curl",
+    "position_shown": "Hamstring peak flexion (heels curled toward glutes, flexion arc arrow)"
+  },
+  {
+    "id": "nordic_hamstring_curl",
+    "file": "nordic_hamstring_curl.svg",
+    "name_en": "Nordic Hamstring Curl",
+    "position_shown": "Hamstring peak flexion (heels curled toward glutes, flexion arc arrow)"
+  },
+  {
+    "id": "one_arm_dumbbell_row",
+    "file": "one_arm_dumbbell_row.svg",
+    "name_en": "One-Arm Dumbbell Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "one_arm_push_up",
+    "file": "one_arm_push_up.svg",
+    "name_en": "One-Arm Push-Up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "overhead_cable_tricep",
+    "file": "overhead_cable_tricep.svg",
+    "name_en": "Overhead Cable Tricep Extension",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "overhead_hold",
+    "file": "overhead_hold.svg",
+    "name_en": "Overhead Hold",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "overhead_press",
+    "file": "overhead_press.svg",
+    "name_en": "Overhead Press",
+    "position_shown": "Front rack shoulder position (bar at collarbone, upward press arrow)"
+  },
+  {
+    "id": "overhead_squat",
+    "file": "overhead_squat.svg",
+    "name_en": "Overhead Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "overhead_tricep_extension",
+    "file": "overhead_tricep_extension.svg",
+    "name_en": "Overhead Tricep Extension",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "pallof_press",
+    "file": "pallof_press.svg",
+    "name_en": "Pallof Press",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "pause_squat",
+    "file": "pause_squat.svg",
+    "name_en": "Pause Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "pec_deck",
+    "file": "pec_deck.svg",
+    "name_en": "Pec Deck",
+    "position_shown": "Wide chest fly stretch (arms abducted, inward adduction arc arrow)"
+  },
+  {
+    "id": "pendlay_row",
+    "file": "pendlay_row.svg",
+    "name_en": "Pendlay Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "pendulum_squat",
+    "file": "pendulum_squat.svg",
+    "name_en": "Pendulum Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "pike_push_up",
+    "file": "pike_push_up.svg",
+    "name_en": "Pike Push-up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "pistol_squat",
+    "file": "pistol_squat.svg",
+    "name_en": "Pistol Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "planche",
+    "file": "planche.svg",
+    "name_en": "Planche",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "plank",
+    "file": "plank.svg",
+    "name_en": "Plank",
+    "position_shown": "Isometric horizontal bridge (flat neutral spine, horizontal stabilization arrow)"
+  },
+  {
+    "id": "plank_jack",
+    "file": "plank_jack.svg",
+    "name_en": "Plank Jack",
+    "position_shown": "Isometric horizontal bridge (flat neutral spine, horizontal stabilization arrow)"
+  },
+  {
+    "id": "plank_shoulder_tap",
+    "file": "plank_shoulder_tap.svg",
+    "name_en": "Plank Shoulder Tap",
+    "position_shown": "Isometric horizontal bridge (flat neutral spine, horizontal stabilization arrow)"
+  },
+  {
+    "id": "plate_front_raise",
+    "file": "plate_front_raise.svg",
+    "name_en": "Plate Front Raise",
+    "position_shown": "Peak abduction position (arms at 90° horizontal, upward arc arrow)"
+  },
+  {
+    "id": "power_clean",
+    "file": "power_clean.svg",
+    "name_en": "Power Clean",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "preacher_curl",
+    "file": "preacher_curl.svg",
+    "name_en": "Preacher Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "prone_t_raise",
+    "file": "prone_t_raise.svg",
+    "name_en": "Prone T Raise",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "prone_y_raise",
+    "file": "prone_y_raise.svg",
+    "name_en": "Prone Y Raise",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "pull_up",
+    "file": "pull_up.svg",
+    "name_en": "Pull-up",
+    "position_shown": "Top concentric hold (chin over bar, elbows down, upward pull arrow)"
+  },
+  {
+    "id": "push_press",
+    "file": "push_press.svg",
+    "name_en": "Push Press",
+    "position_shown": "Front rack shoulder position (bar at collarbone, upward press arrow)"
+  },
+  {
+    "id": "push_up",
+    "file": "push_up.svg",
+    "name_en": "Push-up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "push_up_shoulder_tap",
+    "file": "push_up_shoulder_tap.svg",
+    "name_en": "Push-up Shoulder Tap",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "rack_pull",
+    "file": "rack_pull.svg",
+    "name_en": "Rack Pull",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "rear_delt_fly",
+    "file": "rear_delt_fly.svg",
+    "name_en": "Rear Delt Fly",
+    "position_shown": "Wide chest fly stretch (arms abducted, inward adduction arc arrow)"
+  },
+  {
+    "id": "renegade_row",
+    "file": "renegade_row.svg",
+    "name_en": "Renegade Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "reverse_crunch",
+    "file": "reverse_crunch.svg",
+    "name_en": "Reverse Crunch",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "reverse_curl",
+    "file": "reverse_curl.svg",
+    "name_en": "Reverse Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "reverse_hyperextension",
+    "file": "reverse_hyperextension.svg",
+    "name_en": "Reverse Hyperextension",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "reverse_lunge",
+    "file": "reverse_lunge.svg",
+    "name_en": "Reverse Lunge",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "reverse_pec_deck",
+    "file": "reverse_pec_deck.svg",
+    "name_en": "Reverse Pec Deck",
+    "position_shown": "Wide chest fly stretch (arms abducted, inward adduction arc arrow)"
+  },
+  {
+    "id": "reverse_snow_angel",
+    "file": "reverse_snow_angel.svg",
+    "name_en": "Reverse Snow Angel",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "ring_dip",
+    "file": "ring_dip.svg",
+    "name_en": "Ring Dip",
+    "position_shown": "Bottom dip depth (elbows flexed at 90°, upward drive arrow)"
+  },
+  {
+    "id": "ring_push_up",
+    "file": "ring_push_up.svg",
+    "name_en": "Ring Push-Up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "ring_row",
+    "file": "ring_row.svg",
+    "name_en": "Ring Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "romanian_deadlift",
+    "file": "romanian_deadlift.svg",
+    "name_en": "Romanian Deadlift",
+    "position_shown": "End-range hip hinge (bar below knees, flat back, hip extension arc arrow)"
+  },
+  {
+    "id": "rope_climb",
+    "file": "rope_climb.svg",
+    "name_en": "Rope Climb",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "rope_hammer_curl",
+    "file": "rope_hammer_curl.svg",
+    "name_en": "Rope Hammer Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "rope_pushdown",
+    "file": "rope_pushdown.svg",
+    "name_en": "Rope Tricep Pushdown",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "rope_tricep_pushdown",
+    "file": "rope_tricep_pushdown.svg",
+    "name_en": "Rope Tricep Pushdown",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "rowing",
+    "file": "rowing.svg",
+    "name_en": "Rowing",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "rowing_machine",
+    "file": "rowing_machine.svg",
+    "name_en": "Rowing Machine (Erg)",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "running",
+    "file": "running.svg",
+    "name_en": "Running",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "russian_twist",
+    "file": "russian_twist.svg",
+    "name_en": "Russian Twist",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "sandbag_carry",
+    "file": "sandbag_carry.svg",
+    "name_en": "Sandbag Carry",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "sandbag_lunge",
+    "file": "sandbag_lunge.svg",
+    "name_en": "Sandbag Lunge",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "scapular_pull_up",
+    "file": "scapular_pull_up.svg",
+    "name_en": "Scapular Pull-up",
+    "position_shown": "Top concentric hold (chin over bar, elbows down, upward pull arrow)"
+  },
+  {
+    "id": "scapular_push_up",
+    "file": "scapular_push_up.svg",
+    "name_en": "Scapular Push-up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "seal_jack",
+    "file": "seal_jack.svg",
+    "name_en": "Seal Jack",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "seal_row",
+    "file": "seal_row.svg",
+    "name_en": "Seal Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "seated_back_extension",
+    "file": "seated_back_extension.svg",
+    "name_en": "Seated Back Extension",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "seated_calf_raise",
+    "file": "seated_calf_raise.svg",
+    "name_en": "Seated Calf Raise",
+    "position_shown": "Peak plantarflexion (heels elevated high, upward drive arrow)"
+  },
+  {
+    "id": "seated_dumbbell_press",
+    "file": "seated_dumbbell_press.svg",
+    "name_en": "Dumbbell Seated Shoulder Press",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "seated_forward_fold_stretch",
+    "file": "seated_forward_fold_stretch.svg",
+    "name_en": "Seated Forward Fold",
+    "position_shown": "Terminal stretch elongation (musculoskeletal hold, elongation arrow)"
+  },
+  {
+    "id": "seated_knee_tuck",
+    "file": "seated_knee_tuck.svg",
+    "name_en": "Seated Knee Tuck",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "seated_lateral_raise",
+    "file": "seated_lateral_raise.svg",
+    "name_en": "Seated Lateral Raise",
+    "position_shown": "Peak abduction position (arms at 90° horizontal, upward arc arrow)"
+  },
+  {
+    "id": "seated_leg_curl",
+    "file": "seated_leg_curl.svg",
+    "name_en": "Seated Leg Curl",
+    "position_shown": "Hamstring peak flexion (heels curled toward glutes, flexion arc arrow)"
+  },
+  {
+    "id": "seated_row",
+    "file": "seated_row.svg",
+    "name_en": "Seated Cable Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "shrimp_squat",
+    "file": "shrimp_squat.svg",
+    "name_en": "Shrimp Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "shrug",
+    "file": "shrug.svg",
+    "name_en": "Barbell Shrug",
+    "position_shown": "Peak abduction position (arms at 90° horizontal, upward arc arrow)"
+  },
+  {
+    "id": "side_lunge",
+    "file": "side_lunge.svg",
+    "name_en": "Side Lunge",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "side_lying_hip_abduction",
+    "file": "side_lying_hip_abduction.svg",
+    "name_en": "Side-Lying Hip Abduction",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "side_lying_leg_raise",
+    "file": "side_lying_leg_raise.svg",
+    "name_en": "Side-Lying Leg Raise",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "side_plank",
+    "file": "side_plank.svg",
+    "name_en": "Side Plank",
+    "position_shown": "Isometric horizontal bridge (flat neutral spine, horizontal stabilization arrow)"
+  },
+  {
+    "id": "side_plank_hip_dip",
+    "file": "side_plank_hip_dip.svg",
+    "name_en": "Side Plank Hip Dip",
+    "position_shown": "Bottom dip depth (elbows flexed at 90°, upward drive arrow)"
+  },
+  {
+    "id": "single_arm_cable_row",
+    "file": "single_arm_cable_row.svg",
+    "name_en": "Single-Arm Cable Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "single_arm_dumbbell_row",
+    "file": "single_arm_dumbbell_row.svg",
+    "name_en": "Single-Arm Dumbbell Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "single_arm_dumbbell_tricep_extension",
+    "file": "single_arm_dumbbell_tricep_extension.svg",
+    "name_en": "Single Arm Dumbbell Tricep Extension",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "single_dumbbell_skullcrusher",
+    "file": "single_dumbbell_skullcrusher.svg",
+    "name_en": "Single Dumbbell Skullcrusher",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "single_leg_box_squat",
+    "file": "single_leg_box_squat.svg",
+    "name_en": "Single-Leg Box Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "single_leg_calf_raise",
+    "file": "single_leg_calf_raise.svg",
+    "name_en": "Single-Leg Calf Raise",
+    "position_shown": "Peak plantarflexion (heels elevated high, upward drive arrow)"
+  },
+  {
+    "id": "single_leg_deadlift",
+    "file": "single_leg_deadlift.svg",
+    "name_en": "Single-Leg Deadlift",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "single_leg_glute_bridge",
+    "file": "single_leg_glute_bridge.svg",
+    "name_en": "Single-Leg Glute Bridge",
+    "position_shown": "Peak hip extension lockout (knees at 90°, horizontal torso, upward drive arrow)"
+  },
+  {
+    "id": "single_leg_hip_thrust",
+    "file": "single_leg_hip_thrust.svg",
+    "name_en": "Single-Leg Hip Thrust",
+    "position_shown": "Peak hip extension lockout (knees at 90°, horizontal torso, upward drive arrow)"
+  },
+  {
+    "id": "single_leg_press",
+    "file": "single_leg_press.svg",
+    "name_en": "Single-Leg Press",
+    "position_shown": "Leg press inflection (knees flexed, upward sled drive arrow)"
+  },
+  {
+    "id": "single_leg_romanian_deadlift",
+    "file": "single_leg_romanian_deadlift.svg",
+    "name_en": "Single-Leg Romanian Deadlift",
+    "position_shown": "End-range hip hinge (bar below knees, flat back, hip extension arc arrow)"
+  },
+  {
+    "id": "sissy_squat",
+    "file": "sissy_squat.svg",
+    "name_en": "Sissy Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "sit_up",
+    "file": "sit_up.svg",
+    "name_en": "Sit-Up",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "skater_hop",
+    "file": "skater_hop.svg",
+    "name_en": "Skater Hop",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "skater_jump",
+    "file": "skater_jump.svg",
+    "name_en": "Skater Jump",
+    "position_shown": "Explosive triple extension (jump propulsion, vertical drive arrow)"
+  },
+  {
+    "id": "skater_squat",
+    "file": "skater_squat.svg",
+    "name_en": "Skater Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "ski_erg",
+    "file": "ski_erg.svg",
+    "name_en": "Ski Erg",
+    "position_shown": "Ergometer drive phase (leg drive & arm pull, propulsion arrow)"
+  },
+  {
+    "id": "skierg",
+    "file": "skierg.svg",
+    "name_en": "SkiErg",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "skin_the_cat",
+    "file": "skin_the_cat.svg",
+    "name_en": "Skin the Cat",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "skull_crusher",
+    "file": "skull_crusher.svg",
+    "name_en": "Skull Crusher",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "sled_pull",
+    "file": "sled_pull.svg",
+    "name_en": "Sled Pull",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "sled_push",
+    "file": "sled_push.svg",
+    "name_en": "Sled Push",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "smith_machine_bench_press",
+    "file": "smith_machine_bench_press.svg",
+    "name_en": "Smith Machine Bench Press",
+    "position_shown": "Chest touch inflection point (bar on lower sternum, upward drive arrow)"
+  },
+  {
+    "id": "smith_machine_bulgarian_split_squat",
+    "file": "smith_machine_bulgarian_split_squat.svg",
+    "name_en": "Smith Machine Bulgarian Split Squat",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "smith_machine_hip_thrust",
+    "file": "smith_machine_hip_thrust.svg",
+    "name_en": "Smith Machine Hip Thrust",
+    "position_shown": "Peak hip extension lockout (knees at 90°, horizontal torso, upward drive arrow)"
+  },
+  {
+    "id": "smith_machine_reverse_lunge",
+    "file": "smith_machine_reverse_lunge.svg",
+    "name_en": "Smith Machine Reverse Lunge",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "smith_machine_romanian_deadlift",
+    "file": "smith_machine_romanian_deadlift.svg",
+    "name_en": "Smith Machine Romanian Deadlift",
+    "position_shown": "End-range hip hinge (bar below knees, flat back, hip extension arc arrow)"
+  },
+  {
+    "id": "smith_machine_split_squat",
+    "file": "smith_machine_split_squat.svg",
+    "name_en": "Smith Machine Split Squat",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "smith_machine_squat",
+    "file": "smith_machine_squat.svg",
+    "name_en": "Smith Machine Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "smith_squat",
+    "file": "smith_squat.svg",
+    "name_en": "Smith Machine Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "snatch",
+    "file": "snatch.svg",
+    "name_en": "Snatch",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "snatch_pull",
+    "file": "snatch_pull.svg",
+    "name_en": "Snatch Pull",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "spider_curl",
+    "file": "spider_curl.svg",
+    "name_en": "Spider Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "split_jerk",
+    "file": "split_jerk.svg",
+    "name_en": "Split Jerk",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "split_squat",
+    "file": "split_squat.svg",
+    "name_en": "Split Squat",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "split_squat_jump",
+    "file": "split_squat_jump.svg",
+    "name_en": "Split Squat Jump",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "sprawl",
+    "file": "sprawl.svg",
+    "name_en": "Sprawl",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "squat",
+    "file": "squat.svg",
+    "name_en": "Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "squat_jump_to_lunge",
+    "file": "squat_jump_to_lunge.svg",
+    "name_en": "Squat Jump to Lunge",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "squat_thrust",
+    "file": "squat_thrust.svg",
+    "name_en": "Squat Thrust",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "stability_ball_back_extension",
+    "file": "stability_ball_back_extension.svg",
+    "name_en": "Stability Ball Back Extension",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "stability_ball_crunch",
+    "file": "stability_ball_crunch.svg",
+    "name_en": "Stability Ball Crunch",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "stability_ball_hamstring_curl",
+    "file": "stability_ball_hamstring_curl.svg",
+    "name_en": "Stability Ball Hamstring Curl",
+    "position_shown": "Hamstring peak flexion (heels curled toward glutes, flexion arc arrow)"
+  },
+  {
+    "id": "stability_ball_hip_thrust",
+    "file": "stability_ball_hip_thrust.svg",
+    "name_en": "Stability Ball Hip Thrust",
+    "position_shown": "Peak hip extension lockout (knees at 90°, horizontal torso, upward drive arrow)"
+  },
+  {
+    "id": "stability_ball_pike",
+    "file": "stability_ball_pike.svg",
+    "name_en": "Stability Ball Pike",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "stability_ball_push_up",
+    "file": "stability_ball_push_up.svg",
+    "name_en": "Stability Ball Push-Up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "stair_climber",
+    "file": "stair_climber.svg",
+    "name_en": "Stair Climber",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "standing_calf_raise",
+    "file": "standing_calf_raise.svg",
+    "name_en": "Standing Calf Raise",
+    "position_shown": "Peak plantarflexion (heels elevated high, upward drive arrow)"
+  },
+  {
+    "id": "standing_dumbbell_press",
+    "file": "standing_dumbbell_press.svg",
+    "name_en": "Standing Dumbbell Press",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "standing_leg_extension",
+    "file": "standing_leg_extension.svg",
+    "name_en": "Standing Leg Extension",
+    "position_shown": "Terminal knee extension (lower leg extended, upward arc arrow)"
+  },
+  {
+    "id": "standing_quad_stretch",
+    "file": "standing_quad_stretch.svg",
+    "name_en": "Standing Quad Stretch",
+    "position_shown": "Terminal stretch elongation (musculoskeletal hold, elongation arrow)"
+  },
+  {
+    "id": "step_down",
+    "file": "step_down.svg",
+    "name_en": "Step-Down",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "step_up",
+    "file": "step_up.svg",
+    "name_en": "Step-Up",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "stiff_leg_deadlift",
+    "file": "stiff_leg_deadlift.svg",
+    "name_en": "Stiff-Leg Deadlift",
+    "position_shown": "End-range hip hinge (bar below knees, flat back, hip extension arc arrow)"
+  },
+  {
+    "id": "straight_arm_pulldown",
+    "file": "straight_arm_pulldown.svg",
+    "name_en": "Straight-Arm Pulldown",
+    "position_shown": "Contracted pulldown position (bar at upper chest, downward pull arrow)"
+  },
+  {
+    "id": "sumo_deadlift",
+    "file": "sumo_deadlift.svg",
+    "name_en": "Sumo Deadlift",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "superman",
+    "file": "superman.svg",
+    "name_en": "Superman",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "superman_hold",
+    "file": "superman_hold.svg",
+    "name_en": "Superman Hold",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "superset",
+    "file": "superset.svg",
+    "name_en": "Superset",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "svend_press",
+    "file": "svend_press.svg",
+    "name_en": "Svend Press",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "swimming",
+    "file": "swimming.svg",
+    "name_en": "Swimming",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "t_bar_row",
+    "file": "t_bar_row.svg",
+    "name_en": "T-Bar Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "tate_press",
+    "file": "tate_press.svg",
+    "name_en": "Tate Press",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "thruster",
+    "file": "thruster.svg",
+    "name_en": "Thruster",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "tibialis_raise",
+    "file": "tibialis_raise.svg",
+    "name_en": "Tibialis Raise",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "tire_flip",
+    "file": "tire_flip.svg",
+    "name_en": "Tire Flip",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "toe_touch",
+    "file": "toe_touch.svg",
+    "name_en": "Toe Touch",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "toes_to_bar",
+    "file": "toes_to_bar.svg",
+    "name_en": "Toes to Bar",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "torso_twist_stretch",
+    "file": "torso_twist_stretch.svg",
+    "name_en": "Torso Twists",
+    "position_shown": "Terminal stretch elongation (musculoskeletal hold, elongation arrow)"
+  },
+  {
+    "id": "towel_hamstring_curl",
+    "file": "towel_hamstring_curl.svg",
+    "name_en": "Towel Hamstring Curl",
+    "position_shown": "Hamstring peak flexion (heels curled toward glutes, flexion arc arrow)"
+  },
+  {
+    "id": "towel_pull_up",
+    "file": "towel_pull_up.svg",
+    "name_en": "Towel Pull-up",
+    "position_shown": "Top concentric hold (chin over bar, elbows down, upward pull arrow)"
+  },
+  {
+    "id": "towel_row",
+    "file": "towel_row.svg",
+    "name_en": "Towel Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "trap_bar_deadlift",
+    "file": "trap_bar_deadlift.svg",
+    "name_en": "Trap Bar Deadlift",
+    "position_shown": "Liftoff hinge position (bar at mid-shin, flat back, upward pull arrow)"
+  },
+  {
+    "id": "treadmill_incline_walk",
+    "file": "treadmill_incline_walk.svg",
+    "name_en": "Treadmill Incline Walk",
+    "position_shown": "Ergometer drive phase (leg drive & arm pull, propulsion arrow)"
+  },
+  {
+    "id": "tricep_extension",
+    "file": "tricep_extension.svg",
+    "name_en": "Overhead Tricep Extension",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "tricep_kickback",
+    "file": "tricep_kickback.svg",
+    "name_en": "Tricep Kickback",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "tricep_pushdown",
+    "file": "tricep_pushdown.svg",
+    "name_en": "Tricep Pushdown",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "trx_bicep_curl",
+    "file": "trx_bicep_curl.svg",
+    "name_en": "TRX Bicep Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "trx_hamstring_curl",
+    "file": "trx_hamstring_curl.svg",
+    "name_en": "TRX Hamstring Curl",
+    "position_shown": "Hamstring peak flexion (heels curled toward glutes, flexion arc arrow)"
+  },
+  {
+    "id": "trx_lunge",
+    "file": "trx_lunge.svg",
+    "name_en": "TRX Lunge",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "trx_pike",
+    "file": "trx_pike.svg",
+    "name_en": "TRX Pike",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "trx_push_up",
+    "file": "trx_push_up.svg",
+    "name_en": "TRX Push-Up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "trx_row",
+    "file": "trx_row.svg",
+    "name_en": "TRX Row",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "trx_squat",
+    "file": "trx_squat.svg",
+    "name_en": "TRX Squat",
+    "position_shown": "Bottom squat inflection (thighs parallel to floor, upward drive arrow)"
+  },
+  {
+    "id": "trx_tricep_extension",
+    "file": "trx_tricep_extension.svg",
+    "name_en": "TRX Tricep Extension",
+    "position_shown": "Terminal tricep extension (forearm driving down, downward extension arrow)"
+  },
+  {
+    "id": "tuck_jump",
+    "file": "tuck_jump.svg",
+    "name_en": "Tuck Jump",
+    "position_shown": "Explosive triple extension (jump propulsion, vertical drive arrow)"
+  },
+  {
+    "id": "turkish_get_up",
+    "file": "turkish_get_up.svg",
+    "name_en": "Turkish Get-Up",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "typewriter_pull_up",
+    "file": "typewriter_pull_up.svg",
+    "name_en": "Typewriter Pull-Up",
+    "position_shown": "Top concentric hold (chin over bar, elbows down, upward pull arrow)"
+  },
+  {
+    "id": "typewriter_push_up",
+    "file": "typewriter_push_up.svg",
+    "name_en": "Typewriter Push-up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "upright_row",
+    "file": "upright_row.svg",
+    "name_en": "Upright Row",
+    "position_shown": "Peak abduction position (arms at 90° horizontal, upward arc arrow)"
+  },
+  {
+    "id": "v_up",
+    "file": "v_up.svg",
+    "name_en": "V-Up",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "walking",
+    "file": "walking.svg",
+    "name_en": "Walking",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "walking_lunge",
+    "file": "walking_lunge.svg",
+    "name_en": "Walking Lunge",
+    "position_shown": "Deep split stance (front knee at 90°, rear knee hovering, upward drive arrow)"
+  },
+  {
+    "id": "wall_ball",
+    "file": "wall_ball.svg",
+    "name_en": "Wall Ball",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "wall_calf_stretch",
+    "file": "wall_calf_stretch.svg",
+    "name_en": "Wall Calf Stretch",
+    "position_shown": "Peak plantarflexion (heels elevated high, upward drive arrow)"
+  },
+  {
+    "id": "wall_handstand_push_up",
+    "file": "wall_handstand_push_up.svg",
+    "name_en": "Wall Handstand Push-up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "wall_push_up",
+    "file": "wall_push_up.svg",
+    "name_en": "Wall Push-up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "wall_sit",
+    "file": "wall_sit.svg",
+    "name_en": "Wall Sit",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "wall_walk",
+    "file": "wall_walk.svg",
+    "name_en": "Wall Walk",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "weighted_chin_up",
+    "file": "weighted_chin_up.svg",
+    "name_en": "Weighted Chin-up",
+    "position_shown": "Top concentric hold (chin over bar, elbows down, upward pull arrow)"
+  },
+  {
+    "id": "weighted_crunch",
+    "file": "weighted_crunch.svg",
+    "name_en": "Weighted Crunch",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "weighted_dip",
+    "file": "weighted_dip.svg",
+    "name_en": "Weighted Dip",
+    "position_shown": "Bottom dip depth (elbows flexed at 90°, upward drive arrow)"
+  },
+  {
+    "id": "weighted_pull_up",
+    "file": "weighted_pull_up.svg",
+    "name_en": "Weighted Pull-up",
+    "position_shown": "Top concentric hold (chin over bar, elbows down, upward pull arrow)"
+  },
+  {
+    "id": "weighted_push_up",
+    "file": "weighted_push_up.svg",
+    "name_en": "Weighted Push-up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "weighted_russian_twist",
+    "file": "weighted_russian_twist.svg",
+    "name_en": "Weighted Russian Twist",
+    "position_shown": "Peak abdominal flexion (trunk curled, forward flexion arc arrow)"
+  },
+  {
+    "id": "wide_grip_lat_pulldown",
+    "file": "wide_grip_lat_pulldown.svg",
+    "name_en": "Wide-Grip Lat Pulldown",
+    "position_shown": "Contracted pulldown position (bar at upper chest, downward pull arrow)"
+  },
+  {
+    "id": "wide_grip_pull_up",
+    "file": "wide_grip_pull_up.svg",
+    "name_en": "Wide Grip Pull-Up",
+    "position_shown": "Top concentric hold (chin over bar, elbows down, upward pull arrow)"
+  },
+  {
+    "id": "wide_push_up",
+    "file": "wide_push_up.svg",
+    "name_en": "Wide Push-up",
+    "position_shown": "Bottom push-up depth (chest 1 inch off floor, upward drive arrow)"
+  },
+  {
+    "id": "windshield_wiper",
+    "file": "windshield_wiper.svg",
+    "name_en": "Windshield Wiper",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "wood_chop",
+    "file": "wood_chop.svg",
+    "name_en": "Cable Wood Chop",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "worlds_greatest_stretch",
+    "file": "worlds_greatest_stretch.svg",
+    "name_en": "World's Greatest Stretch",
+    "position_shown": "Terminal stretch elongation (musculoskeletal hold, elongation arrow)"
+  },
+  {
+    "id": "wrist_curl",
+    "file": "wrist_curl.svg",
+    "name_en": "Wrist Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  },
+  {
+    "id": "wrist_extension",
+    "file": "wrist_extension.svg",
+    "name_en": "Wrist Extension",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "yates_row",
+    "file": "yates_row.svg",
+    "name_en": "Yates Row (Underhand Barbell Row)",
+    "position_shown": "Peak concentric retraction (bar at abdomen, backward-upward pull arrow)"
+  },
+  {
+    "id": "z_press",
+    "file": "z_press.svg",
+    "name_en": "Z Press",
+    "position_shown": "Dynamic key position (athletic inflection point, movement arrow)"
+  },
+  {
+    "id": "zercher_squat",
+    "file": "zercher_squat.svg",
+    "name_en": "Zercher Squat",
+    "position_shown": "Bottom squat inflection (upright trunk, front-loaded weight, upward drive arrow)"
+  },
+  {
+    "id": "zottman_curl",
+    "file": "zottman_curl.svg",
+    "name_en": "Zottman Curl",
+    "position_shown": "Peak concentric bicep flexion (forearm at 60°, curved flexion arrow)"
+  }
+]

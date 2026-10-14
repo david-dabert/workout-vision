@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Core / Crunch: supine, knees tucked, curled trunk -->
+  <circle cx="20" cy="36" r="3.5"/>
+  <path d="M 23 38 C 26 40 32 40 38 42"/>
+  <path d="M 38 42 L 44 32 L 52 36"/>
+  <line x1="12" y1="48" x2="54" y2="48"/>
+  <path d="M 22 28 C 26 24 32 24 36 28 M 32 25 L 36 28 L 34 32"/>
+</svg>

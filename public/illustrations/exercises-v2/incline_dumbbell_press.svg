@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Incline Bench Press: 45 deg incline, bar on upper chest -->
+  <line x1="10" y1="48" x2="38" y2="24"/>
+  <line x1="20" y1="40" x2="20" y2="52"/><line x1="36" y1="26" x2="36" y2="52"/>
+  <circle cx="34" cy="20" r="3.5"/>
+  <line x1="32" y1="23" x2="22" y2="36"/>
+  <path d="M 28 28 L 36 28 L 38 22"/>
+  <line x1="32" y1="20" x2="44" y2="24"/>
+  <path d="M 42 16 L 50 8 M 45 8 L 50 8 L 50 13"/>
+</svg>
