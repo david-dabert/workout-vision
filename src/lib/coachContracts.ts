@@ -10,25 +10,43 @@
  * L616-1; literature, texts not opened by us); one article 5, the same everywhere; article 6 promises what the coach
  * does with the client's data, nothing about the app; no em dash, no trademark sign. The 14-day withdrawal (C. consom.
  * L221-18) is left to the lawyer's reading: whether it applies depends on where the contract is signed.
+ * Second review (14 October 2026): each package in its own words, from the coach's own figures (see
+ * CoachingContractData); "Signature" takes its no-break space.
  * French copy of the contract: awaiting David's approval (R10).
  */
 import { eiName, euros, paperDate, siretText, localIsoDate, type CoachIdentity } from './accounting';
 
 export type PackageType = 'single_session' | 'carnet' | 'monthly';
 
+/**
+ * What the coach typed. Each package reads its own fields (second review of 14 October 2026: every package other than
+ * the pack printed "(1 séance)" and "à utiliser dans les 6 mois", false for a monthly follow-up and pointless for one
+ * session): a single session, its price; a pack, its sessions, its price and the months to use them; a monthly
+ * follow-up, its sessions a month, its months and its price a month.
+ */
 export interface CoachingContractData {
   issueDate?: string;
   coach: CoachIdentity;
   client: { name?: string; address?: string };
   packageType: PackageType;
-  sessionsCount: number;
-  totalPrice: number;
-  validityMonths: number;
+  /** The pack's sessions. */
+  sessionsCount?: number;
+  /** The price of the single session or of the whole pack. */
+  totalPrice?: number;
+  /** The months in which the pack's sessions are used. */
+  validityMonths?: number;
+  /** The monthly follow-up: sessions a month, months, price of a month. */
+  sessionsPerMonth?: number;
+  months?: number;
+  monthlyPrice?: number;
 }
 
-export type ContractMissing = 'coachName' | 'siret' | 'coachAddress' | 'cartePro' | 'mediator' | 'clientName' | 'totalPrice' | 'sessions' | 'validity';
+export type ContractMissing = 'coachName' | 'siret' | 'coachAddress' | 'cartePro' | 'mediator' | 'clientName'
+  | 'totalPrice' | 'sessions' | 'validity' | 'sessionsPerMonth' | 'months' | 'monthlyPrice';
 
 const text = (s?: string) => String(s || '').trim();
+const whole = (v: unknown) => Number.isInteger(Number(v)) && Number(v) > 0;
+const money = (v: unknown) => Number.isFinite(Number(v)) && Number(v) > 0;
 
 /** What the contract still lacks, or []: no contract text is made before. */
 export function contractMissing(data: CoachingContractData, siretOk: (s: string) => boolean): ContractMissing[] {
@@ -39,24 +57,56 @@ export function contractMissing(data: CoachingContractData, siretOk: (s: string)
   if (!text(data.coach?.cartePro)) out.push('cartePro');
   if (!text(data.coach?.mediator)) out.push('mediator');
   if (!text(data.client?.name)) out.push('clientName');
-  if (!(Number(data.totalPrice) > 0)) out.push('totalPrice');
-  if (!(Number.isInteger(Number(data.sessionsCount)) && Number(data.sessionsCount) > 0)) out.push('sessions');
-  if (!(Number.isInteger(Number(data.validityMonths)) && Number(data.validityMonths) > 0)) out.push('validity');
+  if (data.packageType === 'monthly') {
+    if (!whole(data.sessionsPerMonth)) out.push('sessionsPerMonth');
+    if (!whole(data.months)) out.push('months');
+    if (!money(data.monthlyPrice)) out.push('monthlyPrice');
+    return out;
+  }
+  if (data.packageType === 'carnet' && !whole(data.sessionsCount)) out.push('sessions');
+  if (!money(data.totalPrice)) out.push('totalPrice');
+  if (data.packageType === 'carnet' && !whole(data.validityMonths)) out.push('validity');
   return out;
 }
 
-const PACKAGE_LABEL: Record<PackageType, (n: number) => string> = {
-  single_session: () => 'Séance de coaching individuel',
-  carnet: n => `Carnet de ${n} séances de coaching individuel`,
-  monthly: () => 'Suivi mensuel',
-};
+const plural = (n: number, one: string, many: string) => (n > 1 ? many : one);
+
+/** Article 1's object and article 3's price, in the package's own words. */
+function packageTerms(data: CoachingContractData): { object: string; price: string[] } {
+  const franchise = 'TVA non applicable, art. 293 B du CGI.';
+  if (data.packageType === 'monthly') {
+    const n = Number(data.sessionsPerMonth), m = Number(data.months), p = Number(data.monthlyPrice);
+    return {
+      object: `un suivi de ${n} ${plural(n, 'séance', 'séances')} d’entraînement personnalisé${n > 1 ? 'es' : 'e'} par mois, pendant ${m}\u00A0mois`,
+      price: [
+        `Le prix est de ${euros(p)} par mois, soit ${euros(p * m)} pour les ${m}\u00A0mois. ${franchise}`,
+        'Le paiement se fait selon les factures remises au Client.',
+        `Le suivi commence à la signature et prend fin au bout des ${m}\u00A0mois, sans reconduction tacite.`,
+      ],
+    };
+  }
+  if (data.packageType === 'carnet') {
+    const n = Number(data.sessionsCount);
+    return {
+      object: `un carnet de ${n} ${plural(n, 'séance', 'séances')} d’entraînement personnalisé${n > 1 ? 'es' : 'e'}, en coaching individuel`,
+      price: [
+        `Le prix du carnet est de ${euros(Number(data.totalPrice))}. ${franchise}`,
+        'Le paiement se fait selon la facture remise au Client.',
+        `Les séances sont à utiliser dans les ${Number(data.validityMonths)}\u00A0mois qui suivent la signature.`,
+      ],
+    };
+  }
+  return {
+    object: 'une séance d’entraînement personnalisée, en coaching individuel',
+    price: [`Le prix de la séance est de ${euros(Number(data.totalPrice))}. ${franchise}`, 'Le paiement se fait selon la facture remise au Client.'],
+  };
+}
 
 /** The contract's text, article by article. Call it only once contractMissing is empty. */
 export function generateCoachingContract(data: CoachingContractData): { title: string; text: string; lines: string[] } {
   const issueDate = data.issueDate || localIsoDate();
   const legal = eiName(text(data.coach.name));
-  const n = Number(data.sessionsCount);
-  const what = `${PACKAGE_LABEL[data.packageType]?.(n) ?? 'Coaching sportif'} (${n} ${n > 1 ? 'séances' : 'séance'})`;
+  const terms = packageTerms(data);
   const insurance = text(data.coach.rcpPro);
   const gym = text(data.coach.gym);
   const lines = [
@@ -78,13 +128,13 @@ export function generateCoachingContract(data: CoachingContractData): { title: s
     'ci-après «\u00A0le Client\u00A0».',
     '',
     'Article 1. Objet',
-    `Le Coach fournit au Client des séances d’entraînement personnalisées\u00A0: ${what}.`,
+    `Le Coach fournit au Client ${terms.object}.`,
     '',
     'Article 2. Le Coach',
     `Le Coach exerce en entreprise individuelle et déclare être titulaire de la carte professionnelle d’éducateur sportif n° ${text(data.coach.cartePro)}.${insurance ? ` Il déclare être assuré en responsabilité civile professionnelle auprès de\u00A0: ${insurance}.` : ''}`,
     '',
     'Article 3. Prix et paiement',
-    `Le prix total est de ${euros(Number(data.totalPrice))}. TVA non applicable, art. 293 B du CGI. Le paiement se fait selon la facture remise au Client. Les séances sont à utiliser dans les ${Number(data.validityMonths)} mois qui suivent la signature.`,
+    terms.price.join(' '),
     '',
     'Article 4. Annulation',
     'Une séance annulée par le Client moins de 24 heures à l’avance est due, sauf cas de force majeure.',
@@ -101,7 +151,7 @@ export function generateCoachingContract(data: CoachingContractData): { title: s
     'Fait en deux exemplaires.',
     '',
     `Le Coach (${legal})`,
-    'Signature :',
+    'Signature\u00A0:',
     '',
     `Le Client (${text(data.client.name)}), signature précédée de «\u00A0Lu et approuvé\u00A0»\u00A0:`,
   ];

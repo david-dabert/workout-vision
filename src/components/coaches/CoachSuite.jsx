@@ -179,20 +179,25 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
 
   // The contract (CTR-1): a model to have read by a lawyer; prices typed by the coach; nothing is drawn up while a
   // required field is empty.
+  // Every figure starts empty and each package asks for its own (second review: the count started at 10, the validity
+  // at 6 months, and a monthly follow-up was printed as one session valid six months).
   const [showContractModal, setShowContractModal] = useState(false);
   const [contractPackage, setContractPackage] = useState('carnet');
-  const [contractSessions, setContractSessions] = useState('10');
-  const [contractPrice, setContractPrice] = useState('');
-  const [contractValidity, setContractValidity] = useState('6');
+  const [contractForm, setContractForm] = useState({ sessions: '', price: '', validity: '', perMonth: '', months: '', monthly: '' });
+  const setContract = (k) => (e) => setContractForm(f => ({ ...f, [k]: e.target.value }));
   const [copiedContract, setCopiedContract] = useState('');
   const contractPdf = useOfficePdf(fr);
+  const amount = (v) => Number(String(v).replace(',', '.'));
   const contractData = {
     coach: coachProfile || {},
     client: { name: selectedClient?.name || '', address: selectedClient?.address || '' },
     packageType: contractPackage,
-    sessionsCount: contractPackage === 'carnet' ? Number(contractSessions) : 1,
-    totalPrice: Number(String(contractPrice).replace(',', '.')),
-    validityMonths: Number(contractValidity),
+    sessionsCount: Number(contractForm.sessions),
+    totalPrice: amount(contractForm.price),
+    validityMonths: Number(contractForm.validity),
+    sessionsPerMonth: Number(contractForm.perMonth),
+    months: Number(contractForm.months),
+    monthlyPrice: amount(contractForm.monthly),
   };
   const contractLacks = contractMissing(contractData, isValidSiret);
   const generatedContract = contractLacks.length ? null : generateCoachingContract(contractData);
@@ -555,20 +560,17 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                             <option value="monthly">{t.ctrMonthly}</option>
                           </select>
                         </div>
-                        {contractPackage === 'carnet' && (
-                          <div className="contract-controls-bar">
-                            <label htmlFor="ctr-sessions">{t.ctrSessions}</label>
-                            <input id="ctr-sessions" type="number" inputMode="numeric" min="1" value={contractSessions} onChange={e => setContractSessions(e.target.value)} />
+                        {(contractPackage === 'monthly'
+                          ? [['perMonth', t.ctrPerMonth, 'numeric'], ['months', t.ctrMonths, 'numeric'], ['monthly', t.ctrMonthlyPrice, 'decimal']]
+                          : contractPackage === 'carnet'
+                            ? [['sessions', t.ctrSessions, 'numeric'], ['price', t.ctrPackPrice, 'decimal'], ['validity', t.ctrValidity, 'numeric']]
+                            : [['price', t.ctrSinglePrice, 'decimal']]
+                        ).map(([k, label, mode]) => (
+                          <div key={k} className="contract-controls-bar">
+                            <label htmlFor={`ctr-${k}`}>{label}</label>
+                            <input id={`ctr-${k}`} type="text" inputMode={mode} value={contractForm[k]} onChange={setContract(k)} data-testid={`ctr-${k}`} />
                           </div>
-                        )}
-                        <div className="contract-controls-bar">
-                          <label htmlFor="ctr-price">{t.ctrPrice}</label>
-                          <input id="ctr-price" type="text" inputMode="decimal" value={contractPrice} onChange={e => setContractPrice(e.target.value)} data-testid="ctr-price" />
-                        </div>
-                        <div className="contract-controls-bar">
-                          <label htmlFor="ctr-validity">{t.ctrValidity}</label>
-                          <input id="ctr-validity" type="number" inputMode="numeric" min="1" value={contractValidity} onChange={e => setContractValidity(e.target.value)} />
-                        </div>
+                        ))}
                       </div>
 
                       {generatedContract ? (
