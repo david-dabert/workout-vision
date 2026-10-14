@@ -58,9 +58,9 @@ export function productFromOff(json, code) {
 }
 
 /**
- * A lookup with its own limit: 15 a minute, counted on this page. Returns { status, product?, retryInMs? }, status one
- * of 'found', 'not-found', 'invalid', 'offline', 'rate-limited', 'error'. A product found is kept for the page's life,
- * so a second look at it sends nothing.
+ * A lookup with its own limit: 15 a minute, counted by this lookup. Returns { status, product?, retryInMs? }, status
+ * one of 'found', 'not-found', 'invalid', 'offline', 'rate-limited', 'error'. A product found is kept by the lookup,
+ * so a second look at it sends nothing. The screen uses the one shared lookup below (offLookup).
  */
 export function createOffLookup({ fetchImpl = (...a) => fetch(...a), now = () => Date.now(), online = () => typeof navigator === 'undefined' || navigator.onLine !== false } = {}) {
   const sent = [];
@@ -92,6 +92,16 @@ export function createOffLookup({ fetchImpl = (...a) => fetch(...a), now = () =>
     found.set(code, product);
     return { status: 'found', product };
   };
+}
+
+// The app's one lookup, made at its first use and kept until the page reloads: the 15 a minute and the products found
+// hold across the nutrition tab's modes and the office's tabs (second review of 14 October 2026: a lookup made inside
+// the barcode panel started afresh, limit and all, each time the panel was opened again).
+let shared = null;
+/** Look a barcode up through the app's one shared lookup (createOffLookup's limit and memory). */
+export function offLookup(code) {
+  shared ??= createOffLookup();
+  return shared(code);
 }
 
 /** What a typed quantity of a product holds, from its values per 100 g: arithmetic on Open Food Facts' figures and

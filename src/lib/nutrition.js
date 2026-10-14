@@ -333,6 +333,11 @@ export function calculateTDEE(bmr, activityLevel) {
  *  Status: convention (common coaching offsets; UNSOURCED). */
 export const GOAL_OFFSET_KCAL = Object.freeze({ cut: -500, maintain: 0, bulk: 300 });
 
+/** The energy as the screen gives it: to the nearest 50 kcal. Mifflin-St Jeor is within ±10 % of a measured resting
+ *  rate for about 8 people in 10 (Frankenfield et al. 2005, J Am Diet Assoc 105(5):775-789; status literature, paper not
+ *  opened by us), so four exact digits ("2 075") claimed a precision it does not have. Status of the 50: convention. */
+export const roundKcal = (kcal) => Math.round(kcal / 50) * 50;
+
 /** Protein for a trained adult, in g per kg of body weight a day: Morton RW et al. 2018, Br J Sports Med 52(6):376-384
  *  (a meta-analysis: gains plateau near 1.6 g/kg, the upper bound of its interval near 2.2 g/kg). Status: literature.
  *  Shown as a range, never as one target (NUT-5: 2.5 g/kg on a cut, outside the source the code cited). */

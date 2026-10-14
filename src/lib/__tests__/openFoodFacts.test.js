@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { isValidGtin, createOffLookup, productFromOff, forGrams, OFF_USER_AGENT, OFF_ORIGIN, RATE_LIMIT } from '../openFoodFacts';
+import { describe, it, expect, vi } from 'vitest';
+import { isValidGtin, createOffLookup, offLookup, productFromOff, forGrams, OFF_USER_AGENT, OFF_ORIGIN, RATE_LIMIT } from '../openFoodFacts';
 
 // Honesty pass of 14 October 2026 (NUT-2, NUT-3, NUT-4): a real lookup, only the barcode sent, values per 100 g as
 // Open Food Facts gives them, every failure said.
@@ -54,6 +54,23 @@ describe('the lookup', () => {
     expect(limited.status).toBe('rate-limited');
     t = RATE_LIMIT.windowMs;
     expect((await lookup('3017620422003')).status).toBe('not-found');
+  });
+});
+
+describe('the app’s one lookup', () => {
+  it('is shared: its memory and its 15 a minute survive the barcode panel being opened again', async () => {
+    let calls = 0;
+    vi.stubGlobal('fetch', async (url) => { calls++; return ok(url.includes('/3017620422003.') ? answer : { status: 0 }); });
+    try {
+      // Two calls stand for two openings of the panel: the second finds the product without sending anything.
+      expect((await offLookup('3017620422003')).status).toBe('found');
+      expect((await offLookup('3017620422003')).status).toBe('found');
+      expect(calls).toBe(1);
+      for (let i = 1; i < RATE_LIMIT.max; i++) expect((await offLookup(i % 2 ? '3228857000166' : '3045320001570')).status).toBe('not-found');
+      expect(calls).toBe(RATE_LIMIT.max);
+      expect((await offLookup('96385074')).status).toBe('rate-limited');
+      expect(calls).toBe(RATE_LIMIT.max);
+    } finally { vi.unstubAllGlobals(); }
   });
 });
 

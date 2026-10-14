@@ -1,17 +1,23 @@
-import { useMemo, useRef, useState } from 'react';
-import { estimateDailyNeeds, ACTIVITY_MULTIPLIERS } from '../../lib/nutrition';
-import { createOffLookup, forGrams } from '../../lib/openFoodFacts';
+import { useMemo, useState } from 'react';
+import { estimateDailyNeeds, roundKcal, ACTIVITY_MULTIPLIERS } from '../../lib/nutrition';
+import { offLookup, forGrams } from '../../lib/openFoodFacts';
 import { localIsoDate, paperDate } from '../../lib/accounting';
 import { hapticLight, hapticTap } from '../../lib/haptics';
 import { Metric } from '../experience/Showcase';
 import { num } from '../experience/showcase-text';
 import { OFFICE } from './office-copy';
+import { legacyMeal, bodyToCheck } from './office-legacy';
 
 // Nutrition (honesty pass of 14 October 2026, NUT-1 to NUT-7). Needs: Mifflin-St Jeor with the activity level the
 // coach chooses, the goal as computed, protein as a range (nutrition.js, sources there); nothing when the client's age,
 // sex, weight or height is missing, which the coach can type here. Plate photo: not available, and no number (the RGB
 // sorting into food groups and its grams formula are gone). Barcode: Open Food Facts, per 100 g, credited (ODbL);
 // a quantity eaten is typed by the coach. No adherence score: what makes a day "respected" has no source yet.
+// Second review of 14 October 2026: a barcode meal logged before this pass came from the hand-written cache (invented
+// values, three of its six barcodes not even valid); like an old photo meal, it is kept and shown with no number. A
+// client file saved before this pass may hold the sex, weight and height the old form filled in by itself (Homme,
+// 75 kg, 175 cm): the coach checks them before any estimate. The energy is shown to the nearest 50 kcal (roundKcal,
+// nutrition.js, with its source).
 
 const SvgCamera = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>;
 const SvgBarcode = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 5v14M8 5v14M12 5v14M17 5v14M21 5v14" /></svg>;
@@ -34,7 +40,7 @@ export default function CoachNutrition({ fr, client, meals, onLogMeal, onUpdateC
         </div>
       </div>
 
-      {mode === 'targets' && <Needs fr={fr} t={t} client={client} onUpdateClient={onUpdateClient} />}
+      {mode === 'targets' && <Needs key={client?.id || 'none'} fr={fr} t={t} client={client} onUpdateClient={onUpdateClient} />}
       {mode === 'photo' && (
         <div className="vision-plate-workbench" data-testid="section-vision-plate">
           <div className="card-top-row">
@@ -53,19 +59,19 @@ export default function CoachNutrition({ fr, client, meals, onLogMeal, onUpdateC
           {meals.length === 0 ? <p className="section-subtext office-flush">{t.logNone}</p> : (
             <div className="meals-list">
               {meals.map(m => {
-                // Meals logged by the plate photo before 14 October 2026 carry invented numbers: kept, never shown.
-                const old = m.source === 'vision_plate';
+                const old = legacyMeal(m);
+                const [lp, lc, lf] = t.macroLetters;
                 return (
-                  <div key={m.id} className="meal-history-card">
+                  <div key={m.id} className="meal-history-card" data-testid="meal-row">
                     <div className="meal-h-left">
-                      <span className="meal-source-tag">{old ? <SvgCamera /> : <SvgBarcode />}{old ? t.oldPhoto : 'Open Food Facts'}</span>
-                      <strong>{old ? t.photoHead : m.title}</strong>
+                      <span className="meal-source-tag">{m.source === 'vision_plate' ? <SvgCamera /> : <SvgBarcode />}{old === 'photo' ? t.oldPhoto : old === 'barcode' ? t.oldValue : 'Open Food Facts'}</span>
+                      <strong>{old === 'photo' ? t.photoHead : m.title}</strong>
                       <span className="meal-date-str">{paperDate(m.dateStr, fr)}</span>
                     </div>
                     {!old && (
                       <div className="meal-h-right">
-                        {m.calories != null && <b>{m.calories}{'\u00A0'}kcal</b>}
-                        <span>{[m.grams ? `${m.grams}\u00A0g` : '', m.proteinG != null ? `${num(m.proteinG, fr)}\u00A0g P` : '', m.carbsG != null ? `${num(m.carbsG, fr)}\u00A0g G` : '', m.fatG != null ? `${num(m.fatG, fr)}\u00A0g L` : ''].filter(Boolean).join(' • ')}</span>
+                        {m.calories != null && <b>{num(m.calories, fr)}{'\u00A0'}kcal</b>}
+                        <span>{[m.grams ? `${num(m.grams, fr)}\u00A0g` : '', m.proteinG != null ? `${num(m.proteinG, fr)}\u00A0g ${lp}` : '', m.carbsG != null ? `${num(m.carbsG, fr)}\u00A0g ${lc}` : '', m.fatG != null ? `${num(m.fatG, fr)}\u00A0g ${lf}` : ''].filter(Boolean).join(' • ')}</span>
                       </div>
                     )}
                   </div>
@@ -85,41 +91,51 @@ function Needs({ fr, t, client, onUpdateClient }) {
   const [typed, setTyped] = useState({});
   if (!client) return <div className="empty-clients-box"><p>{t.pickClient}</p></div>;
   const lacks = ['age', 'sex', 'weight', 'height'].filter(k => k === 'sex' ? !['male', 'female'].includes(client.sex) : !(parseFloat(client[k]) > 0));
-  if (lacks.length) {
+  const check = bodyToCheck(client);
+  if (lacks.length || check) {
+    // A file from before 14 October 2026 shows all four values to confirm, as they are; a newer one asks only for what
+    // is missing.
+    const fields = check ? ['age', 'sex', 'weight', 'height'] : lacks;
+    const valueOf = (k) => (k in typed ? typed[k] : check ? String(client[k] ?? '') : '');
     const save = async () => {
       hapticTap();
-      await onUpdateClient({ ...client, ...Object.fromEntries(Object.entries(typed).filter(([, v]) => String(v).trim() !== '')) });
+      const entered = Object.fromEntries(fields.map(k => [k, String(valueOf(k)).trim()]).filter(([, v]) => v !== ''));
+      await onUpdateClient({ ...client, ...entered, bodyTyped: true });
       setTyped({});
     };
     const label = { age: t.fAge, sex: t.fSex, weight: t.fWeight, height: t.fHeight };
     return (
-      <div className="client-target-summary" data-testid="needs-missing">
-        <span className="summary-client-name"><b>{client.name}</b></span>
-        <p className="office-strong">{t.needData}</p>
+      <div className="client-target-summary" data-testid={check ? 'needs-check' : 'needs-missing'}>
+        <span className="summary-client-name"><b>{client.name}</b>{check && <span className="comp-badge">{t.legacyTag}</span>}</span>
+        <p className="office-strong">{check ? t.bodyLegacy : t.needData}</p>
         <div className="inline-inputs">
-          {lacks.map(k => (
+          {fields.map(k => (
             <div key={k} className="input-group">
               <label htmlFor={`nd-${k}`}>{label[k]}</label>
               {k === 'sex' ? (
-                <select id={`nd-${k}`} value={typed.sex || ''} onChange={e => setTyped(v => ({ ...v, sex: e.target.value }))}>
+                <select id={`nd-${k}`} value={valueOf('sex')} onChange={e => setTyped(v => ({ ...v, sex: e.target.value }))}>
                   <option value="">{t.activityPick}</option>
                   <option value="female">{fr ? 'Femme' : 'Female'}</option>
                   <option value="male">{fr ? 'Homme' : 'Male'}</option>
                 </select>
               ) : (
-                <input id={`nd-${k}`} type="number" inputMode="decimal" value={typed[k] || ''} onChange={e => setTyped(v => ({ ...v, [k]: e.target.value }))} />
+                <input id={`nd-${k}`} type="number" inputMode="decimal" value={valueOf(k)} onChange={e => setTyped(v => ({ ...v, [k]: e.target.value }))} />
               )}
             </div>
           ))}
         </div>
         <div className="form-actions-row">
-          <button type="button" className="btn-save press" onClick={save} data-testid="btn-save-needs">{t.saveToFile}</button>
+          <button type="button" className="btn-save press" onClick={save} data-testid="btn-save-needs">{check ? t.bodyConfirm : t.saveToFile}</button>
         </div>
       </div>
     );
   }
   const needs = estimateDailyNeeds(client, { goal, activity });
-  const kcal = (n) => (fr ? String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202F') : n.toLocaleString('en-GB'));
+  // To the nearest 50 kcal (roundKcal, nutrition.js): the equation is not closer than that for one person.
+  const kcal = (n) => {
+    const r = roundKcal(n);
+    return fr ? String(r).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202F') : r.toLocaleString('en-GB');
+  };
   return (
     <div className="nutrition-cards-layout">
       <div className="nutrition-goal-selector" role="group" aria-label={t.modeTargets}>
@@ -149,8 +165,6 @@ function Needs({ fr, t, client, onUpdateClient }) {
 }
 
 function Barcode({ fr, t, client, onLogMeal }) {
-  const lookupRef = useRef(null);
-  lookupRef.current ??= createOffLookup();
   const [code, setCode] = useState('');
   const [state, setState] = useState({ status: 'idle' });
   const [grams, setGrams] = useState('');
@@ -160,7 +174,7 @@ function Barcode({ fr, t, client, onLogMeal }) {
     hapticLight();
     setGrams('');
     setState({ status: 'loading' });
-    const r = await lookupRef.current(code);
+    const r = await offLookup(code);
     setState(r);
   };
   const p = state.status === 'found' ? state.product : null;

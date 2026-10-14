@@ -285,3 +285,5 @@
 /* A logged meal: its name and date, then what it holds, on one line under it at phone width. */
 .wv-experience .coach-suite-container .meal-history-card { flex-direction: column; align-items: stretch; gap: var(--s-2); }
 .wv-experience .coach-suite-container .meal-history-card .meal-h-right { flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: flex-start; gap: 4px 10px; text-align: left; }
+/* A file to check (a client saved before 14 October 2026): the badge beside the name. */
+.wv-experience .coach-suite-container .summary-client-name .comp-badge, .wv-experience .coach-suite-container .detail-meta .comp-badge { margin-left: 8px; vertical-align: 1px; }

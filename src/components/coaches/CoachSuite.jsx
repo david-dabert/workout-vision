@@ -19,6 +19,7 @@ import CoachAccounting from './CoachAccounting';
 import { OFFICE } from './office-copy';
 import { useOfficePdf } from './office-share';
 import CoachNutrition from './CoachNutrition';
+import { bodyToCheck } from './office-legacy';
 import {
   PHYSIO_CATALOG,
   PHYSIO_REGIONS,
@@ -98,7 +99,9 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
     e.preventDefault();
     if (!newClient.name.trim()) return;
     hapticTap();
-    const created = await saveClient({ ...newClient, name: newClient.name.trim() });
+    // bodyTyped: this file's sex, weight and height were typed by the coach (the form starts empty since 14 October
+    // 2026); a file without it may hold the old form's pre-filled values (CoachNutrition.jsx, bodyToCheck).
+    const created = await saveClient({ ...newClient, name: newClient.name.trim(), bodyTyped: true });
     setClients(prev => [created, ...prev]);
     setSelectedClientId(created.id);
     setCarnetForm(null);
@@ -369,6 +372,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                           selectedClient.weight ? `${selectedClient.weight}\u00A0kg` : '',
                           selectedClient.height ? `${selectedClient.height}\u00A0cm` : '',
                         ].filter(Boolean).join(' • ')}
+                        {bodyToCheck(selectedClient) && (selectedClient.sex || selectedClient.weight || selectedClient.height) ? <span className="comp-badge" data-testid="body-to-check">{t.legacyTag}</span> : null}
                       </span>
                     </div>
                     {!confirmDelete && (
