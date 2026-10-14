@@ -1,40 +1,24 @@
 import { describe, it, expect } from 'vitest';
-import {
-  calculateStrengthParity,
-  findCompatibleBuddies,
-  ACTIVE_BUDDIES_POOL,
-} from '../matcher';
+import * as buddies from '../matcher';
+import { calculateStrengthParity, findCompatibleBuddies, DEMO_BUDDY_PROFILES } from '../matcher';
 
-describe('Gym Buddy Matchmaker Engine', () => {
-  it('calculates compound strength parity accurately', () => {
-    // Similar working weights (100kg bench / 140kg squat vs 95kg bench / 135kg squat)
-    const c1 = { benchPressKg: 100, squatKg: 140 };
-    const c2 = { benchPressKg: 95, squatKg: 135 };
-    expect(calculateStrengthParity(c1, c2)).toBe(100);
-
-    // Wide disparity (140kg vs 60kg)
-    const c3 = { benchPressKg: 60, squatKg: 80 };
-    expect(calculateStrengthParity(c1, c3)).toBeLessThan(60);
+// Honesty pass of 14 October 2026 (BUD-1 to BUD-3): fictional gyms, a split that filters, no assumed weights.
+describe('the gym buddy demo', () => {
+  it('compares working weights: 100 within 15 %, lower beyond', () => {
+    expect(calculateStrengthParity({ benchPressKg: 100, squatKg: 140 }, { benchPressKg: 95, squatKg: 135 })).toBe(100);
+    expect(calculateStrengthParity({ benchPressKg: 100, squatKg: 140 }, { benchPressKg: 60, squatKg: 80 })).toBeLessThan(60);
   });
-
-  it('ranks gym partners by facility and evening schedule', () => {
-    const matches = findCompatibleBuddies({
-      facility: 'Fitness Park République',
-      timeWindow: 'evening',
-      split: 'ppl',
-      userCompounds: { benchPressKg: 105, squatKg: 135 },
-    });
-
-    expect(matches.length).toBeGreaterThanOrEqual(1);
-    expect(matches[0].buddy.name).toBe('Antoine D.');
-    expect(matches[0].score.facilityMatch).toBe(true);
-    expect(matches[0].score.scheduleMatch).toBe(true);
-    expect(matches[0].score.splitMatch).toBe(true);
-    expect(matches[0].score.totalScore).toBeGreaterThan(90);
+  it('holds fictional profiles in fictional gyms, no brand', () => {
+    expect('ACTIVE_BUDDIES_POOL' in buddies).toBe(false);
+    expect(DEMO_BUDDY_PROFILES.every(b => b.fictional && /^Salle exemple [A-Z]$/.test(b.facility))).toBe(true);
+    expect(JSON.stringify(DEMO_BUDDY_PROFILES)).not.toMatch(/Basic-Fit|Fitness Park|Gymbox|Equinox|London|New York/);
   });
-
-  it('filters by city correctly', () => {
-    const londonMatches = findCompatibleBuddies({ city: 'London' });
-    expect(londonMatches.every(m => m.buddy.city === 'London')).toBe(true);
+  it('lists only the split chosen, and gives no parity without the person’s weights', () => {
+    const pl = findCompatibleBuddies({ split: 'powerlifting' });
+    expect(pl.length).toBeGreaterThan(0);
+    expect(pl.every(m => m.buddy.split === 'powerlifting')).toBe(true);
+    expect(pl.every(m => m.score.strengthParityPct === null)).toBe(true);
+    expect(findCompatibleBuddies({ split: 'bro_split' })).toEqual([]);
+    expect(findCompatibleBuddies({ userCompounds: { benchPressKg: 100, squatKg: 130 } })[0].score.strengthParityPct).toBe(100);
   });
 });
