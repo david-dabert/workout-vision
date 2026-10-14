@@ -148,6 +148,23 @@ describe('records from before the honesty pass', () => {
     expect(html).toContain('value="75"');
     expect(html).not.toMatch(/kcal\/j|data-testid="needs"/);
   });
+  // Final check of 14 October 2026: confirming an old file dropped every field the coach emptied, then kept the old
+  // value under bodyTyped: an erased pre-filled 75 kg came back as typed and reached a kcal figure.
+  it('confirming an old file with the weight and the sex erased keeps them empty, gives no estimate and asks for them', async () => {
+    const { bodyAsShown, shownBodyValue } = await import('./office-legacy');
+    const old = { id: 'c1', name: 'Alex', age: '30', sex: 'male', weight: '75', height: '175' };
+    const shown = { age: shownBodyValue(old, 'age'), sex: '', weight: '', height: shownBodyValue(old, 'height') };
+    const saved = bodyAsShown(old, shown);
+    expect(saved).toEqual({ id: 'c1', name: 'Alex', age: '30', sex: '', weight: '', height: '175', bodyTyped: true });
+    const html = await renderNutrition({ client: saved });
+    expect(html).toContain('data-testid="needs-missing"');
+    expect(html).toContain('id="nd-weight"');
+    expect(html).toContain('id="nd-sex"');
+    expect(html).not.toContain('id="nd-age"');
+    expect(html).not.toMatch(/kcal\/j|75 kg|value="75"/);
+    expect(bodyAsShown(old, { age: '30', sex: 'male', weight: ' 80 ', height: '175' })).toMatchObject({ weight: '80', sex: 'male', bodyTyped: true });
+    expect(shownBodyValue({ sex: 'other' }, 'sex')).toBe('');
+  });
   it('the energy is given to the nearest 50 kcal', async () => {
     const { estimateDailyNeeds, roundKcal } = await import('../../lib/nutrition');
     const raw = estimateDailyNeeds({ age: '34', sex: 'female', weight: '62', height: '168' }, { activity: 'moderate' }).calories;

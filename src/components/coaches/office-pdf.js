@@ -8,12 +8,27 @@ import { euros, paperDate, siretText } from '../../lib/accounting';
 
 const BODY = 10, LEAD = 1.5, TITLE = 20;
 
+// euros() (accounting.ts) separates thousands with a narrow no-break space (U+202F), which the Geist fonts lack:
+// write() set "1 500,00 €" as "15 00,00 €" (final check of 14 October 2026). On paper the separator is the plain
+// no-break space (U+00A0), which the fonts have; every string goes through it before it is measured, wrapped or set.
+const paper = s => String(s).replace(/\u202F/g, '\u00A0');
+function officeDoc(opts) {
+  const kit = pdfDoc(opts);
+  return {
+    ...kit,
+    width: (s, ...a) => kit.width(paper(s), ...a),
+    write: (s, ...a) => kit.write(paper(s), ...a),
+    lines: (s, ...a) => kit.lines(paper(s), ...a),
+    drawLine: (s, ...a) => kit.drawLine(paper(s), ...a),
+  };
+}
+
 /**
  * A document of lines: the first is its title (serif), "Article …" lines are heads (medium), an empty line is a gap.
  * Returns a PDF Blob.
  */
 export function documentPdf({ title, lines, fr = true }) {
-  const { doc, write, lines: wrap, drawLine, paint } = pdfDoc({ title, fr });
+  const { doc, write, lines: wrap, drawLine, paint } = officeDoc({ title, fr });
   paint();
   let y = MARGIN;
   const bottom = PAGE_H - MARGIN;
@@ -47,7 +62,7 @@ export function documentPdf({ title, lines, fr = true }) {
 export function invoicePdf(inv) {
   const avoir = inv.kind === 'avoir';
   const kind = avoir ? 'Avoir' : 'Facture';
-  const { doc, upper, width, write, lines: wrap, drawLine, paint } = pdfDoc({ title: `${kind} ${inv.number}`, fr: true });
+  const { doc, upper, width, write, baseline, lines: wrap, drawLine, paint } = officeDoc({ title: `${kind} ${inv.number}`, fr: true });
   paint();
   let y = MARGIN;
   const bottom = PAGE_H - MARGIN;
@@ -95,8 +110,10 @@ export function invoicePdf(inv) {
   });
   y += partyH + GAP;
 
-  // The table: designation (50 %), quantity (12 %), unit price (19 %), total (19 %), figures flush right.
-  const widths = [COLUMN * 0.5, COLUMN * 0.12, COLUMN * 0.19, COLUMN * 0.19];
+  // The table: designation (42 %), quantity (10 %), unit price (24 %), total (24 %), figures flush right. At 19 % a
+  // column was narrower than "12 345,00 €" and the price ran into the total (final check of 14 October 2026); at 24 %
+  // up to 99 999,99 € fits with room to spare, and a longer figure is set smaller to stay in its column (cell()).
+  const widths = [COLUMN * 0.42, COLUMN * 0.1, COLUMN * 0.24, COLUMN * 0.24];
   const colX = k => MARGIN + widths.slice(0, k).reduce((a, b) => a + b, 0);
   const colR = k => colX(k) + widths[k];
   room(30);
@@ -112,9 +129,10 @@ export function invoicePdf(inv) {
     room(h);
     const top = y + 8;
     name.lines.forEach((line, k) => drawLine(line, name.raster, colX(0), top + k * 10.5 * 1.4, 10.5, 1.4, COLOR.ink));
-    flushRight(String(it.quantity), colR(1), top, 'sans', 10.5, COLOR.ink);
-    flushRight(euros(it.unitPrice), colR(2), top, 'sans', 10.5, COLOR.ink);
-    flushRight(euros(it.quantity * it.unitPrice), colR(3), top, 'sans', 10.5, COLOR.ink);
+    const cell = (s, k) => { let z = 10.5; while (z > 6 && width(s, 'sans', z) > widths[k] - 8) z -= 0.5; flushRight(s, colR(k), top + baseline('sans', 10.5, 1.4, 0) - baseline('sans', z, 1.4, 0), 'sans', z, COLOR.ink); };
+    cell(String(it.quantity), 1);
+    cell(euros(it.unitPrice), 2);
+    cell(euros(it.quantity * it.unitPrice), 3);
     y += h;
     rule(COLOR.rowRule);
   }

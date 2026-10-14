@@ -45,6 +45,15 @@ describe('the lookup', () => {
     expect((await lookup('3017620422003')).status).toBe('found');
     expect(seen).toEqual([{ 'User-Agent': OFF_USER_AGENT }, undefined]);
   });
+  it('counts the second try without the User-Agent against the 15 a minute', async () => {
+    let sent = 0;
+    const lookup = createOffLookup({ fetchImpl: async (url, init) => { sent++; if (init.headers) throw new TypeError('Failed to fetch'); return ok({ status: 0 }); }, online: () => true, now: () => 0 });
+    const codes = ['3017620422003', '3228857000166', '3045320001570', '96385074'];
+    for (let i = 0; i < RATE_LIMIT.max / 2 - 0.5; i++) expect((await lookup(codes[i % codes.length])).status).toBe('not-found');
+    expect(sent).toBe(RATE_LIMIT.max - 1);
+    expect((await lookup('3017620422003')).status).toBe('rate-limited');
+    expect(sent).toBe(RATE_LIMIT.max);
+  });
   it('keeps to 15 lookups a minute', async () => {
     let t = 0;
     const lookup = createOffLookup({ fetchImpl: async () => ok({ status: 0 }), online: () => true, now: () => t });

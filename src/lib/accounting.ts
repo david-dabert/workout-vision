@@ -28,6 +28,8 @@ export const RATES = Object.freeze({
    *  income is at most 29 315 € per part (2026 limit). Source: impots.gouv.fr. Status: literature (page not opened). */
   versementLiberatoire: 0.022,
   versementLiberatoireIncomeLimitPerPart: 29315,
+  /** The year of the reference income that limit applies to; shown under the toggle (CoachAccounting.jsx). */
+  versementLiberatoireIncomeYear: 2024,
   /** Micro-BNC turnover ceiling for 2026 to 2028. Source: economie.gouv.fr; BOFiP BOI-BAREME-000044.
    *  Status: literature (page not opened by us). */
   microBncCeiling: 83600,

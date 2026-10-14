@@ -42,6 +42,14 @@ describe('the coaching contract model (honesty pass of 14 October 2026, CTR-1)',
     expect(text).toContain('prend fin au bout des 3\u00A0mois, sans reconduction tacite.');
     expect(text).not.toMatch(/1 séance\)|à utiliser dans|Suivi mensuel \(/);
   });
+  // Final check of 14 October 2026: one month read "dans les 1 mois", "pour les 1 mois", "au bout des 1 mois".
+  it('one month is written in the singular', () => {
+    const one = generateCoachingContract({ ...DATA, packageType: 'monthly' as const, sessionsCount: undefined, totalPrice: undefined, validityMonths: undefined, sessionsPerMonth: 4, months: 1, monthlyPrice: 200 }).text;
+    expect(one).toContain('Le prix est de 200,00 € pour le mois. TVA non applicable');
+    expect(one).toContain('prend fin au bout d’un mois, sans reconduction tacite.');
+    expect(generateCoachingContract({ ...DATA, validityMonths: 1 }).text).toContain('Les séances sont à utiliser dans le mois qui suit la signature.');
+    expect(one + generateCoachingContract({ ...DATA, validityMonths: 1 }).text).not.toMatch(/les 1 mois|des 1 mois/);
+  });
   it('a single session has its price and no validity clause', () => {
     const single = { ...DATA, packageType: 'single_session' as const, sessionsCount: undefined, validityMonths: undefined, totalPrice: 60 };
     expect(contractMissing({ ...single, totalPrice: 0 }, isValidSiret)).toEqual(['totalPrice']);

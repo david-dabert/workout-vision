@@ -185,7 +185,7 @@ export default function CoachAccounting({ fr, clients, selectedClient, profile, 
           <Range label={t.otherCosts} display={money(otherCosts)} min="0" max="1000" step="10" value={otherCosts} onChange={e => setOtherCosts(Number(e.target.value))} testId="acc-other" />
         </div>
         <label className="sc-switch">
-          <span className="sc-switch-text">{t.vl}<small>{t.vlSub(ratePct(RATES.versementLiberatoire, fr))}</small></span>
+          <span className="sc-switch-text">{t.vl}<small>{t.vlSub(ratePct(RATES.versementLiberatoire, fr), money(RATES.versementLiberatoireIncomeLimitPerPart), RATES.versementLiberatoireIncomeYear)}</small></span>
           <input type="checkbox" role="switch" checked={vl} onChange={e => { hapticLight(); setVl(e.target.checked); }} data-testid="acc-vl" />
         </label>
       </div>

@@ -6,7 +6,7 @@ import { hapticLight, hapticTap } from '../../lib/haptics';
 import { Metric } from '../experience/Showcase';
 import { num } from '../experience/showcase-text';
 import { OFFICE } from './office-copy';
-import { legacyMeal, bodyToCheck } from './office-legacy';
+import { legacyMeal, bodyToCheck, bodyAsShown, shownBodyValue } from './office-legacy';
 
 // Nutrition (honesty pass of 14 October 2026, NUT-1 to NUT-7). Needs: Mifflin-St Jeor with the activity level the
 // coach chooses, the goal as computed, protein as a range (nutrition.js, sources there); nothing when the client's age,
@@ -96,11 +96,11 @@ function Needs({ fr, t, client, onUpdateClient }) {
     // A file from before 14 October 2026 shows all four values to confirm, as they are; a newer one asks only for what
     // is missing.
     const fields = check ? ['age', 'sex', 'weight', 'height'] : lacks;
-    const valueOf = (k) => (k in typed ? typed[k] : check ? String(client[k] ?? '') : '');
+    const valueOf = (k) => (k in typed ? typed[k] : check ? shownBodyValue(client, k) : '');
+    // Saved as shown: a field the coach emptied is emptied in the file, and asked for again (bodyAsShown).
     const save = async () => {
       hapticTap();
-      const entered = Object.fromEntries(fields.map(k => [k, String(valueOf(k)).trim()]).filter(([, v]) => v !== ''));
-      await onUpdateClient({ ...client, ...entered, bodyTyped: true });
+      await onUpdateClient(bodyAsShown(client, Object.fromEntries(fields.map(k => [k, valueOf(k)]))));
       setTyped({});
     };
     const label = { age: t.fAge, sex: t.fSex, weight: t.fWeight, height: t.fHeight };

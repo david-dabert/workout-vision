@@ -79,9 +79,10 @@ function packageTerms(data: CoachingContractData): { object: string; price: stri
     return {
       object: `un suivi de ${n} ${plural(n, 'séance', 'séances')} d’entraînement personnalisé${n > 1 ? 'es' : 'e'} par mois, pendant ${m}\u00A0mois`,
       price: [
-        `Le prix est de ${euros(p)} par mois, soit ${euros(p * m)} pour les ${m}\u00A0mois. ${franchise}`,
+        // One month in the singular (final check of 14 October 2026: "pour les 1 mois"); awaiting David's approval (R10).
+        m > 1 ? `Le prix est de ${euros(p)} par mois, soit ${euros(p * m)} pour les ${m}\u00A0mois. ${franchise}` : `Le prix est de ${euros(p)} pour le mois. ${franchise}`,
         'Le paiement se fait selon les factures remises au Client.',
-        `Le suivi commence à la signature et prend fin au bout des ${m}\u00A0mois, sans reconduction tacite.`,
+        `Le suivi commence à la signature et prend fin au bout ${m > 1 ? `des ${m}\u00A0mois` : 'd’un mois'}, sans reconduction tacite.`,
       ],
     };
   }
@@ -92,7 +93,8 @@ function packageTerms(data: CoachingContractData): { object: string; price: stri
       price: [
         `Le prix du carnet est de ${euros(Number(data.totalPrice))}. ${franchise}`,
         'Le paiement se fait selon la facture remise au Client.',
-        `Les séances sont à utiliser dans les ${Number(data.validityMonths)}\u00A0mois qui suivent la signature.`,
+        // One month in the singular (final check of 14 October 2026: "dans les 1 mois"); awaiting David's approval (R10).
+        Number(data.validityMonths) > 1 ? `Les séances sont à utiliser dans les ${Number(data.validityMonths)}\u00A0mois qui suivent la signature.` : 'Les séances sont à utiliser dans le mois qui suit la signature.',
       ],
     };
   }
@@ -137,6 +139,8 @@ export function generateCoachingContract(data: CoachingContractData): { title: s
     terms.price.join(' '),
     '',
     'Article 4. Annulation',
+    // The 24-hour notice is a common rule among coaches, not a legal one. Source: UNSOURCED. Status: convention. The
+    // coach never typed it, so the screen names it among what the lawyer reads (ctrSub, office-copy.js).
     'Une séance annulée par le Client moins de 24 heures à l’avance est due, sauf cas de force majeure.',
     '',
     'Article 5. Santé',

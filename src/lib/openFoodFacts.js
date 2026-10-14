@@ -70,16 +70,24 @@ export function createOffLookup({ fetchImpl = (...a) => fetch(...a), now = () =>
     if (!isValidGtin(code)) return { status: 'invalid' };
     if (found.has(code)) return { status: 'found', product: found.get(code) };
     if (!online()) return { status: 'offline' };
-    const t = now();
-    while (sent.length && t - sent[0] >= RATE_LIMIT.windowMs) sent.shift();
-    if (sent.length >= RATE_LIMIT.max) return { status: 'rate-limited', retryInMs: RATE_LIMIT.windowMs - (t - sent[0]) };
-    sent.push(t);
+    // Every request sent counts, the second try without the User-Agent included (final check of 14 October 2026).
+    const take = () => {
+      const t = now();
+      while (sent.length && t - sent[0] >= RATE_LIMIT.windowMs) sent.shift();
+      if (sent.length >= RATE_LIMIT.max) return { status: 'rate-limited', retryInMs: RATE_LIMIT.windowMs - (t - sent[0]) };
+      sent.push(t);
+      return null;
+    };
+    const busy = take();
+    if (busy) return busy;
     const url = `${OFF_ORIGIN}/api/v2/product/${code}.json?fields=${OFF_FIELDS}`;
     let res;
     try {
       res = await fetchImpl(url, { headers: { 'User-Agent': OFF_USER_AGENT }, credentials: 'omit', referrerPolicy: 'no-referrer' });
     } catch {
       if (!online()) return { status: 'offline' };
+      const again = take();
+      if (again) return again;
       try { res = await fetchImpl(url, { credentials: 'omit', referrerPolicy: 'no-referrer' }); } catch { return { status: online() ? 'error' : 'offline' }; }
     }
     if (res.status === 404) return { status: 'not-found' };
