@@ -1,10 +1,13 @@
+// EquiVision held to honesty properties (audit of 14 October 2026, EQ-01 to EQ-24): every simulated value sits under
+// a Démo badge beside the value the simulation was written with; no verdict, limb, duty factor or legal claim is
+// rendered; the painted "analysed" videos are not served; a visitor's own video gets no number, only the statement.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 vi.mock('./Equine.css', () => ({}));
 afterEach(() => { vi.unstubAllGlobals(); vi.resetModules(); });
 
-async function render(lang) {
+async function load(lang) {
   const store = { wv_lang: lang };
   vi.stubGlobal('localStorage', {
     getItem: k => store[k] ?? null,
@@ -12,33 +15,73 @@ async function render(lang) {
     removeItem: k => { delete store[k]; },
   });
   const { LanguageProvider } = await import('../../lib/LanguageContext');
-  const { default: Equine } = await import('./Equine');
-  return renderToStaticMarkup(
-    <LanguageProvider>
-      <Equine onClose={() => {}} />
-    </LanguageProvider>
-  );
+  return { LanguageProvider, mod: await import('./Equine') };
+}
+
+async function render(lang) {
+  const { LanguageProvider, mod } = await load(lang);
+  const Equine = mod.default;
+  return renderToStaticMarkup(<LanguageProvider><Equine onClose={() => {}} /></LanguageProvider>);
 }
 
 const decode = s => s.replace(/&#x27;/g, '\'').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+const text = html => decode(html.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ');
 
-describe('EquiVision Equine Gait UI Component', () => {
+// Words of the screen before the honesty pass that claimed what nothing measures (EN and FR).
+const FALSE_CLAIMS = [
+  'Veterinary AI', 'On-Device', 'sur l’appareil', 'Neural', 'GDPR', 'RGPD', 'CNIL', 'Article 9', 'Clinical', 'Clinique',
+  'Sound /', 'Sain', 'Suspected', 'Suspicion', 'Duty factor', 'Facteur d’appui', 'BAI', 'Within clinical tolerance',
+  'Aucune boiterie significative', 'Compensé', 'compensation', 'CC-BY', 'Public Domain', 'Domaine Public', 'Muybridge',
+  'Analyzed', 'Analysée', 'Withers (T6)', 'Savitzky-Golay',
+];
+
+describe('EquiVision', () => {
   for (const lang of ['en', 'fr']) {
-    it(`renders correctly with gait analysis elements in ${lang}`, async () => {
-      const rawHtml = await render(lang);
-      const html = decode(rawHtml);
-
-      expect(html).toContain('EquiVision');
-      expect(html).toContain('Veterinary AI');
+    it(`renders every band, each marked for what it is, in ${lang}`, async () => {
+      const html = decode(await render(lang));
       expect(html).toContain('data-testid="equine-screen"');
-      expect(html).toContain('data-testid="scenario-sound"');
-      expect(html).toContain('data-testid="scenario-forelimb"');
-      expect(html).toContain('data-testid="scenario-hindlimb"');
-      expect(html).toContain('data-testid="toggle-circle"');
-      expect(html).toContain('data-testid="btn-mode-analyzed"');
-      expect(html).toContain('data-testid="btn-download-equine-video"');
-      expect(html).toContain('Savitzky-Golay quadratic');
-      expect(html).toContain('Dyson & Greve, 2016');
+      expect(html).toContain('data-testid="equine-player"');
+      expect(html).toContain('data-testid="equine-simulation"');
+      expect(html).toContain('data-testid="equine-circle"');
+      for (const s of ['sound', 'fore', 'hind']) expect(html).toContain(`data-testid="scenario-${s}"`);
+      // Démo on the video band, the simulation band, its chart and its figures.
+      expect(html.match(/data-testid="demo-badge"/g)?.length).toBeGreaterThanOrEqual(4);
+      expect(html).toContain('data-testid="equine-upload-card"');
+    });
+
+    it(`shows no verdict, limb, legal or false on-device claim in ${lang}`, async () => {
+      const t = text(await render(lang));
+      for (const w of FALSE_CLAIMS) expect(t, w).not.toContain(w);
+      for (const w of ['left fore', 'right hind', 'antérieur gauche', 'postérieur droit', '(LF)', '(RH)', '(AG)', '(PD)']) expect(t, w).not.toContain(w);
+    });
+
+    it(`serves no painted "analysed" video and offers no download, in ${lang}`, async () => {
+      const html = await render(lang);
+      expect(html).not.toMatch(/analyzed/i);
+      expect(html).not.toContain('download=');
+      expect(html).toContain('workoutvision-ridden-dressage-raw.mp4');
+    });
+
+    it(`sets each read value beside the value the simulation was written with, in ${lang}`, async () => {
+      const t = text(await render(lang));
+      const programmed = lang === 'fr' ? 'Programmé dans la simulation' : 'Programmed in the simulation';
+      expect(t.split(programmed).length - 1).toBe(3);
     });
   }
+
+  it('gives the visitor’s own video no number, curve or verdict, only the statement, the file and the way back', async () => {
+    for (const lang of ['en', 'fr']) {
+      const { mod } = await load(lang);
+      const html = decode(renderToStaticMarkup(<mod.EquineVideoBand lang={lang} own={{ url: 'blob:x', name: 'trot.mov' }} reduced onOpen={() => {}} onClose={() => {}} />));
+      const t = text(html);
+      expect(html).toContain('data-testid="equine-own-statement"');
+      expect(html).toContain('data-testid="equine-own-video"');
+      expect(html).toContain('src="blob:x"');
+      expect(t).toContain('trot.mov');
+      expect(html).not.toContain('demo-badge');
+      expect(html).not.toContain('<canvas');
+      expect(t).not.toMatch(/\d/); // not a single figure
+      expect(t).toContain(lang === 'fr' ? 'Pas de mesure sur votre vidéo' : 'No measurement on your video');
+    }
+  });
 });

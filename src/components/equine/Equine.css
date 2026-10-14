@@ -1,34 +1,29 @@
 /* EquiVision (Equine.jsx): the experience's wrapper, topbar and tokens, with the showcase parts of Showcase.css
-   (design/SYSTEM.md). Only what is the screen's own is here: the legend and overlay of the trace, the clinical
-   points and the upload card. The trace's two lines: the withers in the lamp, the sacrum in bone (palette.js).
+   (design/SYSTEM.md). Only what is the screen's own is here: the statement under the visitor's video, the legend of
+   the simulated curve, the roadmap cards and the open card. The head in the lamp, the pelvis in bone (palette.js).
    Status: convention (the app's design system; no measurement involved). */
 
-.wv-experience .equine-screen .equine-rail-section { margin-top: var(--s-6); }
-.wv-experience .equine-screen .equine-hero { margin-top: var(--s-5); }
-.wv-experience .equine-screen .equine-download { align-self: flex-start; }
-.wv-experience .equine-screen .sc-name-row .btn-ghost.is-s { align-self: flex-start; }
+.wv-experience .equine-screen .equine-hero { margin-top: var(--s-6); }
 
-/* The legend of the trace, above its frame. */
+/* The statement under the visitor's own video: a card in the lamp's outline, so it reads as the answer. */
+.wv-experience .equine-own { border-color: var(--lamp-line); gap: var(--s-2); }
+.wv-experience .equine-own-title { margin: 0; font-size: var(--fs-body); font-weight: 600; line-height: 1.35; color: var(--lamp-hi); }
+
+/* The legend of the simulated curve, above its frame: two lines, then the two dips (A filled, B hollow). */
 .wv-experience .equine-legend { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-4); font-size: var(--fs-caption); color: var(--bone-2); }
 .wv-experience .equine-legend .legend-item { display: inline-flex; align-items: center; gap: var(--s-2); }
 .wv-experience .equine-legend .legend-color { width: 16px; height: 3px; border-radius: 2px; }
-.wv-experience .equine-legend .legend-withers { background: var(--c-accent); }
-.wv-experience .equine-legend .legend-sacrum { background: var(--bone); }
+.wv-experience .equine-legend .legend-head { background: var(--c-accent); }
+.wv-experience .equine-legend .legend-pelvis { background: var(--bone); }
+.wv-experience .equine-legend .legend-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bone-2); }
+.wv-experience .equine-legend .legend-dot.is-hollow { background: transparent; box-shadow: inset 0 0 0 1.5px var(--bone-2); }
 
-/* The markers over the raw video: small pills on a veil of the void, never over the picture's centre. */
-.wv-experience .equine-video-hud { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; flex-wrap: wrap; gap: 6px; pointer-events: none; }
-.wv-experience .equine-video-hud > span { display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px 3px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--void) 74%, transparent); font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.06em; color: var(--bone-2); }
-.wv-experience .equine-video-hud .hud-dot { width: 6px; height: 6px; border-radius: 50%; padding: 0; background: var(--bone); }
-.wv-experience .equine-video-hud .hud-withers .hud-dot { background: var(--c-accent); }
-.wv-experience .equine-video-hud .hud-phase-badge { margin-left: auto; }
-
-/* The science: the two paragraphs, then the three thresholds, one card each. */
-.wv-experience .equine-science .sc-text strong { font-weight: 600; color: var(--c-fg); }
+/* What a real reading would take: three short cards. */
 .wv-experience .equine-points { display: flex; flex-direction: column; gap: var(--s-2); }
 .wv-experience .equine-points .sc-card { padding: 14px 16px; gap: var(--s-2); border-radius: var(--r-s); }
 .wv-experience .equine-points .sc-head-title { color: var(--lamp-hi); }
 
-/* The upload card closes the page: the whole card is the button. */
-.wv-experience .equine-upload { margin-top: var(--s-6); width: 100%; align-items: center; text-align: center; gap: var(--s-2); padding: 22px 18px; border-style: dashed; border-color: var(--hair-2); }
+/* The open card, under the demo clip: the whole card is the button. */
+.wv-experience .equine-upload { width: 100%; align-items: center; text-align: center; gap: var(--s-2); padding: 22px 18px; border-style: dashed; border-color: var(--hair-2); }
 .wv-experience .equine-upload .upload-icon { width: 22px; height: 22px; color: var(--c-accent); }
 .wv-experience .equine-upload-title { font-size: var(--fs-body); font-weight: 600; color: var(--c-fg); text-wrap: balance; }

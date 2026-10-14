@@ -1,108 +1,155 @@
+// EquiVision's engine, held to honesty properties (audit of 14 October 2026, EQ-04 to EQ-09, EQ-23): a trace with no
+// regular stride is refused, never read as symmetric; no limb or verdict exists in the report; the differences it
+// reads on the simulated horse match what the simulation was written with; the stride's rate is read to 0.02 Hz.
 import { describe, it, expect } from 'vitest';
 import {
   analyzeEquineGait,
-  calculateBAI,
   calculateCircleLean,
   savitzkyGolay,
   type EquineFrame,
 } from '../kinematics';
+import { simulateTrot, FORE_LAMENESS_MM, HIND_LAMENESS_MM } from '../simulation';
 
-describe('Equine Gait Kinematics & Asymmetry Engine', () => {
-  it('smooths 1D signals cleanly with Savitzky-Golay quadratic filtering', () => {
-    const raw = [10, 10.5, 9.8, 10.2, 10.0, 9.9, 10.1, 10.0, 10.2, 10.1];
-    const smoothed = savitzkyGolay(raw, 7);
-    expect(smoothed).toHaveLength(raw.length);
-    // Boundary values handled, interior smoothed
-    expect(smoothed[4]).toBeCloseTo(10.0, 1);
+/** Deterministic noise (Park-Miller), so a failure can be replayed. */
+function noise(seed: number) {
+  let s = seed;
+  return () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+}
+
+function noiseFrames(seed: number, n = 120, fps = 30, mm = 10): EquineFrame[] {
+  const r = noise(seed);
+  return Array.from({ length: n }, (_, i) => ({
+    timestamp: (i * 1000) / fps,
+    landmarks: { poll: { x: 0, y: (r() - 0.5) * mm }, sacrum: { x: 0, y: (r() - 0.5) * mm } },
+  }));
+}
+
+describe('Savitzky-Golay smoothing', () => {
+  it('keeps a quadratic as it is and leaves the three edge samples untouched', () => {
+    const q = Array.from({ length: 12 }, (_, i) => 0.5 * i * i - 3 * i + 2);
+    const s = savitzkyGolay(q, 7);
+    for (let i = 0; i < q.length; i++) expect(s[i]).toBeCloseTo(q[i], 9);
   });
 
-  it('computes Bilateral Asymmetry Index (Bishop 2018) accurately', () => {
-    expect(calculateBAI(100, 100)).toBe(0);
-    expect(calculateBAI(100, 80)).toBeCloseTo(-20, 1); // Left/D1 dominant
-    expect(calculateBAI(80, 100)).toBeCloseTo(20, 1); // Right/D2 dominant
-    expect(calculateBAI(0, 0)).toBe(0);
+  it('refuses a window it does not implement rather than return wrong values', () => {
+    expect(() => savitzkyGolay([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 5)).toThrow(RangeError);
+    expect(() => savitzkyGolay([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 9)).toThrow(RangeError);
+  });
+});
+
+describe('refusals: nothing measurable is never "sound"', () => {
+  it('refuses an empty input', () => {
+    const r = analyzeEquineGait([]);
+    expect(r.refused).toBe('too_few_frames');
+    expect(r.strideFrequencyHz).toBeNull();
   });
 
-  it('calculates circle centripetal lean angle based on Dyson & Greve (2016)', () => {
-    // 10m radius lunge circle at 3.5 m/s trot
-    // theta = arctan(3.5^2 / (9.80665 * 10)) = arctan(12.25 / 98.0665) = arctan(0.1249) ~ 7.12 degrees
-    const lean = calculateCircleLean(10, 3.5);
-    expect(lean).toBeGreaterThan(6.5);
-    expect(lean).toBeLessThan(7.5);
+  it('refuses a flat trace', () => {
+    const frames = Array.from({ length: 120 }, (_, i) => ({ timestamp: i * 33.3, landmarks: { poll: { x: 0, y: 5 }, sacrum: { x: 0, y: 3 } } }));
+    const r = analyzeEquineGait(frames);
+    expect(r.refused).toBe('no_regular_stride');
+    expect(r.totalStrides).toBe(0);
+    expect(r.channels.poll?.meanMinDiff).toBeNull();
   });
 
-  it('identifies a clinically sound trot with near-zero asymmetry', () => {
-    // Generate 3 seconds of sound equine trot at 30 FPS (90 frames)
-    // Stride period = 700 ms (frequency ~ 1.43 Hz)
-    const frames: EquineFrame[] = [];
-    const fps = 30;
-    const stridePeriodMs = 700;
+  it('refuses too short a trace', () => {
+    const r = analyzeEquineGait(simulateTrot('sound').frames.slice(0, 10));
+    expect(r.refused).toBe('too_few_frames');
+  });
 
-    for (let i = 0; i < 90; i++) {
-      const t = (i / fps) * 1000;
-      // In a trot, withers oscillates twice per stride (sine wave with period = stridePeriodMs / 2)
-      const phase = (2 * Math.PI * t) / (stridePeriodMs / 2);
-      const withersY = 1.4 + 0.05 * Math.sin(phase); // symmetrical 5cm vertical oscillation
-      const sacrumY = 1.35 + 0.04 * Math.sin(phase + Math.PI / 4);
+  it('refuses white noise on 500 seeds', () => {
+    const passed = [];
+    for (let seed = 1; seed <= 500; seed++) if (analyzeEquineGait(noiseFrames(seed)).refused === null) passed.push(seed);
+    expect(passed).toEqual([]);
+  });
 
-      frames.push({
-        timestamp: t,
-        landmarks: {
-          withers: { x: 0.5, y: withersY },
-          sacrum: { x: 0.2, y: sacrumY },
-        },
-      });
+  it('refuses a trace with a missing point rather than invent the gap', () => {
+    const { frames } = simulateTrot('sound');
+    const holed = frames.map((f, i) => (i === 40 ? { ...f, landmarks: { sacrum: f.landmarks.sacrum } } : f));
+    const r = analyzeEquineGait(holed);
+    expect(r.channels.poll?.refused).toBe('no_trace');
+    expect(r.channels.sacrum?.refused).toBeNull();
+  });
+
+  it('carries no verdict, no limb and no duty factor', () => {
+    const r = analyzeEquineGait(simulateTrot('fore').frames) as unknown as Record<string, unknown>;
+    for (const key of ['isClinicallySymmetric', 'suspectedLamenessLimb', 'meanDutyFactor', 'meanWithersAsymmetryPct', 'meanPelvicAsymmetryPct']) {
+      expect(r).not.toHaveProperty(key);
     }
+  });
+});
 
-    const report = analyzeEquineGait(frames);
-    expect(report.totalStrides).toBeGreaterThanOrEqual(2);
-    expect(report.meanStrideFrequencyHz).toBeCloseTo(1.43, 0);
-    expect(report.isClinicallySymmetric).toBe(true);
-    expect(report.suspectedLamenessLimb).toBe('None');
-    expect(report.meanWithersMinDiff).toBeLessThan(0.015);
-    expect(Math.abs(report.meanWithersAsymmetryPct)).toBeLessThan(8.0);
+describe('the simulated horse, read back', () => {
+  for (const fps of [25, 30, 60]) {
+    it(`reads the stride to 0.02 Hz at ${fps} images/s`, () => {
+      const { frames, truth } = simulateTrot('sound', { fps });
+      const r = analyzeEquineGait(frames);
+      expect(r.refused).toBeNull();
+      expect(Math.abs((r.strideFrequencyHz as number) - 1000 / truth.strideMs)).toBeLessThan(0.02);
+      expect(r.totalStrides).toBeGreaterThanOrEqual(4);
+    });
+  }
+
+  it('reads a regular trot as two equal dips, head and pelvis, within 0.1 mm', () => {
+    const r = analyzeEquineGait(simulateTrot('sound').frames);
+    expect(Math.abs(r.channels.poll?.meanMinDiff as number)).toBeLessThan(0.1);
+    expect(Math.abs(r.channels.sacrum?.meanMinDiff as number)).toBeLessThan(0.1);
   });
 
-  it('detects left forelimb (LF) lameness via asymmetric withers head-nod', () => {
-    // Simulate forelimb lameness: D1 (LF) has diminished range of motion and elevated head
-    const frames: EquineFrame[] = [];
-    const fps = 30;
-    const stridePeriodMs = 700;
+  // The engine reads short of the programmed difference at low frame rates (smoothing over 7 samples flattens the
+  // dips): 18.1 mm of 20 at 25 images/s, 18.8 at 30, 19.9 at 60 on 14 October 2026. These bounds hold that.
+  const BOUNDS: Record<number, number> = { 25: 2.0, 30: 1.3, 60: 0.2 };
+  for (const fps of [25, 30, 60]) {
+    it(`finds the programmed head difference of a lame fore, and only on the head, at ${fps} images/s`, () => {
+      const r = analyzeEquineGait(simulateTrot('fore', { fps }).frames);
+      expect(Math.abs(Math.abs(r.channels.poll?.meanMinDiff as number) - FORE_LAMENESS_MM)).toBeLessThan(BOUNDS[fps] * FORE_LAMENESS_MM / 20);
+      expect(Math.abs(r.channels.sacrum?.meanMinDiff as number)).toBeLessThan(0.1);
+      expect(Math.abs(r.channels.poll?.meanMaxDiff as number)).toBeLessThan(0.1);
+    });
 
-    for (let i = 0; i < 90; i++) {
-      const t = (i / fps) * 1000;
-      const strideProgress = (t % stridePeriodMs) / stridePeriodMs;
+    it(`finds the programmed pelvis difference of a lame hind, and only on the pelvis, at ${fps} images/s`, () => {
+      const r = analyzeEquineGait(simulateTrot('hind', { fps }).frames);
+      expect(Math.abs(Math.abs(r.channels.sacrum?.meanMinDiff as number) - HIND_LAMENESS_MM)).toBeLessThan(BOUNDS[fps] * HIND_LAMENESS_MM / 20);
+      expect(Math.abs(r.channels.poll?.meanMinDiff as number)).toBeLessThan(0.1);
+    });
+  }
 
-      // In D1 (first half of stride, LF stance), withers drops less (head elevated to offload weight)
-      let withersY: number;
-      if (strideProgress < 0.5) {
-        // D1: restricted downward excursion (only 2cm drop)
-        withersY = 1.4 + 0.02 * Math.sin((2 * Math.PI * strideProgress) / 0.5);
-      } else {
-        // D2: normal sound downward excursion (6cm drop)
-        withersY = 1.4 + 0.06 * Math.sin((2 * Math.PI * (strideProgress - 0.5)) / 0.5);
-      }
-
-      frames.push({
-        timestamp: t,
-        landmarks: {
-          withers: { x: 0.5, y: withersY },
-          sacrum: { x: 0.2, y: 1.35 + 0.04 * Math.sin((4 * Math.PI * t) / stridePeriodMs) },
-        },
-      });
+  it('reads the same size whatever frame the clip starts on; only the sign (dip A or B) follows the start', () => {
+    const { frames } = simulateTrot('fore');
+    const sizes = [], signs = new Set();
+    for (const off of [0, 3, 6, 9, 11, 12, 15, 18]) {
+      const d = analyzeEquineGait(frames.slice(off)).channels.poll?.meanMinDiff as number;
+      sizes.push(Math.abs(d));
+      signs.add(Math.sign(d));
     }
-
-    const report = analyzeEquineGait(frames);
-    expect(report.totalStrides).toBeGreaterThanOrEqual(2);
-    expect(report.isClinicallySymmetric).toBe(false);
-    expect(report.suspectedLamenessLimb).toBe('LF');
-    expect(Math.abs(report.meanWithersAsymmetryPct)).toBeGreaterThan(15.0);
+    expect(Math.max(...sizes) - Math.min(...sizes)).toBeLessThan(0.2);
+    // Both signs occur: which dip comes first depends on where the clip starts, which is why no limb is ever named.
+    expect(signs).toEqual(new Set([1, -1]));
   });
 
-  it('gracefully handles insufficient frames', () => {
-    const report = analyzeEquineGait([]);
-    expect(report.totalStrides).toBe(0);
-    expect(report.isClinicallySymmetric).toBe(true);
-    expect(report.suspectedLamenessLimb).toBe('None');
+  it('places every dip on the smoothed curve it was found on (within half a frame and 2 mm of its sample)', () => {
+    // The first engine drew its dots at a window's start time with another dip's value, up to 48 % of the chart off
+    // the curve (audit, missed item on the trace). A dip is now its own sample, moved by the parabola between frames.
+    const { frames } = simulateTrot('fore');
+    const r = analyzeEquineGait(frames);
+    const c = r.channels.poll!;
+    for (const d of c.dips) {
+      expect(Math.abs(d.time - frames[d.index].timestamp)).toBeLessThanOrEqual(1000 / 30 / 2 + 1e-9);
+      expect(Math.abs(d.value - c.smoothed[d.index])).toBeLessThan(2);
+      expect(d.value).toBeLessThanOrEqual(c.smoothed[d.index] + 1e-9);
+    }
+  });
+
+  it('refuses an unknown scenario instead of falling back to a lameness', () => {
+    // @ts-expect-error: the scenario is checked at run time too
+    expect(() => simulateTrot('custom')).toThrow(RangeError);
+  });
+});
+
+describe('circle lean calculator', () => {
+  it('computes arctan(v^2 / gR) in degrees', () => {
+    // 10 m at 3.5 m/s: arctan(12.25 / 98.0665) = 7.12 degrees.
+    expect(calculateCircleLean(10, 3.5)).toBeCloseTo(7.12, 2);
+    expect(calculateCircleLean(0, 3.5)).toBe(0);
   });
 });
