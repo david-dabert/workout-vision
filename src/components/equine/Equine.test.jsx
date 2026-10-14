@@ -34,6 +34,9 @@ const FALSE_CLAIMS = [
   'Aucune boiterie significative', 'Compensé', 'compensation', 'CC-BY', 'Public Domain', 'Domaine Public', 'Muybridge',
   'Analyzed', 'Analysée', 'Withers (T6)', 'Savitzky-Golay',
 ];
+// French that reads as translated (review of 14 October 2026): "lire" for analyse ("lire une vidéo" is to play it),
+// the engine's jargon, and a frame-rate unit no one writes.
+const CALQUES_FR = ['ne lit ', 'lire ', 'Lire ', 'le moteur', 'relit', 'im/s', 'aucun point', 'bilan de locomotion', 'en longe'];
 
 describe('EquiVision', () => {
   for (const lang of ['en', 'fr']) {
@@ -53,6 +56,12 @@ describe('EquiVision', () => {
       const t = text(await render(lang));
       for (const w of FALSE_CLAIMS) expect(t, w).not.toContain(w);
       for (const w of ['left fore', 'right hind', 'antérieur gauche', 'postérieur droit', '(LF)', '(RH)', '(AG)', '(PD)']) expect(t, w).not.toContain(w);
+      if (lang === 'fr') for (const w of CALQUES_FR) expect(t, w).not.toContain(w);
+    });
+
+    it(`names the images-a-second control on screen, in ${lang}`, async () => {
+      const t = text(await render(lang));
+      expect(t).toContain(lang === 'fr' ? 'Images par seconde de la simulation' : 'Frames per second of the simulation');
     });
 
     it(`serves no painted "analysed" video and offers no download, in ${lang}`, async () => {
@@ -76,7 +85,7 @@ describe('EquiVision', () => {
       const t = text(html);
       expect(html).toContain('data-testid="equine-own-statement"');
       expect(html).toContain('data-testid="equine-own-video"');
-      expect(html).toContain('src="blob:x"');
+      expect(html).toContain('src="blob:x#t=0.1"');
       expect(t).toContain('trot.mov');
       expect(html).not.toContain('demo-badge');
       expect(html).not.toContain('<canvas');

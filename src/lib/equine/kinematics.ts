@@ -188,7 +188,8 @@ function refusedChannel(channel: EquineChannel, refused: EquineRefusal, smoothed
 
 /** One trace: its dips, its strides and their differences, or the reason it gives none. */
 export function analyzeChannel(frames: EquineFrame[], channel: EquineChannel): ChannelReport {
-  const raw = frames.map(f => f.landmarks[channel]?.y ?? NaN);
+  // A frame without its landmarks object is a frame where every point is missing (never a throw).
+  const raw = frames.map(f => f?.landmarks?.[channel]?.y ?? NaN);
   if (raw.every(v => !Number.isFinite(v))) return refusedChannel(channel, 'no_trace', raw);
   // A trace with a gap is not read: no interpolation is invented between frames where the point was missing.
   if (raw.some(v => !Number.isFinite(v))) return refusedChannel(channel, 'no_trace', raw);
@@ -245,7 +246,7 @@ export function analyzeEquineGait(frames: EquineFrame[]): EquineGaitReport {
     return { refused: 'too_few_frames', strideDurationMs: null, strideFrequencyHz: null, totalStrides: 0, channels };
   }
   for (const c of CHANNELS) {
-    if (frames.some(f => f.landmarks[c])) channels[c] = analyzeChannel(frames, c);
+    if (frames.some(f => f?.landmarks?.[c])) channels[c] = analyzeChannel(frames, c);
   }
   const read = CHANNELS.map(c => channels[c]).filter((r): r is ChannelReport => !!r);
   const ok = read.find(r => r.refused === null);

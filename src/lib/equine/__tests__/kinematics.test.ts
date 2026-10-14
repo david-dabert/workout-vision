@@ -71,6 +71,16 @@ describe('refusals: nothing measurable is never "sound"', () => {
     expect(r.channels.sacrum?.refused).toBeNull();
   });
 
+  it('reads a frame with no landmarks object as a missing point, without throwing', () => {
+    const { frames } = simulateTrot('sound');
+    const holed = frames.map((f, i) => (i === 40 ? ({ timestamp: f.timestamp } as unknown as EquineFrame) : f));
+    let r: ReturnType<typeof analyzeEquineGait> | undefined;
+    expect(() => { r = analyzeEquineGait(holed); }).not.toThrow();
+    expect(r?.channels.poll?.refused).toBe('no_trace');
+    expect(r?.channels.sacrum?.refused).toBe('no_trace');
+    expect(r?.refused).toBe('no_trace');
+  });
+
   it('carries no verdict, no limb and no duty factor', () => {
     const r = analyzeEquineGait(simulateTrot('fore').frames) as unknown as Record<string, unknown>;
     for (const key of ['isClinicallySymmetric', 'suspectedLamenessLimb', 'meanDutyFactor', 'meanWithersAsymmetryPct', 'meanPelvicAsymmetryPct']) {
@@ -113,6 +123,26 @@ describe('the simulated horse, read back', () => {
       expect(Math.abs(r.channels.poll?.meanMinDiff as number)).toBeLessThan(0.1);
     });
   }
+
+  // The screen's note (equine-copy.js rateNote): the fewer images a second, the more the programmed difference is
+  // underestimated. Held here for both lamenesses, so the sentence stays true of the simulation it sits under.
+  it('underestimates the programmed difference more at 25 than at 30, and at 30 than at 60 images/s', () => {
+    for (const [scenario, ch, truth] of [['fore', 'poll', FORE_LAMENESS_MM], ['hind', 'sacrum', HIND_LAMENESS_MM]] as const) {
+      const read = [25, 30, 60].map(fps => Math.abs(analyzeEquineGait(simulateTrot(scenario, { fps }).frames).channels[ch]?.meanMinDiff as number));
+      expect(read[0]).toBeLessThan(read[1]);
+      expect(read[1]).toBeLessThan(read[2]);
+      expect(read[2]).toBeLessThan(truth);
+    }
+  });
+
+  // The screen's note (equine-copy.js noLimb): dip A is the first dip the engine finds, not the curve's first point.
+  // The simulation starts on a dip at t = 0, inside the 3 edge samples the engine never searches.
+  it('names as dip A the first dip it finds, after the edge samples, not a dip at the curve’s first frame', () => {
+    const { frames } = simulateTrot('fore');
+    const first = analyzeEquineGait(frames).channels.poll?.dips[0];
+    expect(first?.index).toBeGreaterThanOrEqual(3);
+    expect(first?.time).toBeGreaterThan(0);
+  });
 
   it('reads the same size whatever frame the clip starts on; only the sign (dip A or B) follows the start', () => {
     const { frames } = simulateTrot('fore');

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useId } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { analyzeEquineGait, calculateCircleLean, simulateTrot } from '../../lib/equine';
 import { hapticLight } from '../../lib/haptics';
@@ -26,6 +26,9 @@ const RATES = [25, 30, 60];
 const SCENARIOS = ['sound', 'fore', 'hind'];
 
 const SvgVideo = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>;
+// The muted attribute itself, not only React's property: iOS lets a clip play on its own only when it is muted, and
+// React writes muted as a property (status convention: WebKit's autoplay policy; to confirm on David's iPhone).
+const muteVideo = el => { if (el) { el.muted = true; el.setAttribute('muted', ''); } };
 const SvgUpload = () => <svg className="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>;
 
 /** A length in mm with one decimal; a duration in s with two. Status: convention (display only). */
@@ -49,9 +52,9 @@ export function EquineVideoBand({ lang, own, reduced, onOpen, onClose }) {
       ) : <h2 className="sc-name">{c.demoName}</h2>}
       <div className="sc-frame">
         {own
-          ? <video key={own.url} src={own.url} controls playsInline preload="metadata" data-testid="equine-own-video" />
-          // #t=0.1 shows the clip's first frame on iOS when it does not play on its own (Reduce Motion).
-          : <video src={`${RIDDEN_RAW_URL}#t=0.1`} controls playsInline muted loop autoPlay={!reduced} preload="metadata" data-testid="equine-demo-video" />}
+          // #t=0.1 shows a clip's first frame on iOS before it plays (the visitor's video, or the demo under Reduce Motion).
+          ? <video key={own.url} src={`${own.url}#t=0.1`} controls playsInline preload="metadata" data-testid="equine-own-video" />
+          : <video ref={muteVideo} src={`${RIDDEN_RAW_URL}#t=0.1`} controls playsInline muted loop autoPlay={!reduced} preload="metadata" data-testid="equine-demo-video" />}
       </div>
       {own ? (
         <div className="sc-card equine-own" role="status" data-testid="equine-own-statement">
@@ -73,7 +76,13 @@ export function EquineVideoBand({ lang, own, reduced, onOpen, onClose }) {
   );
 }
 
-/** The simulated curves, one lane each for the head and the pelvis on one millimetre scale, with the engine's dips. */
+// The scale bar of the chart, in mm of the simulation. Status: convention (display only).
+const SCALE_MM = 20;
+
+/**
+ * The simulated curves, one lane each for the head and the pelvis on one millimetre scale, with the engine's dips and
+ * a 20 mm scale bar at the right of the head's lane.
+ */
 function drawTrace(canvas, frames, report, c) {
   const ctx = canvas.getContext('2d');
   if (!ctx || frames.length < 2) return;
@@ -85,7 +94,7 @@ function drawTrace(canvas, frames, report, c) {
   // The frame's well shows through (Showcase.css .sc-frame); the lines take the app's palette (palette.js).
   ctx.clearRect(0, 0, W, H);
   const t0 = frames[0].timestamp, t1 = frames[frames.length - 1].timestamp;
-  const left = 16, right = 16, top = 26, bottom = 24, gap = 26;
+  const left = 16, right = 30, top = 26, bottom = 24, gap = 26;
   const laneH = (H - top - bottom - gap) / 2;
   const lanes = [
     { key: 'poll', label: c.head, colour: HEX.lamp, y0: top },
@@ -93,7 +102,7 @@ function drawTrace(canvas, frames, report, c) {
   ];
   let lo = 0, hi = 0;
   for (const f of frames) for (const l of lanes) {
-    const v = f.landmarks[l.key]?.y;
+    const v = f.landmarks?.[l.key]?.y;
     if (Number.isFinite(v)) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
   }
   const span = hi - lo || 1;
@@ -118,7 +127,13 @@ function drawTrace(canvas, frames, report, c) {
     ctx.lineWidth = 2;
     ctx.lineJoin = 'round';
     ctx.beginPath();
-    frames.forEach((f, i) => { const x = xOf(f.timestamp), y = yOf(f.landmarks[l.key].y); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); });
+    let started = false;
+    for (const f of frames) {
+      const v = f.landmarks?.[l.key]?.y;
+      if (!Number.isFinite(v)) { started = false; continue; }
+      const x = xOf(f.timestamp), y = yOf(v);
+      if (started) ctx.lineTo(x, y); else { ctx.moveTo(x, y); started = true; }
+    }
     ctx.stroke();
     if (ch && !ch.refused) {
       // Dip A filled, dip B hollow, each at the time and height the engine found it (on the curve).
@@ -131,6 +146,19 @@ function drawTrace(canvas, frames, report, c) {
       });
     }
   }
+  // The scale: a bar 20 mm tall at the right edge of the head's lane, its length written above it.
+  const barH = (SCALE_MM / span) * laneH, barX = W - 12;
+  ctx.strokeStyle = rgba(RGB.bone, 0.55);
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(barX - 3, top); ctx.lineTo(barX + 3, top);
+  ctx.moveTo(barX, top); ctx.lineTo(barX, top + barH);
+  ctx.moveTo(barX - 3, top + barH); ctx.lineTo(barX + 3, top + barH);
+  ctx.stroke();
+  ctx.fillStyle = rgba(RGB.bone, 0.55);
+  ctx.textAlign = 'right';
+  ctx.fillText(`${SCALE_MM}${NBSP}mm`, W - 6, top - 10);
+  ctx.textAlign = 'left';
   ctx.fillStyle = rgba(RGB.bone, 0.45);
   for (let s = 0; t0 + s * 1000 <= t1 + 1; s++) {
     const x = xOf(t0 + s * 1000);
@@ -177,10 +205,24 @@ export default function Equine({ onClose }) {
     setOwn(null);
   };
 
+  // The chart is drawn at the canvas's size, and again whenever that size changes (a rotation, a resized window), so
+  // its bitmap never stretches.
   const canvasRef = useRef(null);
   useEffect(() => {
-    if (canvasRef.current) drawTrace(canvasRef.current, sim.frames, report, c);
+    const el = canvasRef.current;
+    if (!el) return undefined;
+    const draw = () => drawTrace(el, sim.frames, report, c);
+    draw();
+    if (typeof ResizeObserver === 'undefined') return undefined;
+    let size = `${el.clientWidth}x${el.clientHeight}`;
+    const ro = new ResizeObserver(() => {
+      const now = `${el.clientWidth}x${el.clientHeight}`;
+      if (now !== size) { size = now; draw(); }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
   }, [sim, report, c]);
+  const rateId = useId();
 
   const head = report.channels.poll, pelvis = report.channels.sacrum;
   const diffValue = ch => (ch && !ch.refused ? mm(ch.meanMinDiff, fr) : c.noNumber);
@@ -211,7 +253,8 @@ export default function Equine({ onClose }) {
           <section className="sc-section equine-sim" data-testid="equine-simulation" data-reveal style={{ '--i': 3 }}>
             <GroupHead title={c.simHead}><DemoTag fr={fr} /></GroupHead>
             <p className="sc-text">{c.simIntro}</p>
-            <div className="sc-rail" role="group" aria-label={c.scenariosGroup}>
+            {/* Three chips that wrap, so none is ever cut at the screen's edge. */}
+            <div className="sc-chips" role="group" aria-label={c.scenariosGroup}>
               {SCENARIOS.map(s => (
                 <button key={s} type="button" className="sc-chip press" aria-pressed={scenario === s} onClick={() => { hapticLight(); setScenario(s); }} data-testid={`scenario-${s}`}>
                   {c.scenarios[s]}
@@ -219,12 +262,15 @@ export default function Equine({ onClose }) {
               ))}
             </div>
             <p className="sc-caption" data-testid="equine-scenario-text">{c.scenarioText[scenario]}</p>
-            <div className="sc-seg" role="group" aria-label={c.rateGroup}>
-              {RATES.map(r => (
-                <button key={r} type="button" className="press" aria-pressed={rate === r} onClick={() => { hapticLight(); setRate(r); }} data-testid={`equine-rate-${r}`}>
-                  {c.rate(r)}
-                </button>
-              ))}
+            <div className="equine-rate">
+              <span className="equine-rate-head" id={rateId}>{c.rateHead}</span>
+              <div className="sc-seg" role="group" aria-labelledby={rateId}>
+                {RATES.map(r => (
+                  <button key={r} type="button" className="press" aria-pressed={rate === r} onClick={() => { hapticLight(); setRate(r); }} data-testid={`equine-rate-${r}`}>
+                    {c.rate(r)}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <GroupHead as="h3" title={c.chartHead}><DemoTag fr={fr} /></GroupHead>
