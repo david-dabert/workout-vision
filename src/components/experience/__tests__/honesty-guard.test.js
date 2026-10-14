@@ -49,3 +49,16 @@ describe('the README quotes the scoreboards, and only them', () => {
     expect(readme).toContain(`${n} sets: ${synthExact} exact (${synthPct} %), ${off3} off by 3 or more`);
   });
 });
+
+// The Manifesto's promise is the one the app keeps, with the dated scoreboard (R13), and it makes no injury claim (R9).
+describe('the Manifesto', () => {
+  it('quotes the real-video figure of the scoreboard, and no injury, tendinopathy or 10 % / 15 % rule', async () => {
+    const { MANIFESTO } = await import('../manifesto-copy');
+    const board = readFileSync(resolve(__dirname, '../../../../test/real-phone/accuracy/scoreboard.txt'), 'utf8');
+    const [, videos, exact] = board.match(/Real video, 7 October[^\n]*?of the (\d+) sets in the baseline, (\d+) exact now/);
+    expect(MANIFESTO.fr.conclusion.text1).toContain(`${exact} fois sur ${videos}`);
+    expect(MANIFESTO.en.conclusion.text1).toContain(`${exact} times in ${videos}`);
+    const all = JSON.stringify(MANIFESTO);
+    expect(all).not.toMatch(/injury rates|risque de blessure|tendinopathy|protège les articulations|exactitude absolue|approximations|below 10%|inférieure à 10/);
+  });
+});

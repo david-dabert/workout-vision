@@ -131,7 +131,8 @@ export const MANIFESTO = {
           title: '1. Efficiency of Stimulus-to-Fatigue Ratio (SFR)',
           desc: 'Every exercise carries a systemic, neural, and connective tissue cost. Science-based lifting seeks movements and ranges of motion that maximize mechanical tension on the target muscle fibers while minimizing spinal loading, joint friction, and central nervous system depletion.',
           formula: '\\text{SFR} = \\frac{\\text{High-Threshold Motor Unit Recruitment} \\times \\text{Active Mechanical Tension}}{\\text{Axial Loading} + \\text{Joint Shear Force} + \\text{CNS Fatigue}}',
-          highlight: 'Higher SFR allows more productive weekly volume with vastly reduced injury rates.',
+          // The injury claim is withdrawn (honesty audit of 14 October 2026: no source, and the app measures none of it, R9).
+          highlight: 'A way of thinking when choosing exercises, not a measured number: the app does not compute it.',
         },
         {
           title: '2. Mechanical Tension as the Primary Driver',
@@ -145,9 +146,11 @@ export const MANIFESTO = {
         },
         {
           title: '4. Bilateral Symmetry & Musculoskeletal Equilibrium',
-          desc: 'Human movement rarely operates in perfect geometric parity. Subtle deficits in unilateral joint range of motion (ROM) or compensatory lateral trunk shifts create asymmetric torque distributions on spinal discs and cartilage. Quantifying bilateral divergence prevents chronic tendinopathy and maximizes force output.',
+          // The injury and tendinopathy claims and the 10 % / 15 % rule are withdrawn (honesty audit of 14 October 2026: no
+          // source or status, R9; a care conclusion the app may not draw, sides-line.js, R8).
+          desc: 'Human movement rarely operates in perfect geometric parity: one side often moves through a little more range than the other. How large a gap matters, and what to do about it, is for a coach or a physiotherapist who sees you to judge.',
           formula: '\\text{Asymmetry Index (AI)} = \\frac{|\\text{ROM}_{\\text{left}} - \\text{ROM}_{\\text{right}}|}{\\max(\\text{ROM}_{\\text{left}}, \\text{ROM}_{\\text{right}})} \\times 100\\%',
-          highlight: 'An asymmetry below 10% is physiological; exceeding 15% requires unilateral isolation and postural stabilization.',
+          highlight: 'The app compares left and right only on a lateral raise filmed from the front, and gives both ranges without judging the gap.',
         },
       ],
     },
@@ -186,8 +189,10 @@ export const MANIFESTO = {
 
     conclusion: {
       title: 'Conclusion: Precision Meets Execution',
-      text1: 'WorkoutVision was built because modern training demands precision. We do not guess rep counts; we do not accept sloppy execution; and we do not rely on subjective fatigue metrics when we can measure kinematic reality directly on your device.',
-      text2: 'By combining the historical rigor of exercise physiology with cutting-edge edge AI and uncompromising mechanical standards, WorkoutVision turns every workout into a masterclass in science-based progress.',
+      // The promise the app keeps (honesty audit of 14 October 2026, CORE-14), with the dated scoreboard (R13:
+      // test/real-phone/accuracy/scoreboard.txt; honesty-guard.test.js checks the figures).
+      text1: 'WorkoutVision counts your reps, shows you what it saw and asks you to confirm. When it is unsure, it gives no number. On the real videos David filmed, it counts exactly 6 times in 14 (scoreboard of 12 October 2026): that is why it always asks you to confirm.',
+      text2: 'By combining the rigour of exercise physiology with an analysis made on your phone, the app helps you keep track of your sets, without claiming to measure what it cannot.',
       creed: 'Lift with intent. Train with data. Trust the science.',
     },
 
@@ -324,7 +329,8 @@ export const MANIFESTO = {
           title: '1. Efficience du Ratio Stimulus-Fatigue (SFR)',
           desc: 'Chaque exercice engendre un coût systémique, articulaire et neural. L’approche scientifique sélectionne les mouvements et amplitudes qui maximisent la tension mécanique sur les fibres cibles tout en minimisant la charge axiale sur le rachis et l’usure tendineuse.',
           formula: '\\text{SFR} = \\frac{\\text{Recrutement des Unités Motrices} \\times \\text{Tension Mécanique Active}}{\\text{Charge Axiale} + \\text{Frottement Articulaire} + \\text{Fatigue SNC}}',
-          highlight: 'Un SFR élevé permet d’accumuler un volume hebdomadaire plus productif tout en éloignant drastiquement le risque de blessure.',
+          // Awaiting David's approval (R10), as the whole page.
+          highlight: 'Une façon de choisir ses exercices, pas un chiffre mesuré\u00A0: l’appli ne le calcule pas.',
         },
         {
           title: '2. La Tension Mécanique comme Moteur Principal',
@@ -338,9 +344,9 @@ export const MANIFESTO = {
         },
         {
           title: '4. La Symétrie Bilatérale et l’Équilibre Musculosquelettique',
-          desc: 'Le corps humain fonctionne rarement dans une parité géométrique parfaite. Des déficits subtils d’amplitude unilatérale (ROM) ou des décalages latéraux du tronc créent des couples asymétriques sur les disques vertébraux et le cartilage. Quantifier ces divergences protège les articulations et optimise la production de force.',
+          desc: 'Le corps fonctionne rarement de façon parfaitement symétrique\u00A0: un côté bouge souvent sur une amplitude un peu plus grande que l’autre. À partir de quel écart il faut s’en occuper, et comment, c’est à un coach ou à un kiné qui vous voit d’en juger.',
           formula: '\\text{Indice d’Asymétrie (AI)} = \\frac{|\\text{ROM}_{\\text{gauche}} - \\text{ROM}_{\\text{droite}}|}{\\max(\\text{ROM}_{\\text{gauche}}, \\text{ROM}_{\\text{droite}})} \\times 100\\%',
-          highlight: 'Une asymétrie inférieure à 10\u00A0% est physiologique\u00A0; au-delà de 15\u00A0%, un travail unilatéral compensatoire s’impose.',
+          highlight: 'L’appli ne compare la gauche et la droite que sur une élévation latérale filmée de face, et donne les deux amplitudes sans juger l’écart.',
         },
       ],
     },
@@ -379,8 +385,8 @@ export const MANIFESTO = {
 
     conclusion: {
       title: 'Conclusion\u00A0: Quand la Précision Rencontre l’Exécution',
-      text1: 'WorkoutVision a été conçu parce que l’entraînement moderne exige une exactitude absolue. Nous ne devinons pas les répétitions\u00A0; nous ne tolérons pas les approximations\u00A0; et nous ne nous fions pas à la fatigue subjective quand la cinématique réelle peut être mesurée directement sur votre appareil.',
-      text2: 'En combinant la rigueur historique de la physiologie avec l’intelligence artificielle embarquée et des standards mécaniques sans compromis, WorkoutVision transforme chaque séance en un cours magistral de progression scientifique.',
+      text1: 'L’appli compte vos répétitions, vous montre ce qu’elle a vu et vous demande de confirmer. Quand elle doute, elle ne donne pas de chiffre. Sur les vraies vidéos filmées par David, elle compte juste 6 fois sur 14 (tableau du 12 octobre 2026)\u00A0: c’est pour ça qu’elle vous demande toujours de confirmer.',
+      text2: 'En alliant la rigueur de la physiologie de l’exercice à une analyse faite sur votre téléphone, l’appli vous aide à suivre vos séries, sans prétendre mesurer ce qu’elle ne sait pas mesurer.',
       creed: 'Bougez avec intention. Entraînez-vous avec les données. Fiez-vous à la science.',
     },
 
