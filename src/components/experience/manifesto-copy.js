@@ -315,7 +315,7 @@ export const MANIFESTO = {
               name: 'Dr. Mike Israetel',
               affiliation: 'Renaissance Periodization (RP)',
               specialty: 'Repères de Volume & Gestion de la Fatigue',
-              summary: 'A combiné son doctorat en physiologie sportive avec une méthodologie algorithmique claire\u00A0: Volume Minimal Efficace (MEV), Volume Adaptatif Maximal (MAV) et gestion systématique de la fatigue systémique (SFR).',
+              summary: 'A combiné son doctorat en physiologie sportive avec une méthodologie algorithmique claire\u00A0: Volume Minimal Efficace (MEV), Volume Adaptatif Maximal (MAV) et le rapport stimulus/fatigue (SFR).', // SFR: stimulus-to-fatigue ratio (second review, 14 October 2026); French awaiting David's approval (R10)
             },
             {
               name: 'Greg Nuckols',

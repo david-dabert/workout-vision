@@ -82,6 +82,11 @@ describe('the manifesto after the honesty pass', () => {
       expect(text).toContain('Schoenfeld et al. 2015');
     }
   });
+  it('expands SFR as the stimulus-to-fatigue ratio (second review)', () => {
+    const text = JSON.stringify(MANIFESTO.fr);
+    expect(text).toContain('le rapport stimulus/fatigue (SFR)');
+    expect(text).not.toContain('fatigue systémique (SFR)');
+  });
   it('films rather than "tests" a lift, and draws no SFR equation', async () => {
     expect(MANIFESTO.fr.chapter4.rules.map(r => r.liftLabel)).toEqual(['Filmer un curl biceps', 'Filmer un squat', 'Filmer un tirage vertical']);
     expect(MANIFESTO.en.chapter4.rules.map(r => r.liftLabel)).toEqual(['Film a biceps curl', 'Film a squat', 'Film a lat pulldown']);
