@@ -403,7 +403,9 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                             <div className="carnet-fraction">
                               <b>{Math.min(clientCarnet.completedCount, clientCarnet.totalPurchased)}</b> / {clientCarnet.totalPurchased} {fr ? 'séances effectuées' : 'sessions delivered'}
                             </div>
-                            <span className="client-card-sub">{t.carnetBought(paperDate(clientCarnet.boughtOn || '', fr), clientCarnet.pricePerPack ? euros(clientCarnet.pricePerPack, fr) : '')}</span>
+                            {/* A pack saved before 14 October 2026 has no date: the first version wrote a pack of 10 at 500 € for any
+                                client whose session was logged. It is shown to check, its price not repeated. */}
+                            <span className="client-card-sub">{clientCarnet.boughtOn ? t.carnetBought(paperDate(clientCarnet.boughtOn, fr), clientCarnet.pricePerPack ? euros(clientCarnet.pricePerPack, fr) : '') : t.carnetLegacy}</span>
                           </div>
                           <span className="carnet-remaining-badge">
                             {carnetLeft} {fr ? 'restantes' : 'remaining'}
