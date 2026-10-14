@@ -1,0 +1,17 @@
+URL: https://zenodo.org/records/10891515
+DOI: 10.5281/zenodo.10891515
+Conference: SISAP 2024 (17th International Conference on Similarity Search and Applications)
+Fetched: 2026-10-14T07:44:00Z
+License: Non-Commercial Research Use Only
+
+Dataset Terms and Conditions:
+REHAB24-6: Physical Therapy Dataset for Analyzing Pose Estimation Methods.
+Authors: Antonin Černek, Jan Sedmidubsky, Petra Budíková. Masaryk University & VisionCraft.
+
+1. Permitted Use:
+The REHAB24-6 dataset is provided strictly for academic, educational, and non-profit scientific research purposes.
+2. Commercial Use Clause:
+Commercial use is strictly prohibited without explicit written prior authorization and licensing agreement negotiated with the authors/VisionCraft (contact: info@visioncraft.ai).
+3. Attribution:
+Any publication, paper, or system using the data must cite:
+Černek, A., Sedmidubsky, J., Budíková, P. (2024). REHAB24-6: Physical Therapy Dataset for Analyzing Pose Estimation Methods. In: Similarity Search and Applications (SISAP 2024). Springer LNCS.

@@ -1,0 +1,17 @@
+URL: https://github.com/ubc-vision/Fitness-AQA
+Conference: CVPR 2022
+Fetched: 2026-10-14T07:44:00Z
+License: Academic Non-Commercial Research License (DUA Required)
+
+Fitness-AQA: Action Quality Assessment for Fitness Workouts
+Authors: Paritosh Parmar, Amol Gharat, Helge Rhodin. University of British Columbia & FlexAI Inc.
+
+Terms and Conditions:
+1. Permitted Use:
+The Fitness-AQA dataset (comprising video sequences of exercise repetitions evaluated for biomechanical execution quality, form errors, and repetition boundaries across squat, deadlift, pullup, etc.) is available exclusively for academic research.
+2. Access Protocol:
+Users must complete a formal institutional request form and sign a Data Use Agreement (DUA) agreeing not to distribute or use the data commercially.
+3. Commercial Use Clause:
+Commercial exploitation, product integration, or training commercial AI models without an explicit commercial license from UBC/FlexAI is strictly barred.
+4. Citation:
+Parmar, P., Gharat, A., & Rhodin, H. (2022). Domain Knowledge-Informed Self-Supervised Representations for Action Quality Assessment. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR 2022).

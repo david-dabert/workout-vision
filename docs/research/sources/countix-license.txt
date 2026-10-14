@@ -1,0 +1,17 @@
+URL: https://github.com/google-research/google-research/tree/master/countix
+Paper: CVPR 2020
+Fetched: 2026-10-14T07:44:00Z
+License: Apache 2.0 (Code) / YouTube Terms of Service (Videos)
+
+Countix: A Large-scale Repetitive Action Video Dataset
+Authors: Debidatta Dwibedi, Yusuf Aytar, Jonathan Tompson, Pierre Sermanet, Andrew Zisserman. Google Research.
+
+Licensing & Terms of Use:
+1. Annotation Metadata:
+The annotation CSV files (video ID, start time, end time, count, repetition intervals) are distributed by Google under the Apache 2.0 License.
+2. Video Footage:
+The dataset points to video clips hosted on YouTube. Google does not own or license the copyright to the original third-party videos. Access and use of the video content are governed strictly by the YouTube Terms of Service and applicable fair use / academic research doctrines.
+3. Commercial Use Clause:
+Commercial distribution of downloaded video clips is prohibited under YouTube TOS. Annotations may be used under Apache 2.0.
+4. Citation:
+Dwibedi, D., Aytar, Y., Tompson, J., Sermanet, P., & Zisserman, A. (2020). Counting Out Time: Class Agnostic Video Repetition Counting in the Wild. In CVPR 2020.

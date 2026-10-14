@@ -1,0 +1,17 @@
+URL: https://fit3d.imar.ro/
+Conference: CVPR 2023 (IEEE/CVF Conference on Computer Vision and Pattern Recognition)
+Fetched: 2026-10-14T07:44:00Z
+License: Non-Commercial Research Use Only
+
+Fit3D: 3D Human Shape and Motion in the Wild
+Authors: Mihai Fieraru, Mihai Zanfir, Silviu-Cristian Pirlea, Vlad Olaru, Cristian Sminchisescu (IMAR - Institute of Mathematics of the Romanian Academy).
+
+License and Data Agreement:
+1. Permitted Use:
+The Fit3D dataset, comprising multi-view video recordings, SMPL 3D mesh fits, and markerless mocap calibrations across varied workout exercises, is released exclusively for academic, educational, and non-commercial scientific research.
+2. Commercial Restrictions:
+Commercial use, training commercial products, or public redistribution of the raw frames or 3D annotations without a formal commercial agreement executed by IMAR is strictly prohibited.
+3. Access:
+Access requires registration through the official IMAR portal (fit3d.imar.ro) and individual authorization.
+4. Citation:
+Fieraru, M., Zanfir, M., Pirlea, S. C., Olaru, V., & Sminchisescu, C. (2023). Fit3D: 3D Human Shape and Motion in the Wild. In CVPR 2023.

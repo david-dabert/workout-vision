@@ -1,0 +1,17 @@
+URL: https://ego-exo4d-data.org/
+Conference: CVPR 2024
+Fetched: 2026-10-14T07:44:00Z
+License: Meta Ego-Exo4D Community License / OpenRAIL
+
+Ego-Exo4D: Ego-Exocentric Multimodal Benchmark (Fitness Domain)
+Authors: Kristen Grauman, Andrew Westbury, Lorenzo Torresani, et al. Meta AI & University Consortium.
+
+Licensing & Data Use Terms:
+1. Permitted Use:
+The dataset is made available to researchers under the Ego-Exo4D License Agreement for non-commercial academic research and open-source benchmarking.
+2. Fitness Subset:
+Includes synchronized first-person (egocentric Aria glasses) and multi-view exocentric video recordings of fitness and athletic exercises with 3D body pose, language descriptions, and keystep temporal boundaries.
+3. Commercial Use Clause:
+Use of the raw video data or derivative 3D body models for commercial production systems, commercial training, or direct monetization is restricted unless governed by an enterprise agreement with Meta AI.
+4. Citation:
+Grauman, K., Westbury, A., et al. (2024). Ego-Exo4D: Understanding Skilled Human Activity from First- and Third-Person Perspectives. In CVPR 2024.

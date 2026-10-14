@@ -1,0 +1,13 @@
+URL: https://vrai.dii.univpm.it/content/kimore-dataset
+Paper DOI: 10.1109/TNSRE.2019.2899927
+Fetched: 2026-10-14T07:44:00Z
+License: Academic Research Use Only (Non-Commercial)
+
+KIMORE (KInematic Assessment of MOvement and Clinical Scores for Remote Monitoring of Physical REhabilitation)
+Authors: Capecci, M., Ceravolo, M. G., Ferracuti, F., Iarlori, S., Monteriu, A., Romeo, L., ... & Verdini, F.
+Journal: IEEE Transactions on Neural Systems and Rehabilitation Engineering, 2019.
+
+Terms of Use:
+- The KIMORE dataset is freely accessible exclusively to academic and non-profit researchers for non-commercial research purposes.
+- Commercial redistribution, resale, or embedding into commercial commercial applications without express bilateral written consent from Università Politecnica delle Marche is forbidden.
+- Attribution required: Any scientific report or benchmark must cite the original IEEE TNSRE 2019 paper.

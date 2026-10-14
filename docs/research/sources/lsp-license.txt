@@ -1,0 +1,17 @@
+URL: https://sam.johnson.io/research/lsp.html
+Paper: BMVC 2010
+Fetched: 2026-10-14T07:44:00Z
+License: Non-Commercial Research & Educational Use Only
+
+Leeds Sports Pose (LSP) & Extended LSP (E-LSP) Datasets
+Authors: Sam Johnson and Mark Everingham. University of Leeds.
+
+Terms of Use:
+1. Permitted Use:
+The dataset consists of sports imagery gathered from Flickr with full-body 14-joint pose annotations. It is made available freely for research and educational purposes.
+2. Original Imagery Ownership:
+The images are the property of their respective creators on Flickr under various Creative Commons and copyright regimes. The authors provide the URLs and joint annotations.
+3. Commercial Use Clause:
+Commercial use is prohibited without obtaining separate commercial copyright clearances from individual image creators.
+4. Citation:
+Johnson, S., & Everingham, M. (2010). Clustered Pose and Nonlinear Appearance Models for Human Pose Estimation. In British Machine Vision Conference (BMVC 2010).

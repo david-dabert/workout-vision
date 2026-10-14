@@ -1,0 +1,18 @@
+URL: https://github.com/DmitryRyumin/MM-Fit
+Paper DOI: 10.1145/3432230
+Journal: ACM IMWUT 2020
+Fetched: 2026-10-14T07:44:00Z
+License: MIT License (Code) / Academic Research Data License
+
+MM-Fit: Multimodal Deep Learning for Free-Weight Exercises
+Authors: David Strömbäck, Shangyue Zhu, and colleagues. University of Edinburgh.
+
+Terms of Use:
+1. Code Repository:
+The extraction scripts, sensor synchronization logic, and baseline modeling code are released under the open-source MIT License.
+2. Dataset Media & Sensor Streams:
+The multi-sensor inertial measurements (smartwatch, earbuds, phone) and multi-view RGB-D camera feeds are hosted on academic data portals (Edinburgh DataShare / Zenodo).
+3. Permitted Use:
+Academic and scientific research purposes only. Direct commercial redistribution or commercial SaaS deployment of subject footage is prohibited without institutional consent.
+4. Citation:
+Strömbäck, D., et al. (2020). MM-Fit: Multimodal Deep Learning for Free-Weight Exercises. Proceedings of the ACM on Interactive, Mobile, Wearable and Ubiquitous Technologies (IMWUT), 4(4), 1-24.

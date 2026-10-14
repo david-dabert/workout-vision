@@ -1,0 +1,17 @@
+URL: https://github.com/svip-lab/RepCount
+Conference: CVPR 2022 (IEEE/CVF Conference on Computer Vision and Pattern Recognition)
+Fetched: 2026-10-14T07:44:00Z
+License: Academic Research Use Only (Non-Commercial)
+
+RepCount: A Large-scale Dataset for Repetition Counting in the Wild
+Authors: Hu, Y., Deng, L., Yuan, J., et al. (SVIP Lab).
+
+Terms of Use:
+1. Research Only:
+The RepCount dataset (Part-A and Part-B) annotations and compiled videos are distributed strictly for academic and non-commercial research purposes.
+2. Third-Party Media Content:
+Part-A videos are sourced from public YouTube clips. Users must respect the terms of service of YouTube and individual creators' rights. The dataset distributors claim no ownership of third-party video footage.
+3. Commercial Use Clause:
+Commercial exploitation, sublicensing, or integration into revenue-generating fitness systems is strictly barred.
+4. Citation:
+Hu, Y., et al. (2022). RepCount: A Large-scale Dataset for Repetition Counting in the Wild. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR 2022).
