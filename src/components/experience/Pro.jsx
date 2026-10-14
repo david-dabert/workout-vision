@@ -126,7 +126,7 @@ export default function Pro({ onClose, start = null }) {
 
 function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, onSetProTab, onAddPhysio }) {
   const screenRef = useRef(null);
-  useCondensingTopbar(screenRef, [fr]);
+  useCondensingTopbar(screenRef, [fr, proTab]);
   const day = t => new Date(t).toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short' });
   return <div className="wv-experience">
     <section ref={screenRef} className="screen is-active pro-screen" data-testid="pro-screen"><div className="wrap">
