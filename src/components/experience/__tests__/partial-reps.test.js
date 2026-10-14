@@ -35,8 +35,8 @@ describe('partial reps', () => {
   });
   it('are named under the table', () => {
     const sheet = reportSheet({ lang: 'fr', date: new Date(2026, 9, 2), notes: '', liftName: 'Développé machine', count: 8, reps, first: 'concentric', measures: true });
-    expect(sheet.partialRepNote).toBe('… : répétition partielle, non chronométrée');
-    expect(reportSheet({ lang: 'en', date: new Date(2026, 9, 2), notes: '', liftName: 'Chest press', count: 8, reps, first: 'concentric', measures: true }).partialRepNote).toBe('…: partial rep, not timed');
+    expect(sheet.partialRepNote).toBe('… : répétition non chronométrée');
+    expect(reportSheet({ lang: 'en', date: new Date(2026, 9, 2), notes: '', liftName: 'Chest press', count: 8, reps, first: 'concentric', measures: true }).partialRepNote).toBe('…: rep not timed');
   });
   it('a set without partial reps is unchanged', () => {
     const whole = reps.filter(r => ![4, 6].includes(r.index));

@@ -19,7 +19,7 @@ export const MANIFESTO = {
       { id: 'ch2', title: 'Chapter 2: The Giants of Human Performance', subtitle: 'Academic Pioneers & Modern Proponents' },
       { id: 'ch3', title: 'Chapter 3: Why Science-Based Lifting is Superior', subtitle: 'From Anecdote to First Principles' },
       { id: 'ch4', title: 'Chapter 4: The Mechanics of Optimal Gains', subtitle: 'Perfecting Physical Execution' },
-      { id: 'conclusion', title: 'Conclusion: Precision Meets Execution', subtitle: 'WorkoutVision’s Core Ethos' },
+      { id: 'conclusion', title: 'Conclusion: What the App Does, and What It Does Not', subtitle: 'WorkoutVision’s Core Ethos' },
     ],
 
     chapter1: {
@@ -131,7 +131,8 @@ export const MANIFESTO = {
           title: '1. Efficiency of Stimulus-to-Fatigue Ratio (SFR)',
           desc: 'Every exercise carries a systemic, neural, and connective tissue cost. Science-based lifting seeks movements and ranges of motion that maximize mechanical tension on the target muscle fibers while minimizing spinal loading, joint friction, and central nervous system depletion.',
           formula: '\\text{SFR} = \\frac{\\text{High-Threshold Motor Unit Recruitment} \\times \\text{Active Mechanical Tension}}{\\text{Axial Loading} + \\text{Joint Shear Force} + \\text{CNS Fatigue}}',
-          highlight: 'Higher SFR allows more productive weekly volume with vastly reduced injury rates.',
+          // The injury claim is withdrawn (honesty audit of 14 October 2026: no source, and the app measures none of it, R9).
+          highlight: 'A way of thinking when choosing exercises, not a measured number. The app does not compute it.',
         },
         {
           title: '2. Mechanical Tension as the Primary Driver',
@@ -145,9 +146,13 @@ export const MANIFESTO = {
         },
         {
           title: '4. Bilateral Symmetry & Musculoskeletal Equilibrium',
-          desc: 'Human movement rarely operates in perfect geometric parity. Subtle deficits in unilateral joint range of motion (ROM) or compensatory lateral trunk shifts create asymmetric torque distributions on spinal discs and cartilage. Quantifying bilateral divergence prevents chronic tendinopathy and maximizes force output.',
-          formula: '\\text{Asymmetry Index (AI)} = \\frac{|\\text{ROM}_{\\text{left}} - \\text{ROM}_{\\text{right}}|}{\\max(\\text{ROM}_{\\text{left}}, \\text{ROM}_{\\text{right}})} \\times 100\\%',
-          highlight: 'An asymmetry below 10% is physiological; exceeding 15% requires unilateral isolation and postural stabilization.',
+          // The injury and tendinopathy claims and the 10 % / 15 % rule are withdrawn (honesty audit of 14 October 2026: no
+          // source or status, R9; a care conclusion the app may not draw, sides-line.js, R8).
+          desc: 'Human movement rarely operates in perfect geometric parity: one side often moves through a little more range than the other. How large a gap matters, and what to do about it, is for a coach or a physiotherapist who sees you to judge.',
+          // The gap as the app computes it (sides-line.js, counting/symmetry.ts): relative to the mean of the two ranges, not
+          // to the larger (honesty pass, second round, 14 October 2026).
+          formula: '\\text{Left-right gap} = \\frac{|\\text{ROM}_{\\text{left}} - \\text{ROM}_{\\text{right}}|}{(\\text{ROM}_{\\text{left}} + \\text{ROM}_{\\text{right}}) / 2} \\times 100\\%',
+          highlight: 'The app compares left and right only on a lateral raise filmed from the front, and gives both ranges without judging the gap.',
         },
       ],
     },
@@ -163,15 +168,18 @@ export const MANIFESTO = {
           body: 'Sarcomeres produce high active tension and stimulate titin-mediated passive tension when challenged at long muscle lengths (the deep stretched position). Cutting the range of motion eliminates the most hypertrophic portion of the repetition.',
           application: 'Never cut repetitions short at the turnaround. For a Bicep Curl, the bottom position (full elbow extension) provides superior stretch-mediated signaling. For a Lateral Raise, match the resistance profile to the shoulder’s strength curve so peak resistance aligns with active abduction.',
           liftKey: 'bicep_curl',
-          liftLabel: 'Test Range of Motion on Bicep Curl',
+          liftLabel: 'Film a biceps curl',
         },
         {
           num: '02',
           name: 'Eliminating Momentum (Inertial Leakage)',
           body: 'When a lifter bounces out of the hole or uses body English, they inject kinetic energy into the system. This produces a sudden spike in joint shear force while unloading the target muscle during the critical mid-range inflection point.',
-          application: 'Every repetition must begin from a controlled state or deliberate directional reversal. The eccentric (lowering) phase should be controlled (2 to 3 seconds) to ensure continuous actin-myosin cross-bridge cycling and eliminate ballistic unloading.',
+          // convention: no momentum, a lowering held back. The "2 to 3 seconds" eccentric and its cross-bridge reason are
+          // withdrawn: slowing the eccentric has not been shown to build more muscle (set-notes.js, source 3, literature;
+          // honesty pass, second round, 14 October 2026).
+          application: 'Start each rep from a controlled position, without momentum, and lower the load under control rather than letting it drop.',
           liftKey: 'squat',
-          liftLabel: 'Test Tempo & Turnaround on Barbell Squat',
+          liftLabel: 'Film a squat',
         },
         {
           num: '03',
@@ -179,15 +187,17 @@ export const MANIFESTO = {
           body: 'External resistance must act directly opposite to the muscle fibers’ architectural orientation. When joint motion deviates from the fascicle plane, rotational shear is transferred into ligaments and non-target synergists.',
           application: 'On a Lat Pulldown, the humerus must track precisely in the plane of the latissimus dorsi fibers—pulling elbows down and slightly inward toward the front pockets, rather than flaring wide like an upper-back row.',
           liftKey: 'lat_pulldown',
-          liftLabel: 'Test Line of Pull on Lat Pulldown',
+          liftLabel: 'Film a lat pulldown',
         },
       ],
     },
 
     conclusion: {
-      title: 'Conclusion: Precision Meets Execution',
-      text1: 'WorkoutVision was built because modern training demands precision. We do not guess rep counts; we do not accept sloppy execution; and we do not rely on subjective fatigue metrics when we can measure kinematic reality directly on your device.',
-      text2: 'By combining the historical rigor of exercise physiology with cutting-edge edge AI and uncompromising mechanical standards, WorkoutVision turns every workout into a masterclass in science-based progress.',
+      title: 'Conclusion: What the App Does, and What It Does Not',
+      // The promise the app keeps (honesty audit of 14 October 2026, CORE-14), with the dated scoreboard (R13:
+      // test/real-phone/accuracy/scoreboard.txt; honesty-guard.test.js checks the figures).
+      text1: 'WorkoutVision counts your reps, shows you what it saw and asks you to confirm. When it is unsure, it says so: at most it suggests a number for you to check, never a grade. On the 14 real videos filmed by the app’s maker, it finds the right number on 6 (scoreboard of 12 October 2026). That is why it always asks you to confirm.',
+      text2: 'By combining the rigour of exercise physiology with an analysis made on your phone, the app helps you keep track of your sets, without claiming to measure what it cannot.',
       creed: 'Lift with intent. Train with data. Trust the science.',
     },
 
@@ -212,7 +222,7 @@ export const MANIFESTO = {
       { id: 'ch2', title: 'Chapitre 2\u00A0: Les Géants de la Performance Humaine', subtitle: 'Pionniers Académiques & Pédagogues Modernes' },
       { id: 'ch3', title: 'Chapitre 3\u00A0: Pourquoi la Musculation Scientifique Surpasse le Dogme', subtitle: 'Des Anecdotes aux Premiers Principes' },
       { id: 'ch4', title: 'Chapitre 4\u00A0: La Mécanique des Gains Optimaux', subtitle: 'Perfectionner l’Exécution Physique' },
-      { id: 'conclusion', title: 'Conclusion\u00A0: Quand la Précision Rencontre l’Exécution', subtitle: 'L’Éthique WorkoutVision' },
+      { id: 'conclusion', title: 'Conclusion\u00A0: Ce que Fait l’Appli, et ce qu’Elle ne Fait Pas', subtitle: 'L’Éthique WorkoutVision' },
     ],
 
     chapter1: {
@@ -324,7 +334,8 @@ export const MANIFESTO = {
           title: '1. Efficience du Ratio Stimulus-Fatigue (SFR)',
           desc: 'Chaque exercice engendre un coût systémique, articulaire et neural. L’approche scientifique sélectionne les mouvements et amplitudes qui maximisent la tension mécanique sur les fibres cibles tout en minimisant la charge axiale sur le rachis et l’usure tendineuse.',
           formula: '\\text{SFR} = \\frac{\\text{Recrutement des Unités Motrices} \\times \\text{Tension Mécanique Active}}{\\text{Charge Axiale} + \\text{Frottement Articulaire} + \\text{Fatigue SNC}}',
-          highlight: 'Un SFR élevé permet d’accumuler un volume hebdomadaire plus productif tout en éloignant drastiquement le risque de blessure.',
+          // Awaiting David's approval (R10), as the whole page.
+          highlight: 'Une façon de choisir ses exercices, pas un chiffre mesuré. L’appli ne le calcule pas.',
         },
         {
           title: '2. La Tension Mécanique comme Moteur Principal',
@@ -338,9 +349,9 @@ export const MANIFESTO = {
         },
         {
           title: '4. La Symétrie Bilatérale et l’Équilibre Musculosquelettique',
-          desc: 'Le corps humain fonctionne rarement dans une parité géométrique parfaite. Des déficits subtils d’amplitude unilatérale (ROM) ou des décalages latéraux du tronc créent des couples asymétriques sur les disques vertébraux et le cartilage. Quantifier ces divergences protège les articulations et optimise la production de force.',
-          formula: '\\text{Indice d’Asymétrie (AI)} = \\frac{|\\text{ROM}_{\\text{gauche}} - \\text{ROM}_{\\text{droite}}|}{\\max(\\text{ROM}_{\\text{gauche}}, \\text{ROM}_{\\text{droite}})} \\times 100\\%',
-          highlight: 'Une asymétrie inférieure à 10\u00A0% est physiologique\u00A0; au-delà de 15\u00A0%, un travail unilatéral compensatoire s’impose.',
+          desc: 'Le corps fonctionne rarement de façon parfaitement symétrique\u00A0: un côté bouge souvent sur une amplitude un peu plus grande que l’autre. À partir de quel écart il faut s’en occuper, et comment, c’est à un coach ou à un kiné qui vous voit d’en juger.',
+          formula: '\\text{Écart gauche-droite} = \\frac{|\\text{ROM}_{\\text{gauche}} - \\text{ROM}_{\\text{droite}}|}{(\\text{ROM}_{\\text{gauche}} + \\text{ROM}_{\\text{droite}}) / 2} \\times 100\\%',
+          highlight: 'L’appli ne compare la gauche et la droite que sur une élévation latérale filmée de face, et donne les deux amplitudes sans juger l’écart.',
         },
       ],
     },
@@ -356,15 +367,16 @@ export const MANIFESTO = {
           body: 'Les sarcomères produisent une tension active maximale et recrutent la titine (tension passive) lorsqu’ils sont sollicités en position allongée (étirement sous charge). Réduire l’amplitude revient à supprimer la portion la plus anabolique de la répétition.',
           application: 'Ne tronquez jamais le bas du mouvement. Au Biceps Curl, l’extension complète du coude active l’hypertrophie en étirement. Aux Élévations Latérales, alignez la courbe de résistance avec le profil de force de l’épaule.',
           liftKey: 'bicep_curl',
-          liftLabel: 'Tester l’Amplitude sur le Biceps Curl',
+          liftLabel: 'Filmer un curl biceps',
         },
         {
           num: '02',
           name: 'Élimination de l’Élan (Fuite Inertielle)',
           body: 'Lorsqu’un pratiquant rebondit en bas ou utilise un balancement du buste, il injecte de l’énergie cinétique balistique. Cela décharge le muscle cible précisément au moment où la tension est la plus stimulante, tout en surchargeant les cartilages.',
-          application: 'Chaque répétition doit démarrer d’un point fixe sans impulsion parasite. La phase excentrique (descente) doit être contrôlée (2 à 3 secondes) pour maintenir l’engagement des ponts actine-myosine.',
+          // convention, as in English: the "2 à 3 secondes" are withdrawn (set-notes.js, source 3). Awaiting David's approval (R10).
+          application: 'Démarrez chaque répétition d’une position contrôlée, sans élan, et redescendez la charge en la retenant, sans la laisser tomber.',
           liftKey: 'squat',
-          liftLabel: 'Tester le Tempo & l’Inflexion sur le Squat',
+          liftLabel: 'Filmer un squat',
         },
         {
           num: '03',
@@ -372,15 +384,18 @@ export const MANIFESTO = {
           body: 'La résistance doit s’opposer directement au plan anatomique des faisceaux musculaires cibles. Tout désalignement disperse les forces sous forme de cisaillement articulaire.',
           application: 'Au Tirage Poitrine (Lat Pulldown), l’humérus doit voyager exactement dans le plan des fibres du grand dorsal\u00A0: coudes tirés vers le bas et légèrement vers les poches, et non écartés vers l’arrière.',
           liftKey: 'lat_pulldown',
-          liftLabel: 'Tester la Ligne de Tirage sur le Tirage Poitrine',
+          liftLabel: 'Filmer un tirage vertical',
         },
       ],
     },
 
     conclusion: {
-      title: 'Conclusion\u00A0: Quand la Précision Rencontre l’Exécution',
-      text1: 'WorkoutVision a été conçu parce que l’entraînement moderne exige une exactitude absolue. Nous ne devinons pas les répétitions\u00A0; nous ne tolérons pas les approximations\u00A0; et nous ne nous fions pas à la fatigue subjective quand la cinématique réelle peut être mesurée directement sur votre appareil.',
-      text2: 'En combinant la rigueur historique de la physiologie avec l’intelligence artificielle embarquée et des standards mécaniques sans compromis, WorkoutVision transforme chaque séance en un cours magistral de progression scientifique.',
+      // The promise the app keeps (honesty pass, second round, 14 October 2026): when it doubts it may propose a number to
+      // check, never a grade (Result.jsx), so "elle ne donne pas de chiffre" was untrue; a public reader does not know
+      // David, so the videos are the app's maker's. Awaiting David's approval (R10), with the rest of the page.
+      title: 'Conclusion\u00A0: Ce que Fait l’Appli, et ce qu’Elle ne Fait Pas',
+      text1: 'L’appli compte vos répétitions, vous montre ce qu’elle a vu et vous demande de confirmer. Quand elle doute, elle le dit\u00A0: tout au plus, elle vous propose un nombre à vérifier, jamais une note. Sur les 14 vraies vidéos filmées par le créateur de l’appli, elle trouve le bon nombre sur 6 (tableau du 12 octobre 2026). C’est pour ça qu’elle vous demande toujours de confirmer.',
+      text2: 'En alliant la rigueur de la physiologie de l’exercice à une analyse faite sur votre téléphone, l’appli vous aide à suivre vos séries, sans prétendre mesurer ce qu’elle ne sait pas mesurer.',
       creed: 'Bougez avec intention. Entraînez-vous avec les données. Fiez-vous à la science.',
     },
 

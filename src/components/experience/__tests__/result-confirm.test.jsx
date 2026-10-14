@@ -151,106 +151,39 @@ describe('the keys’ outlines', () => {
   });
 });
 
-describe('biomechanical symmetry and trunk stability in result', () => {
-  it('renders symmetry line, trunk shift, and actionable coaching advice', async () => {
-    const symResult = {
-      ...nine,
-      symmetry: {
-        symmetryScore: 78,
-        status: 'notable_asymmetry',
-        dominantSide: 'left',
-        romDiffDeg: 24,
-        trunkShift: {
-          significantShift: true,
-          maxLateralTiltDeg: 6.8,
-          direction: 'left',
-        },
-        coaching: {
-          hasNotableAsymmetry: true,
-          adviceFr: 'Asymétrie notable (+24° côté gauche). Intégrez du travail unilatéral avec haltères.',
-          adviceEn: 'Notable asymmetry detected (+24° on left side). Introduce unilateral dumbbell exercises.',
-        },
-      },
-    };
-    const fr = await render('fr', symResult);
-    expect(fr).toContain('data-testid="acc-symmetry"');
-    expect(fr).toContain('78 %');
-    expect(fr).toContain('Gauche dominante (+24°)');
-    expect(fr).toContain('data-testid="acc-trunk-shift"');
-    expect(fr).toContain('6.8° vers la gauche');
-    expect(fr).toContain('data-testid="acc-asymmetry-advice"');
-    expect(fr).toContain('Conseil biomécanique');
-    expect(fr).toContain('haltères');
-
-    const en = await render('en', symResult);
-    expect(en).toContain('data-testid="acc-symmetry"');
-    expect(en).toContain('Left dominant (+24°)');
-    expect(en).toContain('data-testid="acc-trunk-shift"');
-    expect(en).toContain('6.8° towards the left');
-    expect(en).toContain('data-testid="acc-asymmetry-advice"');
-    expect(en).toContain('Biomechanical cue');
-    expect(en).toContain('dumbbell');
-  });
-
-  it('renders safe execution confidence shield when knee tracking is clean and risk is zero', async () => {
-    const safeResult = {
-      ...nine,
-      formChecks: {
-        kneeValgus: { detected: false, count: 0, total: 6, valgusRate: 0 },
-        lockout: { fullLockout: true, count: 6, total: 6, lockoutRate: 1 },
-      },
-    };
-    const fr = await render('fr', safeResult);
-    expect(fr).toContain('data-testid="acc-confidence-shield"');
-    expect(fr).toContain('Exécution sécurisée');
-    expect(fr).toContain('Alignement articulaire optimal');
-
-    const en = await render('en', safeResult);
-    expect(en).toContain('data-testid="acc-confidence-shield"');
-    expect(en).toContain('Safe execution');
-    expect(en).toContain('Optimal joint tracking');
-  });
-
-  it('renders VBT velocity loss, fatigue rating, RIR, sticking point angle, and coaching cue', async () => {
-    const vbtResult = {
-      ...nine,
-      vbt: {
-        velocityLossPercent: 22,
-        fatigueZone: 'high',
-        stickingAngleDeg: 94,
-        slowestRepIndex: 8,
-        estimatedRir: '0-1',
-        cueFr: 'Forte perte de vitesse (22\u00A0%). Ralentissement marqué à 94° sur la rép 8. Fin de série recommandée.',
-        cueEn: 'High velocity loss (22%). Pronounced sticking at 94° on rep 8. Rest recommended.',
-      },
-    };
-    const fr = await render('fr', vbtResult);
-    expect(fr).toContain('data-testid="acc-vbt"');
-    expect(fr).toContain('Perte de vitesse (VBT)');
-    expect(fr).toContain('22 %');
-    expect(fr).toContain('fatigue haute');
-    expect(fr).toContain('RIR ~0-1');
-    expect(fr).toContain('data-testid="acc-sticking"');
-    expect(fr).toContain('Point de friction');
-    expect(fr).toContain('94°');
-    expect(fr).toContain('sur la rép. 8');
-    expect(fr).toContain('data-testid="acc-vbt-advice"');
-    expect(fr).toContain('Coaching VBT');
-    expect(fr).toContain('Fin de série recommandée');
-
-    const en = await render('en', vbtResult);
-    expect(en).toContain('data-testid="acc-vbt"');
-    expect(en).toContain('Velocity loss (VBT)');
-    expect(en).toContain('22%');
-    expect(en).toContain('high fatigue');
-    expect(en).toContain('RIR ~0-1');
-    expect(en).toContain('data-testid="acc-sticking"');
-    expect(en).toContain('Sticking point');
-    expect(en).toContain('94°');
-    expect(en).toContain('on rep 8');
-    expect(en).toContain('data-testid="acc-vbt-advice"');
-    expect(en).toContain('VBT cue');
-    expect(en).toContain('Rest recommended');
+describe('no unmeasured number on the result (honesty audit of 14 October 2026)', () => {
+  // A result that still carries the fields the withdrawn engines produced on 11-13 October (a set saved then, or a
+  // result built by an older build) shows none of them: no symmetry score, trunk shift, advice, partial count,
+  // consistency, SPARC, form check, safety shield, joint load, certificate, VBT line or estimated RIR (R8).
+  const old = {
+    ...nine,
+    symmetry: { symmetryScore: 78, status: 'notable_asymmetry', dominantSide: 'left', romDiffDeg: 24,
+      trunkShift: { significantShift: true, maxLateralTiltDeg: 6.8, direction: 'left' },
+      coaching: { hasNotableAsymmetry: true, adviceFr: 'Intégrez du travail unilatéral avec haltères.', adviceEn: 'Introduce unilateral dumbbell work.' } },
+    partialCount: 13, partials: [{ partialType: 'lengthened' }],
+    consistency: { score: 90, rating: 'high' },
+    smoothness: { avgSparc: -2.95, quality: 'moderate' },
+    formChecks: { squatDepth: { allParallel: true, count: 8, total: 8, parallelRate: 1 }, kneeValgus: { detected: false, count: 0, total: 6 },
+      lockout: { fullLockout: true, count: 6, total: 6, lockoutRate: 1 }, trapeziusHike: { detected: false }, activeRom: { peakAngleDeg: 174, avgAngleDeg: 160 } },
+    kinetics: { totalWorkJoules: 671, maxL5S1ShearN: 433.4, maxKneeShearN: 250.1, riskNote: { textFr: 'Alerte', textEn: 'Alert' } },
+    compliance: { verified: true, certificateId: 'WV-EB858634-9R' },
+    vbt: { velocityLossPercent: 58, fatigueZone: 'high', stickingAngleDeg: 122, slowestRepIndex: 4, estimatedRir: '0-1', cueFr: 'Fin de série recommandée.', cueEn: 'Rest recommended.' },
+    isometric: { isHold: true, tutSeconds: 30, stabilityDeg: 2 },
+  };
+  for (const level of ['beginner', 'intermediate', 'expert']) it(`shows none of them at level ${level}, in French and in English`, async () => {
+    for (const lang of ['fr', 'en']) {
+      const html = await render(lang, old, {}, level);
+      expect(html).toContain('data-testid="res-numeral"');
+      for (const id of ['acc-symmetry', 'acc-trunk-shift', 'acc-asymmetry-advice', 'acc-partials', 'acc-consistency', 'acc-smoothness',
+        'acc-squat-depth', 'acc-knee-valgus', 'acc-lockout', 'acc-trapezius-hike', 'acc-active-rom', 'acc-confidence-shield', 'acc-work',
+        'acc-l5s1', 'acc-knee-shear', 'acc-kinetics-advice', 'acc-compliance', 'acc-vbt', 'acc-sticking', 'acc-vbt-advice', 'acc-rir', 'acc-isometric']) {
+        expect(html).not.toContain(`data-testid="${id}"`);
+      }
+      for (const word of ['WV-EB858634', 'Intégrité', 'Certificat', 'Verified integrity', 'VBT', 'RIR', 'sécurisée', 'Safe execution', '433', '250.1', '671 J',
+        'Symétrie', 'symmetry', 'SPARC', 'Valgus', 'Répétitions partielles', 'en étirement', 'lengthened', 'Partial reps :', 'haltères', 'dumbbell', 'Wolf', 'Israetel']) {
+        expect(html).not.toContain(word);
+      }
+    }
   });
 });
 

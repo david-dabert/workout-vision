@@ -39,9 +39,6 @@
   font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.06em; color: var(--bone);
   display: flex; align-items: baseline; gap: 3px; margin-top: 1px;
 }
-.wv-experience .rp-angle::before {
-  content: "∠"; font-family: system-ui, -apple-system, sans-serif; font-size: 1.05em; color: var(--c-accent);
-}
 .wv-experience .rp-broken { position: absolute; inset: 0; margin: 0; display: grid; place-items: center; padding: 24px; text-align: center; font-size: var(--fs-body); line-height: 1.5; color: var(--bone-2); background: rgba(8, 7, 6, 0.7); text-wrap: balance; }
 
 /* The set's time line: one mark per rep; the lit one is on screen. */

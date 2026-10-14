@@ -1,6 +1,13 @@
 /**
  * vbtEngine.js — On-Device Velocity-Based Training (VBT) & Sticking Point Localization.
  *
+ * WITHDRAWN from the app on 14 October 2026 (honesty audit, CORE-02): run by no screen, kept for research. VBT is
+ * defined on bar velocity in m/s; this module divides a joint's angular range by its concentric time at 15 Hz, the
+ * signal measures.js keeps hidden as noise (SPEED_CHANGE_SHOWN). On 89 synthetic sets with identical reps it read a
+ * median loss of 26 % (90th percentile 74 %). The zones and the RIR mapping are UNSOURCED. Corrected references:
+ * González-Badillo et al. 2017 is Int J Sports Med 38(3):217-225 (bench press, bar velocity); Kompf and Arandjelović
+ * is Sports Med 2016;46(6):751-762. The references below are kept as first written, with those two errors.
+ *
  * Literature:
  *   - González-Badillo JJ, Yáñez-García JM, Mora-Custodio R, Rodríguez-Rosell D.
  *     "Velocity Loss as a Variable for Monitoring Resistance Exercise".

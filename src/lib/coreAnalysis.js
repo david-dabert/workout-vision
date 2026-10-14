@@ -10,11 +10,6 @@ import { specGuidedCount } from './counting/sgc';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './extractionConfig';
 
 import { OFFERED, isOffered } from './offer';
-import { analyzeAsymmetryAndTrunk } from './asymmetryCoaching';
-import { analyzeMovementQuality } from './smoothness';
-import { analyzeSetKinetics } from './jointTorqueEngine';
-import { generateComplianceProof } from './complianceEngine';
-import { analyzeVbtAndStickingPoint } from './vbtEngine';
 
 // Every offered exercise: the lifts of LIFT TIERS and every countable exercise of the guide (offer.js).
 export const APPROVED_LIFTS = OFFERED;
@@ -362,21 +357,15 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     const pose = { delegate: init?.delegate ?? null, renderer: init?.renderer ?? null, msMedian: at(0.5), msP90: at(0.9), samples: sorted.length };
 
     const countSummary = summarizeCount(worldLandmarks, timestamps, lift);
-    const symmetry = analyzeAsymmetryAndTrunk(worldLandmarks, timestamps, lift, countSummary.reps);
-    const quality = analyzeMovementQuality(worldLandmarks, timestamps, lift, countSummary.reps, countSummary.arm);
-    const kinetics = analyzeSetKinetics(worldLandmarks, timestamps, lift, countSummary.reps);
-    const compliance = await generateComplianceProof({ exercise: lift, reps: countSummary.count, duration: metadata?.duration, timestamps, worldLandmarks });
-    const vbt = analyzeVbtAndStickingPoint(countSummary.reps, timestamps, countSummary.smoothedAngles, lift);
-
+    // The engines wired here on 11-13 October 2026 are no longer run on a set (honesty audit of 14 October 2026): the
+    // bilateral symmetry score and trunk shift (asymmetryCoaching.js), consistency, SPARC and the form checks
+    // (smoothness.js), joint loads from a fixed 75 kg body (jointTorqueEngine.js), the "execution certificate"
+    // (complianceEngine.js) and VBT with its RIR and sticking point (vbtEngine.js). None was measured against known
+    // truth; the audit found each wrong by construction or unsourced (R8, R9). Their modules stay for research and are
+    // read by no screen. The core's partial reps (core.ts, detectPartialReps) stay in the result for research and reach
+    // no screen either: on the 96 synthetic sets, built with none, they report 180 (research, 14 October 2026).
     const mergedSummary = {
       ...countSummary,
-      symmetry,
-      smoothness: quality?.smoothness ?? null,
-      consistency: quality?.consistency ?? null,
-      formChecks: quality?.formChecks ?? null,
-      kinetics: kinetics ?? null,
-      compliance: compliance ?? null,
-      vbt: vbt ?? null,
       exercise: lift,
       metadata: { ...metadata, pose },
       imageLandmarks,

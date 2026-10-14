@@ -45,7 +45,8 @@ export const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'compliance',
   // Velocity-based training & sticking point localization (vbtEngine.js, 12 October 2026).
   'vbt',
-  // Partial repetition tracking & classification (Dr. Milo Wolf & Dr. Mike Israetel, 13 October 2026).
+  // Partial repetitions of sets saved on 13-14 October 2026 (core.ts detectPartialReps): kept as stored, read by no
+  // screen (honesty audit of 14 October 2026: unmeasured, and the hypertrophy claim shown with them was unsourced).
   'partialCount', 'partials',
 ];
 
@@ -136,10 +137,13 @@ export function validateWorkout(record: unknown): ValidationResult {
   const whole = (v: unknown) => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 1000;
   if (p != null && !(typeof p === 'object' && typeof p.programme === 'string' && p.programme.length <= 32
     && whole(p.item) && whole(p.sets) && whole(p.reps) && whole(p.rest))) delete sanitized.planned;
-  // A proposal that is not a whole count of the app's proposer, and a body check that is not its two numbers, are
-  // dropped: the set stays, read as typed by hand or as counted.
+  // A proposal that is not a whole count of one of the app's proposers, and a body check that is not its two numbers,
+  // are dropped: the set stays, read as typed by hand or as counted. The proposers: 'psc', the core's proposal on a
+  // refused set (8 October 2026), and 'universal', the number read for an exercise the core does not offer
+  // (universalProposal.js, 14 October 2026), which was dropped here until the honesty pass's second round, so a
+  // confirmed universal proposal read back as typed by hand.
   const pr = sanitized.proposal as Record<string, unknown> | null | undefined;
-  if (pr != null && !(typeof pr === 'object' && whole(pr.reps) && pr.by === 'psc')) delete sanitized.proposal;
+  if (pr != null && !(typeof pr === 'object' && whole(pr.reps) && (pr.by === 'psc' || pr.by === 'universal'))) delete sanitized.proposal;
   const bc = sanitized.bodyCheck as Record<string, unknown> | null | undefined;
   if (bc != null && !(typeof bc === 'object' && (bc.agreement === null || num(bc.agreement))
     && (bc.second === null || whole(bc.second)))) delete sanitized.bodyCheck;

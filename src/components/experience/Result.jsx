@@ -208,6 +208,13 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // "Proposition de l'appli", and nothing is saved until the person confirms or changes it (R8: a number to confirm,
   // never a silent count, no grade, no measure). Status: validated on the bench (TRIED.md, 8 October).
   const proposal = result.refused && Number.isInteger(result.proposal?.count) && result.proposal.count > 0 ? result.proposal.count : null;
+  // An exercise the core does not offer (universalProposal.js; counting research of 14 October 2026): refused, its number
+  // at most a proposal. That engine's number is right on 10 of 35 labelled sets, so the slot opens empty and the number
+  // is offered as one key labelled "Proposition de l'appli": confirming it takes a tap on it, then on Confirm (second
+  // round of the honesty pass, 14 October 2026). A hold (plank, wall sit...) gets no slot: the app does not measure the
+  // time held, and a number typed there would be saved as reps. Status: convention (R8).
+  const uni = result.refused && result.universal ? result.universal : null;
+  const uniHold = !!uni?.hold;
   // The numbers of the app the person may confirm as they stand: the proposal, or a flagged set's two counts.
   const offeredBy = n => n > 0 && (n === proposal || (toCheck && n === result.count) || (flagged && n === second));
   const c = RESULT[fr ? 'fr' : 'en'];
@@ -237,7 +244,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     target.focus({ preventScroll: true, focusVisible: false });
   }, [step]);
   // 0 stands for "no number chosen yet" on the low-confidence screen ("–"); otherwise the app's count to confirm.
-  const [trueN, setTrueN] = useState(blindN ?? (low ? (proposal ?? (toCheck ? result.count : 0)) : result.count));
+  const [trueN, setTrueN] = useState(blindN ?? (low ? ((uni ? null : proposal) ?? (toCheck ? result.count : 0)) : result.count));
   // The typed digits while the numeral is open to the keyboard ('' until a digit is typed); null when not
   // typing. The number it opened on is kept, so an empty field means "unchanged".
   const [typed, setTyped] = useState(null);
@@ -364,7 +371,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     return { head: `${word} · `, body: r.clipped
       ? `${Math.round(r.romDegrees)}°${NB}· ${filmed}`
       : partialIn(reps)(r)
-      ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? (corrected ? 'partiel, non chronométré' : 'partielle, non chronométrée') : 'partial, not timed'}`
+      ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? (corrected ? 'non chronométré' : 'non chronométrée') : 'not timed'}`
       : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}` };
   };
   let detail = '', detailHead = '';
@@ -576,7 +583,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const status = <div className="res-status" data-testid="res-status">
     <p className="res-status-state">{step === 'saved'
       ? <><i className={`res-mark is-sq${typedSaved ? '' : ' is-measured'}`} aria-hidden="true" />{c.saved}</>
-      : <><i className={`res-mark is-ring${!low && step === 'ask' ? ' is-measured' : ''}`} aria-hidden="true" />{low && !offeredBy(trueN) ? c.yourCount : c.toConfirm}</>}</p>
+      : <><i className={`res-mark is-ring${!low && step === 'ask' ? ' is-measured' : ''}`} aria-hidden="true" />{uniHold ? c.notCounted : low && !offeredBy(trueN) ? c.yourCount : c.toConfirm}</>}</p>
     <p className="res-status-where">{where}</p>
   </div>;
   const tierLine = tierOf(lift) ? <div className="res-tierline"><p className={`tier tier-${tierOf(lift)}`}>{tierLabel(tierOf(lift), fr)}</p></div> : null;
@@ -621,18 +628,31 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const previous = before?.[0]?.reps;
   const quick = quickKeys(centre ?? previous);
   const centreLine = centre ? c.planSays(centre) : quick.length ? c.lastSet(previous) : '';
-  const lowAsk = (manual, cause) => <div key="count" className="res-low" data-testid="fix-card">
-    <h2 className="res-low-title refused-title" data-testid={manual ? undefined : 'res-uncounted'}>{liveDiffers || proposal || toCheck ? c.notSure : c.noCount}</h2>
+  // title: the screen's own (an exercise the core does not offer says so, universalTitle); slot: false for a hold, which
+  // shows its title and cause, then its one key right under them: no number to ask for, nothing to save, so no dock at
+  // the foot of an empty screen (second round of the honesty pass, 14 October 2026).
+  const lowAsk = (manual, cause, { title = null, slot = true } = {}) => <div key="count" className="res-low" data-testid="fix-card">
+    <h2 className="res-low-title refused-title" data-testid={manual ? undefined : 'res-uncounted'}>{title ?? (liveDiffers || proposal || toCheck ? c.notSure : c.noCount)}</h2>
     <div className="res-cause">
       <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.5" /><path d="M10 5.5v5.5" /><circle className="dot" cx="10" cy="14.2" r=".6" /></svg>
       <div>{cause.map(l => <p key={l}>{l}</p>)}</div>
     </div>
+    {!slot && <div className="res-keys res-keys-inline">
+      <button type="button" className="res-key is-primary press" data-testid="change-lift" onClick={() => release().then(onChangeLift)}>{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
+    </div>}
+    {slot && <>
     <p className="ask-q res-ask" id="res-ask">{c.howMany}</p>
     {hero(trueN > 0
       ? <span key={trueN} className="res-typed" data-testid="res-typed" aria-hidden="true">{trueN}</span>
       : <span className="res-empty" data-testid="res-empty" aria-hidden="true"><i /></span>, true)}
     <p className="sr" aria-live="polite" aria-atomic="true">{trueN > 0 ? trueN : c.empty}</p>
-    {proposal && <p className="res-state is-proposal" data-testid="res-proposal">{c.proposal(proposal)}</p>}
+    {proposal && !uni && <p className="res-state is-proposal" data-testid="res-proposal">{c.proposal(proposal)}</p>}
+    {/* The universal engine's number, one key to take it into the slot; the slot itself opened empty (uni, above). */}
+    {proposal && uni && <div className="res-cands" role="group" aria-labelledby="res-ask" data-testid="res-proposal-key">
+      <button type="button" className={`res-cand press${trueN === proposal ? ' is-on' : ''}`} aria-pressed={trueN === proposal} onClick={() => adjust(proposal)}>
+        <span className="res-cand-n">{proposal}</span><span className="res-cand-from">{c.proposalKey}</span>
+      </button>
+    </div>}
     {/* A flagged set: the app's count, labelled; with the spec-guided count, the two as keys, each with where it
         comes from (the counted joint, the whole body), neither chosen over the other by its look. */}
     {toCheck && !second && <p className="res-state is-proposal" data-testid="res-bodycount">{c.bodyCounted(count)}</p>}
@@ -641,11 +661,12 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
         <span className="res-cand-n">{n}</span><span className="res-cand-from">{from}</span>
       </button>)}
     </div>}
-    {proposal && trueN === proposal ? <p className="res-hint" data-testid="res-proposal-note">{c.proposalNote}</p>
+    {proposal && trueN === proposal ? (uni ? null : <p className="res-hint" data-testid="res-proposal-note">{c.proposalNote}</p>)
       : toCheck && offeredBy(trueN) ? <p className="res-hint" data-testid="res-body-note">{c.bodyNote}</p>
       : trueN > 0 ? <p className="res-state is-typed">{c.typedBy}</p> : <p className="res-hint">{quick.length > 0 ? c.quickHint : c.typeHint}</p>}
     {quick.length > 0 && <div className="res-quick" role="group" aria-labelledby="res-ask">{quick.map(k => <button key={k} type="button" className={`res-qk press${trueN === k ? ' is-on' : ''}`} aria-pressed={trueN === k} onClick={() => adjust(k)}>{k}</button>)}</div>}
     {centreLine && <p className="res-hint res-centre">{centreLine}</p>}
+    </>}
   </div>;
   const lowDock = manual => [<div key="dock" className="res-dock" data-testid="res-dock">{closing && unsaved ? closeCard : <div className="res-keys">
     <button type="button" className="res-key is-primary press" data-testid="res-save" disabled={trueN === 0} onClick={() => { if (trueN === 0) return; navigator.vibrate?.(10); doSave(trueN, toCheck ? trueN !== count : true, manual); }}>{trueN > 0 ? (offeredBy(trueN) ? c.confirmN(trueN) : c.saveN(trueN)) : c.save}</button>
@@ -677,7 +698,12 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
             : (many
               ? (fr ? `Vos ${limb.noun} étaient caché${ee} pendant la plus grande partie de la série.` : `Your ${limb.noun} were hidden for most of the set.`)
               : (fr ? `Votre ${armLabel} était caché${e} pendant la plus grande partie de la série.` : `Your ${armLabel} was hidden for most of the set.`)));
-    const fix = result.notRead ? '' : why.hips
+    // An exercise the core does not offer (universalProposal.js): what the app does not do yet, then whether it proposes a
+    // number; no filming fix, since none is known to make it count. A video with nobody in it says so, as above.
+    // One title, one line under it (second round of the honesty pass, 14 October 2026: the title, the cause and two notes
+    // said the same doubt four times).
+    const universal = !notRead && result.universal && (uniHold || why.cause !== 'nobody') ? result.universal : null;
+    const fix = universal ? (uniHold ? c.universalHold : proposal ? c.universalProposes : c.universalUnseen) : result.notRead ? '' : why.hips
       ? (fr ? 'Reculez pour que vos hanches soient dans l’image, puis refilmez.' : 'Step back so your hips are in the picture, then record again.')
       : why.cause === 'nobody'
         ? (fr ? 'Posez le téléphone face à vous, placez-vous dans l’image, puis refilmez.' : 'Stand the phone facing you, step into the picture, then record again.')
@@ -692,8 +718,10 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
         <Topbar fr={fr} onClose={askClose} onReplay={onReplay} replayRef={replayRef} badge={false} />
         {status}
         {tierLine}
-        {step !== 'saved' && lowAsk(true, [text, fix].filter(Boolean))}
-        {step !== 'saved' && lowDock(true)}
+        {step !== 'saved' && (universal
+          ? lowAsk(true, [fix], { title: c.universalTitle, slot: !uniHold })
+          : lowAsk(true, [text, fix].filter(Boolean)))}
+        {step !== 'saved' && !(universal && uniHold) && lowDock(true)}
         <div ref={cardRef}>
           {step === 'saved' && <div className="saved appear" data-testid="saved-card">
             <p className="saved-msg">{proposal && trueN === proposal ? c.savedConfirmed(trueN) : fr ? `Merci. ${trueN} ${trueN > 1 ? 'répétitions enregistrées, saisies' : 'répétition enregistrée, saisie'} à la main.` : `Thank you. ${trueN} ${trueN === 1 ? 'rep' : 'reps'} saved, typed by hand.`}</p>
@@ -703,205 +731,23 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
           </div>}
           {saveError && <p role="alert" className="save-error">{saveError}</p>}
         </div>
-        {report && <ReportCount fr={fr} report={report} />}
+        {/* Nothing was counted or proposed on a hold: no count to report (second round of the honesty pass). */}
+        {report && !(universal && uniHold) && <ReportCount fr={fr} report={report} />}
       </div></section>
     </div>;
   }
 
   // The account (A) and the tip (B); the cheer (C) and the notes, which a beginner finds open.
+  // The lines added on 11-13 October 2026 under the account are withdrawn (honesty audit of 14 October 2026, CORE-01 to
+  // CORE-11 and CORE-19): an estimated RIR, a bilateral symmetry score and its advice, a trunk "shift", a partial-rep
+  // count with a hypertrophy claim, a consistency percentage, a SPARC grade, squat depth, knee valgus, lockout, trapezius
+  // and peak-angle checks, a "safe execution" shield, joint loads from a fixed 75 kg body, an "execution certificate"
+  // and a VBT line. None was measured against known truth, several were wrong by construction (the squat depth read no
+  // bottom, the loads hit a ceiling of the fixed body, the certificate verified nothing), so none reaches the screen
+  // (R8: no number the app cannot measure reliably). Left and right stay the front-view comparison (sides-line.js),
+  // shown only when both sides were measured.
   const plain = <>
     {account.lines.map(l => <p key={l} className="acc-line">{l}</p>)}
-    {account.rir && <p className="acc-line acc-rir" data-testid="acc-rir">
-      <b>{fr ? 'Effort estimé (RIR)' : 'Estimated effort (RIR)'} :</b> {account.rir.label}.
-    </p>}
-    {result.isometric?.isHold && (
-      <p className="acc-line acc-isometric" data-testid="acc-isometric">
-        <b>{fr ? 'Maintien isométrique (TUT)' : 'Isometric hold (TUT)'} :</b> {result.isometric.tutSeconds} s ({
-          fr ? `stabilité ±${result.isometric.stabilityDeg}°` : `stability ±${result.isometric.stabilityDeg}°`
-        }{result.isometric.breakdownTime ? (fr ? `, rupture à ${result.isometric.breakdownTime} s` : `, breakdown at ${result.isometric.breakdownTime} s`) : ''}).
-      </p>
-    )}
-    {result.symmetry && (
-      <>
-        <p className="acc-line acc-symmetry" data-testid="acc-symmetry">
-          <b>{fr ? 'Symétrie bilatérale' : 'Bilateral symmetry'} :</b> {result.symmetry.symmetryScore} % ({
-            result.symmetry.status === 'balanced'
-              ? (fr ? 'Équilibrée' : 'Balanced')
-              : (fr ? `${result.symmetry.dominantSide === 'left' ? 'Gauche dominante' : 'Droite dominante'} (+${result.symmetry.romDiffDeg}°)`
-                    : `${result.symmetry.dominantSide === 'left' ? 'Left dominant' : 'Right dominant'} (+${result.symmetry.romDiffDeg}°)`)
-          }).
-        </p>
-        {result.symmetry.trunkShift?.significantShift && (
-          <p className="acc-line acc-trunk-shift" data-testid="acc-trunk-shift">
-            <b>{fr ? 'Stabilité du tronc (shift)' : 'Trunk stability (shift)'} :</b> {
-              fr
-                ? `Décalage latéral de ${result.symmetry.trunkShift.maxLateralTiltDeg}° vers la ${result.symmetry.trunkShift.direction === 'left' ? 'gauche' : 'droite'}.`
-                : `Lateral tilt of ${result.symmetry.trunkShift.maxLateralTiltDeg}° towards the ${result.symmetry.trunkShift.direction}.`
-            }
-          </p>
-        )}
-        {result.symmetry.coaching?.hasNotableAsymmetry && (
-          <div className="acc-advice-card" data-testid="acc-asymmetry-advice">
-            <span className="acc-advice-badge">{fr ? 'Conseil biomécanique' : 'Biomechanical cue'}</span>
-            <p className="acc-advice-text">{fr ? result.symmetry.coaching.adviceFr : result.symmetry.coaching.adviceEn}</p>
-          </div>
-        )}
-      </>
-    )}
-    {result.partialCount > 0 && (
-      <div className="acc-card acc-partials-card" data-testid="acc-partials">
-        <p className="acc-line acc-partials-line">
-          <b>{fr ? 'Répétitions partielles' : 'Partial reps'} :</b> {result.partialCount} {
-            result.partials?.some(p => p.partialType === 'lengthened')
-              ? (fr ? `(${result.partials.filter(p => p.partialType === 'lengthened').length} en étirement / lengthened)`
-                    : `(${result.partials.filter(p => p.partialType === 'lengthened').length} lengthened / stretch)`)
-              : ''
-          }
-        </p>
-        <p className="acc-hint-text text-muted">
-          {fr
-            ? 'Les répétitions partielles en étirement (lengthened partials) stimulent efficacement l’hypertrophie musculaire et le renforcement des amplitudes vulnérables.'
-            : 'Lengthened partial repetitions provide high mechanical tension in the stretched position, highly effective for muscle hypertrophy and joint conditioning (Dr. Milo Wolf, Dr. Mike Israetel).'}
-        </p>
-      </div>
-    )}
-    {result.consistency && (
-      <p className="acc-line acc-consistency" data-testid="acc-consistency">
-        <b>{fr ? 'Régularité' : 'Form consistency'} :</b> {result.consistency.score} % ({
-          result.consistency.rating === 'high'
-            ? (fr ? 'très régulier' : 'high consistency')
-            : result.consistency.rating === 'moderate'
-            ? (fr ? 'régulier' : 'moderate consistency')
-            : (fr ? 'irrégulier' : 'inconsistent')
-        }).
-      </p>
-    )}
-    {result.smoothness && (
-      <p className="acc-line acc-smoothness" data-testid="acc-smoothness">
-        <b>{fr ? 'Fluidité (SPARC)' : 'Smoothness (SPARC)'} :</b> {result.smoothness.avgSparc} ({
-          result.smoothness.quality === 'very_smooth'
-            ? (fr ? 'très fluide' : 'very smooth')
-            : result.smoothness.quality === 'smooth'
-            ? (fr ? 'fluide' : 'smooth')
-            : result.smoothness.quality === 'moderate'
-            ? (fr ? 'modérée' : 'moderate')
-            : (fr ? 'saccadée' : 'jerky')
-        }).
-      </p>
-    )}
-    {result.formChecks && (
-      <>
-        {result.formChecks.squatDepth && (
-          <p className="acc-line acc-squat-depth" data-testid="acc-squat-depth">
-            <b>{fr ? 'Profondeur (squat)' : 'Squat depth'} :</b> {
-              result.formChecks.squatDepth.allParallel
-                ? (fr ? '100 % à la parallèle' : '100% parallel depth')
-                : (fr
-                    ? `${result.formChecks.squatDepth.count}/${result.formChecks.squatDepth.total} à la parallèle (${Math.round(result.formChecks.squatDepth.parallelRate * 100)} %)`
-                    : `${result.formChecks.squatDepth.count}/${result.formChecks.squatDepth.total} reps reached parallel (${Math.round(result.formChecks.squatDepth.parallelRate * 100)}%)`)
-            }
-          </p>
-        )}
-        {result.formChecks.kneeValgus && (
-          <p className="acc-line acc-knee-valgus" data-testid="acc-knee-valgus">
-            <b>{fr ? 'Alignement des genoux' : 'Knee tracking'} :</b> {
-              !result.formChecks.kneeValgus.detected
-                ? (fr ? 'Parfait (aucun valgus détecté)' : 'Clean (no valgus collapse detected)')
-                : (fr
-                    ? `Valgus détecté sur ${result.formChecks.kneeValgus.count}/${result.formChecks.kneeValgus.total} répétition(s)`
-                    : `Valgus collapse detected on ${result.formChecks.kneeValgus.count}/${result.formChecks.kneeValgus.total} rep(s)`)
-            }
-          </p>
-        )}
-        {result.formChecks.lockout && (
-          <p className="acc-line acc-lockout" data-testid="acc-lockout">
-            <b>{fr ? 'Verrouillage articulaire' : 'Lockout consistency'} :</b> {
-              result.formChecks.lockout.fullLockout
-                ? (fr ? 'Complet sur chaque répétition (100 %)' : 'Complete on all reps (100%)')
-                : (fr
-                    ? `${result.formChecks.lockout.count}/${result.formChecks.lockout.total} avec extension complète (${Math.round(result.formChecks.lockout.lockoutRate * 100)} %)`
-                    : `${result.formChecks.lockout.count}/${result.formChecks.lockout.total} reps with full extension (${Math.round(result.formChecks.lockout.lockoutRate * 100)}%)`)
-            }
-          </p>
-        )}
-        {result.formChecks.trapeziusHike && (
-          <p className="acc-line acc-trapezius-hike" data-testid="acc-trapezius-hike">
-            <b>{fr ? 'Contrôle des trapèzes' : 'Shoulder tracking'} :</b> {
-              !result.formChecks.trapeziusHike.detected
-                ? (fr ? 'Parfait (épaules basses et stables)' : 'Clean (shoulders down and stable)')
-                : (fr
-                    ? `Haussement compensatoire détecté sur ${result.formChecks.trapeziusHike.count}/${result.formChecks.trapeziusHike.total} répétition(s)`
-                    : `Trapezius hiking detected on ${result.formChecks.trapeziusHike.count}/${result.formChecks.trapeziusHike.total} rep(s)`)
-            }
-          </p>
-        )}
-        {result.formChecks.activeRom && (
-          <p className="acc-line acc-active-rom" data-testid="acc-active-rom">
-            <b>{fr ? 'Amplitude articulaire max' : 'Peak active ROM'} :</b> {
-              fr
-                ? `${result.formChecks.activeRom.peakAngleDeg}° (moyenne ${result.formChecks.activeRom.avgAngleDeg}°)`
-                : `${result.formChecks.activeRom.peakAngleDeg}° (avg ${result.formChecks.activeRom.avgAngleDeg}°)`
-            }
-          </p>
-        )}
-        {result.formChecks.kneeValgus && !result.formChecks.kneeValgus.detected && (!result.kinetics || !result.kinetics.riskNote) && (
-          <div className="acc-shield-card" data-testid="acc-confidence-shield">
-            <span className="acc-shield-badge">{fr ? 'Exécution sécurisée' : 'Safe execution'}</span>
-            <p className="acc-shield-text">
-              {fr
-                ? 'Alignement articulaire optimal et zéro contrainte excessive détectée.'
-                : 'Optimal joint tracking and zero excessive shear detected.'}
-            </p>
-          </div>
-        )}
-      </>
-    )}
-    {result.kinetics && (
-      <>
-        {result.kinetics.totalWorkJoules > 0 && (
-          <p className="acc-line acc-work" data-testid="acc-work">
-            <b>{fr ? 'Travail mécanique' : 'Mechanical work'} :</b> {result.kinetics.totalWorkJoules} J
-          </p>
-        )}
-        {result.kinetics.maxL5S1ShearN > 0 && (
-          <p className="acc-line acc-l5s1" data-testid="acc-l5s1">
-            <b>{fr ? 'Cisaillement lombaire max' : 'Peak lumbar shear'} :</b> {result.kinetics.maxL5S1ShearN} N
-          </p>
-        )}
-        {result.kinetics.maxKneeShearN > 0 && (
-          <p className="acc-line acc-knee-shear" data-testid="acc-knee-shear">
-            <b>{fr ? 'Contrainte patellaire max' : 'Peak patellofemoral shear'} :</b> {result.kinetics.maxKneeShearN} N
-          </p>
-        )}
-        {result.kinetics.riskNote && (
-          <div className="acc-advice-card" data-testid="acc-kinetics-advice">
-            <span className="acc-advice-badge">{fr ? 'Alerte biomécanique' : 'Biomechanical cue'}</span>
-            <p className="acc-advice-text">{fr ? result.kinetics.riskNote.textFr : result.kinetics.riskNote.textEn}</p>
-          </div>
-        )}
-      </>
-    )}
-    {result.compliance && result.compliance.verified && (
-      <p className="acc-line acc-compliance" data-testid="acc-compliance">
-        <b>{fr ? 'Certificat d’exécution' : 'Compliance seal'} :</b> {result.compliance.certificateId} ({fr ? 'Intégrité vérifiée' : 'Verified integrity'})
-      </p>
-    )}
-    {result.vbt && (
-      <>
-        <p className="acc-line acc-vbt" data-testid="acc-vbt">
-          <b>{fr ? 'Perte de vitesse (VBT)' : 'Velocity loss (VBT)'} :</b> {result.vbt.velocityLossPercent} % ({fr ? (result.vbt.fatigueZone === 'low' ? 'réserve élevée' : result.vbt.fatigueZone === 'optimal' ? 'stimulus optimal' : 'fatigue haute') : (result.vbt.fatigueZone === 'low' ? 'high reserve' : result.vbt.fatigueZone === 'optimal' ? 'optimal stimulus' : 'high fatigue')}) · RIR ~{result.vbt.estimatedRir}
-        </p>
-        {result.vbt.stickingAngleDeg && (
-          <p className="acc-line acc-sticking" data-testid="acc-sticking">
-            <b>{fr ? 'Point de friction' : 'Sticking point'} :</b> {result.vbt.stickingAngleDeg}° ({fr ? `sur la rép.${NB}${result.vbt.slowestRepIndex}` : `on rep ${result.vbt.slowestRepIndex}`})
-          </p>
-        )}
-        <div className="acc-advice-card" data-testid="acc-vbt-advice">
-          <span className="acc-advice-badge">{fr ? 'Coaching VBT' : 'VBT cue'}</span>
-          <p className="acc-advice-text">{fr ? result.vbt.cueFr : result.vbt.cueEn}</p>
-        </div>
-      </>
-    )}
     <p className="acc-tip">{account.tip}</p>
   </>;
   const more = <>
