@@ -59,15 +59,9 @@ export function savedSet({ result, lift, n, corrected, sides = null, manual = fa
     ...(result.sensitivity ? { sensitivity: { moved: !!result.sensitivity.moved, counts: result.sensitivity.counts } } : {}),
     // Rep details measured with step 3c's boundaries; older sets' details are not shown.
     repDetailsVersion: 2,
-    partialCount: result.partialCount ?? 0,
-    partials: flagged ? [] : (result.partials ?? []),
-    symmetry: result.symmetry ?? null,
-    smoothness: result.smoothness ?? null,
-    consistency: result.consistency ?? null,
-    formChecks: result.formChecks ?? null,
-    kinetics: result.kinetics ?? null,
-    compliance: result.compliance ?? null,
-    vbt: result.vbt ?? null,
+    // No partial count, symmetry score, consistency, SPARC, form check, joint load, certificate or VBT is saved (honesty
+    // audit of 14 October 2026): none was measured against known truth (R8). Sets saved on 11-14 October may still hold
+    // them; no screen, report or export reads them.
     // The measured angle over the set, compact, for the report's wave (wave.js).
     wave: flagged ? null : compactWave(waveAngles(result), result.timestamps),
   });

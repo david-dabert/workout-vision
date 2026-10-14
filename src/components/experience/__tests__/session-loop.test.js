@@ -32,6 +32,16 @@ describe('a set kept from the close button before its count was answered (WP1.4)
   });
 });
 
+describe('a counted set keeps no unmeasured field (honesty audit of 14 October 2026)', () => {
+  it('saves no partial count, symmetry, consistency, SPARC, form check, joint load, certificate or VBT', () => {
+    const old = { ...counted, partialCount: 13, partials: [{}], symmetry: { symmetryScore: 73 }, smoothness: { avgSparc: -2.9 }, consistency: { score: 90 },
+      formChecks: { squatDepth: {} }, kinetics: { maxL5S1ShearN: 433.4 }, compliance: { verified: true, certificateId: 'WV-1-9R' }, vbt: { velocityLossPercent: 58 } };
+    const w = savedSet({ result: old, lift: 'squat', n: 9, corrected: false });
+    for (const k of ['partialCount', 'partials', 'symmetry', 'smoothness', 'consistency', 'formChecks', 'kinetics', 'compliance', 'vbt']) expect(w).not.toHaveProperty(k);
+    expect(w).toMatchObject({ reps: 9, machineResult: { reps: 9 } });
+  });
+});
+
 describe('the recent lifts (WP1.5)', () => {
   it('are the lifts of the newest sets, each once, newest first, three at most', () => {
     const sets = ['squat', 'squat', 'bicep_curl', 'squat', 'leg_press', 'hip_thrust'].map(exercise => ({ exercise }));

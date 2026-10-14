@@ -1440,8 +1440,13 @@ function placeBoundaries(
 /**
  * Detects partial repetitions (lengthened and shortened partials) outside full repetition cycles.
  * Lengthened partials: excursions operating in the stretched / lengthened range of the movement
- * (Dr. Milo Wolf & Dr. Mike Israetel hypertrophy/rehab literature; Kassiano et al., 2023; Pedrosa et al., 2022).
+ * (literature, tentative: Wolf et al. 2023 found a trivial difference favouring full range overall, and the
+ * lengthened-partial subgroup's 95 % interval crosses zero; Kassiano et al. 2023 and Pedrosa et al. 2022 unverified here).
  * Shortened partials: excursions operating in the contracted / lockout range.
+ * Status: experimental, shown on no screen, report or export (honesty audit of 14 October 2026): on the 96 synthetic
+ * sets, built with no partial rep, it reports 180, and 124 on David's counted sets, many before the first rep or after
+ * the last (walk-out and re-rack). It stays for research until partials are labelled on real sets and measured (R2, R8).
+ * Its thresholds (10°, 32 %, 92 %, 0.35 s) are UNSOURCED.
  */
 function detectPartialReps(
   smoothed: (number | null)[],
