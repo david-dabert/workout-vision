@@ -1,0 +1,786 @@
+{
+  "description": "Stability Matrix Video Variants Manifest",
+  "variants_directory": "/Users/azeliebernard/wv-tools/variants",
+  "clips": {
+    "dip-13": {
+      "source_file": "public/demo/dip-13.mp4",
+      "true_count": 13,
+      "source_meta": {
+        "width": 404,
+        "height": 720,
+        "fps": 30.0,
+        "duration": 21.167
+      },
+      "variants": {
+        "original": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/dip-13/original.mp4",
+          "command": "cp public/demo/dip-13.mp4 /Users/azeliebernard/wv-tools/variants/dip-13/original.mp4",
+          "sha256": "345a1ab723956598d58f9b8d0fcd214769d325337586eae312f1aeabeb17e473",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 21.167
+        },
+        "crf18": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/dip-13/crf18.mp4",
+          "command": "ffmpeg -y -i public/demo/dip-13.mp4 -c:v libx264 -crf 18 -preset fast -an /Users/azeliebernard/wv-tools/variants/dip-13/crf18.mp4",
+          "sha256": "a41bff0f2ab20a634b7f4a8c604c2b00c245fd3c21f86d553ee776e2b86d3836",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 21.166
+        },
+        "crf28": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/dip-13/crf28.mp4",
+          "command": "ffmpeg -y -i public/demo/dip-13.mp4 -c:v libx264 -crf 28 -preset fast -an /Users/azeliebernard/wv-tools/variants/dip-13/crf28.mp4",
+          "sha256": "b6c2da8669a9c03e563f0f1aa189735330b9810a876d6586e57db43bef7d4da8",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 21.166
+        },
+        "crf35": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/dip-13/crf35.mp4",
+          "command": "ffmpeg -y -i public/demo/dip-13.mp4 -c:v libx264 -crf 35 -preset fast -an /Users/azeliebernard/wv-tools/variants/dip-13/crf35.mp4",
+          "sha256": "7120ea74d694d21ec92e29ebdd6e2c1cb22cbfae9be0427b0204f296512a0979",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 21.166
+        },
+        "scale_720": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/dip-13/scale_720.mp4",
+          "command": "ffmpeg -y -i public/demo/dip-13.mp4 -vf scale=if(gt(iw\\,ih)\\,-2\\,720):if(gt(iw\\,ih)\\,720\\,-2) -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/dip-13/scale_720.mp4",
+          "sha256": "86605605f28e77dcae86af2eff4459154f9ad51ce6883f5ec0702f3b13c60c5d",
+          "width": 720,
+          "height": 1284,
+          "fps": 30.0,
+          "duration": 21.166
+        },
+        "scale_480": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/dip-13/scale_480.mp4",
+          "command": "ffmpeg -y -i public/demo/dip-13.mp4 -vf scale=if(gt(iw\\,ih)\\,-2\\,480):if(gt(iw\\,ih)\\,480\\,-2) -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/dip-13/scale_480.mp4",
+          "sha256": "a0c9d627650f3c0755188fea05e0ded064dfbf55314e739db6a35b0d50ed7365",
+          "width": 480,
+          "height": 856,
+          "fps": 30.0,
+          "duration": 21.166
+        },
+        "scale_360": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/dip-13/scale_360.mp4",
+          "command": "ffmpeg -y -i public/demo/dip-13.mp4 -vf scale=if(gt(iw\\,ih)\\,-2\\,360):if(gt(iw\\,ih)\\,360\\,-2) -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/dip-13/scale_360.mp4",
+          "sha256": "ac81d600c3b0d50f8f1517be699134d05796b52b4a3eef800121e770bc5b2f23",
+          "width": 360,
+          "height": 642,
+          "fps": 30.0,
+          "duration": 21.166
+        },
+        "fps_half": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/dip-13/fps_half.mp4",
+          "command": "ffmpeg -y -i public/demo/dip-13.mp4 -vf fps=15.0 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/dip-13/fps_half.mp4",
+          "sha256": "5c54c13e4978f85628c8a175db1307a8ed12a60ddd5faf73f1365eed0390f29b",
+          "width": 404,
+          "height": 720,
+          "fps": 15.0,
+          "duration": 21.2
+        },
+        "fps_24": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/dip-13/fps_24.mp4",
+          "command": "ffmpeg -y -i public/demo/dip-13.mp4 -vf fps=24 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/dip-13/fps_24.mp4",
+          "sha256": "4fc6e164ad0f301b8adefd99db1f5e00c46cfb4d7fbe0bea0e25a040a2ba76d4",
+          "width": 404,
+          "height": 720,
+          "fps": 24.0,
+          "duration": 21.167
+        },
+        "fps_15": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/dip-13/fps_15.mp4",
+          "command": "ffmpeg -y -i public/demo/dip-13.mp4 -vf fps=15 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/dip-13/fps_15.mp4",
+          "sha256": "5c54c13e4978f85628c8a175db1307a8ed12a60ddd5faf73f1365eed0390f29b",
+          "width": 404,
+          "height": 720,
+          "fps": 15.0,
+          "duration": 21.2
+        },
+        "crop_10": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/dip-13/crop_10.mp4",
+          "command": "ffmpeg -y -i public/demo/dip-13.mp4 -vf crop=trunc(0.8*in_w/2)*2:trunc(0.8*in_h/2)*2:trunc(0.1*in_w/2)*2:trunc(0.1*in_h/2)*2 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/dip-13/crop_10.mp4",
+          "sha256": "62fed1518c71e468e9164c4deb6b2a7ccd521d9c3c9c7521395908874e052d2d",
+          "width": 322,
+          "height": 576,
+          "fps": 30.0,
+          "duration": 21.166
+        },
+        "brightness_m20": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/dip-13/brightness_m20.mp4",
+          "command": "ffmpeg -y -i public/demo/dip-13.mp4 -vf eq=brightness=-0.20 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/dip-13/brightness_m20.mp4",
+          "sha256": "a33bdab9f2a35cc573a74c080add69501ec6d4265c440bd5c4fa76a3b52694d8",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 21.166
+        },
+        "brightness_p20": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/dip-13/brightness_p20.mp4",
+          "command": "ffmpeg -y -i public/demo/dip-13.mp4 -vf eq=brightness=0.20 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/dip-13/brightness_p20.mp4",
+          "sha256": "0e45832ea6bdcbb84f01081b239f016aab0ab0d552e13b720ed6649e4c44a676",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 21.166
+        },
+        "hflip": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/dip-13/hflip.mp4",
+          "command": "ffmpeg -y -i public/demo/dip-13.mp4 -vf hflip -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/dip-13/hflip.mp4",
+          "sha256": "338aafbe552a4d96f2c4fce6eee66a3dec1bec6b2c9afd6d811bbaa45a783381",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 21.166
+        },
+        "rotate_90": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/dip-13/rotate_90.mp4",
+          "command": "ffmpeg -y -i public/demo/dip-13.mp4 -c copy -metadata:s:v:0 rotate=90 /Users/azeliebernard/wv-tools/variants/dip-13/rotate_90.mp4",
+          "sha256": "97aca127e05a3819180fc7f041dfd91b94e7f561eafef65d3a7a3f36b39cd5b6",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 21.167
+        },
+        "hevc": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/dip-13/hevc.mp4",
+          "command": "ffmpeg -y -i public/demo/dip-13.mp4 -c:v libx265 -tag:v hvc1 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/dip-13/hevc.mp4",
+          "sha256": "4ba5ffc48ebd905c279d4ea710ebad5e2fcf35975f29fb427bbe9d26290612cf",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 21.167
+        }
+      }
+    },
+    "ez-curl-10": {
+      "source_file": "public/demo/ez-curl-10.mp4",
+      "true_count": 10,
+      "source_meta": {
+        "width": 404,
+        "height": 720,
+        "fps": 30.0,
+        "duration": 31.933
+      },
+      "variants": {
+        "original": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/ez-curl-10/original.mp4",
+          "command": "cp public/demo/ez-curl-10.mp4 /Users/azeliebernard/wv-tools/variants/ez-curl-10/original.mp4",
+          "sha256": "49a2125d4304a76ce3499e2d6a5788595fdebb29f2d0f2b4229a292486eb9e4b",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 31.933
+        },
+        "crf18": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/ez-curl-10/crf18.mp4",
+          "command": "ffmpeg -y -i public/demo/ez-curl-10.mp4 -c:v libx264 -crf 18 -preset fast -an /Users/azeliebernard/wv-tools/variants/ez-curl-10/crf18.mp4",
+          "sha256": "7dba93fbf3d93eeef591b9ae3c6c063a77923ee741483964f92a190fa3857a57",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 31.933
+        },
+        "crf28": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/ez-curl-10/crf28.mp4",
+          "command": "ffmpeg -y -i public/demo/ez-curl-10.mp4 -c:v libx264 -crf 28 -preset fast -an /Users/azeliebernard/wv-tools/variants/ez-curl-10/crf28.mp4",
+          "sha256": "89c952d0ef72632888fc94d4f29a9a73e5d1d7c99ad9282bcc5306399181d94d",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 31.933
+        },
+        "crf35": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/ez-curl-10/crf35.mp4",
+          "command": "ffmpeg -y -i public/demo/ez-curl-10.mp4 -c:v libx264 -crf 35 -preset fast -an /Users/azeliebernard/wv-tools/variants/ez-curl-10/crf35.mp4",
+          "sha256": "5da3e6f2728cab0e4a4f12a7aeab7ab4a15dfc4eaa4c7e71dcb6765fbffea633",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 31.933
+        },
+        "scale_720": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/ez-curl-10/scale_720.mp4",
+          "command": "ffmpeg -y -i public/demo/ez-curl-10.mp4 -vf scale=if(gt(iw\\,ih)\\,-2\\,720):if(gt(iw\\,ih)\\,720\\,-2) -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/ez-curl-10/scale_720.mp4",
+          "sha256": "cb15c97b0f4e656d135cdd8ae1d3a8180a81b2ca5d40674a85e5ae019e3ffd5c",
+          "width": 720,
+          "height": 1284,
+          "fps": 30.0,
+          "duration": 31.933
+        },
+        "scale_480": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/ez-curl-10/scale_480.mp4",
+          "command": "ffmpeg -y -i public/demo/ez-curl-10.mp4 -vf scale=if(gt(iw\\,ih)\\,-2\\,480):if(gt(iw\\,ih)\\,480\\,-2) -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/ez-curl-10/scale_480.mp4",
+          "sha256": "0ef4ddcbd587b4db4bd89e35e6ee207bebe82dc1f427e8cff41f4931f5770426",
+          "width": 480,
+          "height": 856,
+          "fps": 30.0,
+          "duration": 31.933
+        },
+        "scale_360": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/ez-curl-10/scale_360.mp4",
+          "command": "ffmpeg -y -i public/demo/ez-curl-10.mp4 -vf scale=if(gt(iw\\,ih)\\,-2\\,360):if(gt(iw\\,ih)\\,360\\,-2) -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/ez-curl-10/scale_360.mp4",
+          "sha256": "7e4dc282ba1ba4f4974df3b87f99e8335af55768df657ad8b48d0864b272dd6b",
+          "width": 360,
+          "height": 642,
+          "fps": 30.0,
+          "duration": 31.933
+        },
+        "fps_half": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/ez-curl-10/fps_half.mp4",
+          "command": "ffmpeg -y -i public/demo/ez-curl-10.mp4 -vf fps=15.0 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/ez-curl-10/fps_half.mp4",
+          "sha256": "2a4515ee2c489ea9ad3e4a059c759b54bd349d581b147acda09b0c098c60f688",
+          "width": 404,
+          "height": 720,
+          "fps": 15.0,
+          "duration": 31.933
+        },
+        "fps_24": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/ez-curl-10/fps_24.mp4",
+          "command": "ffmpeg -y -i public/demo/ez-curl-10.mp4 -vf fps=24 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/ez-curl-10/fps_24.mp4",
+          "sha256": "375de6608f0b54e58bf702065af7219ade813258c3a604e196b2b5fb05a93ac2",
+          "width": 404,
+          "height": 720,
+          "fps": 24.0,
+          "duration": 31.917
+        },
+        "fps_15": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/ez-curl-10/fps_15.mp4",
+          "command": "ffmpeg -y -i public/demo/ez-curl-10.mp4 -vf fps=15 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/ez-curl-10/fps_15.mp4",
+          "sha256": "2a4515ee2c489ea9ad3e4a059c759b54bd349d581b147acda09b0c098c60f688",
+          "width": 404,
+          "height": 720,
+          "fps": 15.0,
+          "duration": 31.933
+        },
+        "crop_10": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/ez-curl-10/crop_10.mp4",
+          "command": "ffmpeg -y -i public/demo/ez-curl-10.mp4 -vf crop=trunc(0.8*in_w/2)*2:trunc(0.8*in_h/2)*2:trunc(0.1*in_w/2)*2:trunc(0.1*in_h/2)*2 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/ez-curl-10/crop_10.mp4",
+          "sha256": "29cec11464b860693687bca59cea13281aa95748f19df52828006649f89e666f",
+          "width": 322,
+          "height": 576,
+          "fps": 30.0,
+          "duration": 31.933
+        },
+        "brightness_m20": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/ez-curl-10/brightness_m20.mp4",
+          "command": "ffmpeg -y -i public/demo/ez-curl-10.mp4 -vf eq=brightness=-0.20 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/ez-curl-10/brightness_m20.mp4",
+          "sha256": "bd0b342f27c71f1bc56b10234600ceb91d3c3146c8e1d25096086b65bdad6933",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 31.933
+        },
+        "brightness_p20": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/ez-curl-10/brightness_p20.mp4",
+          "command": "ffmpeg -y -i public/demo/ez-curl-10.mp4 -vf eq=brightness=0.20 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/ez-curl-10/brightness_p20.mp4",
+          "sha256": "67d6ac03a87ce02487b45af7309167b9501e43dbb37ef38a6b15fd3536295f11",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 31.933
+        },
+        "hflip": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/ez-curl-10/hflip.mp4",
+          "command": "ffmpeg -y -i public/demo/ez-curl-10.mp4 -vf hflip -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/ez-curl-10/hflip.mp4",
+          "sha256": "5e77f2627025c245d998398820cb59f25ad852bc099a684a9e214fca1aeefb6a",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 31.933
+        },
+        "rotate_90": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/ez-curl-10/rotate_90.mp4",
+          "command": "ffmpeg -y -i public/demo/ez-curl-10.mp4 -c copy -metadata:s:v:0 rotate=90 /Users/azeliebernard/wv-tools/variants/ez-curl-10/rotate_90.mp4",
+          "sha256": "83c239f5a37f0df06b0845fa029469f4e86e8f90af5f3746a43e2a41d459817e",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 31.933
+        },
+        "hevc": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/ez-curl-10/hevc.mp4",
+          "command": "ffmpeg -y -i public/demo/ez-curl-10.mp4 -c:v libx265 -tag:v hvc1 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/ez-curl-10/hevc.mp4",
+          "sha256": "a7155e998ef6aea4f06438de5d072b878f743fb12f63d550dbb2bc67e34afa1a",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 31.933
+        }
+      }
+    },
+    "bodyweight-squat-9": {
+      "source_file": "public/demo/bodyweight-squat-9.mp4",
+      "true_count": 9,
+      "source_meta": {
+        "width": 404,
+        "height": 720,
+        "fps": 30.0,
+        "duration": 27.667
+      },
+      "variants": {
+        "original": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/original.mp4",
+          "command": "cp public/demo/bodyweight-squat-9.mp4 /Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/original.mp4",
+          "sha256": "64f658274e6c6d05242122293d63f7ceac725ad83ec1856db5d9b27b61a47a3c",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 27.667
+        },
+        "crf18": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/crf18.mp4",
+          "command": "ffmpeg -y -i public/demo/bodyweight-squat-9.mp4 -c:v libx264 -crf 18 -preset fast -an /Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/crf18.mp4",
+          "sha256": "7375e06e63f27fe5a390d52579db48877a0dbe9a927b1ee5b8a06afa7b9b2aa1",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 27.666
+        },
+        "crf28": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/crf28.mp4",
+          "command": "ffmpeg -y -i public/demo/bodyweight-squat-9.mp4 -c:v libx264 -crf 28 -preset fast -an /Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/crf28.mp4",
+          "sha256": "47000a0a4cd431bce35bff60251dd9d6513183a6de8c623ef737496ef9418b78",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 27.666
+        },
+        "crf35": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/crf35.mp4",
+          "command": "ffmpeg -y -i public/demo/bodyweight-squat-9.mp4 -c:v libx264 -crf 35 -preset fast -an /Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/crf35.mp4",
+          "sha256": "49e7f625b9b805fca60e3fd7a52f7dc8a8efd40d3d21f931c332af66b890302f",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 27.666
+        },
+        "scale_720": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/scale_720.mp4",
+          "command": "ffmpeg -y -i public/demo/bodyweight-squat-9.mp4 -vf scale=if(gt(iw\\,ih)\\,-2\\,720):if(gt(iw\\,ih)\\,720\\,-2) -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/scale_720.mp4",
+          "sha256": "8f2d26910af761fba27ca393e942643b6570240d3625eba620a98c57769d367d",
+          "width": 720,
+          "height": 1284,
+          "fps": 30.0,
+          "duration": 27.667
+        },
+        "scale_480": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/scale_480.mp4",
+          "command": "ffmpeg -y -i public/demo/bodyweight-squat-9.mp4 -vf scale=if(gt(iw\\,ih)\\,-2\\,480):if(gt(iw\\,ih)\\,480\\,-2) -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/scale_480.mp4",
+          "sha256": "a830330f621460f06110b1304e25daeda08d54020968a07ab47d944869f22193",
+          "width": 480,
+          "height": 856,
+          "fps": 30.0,
+          "duration": 27.666
+        },
+        "scale_360": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/scale_360.mp4",
+          "command": "ffmpeg -y -i public/demo/bodyweight-squat-9.mp4 -vf scale=if(gt(iw\\,ih)\\,-2\\,360):if(gt(iw\\,ih)\\,360\\,-2) -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/scale_360.mp4",
+          "sha256": "7ce74bc6b9fe76dfa629e0f0614970fb8cd0c57af383f990bcce1c6f1a433093",
+          "width": 360,
+          "height": 642,
+          "fps": 30.0,
+          "duration": 27.666
+        },
+        "fps_half": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/fps_half.mp4",
+          "command": "ffmpeg -y -i public/demo/bodyweight-squat-9.mp4 -vf fps=15.0 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/fps_half.mp4",
+          "sha256": "595c46ae7a38c5da78d366c54c51340afc15664e808ad23dcb0f9f65d0d8407c",
+          "width": 404,
+          "height": 720,
+          "fps": 15.0,
+          "duration": 27.667
+        },
+        "fps_24": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/fps_24.mp4",
+          "command": "ffmpeg -y -i public/demo/bodyweight-squat-9.mp4 -vf fps=24 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/fps_24.mp4",
+          "sha256": "f9012cbbd6c3aa9e0dd63df4f1be652d704b8d161d570043ae313b2cfb296fe2",
+          "width": 404,
+          "height": 720,
+          "fps": 24.0,
+          "duration": 27.667
+        },
+        "fps_15": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/fps_15.mp4",
+          "command": "ffmpeg -y -i public/demo/bodyweight-squat-9.mp4 -vf fps=15 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/fps_15.mp4",
+          "sha256": "595c46ae7a38c5da78d366c54c51340afc15664e808ad23dcb0f9f65d0d8407c",
+          "width": 404,
+          "height": 720,
+          "fps": 15.0,
+          "duration": 27.667
+        },
+        "crop_10": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/crop_10.mp4",
+          "command": "ffmpeg -y -i public/demo/bodyweight-squat-9.mp4 -vf crop=trunc(0.8*in_w/2)*2:trunc(0.8*in_h/2)*2:trunc(0.1*in_w/2)*2:trunc(0.1*in_h/2)*2 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/crop_10.mp4",
+          "sha256": "0d1be897a40dc4d484a23d3362c20dada7acacd7bc52dabf0a6a48ac680527cd",
+          "width": 322,
+          "height": 576,
+          "fps": 30.0,
+          "duration": 27.666
+        },
+        "brightness_m20": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/brightness_m20.mp4",
+          "command": "ffmpeg -y -i public/demo/bodyweight-squat-9.mp4 -vf eq=brightness=-0.20 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/brightness_m20.mp4",
+          "sha256": "32eba2be9ce26aee979ddf019544d4c2c35871362c2081034493728f930d21c3",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 27.667
+        },
+        "brightness_p20": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/brightness_p20.mp4",
+          "command": "ffmpeg -y -i public/demo/bodyweight-squat-9.mp4 -vf eq=brightness=0.20 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/brightness_p20.mp4",
+          "sha256": "138d300ea8f7842ff5c059a25928d1c5e7b6d98693e0d10db7b7c2202b32276b",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 27.666
+        },
+        "hflip": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/hflip.mp4",
+          "command": "ffmpeg -y -i public/demo/bodyweight-squat-9.mp4 -vf hflip -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/hflip.mp4",
+          "sha256": "020072afe49bdba3847f14b20f9c1d2243abdff25a42fed3f44ff6e59f5e914c",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 27.666
+        },
+        "rotate_90": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/rotate_90.mp4",
+          "command": "ffmpeg -y -i public/demo/bodyweight-squat-9.mp4 -c copy -metadata:s:v:0 rotate=90 /Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/rotate_90.mp4",
+          "sha256": "04a3570a55a9c31b9d042cab4ebe31c3312cfc8f07db47b7db98e1c3649faa08",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 27.667
+        },
+        "hevc": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/hevc.mp4",
+          "command": "ffmpeg -y -i public/demo/bodyweight-squat-9.mp4 -c:v libx265 -tag:v hvc1 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bodyweight-squat-9/hevc.mp4",
+          "sha256": "768ef9623dab3b762f980a3f44f604d051f20aaf7f213caae707432f275b4df1",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 27.667
+        }
+      }
+    },
+    "lat-pulldown-6": {
+      "source_file": "public/demo/lat-pulldown-6.mp4",
+      "true_count": 6,
+      "source_meta": {
+        "width": 404,
+        "height": 720,
+        "fps": 30.0,
+        "duration": 18.367
+      },
+      "variants": {
+        "original": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/lat-pulldown-6/original.mp4",
+          "command": "cp public/demo/lat-pulldown-6.mp4 /Users/azeliebernard/wv-tools/variants/lat-pulldown-6/original.mp4",
+          "sha256": "2f0dc9f8ef2b901a066865b8a1e5602988135ce2891811675f976cda49f53bd4",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 18.367
+        },
+        "crf18": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/lat-pulldown-6/crf18.mp4",
+          "command": "ffmpeg -y -i public/demo/lat-pulldown-6.mp4 -c:v libx264 -crf 18 -preset fast -an /Users/azeliebernard/wv-tools/variants/lat-pulldown-6/crf18.mp4",
+          "sha256": "72885ddb7fff26515ea30d843f21c4eaf414b3254af7068d5ce03db6c8706175",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 18.366
+        },
+        "crf28": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/lat-pulldown-6/crf28.mp4",
+          "command": "ffmpeg -y -i public/demo/lat-pulldown-6.mp4 -c:v libx264 -crf 28 -preset fast -an /Users/azeliebernard/wv-tools/variants/lat-pulldown-6/crf28.mp4",
+          "sha256": "9d6a566caee18da1f3fcdfff8c07c918fcd9f3fb30a90963a19da4f081f40a36",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 18.366
+        },
+        "crf35": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/lat-pulldown-6/crf35.mp4",
+          "command": "ffmpeg -y -i public/demo/lat-pulldown-6.mp4 -c:v libx264 -crf 35 -preset fast -an /Users/azeliebernard/wv-tools/variants/lat-pulldown-6/crf35.mp4",
+          "sha256": "b2805ca5b84460eed7db96a395b46ec0fc64138b9e1bf792f2d6275f21ffcd7f",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 18.366
+        },
+        "scale_720": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/lat-pulldown-6/scale_720.mp4",
+          "command": "ffmpeg -y -i public/demo/lat-pulldown-6.mp4 -vf scale=if(gt(iw\\,ih)\\,-2\\,720):if(gt(iw\\,ih)\\,720\\,-2) -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/lat-pulldown-6/scale_720.mp4",
+          "sha256": "63af876148fff76f8e69fd45af126225a9b1fc18b066c47a3dd35672d610a107",
+          "width": 720,
+          "height": 1284,
+          "fps": 30.0,
+          "duration": 18.367
+        },
+        "scale_480": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/lat-pulldown-6/scale_480.mp4",
+          "command": "ffmpeg -y -i public/demo/lat-pulldown-6.mp4 -vf scale=if(gt(iw\\,ih)\\,-2\\,480):if(gt(iw\\,ih)\\,480\\,-2) -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/lat-pulldown-6/scale_480.mp4",
+          "sha256": "3285a5af361945fe06f6393c6632aed2e49339dae323785a8ae60441dd9e6360",
+          "width": 480,
+          "height": 856,
+          "fps": 30.0,
+          "duration": 18.366
+        },
+        "scale_360": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/lat-pulldown-6/scale_360.mp4",
+          "command": "ffmpeg -y -i public/demo/lat-pulldown-6.mp4 -vf scale=if(gt(iw\\,ih)\\,-2\\,360):if(gt(iw\\,ih)\\,360\\,-2) -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/lat-pulldown-6/scale_360.mp4",
+          "sha256": "06fd7437b09dad0935173031697e02d36b23b518d4edb68f247db2edfa460d96",
+          "width": 360,
+          "height": 642,
+          "fps": 30.0,
+          "duration": 18.366
+        },
+        "fps_half": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/lat-pulldown-6/fps_half.mp4",
+          "command": "ffmpeg -y -i public/demo/lat-pulldown-6.mp4 -vf fps=15.0 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/lat-pulldown-6/fps_half.mp4",
+          "sha256": "c5abd07129c5eff9ed98a1df591b8802c432682528642188842298a59dc78f78",
+          "width": 404,
+          "height": 720,
+          "fps": 15.0,
+          "duration": 18.4
+        },
+        "fps_24": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/lat-pulldown-6/fps_24.mp4",
+          "command": "ffmpeg -y -i public/demo/lat-pulldown-6.mp4 -vf fps=24 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/lat-pulldown-6/fps_24.mp4",
+          "sha256": "1c8ae3c607a24590d078931589503d3bcee9497e71e6017a2690ae171bcbba17",
+          "width": 404,
+          "height": 720,
+          "fps": 24.0,
+          "duration": 18.375
+        },
+        "fps_15": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/lat-pulldown-6/fps_15.mp4",
+          "command": "ffmpeg -y -i public/demo/lat-pulldown-6.mp4 -vf fps=15 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/lat-pulldown-6/fps_15.mp4",
+          "sha256": "c5abd07129c5eff9ed98a1df591b8802c432682528642188842298a59dc78f78",
+          "width": 404,
+          "height": 720,
+          "fps": 15.0,
+          "duration": 18.4
+        },
+        "crop_10": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/lat-pulldown-6/crop_10.mp4",
+          "command": "ffmpeg -y -i public/demo/lat-pulldown-6.mp4 -vf crop=trunc(0.8*in_w/2)*2:trunc(0.8*in_h/2)*2:trunc(0.1*in_w/2)*2:trunc(0.1*in_h/2)*2 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/lat-pulldown-6/crop_10.mp4",
+          "sha256": "3e97b64ea9c8992bdd814ee2f8d231469049e61652cc585105259d4ad4f94388",
+          "width": 322,
+          "height": 576,
+          "fps": 30.0,
+          "duration": 18.366
+        },
+        "brightness_m20": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/lat-pulldown-6/brightness_m20.mp4",
+          "command": "ffmpeg -y -i public/demo/lat-pulldown-6.mp4 -vf eq=brightness=-0.20 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/lat-pulldown-6/brightness_m20.mp4",
+          "sha256": "278b44a147c5ab44af2657f7f703d9ad1a53325af41220ce22c00f19e8bd610e",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 18.367
+        },
+        "brightness_p20": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/lat-pulldown-6/brightness_p20.mp4",
+          "command": "ffmpeg -y -i public/demo/lat-pulldown-6.mp4 -vf eq=brightness=0.20 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/lat-pulldown-6/brightness_p20.mp4",
+          "sha256": "cc6545fb5c0e49e74b6ae5cd9e3b9640ae52999eb5f42254d4f7f5136f9f5733",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 18.366
+        },
+        "hflip": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/lat-pulldown-6/hflip.mp4",
+          "command": "ffmpeg -y -i public/demo/lat-pulldown-6.mp4 -vf hflip -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/lat-pulldown-6/hflip.mp4",
+          "sha256": "16acbc900d67b1e01f942173da6fc0dfdf9c6d980cb4c76f4ebc09a631221dc1",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 18.366
+        },
+        "rotate_90": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/lat-pulldown-6/rotate_90.mp4",
+          "command": "ffmpeg -y -i public/demo/lat-pulldown-6.mp4 -c copy -metadata:s:v:0 rotate=90 /Users/azeliebernard/wv-tools/variants/lat-pulldown-6/rotate_90.mp4",
+          "sha256": "a5d5db2c80758de12de8f188be30ca5857aede8ebc21a3c0abb7f17f53d8a775",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 18.367
+        },
+        "hevc": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/lat-pulldown-6/hevc.mp4",
+          "command": "ffmpeg -y -i public/demo/lat-pulldown-6.mp4 -c:v libx265 -tag:v hvc1 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/lat-pulldown-6/hevc.mp4",
+          "sha256": "27259dcd94411d4274fcecfe1452835108def1743789beba6bac95a5caf7e77c",
+          "width": 404,
+          "height": 720,
+          "fps": 30.0,
+          "duration": 18.367
+        }
+      }
+    },
+    "bicep-curl-5": {
+      "source_file": "public/demo/bicep-curl-5.mp4",
+      "true_count": 5,
+      "source_meta": {
+        "width": 540,
+        "height": 960,
+        "fps": 9.79,
+        "duration": 11.953
+      },
+      "variants": {
+        "original": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bicep-curl-5/original.mp4",
+          "command": "cp public/demo/bicep-curl-5.mp4 /Users/azeliebernard/wv-tools/variants/bicep-curl-5/original.mp4",
+          "sha256": "8dcc9992efa4c9e17034d93ff73e58fefa6269241a77b7c89eb37aae82ef4f45",
+          "width": 540,
+          "height": 960,
+          "fps": 9.79,
+          "duration": 11.953
+        },
+        "crf18": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bicep-curl-5/crf18.mp4",
+          "command": "ffmpeg -y -i public/demo/bicep-curl-5.mp4 -c:v libx264 -crf 18 -preset fast -an /Users/azeliebernard/wv-tools/variants/bicep-curl-5/crf18.mp4",
+          "sha256": "8e7807455cb841ebd55fe4dda4badd776c81fcca869f3260ebc1c24c8a33d1d0",
+          "width": 540,
+          "height": 960,
+          "fps": 9.79,
+          "duration": 11.953
+        },
+        "crf28": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bicep-curl-5/crf28.mp4",
+          "command": "ffmpeg -y -i public/demo/bicep-curl-5.mp4 -c:v libx264 -crf 28 -preset fast -an /Users/azeliebernard/wv-tools/variants/bicep-curl-5/crf28.mp4",
+          "sha256": "5e6bf0080fb11f29c976441886b7c623279f497707a1a1f084c61963cd0f0dc3",
+          "width": 540,
+          "height": 960,
+          "fps": 9.79,
+          "duration": 11.953
+        },
+        "crf35": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bicep-curl-5/crf35.mp4",
+          "command": "ffmpeg -y -i public/demo/bicep-curl-5.mp4 -c:v libx264 -crf 35 -preset fast -an /Users/azeliebernard/wv-tools/variants/bicep-curl-5/crf35.mp4",
+          "sha256": "4a3364b96f60f70b1ed0d1c54ac8d0e851cb39ea12ca2d26197919fb08f24282",
+          "width": 540,
+          "height": 960,
+          "fps": 9.79,
+          "duration": 11.953
+        },
+        "scale_720": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bicep-curl-5/scale_720.mp4",
+          "command": "ffmpeg -y -i public/demo/bicep-curl-5.mp4 -vf scale=if(gt(iw\\,ih)\\,-2\\,720):if(gt(iw\\,ih)\\,720\\,-2) -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bicep-curl-5/scale_720.mp4",
+          "sha256": "c3cb8ef237e6be8edcb42f95ff2a2cf3d93b589288dfb32c74c74fec87722600",
+          "width": 720,
+          "height": 1280,
+          "fps": 9.79,
+          "duration": 11.953
+        },
+        "scale_480": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bicep-curl-5/scale_480.mp4",
+          "command": "ffmpeg -y -i public/demo/bicep-curl-5.mp4 -vf scale=if(gt(iw\\,ih)\\,-2\\,480):if(gt(iw\\,ih)\\,480\\,-2) -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bicep-curl-5/scale_480.mp4",
+          "sha256": "db1fa44a4008da6452e242bf05ebb19a5858fcf852b567a5390d22057f970270",
+          "width": 480,
+          "height": 854,
+          "fps": 9.79,
+          "duration": 11.953
+        },
+        "scale_360": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bicep-curl-5/scale_360.mp4",
+          "command": "ffmpeg -y -i public/demo/bicep-curl-5.mp4 -vf scale=if(gt(iw\\,ih)\\,-2\\,360):if(gt(iw\\,ih)\\,360\\,-2) -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bicep-curl-5/scale_360.mp4",
+          "sha256": "4c3e71b63fd70ee58d2fe2ebfcac7da9ff8431e702a82219bae1b23c91f6007b",
+          "width": 360,
+          "height": 640,
+          "fps": 9.79,
+          "duration": 11.953
+        },
+        "fps_half": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bicep-curl-5/fps_half.mp4",
+          "command": "ffmpeg -y -i public/demo/bicep-curl-5.mp4 -vf fps=4.89 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bicep-curl-5/fps_half.mp4",
+          "sha256": "e14bab9e128b94a1930a5a63890f6bbdba9c4f8744c4902177ad6c4f466df4b4",
+          "width": 540,
+          "height": 960,
+          "fps": 4.89,
+          "duration": 11.861
+        },
+        "fps_24": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bicep-curl-5/fps_24.mp4",
+          "command": "ffmpeg -y -i public/demo/bicep-curl-5.mp4 -vf fps=24 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bicep-curl-5/fps_24.mp4",
+          "sha256": "16c08f8360ee415c9f6268db3b901cff3deb1bcb67ecfc9492f9227b324bf89c",
+          "width": 540,
+          "height": 960,
+          "fps": 24.0,
+          "duration": 11.958
+        },
+        "fps_15": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bicep-curl-5/fps_15.mp4",
+          "command": "ffmpeg -y -i public/demo/bicep-curl-5.mp4 -vf fps=15 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bicep-curl-5/fps_15.mp4",
+          "sha256": "574b0480b34dfcea5102e08aaa7a91f088d19edcff302db0628e45aa6d2f1499",
+          "width": 540,
+          "height": 960,
+          "fps": 15.0,
+          "duration": 11.933
+        },
+        "crop_10": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bicep-curl-5/crop_10.mp4",
+          "command": "ffmpeg -y -i public/demo/bicep-curl-5.mp4 -vf crop=trunc(0.8*in_w/2)*2:trunc(0.8*in_h/2)*2:trunc(0.1*in_w/2)*2:trunc(0.1*in_h/2)*2 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bicep-curl-5/crop_10.mp4",
+          "sha256": "2242064ea6ecc19605930bb4c2dcee772338a47c462ebf2068aa9e7571286885",
+          "width": 432,
+          "height": 768,
+          "fps": 9.79,
+          "duration": 11.953
+        },
+        "brightness_m20": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bicep-curl-5/brightness_m20.mp4",
+          "command": "ffmpeg -y -i public/demo/bicep-curl-5.mp4 -vf eq=brightness=-0.20 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bicep-curl-5/brightness_m20.mp4",
+          "sha256": "952a96881386554f444b33379959e91c388a61d4376b61a185a5f5d4fae25088",
+          "width": 540,
+          "height": 960,
+          "fps": 9.79,
+          "duration": 11.953
+        },
+        "brightness_p20": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bicep-curl-5/brightness_p20.mp4",
+          "command": "ffmpeg -y -i public/demo/bicep-curl-5.mp4 -vf eq=brightness=0.20 -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bicep-curl-5/brightness_p20.mp4",
+          "sha256": "2f343936c392117efd43bc4d1f2a1886c2d9be9b2b5a3392864985696e67293b",
+          "width": 540,
+          "height": 960,
+          "fps": 9.79,
+          "duration": 11.953
+        },
+        "hflip": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bicep-curl-5/hflip.mp4",
+          "command": "ffmpeg -y -i public/demo/bicep-curl-5.mp4 -vf hflip -c:v libx264 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bicep-curl-5/hflip.mp4",
+          "sha256": "123b8d0ebdbcc35e79e9cfb23a4d9fcf5a9eae309e00eb5e71a8b705f609cbd8",
+          "width": 540,
+          "height": 960,
+          "fps": 9.79,
+          "duration": 11.953
+        },
+        "rotate_90": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bicep-curl-5/rotate_90.mp4",
+          "command": "ffmpeg -y -i public/demo/bicep-curl-5.mp4 -c copy -metadata:s:v:0 rotate=90 /Users/azeliebernard/wv-tools/variants/bicep-curl-5/rotate_90.mp4",
+          "sha256": "2e0046e3ae5bf75aef9ebcbd75e4bf3ea144b52b89ec78b0794c7d43168b55e0",
+          "width": 540,
+          "height": 960,
+          "fps": 9.79,
+          "duration": 11.953
+        },
+        "hevc": {
+          "file_path": "/Users/azeliebernard/wv-tools/variants/bicep-curl-5/hevc.mp4",
+          "command": "ffmpeg -y -i public/demo/bicep-curl-5.mp4 -c:v libx265 -tag:v hvc1 -crf 23 -preset fast -an /Users/azeliebernard/wv-tools/variants/bicep-curl-5/hevc.mp4",
+          "sha256": "d1042f72d55e03f789035e957cf682498b2b2ab30609a5965f7ea34025ccc766",
+          "width": 540,
+          "height": 960,
+          "fps": 9.79,
+          "duration": 11.953
+        }
+      }
+    }
+  }
+}
