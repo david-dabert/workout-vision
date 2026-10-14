@@ -1,14 +1,19 @@
-/* Workplace ergonomics (Ergonomics.jsx): the experience's wrapper, topbar and tokens, with the showcase parts of
-   Showcase.css (design/SYSTEM.md). Only what is the screen's own is here.
+/* The NIOSH calculator (Ergonomics.jsx): the experience's wrapper, topbar and tokens, with the showcase parts of
+   Showcase.css (design/SYSTEM.md). Only what is the screen's own is here: the worked product and the three selects.
    Status: convention (the app's design system; no measurement involved). */
 
-.wv-experience .ergo-privacy { flex-direction: row; align-items: flex-start; gap: var(--s-3); }
-.wv-experience .ergo-privacy svg { width: 20px; height: 20px; flex: none; margin-top: 2px; color: var(--c-accent); }
-.wv-experience .ergo-privacy b { display: block; margin-bottom: 4px; font-weight: 600; font-size: var(--fs-body); line-height: 1.35; color: var(--c-fg); }
-.wv-experience .ergo-modes { gap: var(--s-3); }
-/* The worker stands on a floor drawn 32 px above the frame's foot: a 4:3 frame gives the figure its height. */
-.wv-experience .ergo-frame { aspect-ratio: 4 / 3; }
-.wv-experience .ergo-l5s1 { text-transform: none; letter-spacing: 0.02em; }
-.wv-experience .ergo-rec-list { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--s-2); }
-.wv-experience .ergo-rec-list li { position: relative; padding: 12px 14px 12px 32px; border-radius: var(--r-s); border: 1px solid var(--c-rule); font-size: var(--fs-caption); line-height: 1.5; }
-.wv-experience .ergo-rec-list li::before { content: ""; position: absolute; left: 15px; top: 19px; width: 6px; height: 6px; border-radius: 50%; background: var(--c-accent); }
+/* The calculation: the equation, one row per multiplier (its name, what set it, its value), the lowest in the lamp. */
+.wv-experience .ergo-equation { margin: 0; font-family: var(--mono); font-size: var(--fs-caption); line-height: 1.5; letter-spacing: 0.02em; color: var(--bone-2); overflow-wrap: anywhere; }
+.wv-experience .ergo-equation.is-total { font-family: var(--sans); font-weight: 600; font-size: 21px; color: var(--c-fg); text-align: right; font-variant-numeric: tabular-nums; }
+.wv-experience .ergo-factors { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+.wv-experience .ergo-factors li { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name val" "why val"; align-items: center; gap: 2px var(--s-3); padding: 10px 0; border-bottom: 1px solid var(--hair-0); }
+.wv-experience .ergo-factor-name { grid-area: name; font-size: var(--fs-caption); color: var(--bone-2); }
+.wv-experience .ergo-factor-name b { font-family: var(--mono); font-weight: 400; letter-spacing: 0.06em; color: var(--c-fg); margin-right: 6px; }
+.wv-experience .ergo-factor-why { grid-area: why; font-size: 12px; color: var(--c-fg-muted); font-variant-numeric: tabular-nums; }
+.wv-experience .ergo-factor-val { grid-area: val; font-weight: 600; font-size: var(--fs-body); color: var(--c-fg); font-variant-numeric: tabular-nums; }
+.wv-experience .ergo-factors li.is-lowest .ergo-factor-val, .wv-experience .ergo-factors li.is-lowest .ergo-factor-name b { color: var(--lamp-hi); }
+
+/* Frequency, duration and grip: a label over a field, 48 px, on basalt. */
+.wv-experience .ergo-selects { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-3); }
+.wv-experience .ergo-select { display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-caption); color: var(--bone-2); }
+.wv-experience .ergo-select select { width: 100%; min-height: 48px; padding: 0 14px; border-radius: var(--r-s); border: 1px solid var(--c-rule); background: var(--basalt); color: var(--c-fg); font: 400 16px/1.4 var(--sans); }

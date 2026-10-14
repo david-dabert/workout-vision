@@ -1,22 +1,42 @@
 /**
- * Industrial Ergonomics & Postural Biomechanics Engine
+ * The revised NIOSH lifting equation (Ergonomics.jsx, Calculateur NIOSH): the recommended weight limit (RWL) of a
+ * two-handed lift and its lifting index (LI), from values the person types.
  *
- * Implements the Revised NIOSH Lifting Equation (Waters et al., 1993)
- * and REBA (Rapid Entire Body Assessment) risk scoring.
+ * Source: Waters TR, Putz-Anderson V, Garg A, Fine LJ. Revised NIOSH equation for the design and evaluation of manual
+ * lifting tasks. Ergonomics 1993;36(7):749-776; and the NIOSH Applications Manual (Waters et al. 1994, DHHS (NIOSH)
+ * Publication No. 94-110). Status: literature. The metric multipliers below are the published ones. The frequency and
+ * coupling tables (FM_TABLE, couplingMultiplier) were written down from those publications from memory, not copied
+ * from a fetched page on 14 October 2026: check them against Table 5 and Table 7 before relying on a value.
  *
- * Evaluates occupational lifting tasks, spinal compressive loads (L5/S1),
- * and ergonomic injury risk with 100% on-device processing.
+ * Honesty pass of 14 October 2026 (ERG-1, ERG-3, ERG-4): the L5/S1 "compression" (1000 + load × 9.81 × H/5 + A × 15,
+ * credited to Chaffin & Andersson 1991, whose book holds no such formula) and its verdict against 3 400 N are gone;
+ * so is the "REBA" score, which had none of REBA's tables. The frequency multiplier was fixed at 1; frequency, duration
+ * and coupling are now inputs. A factor outside the equation's domain (H over 63 cm, V over 175 cm, D over 175 cm, A
+ * over 135°, or a frequency the table gives 0) makes the RWL 0 and the lift "outside the equation", as NIOSH sets it,
+ * rather than clamping H to 63 cm. A future reading of H, V and A from a side video (extractNioshParametersFromLandmarks)
+ * is experimental and used by no screen.
  */
+
+export type Duration = 'short' | 'moderate' | 'long'; // ≤ 1 h, 1 to 2 h, 2 to 8 h of lifting
+export type Coupling = 'good' | 'fair' | 'poor';
 
 export interface NioshInput {
   loadWeightKg: number;
-  horizontalDistanceCm: number; // H: distance from hands to midpoint between ankles (25 - 63 cm)
-  verticalOriginCm: number; // V: vertical height of the hands at lift origin (0 - 175 cm)
-  verticalTravelDistanceCm: number; // D: vertical travel distance (25 - 260 cm)
-  asymmetryAngleDeg: number; // A: angle of trunk twist / asymmetry (0 - 135 deg)
-  frequencyLiftsPerMin?: number; // F: lifts/min (default 0.2 = intermittent)
-  couplingQuality?: 'good' | 'fair' | 'poor'; // CM multiplier
+  /** H: horizontal distance of the hands from the midpoint between the ankles, cm. */
+  horizontalDistanceCm: number;
+  /** V: height of the hands above the floor at the origin, cm. */
+  verticalOriginCm: number;
+  /** D: vertical travel distance between origin and destination, cm. */
+  verticalTravelDistanceCm: number;
+  /** A: asymmetry angle, degrees. */
+  asymmetryAngleDeg: number;
+  /** F: lifts per minute (a row of FM_TABLE; 0.2 means one lift every five minutes or less often). */
+  frequencyLiftsPerMin?: number;
+  duration?: Duration;
+  couplingQuality?: Coupling;
 }
+
+export type Factor = 'HM' | 'VM' | 'DM' | 'AM' | 'FM' | 'CM';
 
 export interface NioshResult {
   loadConstantKg: number;
@@ -27,112 +47,100 @@ export interface NioshResult {
   frequencyMultiplierFM: number;
   couplingMultiplierCM: number;
   recommendedWeightLimitKg: number; // RWL
-  liftingIndexLI: number; // LI = Load / RWL
-  riskCategory: 'safe' | 'moderate' | 'high';
-  estimatedL5S1CompressionNewtons: number; // L5/S1 spinal compressive load
-  recommendations: string[];
+  /** LI = load / RWL; null when the lift is outside the equation (RWL 0). */
+  liftingIndexLI: number | null;
+  /** NIOSH's reading of the LI (Applications Manual): 'nominal' at most 1, 'increased' above 1, 'high' above 3. */
+  riskCategory: 'nominal' | 'increased' | 'high' | 'outside';
+  /** The factors that put the lift outside the equation's domain. */
+  outside: Factor[];
+  /** The lowest multiplier: the one that reduces the limit most. */
+  lowest: Factor;
 }
 
+/** The frequency rows of the table (lifts per minute). */
+export const FREQUENCIES = [0.2, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+
 /**
- * Computes the Revised NIOSH Lifting Equation parameters.
+ * FM by frequency row: [≤ 1 h, V < 75 cm], [≤ 1 h, V ≥ 75], [≤ 2 h, V < 75], [≤ 2 h, V ≥ 75], [≤ 8 h, V < 75],
+ * [≤ 8 h, V ≥ 75]. Above 15 lifts a minute FM is 0. Waters et al. 1993, Table 5 (written from memory; see the header).
  */
+export const FM_TABLE: Record<number, [number, number, number, number, number, number]> = {
+  0.2: [1.00, 1.00, 0.95, 0.95, 0.85, 0.85],
+  0.5: [0.97, 0.97, 0.92, 0.92, 0.81, 0.81],
+  1: [0.94, 0.94, 0.88, 0.88, 0.75, 0.75],
+  2: [0.91, 0.91, 0.84, 0.84, 0.65, 0.65],
+  3: [0.88, 0.88, 0.79, 0.79, 0.55, 0.55],
+  4: [0.84, 0.84, 0.72, 0.72, 0.45, 0.45],
+  5: [0.80, 0.80, 0.60, 0.60, 0.35, 0.35],
+  6: [0.75, 0.75, 0.50, 0.50, 0.27, 0.27],
+  7: [0.70, 0.70, 0.42, 0.42, 0.22, 0.22],
+  8: [0.60, 0.60, 0.35, 0.35, 0.18, 0.18],
+  9: [0.52, 0.52, 0.30, 0.30, 0.00, 0.15],
+  10: [0.45, 0.45, 0.26, 0.26, 0.00, 0.13],
+  11: [0.41, 0.41, 0.00, 0.23, 0.00, 0.00],
+  12: [0.37, 0.37, 0.00, 0.21, 0.00, 0.00],
+  13: [0.00, 0.34, 0.00, 0.00, 0.00, 0.00],
+  14: [0.00, 0.31, 0.00, 0.00, 0.00, 0.00],
+  15: [0.00, 0.28, 0.00, 0.00, 0.00, 0.00],
+};
+
+/** FM for a frequency (the table row at or above it), a duration and V. */
+export function frequencyMultiplier(liftsPerMin: number, duration: Duration, verticalCm: number): number {
+  const f = Number.isFinite(liftsPerMin) ? liftsPerMin : 0.2;
+  if (f > 15) return 0;
+  const row = FREQUENCIES.find(x => f <= x + 1e-9) ?? 15;
+  const col = (duration === 'long' ? 4 : duration === 'moderate' ? 2 : 0) + (verticalCm >= 75 ? 1 : 0);
+  return FM_TABLE[row][col];
+}
+
+/** CM: good 1.00; fair 0.95 below 75 cm and 1.00 from 75 cm; poor 0.90. Waters et al. 1993, Table 7 (from memory). */
+export function couplingMultiplier(coupling: Coupling, verticalCm: number): number {
+  if (coupling === 'poor') return 0.9;
+  if (coupling === 'fair') return verticalCm < 75 ? 0.95 : 1.0;
+  return 1.0;
+}
+
+const r3 = (x: number) => Math.round(x * 1000) / 1000;
+
+/** The revised NIOSH lifting equation: RWL = LC × HM × VM × DM × AM × FM × CM, LC = 23 kg. */
 export function calculateNioshLifting(input: NioshInput): NioshResult {
-  const LC = 23; // Load Constant: 23 kg (51 lbs)
-
-  // Horizontal Multiplier (HM = 25 / H)
-  const H = Math.max(25, Math.min(63, input.horizontalDistanceCm));
-  const HM = 25 / H;
-
-  // Vertical Multiplier (VM = 1 - 0.003 * |V - 75|)
-  const V = Math.max(0, Math.min(175, input.verticalOriginCm));
-  const VM = Math.max(0, 1 - 0.003 * Math.abs(V - 75));
-
-  // Distance Multiplier (DM = 0.82 + 4.5 / D)
-  const D = Math.max(25, Math.min(260, input.verticalTravelDistanceCm));
-  const DM = Math.min(1.0, 0.82 + 4.5 / D);
-
-  // Asymmetric Multiplier (AM = 1 - 0.0032 * A)
-  const A = Math.max(0, Math.min(135, input.asymmetryAngleDeg));
-  const AM = Math.max(0, 1 - 0.0032 * A);
-
-  // Frequency Multiplier (FM): for standard single/intermittent lifts (< 1/min), FM = 1.0
-  const FM = 1.0;
-
-  // Coupling Multiplier (CM): good handles = 1.0, fair = 0.95, poor = 0.90
-  const CM = input.couplingQuality === 'poor' ? 0.90 : input.couplingQuality === 'fair' ? 0.95 : 1.0;
-
-  // Recommended Weight Limit: RWL = LC * HM * VM * DM * AM * FM * CM
+  const LC = 23;
+  const H = input.horizontalDistanceCm, V = input.verticalOriginCm, D = input.verticalTravelDistanceCm, A = input.asymmetryAngleDeg;
+  const outside: Factor[] = [];
+  // HM = 25 / H, 1 below 25 cm, 0 beyond 63 cm.
+  const HM = H > 63 ? 0 : H <= 25 ? 1 : 25 / H;
+  if (HM === 0) outside.push('HM');
+  // VM = 1 − 0.003 × |V − 75|, 0 above 175 cm.
+  const VM = V < 0 || V > 175 ? 0 : 1 - 0.003 * Math.abs(V - 75);
+  if (VM === 0) outside.push('VM');
+  // DM = 0.82 + 4.5 / D, 1 below 25 cm, 0 beyond 175 cm.
+  const DM = D > 175 ? 0 : D <= 25 ? 1 : 0.82 + 4.5 / D;
+  if (DM === 0) outside.push('DM');
+  // AM = 1 − 0.0032 × A, 0 beyond 135°.
+  const AM = A > 135 || A < 0 ? 0 : 1 - 0.0032 * A;
+  if (AM === 0) outside.push('AM');
+  const FM = frequencyMultiplier(input.frequencyLiftsPerMin ?? 0.2, input.duration ?? 'short', V);
+  if (FM === 0) outside.push('FM');
+  const CM = couplingMultiplier(input.couplingQuality ?? 'good', V);
   const RWL = LC * HM * VM * DM * AM * FM * CM;
-
-  // Lifting Index: LI = Load / RWL
-  const LI = input.loadWeightKg / Math.max(0.1, RWL);
-
-  let riskCategory: 'safe' | 'moderate' | 'high' = 'safe';
-  if (LI > 3.0) riskCategory = 'high';
-  else if (LI > 1.0) riskCategory = 'moderate';
-
-  // L5/S1 Spinal Compressive Load estimation (Chaffin & Andersson, 1991):
-  // Baseline body weight compression ~ 800-1200 N, plus load moment arm force:
-  // F_comp ~= 1000 + (Load * 9.81 * (H / 5.0)) + (TrunkAngle * 25)
-  const estimatedL5S1CompressionNewtons = Math.round(
-    1000 + (input.loadWeightKg * 9.81 * (H / 5.0)) + (A * 15)
-  );
-
-  const recommendations: string[] = [];
-  if (HM < 0.7) {
-    recommendations.push('Bring the load closer to the body to reduce horizontal moment arm.');
-  }
-  if (VM < 0.8) {
-    recommendations.push('Elevate the origin height of the load to avoid deep trunk flexion.');
-  }
-  if (AM < 0.85) {
-    recommendations.push('Eliminate rotational twist: reposition feet squarely toward the target.');
-  }
-  if (LI > 1.0) {
-    recommendations.push(`Split load into smaller batches: recommended threshold is ${RWL.toFixed(1)} kg.`);
-  }
-
+  const LI = RWL > 0 ? input.loadWeightKg / RWL : null;
+  const riskCategory = LI === null ? 'outside' : LI > 3 ? 'high' : LI > 1 ? 'increased' : 'nominal';
+  const factors: [Factor, number][] = [['HM', HM], ['VM', VM], ['DM', DM], ['AM', AM], ['FM', FM], ['CM', CM]];
+  const lowest = factors.reduce((a, b) => (b[1] < a[1] ? b : a))[0];
   return {
     loadConstantKg: LC,
-    horizontalMultiplierHM: parseFloat(HM.toFixed(3)),
-    verticalMultiplierVM: parseFloat(VM.toFixed(3)),
-    distanceMultiplierDM: parseFloat(DM.toFixed(3)),
-    asymmetricMultiplierAM: parseFloat(AM.toFixed(3)),
+    horizontalMultiplierHM: r3(HM),
+    verticalMultiplierVM: r3(VM),
+    distanceMultiplierDM: r3(DM),
+    asymmetricMultiplierAM: r3(AM),
     frequencyMultiplierFM: FM,
     couplingMultiplierCM: CM,
-    recommendedWeightLimitKg: parseFloat(RWL.toFixed(2)),
-    liftingIndexLI: parseFloat(LI.toFixed(2)),
+    recommendedWeightLimitKg: Math.round(RWL * 10) / 10,
+    liftingIndexLI: LI === null ? null : Math.round(LI * 100) / 100,
     riskCategory,
-    estimatedL5S1CompressionNewtons,
-    recommendations,
+    outside,
+    lowest,
   };
-}
-
-/**
- * REBA (Rapid Entire Body Assessment) ergonomic posture scoring.
- */
-export function calculateRebaScore(angles: {
-  trunkFlexionDeg: number; // 0 - 90
-  neckFlexionDeg: number; // 0 - 60
-  legsFlexionDeg: number; // 0 - 90
-  upperArmFlexionDeg: number; // 0 - 90
-}): { rebaScore: number; actionLevel: string } {
-  let scoreA = 1; // Trunk, Neck, Legs
-  if (angles.trunkFlexionDeg > 60) scoreA += 4;
-  else if (angles.trunkFlexionDeg > 20) scoreA += 2;
-
-  if (angles.neckFlexionDeg > 20) scoreA += 2;
-
-  let scoreB = 1; // Upper Arm
-  if (angles.upperArmFlexionDeg > 45) scoreB += 3;
-  else if (angles.upperArmFlexionDeg > 20) scoreB += 2;
-
-  const total = scoreA + scoreB;
-  let actionLevel = 'Low Risk (Change may be needed)';
-  if (total >= 8) actionLevel = 'High Risk (Investigate & implement change immediately)';
-  else if (total >= 4) actionLevel = 'Medium Risk (Action required soon)';
-
-  return { rebaScore: total, actionLevel };
 }
 
 export interface SkeletalLandmark {
@@ -143,8 +151,9 @@ export interface SkeletalLandmark {
 }
 
 /**
- * Extracts NIOSH lifting variables (H, V, A) directly from a 33-point MediaPipe pose landmark array.
- * Uses anatomical proportional scaling to estimate real-world metric values.
+ * Experimental, used by no screen: H, V and A read from a 33-point MediaPipe pose, scaled by the person's height. Not
+ * validated (no tape-measured lift compared yet); the 0.78 shoulder-to-ankle ratio and the 20 cm reach offset are
+ * UNSOURCED. Returns null when the pose is missing, rather than fixed values (it returned 35, 75 and 0).
  */
 export function extractNioshParametersFromLandmarks(
   landmarks: SkeletalLandmark[],
@@ -153,14 +162,8 @@ export function extractNioshParametersFromLandmarks(
   horizontalDistanceCm: number;
   verticalOriginCm: number;
   asymmetryAngleDeg: number;
-} {
-  if (!landmarks || landmarks.length < 29) {
-    return {
-      horizontalDistanceCm: 35,
-      verticalOriginCm: 75,
-      asymmetryAngleDeg: 0,
-    };
-  }
+} | null {
+  if (!landmarks || landmarks.length < 29) return null;
 
   // 11/12 = Shoulders, 15/16 = Wrists, 23/24 = Hips, 27/28 = Ankles
   const leftShoulder = landmarks[11];

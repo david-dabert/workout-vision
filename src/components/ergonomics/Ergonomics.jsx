@@ -1,428 +1,195 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useT } from '../../lib/LanguageContext';
-import {
-  calculateNioshLifting,
-  extractNioshParametersFromLandmarks,
-} from '../../lib/ergonomics';
+import { calculateNioshLifting, FREQUENCIES } from '../../lib/ergonomics';
 import { hapticLight } from '../../lib/haptics';
 import { useCondensingTopbar } from '../experience/topbar';
-import { RGB, HEX, rgba } from '../experience/palette';
-import { Topbar, DemoTag, Verdict, GroupHead, Metric, Range } from '../experience/Showcase';
-import { num, frText } from '../experience/showcase-text';
+import { Topbar, Verdict, GroupHead, Metric, Range } from '../experience/Showcase';
+import { num } from '../experience/showcase-text';
 import './Ergonomics.css';
 
-const INDUSTRIAL_PRESETS = [
-  {
-    id: 'floor_lift',
-    labelEn: 'Floor Squat Lift',
-    labelFr: 'Prise au Sol (Squat)',
-    load: 20,
-    H: 38,
-    V: 22,
-    D: 65,
-    A: 0,
-  },
-  {
-    id: 'conveyor_reach',
-    labelEn: 'Conveyor Extended Reach',
-    labelFr: 'Convoyeur Portée Éloignée',
-    load: 14,
-    H: 52,
-    V: 85,
-    D: 30,
-    A: 10,
-  },
-  {
-    id: 'overhead_shelf',
-    labelEn: 'Overhead Pallet Stacking',
-    labelFr: 'Empilage Rayonnage Haut',
-    load: 12,
-    H: 42,
-    V: 140,
-    D: 45,
-    A: 5,
-  },
-  {
-    id: 'twist_pallet',
-    labelEn: 'Asymmetric Palletizing Twist',
-    labelFr: 'Torsion de Palettisation',
-    load: 18,
-    H: 45,
-    V: 70,
-    D: 40,
-    A: 45,
-  },
+// Calculateur NIOSH (honesty pass of 14 October 2026, ERG-1 to ERG-4): the revised NIOSH lifting equation on the values
+// the person sets (src/lib/ergonomics/niosh.ts, Waters et al. 1993; status literature), every multiplier shown as a
+// worked product, NIOSH's own reading of the lifting index, and a lift outside the equation said as such. Gone: the
+// invented L5/S1 "compression" and its verdict, the drawing that did not follow the posture, the "vision" and "HUD"
+// tabs (nothing is read from a camera), the GDPR card, "Conforme", "Enterprise Biomechanics", and an opening state
+// that did not match the example highlighted. French awaiting David's approval (R10).
+
+const EXAMPLES = [
+  { id: 'twist_pallet', fr: 'Palettisation avec torsion', en: 'Palletising with a twist', load: 18, H: 45, V: 70, D: 40, A: 45 },
+  { id: 'floor_lift', fr: 'Prise au sol', en: 'Lift from the floor', load: 20, H: 38, V: 22, D: 65, A: 0 },
+  { id: 'conveyor_reach', fr: 'Convoyeur, bras tendus', en: 'Conveyor, arms out', load: 14, H: 52, V: 85, D: 30, A: 10 },
+  { id: 'overhead_shelf', fr: 'Étagère en hauteur', en: 'High shelf', load: 12, H: 42, V: 140, D: 45, A: 5 },
 ];
+
+const COPY = {
+  fr: {
+    eyebrow: 'Ergonomie au travail',
+    title: 'Calculateur NIOSH',
+    sub: 'La charge limite recommandée pour une manutention à deux mains, par l’équation révisée du NIOSH, à partir des valeurs que vous réglez. Un calcul indicatif, pas un diagnostic.',
+    examples: 'Exemples',
+    result: 'Résultat',
+    rwl: 'Limite recommandée (RWL)',
+    load: v => `Charge soulevée\u00A0: ${v}\u00A0kg`,
+    li: 'Indice de levage (LI)',
+    nominal: 'LI ≤\u00A01\u00A0: risque nominal selon le NIOSH',
+    increased: 'LI >\u00A01\u00A0: risque accru pour une partie des personnes',
+    high: 'LI >\u00A03\u00A0: risque accru pour la plupart des personnes',
+    outside: list => `Hors du domaine de l’équation (${list})\u00A0: aucune limite ni indice.`,
+    product: 'Le calcul',
+    lowest: name => `Le coefficient le plus bas, celui qui réduit le plus la limite\u00A0: ${name}.`,
+    factors: { HM: 'distance horizontale', VM: 'hauteur de départ', DM: 'course verticale', AM: 'torsion', FM: 'fréquence et durée', CM: 'qualité de la prise' },
+    settings: 'Vos valeurs',
+    sLoad: 'Charge', sH: 'Distance horizontale des mains (H)', sV: 'Hauteur des mains au départ (V)', sD: 'Course verticale (D)', sA: 'Angle de torsion (A)',
+    sF: 'Fréquence', perMin: v => (v === 0.2 ? '1 toutes les 5\u00A0min ou moins' : `${num(v, true)} par minute`),
+    sDur: 'Durée de la tâche', durShort: '1\u00A0h ou moins', durModerate: '1 à 2\u00A0h', durLong: '2 à 8\u00A0h',
+    sC: 'Prise', good: 'Bonne (poignées)', fair: 'Moyenne', poor: 'Mauvaise',
+    source: 'Coefficients\u00A0: Waters et al. 1993 (Ergonomics 36(7)) et le manuel d’application du NIOSH (1994, publication 94-110). Les valeurs viennent de vos réglages, pas d’une vidéo.',
+  },
+  en: {
+    eyebrow: 'Workplace ergonomics',
+    title: 'NIOSH calculator',
+    sub: 'The recommended weight limit of a two-handed lift, by the revised NIOSH lifting equation, from the values you set. An indicative calculation, not a diagnosis.',
+    examples: 'Examples',
+    result: 'Result',
+    rwl: 'Recommended limit (RWL)',
+    load: v => `Load lifted: ${v} kg`,
+    li: 'Lifting index (LI)',
+    nominal: 'LI ≤ 1: nominal risk according to NIOSH',
+    increased: 'LI > 1: increased risk for some people',
+    high: 'LI > 3: increased risk for most people',
+    outside: list => `Outside the equation's domain (${list}): no limit, no index.`,
+    product: 'The calculation',
+    lowest: name => `The lowest multiplier, the one that lowers the limit most: ${name}.`,
+    factors: { HM: 'horizontal distance', VM: 'starting height', DM: 'vertical travel', AM: 'twist', FM: 'frequency and duration', CM: 'grip quality' },
+    settings: 'Your values',
+    sLoad: 'Load', sH: 'Horizontal distance of the hands (H)', sV: 'Height of the hands at the start (V)', sD: 'Vertical travel (D)', sA: 'Twist angle (A)',
+    sF: 'Frequency', perMin: v => (v === 0.2 ? '1 every 5 min or less' : `${v} a minute`),
+    sDur: 'Task duration', durShort: '1 h or less', durModerate: '1 to 2 h', durLong: '2 to 8 h',
+    sC: 'Grip', good: 'Good (handles)', fair: 'Fair', poor: 'Poor',
+    source: 'Multipliers: Waters et al. 1993 (Ergonomics 36(7)) and the NIOSH Applications Manual (1994, publication 94-110). The values come from your settings, not from a video.',
+  },
+};
 
 export default function Ergonomics({ onClose }) {
   const { lang } = useT();
   const fr = lang === 'fr';
-
-  const [activeTab, setActiveTab] = useState('vision'); // 'vision' | 'hud'
-  const [loadWeightKg, setLoadWeightKg] = useState(18);
-  const [horizontalDistanceCm, setHorizontalDistanceCm] = useState(38);
-  const [verticalOriginCm, setVerticalOriginCm] = useState(65);
-  const [verticalTravelDistanceCm, setVerticalTravelDistanceCm] = useState(40);
-  const [asymmetryAngleDeg, setAsymmetryAngleDeg] = useState(15);
-  const [activePreset, setActivePreset] = useState('twist_pallet');
-
-  const canvasRef = useRef(null);
-  // The title condenses into the topbar as the page scrolls under it (topbar.js), as on Guide, History and Pro.
+  const c = COPY[fr ? 'fr' : 'en'];
+  // The screen opens on the example it highlights (ERG-4: the state and the highlighted example disagreed).
+  const first = EXAMPLES[0];
+  const [example, setExample] = useState(first.id);
+  const [load, setLoad] = useState(first.load);
+  const [H, setH] = useState(first.H);
+  const [V, setV] = useState(first.V);
+  const [D, setD] = useState(first.D);
+  const [A, setA] = useState(first.A);
+  const [freq, setFreq] = useState(0.2);
+  const [duration, setDuration] = useState('short');
+  const [coupling, setCoupling] = useState('good');
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [lang]);
 
-  const result = useMemo(() => {
-    return calculateNioshLifting({
-      loadWeightKg,
-      horizontalDistanceCm,
-      verticalOriginCm,
-      verticalTravelDistanceCm,
-      asymmetryAngleDeg,
-    });
-  }, [loadWeightKg, horizontalDistanceCm, verticalOriginCm, verticalTravelDistanceCm, asymmetryAngleDeg]);
+  const r = useMemo(() => calculateNioshLifting({
+    loadWeightKg: load, horizontalDistanceCm: H, verticalOriginCm: V, verticalTravelDistanceCm: D, asymmetryAngleDeg: A,
+    frequencyLiftsPerMin: freq, duration, couplingQuality: coupling,
+  }), [load, H, V, D, A, freq, duration, coupling]);
 
-  const handlePresetSelect = (preset) => {
-    hapticLight();
-    setActivePreset(preset.id);
-    setLoadWeightKg(preset.load);
-    setHorizontalDistanceCm(preset.H);
-    setVerticalOriginCm(preset.V);
-    setVerticalTravelDistanceCm(preset.D);
-    setAsymmetryAngleDeg(preset.A);
-  };
-
-
-  // Biomechanical Sagittal Skeleton Canvas Rendering
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const dpr = window.devicePixelRatio || 1;
-    const width = canvas.clientWidth || 360;
-    const height = canvas.clientHeight || 260;
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-    ctx.scale(dpr, dpr);
-
-    // The frame's well shows through (Showcase.css .sc-frame); the figure takes the app's palette (palette.js).
-    ctx.clearRect(0, 0, width, height);
-
-    // Floor Reference Line
-    const floorY = height - 32;
-    ctx.strokeStyle = rgba(RGB.bone, 0.12);
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(20, floorY);
-    ctx.lineTo(width - 20, floorY);
-    ctx.stroke();
-
-    // Floor Grid Hash marks
-    ctx.fillStyle = rgba(RGB.bone, 0.2);
-    for (let x = 30; x < width - 20; x += 30) {
-      ctx.fillRect(x, floorY, 1, 4);
-    }
-
-    // Coordinate Mapping (Worker centered at x = 110)
-    const workerX = 110;
-    const scaleY = (floorY - 40) / 175; // 175cm stature
-
-    const ankle = { x: workerX, y: floorY - 8 };
-    const knee = { x: workerX - 12, y: floorY - (48 * scaleY) };
-    const hip = { x: workerX - 4, y: floorY - (90 * scaleY) };
-    const l5s1 = { x: workerX, y: floorY - (98 * scaleY) };
-    const shoulder = { x: workerX + 10, y: floorY - (142 * scaleY) };
-    const head = { x: workerX + 12, y: floorY - (164 * scaleY) };
-
-    // Hands and Load Position based on H and V
-    const handX = workerX + (horizontalDistanceCm * 1.6);
-    const handY = floorY - (verticalOriginCm * scaleY);
-    const elbow = {
-      x: (shoulder.x + handX) / 2 - 10,
-      y: (shoulder.y + handY) / 2 + 10,
-    };
-
-    // Draw Skeletal Segments
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    // Legs
-    ctx.strokeStyle = rgba(RGB.bone, 0.85); // Bone
-    ctx.beginPath();
-    ctx.moveTo(ankle.x, ankle.y);
-    ctx.lineTo(knee.x, knee.y);
-    ctx.lineTo(hip.x, hip.y);
-    ctx.stroke();
-
-    // Spine & Torso
-    ctx.strokeStyle = HEX.lamp; // Lamp
-    ctx.beginPath();
-    ctx.moveTo(hip.x, hip.y);
-    ctx.lineTo(l5s1.x, l5s1.y);
-    ctx.lineTo(shoulder.x, shoulder.y);
-    ctx.stroke();
-
-    // Head
-    ctx.beginPath();
-    ctx.arc(head.x, head.y, 11, 0, Math.PI * 2);
-    ctx.fillStyle = rgba(RGB.lamp, 0.15);
-    ctx.fill();
-    ctx.stroke();
-
-    // Arms
-    ctx.strokeStyle = rgba(RGB.bone, 0.55);
-    ctx.beginPath();
-    ctx.moveTo(shoulder.x, shoulder.y);
-    ctx.lineTo(elbow.x, elbow.y);
-    ctx.lineTo(handX, handY);
-    ctx.stroke();
-
-    // L5/S1 Vertebral Stress Indicator
-    ctx.beginPath();
-    ctx.arc(l5s1.x, l5s1.y, 6, 0, Math.PI * 2);
-    ctx.fillStyle = result.estimatedL5S1CompressionNewtons > 3400 ? HEX.lampHi : rgba(RGB.bone, 0.85);
-    ctx.fill();
-    ctx.strokeStyle = rgba(RGB.void, 0.9);
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Load Box at Hands
-    const boxSize = Math.max(22, Math.min(36, 16 + loadWeightKg * 0.7));
-    // No red in the app: a safe load in bone, a moderate one in the lamp, a high one in the bright lamp.
-    ctx.fillStyle = result.riskCategory === 'safe'
-      ? rgba(RGB.bone, 0.16)
-      : result.riskCategory === 'moderate'
-      ? rgba(RGB.lamp, 0.3)
-      : rgba(RGB.lampHi, 0.42);
-    ctx.strokeStyle = result.riskCategory === 'safe'
-      ? rgba(RGB.bone, 0.85)
-      : result.riskCategory === 'moderate'
-      ? HEX.lamp
-      : HEX.lampHi;
-    ctx.lineWidth = 2;
-    ctx.fillRect(handX - 8, handY - boxSize / 2, boxSize, boxSize);
-    ctx.strokeRect(handX - 8, handY - boxSize / 2, boxSize, boxSize);
-
-    // Box weight label
-    ctx.fillStyle = rgba(RGB.bone, 0.95);
-    ctx.font = '600 11px Geist, system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${loadWeightKg}\u00A0kg`, handX - 8 + boxSize / 2, handY + 4);
-
-    // Moment Arm (H) Dimension Line
-    ctx.strokeStyle = rgba(RGB.lamp, 0.8);
-    ctx.lineWidth = 1;
-    ctx.setLineDash([3, 3]);
-    ctx.beginPath();
-    ctx.moveTo(workerX, floorY - 12);
-    ctx.lineTo(handX, floorY - 12);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    ctx.fillStyle = HEX.lamp;
-    ctx.font = '10px "Geist Mono", ui-monospace, monospace';
-    ctx.fillText(`H = ${horizontalDistanceCm}\u00A0cm`, (workerX + handX) / 2, floorY - 16);
-
-    // Vertical Height (V) Dimension Line
-    ctx.strokeStyle = rgba(RGB.bone, 0.6);
-    ctx.setLineDash([3, 3]);
-    ctx.beginPath();
-    ctx.moveTo(handX + boxSize + 6, floorY);
-    ctx.lineTo(handX + boxSize + 6, handY);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    ctx.fillStyle = rgba(RGB.bone, 0.85);
-    ctx.textAlign = 'left';
-    ctx.fillText(`V = ${verticalOriginCm}\u00A0cm`, handX + boxSize + 10, (floorY + handY) / 2 + 3);
-
-  }, [horizontalDistanceCm, verticalOriginCm, loadWeightKg, result]);
-
-  // The values are the NIOSH equation's for the sliders' positions (src/lib/ergonomics), not a measure of a video: the
-  // figures carry Demo. The equation's advice is written in English in the code; each sentence has its French here.
-  const riskText = result.riskCategory === 'safe'
-    ? fr ? 'Conforme / Risque Faible (LI ≤ 1.0)' : 'Safe / Low Risk (LI ≤ 1.0)'
-    : result.riskCategory === 'moderate'
-    ? fr ? 'Risque Modéré (1.0 < LI ≤ 3.0)' : 'Moderate Risk (1.0 < LI ≤ 3.0)'
-    : fr ? 'Danger Ergonomique (LI > 3.0)' : 'High Ergonomic Risk (LI > 3.0)';
-  const advice = (rec) => {
-    if (!fr) return rec;
-    if (rec.startsWith('Bring the load closer')) return 'Rapprochez la charge du corps pour réduire le bras de levier horizontal.';
-    if (rec.startsWith('Elevate the origin height')) return 'Montez la hauteur de prise de la charge pour éviter une flexion profonde du tronc.';
-    if (rec.startsWith('Eliminate rotational twist')) return 'Supprimez la torsion : placez les pieds face à la cible.';
-    const split = rec.match(/^Split load into smaller batches: recommended threshold is ([\d.]+) kg\.$/);
-    if (split) return `Fractionnez la charge en lots plus légers : seuil recommandé de ${num(split[1], fr)} kg.`;
-    return rec;
-  };
+  const pick = (e) => { hapticLight(); setExample(e.id); setLoad(e.load); setH(e.H); setV(e.V); setD(e.D); setA(e.A); };
+  const set = (fn) => (ev) => { setExample(''); fn(Number(ev.target.value)); };
+  const n2 = v => num(v.toFixed(2), fr);
+  const rows = [
+    ['HM', r.horizontalMultiplierHM, `H = ${H}\u00A0cm`],
+    ['VM', r.verticalMultiplierVM, `V = ${V}\u00A0cm`],
+    ['DM', r.distanceMultiplierDM, `D = ${D}\u00A0cm`],
+    ['AM', r.asymmetricMultiplierAM, `A = ${A}°`],
+    ['FM', r.frequencyMultiplierFM, c.perMin(freq)],
+    ['CM', r.couplingMultiplierCM, c[coupling]],
+  ];
+  const verdict = r.riskCategory === 'nominal' ? c.nominal : r.riskCategory === 'increased' ? c.increased : c.high;
 
   return (
     <div className="wv-experience">
       <section ref={screenRef} className="screen is-active sc-screen ergo-screen" data-testid="ergonomics-screen">
         <div className="wrap">
-          <Topbar fr={fr} backTestId="ergo-back-btn" onBack={onClose || (() => { window.location.hash = ''; })}>
-            <span className="pill">Enterprise Biomechanics</span>
-          </Topbar>
+          <Topbar fr={fr} backTestId="ergo-back-btn" onBack={onClose || (() => { window.location.hash = ''; })} />
 
-          <p className="eyebrow" data-reveal style={{ '--i': 0 }}>{fr ? 'Ergonomie au Travail (NIOSH)' : 'Workplace Ergonomics (NIOSH)'}</p>
-          <h1 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Équation de Levage NIOSH & Risque Spinal L5/S1' : 'NIOSH Lifting Equation & Spinal L5/S1 Analysis'}</h1>
-          <p className="sub" data-reveal style={{ '--i': 1 }}>
-            {fr
-              ? 'Évaluation objective des charges de manutention, calcul de la Charge Limite Recommandée (RWL) et de l’Indice de Levage (LI). 100 % sur l’appareil pour une conformité totale au RGPD.'
-              : 'Objective occupational biomechanics, Recommended Weight Limit (RWL), and Lifting Index (LI). 100% on-device for total privacy and enterprise labor compliance.'}
-          </p>
+          <p className="eyebrow" data-reveal style={{ '--i': 0 }}>{c.eyebrow}</p>
+          <h1 className="title" data-reveal style={{ '--i': 0 }}>{c.title}</h1>
+          <p className="sub" data-reveal style={{ '--i': 1 }}>{c.sub}</p>
 
-          {/* Enterprise Privacy */}
           <div className="sc-section" data-reveal style={{ '--i': 2 }}>
-            <div className="sc-card ergo-privacy">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-              </svg>
-              <div>
-                <b>{fr ? 'Conformité Entreprise & Vie Privée des Salariés' : 'Enterprise Privacy & Labor Compliance'}</b>
-                <p className="sc-caption">
-                  {fr
-                    ? 'Aucun visage, flux vidéo ou donnée biométrique n’est transmis au cloud. Tout le calcul squelettique reste confiné dans le navigateur de l’opérateur.'
-                    : 'Zero facial data or video footage is uploaded to cloud servers. All skeletal calculations remain isolated within the device.'}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Mode, then the industrial presets */}
-          <div className="sc-section ergo-modes" data-reveal style={{ '--i': 3 }}>
-            <div className="sc-seg">
-              <button type="button" className="press" aria-pressed={activeTab === 'vision'} onClick={() => { hapticLight(); setActiveTab('vision'); }} data-testid="tab-vision">
-                {fr ? 'Simulation Squelettique & Vision' : 'Skeletal Vision Simulation'}
-              </button>
-              <button type="button" className="press" aria-pressed={activeTab === 'hud'} onClick={() => { hapticLight(); setActiveTab('hud'); }} data-testid="tab-hud">
-                {fr ? 'Curseurs Manuels HUD' : 'Manual Multipliers HUD'}
-              </button>
-            </div>
-            <div className="sc-rail" role="group" aria-label="NIOSH">
-              {INDUSTRIAL_PRESETS.map(p => (
-                <button
-                  key={p.id}
-                  type="button"
-                  className="sc-chip press"
-                  aria-pressed={activePreset === p.id}
-                  onClick={() => handlePresetSelect(p)}
-                  data-testid={`preset-${p.id}`}
-                >
-                  {fr ? p.labelFr : p.labelEn}
+            <div className="sc-rail" role="group" aria-label={c.examples}>
+              {EXAMPLES.map(e => (
+                <button key={e.id} type="button" className="sc-chip press" aria-pressed={example === e.id} onClick={() => pick(e)} data-testid={`preset-${e.id}`}>
+                  {fr ? e.fr : e.en}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* The figure, then the figures */}
-          <section className="sc-section ergo-hero" data-reveal style={{ '--i': 4 }}>
-            {activeTab === 'vision' && (
-              <>
-                <GroupHead title={fr ? 'Cinématique Squelettique du Manutentionnaire (Plan Sagittal)' : 'Operator Skeletal Sagittal Kinematics'}>
-                  <span className="sc-tag ergo-l5s1">L5/S1{fr ? ' :' : ':'} {result.estimatedL5S1CompressionNewtons}{' '}N</span>
-                </GroupHead>
-                <div className="sc-frame ergo-frame">
-                  <canvas ref={canvasRef} className="ergo-skeleton-canvas" />
-                </div>
-              </>
+          <section className="sc-section" data-reveal style={{ '--i': 3 }}>
+            <GroupHead title={c.result} />
+            {r.riskCategory === 'outside' ? (
+              <p className="sc-frame-note" data-testid="ergo-outside">{c.outside(r.outside.map(f => c.factors[f]).join(', '))}</p>
+            ) : (
+              <div className="sc-metrics">
+                <Metric label={c.rwl} value={num(r.recommendedWeightLimitKg, fr)} unit="kg" sub={c.load(num(load, fr))} testId="ergo-rwl-value" />
+                <Metric label={c.li} value={num(r.liftingIndexLI, fr)} testId="ergo-li-value">
+                  <Verdict ok={r.riskCategory === 'nominal'}>{verdict}</Verdict>
+                </Metric>
+              </div>
             )}
-
-            <GroupHead title={fr ? 'Chiffres clés' : 'Key figures'}><DemoTag fr={fr} /></GroupHead>
-            <div className="sc-metrics">
-              <Metric label={fr ? 'Indice de Levage (LI)' : 'Lifting Index (LI)'} value={num(result.liftingIndexLI, fr)} testId="ergo-li-value">
-                <Verdict ok={result.riskCategory === 'safe'}>{fr ? frText(riskText, true) : riskText}</Verdict>
-              </Metric>
-              <Metric
-                label={fr ? 'Charge Max Recommandée (RWL)' : 'Recommended Weight (RWL)'}
-                value={num(result.recommendedWeightLimitKg, fr)}
-                unit="kg"
-                sub={fr ? `Charge réelle : ${loadWeightKg} kg` : `Actual Load: ${loadWeightKg} kg`}
-                testId="ergo-rwl-value"
-              />
-              <Metric
-                wide
-                label={fr ? 'Compression L5/S1 Estimée' : 'Est. L5/S1 Compression'}
-                value={result.estimatedL5S1CompressionNewtons}
-                unit="N"
-                sub={fr ? 'Limite d’action NIOSH : 3 400 N' : 'NIOSH Action Limit: 3,400 N'}
-              >
-                <Verdict ok={result.estimatedL5S1CompressionNewtons <= 3400}>{result.estimatedL5S1CompressionNewtons > 3400 ? (fr ? 'Au-dessus de la limite' : 'Above the limit') : (fr ? 'Sous la limite' : 'Under the limit')}</Verdict>
-              </Metric>
-            </div>
           </section>
 
-          {/* Interactive Sliders */}
-          <section className="sc-section ergo-controls">
-            <GroupHead title={fr ? 'Paramètres du Poste de Travail' : 'Workstation & Lift Parameters'} />
-            <div className="sc-ranges">
-              <Range
-                label={fr ? 'Poids de la charge' : 'Load Weight'}
-                display={`${loadWeightKg} kg`}
-                min="5"
-                max="45"
-                step="1"
-                value={loadWeightKg}
-                onChange={e => {
-                  hapticLight();
-                  setLoadWeightKg(parseFloat(e.target.value));
-                }}
-                testId="slider-load"
-              />
-              <Range
-                label={fr ? 'Portée horizontale (H)' : 'Horizontal Reach (H)'}
-                display={`${horizontalDistanceCm} cm`}
-                min="25"
-                max="65"
-                step="1"
-                value={horizontalDistanceCm}
-                onChange={e => {
-                  hapticLight();
-                  setHorizontalDistanceCm(parseFloat(e.target.value));
-                }}
-                testId="slider-h"
-              />
-              <Range
-                label={fr ? 'Hauteur d’origine (V)' : 'Vertical Origin Height (V)'}
-                display={`${verticalOriginCm} cm`}
-                min="10"
-                max="150"
-                step="5"
-                value={verticalOriginCm}
-                onChange={e => {
-                  hapticLight();
-                  setVerticalOriginCm(parseFloat(e.target.value));
-                }}
-                testId="slider-v"
-              />
-              <Range
-                label={fr ? 'Angle d’asymétrie / torsion (A)' : 'Twist / Asymmetry Angle (A)'}
-                display={`${asymmetryAngleDeg}°`}
-                min="0"
-                max="90"
-                step="5"
-                value={asymmetryAngleDeg}
-                onChange={e => {
-                  hapticLight();
-                  setAsymmetryAngleDeg(parseFloat(e.target.value));
-                }}
-                testId="slider-a"
-              />
-            </div>
-          </section>
-
-          {/* Recommendations */}
-          {result.recommendations.length > 0 && (
-            <section className="sc-section ergo-recommendations">
-              <GroupHead title={fr ? 'Recommandations Ergonomiques Immédiates' : 'Immediate Ergonomic Recommendations'} />
-              <ul className="ergo-rec-list">
-                {result.recommendations.map((rec, i) => (
-                  <li key={i} className="sc-text">{advice(rec)}</li>
+          <section className="sc-section ergo-product" data-testid="ergo-product">
+            <GroupHead title={c.product} />
+            <div className="sc-card">
+              <p className="ergo-equation">RWL = 23{'\u00A0'}kg × HM × VM × DM × AM × FM × CM</p>
+              <ul className="ergo-factors">
+                {rows.map(([f, v, why]) => (
+                  <li key={f} className={f === r.lowest ? 'is-lowest' : ''}>
+                    <span className="ergo-factor-name"><b>{f}</b> {c.factors[f]}</span>
+                    <span className="ergo-factor-why">{why}</span>
+                    <span className="ergo-factor-val">{n2(v)}</span>
+                  </li>
                 ))}
               </ul>
-            </section>
-          )}
+              <p className="ergo-equation is-total">= {num(r.recommendedWeightLimitKg, fr)}{'\u00A0'}kg</p>
+              <p className="sc-caption">{c.lowest(c.factors[r.lowest])}</p>
+            </div>
+          </section>
+
+          <section className="sc-section ergo-controls">
+            <GroupHead title={c.settings} />
+            <div className="sc-ranges">
+              <Range label={c.sLoad} display={`${num(load, fr)}\u00A0kg`} min="1" max="50" step="1" value={load} onChange={set(setLoad)} testId="slider-load" />
+              <Range label={c.sH} display={`${H}\u00A0cm`} min="20" max="70" step="1" value={H} onChange={set(setH)} testId="slider-h" />
+              <Range label={c.sV} display={`${V}\u00A0cm`} min="0" max="180" step="5" value={V} onChange={set(setV)} testId="slider-v" />
+              <Range label={c.sD} display={`${D}\u00A0cm`} min="25" max="180" step="5" value={D} onChange={set(setD)} testId="slider-d" />
+              <Range label={c.sA} display={`${A}°`} min="0" max="140" step="5" value={A} onChange={set(setA)} testId="slider-a" />
+            </div>
+            <div className="ergo-selects">
+              <label className="ergo-select"><span>{c.sF}</span>
+                <select value={freq} onChange={e => setFreq(Number(e.target.value))} data-testid="select-frequency">
+                  {FREQUENCIES.map(f => <option key={f} value={f}>{c.perMin(f)}</option>)}
+                </select>
+              </label>
+              <label className="ergo-select"><span>{c.sDur}</span>
+                <select value={duration} onChange={e => setDuration(e.target.value)} data-testid="select-duration">
+                  <option value="short">{c.durShort}</option>
+                  <option value="moderate">{c.durModerate}</option>
+                  <option value="long">{c.durLong}</option>
+                </select>
+              </label>
+              <label className="ergo-select"><span>{c.sC}</span>
+                <select value={coupling} onChange={e => setCoupling(e.target.value)} data-testid="select-coupling">
+                  <option value="good">{c.good}</option>
+                  <option value="fair">{c.fair}</option>
+                  <option value="poor">{c.poor}</option>
+                </select>
+              </label>
+            </div>
+            <p className="sc-caption">{c.source}</p>
+          </section>
         </div>
       </section>
     </div>
