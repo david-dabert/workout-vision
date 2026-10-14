@@ -196,16 +196,19 @@ export function programmePdf(programme, { lang, date = new Date(), link = null, 
     const frames = r.drawing ? [r.drawing.start, r.drawing.end].filter(Boolean) : [];
     const x = frames.length ? MARGIN + ART_W + ART_GUTTER : MARGIN, w = MARGIN + COLUMN - x;
     const name = lines(r.name, 13, w - INDEX_W);
+    // The details beside the target where they take two lines at most there, else under it, across the text column.
     const targetW = width(r.target, 'serif', TARGET), besideW = w - targetW - 10;
-    const details = lines(r.details, DETAIL, besideW >= 70 ? besideW : w);
-    const rowH = besideW >= 70
+    const besideLines = besideW >= 70 ? lines(r.details, DETAIL, besideW) : null;
+    const beside = !!besideLines && besideLines.lines.length <= 2;
+    const details = beside ? besideLines : lines(r.details, DETAIL, w);
+    const rowH = beside
       ? Math.max(TARGET * TARGET_LH, detailDrop + details.lines.length * DETAIL * DETAIL_LH)
       : TARGET * TARGET_LH + 2 + details.lines.length * DETAIL * DETAIL_LH;
     const note = r.note ? lines(r.note, 10.5, w) : null;
     const caption = frames.length && r.drawing.similar ? wrapText(sheet.similar, ART_W, s => width(s, 'sans', 8.5)).slice(0, 2) : [];
     const textH = name.lines.length * NAME_LH + 3 + rowH + (note ? 3 + note.lines.length * NOTE_LH : 0);
     const artH = frames.length ? ART + (caption.length ? 4 + caption.length * CAPTION_LH : 0) : 0;
-    return { r, frames, x, w, name, targetW, details, beside: besideW >= 70, rowH, note, caption, h: PAD + Math.max(artH, textH) + PAD };
+    return { r, frames, x, w, name, targetW, details, beside, rowH, note, caption, h: PAD + Math.max(artH, textH) + PAD };
   });
   const drawBlock = b => {
     const top = y + PAD;

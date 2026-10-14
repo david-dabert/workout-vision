@@ -373,7 +373,7 @@ describe('the programme’s PDF', () => {
     expect(s.people).toEqual([['Pour', 'Camille'], ['Exercices', '2']]);
     expect(s.rows[0]).toEqual({
       index: '01', name: 'Squat', note: 'Descendre lentement', target: `3${NBSP}×${NBSP}10`, rest: `1${NBSP}min${NBSP}30`,
-      details: `Récup. 1${NBSP}min${NBSP}30`, filmed: true, hold: 0, side: 'both', drawing: null,
+      details: `Récup.${NBSP}1${NBSP}min${NBSP}30`, filmed: true, hold: 0, side: 'both', drawing: null,
     });
     expect([s.foot, s.credit]).toEqual([PRO.fr.pdfFoot, '']);
     expect(programmeFileName(sample, { lang: 'fr', date })).toBe('programme-camille-2026-10-06.pdf');
@@ -791,10 +791,12 @@ describe('the exercise sheet’s model', () => {
     expect(PRO.fr.targetLine(3, 10, 90, 0, 'left')).toBe(`3${NBSP}×${NBSP}10 · côté gauche · récup. 1${NBSP}min${NBSP}30`);
     expect([PRO.fr.frequency(3, 'week'), PRO.fr.frequency(1, 'day')]).toEqual([`3${NBSP}fois par semaine`, `1${NBSP}fois par jour`]);
     expect([PRO.en.frequency(1, 'day'), PRO.en.frequency(2, 'week'), PRO.en.frequency(3, 'week')]).toEqual(['Once a day', 'Twice a week', '3 times a week']);
-    expect(PRO.fr.pdfDetails(45, 45, 'each', false)).toBe(`Maintien · récup. 45${NBSP}s · chaque côté · sans filmer`);
-    expect(PRO.fr.pdfDetails(90, 0, 'each', true)).toBe(`Récup. 1${NBSP}min${NBSP}30 · chaque côté`);
-    expect(PRO.fr.pdfDetails(0, 0, 'both', false)).toBe('Sans récup. · sans filmer');
-    expect(PRO.en.pdfDetails(45, 45, 'each', false)).toBe(`Hold · rest 45${NBSP}s · each side · without filming`);
+    // On the PDF, a no-break space before each dot (a wrapped line never starts with one) and after "récup.".
+    const dot = `${NBSP}· `;
+    expect(PRO.fr.pdfDetails(45, 45, 'each', false)).toBe(`Maintien${dot}récup.${NBSP}45${NBSP}s${dot}chaque côté${dot}sans filmer`);
+    expect(PRO.fr.pdfDetails(90, 0, 'each', true)).toBe(`Récup.${NBSP}1${NBSP}min${NBSP}30${dot}chaque côté`);
+    expect(PRO.fr.pdfDetails(0, 0, 'both', false)).toBe(`Sans récup.${dot}sans filmer`);
+    expect(PRO.en.pdfDetails(45, 45, 'each', false)).toBe(`Hold${dot}rest${NBSP}45${NBSP}s${dot}each side${dot}without filming`);
     expect(PRO.fr.pdfCredit).toBe(`Dessins${NBSP}: Bryl Lim, workout-guide, CC BY-SA 4.0`);
     expect(PRO.en.pdfCredit).toBe('Drawings: Bryl Lim, workout-guide, CC BY-SA 4.0');
     // David's file holds every sample written out: no NaN, no undefined, no em dash.

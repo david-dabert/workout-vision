@@ -28,6 +28,9 @@ const SIDE_FR = { left: 'côté gauche', right: 'côté droit', each: 'chaque c�
 const SIDE_EN = { left: 'left side', right: 'right side', each: 'each side' };
 const sideWords = (words, side) => (Object.hasOwn(words, side) ? [words[side]] : []);
 const capital = s => s.charAt(0).toLocaleUpperCase() + s.slice(1);
+// The PDF's details beside a target: a no-break space before each dot, so a wrapped line never starts with one (and
+// one after "récup.", which stays with its time).
+const DETAIL_JOIN = `${NB}· `;
 
 export const PRO = {
   fr: {
@@ -137,8 +140,8 @@ export const PRO = {
     // filming, and the drawings' credit (CC BY-SA 4.0, as the task set it).
     pdfFrequency: 'Fréquence',
     pdfDetails: (rest, holdSec, side, filmed) => capital([
-      ...(holdSec > 0 ? ['maintien'] : []), rest ? `récup. ${restFr(rest)}` : restFr(rest), ...sideWords(SIDE_FR, side), ...(filmed ? [] : ['sans filmer']),
-    ].join(' · ')),
+      ...(holdSec > 0 ? ['maintien'] : []), rest ? `récup.${NB}${restFr(rest)}` : restFr(rest), ...sideWords(SIDE_FR, side), ...(filmed ? [] : ['sans filmer']),
+    ].join(DETAIL_JOIN)),
     pdfSimilar: 'Dessin d’un mouvement proche',
     pdfFootSome: `Filmez chaque série, sauf mention «${NB}sans filmer${NB}»${NB}: les répétitions sont comptées, et le rapport de séance montre le prévu à côté du compté.`,
     pdfCredit: `Dessins${NB}: Bryl Lim, workout-guide, CC BY-SA 4.0`,
@@ -326,8 +329,8 @@ export const PRO = {
     pdfFoot: 'Film each set with your phone: the reps are counted, and the session report shows what was planned beside what was counted.',
     pdfFrequency: 'Frequency',
     pdfDetails: (rest, holdSec, side, filmed) => capital([
-      ...(holdSec > 0 ? ['hold'] : []), rest ? `rest ${restEn(rest)}` : restEn(rest), ...sideWords(SIDE_EN, side), ...(filmed ? [] : ['without filming']),
-    ].join(' · ')),
+      ...(holdSec > 0 ? ['hold'] : []), rest ? `rest${NB}${restEn(rest)}` : restEn(rest), ...sideWords(SIDE_EN, side), ...(filmed ? [] : ['without filming']),
+    ].join(DETAIL_JOIN)),
     pdfSimilar: 'Drawing of a similar movement',
     pdfFootSome: 'Film each set, unless marked “without filming”: the reps are counted, and the session report shows what was planned beside what was counted.',
     pdfCredit: 'Drawings: Bryl Lim, workout-guide, CC BY-SA 4.0',
