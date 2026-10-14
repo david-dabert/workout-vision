@@ -1,124 +1,107 @@
 import { describe, it, expect } from 'vitest';
 import {
-  calculateCoachAccounting,
-  generateFrenchInvoice,
-  exportLivreRecettesCsv,
-  calculateCoachAnnualPl,
+  RATES, simulateCoachMonth, isValidSiret, eiName, invoiceMissing, buildInvoice, invoiceLines, receiptsCsv, localIsoDate, euros,
 } from '../accounting';
 
-describe('Coach Freelance Accounting & Basic-Fit Rent Simulator', () => {
-  it('calculates correct Micro-BNC charges and take-home pay with €650 Basic-Fit rent', () => {
-    // 40 sessions at 50 € = 2000 € gross
-    const result = calculateCoachAccounting({
-      monthlyRent: 650,
-      regime: 'micro',
-      averageSessionPrice: 50,
-      monthlySessionsCount: 40,
-      otherMonthlyExpenses: 50,
-    });
+// A SIRET made up for the tests: 14 digits whose Luhn key holds, matching no company we know of.
+const SIRET = '12345678901237';
+const COACH = { name: 'Camille Martin', siret: SIRET, address: '1 rue de l’Exemple, 69001 Lyon', cartePro: '06912ED0001' };
+const CLIENT = { name: 'Alex Durand', address: '2 rue de l’Exemple, 69002 Lyon' };
+const ITEM = { description: 'Séance de coaching individuel (1 h)', quantity: 4, unitPrice: 55 };
 
-    expect(result.grossRevenueHt).toBe(2000);
-    expect(result.gymRent).toBe(650);
-    // URSSAF + CFP = 21.1% + 0.2% = 21.3% of 2000 = 426 €
-    expect(result.socialContributions).toBe(426);
-    expect(result.tvaCollected).toBe(0);
-    expect(result.netTakeHomePay).toBeGreaterThan(700);
-    expect(result.netTakeHomePay).toBeLessThan(850);
-    // Break-even for €650 rent: 650 / (50 * (1 - 0.213)) = 650 / 39.35 = ~17 sessions
-    expect(result.breakEvenSessionsForRent).toBe(17);
+describe('the simulator of a month (honesty pass of 14 October 2026, ACC-1 to ACC-6)', () => {
+  it('takes 25.6 % + 0.2 % of turnover, the rates read on 14 October 2026, and nothing hidden', () => {
+    expect(RATES.ssiBnc).toBe(0.256);
+    expect(RATES.cfp).toBe(0.002);
+    const m = simulateCoachMonth({ sessionPrice: 50, sessionsPerMonth: 40, rent: 650 });
+    expect(m.turnover).toBe(2000);
+    expect(m.contributions).toBe(516);
+    expect(m.costs).toBe(650);
+    expect(m.incomeTax).toBeNull(); // income tax depends on the household: not computed
+    // The tiles add up: 2000 - 516 - 650.
+    expect(m.estimate).toBe(834);
   });
-
-  it('calculates correct EI Réel deductions where €650 rent is deducted before social charges', () => {
-    const result = calculateCoachAccounting({
-      monthlyRent: 650,
-      regime: 'reel',
-      averageSessionPrice: 60,
-      monthlySessionsCount: 50, // 3000 € gross
-      otherMonthlyExpenses: 150, // total expenses = 800 €
-    });
-
-    expect(result.grossRevenueHt).toBe(3000);
-    expect(result.tvaCollected).toBe(600); // 20%
-    expect(result.tvaDeductible).toBe(160); // 20% of 800
-    expect(result.netTvaDue).toBe(440);
-    expect(result.socialContributions).toBe(880);
-    expect(result.netTakeHomePay).toBeGreaterThan(1000);
+  it('adds the 2.2 % versement libératoire only when chosen, and the break-even follows the same rule', () => {
+    const m = simulateCoachMonth({ sessionPrice: 50, sessionsPerMonth: 40, rent: 650, versementLiberatoire: true });
+    expect(m.incomeTax).toBe(44);
+    expect(m.estimate).toBe(2000 - 516 - 650 - 44);
+    // 650 / (50 × (1 - 0.258 - 0.022)) = 18.06: 19 sessions.
+    expect(m.breakEvenSessions).toBe(19);
+    expect(simulateCoachMonth({ sessionPrice: 50, sessionsPerMonth: 40, rent: 650 }).breakEvenSessions).toBe(18);
+    expect(simulateCoachMonth({ sessionPrice: 50, sessionsPerMonth: 40 }).breakEvenSessions).toBe(0);
   });
-
-  it('generates legally compliant French invoice with mandatory EI prefix, Art. 293 B CGI, and Sports Code mentions', () => {
-    const invoice = generateFrenchInvoice({
-      invoiceNumber: 'FAC-2026-0042',
-      coach: {
-        name: 'Thomas Martin',
-        siret: '123 456 789 00012',
-        address: '12 Rue de la République, 75011 Paris',
-        gymFacility: 'Basic-Fit Paris République',
-        cartePro: 'ED-75-2023-09418',
-        rcpPro: 'MACSF Sport N° 4920184',
-      },
-      client: {
-        name: 'Alexandre Dupont',
-      },
-      regime: 'micro',
-      items: [
-        { description: 'Séance de Coaching Individuel (1h)', quantity: 4, unitPriceHt: 55 },
-        { description: 'Bilan Biomécanique & Postural WorkoutVision', quantity: 1, unitPriceHt: 60 },
-      ],
-    });
-
-    expect(invoice.invoiceNumber).toBe('FAC-2026-0042');
-    expect(invoice.coach.legalName).toBe('EI Thomas Martin'); // Décret 2022-725 mandatory EI prefix
-    expect(invoice.totalHt).toBe(280);
-    expect(invoice.tvaRate).toBe(0);
-    expect(invoice.totalTtc).toBe(280);
-    expect(invoice.legalMentions).toContain('TVA non applicable, art. 293 B du CGI');
-    expect(invoice.legalMentions.some(m => m.includes('ED-75-2023-09418'))).toBe(true);
-    expect(invoice.legalMentions.some(m => m.includes('40'))).toBe(true); // Indemnité 40 €
+  it('warns past the VAT franchise (37 500 / 41 250 €) and the micro-BNC ceiling (83 600 €) over a year', () => {
+    expect(simulateCoachMonth({ sessionPrice: 50, sessionsPerMonth: 40 }).warnings).toEqual([]);
+    expect(simulateCoachMonth({ sessionPrice: 80, sessionsPerMonth: 40 }).warnings).toEqual(['vat-base']); // 38 400
+    expect(simulateCoachMonth({ sessionPrice: 90, sessionsPerMonth: 40 }).warnings).toEqual(['vat-increased']); // 43 200
+    expect(simulateCoachMonth({ sessionPrice: 150, sessionsPerMonth: 50 }).warnings).toEqual(['vat-increased', 'micro-ceiling']); // 90 000
   });
+});
 
-  it('generates compliant Livre des Recettes CSV file', () => {
-    const entries = [
-      {
-        date: '2026-10-01',
-        invoiceNumber: 'F-2026-001',
-        clientName: 'Alexandre Dupont',
-        naturePrestation: 'Pack 10 Séances Coaching Basic-Fit',
-        montantHt: 500,
-        modeReglement: 'Virement' as const,
-      },
-      {
-        date: '2026-10-05',
-        invoiceNumber: 'F-2026-002',
-        clientName: 'Sophie Martin',
-        naturePrestation: 'Séance Coaching 1h',
-        montantHt: 50,
-        modeReglement: 'Carte Bancaire' as const,
-      },
-    ];
-
-    const csv = exportLivreRecettesCsv(entries);
-    expect(csv).toContain('Date;N° Facture;Nom Client;Nature Prestation;Montant Encaissé (€);Mode de Règlement');
-    expect(csv).toContain('2026-10-01;F-2026-001;"Alexandre Dupont";"Pack 10 Séances Coaching Basic-Fit";500.00;Virement');
-    expect(csv).toContain('2026-10-05;F-2026-002;"Sophie Martin";"Séance Coaching 1h";50.00;Carte Bancaire');
+describe('the invoice: no identity default, refused while a required field is empty (INV-1 to INV-5)', () => {
+  it('checks the SIRET key (Luhn), and refuses the code’s old made-up SIRET', () => {
+    expect(isValidSiret(SIRET)).toBe(true);
+    expect(isValidSiret('123 456 789 01237')).toBe(true);
+    expect(isValidSiret('842 918 203 00018')).toBe(false);
+    expect(isValidSiret('00000000000000')).toBe(false);
+    expect(isValidSiret('1234')).toBe(false);
   });
+  it('says what is missing, and builds nothing until it is there', () => {
+    const empty = { coach: {}, client: {}, items: [{ description: '', quantity: 1, unitPrice: 0 }], serviceDate: '' };
+    expect(invoiceMissing(empty)).toEqual(['coachName', 'siret', 'coachAddress', 'cartePro', 'clientName', 'clientAddress', 'description', 'price', 'serviceDate']);
+    expect(buildInvoice(empty, 'F-2026-0001')).toBeNull();
+    const full = { coach: COACH, client: CLIENT, items: [ITEM], serviceDate: '2026-10-14', issueDate: '2026-10-14' };
+    expect(invoiceMissing(full)).toEqual([]);
+    expect(buildInvoice(full, '')).toBeNull();
+  });
+  it('prints only what the coach typed, the EI mention, the franchise line and one payment term', () => {
+    const inv = buildInvoice({ coach: COACH, client: CLIENT, items: [ITEM], serviceDate: '2026-10-13', issueDate: '2026-10-14' }, 'F-2026-0001');
+    expect(inv).not.toBeNull();
+    if (!inv) return;
+    expect(inv.coach.legalName).toBe('EI Camille Martin');
+    expect(inv.total).toBe(220);
+    expect(inv.mentions).toContain('TVA non applicable, art. 293 B du CGI');
+    expect(inv.mentions).toContain('Paiement à réception de la facture.');
+    expect(inv.dueDate).toBe('2026-10-14');
+    // A consumer: no 40 € indemnity, no penalty line.
+    expect(inv.mentions.some(m => m.includes('40'))).toBe(false);
+    const text = invoiceLines(inv).join('\n');
+    expect(text).toContain('FACTURE N° F-2026-0001');
+    expect(text).toContain('SIRET\u00A0: 123 456 789 01237');
+    expect(text).not.toMatch(/842 918 203|MACSF|Basic-Fit|ED-75-2023-09418|Coach Thomas/);
+    expect(text).not.toContain('Assurance'); // not typed, not printed
+    expect(text).not.toContain('TTC');
+  });
+  it('gives a business client the penalties, the 40 € indemnity and the discount line, and a due date at 30 days', () => {
+    const inv = buildInvoice({ coach: COACH, client: { ...CLIENT, kind: 'professionnel' }, items: [ITEM], serviceDate: '2026-10-14', issueDate: '2026-10-14', payment: 'days30' }, 'F-2026-0002');
+    expect(inv?.dueDate).toBe('2026-11-13');
+    expect(inv?.mentions.some(m => m.includes('D441-5'))).toBe(true);
+    expect(inv?.mentions.some(m => m.includes('L441-10'))).toBe(true);
+    expect(inv?.mentions.some(m => m.startsWith('Escompte'))).toBe(true);
+  });
+  it('adds EI once', () => {
+    expect(eiName('Camille Martin')).toBe('EI Camille Martin');
+    expect(eiName('Camille Martin EI')).toBe('Camille Martin EI');
+    expect(eiName('')).toBe('');
+  });
+});
 
-  it('projects 12-month annual P&L incorporating seasonal fitness trends', () => {
-    const pl = calculateCoachAnnualPl({
-      monthlyRent: 650,
-      averageSessionPrice: 50,
-      monthlySessionsCount: 40,
-    });
+describe('dates and amounts as a French invoice writes them', () => {
+  it('dates in the phone’s own time zone, not UTC', () => {
+    expect(localIsoDate(new Date(2026, 9, 14, 0, 30))).toBe('2026-10-14');
+  });
+  it('writes euros with a decimal comma and no-break spaces', () => {
+    expect(euros(1234.5)).toBe('1 234,50 €');
+    expect(euros(-516, true, 0)).toBe('−516 €');
+    expect(euros(1234.5, false)).toBe('€1,234.50');
+  });
+});
 
-    expect(pl.length).toBe(12);
-    expect(pl[0].monthName).toBe('Janvier');
-    expect(pl[8].monthName).toBe('Septembre');
-    // September (La rentrée) is peak month factor 1.35
-    expect(pl[8].seasonFactor).toBe(1.35);
-    expect(pl[8].sessionsCount).toBe(54); // 40 * 1.35
-    // August is vacation slump factor 0.60
-    expect(pl[7].seasonFactor).toBe(0.60);
-    expect(pl[7].sessionsCount).toBe(24); // 40 * 0.60
-    // Every month deducts the €650 Basic-Fit rent
-    expect(pl.every(m => m.gymRent === 650)).toBe(true);
+describe('the receipts book (INV-6)', () => {
+  it('exports money received only, with a byte-order mark, ";" and a decimal comma; an empty book is its header', () => {
+    const csv = receiptsCsv([{ paidOn: '2026-10-15', number: 'F-2026-0001', client: 'Alex Durand', nature: 'Séance', amount: 55.5, mode: 'virement' }]);
+    expect(csv.startsWith('﻿')).toBe(true);
+    expect(csv).toContain('2026-10-15;F-2026-0001;"Alex Durand";"Séance";55,50;Virement');
+    expect(receiptsCsv([]).split('\r\n')).toHaveLength(1);
   });
 });

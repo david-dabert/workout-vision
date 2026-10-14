@@ -65,8 +65,21 @@ export async function getAllClients() {
   return clients.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 }
 
-/** Delete a client. */
+/**
+ * Delete a client and everything kept for them on this phone: the delivered sessions, the meals, the pack and the
+ * links to sets (honesty pass of 14 October 2026, CLI-3: only the profile went, the health notes' sessions stayed).
+ * The issued invoices stay: an invoice, once issued, is kept (its number is never reused).
+ */
 export async function deleteClient(id) {
+  const drop = async (store, match) => {
+    const keys = [];
+    await store.iterate((value, key) => { if (match(value, key)) keys.push(key); });
+    for (const k of keys) await store.removeItem(k);
+  };
+  await drop(clientSessionStore, v => v?.clientId === id);
+  await drop(clientMealStore, v => v?.clientId === id);
+  await drop(clientWorkoutStore, v => v?.clientId === id);
+  await coachStore.removeItem(`carnet_${id}`);
   await coachStore.removeItem(id);
 }
 
@@ -152,11 +165,14 @@ export async function saveClientCarnet(clientId, carnet) {
 }
 
 /**
- * Get client carnet.
+ * Get client carnet, or null when the coach has recorded no purchase: no pack is assumed (CLI-1: every client was
+ * given a pack of 10 sessions at 500 € that no one bought).
  * @param {string} clientId
+ * @returns {Promise<null | { totalPurchased: number, completedCount: number, pricePerPack?: number, boughtOn?: string }>}
  */
 export async function getClientCarnet(clientId) {
-  return (await coachStore.getItem(`carnet_${clientId}`)) || { totalPurchased: 10, completedCount: 0, pricePerPack: 500 };
+  const c = await coachStore.getItem(`carnet_${clientId}`);
+  return c && Number(c.totalPurchased) > 0 ? c : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -190,22 +206,50 @@ export async function getClientMeals(clientId) {
 }
 
 // ---------------------------------------------------------------------------
-// French Legal Livre des Recettes (Invoices Received)
+// Invoices and the receipts book (honesty pass of 14 October 2026, INV-3 and INV-6)
 // ---------------------------------------------------------------------------
 
+const invoiceStore = localforage.createInstance({ name: 'workoutVision', storeName: 'coachInvoices' });
+
 /**
- * Add an invoice entry to the official Livre des Recettes.
- * @param {object} entry
+ * The next invoice number of the year, F-2026-0001, F-2026-0002…: a counter kept on this phone, taken once and never
+ * given again, even if the invoice is later cancelled. The old number was the year and four letters of the client's ID:
+ * the same for every invoice to that client.
  */
-export async function saveLivreRecettesEntry(entry) {
-  const id = `recette_${entry.invoiceNumber || Date.now()}`;
-  await livreRecettesStore.setItem(id, entry);
+export async function issueInvoiceNumber(year = new Date().getFullYear()) {
+  const key = `invoiceCounter_${year}`;
+  const n = (Number(await coachStore.getItem(key)) || 0) + 1;
+  await coachStore.setItem(key, n);
+  return `F-${year}-${String(n).padStart(4, '0')}`;
+}
+
+/** Keep an issued invoice, under its number (unique by issueInvoiceNumber). */
+export async function saveIssuedInvoice(invoice) {
+  await invoiceStore.setItem(invoice.number, { ...invoice, savedAt: Date.now() });
+  return invoice;
+}
+
+/** The issued invoices, the latest first. */
+export async function getIssuedInvoices() {
+  const out = [];
+  await invoiceStore.iterate(v => { out.push(v); });
+  return out.sort((a, b) => String(b.number).localeCompare(String(a.number)));
+}
+
+/** Record that an issued invoice was paid: the day and the way. Only then does it enter the receipts book. */
+export async function markInvoicePaid(number, { paidOn, mode }) {
+  const inv = await invoiceStore.getItem(number);
+  if (!inv) return null;
+  const next = { ...inv, paid: { paidOn, mode } };
+  await invoiceStore.setItem(number, next);
+  return next;
 }
 
 /**
- * Get all entries from the Livre des Recettes.
+ * The rows written by the first version of the receipts book (before 14 October 2026), when an invoice was created
+ * rather than paid, under numbers that could repeat: read only, so the coach can check them; never exported.
  */
-export async function getLivreRecettesEntries() {
+export async function getLegacyReceiptRows() {
   const entries = [];
   await livreRecettesStore.iterate((value) => {
     entries.push(value);
