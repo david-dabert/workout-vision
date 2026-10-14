@@ -1,11 +1,11 @@
-Public scoreboard 2026-10-14: 1064 build sets, 490 exact (46%). Of the 949 in the baseline that decide, 431 exact now, 431 before; 0 became off by 3 or more. The 115 bench and overhead press sets are measured and decide nothing (PLAN.md).
+Public scoreboard 2026-10-12: 1064 build sets, 490 exact (46%). Of the 949 in the baseline that decide, 431 exact now, 431 before; 0 became off by 3 or more. The 115 bench and overhead press sets are measured and decide nothing (PLAN.md).
 Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 949 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; Countix's two readings of a clip counted as two sets, as in the headline; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
-Pose doubt (counting/doubt.js, experimental, decides nothing): of 946 counted sets, 197 flagged: 65 exact (33%), 23 off by 3+ (12%); 749 not flagged: 425 exact (57%), 24 off by 3+ (3%). Sets off by 3+ flagged: 23 of 47.
+Pose doubt (counting/doubt.js, experimental, decides nothing): of 946 counted sets, 195 flagged: 65 exact (33%), 23 off by 3+ (12%); 751 not flagged: 425 exact (57%), 26 off by 3+ (3%). Sets off by 3+ flagged: 23 of 49.
 
 Per dataset, each counted by sets, press sets included as in the headline; 95% Wilson interval for the exact share; rep error = total |count - label| over the labelled reps of the counted sets:
 - cfrep: 12 sets, 8 exact (67%, 95% Wilson 39-86%), 0 refused, rep error 8 of 141 reps (5.7%).
-- countix: 447 sets, 181 exact (40%, 95% Wilson 36-45%), 53 refused, rep error 326 of 1412 reps (23.1%).
-- countix-whole: 447 sets, 174 exact (39%, 95% Wilson 35-44%), 65 refused, rep error 335 of 1386 reps (24.2%).
+- countix: 447 sets, 181 exact (40%, 95% Wilson 36-45%), 53 refused, rep error 331 of 1412 reps (23.4%).
+- countix-whole: 447 sets, 174 exact (39%, 95% Wilson 35-44%), 65 refused, rep error 339 of 1386 reps (24.5%).
 - mmfit: 158 sets, 127 exact (80%, 95% Wilson 73-86%), 0 refused, rep error 48 of 1583 reps (3.0%).
 Countix by distinct clip: 447 labelled clips from 435 YouTube videos, each read twice (cut and whole): both readings 157 exact (35%, 95% Wilson 31-40%); either reading 198 exact (44%, 95% Wilson 40-49%).
 
@@ -13,14 +13,14 @@ Countix by distinct clip: 447 labelled clips from 435 YouTube videos, each read 
 |---|---:|---:|---:|---:|---:|
 | cfrep deadlift | 6 | 3 | 2 | 1 | 0 |
 | cfrep squat | 6 | 5 | 0 | 1 | 0 |
-| countix bench_press (press: measured, decides nothing, PLAN.md) | 38 | 12 | 7 | 4 | 11 |
+| countix bench_press (press: measured, decides nothing, PLAN.md) | 38 | 12 | 6 | 5 | 11 |
 | countix front_raise | 75 | 36 | 30 | 1 | 5 |
 | countix lunge | 78 | 33 | 28 | 1 | 7 |
 | countix pull_up | 60 | 20 | 27 | 3 | 7 |
 | countix push_up | 77 | 35 | 15 | 6 | 8 |
 | countix squat | 46 | 21 | 11 | 1 | 9 |
 | countix triceps_pushdown | 73 | 24 | 33 | 2 | 6 |
-| countix-whole bench_press (press: measured, decides nothing, PLAN.md) | 38 | 11 | 8 | 4 | 11 |
+| countix-whole bench_press (press: measured, decides nothing, PLAN.md) | 38 | 11 | 8 | 5 | 11 |
 | countix-whole front_raise | 75 | 31 | 30 | 1 | 8 |
 | countix-whole lunge | 78 | 35 | 24 | 1 | 7 |
 | countix-whole pull_up | 60 | 21 | 20 | 4 | 11 |
@@ -33,10 +33,6 @@ Countix by distinct clip: 447 labelled clips from 435 YouTube videos, each read 
 | mmfit overhead_press (press: measured, decides nothing, PLAN.md) | 39 | 36 | 3 | 0 | 0 |
 | mmfit squat | 40 | 40 | 0 | 0 | 0 |
 
--> public/countix/build/Yxfc0XYQI3I_000000_4120.json.gz  label 3  before 0  now 2  (press: measured, decides nothing, PLAN.md)
--> public/countix/build/rRUaSaoVlBc_000007_0.json.gz  label 8  before 0  now 3
--> public/countix-whole/build/Yxfc0XYQI3I_000000_4120.json.gz  label 3  before 0  now 1  (press: measured, decides nothing, PLAN.md)
--> public/countix-whole/build/rRUaSaoVlBc_000007_0.json.gz  label 8  before 0  now 3
 
 Not scored (5274), each with its reason:
 public/countix/APkos_Kqa3M_000017_0: left out: battle rope training is not a lift the app counts
@@ -5318,7 +5314,7 @@ RepCount-A (Hugging Face lmms-lab-eval/repcounta-lance, test and validation spli
 | Class | Catalogue key | Sets | Exact | Off by 1 | Off by 3+ | Refused |
 |---|---|---:|---:|---:|---:|---:|
 | battle_rope | no counter | 3 | - | - | - | - |
-| bench_pressing | bench_press | 18 | 4 | 1 | 7 | 4 |
+| bench_pressing | bench_press | 18 | 4 | 1 | 8 | 4 |
 | front_raise | front_raise | 14 | 6 | 5 | 1 | 0 |
 | jump_jack | no counter | 14 | - | - | - | - |
 | pommelhorse | no counter | 12 | - | - | - | - |

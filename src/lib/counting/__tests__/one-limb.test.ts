@@ -62,19 +62,35 @@ describe('a two-arm lift counts the working arm when the better seen arm stays s
     expect(result.arm).toBe(working);
   });
 
-  it('keeps the better seen arm when it counts reps, even if the other counts more', () => {
+  // The better seen arm moves (35 degrees, under its own detection's reach as a slow drift) but counts no rep: it is
+  // not still, so the count stays its own and the app asks (the first form of the rule switched here, review of 14 October).
+  it('keeps a better seen arm that moves but counts nothing', () => {
     const def = liftDefinition('bicep_curl')!;
     const sps = 30;
-    const five = sample(cycles({ rest: 170, work: 80, firstSec: 2.4, secondSec: 1.6 }), 170, sps);
     const ten = sample(cycles({ rest: 170, work: 80, firstSec: 1.2, secondSec: 0.8 }), 170, sps);
-    const n = Math.min(five.length, ten.length);
-    const frames = Array.from({ length: n }, (_, i) => {
-      const frame = jointFrame(def.joint, { left: five[i], right: ten[i] })!;
+    const frames = ten.map((a, i) => {
+      const drift = 170 - 35 * Math.min(1, i / ten.length * 2) * (i < ten.length / 2 ? 1 : (ten.length - i) / (ten.length / 2));
+      const frame = jointFrame(def.joint, { left: drift, right: a })!;
       for (const j of JOINT_POINTS[def.joint].right) frame[j] = { ...frame[j], visibility: 0.8 };
       return frame;
     });
-    const result = countReps(frames, timestamps(n, sps), 'bicep_curl');
+    const result = countReps(frames, timestamps(ten.length, sps), 'bicep_curl');
     expect(result.arm).toBe('left');
-    expect(result.count).toBeGreaterThan(0);
+  });
+
+  // The working arm seen on fewer than half the samples does not take the count: summarizeCount would refuse it.
+  it('does not switch to a working arm seen on fewer than half the samples', () => {
+    const def = liftDefinition('bicep_curl')!;
+    const sps = 30;
+    const ten = sample(cycles({ rest: 170, work: 80, firstSec: 1.2, secondSec: 0.8 }), 170, sps);
+    const rng = seeded(9);
+    const frames = ten.map((a, i) => {
+      const frame = jointFrame(def.joint, { left: 170 + (rng() - 0.5), right: a })!;
+      for (const j of JOINT_POINTS[def.joint].right) frame[j] = { ...frame[j], visibility: i % 3 === 0 ? 0.8 : 0.1 };
+      return frame;
+    });
+    const result = countReps(frames, timestamps(ten.length, sps), 'bicep_curl');
+    expect(result.arm).toBe('left');
+    expect(result.count).toBe(0);
   });
 });
