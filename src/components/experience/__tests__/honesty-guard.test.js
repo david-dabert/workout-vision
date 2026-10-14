@@ -35,6 +35,9 @@ describe('the README quotes the scoreboards, and only them', () => {
   const readme = root('README.md');
   it('makes none of the claims of 13 October 2026', () => {
     expect(readme).not.toMatch(/100\s?%|74\/74|clinical-grade|Sub-Degree|McNemar Invariant|HIPAA|zero tolerance|certified judge|Wolf|Israetel|Bilateral Asymmetry Index/i);
+    // Nor a figure no committed scoreboard file holds (second round of the honesty pass, 14 October 2026): the partial-rep
+    // detector's count on synthetic sets came from uncommitted research, and no file is dated 14 October.
+    expect(readme).not.toMatch(/reports 180|run again on 14 October/);
   });
   it('gives the stored sets, the real videos, the public half and the synthetic sets as the files do', () => {
     const board = root('test/real-phone/accuracy/scoreboard.txt');

@@ -11,7 +11,7 @@ Every number on this page comes from the scoreboard files in the repository, wit
 
 - Counts the reps of 183 exercises, and scores two fitness tests over 30 seconds (the chair stand and the arm curl, src/lib/fitness-tests.js). You choose the exercise; the app does not guess it. Five are Beta: biceps curl, lat pulldown, squat, Romanian deadlift and leg press (src/lib/liftTiers.js). All the others are Experimental and say so on the result. No exercise has passed the exam PLAN.md requires; the exam sets are still to be filmed (test/real-phone/exam/README.md).
 - Shows the count and asks you to confirm it or give the true number. When most of the set cannot be seen, it says so and shows no count; where it can, it offers a number marked "Proposition de l'appli", to confirm, with no grade and no measure.
-- The guide lists 309 exercises. The 126 the counter does not offer are marked "Non compté": for those the app at most proposes a number to check, and gives none when the joints it would need were seen on fewer than half the samples (src/lib/universalProposal.js).
+- The guide lists 309 exercises. The 126 the counter does not offer are marked "Non compté": for those the app at most proposes a number to check, offered as one key under an empty slot, and gives none when the joints it would need were seen on fewer than half the samples, or for a hold such as the plank, whose time it does not measure (src/lib/universalProposal.js).
 - Shows, under an experimental label (none of them is validated on real phone video, src/components/experience/measures.js): each rep's range of motion in degrees, its duration, concentric and eccentric time and tempo, the angle over the whole set with each rep marked, and, for a lateral raise filmed from the front only, the range of each side (src/lib/counting/symmetry.ts).
 - Replays the set with the tracked body drawn over the video, the counting joint lit, and each rep marked on a timeline.
 - Builds a session report, on screen and as a PDF shared from the phone: lift, date, people, count and how it was made (counted, corrected or typed), the measures above, and the person's own pain (0 to 10) and perceived effort (RPE), printed as theirs. The same set can be saved as a JSON file that says where each value comes from.
@@ -20,18 +20,20 @@ Every number on this page comes from the scoreboard files in the repository, wit
 
 Other sections (sports, equine, coaches, chat, nutrition, workplace ergonomics) were added on 12-14 October 2026. None of them is measured by the scoreboards below; read their numbers as demonstrations unless the screen says they come from your own data.
 
-## What it does not do
+## What the rep counter does not do
+
+These hold for the rep counter, its result screen, its report, its PDF, its JSON file and the history. The other sections listed above are not covered here.
 
 - It does not score form, judge safety, predict injury, estimate strength or certify a set.
 - It does not measure bar speed in metres per second, joint loads or forces; its speeds are joint angles per second, and the change of speed across a set is not shown (on identical synthetic reps it could not be told from noise).
-- It does not count partial reps. A detector exists in the code for research and is shown nowhere: on 96 synthetic sets built with no partial rep it reports 180.
+- It does not count partial reps. A detector exists in the code for research and is shown nowhere: it reports partial reps on synthetic sets built with none.
 - It does not compare left and right except on a lateral raise filmed from the front.
 
 ## Accuracy
 
 Labelled sets are counted by the same code the app runs, in CI on every push and pull request (npm run scoreboard, .github/workflows/ci.yml). Labels come from David or from human-annotated public datasets (R1).
 
-**David's sets** (test/real-phone/accuracy/scoreboard.txt, 12 October 2026; run again on 14 October 2026 with the same counts):
+**David's sets** (test/real-phone/accuracy/scoreboard.txt, 12 October 2026):
 - stored landmark sets: 11 of the 15 that decide are exact; the 5 bench and overhead press sets are measured and decide nothing (PLAN.md);
 - real videos read whole by the built app: 6 of 14 exact, 3 refused, and 1 known error of 3 or more (a pendulum squat counted 14 for 7).
 
