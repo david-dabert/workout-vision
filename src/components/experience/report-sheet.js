@@ -290,7 +290,9 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     wave: shown && wave?.t?.length > 1 && allReps.length ? { t: wave.t, a: wave.a, reps: allReps, rest: liftDefinition(lift)?.rest ?? 'low', first: liftFirst, jointWord: jointName(joint, fr), reference: referenceBand(lift, { joint: liftDefinition(lift)?.joint }) } : null,
     // The plain-words key to the table and the summary, wherever they are shown.
     guide: shown && rows.length > 0 ? measureGuide(fr) : null,
-    partialRepNote: hasPartial ? (fr ? `…${NBSP}: répétition partielle, non chronométrée` : '…: partial rep, not timed') : '',
+    // A rep tempo.js does not time (partialIn): said untimed, not "partial", a word for a detection the app has not
+    // measured against labels (honesty pass, second round, 14 October 2026). Awaiting David's approval (R10).
+    partialRepNote: hasPartial ? (fr ? `…${NBSP}: répétition non chronométrée` : '…: rep not timed') : '',
     // Beside every measure printed, while none is validated (measures.js).
     experimental: shown && (rows.length > 0 || (measures && summary.length > 0)) ? experimentalLabel(fr) : '',
     notesLabel: 'Notes',

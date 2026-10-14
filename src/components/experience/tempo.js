@@ -9,7 +9,8 @@ export const decimal = (x, fr) => (fr ? x.toFixed(1).replace('.', ',') : x.toFix
 // a rep the video holds whole, but whose range is under half the set's median, or one of whose moving phases is
 // under 0.2 s. It stays counted, with its range; its tempo and speeds are not shown and it leaves the set's tempo
 // and time under tension. Status: experimental, UNSOURCED thresholds (a rep shorter than 0.5 s is already
-// implausible, core.ts MIN_REP_SEC; a half-range rep is not the movement the set is made of).
+// implausible, core.ts MIN_REP_SEC; a half-range rep is not the movement the set is made of). The screens and the
+// report call such a rep "non chronométrée" / "not timed", never "partial" (honesty pass, second round, 14 October 2026).
 export const PARTIAL_RANGE_RATIO = 0.5;
 export const MIN_PHASE_SEC = 0.2;
 export function partialIn(reps) {

@@ -371,7 +371,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     return { head: `${word} · `, body: r.clipped
       ? `${Math.round(r.romDegrees)}°${NB}· ${filmed}`
       : partialIn(reps)(r)
-      ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? (corrected ? 'partiel, non chronométré' : 'partielle, non chronométrée') : 'partial, not timed'}`
+      ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? (corrected ? 'non chronométré' : 'non chronométrée') : 'not timed'}`
       : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}` };
   };
   let detail = '', detailHead = '';

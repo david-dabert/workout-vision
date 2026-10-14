@@ -83,7 +83,7 @@ function caption(r, s, i, fr, markName, isPartial = false) {
   const NB = '\u00A0', sec = x => `${decimal(x, fr)}${NB}s`;
   const parts = [markName ? markName(i) : `${fr ? 'Rép.' : 'Rep'}${NB}${i + 1}`];
   if (r.clipped) parts.push(fr ? (markName ? 'filmé en partie' : 'filmée en partie') : 'partly filmed');
-  else if (isPartial) parts.push(fr ? (markName ? 'partiel, non chronométré' : 'partielle, non chronométrée') : 'partial, not timed');
+  else if (isPartial) parts.push(fr ? (markName ? 'non chronométré' : 'non chronométrée') : 'not timed');
   else parts.push(`conc.${NB}${sec(r.concentricSec)}`, `${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`);
   if (s) {
     const raw = repGap(s), g = Math.round(raw);
