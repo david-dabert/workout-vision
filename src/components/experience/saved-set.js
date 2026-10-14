@@ -33,7 +33,9 @@ export function savedSet({ result, lift, n, corrected, sides = null, manual = fa
       exercise: lift, reps: n, repDetails: [], arm: null, confidence: null, afterRefusal: true,
       date: now.toISOString(), source: 'manual', duration: result.metadata?.duration, corrected: true,
       sides: null, machineResult: null, correctedResult: { reps: n }, repDetailsVersion: 2, wave: null,
-      ...(proposal ? { proposal: { reps: proposal, by: 'psc' } } : {}),
+      // by: 'psc' (the core's proposal on a refused set) or 'universal' (an exercise the core does not offer,
+      // universalProposal.js), so the history can tell them apart.
+      ...(proposal ? { proposal: { reps: proposal, by: result?.proposal?.by === 'universal' ? 'universal' : 'psc' } } : {}),
     });
   }
   const count = result.count;

@@ -51,6 +51,13 @@ export const RESULT = {
     // measure; test/real-phone/swarm/copy-proposal.md). Approved by David on 9 October 2026.
     proposal: n => `Proposition de l’appli${NB}: ${n}`,
     proposalNote: 'L’appli propose ce nombre sans avoir bien vu le mouvement. Vérifiez-le avant d’enregistrer.',
+    // An exercise the core does not offer, read by the universal engine (universalProposal.js; counting research of 14
+    // October 2026): refused, its number at most a proposal. Awaiting David's approval (R10).
+    universalCause: 'L’appli ne compte pas encore cet exercice.',
+    universalProposes: 'Elle propose un nombre lu sur votre vidéo, sans garantie.',
+    universalUnseen: 'Le mouvement n’était pas assez visible pour proposer un nombre.',
+    universalHold: 'Elle ne mesure pas encore le temps de maintien.',
+    universalNote: 'Ce nombre n’est pas un comptage validé. Vérifiez-le avant d’enregistrer.',
     confirmN: n => `Confirmer ${n} ${reps(n, true)}`,
     savedConfirmed: n => `Merci. ${n} ${n > 1 ? 'répétitions enregistrées' : 'répétition enregistrée'}, ${n > 1 ? 'confirmées' : 'confirmée'} par vous.`,
     // A counted set the body check flags (coreAnalysis.js withBodyCheck, 8 October 2026; R8: a count to confirm, no
@@ -103,6 +110,11 @@ export const RESULT = {
     howMany: 'How many did you do?',
     proposal: n => `The app’s proposal: ${n}`,
     proposalNote: 'The app suggests this number without having seen the movement clearly. Check it before saving.',
+    universalCause: 'The app does not count this exercise yet.',
+    universalProposes: 'It suggests a number read from your video, with no guarantee.',
+    universalUnseen: 'The movement was not visible enough to suggest a number.',
+    universalHold: 'It does not measure hold times yet.',
+    universalNote: 'This number is not a validated count. Check it before saving.',
     confirmN: n => `Confirm ${n} ${reps(n, false)}`,
     savedConfirmed: n => `Thank you. ${n} ${n === 1 ? 'rep' : 'reps'} saved, confirmed by you.`,
     bodyCause: joint => `In this set, the ${joint} angle does not move like the rest of your body. The app may have misread it.`,

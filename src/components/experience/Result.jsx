@@ -641,7 +641,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
         <span className="res-cand-n">{n}</span><span className="res-cand-from">{from}</span>
       </button>)}
     </div>}
-    {proposal && trueN === proposal ? <p className="res-hint" data-testid="res-proposal-note">{c.proposalNote}</p>
+    {proposal && trueN === proposal ? <p className="res-hint" data-testid="res-proposal-note">{result.proposal?.by === 'universal' ? c.universalNote : c.proposalNote}</p>
       : toCheck && offeredBy(trueN) ? <p className="res-hint" data-testid="res-body-note">{c.bodyNote}</p>
       : trueN > 0 ? <p className="res-state is-typed">{c.typedBy}</p> : <p className="res-hint">{quick.length > 0 ? c.quickHint : c.typeHint}</p>}
     {quick.length > 0 && <div className="res-quick" role="group" aria-labelledby="res-ask">{quick.map(k => <button key={k} type="button" className={`res-qk press${trueN === k ? ' is-on' : ''}`} aria-pressed={trueN === k} onClick={() => adjust(k)}>{k}</button>)}</div>}
@@ -677,7 +677,10 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
             : (many
               ? (fr ? `Vos ${limb.noun} étaient caché${ee} pendant la plus grande partie de la série.` : `Your ${limb.noun} were hidden for most of the set.`)
               : (fr ? `Votre ${armLabel} était caché${e} pendant la plus grande partie de la série.` : `Your ${armLabel} was hidden for most of the set.`)));
-    const fix = result.notRead ? '' : why.hips
+    // An exercise the core does not offer (universalProposal.js): what the app does not do yet, then whether it proposes a
+    // number; no filming fix, since none is known to make it count. A video with nobody in it says so, as above.
+    const universal = !notRead && result.universal && why.cause !== 'nobody' ? result.universal : null;
+    const fix = universal ? (result.universal.hold ? c.universalHold : proposal ? c.universalProposes : c.universalUnseen) : result.notRead ? '' : why.hips
       ? (fr ? 'Reculez pour que vos hanches soient dans l’image, puis refilmez.' : 'Step back so your hips are in the picture, then record again.')
       : why.cause === 'nobody'
         ? (fr ? 'Posez le téléphone face à vous, placez-vous dans l’image, puis refilmez.' : 'Stand the phone facing you, step into the picture, then record again.')
@@ -692,7 +695,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
         <Topbar fr={fr} onClose={askClose} onReplay={onReplay} replayRef={replayRef} badge={false} />
         {status}
         {tierLine}
-        {step !== 'saved' && lowAsk(true, [text, fix].filter(Boolean))}
+        {step !== 'saved' && lowAsk(true, [universal ? c.universalCause : text, fix].filter(Boolean))}
         {step !== 'saved' && lowDock(true)}
         <div ref={cardRef}>
           {step === 'saved' && <div className="saved appear" data-testid="saved-card">
