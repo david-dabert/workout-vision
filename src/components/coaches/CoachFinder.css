@@ -8,19 +8,17 @@
 .wv-experience .coach-screen .coach-telemetry .sc-tag { flex: none; }
 .wv-experience .coach-screen .coach-filters { gap: var(--s-2); }
 
-/* The profiles: one hairline card each, name and distance, credentials, bio, then rate and the two actions. */
+/* The profiles: one hairline card each, a monogram, the placeholder's name and role, its "fictional" tag, the
+   specialties and a sample line. No price, rating or credential: none exists. */
 .wv-experience .coach-list { display: flex; flex-direction: column; gap: var(--s-3); }
 .wv-experience .coach-card { gap: var(--s-3); padding: 18px; }
-.wv-experience .coach-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.wv-experience .coach-card-head { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: var(--s-3); }
+.wv-experience .coach-avatar { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; border: 1px dashed var(--hair-2); font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; color: var(--c-fg-muted); }
 .wv-experience .coach-name-block { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.wv-experience .coach-distance { flex: none; text-transform: none; letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+.wv-experience .coach-fictional { grid-column: 1 / -1; justify-self: start; }
 .wv-experience .coach-credentials { display: flex; flex-wrap: wrap; gap: 6px; }
 .wv-experience .coach-bio { font-size: var(--fs-caption); line-height: 1.55; }
-.wv-experience .coach-card-foot { display: flex; flex-direction: column; gap: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--hair-0); }
-.wv-experience .coach-rate { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: var(--s-2); }
-.wv-experience .coach-rate-value { font-weight: 600; font-size: 21px; line-height: 1.1; color: var(--c-fg); font-variant-numeric: tabular-nums; }
-.wv-experience .coach-rating { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-caption); color: var(--bone-2); font-variant-numeric: tabular-nums; }
-.wv-experience .coach-rating svg { width: 12px; height: 12px; color: var(--c-accent); flex: none; }
-.wv-experience .coach-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--s-2); }
-.wv-experience .coach-actions > * { width: 100%; height: 44px; min-height: 44px; padding: 0 12px; border-radius: var(--r-s); font-size: var(--fs-caption); }
-.wv-experience .coach-actions svg { width: 14px; height: 14px; }
+/* Sending a set: the way that works today (SendToCoach.jsx). */
+.wv-experience .send-coach { gap: var(--s-3); }
+.wv-experience .send-coach .send-coach-head { font-size: var(--fs-name); }
+.wv-experience .send-coach .btn-line { align-self: stretch; }

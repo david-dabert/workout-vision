@@ -14,8 +14,12 @@ const TEXT = new Set(['.html', '.js', '.mjs', '.cjs', '.css', '.json', '.webmani
 // An events URL as the worker's README names it (https://<name>.<account>.workers.dev/event), or any URL whose path
 // ends in /event, or the test build's address (playwright.config.js, events.invalid).
 const PATTERNS = [/https?:\/\/[^\s"'`<>);]*\.workers\.dev[^\s"'`<>);]*/g, /https?:\/\/[^\s"'`<>);]+\/event(?![\w-])/g, /https?:\/\/events\.invalid[^\s"'`<>);]*/g];
-// The pages' Content-Security-Policy as written in index.html: anything more in connect-src is a server the page may reach.
+// The pages' Content-Security-Policy as written: anything more in connect-src is a server the page may reach. The app's
+// page (index.html) also names Open Food Facts, for the office's barcode lookup (src/lib/openFoodFacts.js, 14 October
+// 2026): that origin, and only it, is taken out before the comparison; it is no events server.
 const CONNECT_SRC = "connect-src 'self' blob:";
+const LOOKUP_ORIGINS = ['https://world.openfoodfacts.org'];
+const withoutLookups = src => LOOKUP_ORIGINS.reduce((s, o) => s.replace(` ${o}`, ''), src);
 
 async function* files(dir) {
   for (const e of await readdir(dir, { withFileTypes: true })) {
@@ -39,7 +43,7 @@ export async function findEventsUrls(dir, { url = '', known = [] } = {}) {
     const hits = new Set();
     for (const re of PATTERNS) for (const m of text.matchAll(re)) hits.add(m[0]);
     for (const k of literal) if (text.includes(k)) hits.add(k);
-    for (const m of text.matchAll(/connect-src [^;"]*/g)) if (m[0].trim() !== CONNECT_SRC) hits.add(m[0].trim());
+    for (const m of text.matchAll(/connect-src [^;"]*/g)) if (withoutLookups(m[0].trim()) !== CONNECT_SRC) hits.add(withoutLookups(m[0].trim()));
     for (const found of hits) {
       if (allowed && (found === url || found.startsWith(allowed) || found === `${CONNECT_SRC} ${allowed}`)) continue;
       out.push({ file: rel, found });

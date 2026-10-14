@@ -1,6 +1,12 @@
 /**
  * smoothness.js — Movement smoothness (SPARC) and rep consistency (DTW).
  *
+ * WITHDRAWN from the app on 14 October 2026 (honesty audit, CORE-08, CORE-09, CORE-10): run by no screen, kept for
+ * research. The SPARC bands (-1.6 / -2.5 / -3.8) are UNSOURCED and the implementation departs from reference SPARC
+ * (no 0.05 amplitude threshold, cutoff at the 7.5 Hz Nyquist); the consistency mapping 100 - 2 x DTW is invented; the
+ * valgus (0.8), lockout (165°), trapezius (22 %) and depth (2 cm) thresholds are UNSOURCED, and the depth check reads
+ * the hip-centre y of world landmarks, which is about 0 by construction, so it never finds the bottom of the rep.
+ *
  * 100% on-device biomechanical intelligence for WorkoutVision.
  *
  * Literature:

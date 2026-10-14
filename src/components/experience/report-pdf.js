@@ -4,6 +4,7 @@
 import { PAGE_H, COLUMN, MARGIN, GAP, COLOR, pdfDoc, wrapText } from './pdf-kit';
 import { repStrokes, waveGeometry } from './wave';
 import { partialIn } from './tempo';
+import { wideDetail } from './report-sheet';
 
 const SHORT_MARK = '▾';                          // report-sheet.js: after a short rep's range
 
@@ -48,15 +49,23 @@ export function reportPdf(sheet) {
   // What the user filled in about themselves, two to a row, in two columns 8 apart; nothing when
   // nothing was filled in (step 1: no coach is assumed). The count's details are set the same way.
   const colW = (COLUMN - 8) / 2;
-  const pairs = (items, per = 2) => {
+  const pairs = (items, per = 2, wide = () => false) => {
     const w = (COLUMN - 8 * (per - 1)) / per;
-    for (let r = 0; r < items.length; r += per) {
+    // A long value (wide, report-sheet.js wideDetail) takes a row of its own across the column, as on the sheet.
+    const grouped = [];
+    for (const item of items) {
+      const last = grouped[grouped.length - 1];
+      if (wide(item[1])) grouped.push({ items: [item], w: COLUMN });
+      else if (last && last.w === w && last.items.length < per) last.items.push(item);
+      else grouped.push({ items: [item], w });
+    }
+    for (const { items: cells, w: cw } of grouped) {
       // A label wider than its column ("COUNTED BY THE APP" in three) wraps there, as the sheet's does.
-      const row = items.slice(r, r + per).map(([name, value]) => ({ heads: wrapText(upper(name), w, t => width(t, 'mono', 9, 9 * 0.16)), block: lines(value, 12, w) }));
+      const row = cells.map(([name, value]) => ({ heads: wrapText(upper(name), cw, t => width(t, 'mono', 9, 9 * 0.16)), block: lines(value, 12, cw) }));
       const headH = 13.5 * Math.max(...row.map(c => c.heads.length));
       if (room() < headH + 18 * Math.max(...row.map(c => c.block.lines.length)) && y > MARGIN) newPage();
       row.forEach(({ heads, block }, i) => {
-        const x = MARGIN + i * (w + 8);
+        const x = MARGIN + i * (cw + 8);
         heads.forEach((h, k) => write(h, x, y + k * 13.5, 'mono', 9, 1.5, COLOR.ash, 9 * 0.16));
         block.lines.forEach((line, k) => drawLine(line, block.raster, x, y + headH + k * 18, 12, 1.5, COLOR.ink));
       });
@@ -96,7 +105,9 @@ export function reportPdf(sheet) {
     y += GAP;
   };
   // How the count was made, labelled like the people (report-sheet.js, details).
-  pairs(sheet.details || [], 3);
+  pairs(sheet.details || [], 3, wideDetail);
+  // The person's own pain and effort (report-sheet.js, own), labelled the same way.
+  pairs(sheet.own || [], 2);
   // The set's two figures, set like the count: a rule, two columns, a label in capitals over a serif value in gold.
   if (sheet.stats?.length) {
     const H = 1 + 12 + 13.5 + 4 + 26;

@@ -1,6 +1,25 @@
 /**
  * The WorkoutVision Manifesto: The Science, History, and Mechanics of Optimal Lifting
  * Bilingual: French and English.
+ *
+ * Honesty pass of 14 October 2026, wave 2B (MAN-2 to MAN-4, the em dashes of the English text). The conclusion's
+ * accuracy claim (MAN-1), the stimulus-to-fatigue injury claim and the 10 % / 15 % asymmetry rule (part of MAN-3) are
+ * rewritten on the branch honesty-pass (commit 1959f6e) and left as they are here, to keep the two changes apart.
+ * The claims changed here, with their source and status (R9); "not fetched" means not opened again on that day:
+ * - Blair: fitness strongly associated with lower all-cause mortality (Blair SN et al., JAMA 1989;262(17):2395-2401);
+ *   muscular strength likewise (Ruiz JR et al., BMJ 2008;337:a439). Literature, not fetched. "Definitive proof" is
+ *   gone: cohorts show association.
+ * - Layne Norton: PhD in nutritional sciences, University of Illinois, not a physician (biolayne.com, per the audit).
+ * - Mechanical tension as the main driver of hypertrophy: Wackerhage H et al., J Appl Physiol 2019;126(1):30-43 (a
+ *   review). Literature, not fetched. "Prove" became "indicate".
+ * - Repetition tempo (rule 02): similar hypertrophy for repetitions of 0.5 to 8 s (Schoenfeld BJ et al., Sports Med
+ *   2015;45(4):577-585, a meta-analysis). Literature, not fetched. A 2 to 3 s descent is an option, not a must.
+ * - Momentum unloading the muscle and loading the joints (rule 02, its body), full range and stretch (rule 01), line of
+ *   pull (rule 03), individual anatomy and joint pain (principle 3): convention, UNSOURCED. The app measures none of
+ *   them: the buttons only open the lift for filming.
+ * - The stimulus-to-fatigue ratio is a coaching idea (Israetel et al., Renaissance Periodization; convention): its
+ *   drawn "equation" is not shown (Manifesto.jsx).
+ * French lines changed here: awaiting David's approval (R10).
  */
 
 export const MANIFESTO = {
@@ -10,7 +29,7 @@ export const MANIFESTO = {
     subtitle: 'The Science, History, and Mechanics of Optimal Lifting',
     readTime: '8 min read',
     lead: 'Welcome to WorkoutVision. You are holding a blueprint designed to bridge the gap between academic exercise physiology and the gym floor.',
-    introP1: 'For decades, the fitness industry was dictated by dogmatic traditions, anecdotal hearsay, and unverified coaching lore. Today, we live in the era of science-based lifting—a discipline rooted in biomechanics, muscle protein synthesis, physics, and empirical data.',
+    introP1: 'For decades, the fitness industry was dictated by dogmatic traditions, anecdotal hearsay, and unverified coaching lore. Today, we live in the era of science-based lifting, a discipline rooted in biomechanics, muscle protein synthesis, physics, and empirical data.',
     introP2: 'This guide details the history of sports science, the giants who built the field, why evidence-based training yields superior results, and how to execute movements with surgical precision.',
 
     tocTitle: 'Table of Contents',
@@ -19,12 +38,12 @@ export const MANIFESTO = {
       { id: 'ch2', title: 'Chapter 2: The Giants of Human Performance', subtitle: 'Academic Pioneers & Modern Proponents' },
       { id: 'ch3', title: 'Chapter 3: Why Science-Based Lifting is Superior', subtitle: 'From Anecdote to First Principles' },
       { id: 'ch4', title: 'Chapter 4: The Mechanics of Optimal Gains', subtitle: 'Perfecting Physical Execution' },
-      { id: 'conclusion', title: 'Conclusion: Precision Meets Execution', subtitle: 'WorkoutVision’s Core Ethos' },
+      { id: 'conclusion', title: 'Conclusion: What the App Does, and What It Does Not', subtitle: 'WorkoutVision’s Core Ethos' },
     ],
 
     chapter1: {
       number: 'Chapter 1',
-      title: 'The Evolution of Sports Science — A Historical Overview',
+      title: 'The Evolution of Sports Science: A Historical Overview',
       intro: 'Human movement has always been studied, but the systematic quantification of exercise is a remarkably recent development.',
       sections: [
         {
@@ -61,7 +80,7 @@ export const MANIFESTO = {
               name: 'Steven N. Blair',
               dates: '1939–2023',
               role: 'Lead Investigator, Aerobics Center Longitudinal Study (ACLS)',
-              desc: 'Through landmark epidemiological cohorts spanning over 80,000 person-years, Blair provided definitive proof that cardiorespiratory fitness and muscular strength are among the strongest independent predictors of all-cause mortality and longevity. Exercise transitioned from an optional athletic pursuit to a foundational pillar of preventative human medicine.',
+              desc: 'Through the Aerobics Center Longitudinal Study, Blair showed that cardiorespiratory fitness is strongly associated with lower all-cause mortality, independently of other risk factors (Blair et al., JAMA 1989), and later muscular strength too (Ruiz et al., BMJ 2008). Exercise moved from an optional athletic pursuit to a pillar of preventive medicine.',
             },
           ],
         },
@@ -90,7 +109,7 @@ export const MANIFESTO = {
             },
             {
               name: 'Dr. Layne Norton',
-              affiliation: 'Physician / PhD Nutritional Sciences',
+              affiliation: 'PhD, Nutritional Sciences (University of Illinois)',
               specialty: 'mTOR Signaling & Energy Balance',
               summary: 'Bridged the gap between cellular leucine sensing (mTORC1 activation) and practical nutritional programming, debunking dogmatic bro-science in favor of strict thermodynamic balance and evidence-based dietary adherence.',
             },
@@ -131,11 +150,12 @@ export const MANIFESTO = {
           title: '1. Efficiency of Stimulus-to-Fatigue Ratio (SFR)',
           desc: 'Every exercise carries a systemic, neural, and connective tissue cost. Science-based lifting seeks movements and ranges of motion that maximize mechanical tension on the target muscle fibers while minimizing spinal loading, joint friction, and central nervous system depletion.',
           formula: '\\text{SFR} = \\frac{\\text{High-Threshold Motor Unit Recruitment} \\times \\text{Active Mechanical Tension}}{\\text{Axial Loading} + \\text{Joint Shear Force} + \\text{CNS Fatigue}}',
-          highlight: 'Higher SFR allows more productive weekly volume with vastly reduced injury rates.',
+          // The injury claim is withdrawn (honesty audit of 14 October 2026: no source, and the app measures none of it, R9).
+          highlight: 'A way of thinking when choosing exercises, not a measured number. The app does not compute it.',
         },
         {
           title: '2. Mechanical Tension as the Primary Driver',
-          desc: 'Decades of cell biology and in-vivo human studies prove that mechanical tension—the physical elongation and contraction of muscle fibers under load acting on costameres and focal adhesions—is the primary catalyst for myofibrillar hypertrophy. Metabolic stress ("the burn") and muscle damage are secondary byproducts, not primary drivers.',
+          desc: 'Cell biology and human studies indicate that mechanical tension, the elongation and contraction of muscle fibers under load acting on costameres and focal adhesions, is the primary catalyst for myofibrillar hypertrophy. Metabolic stress ("the burn") and muscle damage are secondary byproducts, not primary drivers.',
           highlight: 'Chasing pure fatigue or soreness is a sub-optimal proxy for mechanical tension.',
         },
         {
@@ -145,16 +165,20 @@ export const MANIFESTO = {
         },
         {
           title: '4. Bilateral Symmetry & Musculoskeletal Equilibrium',
-          desc: 'Human movement rarely operates in perfect geometric parity. Subtle deficits in unilateral joint range of motion (ROM) or compensatory lateral trunk shifts create asymmetric torque distributions on spinal discs and cartilage. Quantifying bilateral divergence prevents chronic tendinopathy and maximizes force output.',
-          formula: '\\text{Asymmetry Index (AI)} = \\frac{|\\text{ROM}_{\\text{left}} - \\text{ROM}_{\\text{right}}|}{\\max(\\text{ROM}_{\\text{left}}, \\text{ROM}_{\\text{right}})} \\times 100\\%',
-          highlight: 'An asymmetry below 10% is physiological; exceeding 15% requires unilateral isolation and postural stabilization.',
+          // The injury and tendinopathy claims and the 10 % / 15 % rule are withdrawn (honesty audit of 14 October 2026: no
+          // source or status, R9; a care conclusion the app may not draw, sides-line.js, R8).
+          desc: 'Human movement rarely operates in perfect geometric parity: one side often moves through a little more range than the other. How large a gap matters, and what to do about it, is for a coach or a physiotherapist who sees you to judge.',
+          // The gap as the app computes it (sides-line.js, counting/symmetry.ts): relative to the mean of the two ranges, not
+          // to the larger (honesty pass, second round, 14 October 2026).
+          formula: '\\text{Left-right gap} = \\frac{|\\text{ROM}_{\\text{left}} - \\text{ROM}_{\\text{right}}|}{(\\text{ROM}_{\\text{left}} + \\text{ROM}_{\\text{right}}) / 2} \\times 100\\%',
+          highlight: 'The app compares left and right only on a lateral raise filmed from the front, and gives both ranges without judging the gap.',
         },
       ],
     },
 
     chapter4: {
       number: 'Chapter 4',
-      title: 'The Mechanics of Optimal Gains — Perfecting Execution',
+      title: 'The Mechanics of Optimal Gains: Perfecting Execution',
       intro: 'To maximize hypertrophic adaptation, an exercise must be executed with uncompromising fidelity to fundamental Newtonian physics and joint kinetics. Here is how modern sports science dictates surgical execution across movement profiles:',
       rules: [
         {
@@ -163,31 +187,35 @@ export const MANIFESTO = {
           body: 'Sarcomeres produce high active tension and stimulate titin-mediated passive tension when challenged at long muscle lengths (the deep stretched position). Cutting the range of motion eliminates the most hypertrophic portion of the repetition.',
           application: 'Never cut repetitions short at the turnaround. For a Bicep Curl, the bottom position (full elbow extension) provides superior stretch-mediated signaling. For a Lateral Raise, match the resistance profile to the shoulder’s strength curve so peak resistance aligns with active abduction.',
           liftKey: 'bicep_curl',
-          liftLabel: 'Test Range of Motion on Bicep Curl',
+          liftLabel: 'Film a biceps curl',
         },
         {
           num: '02',
           name: 'Eliminating Momentum (Inertial Leakage)',
           body: 'When a lifter bounces out of the hole or uses body English, they inject kinetic energy into the system. This produces a sudden spike in joint shear force while unloading the target muscle during the critical mid-range inflection point.',
-          application: 'Every repetition must begin from a controlled state or deliberate directional reversal. The eccentric (lowering) phase should be controlled (2 to 3 seconds) to ensure continuous actin-myosin cross-bridge cycling and eliminate ballistic unloading.',
+          // literature: Schoenfeld, Ogborn and Krieger 2015, Sports Med 45(4):577-585 (repetition duration and hypertrophy). The
+          // "2 to 3 seconds" rule is withdrawn (set-notes.js, source 3); it stays only as one option. French awaiting David's approval (R10).
+          application: 'Every repetition must begin from a controlled state or deliberate directional reversal. Controlling the lowering phase is one option: a meta-analysis found similar muscle growth for repetitions lasting 0.5 to 8 seconds (Schoenfeld et al. 2015).',
           liftKey: 'squat',
-          liftLabel: 'Test Tempo & Turnaround on Barbell Squat',
+          liftLabel: 'Film a squat',
         },
         {
           num: '03',
           name: 'Joint Alignment and Line of Pull',
           body: 'External resistance must act directly opposite to the muscle fibers’ architectural orientation. When joint motion deviates from the fascicle plane, rotational shear is transferred into ligaments and non-target synergists.',
-          application: 'On a Lat Pulldown, the humerus must track precisely in the plane of the latissimus dorsi fibers—pulling elbows down and slightly inward toward the front pockets, rather than flaring wide like an upper-back row.',
+          application: 'On a Lat Pulldown, the humerus must track precisely in the plane of the latissimus dorsi fibers: pulling elbows down and slightly inward toward the front pockets, rather than flaring wide like an upper-back row.',
           liftKey: 'lat_pulldown',
-          liftLabel: 'Test Line of Pull on Lat Pulldown',
+          liftLabel: 'Film a lat pulldown',
         },
       ],
     },
 
     conclusion: {
-      title: 'Conclusion: Precision Meets Execution',
-      text1: 'WorkoutVision was built because modern training demands precision. We do not guess rep counts; we do not accept sloppy execution; and we do not rely on subjective fatigue metrics when we can measure kinematic reality directly on your device.',
-      text2: 'By combining the historical rigor of exercise physiology with cutting-edge edge AI and uncompromising mechanical standards, WorkoutVision turns every workout into a masterclass in science-based progress.',
+      title: 'Conclusion: What the App Does, and What It Does Not',
+      // The promise the app keeps (honesty audit of 14 October 2026, CORE-14), with the dated scoreboard (R13:
+      // test/real-phone/accuracy/scoreboard.txt; honesty-guard.test.js checks the figures).
+      text1: 'WorkoutVision counts your reps, shows you what it saw and asks you to confirm. When it is unsure, it says so: at most it suggests a number for you to check, never a grade. On the 14 real videos filmed by the app’s maker, it finds the right number on 6 (scoreboard of 12 October 2026). That is why it always asks you to confirm.',
+      text2: 'By combining the rigour of exercise physiology with an analysis made on your phone, the app helps you keep track of your sets, without claiming to measure what it cannot.',
       creed: 'Lift with intent. Train with data. Trust the science.',
     },
 
@@ -212,7 +240,7 @@ export const MANIFESTO = {
       { id: 'ch2', title: 'Chapitre 2\u00A0: Les Géants de la Performance Humaine', subtitle: 'Pionniers Académiques & Pédagogues Modernes' },
       { id: 'ch3', title: 'Chapitre 3\u00A0: Pourquoi la Musculation Scientifique Surpasse le Dogme', subtitle: 'Des Anecdotes aux Premiers Principes' },
       { id: 'ch4', title: 'Chapitre 4\u00A0: La Mécanique des Gains Optimaux', subtitle: 'Perfectionner l’Exécution Physique' },
-      { id: 'conclusion', title: 'Conclusion\u00A0: Quand la Précision Rencontre l’Exécution', subtitle: 'L’Éthique WorkoutVision' },
+      { id: 'conclusion', title: 'Conclusion\u00A0: Ce que Fait l’Appli, et ce qu’Elle ne Fait Pas', subtitle: 'L’Éthique WorkoutVision' },
     ],
 
     chapter1: {
@@ -254,7 +282,7 @@ export const MANIFESTO = {
               name: 'Steven N. Blair',
               dates: '1939–2023',
               role: 'Chercheur Principal, Aerobics Center Longitudinal Study (ACLS)',
-              desc: 'Grâce à l’étude ACLS portant sur des dizaines de milliers d’individus, Blair a apporté la preuve épidémiologique irréfutable que la capacité cardiorespiratoire et la force musculaire constituent les prédicteurs indépendants majeurs de la longévité. L’exercice physique est ainsi devenu un pilier fondamental de la médecine préventive moderne.',
+              desc: 'Avec l’étude ACLS, Blair a montré que la capacité cardiorespiratoire est fortement associée à une mortalité plus faible, indépendamment des autres facteurs de risque (Blair et al., JAMA 1989), puis la force musculaire aussi (Ruiz et al., BMJ 2008). L’exercice physique est ainsi devenu un pilier de la médecine préventive.',
             },
           ],
         },
@@ -296,7 +324,7 @@ export const MANIFESTO = {
               name: 'Dr. Mike Israetel',
               affiliation: 'Renaissance Periodization (RP)',
               specialty: 'Repères de Volume & Gestion de la Fatigue',
-              summary: 'A combiné son doctorat en physiologie sportive avec une méthodologie algorithmique claire\u00A0: Volume Minimal Efficace (MEV), Volume Adaptatif Maximal (MAV) et gestion systématique de la fatigue systémique (SFR).',
+              summary: 'A combiné son doctorat en physiologie sportive avec une méthodologie algorithmique claire\u00A0: Volume Minimal Efficace (MEV), Volume Adaptatif Maximal (MAV) et le rapport stimulus/fatigue (SFR).', // SFR: stimulus-to-fatigue ratio (second review, 14 October 2026); French awaiting David's approval (R10)
             },
             {
               name: 'Greg Nuckols',
@@ -324,11 +352,12 @@ export const MANIFESTO = {
           title: '1. Efficience du Ratio Stimulus-Fatigue (SFR)',
           desc: 'Chaque exercice engendre un coût systémique, articulaire et neural. L’approche scientifique sélectionne les mouvements et amplitudes qui maximisent la tension mécanique sur les fibres cibles tout en minimisant la charge axiale sur le rachis et l’usure tendineuse.',
           formula: '\\text{SFR} = \\frac{\\text{Recrutement des Unités Motrices} \\times \\text{Tension Mécanique Active}}{\\text{Charge Axiale} + \\text{Frottement Articulaire} + \\text{Fatigue SNC}}',
-          highlight: 'Un SFR élevé permet d’accumuler un volume hebdomadaire plus productif tout en éloignant drastiquement le risque de blessure.',
+          // Awaiting David's approval (R10), as the whole page.
+          highlight: 'Une façon de choisir ses exercices, pas un chiffre mesuré. L’appli ne le calcule pas.',
         },
         {
           title: '2. La Tension Mécanique comme Moteur Principal',
-          desc: 'Des décennies de biologie cellulaire et d’études cliniques prouvent que la tension mécanique (l’étirement et la contraction sous charge captés par les mécanorécepteurs des costamères) est le stimulus primaire de l’hypertrophie. Le stress métabolique ("la brûlure") et les courbatures ne sont que des sous-produits secondaires.',
+          desc: 'La biologie cellulaire et les études chez l’humain indiquent que la tension mécanique (l’étirement et la contraction sous charge captés par les mécanorécepteurs des costamères) est le stimulus primaire de l’hypertrophie. Le stress métabolique ("la brûlure") et les courbatures ne sont que des sous-produits secondaires.',
           highlight: 'Rechercher la fatigue pure ou la douleur aiguë n’est pas un indicateur de croissance musculaire.',
         },
         {
@@ -338,9 +367,9 @@ export const MANIFESTO = {
         },
         {
           title: '4. La Symétrie Bilatérale et l’Équilibre Musculosquelettique',
-          desc: 'Le corps humain fonctionne rarement dans une parité géométrique parfaite. Des déficits subtils d’amplitude unilatérale (ROM) ou des décalages latéraux du tronc créent des couples asymétriques sur les disques vertébraux et le cartilage. Quantifier ces divergences protège les articulations et optimise la production de force.',
-          formula: '\\text{Indice d’Asymétrie (AI)} = \\frac{|\\text{ROM}_{\\text{gauche}} - \\text{ROM}_{\\text{droite}}|}{\\max(\\text{ROM}_{\\text{gauche}}, \\text{ROM}_{\\text{droite}})} \\times 100\\%',
-          highlight: 'Une asymétrie inférieure à 10\u00A0% est physiologique\u00A0; au-delà de 15\u00A0%, un travail unilatéral compensatoire s’impose.',
+          desc: 'Le corps fonctionne rarement de façon parfaitement symétrique\u00A0: un côté bouge souvent sur une amplitude un peu plus grande que l’autre. À partir de quel écart il faut s’en occuper, et comment, c’est à un coach ou à un kiné qui vous voit d’en juger.',
+          formula: '\\text{Écart gauche-droite} = \\frac{|\\text{ROM}_{\\text{gauche}} - \\text{ROM}_{\\text{droite}}|}{(\\text{ROM}_{\\text{gauche}} + \\text{ROM}_{\\text{droite}}) / 2} \\times 100\\%',
+          highlight: 'L’appli ne compare la gauche et la droite que sur une élévation latérale filmée de face, et donne les deux amplitudes sans juger l’écart.',
         },
       ],
     },
@@ -356,31 +385,36 @@ export const MANIFESTO = {
           body: 'Les sarcomères produisent une tension active maximale et recrutent la titine (tension passive) lorsqu’ils sont sollicités en position allongée (étirement sous charge). Réduire l’amplitude revient à supprimer la portion la plus anabolique de la répétition.',
           application: 'Ne tronquez jamais le bas du mouvement. Au Biceps Curl, l’extension complète du coude active l’hypertrophie en étirement. Aux Élévations Latérales, alignez la courbe de résistance avec le profil de force de l’épaule.',
           liftKey: 'bicep_curl',
-          liftLabel: 'Tester l’Amplitude sur le Biceps Curl',
+          liftLabel: 'Filmer un curl biceps',
         },
         {
           num: '02',
           name: 'Élimination de l’Élan (Fuite Inertielle)',
           body: 'Lorsqu’un pratiquant rebondit en bas ou utilise un balancement du buste, il injecte de l’énergie cinétique balistique. Cela décharge le muscle cible précisément au moment où la tension est la plus stimulante, tout en surchargeant les cartilages.',
-          application: 'Chaque répétition doit démarrer d’un point fixe sans impulsion parasite. La phase excentrique (descente) doit être contrôlée (2 à 3 secondes) pour maintenir l’engagement des ponts actine-myosine.',
+          // literature: Schoenfeld, Ogborn and Krieger 2015, Sports Med 45(4):577-585 (repetition duration and hypertrophy). The bare
+          // "2 to 3 seconds" rule is withdrawn (set-notes.js, source 3); it stays only as one option. French awaiting David's approval (R10).
+          application: 'Chaque répétition doit démarrer d’un point fixe sans impulsion parasite. Contrôler la descente est une option\u00A0: une méta-analyse a trouvé une prise de muscle comparable pour des répétitions de 0,5 à 8 secondes (Schoenfeld et al. 2015).',
           liftKey: 'squat',
-          liftLabel: 'Tester le Tempo & l’Inflexion sur le Squat',
+          liftLabel: 'Filmer un squat',
         },
         {
           num: '03',
           name: 'Alignement Articulaire et Ligne de Tirage',
           body: 'La résistance doit s’opposer directement au plan anatomique des faisceaux musculaires cibles. Tout désalignement disperse les forces sous forme de cisaillement articulaire.',
-          application: 'Au Tirage Poitrine (Lat Pulldown), l’humérus doit voyager exactement dans le plan des fibres du grand dorsal\u00A0: coudes tirés vers le bas et légèrement vers les poches, et non écartés vers l’arrière.',
+          application: 'Au tirage vertical, l’humérus doit voyager exactement dans le plan des fibres du grand dorsal\u00A0: coudes tirés vers le bas et légèrement vers les poches, et non écartés vers l’arrière.',
           liftKey: 'lat_pulldown',
-          liftLabel: 'Tester la Ligne de Tirage sur le Tirage Poitrine',
+          liftLabel: 'Filmer un tirage vertical',
         },
       ],
     },
 
     conclusion: {
-      title: 'Conclusion\u00A0: Quand la Précision Rencontre l’Exécution',
-      text1: 'WorkoutVision a été conçu parce que l’entraînement moderne exige une exactitude absolue. Nous ne devinons pas les répétitions\u00A0; nous ne tolérons pas les approximations\u00A0; et nous ne nous fions pas à la fatigue subjective quand la cinématique réelle peut être mesurée directement sur votre appareil.',
-      text2: 'En combinant la rigueur historique de la physiologie avec l’intelligence artificielle embarquée et des standards mécaniques sans compromis, WorkoutVision transforme chaque séance en un cours magistral de progression scientifique.',
+      // The promise the app keeps (honesty pass, second round, 14 October 2026): when it doubts it may propose a number to
+      // check, never a grade (Result.jsx), so "elle ne donne pas de chiffre" was untrue; a public reader does not know
+      // David, so the videos are the app's maker's. Awaiting David's approval (R10), with the rest of the page.
+      title: 'Conclusion\u00A0: Ce que Fait l’Appli, et ce qu’Elle ne Fait Pas',
+      text1: 'L’appli compte vos répétitions, vous montre ce qu’elle a vu et vous demande de confirmer. Quand elle doute, elle le dit\u00A0: tout au plus, elle vous propose un nombre à vérifier, jamais une note. Sur les 14 vraies vidéos filmées par le créateur de l’appli, elle trouve le bon nombre sur 6 (tableau du 12 octobre 2026). C’est pour ça qu’elle vous demande toujours de confirmer.',
+      text2: 'En alliant la rigueur de la physiologie de l’exercice à une analyse faite sur votre téléphone, l’appli vous aide à suivre vos séries, sans prétendre mesurer ce qu’elle ne sait pas mesurer.',
       creed: 'Bougez avec intention. Entraînez-vous avec les données. Fiez-vous à la science.',
     },
 

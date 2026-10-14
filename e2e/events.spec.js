@@ -28,9 +28,10 @@ test('a visit sends the expected events, with only their fields, and nothing els
   await page.route('**/pose_landmarker_full.task', r => r.fulfill({ status: 404, body: '' }));
   await page.addInitScript(() => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', 'fr'); localStorage.setItem('wv_level', 'intermediate'); });
   const response = await page.goto(APP);
-  // The policy lets the page reach the events server, and no other.
+  // The policy lets the page reach the events server, and no other events server...
   const csp = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');
-  expect(csp).toContain("connect-src 'self' blob: https://events.invalid;");
+  // ...and Open Food Facts, for the office's barcode lookup (src/lib/openFoodFacts.js), which this visit never uses.
+  expect(csp).toContain("connect-src 'self' blob: https://world.openfoodfacts.org https://events.invalid;");
   expect(response.ok()).toBe(true);
   // The choice says what is counted, and offers to stop it.
   await expect(page.getByTestId('usage-note')).toContainText('Pour s’améliorer, l’appli compte de façon anonyme l’usage de ses écrans et de ses analyses : ni identité, ni vidéo, ni mouvement.');

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { analyzeCoreVideo } from '../lib/coreAnalysis';
 import { analyzeUniversalVideo } from '../lib/universalKinematics';
+import { universalAsProposal } from '../lib/universalProposal';
 import { isOffered } from '../lib/offer';
 import Watch from './experience/Watch';
 import Result, { AnalysisError, AnalysisInterrupted, AnalysisIncomplete } from './experience/Result';
@@ -87,10 +88,13 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
       release = watchInterruption(controller);
       if (mine()) track('analysis_start', { lift });
       wake = holdScreenAwake();
+      // An exercise the core does not offer is read by the universal engine, whose number is never shown as a counted
+      // result: refused, with its number offered as "Proposition de l'appli" only when the needed joints were seen on
+      // at least half the samples (universalProposal.js; counting research of 14 October 2026).
       const output = isOffered(lift)
         ? await analyzeCoreVideo(file, lift, { signal: controller.signal, onProgress: p => { if (mine()) setProgress(p); }, onPhase, onLandmarks,
             onDecoder: d => markCrash({ decoder: d }), onSource: source => markCrash({ source }) })
-        : await analyzeUniversalVideo(file, lift, { signal: controller.signal, onProgress: p => { if (mine()) setProgress(p); }, onPhase, onLandmarks });
+        : universalAsProposal(await analyzeUniversalVideo(file, lift, { signal: controller.signal, onProgress: p => { if (mine()) setProgress(p); }, onPhase, onLandmarks }), lift);
       markCrash({ phase: 'result', sample: output.timestamps?.length ?? samples, frame: output.metadata ? [output.metadata.width, output.metadata.height] : null, decoder: output.metadata?.method || null });
       // A beat at 100 %, then the result, as in the prototype; a run hidden meanwhile shows no count.
       setProgress(100);
@@ -158,7 +162,7 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
       {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} onByHand={byHand('interrupted')} />}
       {view === 'result' && <Result result={result} lift={lift} videoFile={file} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={result.notRead ? undefined : () => openOverlay('replay')} onNewSet={onNewSet} onChangeLift={onClose} onRefilm={refilm} planned={planned} blind={blind} onSaved={(n, sides) => { setSavedCount(n); setSavedSides(sides ?? null); }} />}
     </ScreenFade>
-    {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={keepsMeasures(result) ? result.reps : []} setId={savedIdRef.current} sides={savedSides} wave={keepsMeasures(result) ? compactWave(waveAngles(result), result.timestamps) : null} planned={planned} symmetry={result.symmetry} smoothness={result.smoothness} consistency={result.consistency} formChecks={result.formChecks} isometric={result.isometric} kinetics={result.kinetics} compliance={result.compliance} vbt={result.vbt} leaving={overlayLeaving} onBack={closeOverlay} />}
+    {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={keepsMeasures(result) ? result.reps : []} setId={savedIdRef.current} sides={savedSides} wave={keepsMeasures(result) ? compactWave(waveAngles(result), result.timestamps) : null} planned={planned} leaving={overlayLeaving} onBack={closeOverlay} />}
     {view === 'result' && overlay === 'replay' && <Replay file={file} result={result} lift={lift} saved={savedCount} leaving={overlayLeaving} onBack={closeOverlay} />}
   </>;
 }

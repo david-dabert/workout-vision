@@ -122,6 +122,9 @@ export function collectedPayload({ result, lift, kept, view, sha256, hashOf, ver
     // The sensitivity check's recounts (coreAnalysis.js withSensitivity), so a blind count can say whether it was right.
     ...(result?.sensitivity ? { sensitivity: { moved: !!result.sensitivity.moved, counts: result.sensitivity.counts } } : {}),
     ...(result?.refused ? { appRefused: true, proposal: Number.isInteger(result.proposal?.count) && result.proposal.count > 0 ? result.proposal.count : null } : {}),
+    // Whose proposal: marked only when it is the universal engine's, for an exercise the core does not offer
+    // (universalProposal.js, 14 October 2026), so it is never read as the core's (PSC's).
+    ...(result?.refused && result.proposal?.by === 'universal' ? { proposalBy: 'universal' } : {}),
   };
 }
 

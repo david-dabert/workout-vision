@@ -115,9 +115,12 @@ export default function Guide({ onClose, onChoose, lift }) {
         <button className="item-btn press" aria-expanded={open === e.key} onClick={() => setOpen(open === e.key ? null : e.key)}>
           <Thumb exercise={e} />
           <span><span className="item-name">{fr ? e.fr : e.name}</span><span className="item-sub">{fr ? e.name : e.fr} · {fr ? EQUIPMENT[e.equipment] : e.equipment}</span></span>
-          <span className="tag on">{tierTag(tierOf(e.key) || 'experimental', fr)}</span>
+          {/* An exercise the core does not offer is not counted: the app reads it with the universal engine and at most
+              proposes a number to check (universalProposal.js; counting research of 14 October 2026). Awaiting David's
+              approval of the words (R10). */}
+          <span className={`tag${isOffered(e.key) ? ' on' : ''}`}>{isOffered(e.key) ? tierTag(tierOf(e.key) || 'experimental', fr) : (fr ? 'Non compté' : 'Not counted')}</span>
         </button>
-        {open === e.key && <div className="guide-detail"><GuideFrames exercise={e} fr={fr} /><p>{`${fr ? 'Compté' : 'Counted'} · ${tierLabel(tierOf(e.key) || 'experimental', fr)}.`}{e.similar ? (fr ? ' Dessin d’un mouvement proche.' : ' Drawing of a similar movement.') : ''}</p>
+        {open === e.key && <div className="guide-detail"><GuideFrames exercise={e} fr={fr} /><p>{isOffered(e.key) ? `${fr ? 'Compté' : 'Counted'} · ${tierLabel(tierOf(e.key) || 'experimental', fr)}.` : (fr ? 'Pas encore compté par l’appli\u00A0: elle propose au mieux un nombre, à vérifier.' : 'Not counted by the app yet: at best it suggests a number for you to check.')}{e.similar ? (fr ? ' Dessin d’un mouvement proche.' : ' Drawing of a similar movement.') : ''}</p>
           <button className="btn-line press" onClick={() => onChoose(e.key)}>{fr ? 'Filmer cet exercice' : 'Film this exercise'}</button>
           <button className="btn-ghost is-s press" onClick={() => setOpen(null)}>{fr ? 'Fermer' : 'Close'}</button>
         </div>}

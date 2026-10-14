@@ -293,8 +293,9 @@ export interface WorkoutRecord {
   doubt?: unknown;
   /** The coach's target, for a set filmed from a programme (components/experience/programme.js, plannedOf). */
   planned?: { programme: string; item: number; key?: string; sets: number; reps: number; rest: number } | null;
-  /** The app's proposal on a refused set, confirmed or changed by the person (saved-set.js). */
-  proposal?: { reps: number; by: 'psc' } | null;
+  /** The app's proposal on a refused set, confirmed or changed by the person (saved-set.js): the core's ('psc') or,
+   * for an exercise the core does not offer, the universal engine's (universalProposal.js). */
+  proposal?: { reps: number; by: 'psc' | 'universal' } | null;
   /** A set the body check flagged: the agreement and the body's count offered beside the app's (saved-set.js). */
   bodyCheck?: { agreement: number | null; second: number | null } | null;
   /** The count the person gave before the app showed its own (blind.js); null for "Je ne sais pas". */

@@ -1,6 +1,11 @@
 /**
  * JointTorqueEngine — Edge Biomechanical Inverse Dynamics & Joint Shear Estimator
  *
+ * WITHDRAWN from the app on 14 October 2026 (honesty audit, CORE-04): run by no screen, kept for research. Every value
+ * comes from a fixed 75 kg body with no external load, so the lumbar "shear" tops out at 433.4 N and the patellar one
+ * at 250.1 N; "work" multiplies a peak torque by another joint's range; the 650 N and 700 N alerts sit above both
+ * ceilings. Joint loads need body mass, external load and a validated model before any value is shown (R8, R9).
+ *
  * Computes real-time net joint moments (N·m), joint shear forces (N), and mechanical work (J)
  * directly in the browser with ZERO server infrastructure.
  *

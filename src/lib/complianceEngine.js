@@ -1,5 +1,10 @@
 /**
  * WorkoutVision Compliance Engine
+ *
+ * WITHDRAWN from the app on 14 October 2026 (honesty audit, CORE-01): run by no screen, kept for reference. It is NOT a
+ * proof: the ID is the first 8 hex digits of a SHA-256 over public fields that anyone can recompute or forge, it
+ * embeds the app's count rather than the count the person confirmed, and `verified` is true for any counted set.
+ * Proof of a set would need a server-held key and a definition of what is attested (a research and legal question).
  * 
  * Generates client-side, zero-server unforgeable cryptographic proof-of-completion
  * for training and physical recovery protocols.

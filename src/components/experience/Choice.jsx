@@ -196,34 +196,36 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{fr ? 'Le Manifeste WorkoutVision' : 'The WorkoutVision Manifesto'}</b><small>{fr ? 'La science, l’histoire et la mécanique du mouvement' : 'The science, history, and mechanics of optimal lifting'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {/* Equine Veterinary Gait Analysis */}
+        {/* EquiVision: a demo on a simulated horse; the app analyses no horse on a video (honesty pass, 14 October 2026,
+            EQ-16). Its icon is a curve, not a tick, which would read as "validated" or "sound". French of this row, of
+            the sports row and of the footer links below awaiting David's approval (R10). */}
         {onEquine && <button className="row-link press" onClick={onEquine} data-testid="choice-equine">
-          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M8 12l3 3 5-5" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'EquiVision\u00A0: Allures & Vétérinaire' : 'EquiVision: Veterinary Locomotion'}</b><small>{fr ? 'Cinématique objective du trot et asymétries en longe' : 'Objective trot kinematics & circle lunge symmetry'}</small></span>
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12c2.2-6 4.4-6 6.6 0s4.4 6 6.6 0 4.4-6 6.6 0" /></svg></span>
+          <span className="row-txt"><b>{fr ? 'EquiVision\u00A0: le trot du cheval' : 'EquiVision: the horse’s trot'}</b><small>{fr ? 'Une démo sur un cheval simulé. L’appli n’analyse pas encore les vidéos de votre cheval.' : 'A demo on a simulated horse. The app does not analyse videos of your horse yet.'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {/* Precision Sports Biomechanics (Golf, Tennis, Padel, Cycling) */}
+        {/* Other sports: demonstration clips; the app analyses none of these sports on a video yet (SP-25). */}
         {onSports && <button className="row-link press" onClick={onSports} data-testid="choice-sports">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'Sports de Précision\u00A0: Golf, Tennis & Padel' : 'Precision Sports: Golf, Tennis & Padel'}</b><small>{fr ? 'X-Factor, tempo 3:1, pose trophée et étude posturale' : 'X-Factor stretch, 3:1 tempo, trophy pose & bike fit'}</small></span>
+          <span className="row-txt"><b>{fr ? 'Autres sports' : 'Other sports'}</b><small>{fr ? 'Golf, tennis, aviron, ski et d’autres, en démo' : 'Golf, tennis, rowing, skiing and more, as demos'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Coach & Physio Matcher */}
         {onCoaches && <button className="row-link press" onClick={onCoaches} data-testid="choice-coaches">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M6 20v-2a6 6 0 0 1 12 0v2" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'Trouver un Coach ou Kinésithérapeute' : 'Find a Sports Coach or Physio'}</b><small>{fr ? 'Recherche locale et partage de profil biomécanique' : 'Local matching & movement telemetry sharing'}</small></span>
+          <span className="row-txt"><b>{fr ? 'Trouver un coach (démo)' : 'Find a coach (demo)'}</b><small>{fr ? 'Des profils fictifs\u00A0: l’annuaire est en préparation' : 'Fictional profiles: the directory is being prepared'}</small></span>{/* HOME-1, 14 October 2026; French awaiting David's approval (R10) */}
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Gym Buddy Matcher */}
         {onBuddies && <button className="row-link press" onClick={onBuddies} data-testid="choice-buddies">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'Partenaires de Salle (Gym Buddy)' : 'Find a Gym Buddy / Partner'}</b><small>{fr ? 'Compatibilité de créneaux et parade sécurisée' : 'Schedule compatibility & safe spotting'}</small></span>
+          <span className="row-txt"><b>{fr ? 'Partenaires de salle (démo)' : 'Gym partners (demo)'}</b><small>{fr ? 'Des profils fictifs, pour comparer vos charges' : 'Fictional profiles, to compare your working weights'}</small></span>{/* HOME-1; French awaiting David's approval (R10) */}
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Industrial Ergonomics & NIOSH */}
         {onErgonomics && <button className="row-link press" onClick={onErgonomics} data-testid="choice-ergonomics">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'Ergonomie au Travail & Équation NIOSH' : 'Occupational Ergonomics & NIOSH'}</b><small>{fr ? 'Risque vertébral L5/S1 et conformité des charges' : 'L5/S1 spinal load & lifting index assessment'}</small></span>
+          <span className="row-txt"><b>{fr ? 'Calculateur NIOSH' : 'NIOSH calculator'}</b><small>{fr ? 'La charge limite d’une manutention, à partir de vos valeurs' : 'The weight limit of a lift, from your values'}</small></span>{/* HOME-1; French awaiting David's approval (R10) */}
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Before the long list of every exercise, where it is read on the first scroll, not after 181 rows. */}
@@ -237,12 +239,12 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           {/* Why the app exists, in David's words (About.jsx). */}
           {onAbout && <button type="button" className="about-link press" onClick={onAbout} data-testid="about-link">{ABOUT[fr ? 'fr' : 'en'].link}</button>}
           {onManifesto && <button type="button" className="about-link press" onClick={onManifesto} data-testid="manifesto-link">{fr ? 'Le Manifeste' : 'Manifesto'}</button>}
-          {onCoaches && <button type="button" className="about-link press" onClick={onCoaches} data-testid="coaches-link">{fr ? 'Coaches & Kinés' : 'Find Coach'}</button>}
-          {onEquine && <button type="button" className="about-link press" onClick={onEquine} data-testid="equine-link">{fr ? 'Allures Équines' : 'Equine AI'}</button>}
-          {onSports && <button type="button" className="about-link press" onClick={onSports} data-testid="sports-link">{fr ? 'Golf & Tennis' : 'Sports AI'}</button>}
-          {onBuddies && <button type="button" className="about-link press" onClick={onBuddies} data-testid="buddies-link">{fr ? 'Gym Buddy' : 'Gym Buddy'}</button>}
-          {onErgonomics && <button type="button" className="about-link press" onClick={onErgonomics} data-testid="ergo-link">{fr ? 'Ergonomie' : 'Ergonomics'}</button>}
-          {onChat && <button type="button" className="about-link press" onClick={onChat} data-testid="chat-link">{fr ? 'Chat P2P' : 'P2P Chat'}</button>}
+          {onCoaches && <button type="button" className="about-link press" onClick={onCoaches} data-testid="coaches-link">{fr ? 'Coachs et kinés (démo)' : 'Coaches (demo)'}</button>}{/* As their rows above say (second review, 14 October 2026); French awaiting David's approval (R10) */}
+          {onEquine && <button type="button" className="about-link press" onClick={onEquine} data-testid="equine-link">{fr ? 'Allures équines' : 'Equine gaits'}</button>}
+          {onSports && <button type="button" className="about-link press" onClick={onSports} data-testid="sports-link">{fr ? 'Sports' : 'Sports'}</button>}
+          {onBuddies && <button type="button" className="about-link press" onClick={onBuddies} data-testid="buddies-link">{fr ? 'Partenaires de salle (démo)' : 'Gym partners (demo)'}</button>}
+          {onErgonomics && <button type="button" className="about-link press" onClick={onErgonomics} data-testid="ergo-link">{fr ? 'Calculateur NIOSH' : 'NIOSH calculator'}</button>}
+          {onChat && <button type="button" className="about-link press" onClick={onChat} data-testid="chat-link">{fr ? 'Messagerie (démo)' : 'Messaging (demo)'}</button>}{/* HOME-1: no "P2P"; French awaiting David's approval (R10) */}
         </div>
       </div>
     </section>

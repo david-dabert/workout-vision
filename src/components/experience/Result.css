@@ -121,6 +121,8 @@
 .wv-experience .res-dock.is-stuck { background: var(--c-surface); box-shadow: inset 0 1px 0 var(--hair-2); }
 .wv-experience .res-dock-end { display: block; height: 0; }
 .wv-experience .res-keys { display: flex; flex-direction: column; gap: 10px; }
+/* A hold's one key, right under its cause (Result.jsx lowAsk): no dock at the foot of an empty screen. */
+.wv-experience .res-keys-inline { margin-top: 28px; }
 .wv-experience .res-key { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 58px; min-height: 44px; box-sizing: border-box; padding: 0 16px; border: 1.5px solid var(--c-edge); border-radius: 4px; background: transparent; color: var(--c-fg); font-family: var(--sans); font-size: 17px; font-weight: 600; line-height: 1.2; cursor: pointer; }
 .wv-experience .res-key.is-primary { border-color: var(--c-fg); background: var(--c-fg); color: var(--c-surface); }
 .wv-experience .res-key.is-primary:disabled { border-style: dashed; border-color: var(--c-edge); background: transparent; color: var(--c-fg-muted); cursor: default; }
@@ -303,59 +305,5 @@
 .wv-experience .res-alts { display: flex; align-items: center; gap: 8px; }
 .wv-experience .res-alts-or { flex: none; min-width: 32px; font-size: 15px; line-height: 1.4; color: var(--bone-2); }
 .wv-experience .res-alt { flex: 1 1 0; min-width: 0; font-family: var(--numeral-face); font-size: 22px; font-weight: 400; font-variant-numeric: lining-nums tabular-nums; }
-
-/* Asymmetry Coaching Card & Biomechanical Intelligence */
-.wv-experience .acc-advice-card {
-  margin-top: var(--s-3);
-  padding: var(--s-3) var(--s-4);
-  background: var(--c-surface-raised);
-  border: 1px solid var(--c-rule);
-  border-radius: var(--radius-sm);
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-2);
-}
-.wv-experience .acc-advice-badge {
-  display: inline-block;
-  align-self: flex-start;
-  font-family: var(--mono);
-  font-size: var(--fs-label);
-  letter-spacing: var(--track-label);
-  text-transform: uppercase;
-  color: var(--c-accent);
-}
-.wv-experience .acc-advice-text {
-  margin: 0;
-  font-size: var(--fs-caption);
-  line-height: 1.5;
-  color: var(--c-fg);
-}
-
-/* Safe-to-Lift Confidence Shield */
-.wv-experience .acc-shield-card {
-  margin-top: var(--s-3);
-  padding: var(--s-3) var(--s-4);
-  background: var(--c-surface-raised);
-  border: 1px solid var(--c-rule);
-  border-radius: var(--radius-sm);
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-2);
-}
-.wv-experience .acc-shield-badge {
-  display: inline-block;
-  align-self: flex-start;
-  font-family: var(--mono);
-  font-size: var(--fs-label);
-  letter-spacing: var(--track-label);
-  text-transform: uppercase;
-  color: var(--lamp-hi);
-}
-.wv-experience .acc-shield-text {
-  margin: 0;
-  font-size: var(--fs-caption);
-  line-height: 1.5;
-  color: var(--c-fg);
-}
 
 

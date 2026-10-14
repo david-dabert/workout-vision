@@ -4,7 +4,7 @@ import { exerciseName } from './exercise-info';
 import { liftDefinition } from '../../lib/counting/core';
 import { decimal } from './report-sheet';
 import { partialIn } from './tempo';
-import { poseAt, repAt, phaseAt, into, keyedTime, angleAt, trajectoryAt } from './replay-track';
+import { poseAt, repAt, phaseAt, into, keyedTime, angleAt } from './replay-track';
 import { drawSkeleton, litSides, trailPoints } from './replay-draw';
 import { steadyFrames, trailAt } from './replay-smooth';
 import { canExport, exportSetVideo } from './video-export';
@@ -14,6 +14,8 @@ import { track } from '../../lib/events';
 import { MEASURES_SHOWN, experimentalLabel } from './measures';
 import { isCorrected, markLabel, provenance } from './replay-labels';
 import { replayClock } from './replay-clock';
+import { keepsMeasures } from './saved-set';
+import { jointName } from './lift-meta';
 
 // The set replayed with the skeleton the pose model tracked on it: what the app saw,
 // frame by frame, with the joint whose angle counts the reps in the lamp's colour.
@@ -36,7 +38,10 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   // The skeleton drawn is the model's, steadied for the eye once per set (replay-smooth.js); the count never reads it.
   const frames = useMemo(() => (steadyFrames ? steadyFrames(result.imageLandmarks || [], times) : (result.imageLandmarks || [])), [result]); // eslint-disable-line react-hooks/exhaustive-deps
   const smoothedAngles = result.smoothedAngles || [];
-  const def = liftDefinition(lift);
+  // An exercise the core does not offer is read by the universal engine (universalProposal.js), which counts on no joint
+  // of the core's: nothing is lit for it, even for the few lifts the core defines but does not offer (walking lunge, dead
+  // bug...), whose lit joint would claim a count the app did not make.
+  const def = result.universal ? null : liftDefinition(lift);
   const sides = litSides(def, result.arm);
   const meta = result.metadata || {};
   const fw = meta.width || meta.extractedWidth || 9, fh = meta.height || meta.extractedHeight || 16;
@@ -123,9 +128,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       const vw = video.videoWidth || fw, vh = video.videoHeight || fh;
       const s = Math.min(cw / vw, ch / vh);
       const trails = trailPoints(def, sides).map(k => trailAt(frames, times, t, k, lm[k]));
-      const curRep = repAt(reps, t);
-      const traj = trajectoryAt(frames, times, t, curRep >= 0 ? reps[curRep] : null, lift, def, result.arm);
-      drawSkeleton(ctx, lm, { ox: (cw - vw * s) / 2, oy: (ch - vh * s) / 2, w: vw * s, h: vh * s }, sides, def, 1, trails, traj);
+      drawSkeleton(ctx, lm, { ox: (cw - vw * s) / 2, oy: (ch - vh * s) / 2, w: vw * s, h: vh * s }, sides, def, 1, trails);
     };
     // The screen's words follow the video about ten times a second, and at once when it stops.
     const tell = (t, force) => {
@@ -246,9 +249,13 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   const NB = ' ', sec = x => `${decimal(x, fr)}${NB}s`;
   const current = repAt(reps, now);
   const begun = reps.filter(r => r.startTime <= now).length;
-  // The phase word follows the unvalidated phase boundaries: hidden with the measures (measures.js).
-  const phase = MEASURES_SHOWN && current >= 0 ? phaseAt(reps[current], now, def?.first) : null;
-  const isTransition = current >= 0 && !phase && !reps[current]?.clipped;
+  // The rep's measures (its range, times, phase and angle) are shown with the measures (measures.js), and never for a set
+  // the body check flagged, whose result, report, history and export withhold them (saved-set.js keepsMeasures, R8):
+  // such a set shows each rep's number alone (honesty pass, second round, 14 October 2026).
+  const measured = MEASURES_SHOWN && keepsMeasures(result);
+  // The phase word follows the unvalidated phase boundaries: hidden with the measures.
+  const phase = measured && current >= 0 ? phaseAt(reps[current], now, def?.first) : null;
+  const isTransition = measured && current >= 0 && !phase && !reps[current]?.clipped;
   const curAngle = angleAt ? angleAt(smoothedAngles, times, now) : null;
   let head = '', detail;
   if (current >= 0) {
@@ -256,12 +263,12 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
     const word = corrected ? markLabel({ index: current + 1, total: reps.length, fr, corrected }) : `${fr ? 'Rép.' : 'Rep'} ${current + 1}`;
     const filmed = fr ? (corrected ? 'filmé en partie' : 'filmée en partie') : 'partly filmed';
     head = `${word} · `;
-    // Without validated measures (measures.js), the rep's number alone.
-    if (!MEASURES_SHOWN) { head = ''; detail = `${word}${r.clipped ? `${NB}· ${filmed}` : ''}`; }
+    // Without the measures (measured, above), the rep's number alone.
+    if (!measured) { head = ''; detail = `${word}${r.clipped ? `${NB}· ${filmed}` : ''}`; }
     else detail = r.clipped
       ? `${Math.round(r.romDegrees)}°${NB}· ${filmed}`
       : partialIn(reps)(r)
-      ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? (corrected ? 'partiel, non chronométré' : 'partielle, non chronométrée') : 'partial, not timed'}`
+      ? `${Math.round(r.romDegrees)}°${NB}· ${fr ? (corrected ? 'non chronométré' : 'non chronométrée') : 'not timed'}`
       : `${sec(r.endTime - r.startTime)}${NB}· ${Math.round(r.romDegrees)}°${NB}· conc.${NB}${sec(r.concentricSec)}${NB}· ${fr ? 'exc.' : 'ecc.'}${NB}${sec(r.eccentricSec)}`;
   } else {
     detail = reps.length
@@ -272,7 +279,16 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
         ? (fr ? 'Cette série n’a pas pu être comptée.' : 'This set could not be counted.')
         : (fr ? 'Aucune répétition comptée dans cette vidéo.' : 'No rep counted in this video.');
   }
-  const phaseWord = { concentric: fr ? 'Concentrique' : 'Concentric', eccentric: fr ? 'Excentrique' : 'Eccentric' }[phase] || (isTransition ? (fr ? 'Inflexion' : 'Turn') : NB);
+  // Between the two phases of a rep, the turn is a pause, said so ("Inflexion" was no gym word; honesty audit of 14 October
+  // 2026, CORE-12). Awaiting David's approval of the word (R10).
+  const phaseWord = { concentric: fr ? 'Concentrique' : 'Concentric', eccentric: fr ? 'Excentrique' : 'Eccentric' }[phase] || (isTransition ? 'Pause' : NB);
+  // The chip's angle is the core's, read in 3D (the number the count reads), named by its joint; the picture draws no 2D
+  // angle beside it, which disagreed with it (replay-draw.js). Shown with the measures only (measures.js).
+  const JOINT_WORD = { elbow: ['Coude', 'Elbow'], shoulder: ['Épaule', 'Shoulder'], knee: ['Genou', 'Knee'], hip: ['Hanche', 'Hip'] };
+  const jointWord = JOINT_WORD[def?.joint]?.[fr ? 0 : 1] ?? null;
+  // The limb's end whose recent path the gold trail draws (replay-draw.js trailPoints: the joint's third point).
+  const END_WORD = { elbow: ['du poignet', 'wrist'], shoulder: ['du coude', 'elbow'], knee: ['de la cheville', 'ankle'], hip: ['du genou', 'knee'] };
+  const endWord = END_WORD[def?.joint]?.[fr ? 0 : 1] ?? null;
 
   return <div className={`wv-experience${leaving ? ' is-leaving' : ''}`}>
     <section className="screen is-active replay-screen" aria-label={`${fr ? 'Revoir la série' : 'Replay of the set'} · ${liftName}`}><div className="wrap">
@@ -295,7 +311,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
           {reps.length > 0 && <div className={`rp-chip${phaseWord === NB ? ' is-idle' : ''}`} aria-hidden="true">
             <span className="rp-count"><span className="rp-n">{begun}</span><span className="rp-of">/{NB}{reps.length}</span></span>
             <span className="rp-phase">{phaseWord}</span>
-            {curAngle !== null && <span className="rp-angle">{Math.round(curAngle)}°</span>}
+            {measured && curAngle !== null && jointWord && <span className="rp-angle" data-testid="rp-angle">{jointWord}{NB}{Math.round(curAngle)}°</span>}
           </div>}
           {broken && <p className="rp-broken" role="alert">{fr ? 'Cette vidéo ne se lit pas dans ce navigateur.' : 'This video does not play in this browser.'}</p>}
         </div>
@@ -313,7 +329,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       </div>
       {note && <p className="rp-prov" data-testid="rp-prov">{note}</p>}
       <p className="rp-detail" aria-live={playing ? 'off' : 'polite'}>{head && <span className="sr">{head}</span>}{detail}</p>
-      {MEASURES_SHOWN && reps.length > 0 && <p className="rp-prov" data-testid="rp-exp">{experimentalLabel(fr)}</p>}
+      {measured && reps.length > 0 && <p className="rp-prov" data-testid="rp-exp">{experimentalLabel(fr)}</p>}
       <div className="rp-controls" data-reveal style={{ '--i': 2 }}>
         <button className="btn-primary press rp-play" onClick={toggle} disabled={broken || made.state === 'making'}>
           {playing
@@ -334,13 +350,20 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
           ? (fr ? 'La préparation s’est arrêtée. Gardez l’écran allumé et l’appli ouverte, puis réessayez.' : 'The preparation stopped. Keep the screen on and the app open, then try again.')
           : (fr ? 'La vidéo n’a pas pu être préparée sur ce téléphone.' : 'The video could not be prepared on this phone.')}</p>}
       </div>}
-      <p className="rp-note" data-reveal style={{ '--i': 3 }}>{file
-        ? (fr
-          ? 'En doré, l’articulation dont l’angle compte les répétitions. La vidéo ne quitte votre téléphone que si vous la partagez.'
-          : 'In gold, the joint whose angle counts the reps. The video leaves your phone only if you share it.')
-        : (fr
-          ? 'En doré, l’articulation dont l’angle compte les répétitions. Série comptée en direct\u00A0: aucune vidéo n’a été enregistrée, seul le squelette est rejoué.'
-          : 'In gold, the joint whose angle counts the reps. Counted live: no video was recorded, only the skeleton is replayed.')}</p>
+      {/* The legend names every mark on the picture, and only those (honesty audit of 14 October 2026, CORE-12): the gold
+          joint and the gold trail of its limb's end, for an exercise the core counts; for one it does not (no lift
+          definition: nothing is lit, universalProposal.js), the skeleton alone, said to be the app's estimate; the angle
+          in the chip at the top left, estimated in 3D, when the chip shows it. Awaiting David's approval of the new words (R10). */}
+      <p className="rp-note" data-reveal style={{ '--i': 3 }} data-testid="rp-legend">
+        {def
+          ? <>{fr ? 'En doré, l’articulation dont l’angle compte les répétitions' : 'In gold, the joint whose angle counts the reps'}
+            {endWord ? (fr ? `, et le trajet récent ${endWord}.` : `, and the recent path of the ${endWord}.`) : '.'}</>
+          : (fr ? 'Le squelette est une estimation de l’appli.' : 'The skeleton is the app’s estimate.')}
+        {measured && reps.length > 0 && smoothedAngles.length > 0 && jointWord ? (fr ? ` En haut à gauche, l’angle ${jointName(def?.joint, true)}, estimé en 3D\u00A0: il peut différer de ce que montre l’image.` : ` Top left, the ${jointName(def?.joint, false)} angle, estimated in 3D: it can differ from what the picture shows.`) : ''}
+        {' '}{file
+          ? (fr ? 'La vidéo ne quitte votre téléphone que si vous la partagez.' : 'The video leaves your phone only if you share it.')
+          : (fr ? 'Série comptée en direct\u00A0: aucune vidéo n’a été enregistrée, seul le squelette est rejoué.' : 'Counted live: no video was recorded, only the skeleton is replayed.')}
+      </p>
     </div></section>
   </div>;
 }

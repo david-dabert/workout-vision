@@ -17,8 +17,11 @@
 /* Beginner: the words first, the number smaller and after them (numbers secondary). */
 .wv-experience .result-screen.lv-beginner .set-account { margin-top: 18px; }
 .wv-experience .result-screen.lv-beginner .set-account > p { font-size: 16px; }
-/* The number and its word on one row, as a caption to the words above. */
-.wv-experience .result-screen.lv-beginner .res-count { margin-top: 14px; display: flex; align-items: baseline; justify-content: center; gap: 12px; }
+/* The count block in one column, as at the other levels: since the final direction (7 October 2026) it holds the
+   question, the number between - and +, its state and where it comes from, which a single row pushed off the screen's
+   left edge at 390 px ("C'est bien 4 ?" cut, the source in a column one word wide; honesty pass, 14 October 2026).
+   The number stays smaller than at the other levels. */
+.wv-experience .result-screen.lv-beginner .res-count { margin-top: 14px; }
 .wv-experience .result-screen.lv-beginner .numeral { font-size: clamp(56px, 17vw, 76px); margin: 0; filter: none; }
 .wv-experience .result-screen.lv-beginner .res-label { margin: 0; }
 .wv-experience .result-screen.lv-beginner .glass { margin-top: 16px; }

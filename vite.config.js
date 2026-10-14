@@ -4,6 +4,7 @@ import { execSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 import { resolve } from 'path'
+import { omitPaintedDemosPlugin } from './scripts/omit-painted-demos.js'
 
 // npm run dev:lan: the dev server on the local network, with the stricter file list below.
 const LAN = process.env.WV_LAN === '1'
@@ -52,7 +53,8 @@ export function eventsOrigin(url) {
 }
 
 export default defineConfig({
-  plugins: [react(), copyModelsPlugin(), eventsCspPlugin()],
+  // omitPaintedDemosPlugin: the demo videos with figures burned in stay out of the built site (honesty pass, 14 October).
+  plugins: [react(), copyModelsPlugin(), eventsCspPlugin(), omitPaintedDemosPlugin()],
   // jsPDF's optional modules, used only by doc.html() and addSvgAsImage(), which the app never calls: stubbed
   // (src/lib/jspdf-optional-stub.js, C9 of the design review of 7 October 2026).
   resolve: {

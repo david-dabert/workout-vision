@@ -133,9 +133,12 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {Array} [o.previousSet.reps]
  * @param {Date} [o.previousSet.date]
  * @param {object} [o.planned]  the coach's target, for a set filmed from a programme (programme.js, plannedOf)
+ * @param {boolean} [o.proposed]  a refused set whose count is the app's proposal, confirmed as it stood
+ * @param {'psc'|'universal'|null} [o.proposedBy]  whose proposal: the core's on a refused set, or the universal engine's
+ *   for an exercise the core does not offer (universalProposal.js)
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, symmetry = null, smoothness = null, consistency = null, formChecks = null, rpe = null, pain = null, isometric = null, kinetics = null, compliance = null, vbt = null, partialCount = 0, partials = null, ergonomics = null, spinalLoad = null }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, proposedBy = null, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, rpe = null, pain = null }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -180,182 +183,15 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
         : `Duration${colon}${sign}${decimal(Math.abs(diff), false)}${NBSP}s from start to end`);
     }
 
-    // Partial repetitions (lengthened & shortened partials)
-    if (partialCount > 0 && Array.isArray(partials) && partials.length > 0) {
-      const lengthened = partials.filter(p => p.partialType === 'lengthened').length;
-      const shortened = partials.filter(p => p.partialType === 'shortened').length;
-      const detail = lengthened > 0 && shortened > 0
-        ? ` (${lengthened} ${fr ? 'en étirement' : 'lengthened'}, ${shortened} ${fr ? 'en contraction' : 'shortened'})`
-        : lengthened > 0
-        ? ` (${lengthened} ${fr ? 'en étirement / lengthened' : 'lengthened partials'})`
-        : ` (${shortened} ${fr ? 'en contraction' : 'shortened'})`;
-      summary.push((fr ? 'Répétitions partielles' : 'Partial reps') + colon + `${partialCount}${detail}`);
-    }
-
     // Left against right, for a set filmed from the front (sides-line.js): the two ranges, then what a gap means.
     const lr = sidesLines(sides, fr, lift);
     if (lr) summary.push(lr.line, lr.note);
 
-    // Bilateral symmetry (when both limbs were visible and measured)
-    if (symmetry && symmetry.symmetryScore != null) {
-      const statusLabel = symmetry.status === 'balanced'
-        ? (fr ? 'Équilibrée' : 'Balanced')
-        : symmetry.dominantSide === 'left'
-        ? (fr ? `Gauche dominante (+${symmetry.romDiffDeg}°)` : `Left dominant (+${symmetry.romDiffDeg}°)`)
-        : (fr ? `Droite dominante (+${symmetry.romDiffDeg}°)` : `Right dominant (+${symmetry.romDiffDeg}°)`);
-      summary.push((fr ? 'Symétrie bilatérale' : 'Bilateral symmetry') + colon + `${symmetry.symmetryScore}${NBSP}% (${statusLabel})`);
-
-      if (symmetry.trunkShift?.hasShift || symmetry.trunkShift?.significantShift) {
-        const tilt = symmetry.trunkShift.maxTrunkTiltDeg ?? symmetry.trunkShift.maxLateralTiltDeg;
-        const dirText = symmetry.trunkShift.direction === 'left'
-          ? (fr ? 'vers la gauche' : 'towards left')
-          : (fr ? 'vers la droite' : 'towards right');
-        summary.push((fr ? 'Décalage latéral du tronc' : 'Lateral trunk shift') + colon + `${tilt}° (${dirText})`);
-      }
-      if (symmetry.coaching?.hasNotableAsymmetry) {
-        summary.push((fr ? 'Conseil d’équilibrage' : 'Balance coaching cue') + colon + (fr ? symmetry.coaching.adviceFr : symmetry.coaching.adviceEn));
-      }
-    }
-
-    // Form consistency (DTW)
-    if (consistency && consistency.score != null) {
-      const consistencyLabel = consistency.rating === 'high'
-        ? (fr ? 'Très régulier' : 'High consistency')
-        : consistency.rating === 'moderate'
-        ? (fr ? 'Régulier' : 'Moderate consistency')
-        : (fr ? 'Irrégulier' : 'Inconsistent');
-      summary.push((fr ? 'Régularité de forme' : 'Form consistency') + colon + `${consistency.score}${NBSP}% (${consistencyLabel})`);
-    }
-
-    // Movement smoothness (SPARC)
-    if (smoothness && smoothness.avgSparc != null) {
-      const smoothnessLabel = smoothness.quality === 'very_smooth'
-        ? (fr ? 'Très fluide' : 'Very smooth')
-        : smoothness.quality === 'smooth'
-        ? (fr ? 'Fluide' : 'Smooth')
-        : smoothness.quality === 'moderate'
-        ? (fr ? 'Modérée' : 'Moderate')
-        : (fr ? 'Saccadée' : 'Jerky');
-      summary.push((fr ? 'Fluidité' : 'Smoothness') + colon + `${smoothness.avgSparc} SPARC (${smoothnessLabel})`);
-    }
-
-    // Biomechanical form checks (depth, knee valgus, lockout)
-    if (formChecks) {
-      if (formChecks.squatDepth) {
-        const d = formChecks.squatDepth;
-        const depthText = d.allParallel
-          ? (fr ? '100 % à la parallèle' : '100% parallel depth')
-          : (fr ? `${d.count}/${d.total} à la parallèle (${Math.round(d.parallelRate * 100)} %)` : `${d.count}/${d.total} parallel (${Math.round(d.parallelRate * 100)}%)`);
-        summary.push((fr ? 'Profondeur (squat)' : 'Squat depth') + colon + depthText);
-      }
-      if (formChecks.kneeValgus) {
-        const v = formChecks.kneeValgus;
-        const valgusText = !v.detected
-          ? (fr ? 'Parfait (aucun valgus)' : 'Clean (no valgus collapse)')
-          : (fr ? `Valgus détecté (${v.count}/${v.total} rép.)` : `Valgus collapse detected (${v.count}/${v.total} reps)`);
-        summary.push((fr ? 'Alignement des genoux' : 'Knee tracking') + colon + valgusText);
-      }
-      if (formChecks.lockout) {
-        const l = formChecks.lockout;
-        const lockoutText = l.fullLockout
-          ? (fr ? 'Complet (100 %)' : 'Complete lockout (100%)')
-          : (fr ? `${l.count}/${l.total} avec extension complète (${Math.round(l.lockoutRate * 100)} %)` : `${l.count}/${l.total} full lockout (${Math.round(l.lockoutRate * 100)}%)`);
-        summary.push((fr ? 'Verrouillage articulaire' : 'Joint lockout') + colon + lockoutText);
-      }
-      if (formChecks.trapeziusHike) {
-        const th = formChecks.trapeziusHike;
-        const hikeText = !th.detected
-          ? (fr ? 'Parfait (épaules basses et stables)' : 'Clean (shoulders down and stable)')
-          : (fr ? `Haussement compensatoire (${th.count}/${th.total} rép.)` : `Trapezius hiking detected (${th.count}/${th.total} reps)`);
-        summary.push((fr ? 'Contrôle des trapèzes' : 'Shoulder tracking') + colon + hikeText);
-      }
-      if (formChecks.activeRom) {
-        const rom = formChecks.activeRom;
-        const romText = fr
-          ? `${rom.peakAngleDeg}° max (moyenne ${rom.avgAngleDeg}°)`
-          : `${rom.peakAngleDeg}° peak (avg ${rom.avgAngleDeg}°)`;
-        summary.push((fr ? 'Amplitude articulaire max' : 'Peak active ROM') + colon + romText);
-      }
-    }
-
-    // Mechanical Work & Joint Kinetics (Inverse Dynamics)
-    if (kinetics) {
-      if (kinetics.totalWorkJoules > 0) {
-        summary.push((fr ? 'Travail mécanique total' : 'Total mechanical work') + colon + `${kinetics.totalWorkJoules}${NBSP}J`);
-      }
-      if (kinetics.maxL5S1ShearN > 0) {
-        summary.push((fr ? 'Cisaillement lombaire max (L5/S1)' : 'Peak lumbar shear (L5/S1)') + colon + `${kinetics.maxL5S1ShearN}${NBSP}N`);
-      }
-      if (kinetics.maxKneeShearN > 0) {
-        summary.push((fr ? 'Contrainte patellaire max' : 'Peak patellofemoral shear') + colon + `${kinetics.maxKneeShearN}${NBSP}N`);
-      }
-      if (kinetics.riskNote) {
-        summary.push((fr ? 'Alerte biomécanique' : 'Biomechanical cue') + colon + (fr ? kinetics.riskNote.textFr : kinetics.riskNote.textEn));
-      }
-    }
-
-    // Occupational Ergonomics & Spinal Compressive Load (NIOSH Revised Lifting Equation / Chaffin 1991)
-    if (ergonomics || spinalLoad) {
-      const ergo = ergonomics || spinalLoad;
-      const compN = ergo.compressionN ?? ergo.estimatedL5S1CompressionNewtons;
-      if (compN != null) {
-        const liText = ergo.liftingIndexLI ? ` · LI ${Number(ergo.liftingIndexLI).toFixed(2)}` : '';
-        const riskLabel = ergo.riskCategory === 'high'
-          ? (fr ? 'risque élevé (>3400 N seuil d’action NIOSH)' : 'high risk (>3400 N NIOSH action limit)')
-          : ergo.riskCategory === 'moderate'
-          ? (fr ? 'vigilance modérée' : 'moderate caution')
-          : (fr ? 'charge maîtrisée' : 'safe threshold');
-        summary.push((fr ? 'Compression spinale (L5/S1 NIOSH)' : 'Spinal compression (L5/S1 NIOSH)') + colon + `${compN}${NBSP}N (${riskLabel}${liText})`);
-      }
-      if (ergo.recommendations && ergo.recommendations.length > 0) {
-        summary.push((fr ? 'Recommandation ergonomique' : 'Ergonomic guideline') + colon + ergo.recommendations[0]);
-      }
-    }
-
-    // Cryptographic Compliance Verification
-    if (compliance && compliance.verified) {
-      summary.push((fr ? 'Certificat de conformité' : 'Compliance verification') + colon + `${compliance.certificateId}`);
-    }
-
-    // Velocity-Based Training (VBT) & Sticking Point
-    if (vbt) {
-      if (vbt.velocityLossPercent != null) {
-        const zoneText = vbt.fatigueZone === 'low'
-          ? (fr ? 'réserve élevée' : 'high reserve')
-          : vbt.fatigueZone === 'optimal'
-          ? (fr ? 'stimulus optimal' : 'optimal stimulus')
-          : (fr ? 'fatigue haute' : 'high fatigue');
-        summary.push((fr ? 'Perte de vitesse (VBT)' : 'Velocity loss (VBT)') + colon + `${vbt.velocityLossPercent}${fr ? NBSP : ''}% (${zoneText}) · RIR ~${vbt.estimatedRir}`);
-      }
-      if (vbt.stickingAngleDeg != null) {
-        summary.push((fr ? 'Point de friction' : 'Sticking point') + colon + `${vbt.stickingAngleDeg}° (${fr ? `sur la rép.${NBSP}${vbt.slowestRepIndex}` : `on rep ${vbt.slowestRepIndex}`})`);
-      }
-      if (vbt.cueFr && vbt.cueEn) {
-        summary.push((fr ? 'Conseil VBT' : 'VBT coaching cue') + colon + (fr ? vbt.cueFr : vbt.cueEn));
-      }
-    }
-
-    // Pain Scale (EVA) & Perceived Exertion (RPE)
-    if (pain != null && Number.isFinite(pain)) {
-      const painLabel = pain === 0
-        ? (fr ? 'aucune douleur' : 'no pain')
-        : pain <= 3
-        ? (fr ? 'légère' : 'mild')
-        : pain <= 6
-        ? (fr ? 'modérée' : 'moderate')
-        : (fr ? 'sévère' : 'severe');
-      summary.push((fr ? 'Échelle douleur (EVA)' : 'Pain scale (VAS)') + colon + `${pain}/10 (${painLabel})`);
-    }
-    if (rpe != null && Number.isFinite(rpe)) {
-      summary.push((fr ? 'Effort perçu (RPE)' : 'Perceived exertion (RPE)') + colon + `${rpe}/10`);
-    }
-    if (isometric && isometric.isHold) {
-      const tut = sec(isometric.tutSeconds);
-      const stab = decimal(isometric.stabilityDeg, fr);
-      const breakText = isometric.breakdownTime != null ? (fr ? `, rupture à ${sec(isometric.breakdownTime)}` : `, breakdown at ${sec(isometric.breakdownTime)}`) : '';
-      const isoText = `${tut} (${fr ? 'stabilité' : 'stability'} ±${stab}°${breakText})`;
-      summary.push((fr ? 'Maintien isométrique (TUT)' : 'Isometric hold (TUT)') + colon + isoText);
-    }
+    // The lines added on 11-13 October 2026 are withdrawn (honesty audit of 14 October 2026, CORE-15, CORE-18): partial
+    // reps, a bilateral symmetry score and its advice, a trunk shift, consistency, SPARC, squat depth, valgus, lockout,
+    // trapezius and peak-angle checks, joint loads and work from a fixed 75 kg body, a NIOSH "spinal compression" no
+    // caller fed, a "certificate of conformity" and VBT. None was measured against known truth (R8); the sheet goes to a
+    // coach or a physiotherapist. The person's own pain and effort are below, outside the measures, as theirs.
 
     // Previous set comparison.
     if (previousSet && previousSet.reps?.length) {
@@ -386,18 +222,33 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   const more = summary.filter(line => !statLabels.some(l => line.startsWith(`${l}${colon}`)));
   // How the count was made, as labelled details under it, like the people above it: who counted, and the limb followed.
   const details = [];
+  // A universal proposal (an exercise the core does not offer, universalProposal.js) says why the app proposed rather than
+  // counted, on the sheet and the PDF as in the history and the file (honesty pass, second round, 14 October 2026: the
+  // words sat in `corrected`, which no screen prints). Awaiting David's approval of the words (R10).
+  if (source === 'manual' && afterRefusal && proposed && proposedBy === 'universal') details.push([fr ? 'Saisie' : 'Entry', fr ? 'proposée par l’appli, qui ne compte pas encore cet exercice, puis confirmée par la personne' : 'proposed by the app, which does not count this exercise yet, then confirmed by the person']);
   // The app's proposal on a refused set, confirmed as it stood (History.jsx; French approved by David on 9 October 2026, R10).
-  if (source === 'manual' && afterRefusal && proposed) details.push([fr ? 'Saisie' : 'Entry', fr ? 'proposée par l’appli, confirmée par la personne' : 'proposed by the app, confirmed by the person']);
+  else if (source === 'manual' && afterRefusal && proposed) details.push([fr ? 'Saisie' : 'Entry', fr ? 'proposée par l’appli, confirmée par la personne' : 'proposed by the app, confirmed by the person']);
   else if (source === 'manual' && afterRefusal) details.push([fr ? 'Saisie' : 'Entry', fr ? 'à la main, l’appli n’a pas pu compter' : 'by hand, the app could not count']);
   else if (counted != null && counted !== count) details.push([fr ? 'Compté par l’appli' : 'Counted by the app', String(counted)], [fr ? 'Corrigé' : 'Corrected', String(count)]);
   if (arm === 'left' || arm === 'right') {
     const limb = joint === 'knee' ? (fr ? 'Jambe suivie' : 'Leg tracked') : joint === 'hip' ? (fr ? 'Côté suivi' : 'Side tracked') : (fr ? 'Bras suivi' : 'Arm tracked');
     details.push([limb, arm === 'left' ? (fr ? 'gauche' : 'left') : fr ? (joint === 'knee' ? 'droite' : 'droit') : 'right']);
   }
+  // The person's own pain and effort, as they gave them on the form, always printed (a typed, refused or flagged set has
+  // no measure, but the physiotherapist still needs these), labelled as theirs and never graded (honesty audit of 14
+  // October 2026, CORE-20 and the missed item on report-sheet.js:339). The sheet is read by a coach or a
+  // physiotherapist, so it names the person in the third person, as its "confirmée par la personne" does: "selon vous"
+  // would credit the rating to its reader (second round of the same day). Awaiting David's approval of the words (R10).
+  const outOf10 = v => (Number.isFinite(v) ? (fr ? `${v} sur 10` : `${v} out of 10`) : null);
+  const own = [];
+  if (outOf10(pain)) own.push([fr ? 'Douleur, selon la personne' : 'Pain, as the person rated it', outOf10(pain)]);
+  if (outOf10(rpe)) own.push([fr ? 'Effort perçu (RPE), selon la personne' : 'Perceived exertion (RPE), as the person rated it', outOf10(rpe)]);
 
   return {
     fr,
     details,
+    // What the person said of the set (pain, effort), as [label, value] pairs, under how the count was made.
+    own,
     stats,
     more,
     // No brand: the report names no app (David, 29 September).
@@ -414,7 +265,11 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     // The coach's target beside the count, for a set filmed from a programme (Espace pro, 6 October): "Prévu : 3 × 10".
     planned: plannedLine(planned, fr),
     // A set the app refused and the person typed (WP1.6): said so where a correction would be.
-    corrected: source === 'manual' && afterRefusal && proposed
+    // A universal proposal says why the app proposed rather than counted: it does not count the exercise yet (awaiting
+    // David's approval of the words, R10).
+    corrected: source === 'manual' && afterRefusal && proposed && proposedBy === 'universal'
+      ? (fr ? 'Proposé par l’appli, qui ne compte pas encore cet exercice, puis confirmé à la main.' : 'Proposed by the app, which does not count this exercise yet, then confirmed by hand.')
+      : source === 'manual' && afterRefusal && proposed
       ? (fr ? 'Proposé par l’appli, qui n’a pas bien vu le mouvement, puis confirmé à la main.' : 'Proposed by the app, which did not see the movement clearly, then confirmed by hand.')
       : source === 'manual' && afterRefusal
       ? (fr ? 'Saisi à la main : l’appli n’a pas pu compter cette série.' : 'Typed by hand: the app could not count this set.')
@@ -430,23 +285,78 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     columns,
     rows,
     summary,
-    symmetry: symmetry ?? null,
-    vbt: vbt ?? null,
-    ergonomics: ergonomics || spinalLoad || null,
-    partialCount: partialCount ?? 0,
-    partials: partials ?? null,
     shortRepNote: hasShort ? (fr ? '▾ amplitude courte' : '▾ short rep') : '',
     // The measured angle over the set (wave.js), as the set kept it; with the measures only (measures.js).
     wave: shown && wave?.t?.length > 1 && allReps.length ? { t: wave.t, a: wave.a, reps: allReps, rest: liftDefinition(lift)?.rest ?? 'low', first: liftFirst, jointWord: jointName(joint, fr), reference: referenceBand(lift, { joint: liftDefinition(lift)?.joint }) } : null,
     // The plain-words key to the table and the summary, wherever they are shown.
     guide: shown && rows.length > 0 ? measureGuide(fr) : null,
-    partialRepNote: hasPartial ? (fr ? `…${NBSP}: répétition partielle, non chronométrée` : '…: partial rep, not timed') : '',
+    // A rep tempo.js does not time (partialIn): said untimed, not "partial", a word for a detection the app has not
+    // measured against labels (honesty pass, second round, 14 October 2026). Awaiting David's approval (R10).
+    partialRepNote: hasPartial ? (fr ? `…${NBSP}: répétition non chronométrée` : '…: rep not timed') : '',
     // Beside every measure printed, while none is validated (measures.js).
     experimental: shown && (rows.length > 0 || (measures && summary.length > 0)) ? experimentalLabel(fr) : '',
     notesLabel: 'Notes',
     notes: (notes || '').normalize('NFC').replace(/\r\n?/g, '\n').trim(),
     // The report names no app (David, 29 September: the name is not final, and the tool spreads by being useful).
     foot: '',
+  };
+}
+
+/**
+ * A detail of how the count was made too long for a third of the sheet ("proposée par l'appli, confirmée par la
+ * personne"): set across the row on the sheet (Report.jsx, is-wide) and in the PDF (report-pdf.js), not wrapped into a
+ * third with two thirds empty (honesty pass, second round, 14 October 2026). Layout only.
+ */
+export const wideDetail = value => String(value).length > 24;
+
+/**
+ * The set as a JSON file (Report.jsx, "Mesures de la série"; honesty audit of 14 October 2026, CORE-15): every value says
+ * where it comes from, the app's count and its experimental per-rep measures apart from what the person confirmed or
+ * typed. No derived metric the app cannot measure (the withdrawn symmetry, consistency, SPARC, form checks, loads,
+ * certificate and VBT), no partial rep, no landmark. Second round of the same day: the sources are in the person's
+ * language; the reps' values are rounded as the screen shows them (whole degrees and degrees per second, tenths of a
+ * second), not to fourteen decimals a reader would take for precision; a set with no measured rep says none (null); left
+ * and right are exported only where the sheet prints them (sidesLines: this lift, the current rule), never a comparison
+ * the app withdrew. The French sources await David's approval (R10).
+ */
+export function measuresFile({ fr, lift, date, count, counted = null, source, afterRefusal = false, proposed = false, proposedBy = null, reps = null, sides = null, planned = null, person = {} }) {
+  const app = counted ?? null;
+  const typed = source === 'manual' && afterRefusal;
+  const tr = (frText, enText) => (fr ? frText : enText);
+  const how = typed
+    ? (proposed && proposedBy === 'universal'
+      ? tr('proposé par l’appli, qui ne compte pas encore cet exercice, puis confirmé par la personne', 'proposed by the app, which does not count this exercise yet, then confirmed by the person')
+      : proposed
+        ? tr('proposé par l’appli, qui n’a pas pu compter la série, puis confirmé par la personne', 'proposed by the app, which could not count the set, then confirmed by the person')
+        : tr(`saisi par la personne${NBSP}: l’appli n’a pas pu compter la série`, 'typed by the person; the app could not count the set'))
+    : app !== null && app !== count ? tr('corrigé par la personne', 'corrected by the person') : tr('compté par l’appli, confirmé par la personne', 'counted by the app, confirmed by the person');
+  const tenth = v => (Number.isFinite(v) ? Math.round(v * 10) / 10 : null);
+  const whole = v => (Number.isFinite(v) ? Math.round(v) : null);
+  // A rep the sheet does not time (filmed in part, or under tempo.js's partialIn rule) has no tempo and no speed here
+  // either, as in repTable ('…'); every key names its unit, the speeds being joint angles per second, not m/s (honesty
+  // pass, second round, 14 October 2026: the file held what the sheet withholds, unitless).
+  const untimed = partialIn(reps);
+  const values = (reps || []).map(r => {
+    const timed = !r.clipped && !untimed(r);
+    return {
+      index: r.index ?? null, startSec: tenth(r.startTime), endSec: tenth(r.endTime), romDegrees: whole(r.romDegrees),
+      concentricSec: timed ? tenth(r.concentricSec) : null, eccentricSec: timed ? tenth(r.eccentricSec) : null,
+      peakDegPerSec: timed ? whole(r.peakSpeed) : null, meanDegPerSec: timed ? whole(r.meanSpeed) : null,
+      ...(r.side ? { side: r.side } : {}), ...(r.clipped ? { clipped: true } : !timed ? { timed: false } : {}),
+    };
+  });
+  const lr = sidesLines(sides, fr, lift) ? sides : null;
+  const p = person || {};
+  return {
+    format: 'workoutvision-set-measures/1',
+    lift,
+    date: (date instanceof Date ? date : new Date(date)).toISOString(),
+    count: { value: count, source: how },
+    countedByApp: app !== null && !typed ? { value: app, source: tr('compté par l’appli', 'counted by the app') } : null,
+    reps: values.length ? { source: tr('mesuré par l’appli sur la vidéo, expérimental, non validé', 'measured by the app on the video, experimental, not validated'), values } : null,
+    sides: lr ? { source: tr('mesuré par l’appli, série filmée de face seulement, expérimental', 'measured by the app, front view only, experimental'), value: { left: lr.left, right: lr.right, gapPercent: Math.abs(Math.round(lr.si)) } } : null,
+    planned: planned ? { source: tr('le programme du coach', 'the coach’s programme'), value: planned } : null,
+    person: { source: tr('saisi par la personne sur le formulaire du rapport', 'typed by the person on the report form'), name: p.name || null, context: p.context || null, partner: p.partner || null, level: p.level || null, pain: p.pain ?? null, rpe: p.rpe ?? null, notes: p.notes || null },
   };
 }
 

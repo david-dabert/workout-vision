@@ -22,16 +22,14 @@ describe('the progress block of the history', () => {
     expect(out).toContain('Reps in your last 2 sets: 8, 10.');
     expect(out).toContain(`Best: 10${NB}reps`);
   });
-  it('renders symmetry and VBT velocity loss averages when present', () => {
+  it('shows no symmetry or velocity-loss average, even from sets that stored them (honesty audit, 14 October 2026)', () => {
     const a = set('a', 'squat', 8, { symmetry: { symmetryScore: 90 }, vbt: { velocityLossPercent: 12 } });
     const b = set('b', 'squat', 10, { symmetry: { symmetryScore: 94 }, vbt: { velocityLossPercent: 18 } });
-    const outFr = html([a, b], true);
-    expect(outFr).toContain(`Symétrie moy.${NB}: 92${NB}%`);
-    expect(outFr).toContain(`Perte vitesse moy.${NB}: 15${NB}%`);
-
-    const outEn = html([a, b], false);
-    expect(outEn).toContain('Mean symmetry: 92%');
-    expect(outEn).toContain('Mean velocity loss: 15%');
+    for (const fr of [true, false]) {
+      const out = html([a, b], fr);
+      expect(out).not.toMatch(/Symétrie|symmetry|vitesse|velocity|92|15/i);
+      expect(out).toContain(fr ? `Record${NB}: 10${NB}répétitions` : `Best: 10${NB}reps`);
+    }
   });
   it('nothing at all without a set', () => {
     expect(html([], true)).toBe('');

@@ -184,7 +184,9 @@ export default function Manifesto({ onClose, onChoose }) {
                   <div key={pIdx} className="manifesto-rule">
                     <h3 className="manifesto-rule-title">{pr.title}</h3>
                     <p className="manifesto-rule-desc">{pr.desc}</p>
-                    {pr.formula && (
+                    {/* The stimulus-to-fatigue ratio is a coaching idea, not a law: its "equation" is not drawn (honesty pass of
+                        14 October 2026, MAN-3; status convention, UNSOURCED). The asymmetry index, a definition, is. */}
+                    {pr.formula && !pr.formula.includes('\\text{SFR}') && (
                       <div className="manifesto-formula-box">
                         <div className="manifesto-formula-code"><Formula tex={pr.formula} fr={fr} /></div>
                       </div>

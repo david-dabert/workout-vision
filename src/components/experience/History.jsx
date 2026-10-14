@@ -3,7 +3,7 @@ import { useT } from '../../lib/LanguageContext';
 import { exerciseName } from './exercise-info';
 import { limbLabel } from './lift-meta';
 import Report, { warmReportPdf } from './Report';
-import { loadSets, knownSets, onSetsChanged, removeSet, countedBy, setTime } from './sets';
+import { loadSets, knownSets, onSetsChanged, removeSet, countedBy, proposedBy, setTime } from './sets';
 import { exerciseProgress, recordsOf } from './progress';
 import ExerciseProgress from './ExerciseProgress';
 import ExportSets from './ExportSets';
@@ -168,7 +168,11 @@ export default function History({ onClose }) {
             const byHand = counted === null, fixed = !byHand && counted !== w.reps;
             // The app's proposal on a refused set, confirmed as it stood: the person typed nothing (saved-set.js;
             // excellence hunt, 9 October 2026; French approved by David the same day, R10).
-            const proposed = byHand && Number.isFinite(w.proposal?.reps) && w.proposal.reps === w.reps;
+            const proposed = byHand && proposedBy(w) !== null;
+            // The proposal of the universal engine, for an exercise the core does not offer (universalProposal.js): the
+            // app does not count that exercise yet, which is not the same as not having seen the movement. Awaiting
+            // David's approval of the words (R10).
+            const universal = byHand && proposedBy(w) === 'universal';
             const seconds = Math.round(w.duration || 0);
             return <li key={w.id} className="hist-item">
               <button ref={el => { rowRefs.current[w.id] = el; }} className="hist-btn press" aria-expanded={shown} onClick={() => toggle(w.id)}>
@@ -178,18 +182,18 @@ export default function History({ onClose }) {
                   <span className="hist-meta"><span>{[time(w), seconds ? `${seconds}\u00A0s` : '', arm].filter(Boolean).map((part, i) => <span key={i}>{part}</span>)}</span></span>
                   <span className="sr">{fr ? `${w.reps} ${w.reps > 1 ? 'répétitions' : 'répétition'}` : `${w.reps} ${w.reps === 1 ? 'rep' : 'reps'}`}</span>
                 </span>
-                {(fixed || byHand || repsBest.has(w.id) || w.symmetry?.symmetryScore != null || w.consistency?.score != null || w.compliance?.verified) && <span className="hist-tags">
+                {/* Reps, records and corrections only: the symmetry, consistency and "Certifié" tags of sets saved on 11-14
+                    October are not read (honesty audit of 14 October 2026, CORE-16); the stored fields stay untouched. */}
+                {(fixed || byHand || repsBest.has(w.id)) && <span className="hist-tags">
                   {repsBest.has(w.id) && <span className="hist-tag is-best">{fr ? 'Record' : 'Best'}</span>}
-                  {w.symmetry?.symmetryScore != null && <span className="hist-tag">{w.symmetry.symmetryScore}% sym.</span>}
-                  {w.consistency?.score != null && <span className="hist-tag">{w.consistency.score}% {fr ? 'rég.' : 'const.'}</span>}
-                  {w.compliance?.verified && <span className="hist-tag is-compliance">{fr ? 'Certifié' : 'Verified'}</span>}
                   {fixed && <span className="hist-tag">{fr ? 'Corrigé' : 'Corrected'}</span>}
                   {byHand && <span className="hist-tag">{proposed ? (fr ? 'Proposition confirmée' : 'Proposal confirmed') : fr ? 'Saisi à la main' : 'Typed by hand'}</span>}
                 </span>}
               </button>
               {shown && <div className="hist-detail appear">
-                {w.compliance?.certificateId && <p className="hist-corr" data-testid="hist-compliance"><b>{fr ? 'Certificat d’exécution' : 'Compliance seal'} :</b> {w.compliance.certificateId}</p>}
-                {byHand && w.afterRefusal && <p className="hist-corr">{proposed
+                {byHand && w.afterRefusal && <p className="hist-corr">{universal
+                  ? (fr ? 'Proposé par l’appli, qui ne compte pas encore cet exercice, puis confirmé par vous.' : 'Proposed by the app, which does not count this exercise yet, then confirmed by you.')
+                  : proposed
                   ? (fr ? 'Proposé par l’appli, qui n’a pas bien vu le mouvement, puis confirmé par vous.' : 'Proposed by the app, which did not see the movement clearly, then confirmed by you.')
                   : fr ? 'Saisi à la main : l’appli n’a pas pu compter cette série.' : 'Typed by hand: the app could not count this set.'}</p>}
                 {fixed && <p className="hist-corr">{fr ? `Compté par l’appli : ${counted}. Corrigé : ${w.reps}.` : `Counted by the app: ${counted}. Corrected: ${w.reps}.`}</p>}
@@ -220,8 +224,8 @@ export default function History({ onClose }) {
       </div></section>
     </div>
     {report && <Report lift={report.exercise || report.exerciseKey} count={report.reps} counted={countedBy(report)} arm={report.arm}
-      date={setTime(report)} source={report.source} afterRefusal={!!report.afterRefusal} proposed={report.source === 'manual' && Number.isFinite(report.proposal?.reps) && report.proposal.reps === report.reps} reps={report.repDetailsVersion === 2 ? report.repDetails : null}
+      date={setTime(report)} source={report.source} afterRefusal={!!report.afterRefusal} proposed={proposedBy(report) !== null} proposedBy={proposedBy(report)} reps={report.repDetailsVersion === 2 ? report.repDetails : null}
       setId={report.id} sides={report.sides ?? null} planned={report.planned ?? null} wave={report.repDetailsVersion === 2 ? report.wave ?? null : null}
-      symmetry={report.symmetry} smoothness={report.smoothness} consistency={report.consistency} formChecks={report.formChecks} kinetics={report.kinetics} compliance={report.compliance} vbt={report.vbt} leaving={leaving} onBack={closeReport} />}
+      leaving={leaving} onBack={closeReport} />}
   </>;
 }
