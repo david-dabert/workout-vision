@@ -114,10 +114,10 @@ export const PHOTOS = {
 // reverse curl (app 9, label 10) and the chest-supported row (app 5, label 6, David, 7 October) are held.
 // Under the five sets: the counts are the early-October app's, not today's. The engine of 14 October, run on the same
 // five videos (stability matrix, PR #174), counts 3 of them exactly in Chromium and 2 in WebKit, so the captions stay
-// true only with their date (R13; assessment of 14 October 2026). Awaiting David's approval (R10).
+// true only with their date (R13; assessment of 14 October 2026). First wording refused by David ("makes no sense in French", 14 October); this one awaiting his approval (R10).
 export const DEMOS_NOTE = {
-  fr: 'Rejeux exportés par l’appli début octobre. La version d’aujourd’hui ne retrouve pas toujours le même nombre sur ces vidéos.',
-  en: 'Replays exported by the app in early October. Today’s version does not always reach the same count on these videos.',
+  fr: 'Ces séries ont été comptées par l’appli début octobre. La version actuelle n’obtient pas toujours le même résultat sur ces vidéos.',
+  en: 'These sets were counted by the app in early October. The current version does not always get the same result on these videos.',
 };
 
 export const DEMOS = [
