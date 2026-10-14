@@ -3,7 +3,10 @@ import { useT } from '../../lib/LanguageContext';
 import { PRO } from './pro-copy';
 import { exerciseName, guideExercise } from './exercise-info';
 import { Thumb } from './Guide';
-import { dayWords, decodeProgramme, lastDayOf, plainPayload, plainResultsPayload, plannedOf, programmeId, programmeLink, progressOf, resultsLink, resultsOf } from './programme';
+import {
+  dayWords, decodeProgramme, frequencyOf, guideOnly, holdOf, lastDayOf, plainPayload, plainResultsPayload, plannedOf, programmable, programmeId,
+  programmeLink, progressOf, resultsLink, resultsOf, sideOf,
+} from './programme';
 import { onHomeScreen } from '../../lib/keep-sets';
 import { inAppBrowser } from '../../lib/install';
 import SetCells from './SetCells';
@@ -94,6 +97,7 @@ export default function Programme({ payload, held = null, onHold, onClose, onSta
   const sent = past ? progressOf(p, ids, mine, past) : progress;
   const resultsUrl = sent.items.some(i => i.done.length) ? resultsLink(location.href, plainResultsPayload(resultsOf(p, sent, past || now))) : null;
   const pastDay = past ? dayWords(past, lang) : '';
+  const frequency = frequencyOf(p);
   // The programme's own link, for the in-app browser's copy.
   const ownLink = programmeLink(location.href, plainPayload(p));
   const copyLink = url => (navigator.clipboard?.writeText(url) ?? Promise.reject(new Error('no clipboard')))
@@ -113,20 +117,24 @@ export default function Programme({ payload, held = null, onHold, onClose, onSta
       <h1 className="title" data-reveal style={{ '--i': 0 }}>{p.title}</h1>
       <p className="programme-meta" data-reveal style={{ '--i': 1 }}>
         {p.who && <span>{c.whoLine(p.who)}</span>}
+        {frequency && <span data-testid="programme-frequency">{c.frequency(frequency.times, frequency.per)}</span>}
         {progress.total > 0 && <span data-testid="programme-today">{c.today(progress.complete, progress.total)}</span>}
       </p>
       {p.note && <p className="programme-note" data-reveal style={{ '--i': 1 }}>{p.note}</p>}
       <ol className="programme-list" data-reveal style={{ '--i': 2 }}>{p.items.map((item, i) => {
         const name = exerciseName(item.key, lang), e = guideExercise(item.key), got = progress.items[i];
-        // An exercise the app no longer counts (withdrawn after the coach sent the programme): shown, not filmed.
+        // The target as the coach set it: sets × reps or sets × the hold, the side when one is set, the rest.
+        const target = c.targetLine(item.sets, item.reps, item.rest, holdOf(item), sideOf(item));
+        // An exercise the client does not film (programme.js, filmable): one the app no longer counts (withdrawn after
+        // the coach sent the programme), one of the guide only, or a hold. Shown with its drawing, not filmed.
         if (!got.counted) return <li key={`${item.key}-${i}`} className="programme-item" data-testid="programme-item">
           <div className="programme-btn">
             {e ? <Thumb exercise={e} /> : <span className="thumb" />}
             <span className="programme-body">
               <span className="programme-name">{name}</span>
-              <span className="programme-target mono">{c.target(item.sets, item.reps, item.rest)}</span>
+              <span className="programme-target mono">{target}</span>
               {item.note && <span className="programme-cue">{item.note}</span>}
-              <span className="programme-cue" data-testid="programme-not-counted">{c.notCounted}</span>
+              <span className="programme-cue" data-testid="programme-not-counted">{guideOnly(item.key) ? c.guideOnly : !programmable(item.key) ? c.notCounted : c.holdNotCounted}</span>
             </span>
           </div>
         </li>;
@@ -135,7 +143,7 @@ export default function Programme({ payload, held = null, onHold, onClose, onSta
             {e ? <Thumb exercise={e} /> : <span className="thumb" />}
             <span className="programme-body">
               <span className="programme-name">{name}</span>
-              <span className="programme-target mono">{c.target(item.sets, item.reps, item.rest)}</span>
+              <span className="programme-target mono">{target}</span>
               {item.note && <span className="programme-cue">{item.note}</span>}
             </span>
             {got.complete
@@ -157,7 +165,8 @@ export default function Programme({ payload, held = null, onHold, onClose, onSta
         </div>}
         <p className="foot pro-foot">{past ? c.resultsPrivacyOf(pastDay) : c.resultsPrivacy}</p>
       </div>}
-      <p className="foot pro-foot">{c.tapHint} {c.sendBack}</p>
+      {/* How to film and send: for a programme with something to film. */}
+      {progress.total > 0 && <p className="foot pro-foot">{c.tapHint} {c.sendBack}</p>}
       <p className="foot pro-foot" data-testid={entry.unkept ? 'programme-not-kept' : undefined}>{entry.unkept ? c.notKept : c.clientPrivacy}</p>
       {others.length > 0 && <>
         <h2 className="section-head">{c.othersHead}</h2>

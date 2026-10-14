@@ -3,7 +3,7 @@ import { useT } from '../../lib/LanguageContext';
 import { PRO } from './pro-copy';
 import { exerciseName, guideExercise } from './exercise-info';
 import { Thumb } from './Guide';
-import { dayWords, decodeResults, targetText, timeWords } from './programme';
+import { dayWords, decodeResults, guideOnly, holdOf, resultsSummary, targetText, timeWords } from './programme';
 import SetCells from './SetCells';
 import { useCondensingTopbar } from './topbar';
 import './Pro.css';
@@ -52,10 +52,9 @@ export default function Results({ payload, onClose, onAdjust }) {
   const [y, m, d] = r.day.split('-').map(Number);
   const day = dayWords(new Date(y, m - 1, d), lang, { year: true });
   // Sets, not exercises: "4 of 4 exercises done" would hide 3 sets of 4 on a target of 10. Each planned set counts
-  // once; a set beyond the plan shows in its cells, not here.
-  const planned = r.items.reduce((a, i) => a + i.sets, 0);
-  const done = r.items.reduce((a, i) => a + Math.min(i.done.length, i.sets), 0);
-  const met = r.items.reduce((a, i) => a + i.done.slice(0, i.sets).filter(n => n >= i.reps).length, 0);
+  // once; a set beyond the plan shows in its cells, not here. A hold and an exercise of the guide only, done without
+  // filming, add no set (programme.js, resultsSummary).
+  const { planned, done, met } = resultsSummary(r);
   const byHand = r.items.some(i => i.kinds?.some(k => k !== 'a'));
   return <div className="wv-experience">
     <section ref={screenRef} className="screen is-active pro-screen programme-screen" data-testid="results-screen"><div className="wrap">
@@ -69,7 +68,19 @@ export default function Results({ payload, onClose, onAdjust }) {
         <span data-testid="results-done">{c.resultsSets(done, planned, met)}</span>
       </p>
       <ol className="programme-list" data-reveal style={{ '--i': 2 }}>{r.items.map((item, i) => {
-        const name = exerciseName(item.key, lang), e = guideExercise(item.key);
+        const name = exerciseName(item.key, lang), e = guideExercise(item.key), hold = holdOf(item);
+        // Done without filming (a hold, an exercise of the guide only): its target, said not counted, and no cells,
+        // which would read as sets missed (R8).
+        if (hold || guideOnly(item.key)) return <li key={`${item.key}-${i}`} className="programme-item" data-testid="results-item">
+          <div className="programme-btn">
+            {e ? <Thumb exercise={e} /> : <span className="thumb" />}
+            <span className="programme-body">
+              <span className="programme-name">{name}</span>
+              <span className="programme-target mono">{hold ? c.holdTarget(item.sets, hold) : targetText(item)}</span>
+              <span className="programme-cue" data-testid="results-not-counted">{c.notCountedTag}</span>
+            </span>
+          </div>
+        </li>;
         return <li key={`${item.key}-${i}`} className={`programme-item${item.done.length >= item.sets ? ' is-done' : ''}`} data-testid="results-item">
           <div className="programme-btn">
             {e ? <Thumb exercise={e} /> : <span className="thumb" />}

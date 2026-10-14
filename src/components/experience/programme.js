@@ -3,6 +3,7 @@
 // link's hash (the part of an address a browser never sends), then on the client's phone. Pure: no DOM, no storage.
 import { isOffered, isKnownExercise } from '../../lib/offer';
 import { isTest } from '../../lib/fitness-tests';
+import { isGuideKey } from '../../lib/guide-keys';
 import { keptAs } from './result-plan';
 
 const NBSP = ' ';
@@ -10,12 +11,22 @@ const NBSP = ' ';
 // Bounds of a programme. The numbers are a coach's ordinary ranges, not a prescription (status: convention, UNSOURCED;
 // R9): from one to ten sets, one to a hundred reps, a rest of up to ten minutes. A link outside them is refused, never
 // stretched to fit.
+// The exercise sheet (14 October 2026) adds a hold of up to five minutes and a frequency of one to fourteen times a
+// day or a week: the bounds the task set, a coach's ordinary ranges, not a prescription (status: convention,
+// UNSOURCED; R9).
 export const LIMITS = Object.freeze({
   title: 80, who: 60, note: 600, itemNote: 140, items: 24,
   sets: [1, 10], reps: [1, 100], rest: [0, 600],
+  hold: [1, 300], times: [1, 14],
 });
 // A new exercise starts at three sets of ten with 90 s of rest (convention, UNSOURCED; R9): the coach changes them.
 export const DEFAULT_ITEM = Object.freeze({ sets: 3, reps: 10, rest: 90, note: '' });
+// A hold starts at 30 s (convention, UNSOURCED; R9): the coach changes it.
+export const DEFAULT_HOLD = 30;
+// The side an exercise is done on: both at once (the default, never written), the left, the right, or each in turn.
+export const SIDES = Object.freeze(['both', 'left', 'right', 'each']);
+const SIDE_LETTER = Object.freeze({ both: 'b', left: 'l', right: 'r', each: 'e' });
+const LETTER_SIDE = Object.freeze({ b: 'both', l: 'left', r: 'right', e: 'each' });
 
 // The longest link payload read (characters after "#programme="), and the most text it may unpack to: a programme at
 // every limit packs to about 4 kB of JSON; anything far beyond is not a programme, and a small packed payload that
@@ -37,11 +48,21 @@ export function cleanText(s, { lines = false } = {}) {
 /** Whether the builder offers this exercise: every exercise the app counts, but the two fitness tests (a protocol of their own). */
 export const programmable = key => typeof key === 'string' && /^[a-z0-9_]{1,64}$/.test(key) && isOffered(key) && !isTest(key);
 /**
- * Whether a programme, a link or the results may name this exercise: one the builder offers, or one the app no longer
- * counts (withdrawn after the programme was sent). Such an exercise is shown, not filmed, and leaves the day's count
- * (progressOf); without this, a withdrawal made every programme naming it vanish (live-app audit, 10 October 2026).
+ * Whether a programme, a link or the results may name this exercise: one the app counts or once counted (withdrawn
+ * after the programme was sent; without this, a withdrawal made every programme naming it vanish, live-app audit,
+ * 10 October 2026), or any other exercise of the guide (the exercise sheet, 14 October 2026: the plank, a stretch).
+ * One the app does not count is shown, not filmed, and leaves the day's count (progressOf, filmable).
  */
-export const knownExercise = key => typeof key === 'string' && /^[a-z0-9_]{1,64}$/.test(key) && isKnownExercise(key) && !isTest(key);
+export const knownExercise = key => typeof key === 'string' && /^[a-z0-9_]{1,64}$/.test(key) && (isKnownExercise(key) || isGuideKey(key)) && !isTest(key);
+/** An exercise of the guide the app has never counted: on a sheet, done without filming. */
+export const guideOnly = key => knownExercise(key) && !isKnownExercise(key);
+
+/** An item's hold in seconds, or 0 for a target in reps (the default, absent from the item). */
+export const holdOf = item => (typeof item?.holdSec === 'number' && item.holdSec > 0 ? item.holdSec : 0);
+/** An item's side: 'both' (the default, absent from the item), 'left', 'right' or 'each'. */
+export const sideOf = item => (SIDES.includes(item?.side) ? item.side : 'both');
+/** Whether the client films this item: an exercise the app counts, set in reps (the app counts no hold). */
+export const filmable = item => programmable(item?.key) && holdOf(item) === 0;
 
 const intIn = (v, [lo, hi]) => Number.isInteger(v) && v >= lo && v <= hi;
 const clampInt = (v, [lo, hi], fallback) => {
@@ -49,33 +70,79 @@ const clampInt = (v, [lo, hi], fallback) => {
   return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : fallback;
 };
 
-/** A draft's item, its numbers brought into bounds (the builder's fields, on leaving them). */
+/** A programme's frequency, { times, per } with per 'day' or 'week', or null when it has none (the default). */
+export function frequencyOf(p) {
+  const f = p?.frequency;
+  return f && intIn(f.times, LIMITS.times) && (f.per === 'day' || f.per === 'week') ? { times: f.times, per: f.per } : null;
+}
+
+/**
+ * A draft's item, its numbers brought into bounds (the builder's fields, on leaving them). A hold and a side are kept
+ * only when set: an item without them is written as before the exercise sheet, so its link and its id are unchanged.
+ */
 export function fixItem(item) {
-  return {
+  const out = {
     key: item.key,
     sets: clampInt(item.sets, LIMITS.sets, DEFAULT_ITEM.sets),
     reps: clampInt(item.reps, LIMITS.reps, DEFAULT_ITEM.reps),
     rest: clampInt(item.rest, LIMITS.rest, DEFAULT_ITEM.rest),
     note: cleanText(item.note).slice(0, LIMITS.itemNote),
   };
+  if (typeof item.holdSec === 'number' && item.holdSec > 0) out.holdSec = clampInt(item.holdSec, LIMITS.hold, DEFAULT_HOLD);
+  if (sideOf(item) !== 'both') out.side = item.side;
+  return out;
 }
 
-/** A draft as the outputs take it: { title, who, note, items }, or null while it has no title or no exercise. */
+/** The hold typed in the builder's field, brought into bounds: empty gives the default. */
+export const fixHold = text => clampInt(text === '' ? NaN : Number(text), LIMITS.hold, DEFAULT_HOLD);
+/** The times typed in the frequency's field, brought into bounds: empty, or not a number, gives none (null). */
+export function fixTimes(text) {
+  if (text === '' || text == null) return null;
+  return clampInt(Number(text), LIMITS.times, null);
+}
+/** The item set in reps ('reps', its reps kept for a switch back) or as a hold ('hold', its hold kept, else the default). */
+export const withKind = (item, kind) => ({ ...item, holdSec: kind === 'hold' ? holdOf(item) || DEFAULT_HOLD : 0 });
+/** The item on another side. */
+export const withSide = (item, side) => ({ ...item, side: SIDES.includes(side) ? side : 'both' });
+
+/**
+ * A draft as the outputs take it: { title, who, note, items, frequency? }, or null while it has no title or no
+ * exercise. The frequency comes only when the coach set one.
+ */
 export function programmeOf(draft) {
   const title = cleanText(draft?.title).slice(0, LIMITS.title);
   const items = (draft?.items || []).filter(i => knownExercise(i.key)).slice(0, LIMITS.items).map(fixItem);
   if (!title || !items.length) return null;
-  return { title, who: cleanText(draft.who).slice(0, LIMITS.who), note: cleanText(draft.note, { lines: true }).slice(0, LIMITS.note), items };
+  const frequency = frequencyOf(draft);
+  return { title, who: cleanText(draft.who).slice(0, LIMITS.who), note: cleanText(draft.note, { lines: true }).slice(0, LIMITS.note), items, ...(frequency ? { frequency } : {}) };
 }
 
-// The compact form the link carries: { v: 1, t, w?, n?, x: [[key, sets, reps, rest, note?], ...] }.
+/**
+ * The compact form the link carries: { v: 1 or 2, t, w?, n?, x: [[key, sets, reps, rest, note?], ...], f?, h?, s? }.
+ * The exercise sheet (14 October 2026) added three keys after x, each only when used, so a programme without them is
+ * written byte for byte as before (programme-compat.test.js) and keeps its id: f, the frequency [times, 'd' or 'w'];
+ * h, one hold in seconds per exercise (0 for reps); s, one letter per exercise for its side (b, l, r, e).
+ * The version is 2 when the link carries h or s (SHEET_VERSION), else 1 as before. An app of before the sheet reads a
+ * v: 1 link and leaves out the keys it does not know: it would show a hold as reps to film, and "each side" would
+ * vanish, a target the coach never set (R8). A v: 2 link it refuses instead, as it refuses any link it cannot read.
+ * A frequency alone stays v: 1: an older app leaves it out and shows no wrong target.
+ */
+export const SHEET_VERSION = 2;
 export function compact(p) {
-  const out = { v: 1, t: p.title };
+  const holds = p.items.some(i => holdOf(i) > 0), sides = p.items.some(i => sideOf(i) !== 'both');
+  const out = { v: holds || sides ? SHEET_VERSION : 1, t: p.title };
   if (p.who) out.w = p.who;
   if (p.note) out.n = p.note;
   out.x = p.items.map(i => (i.note ? [i.key, i.sets, i.reps, i.rest, i.note] : [i.key, i.sets, i.reps, i.rest]));
+  const f = frequencyOf(p);
+  if (f) out.f = [f.times, f.per === 'day' ? 'd' : 'w'];
+  if (holds) out.h = p.items.map(holdOf);
+  if (sides) out.s = p.items.map(i => SIDE_LETTER[sideOf(i)]).join('');
   return out;
 }
+
+// The versions this app reads: 1, and 2 (a hold or a side, compact).
+const readable = v => v === 1 || v === SHEET_VERSION;
 
 /**
  * The compact form read back, every field checked: { ok: true, programme } or { ok: false, error }, error among
@@ -84,7 +151,7 @@ export function compact(p) {
  */
 export function fromCompact(raw) {
   const bad = error => ({ ok: false, error });
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || raw.v !== 1) return bad('malformed');
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !readable(raw.v)) return bad('malformed');
   const str = (v, max, opts) => {
     if (v === undefined) return '';
     if (typeof v !== 'string') return null;
@@ -106,7 +173,26 @@ export function fromCompact(raw) {
     if (itemNote === null) return bad('bad-value');
     items.push({ key, sets, reps, rest, note: itemNote });
   }
-  return { ok: true, programme: { title, who, note, items } };
+  // The sheet's keys (compact): optional, checked when present.
+  if (raw.h !== undefined) {
+    if (!Array.isArray(raw.h) || raw.h.length !== items.length) return bad('malformed');
+    for (let i = 0; i < items.length; i++) {
+      const h = raw.h[i];
+      if (!Number.isInteger(h) || h < 0 || h > LIMITS.hold[1]) return bad('bad-value');
+      if (h > 0) items[i].holdSec = h;
+    }
+  }
+  if (raw.s !== undefined) {
+    if (typeof raw.s !== 'string' || raw.s.length !== items.length || !/^[blre]*$/.test(raw.s)) return bad('malformed');
+    [...raw.s].forEach((letter, i) => { if (letter !== 'b') items[i].side = LETTER_SIDE[letter]; });
+  }
+  let frequency = null;
+  if (raw.f !== undefined) {
+    if (!Array.isArray(raw.f) || raw.f.length !== 2 || (raw.f[1] !== 'd' && raw.f[1] !== 'w')) return bad('malformed');
+    if (!intIn(raw.f[0], LIMITS.times)) return bad('bad-value');
+    frequency = { times: raw.f[0], per: raw.f[1] === 'd' ? 'day' : 'week' };
+  }
+  return { ok: true, programme: { title, who, note, items, ...(frequency ? { frequency } : {}) } };
 }
 
 // Base64url, as a URL carries it without escaping (RFC 4648, section 5), with no padding.
@@ -274,10 +360,11 @@ export function progressOf(programme, id, sets, now = new Date()) {
   const items = programme.items.map((item, index) => {
     const own = mine.filter(m => m.at === index).map(m => m.w);
     const done = own.map(w => w.reps), kinds = own.map(keptLetter);
-    return { index, key: item.key, target: { sets: item.sets, reps: item.reps }, done, kinds, complete: done.length >= item.sets, counted: programmable(item.key) };
+    return { index, key: item.key, target: { sets: item.sets, reps: item.reps }, done, kinds, complete: done.length >= item.sets, counted: filmable(item) };
   });
   const last = mine.length ? setTimeOf(mine.at(-1).w) : null;
-  // An exercise the app no longer counts cannot be filmed: the day is complete once the others are.
+  // An exercise the app does not count (withdrawn, of the guide only, or set as a hold) is not filmed: the day is
+  // complete once the others are.
   const counted = items.filter(i => i.counted);
   return { items, complete: counted.filter(i => i.complete).length, total: counted.length, last };
 }
@@ -334,18 +421,39 @@ export function resultsOf(programme, progress, date = new Date()) {
     title: programme.title, who: programme.who || '', day: dayOf(date), time: progress.last == null ? '' : hhmm(progress.last),
     items: programme.items.map((item, i) => {
       const got = progress.items[i] || {}, done = (got.done || []).slice(0, RESULT_LIMITS.done);
-      return { key: item.key, sets: item.sets, reps: item.reps, done: done.map(n => Math.round(n)), kinds: (got.kinds || []).slice(0, done.length) };
+      const hold = holdOf(item);
+      return { key: item.key, sets: item.sets, reps: item.reps, ...(hold ? { holdSec: hold } : {}), done: done.map(n => Math.round(n)), kinds: (got.kinds || []).slice(0, done.length) };
     }),
   };
 }
 
+/**
+ * The results' sets for the coach's header (Results.jsx): planned, done and met, summed over the exercises the client
+ * films. A hold and an exercise of the guide only are done without filming, so they add no set; a withdrawn exercise
+ * keeps its place in the sums, as before the exercise sheet, so an old results link reads the same. Each planned set
+ * counts once; a set beyond the plan shows in its cells, not here.
+ */
+export function resultsSummary(r) {
+  const items = (r?.items || []).filter(i => holdOf(i) === 0 && !guideOnly(i.key));
+  return {
+    planned: items.reduce((a, i) => a + i.sets, 0),
+    done: items.reduce((a, i) => a + Math.min(i.done.length, i.sets), 0),
+    met: items.reduce((a, i) => a + i.done.slice(0, i.sets).filter(n => n >= i.reps).length, 0),
+  };
+}
+
 // The compact form the results link carries: { v: 1, t, w?, d, h?, x: [[key, sets, reps, [reps of each set]], ...],
-// k? }. h, the time of the latest set ("HH:MM"), and k, one string per exercise with one letter per set (keptLetter),
-// came on 9 October 2026 as keys of their own: a coach's app of the day before reads the link, without them.
+// k?, g? }. h, the time of the latest set ("HH:MM"), and k, one string per exercise with one letter per set
+// (keptLetter), came on 9 October 2026 as keys of their own: a coach's app of the day before reads the link, without
+// them. g, one hold in seconds per exercise (0 for reps), came with the exercise sheet (14 October 2026), only when an
+// exercise holds, so the coach reads a hold as a hold and not as reps (R8). With g the version is 2 (SHEET_VERSION), as
+// a programme's link with a hold: a coach's app of before the sheet refuses the link rather than show a hold as reps
+// missed.
 const compactResults = r => ({
-  v: 1, t: r.title, ...(r.who ? { w: r.who } : {}), d: r.day, ...(r.time ? { h: r.time } : {}),
+  v: r.items.some(i => holdOf(i) > 0) ? SHEET_VERSION : 1, t: r.title, ...(r.who ? { w: r.who } : {}), d: r.day, ...(r.time ? { h: r.time } : {}),
   x: r.items.map(i => [i.key, i.sets, i.reps, i.done]),
   ...(r.items.every(i => Array.isArray(i.kinds) && i.kinds.length === i.done.length) ? { k: r.items.map(i => i.kinds.join('')) } : {}),
+  ...(r.items.some(i => holdOf(i) > 0) ? { g: r.items.map(holdOf) } : {}),
 });
 
 /** The results' plain payload, "j" and the compact JSON in base64url: made at once, so a share stays within the tap. */
@@ -362,7 +470,7 @@ export async function encodeResults(r, { gzip: gzipIt = true } = {}) {
  */
 export function fromCompactResults(raw) {
   const bad = error => ({ ok: false, error });
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || raw.v !== 1) return bad('malformed');
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !readable(raw.v)) return bad('malformed');
   const str = (v, max) => (v === undefined ? '' : typeof v === 'string' && cleanText(v).length <= max ? cleanText(v) : null);
   const title = str(raw.t, LIMITS.title), who = str(raw.w, LIMITS.who);
   if (title === null || who === null) return bad('bad-value');
@@ -386,6 +494,15 @@ export function fromCompactResults(raw) {
       const k = raw.k[i];
       if (typeof k !== 'string' || k.length !== items[i].done.length || !/^[acpt]*$/.test(k)) return bad('malformed');
       items[i].kinds = [...k];
+    }
+  }
+  // The holds, as the programme's link carries them (fromCompact, h).
+  if (raw.g !== undefined) {
+    if (!Array.isArray(raw.g) || raw.g.length !== items.length) return bad('malformed');
+    for (let i = 0; i < items.length; i++) {
+      const g = raw.g[i];
+      if (!Number.isInteger(g) || g < 0 || g > LIMITS.hold[1]) return bad('bad-value');
+      if (g > 0) items[i].holdSec = g;
     }
   }
   return { ok: true, results: { title, who, day: raw.d, time: raw.h || '', items } };
