@@ -365,3 +365,18 @@ Notes for the discussion:
 - Much already exists: the sleeping stage without particles (design pass), the Geist numeral (C1), no number at low confidence (R8, C4), the correction treated as the count.
 - Haptics through navigator.vibrate: as far as known, Safari on iPhone ignores the Vibration API; to verify before anything is designed on it.
 - The confirmation rate is measurable: the usage counts record sets kept and corrected (feedback-worker/usage-schema.js).
+
+## 14 October 2026: the coach's office (moved from docs/VISION.md, its former phase 3), ideas, not decisions
+
+Source: ordered by David in conversation, 13-14 October 2026 (relayed to the session of 14 October; the order itself is
+not recorded in the repository). Moved here from the vision's roadmap after the honesty review of PR #161, since no
+current phase covers it (STATE.md: accuracy; R7).
+
+- Accounting from sourced rates: URSSAF contribution rates, each with its source and date, nothing computed from an
+  unsourced rate.
+- Nutrition by barcode through Open Food Facts.
+- Nutrition by photo: the app proposes foods, the user confirms each one, and calories are shown as a range from
+  CIQUAL, never as a single number.
+- Client records and progress: each client's sets, programmes and results over time.
+- Why not now: outside the current phase; each item would need its own sources, its own error model (R8, R9) and
+  David's opening of the step.
