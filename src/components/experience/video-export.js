@@ -4,7 +4,7 @@
 // Safari on iPhone offers from iOS 14.5, in MP4 with H.264). Nothing is sent anywhere: the file goes
 // to the share sheet only when the user taps it there.
 import { liftDefinition } from '../../lib/counting/core';
-import { poseAt, repAt, trajectoryAt } from './replay-track';
+import { poseAt } from './replay-track';
 import { drawSkeleton, litSides, trailPoints, LAMP } from './replay-draw';
 import { steadyFrames, trailAt } from './replay-smooth';
 import { overlayLines } from './replay-labels';
@@ -96,9 +96,7 @@ export function exportSetVideo({ file, result, lift, fr = false, saved = null, o
       const lm = poseAt(frames, times, t);
       if (lm) {
         const trails = trailPoints(def, sides).map(k => trailAt(frames, times, t, k, lm[k]));
-        const curRep = repAt(reps, t);
-        const traj = trajectoryAt(frames, times, t, curRep >= 0 ? reps[curRep] : null, lift, def, result.arm);
-        drawSkeleton(ctx, lm, { ox: 0, oy: 0, w: W, h: H }, sides, def, u, trails, traj);
+          drawSkeleton(ctx, lm, { ox: 0, oy: 0, w: W, h: H }, sides, def, u, trails);
       }
       if (reps.length) {
         // The reps begun so far, as the replay's chip shows them: "3 / 8"; after a correction, a second

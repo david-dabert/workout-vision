@@ -4,7 +4,7 @@ import { exerciseName } from './exercise-info';
 import { liftDefinition } from '../../lib/counting/core';
 import { decimal } from './report-sheet';
 import { partialIn } from './tempo';
-import { poseAt, repAt, phaseAt, into, keyedTime, angleAt, trajectoryAt } from './replay-track';
+import { poseAt, repAt, phaseAt, into, keyedTime, angleAt } from './replay-track';
 import { drawSkeleton, litSides, trailPoints } from './replay-draw';
 import { steadyFrames, trailAt } from './replay-smooth';
 import { canExport, exportSetVideo } from './video-export';
@@ -123,9 +123,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       const vw = video.videoWidth || fw, vh = video.videoHeight || fh;
       const s = Math.min(cw / vw, ch / vh);
       const trails = trailPoints(def, sides).map(k => trailAt(frames, times, t, k, lm[k]));
-      const curRep = repAt(reps, t);
-      const traj = trajectoryAt(frames, times, t, curRep >= 0 ? reps[curRep] : null, lift, def, result.arm);
-      drawSkeleton(ctx, lm, { ox: (cw - vw * s) / 2, oy: (ch - vh * s) / 2, w: vw * s, h: vh * s }, sides, def, 1, trails, traj);
+      drawSkeleton(ctx, lm, { ox: (cw - vw * s) / 2, oy: (ch - vh * s) / 2, w: vw * s, h: vh * s }, sides, def, 1, trails);
     };
     // The screen's words follow the video about ten times a second, and at once when it stops.
     const tell = (t, force) => {
@@ -272,7 +270,16 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
         ? (fr ? 'Cette série n’a pas pu être comptée.' : 'This set could not be counted.')
         : (fr ? 'Aucune répétition comptée dans cette vidéo.' : 'No rep counted in this video.');
   }
-  const phaseWord = { concentric: fr ? 'Concentrique' : 'Concentric', eccentric: fr ? 'Excentrique' : 'Eccentric' }[phase] || (isTransition ? (fr ? 'Inflexion' : 'Turn') : NB);
+  // Between the two phases of a rep, the turn is a pause, said so ("Inflexion" was no gym word; honesty audit of 14 October
+  // 2026, CORE-12). Awaiting David's approval of the word (R10).
+  const phaseWord = { concentric: fr ? 'Concentrique' : 'Concentric', eccentric: fr ? 'Excentrique' : 'Eccentric' }[phase] || (isTransition ? 'Pause' : NB);
+  // The chip's angle is the core's, read in 3D (the number the count reads), named by its joint; the picture draws no 2D
+  // angle beside it, which disagreed with it (replay-draw.js). Shown with the measures only (measures.js).
+  const JOINT_WORD = { elbow: ['Coude', 'Elbow'], shoulder: ['Épaule', 'Shoulder'], knee: ['Genou', 'Knee'], hip: ['Hanche', 'Hip'] };
+  const jointWord = JOINT_WORD[def?.joint]?.[fr ? 0 : 1] ?? null;
+  // The limb's end whose recent path the gold trail draws (replay-draw.js trailPoints: the joint's third point).
+  const END_WORD = { elbow: ['du poignet', 'wrist'], shoulder: ['du coude', 'elbow'], knee: ['de la cheville', 'ankle'], hip: ['du genou', 'knee'] };
+  const endWord = END_WORD[def?.joint]?.[fr ? 0 : 1] ?? null;
 
   return <div className={`wv-experience${leaving ? ' is-leaving' : ''}`}>
     <section className="screen is-active replay-screen" aria-label={`${fr ? 'Revoir la série' : 'Replay of the set'} · ${liftName}`}><div className="wrap">
@@ -295,7 +302,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
           {reps.length > 0 && <div className={`rp-chip${phaseWord === NB ? ' is-idle' : ''}`} aria-hidden="true">
             <span className="rp-count"><span className="rp-n">{begun}</span><span className="rp-of">/{NB}{reps.length}</span></span>
             <span className="rp-phase">{phaseWord}</span>
-            {curAngle !== null && <span className="rp-angle">{Math.round(curAngle)}°</span>}
+            {MEASURES_SHOWN && curAngle !== null && jointWord && <span className="rp-angle" data-testid="rp-angle">{jointWord}{NB}{Math.round(curAngle)}°</span>}
           </div>}
           {broken && <p className="rp-broken" role="alert">{fr ? 'Cette vidéo ne se lit pas dans ce navigateur.' : 'This video does not play in this browser.'}</p>}
         </div>
@@ -334,13 +341,16 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
           ? (fr ? 'La préparation s’est arrêtée. Gardez l’écran allumé et l’appli ouverte, puis réessayez.' : 'The preparation stopped. Keep the screen on and the app open, then try again.')
           : (fr ? 'La vidéo n’a pas pu être préparée sur ce téléphone.' : 'The video could not be prepared on this phone.')}</p>}
       </div>}
-      <p className="rp-note" data-reveal style={{ '--i': 3 }}>{file
-        ? (fr
-          ? 'En doré, l’articulation dont l’angle compte les répétitions. La vidéo ne quitte votre téléphone que si vous la partagez.'
-          : 'In gold, the joint whose angle counts the reps. The video leaves your phone only if you share it.')
-        : (fr
-          ? 'En doré, l’articulation dont l’angle compte les répétitions. Série comptée en direct\u00A0: aucune vidéo n’a été enregistrée, seul le squelette est rejoué.'
-          : 'In gold, the joint whose angle counts the reps. Counted live: no video was recorded, only the skeleton is replayed.')}</p>
+      {/* The legend names every mark on the picture (honesty audit of 14 October 2026, CORE-12): the gold joint, the gold
+          trail of its limb's end, and the angle in the chip, estimated in 3D. Awaiting David's approval of the new words (R10). */}
+      <p className="rp-note" data-reveal style={{ '--i': 3 }} data-testid="rp-legend">
+        {fr ? 'En doré, l’articulation dont l’angle compte les répétitions' : 'In gold, the joint whose angle counts the reps'}
+        {endWord ? (fr ? `, et le trajet récent ${endWord}.` : `, and the recent path of the ${endWord}.`) : '.'}
+        {MEASURES_SHOWN && jointWord ? (fr ? ' Dans le cadre, cet angle, estimé en 3D\u00A0: il peut différer de ce que montre l’image.' : ' In the box, that angle, estimated in 3D: it can differ from what the picture shows.') : ''}
+        {' '}{file
+          ? (fr ? 'La vidéo ne quitte votre téléphone que si vous la partagez.' : 'The video leaves your phone only if you share it.')
+          : (fr ? 'Série comptée en direct\u00A0: aucune vidéo n’a été enregistrée, seul le squelette est rejoué.' : 'Counted live: no video was recorded, only the skeleton is replayed.')}
+      </p>
     </div></section>
   </div>;
 }
