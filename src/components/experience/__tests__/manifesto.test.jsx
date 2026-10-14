@@ -69,3 +69,24 @@ describe('the WorkoutVision Manifesto reader', () => {
     expect(rulesEn.some(r => r.liftKey === 'lat_pulldown')).toBe(true);
   });
 });
+
+// Honesty pass of 14 October 2026, wave 2B (MAN-2 to MAN-4; MAN-1 and the asymmetry rule are on the branch
+// honesty-pass): a correct credential, association rather than proof, tempo as an option, no drawn SFR law, buttons
+// that say they film, no em dash.
+describe('the manifesto after the honesty pass', () => {
+  it('gives Layne Norton his real degree, Blair an association, tempo as an option, and no em dash', () => {
+    expect(MANIFESTO.en.chapter2.subsections[0].leaders[2].affiliation).toBe('PhD, Nutritional Sciences (University of Illinois)');
+    for (const l of ['fr', 'en']) {
+      const text = JSON.stringify(MANIFESTO[l]);
+      expect(text).not.toMatch(/Physician|irréfutable|definitive proof|prouvent|studies prove|doit être contrôlée|should be controlled|Tester |Test (Range|Tempo|Line)|\u2014/);
+      expect(text).toContain('Schoenfeld et al. 2015');
+    }
+  });
+  it('films rather than "tests" a lift, and draws no SFR equation', async () => {
+    expect(MANIFESTO.fr.chapter4.rules.map(r => r.liftLabel)).toEqual(['Filmer un curl biceps', 'Filmer un squat', 'Filmer un tirage vertical']);
+    expect(MANIFESTO.en.chapter4.rules.map(r => r.liftLabel)).toEqual(['Film a biceps curl', 'Film a squat', 'Film a lat pulldown']);
+    const html = decode(await render('fr'));
+    expect(html).not.toContain('Recrutement des Unités Motrices');
+    expect(html).toContain('Asym');
+  });
+});
