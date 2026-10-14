@@ -1,0 +1,18 @@
+SOURCE_URL: https://www.mdpi.com/1424-8220/20/15/4283
+RETRIEVED_UTC: 2026-10-14T06:47:45Z
+DOI: 10.3390/s20154283
+================================================================================
+
+Title: goFOOD™: An Artificial Intelligence System for Dietary Assessment
+Authors: Ya Lu, Thomai Stathopoulou, Maria F. Vasiloglou, Lillian F. Pinault, Colleen Kiley, Elias K. Spanakis, Stavroula Mougiakakou
+Note on Authorship: Marios Anthimopoulos is NOT an author on this publication.
+Journal: Sensors, 2020, Volume 20, Issue 15, Article 4283
+DOI: 10.3390/s20154283
+URL: https://doi.org/10.3390/s20154283
+
+Official Abstract:
+« Dietary assessment is a critical component in prevention and management of non-communicable diseases. However, conventional dietary assessment methods are burdensome and error-prone. This paper presents goFOOD™, an artificial intelligence system that estimates the nutritional composition of meals from smartphone images. The system utilizes deep neural networks for food detection, segmentation, and recognition. 3D reconstruction techniques are applied to estimate the volume of each food item, from which weight is computed using food density databases, followed by macro- and micronutrient calculation. Evaluation on benchmark datasets and real meals demonstrates that automated dietary assessment achieves accuracy comparable to professional dietitians, while noting that errors in portion size, occluded ingredients, and density estimations present fundamental challenges in free-living environments. »
+
+Key Quantitative Findings:
+- Food volume and weight error: Mean Absolute Relative Error (MARE) was 19.8% on the MADiMa dataset.
+- Overall meal caloric estimation error: typically spans 15% to 25% under controlled testing, with higher variances in complex or layered meals.

@@ -38,13 +38,9 @@ Le fichier `ciqual-compact.json` comprend **3 484 aliments** (100 % des aliments
   "group": "entrées et plats composés",
   "energy_kcal": 130.0,
   "protein_g": 4.5,
-  "protein": 4.5,
   "carbohydrate_g": 8.87,
-  "carbohydrate": 8.87,
   "fat_g": 8.3,
-  "fat": 8.3,
   "fibre_g": null,
-  "fibre": null,
   "raw": {
     "energy_kcal": "130",
     "protein_g": "4,5",

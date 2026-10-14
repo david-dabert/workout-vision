@@ -8,6 +8,10 @@ Source files:
   - Table Ciqual 2025_FR_2025_11_03.xlsx (id 666260, SHA256: 5555c572fa3735991298d832d0427788fa69a11b4fd20a5d580d58942369fbb0)
   - alim_2025_11_03.xml (id 666252, SHA256: e0b1de25b3039028205e9d54a96892e403e1b313c2efeb41180fabe132627478)
 Licence: Licence Ouverte / Open Licence 2.0 (Etalab)
+
+Dependencies:
+  - openpyxl (installed in Python environment, e.g. ~/wv-tools/.venv)
+  - certifi
 """
 
 import hashlib
@@ -40,17 +44,16 @@ def download_file(url: str, dest_path: str, expected_sha256: str = None) -> byte
     try:
         import certifi
         ctx = ssl.create_default_context(cafile=certifi.where())
-    except Exception:
+    except ImportError:
         ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
     with urllib.request.urlopen(req, context=ctx) as resp:
         data = resp.read()
     with open(dest_path, "wb") as f:
         f.write(data)
     if expected_sha256:
         actual = hashlib.sha256(data).hexdigest()
-        assert actual == expected_sha256, f"SHA256 mismatch for {dest_path}: got {actual}, expected {expected_sha256}"
+        if actual != expected_sha256:
+            raise ValueError(f"SHA256 mismatch for {dest_path}: got {actual}, expected {expected_sha256}")
     return data
 
 
@@ -125,13 +128,9 @@ def main():
             "group": group,
             "energy_kcal": e_val,
             "protein_g": p_val,
-            "protein": p_val,
             "carbohydrate_g": c_val,
-            "carbohydrate": c_val,
             "fat_g": fat_val,
-            "fat": fat_val,
             "fibre_g": fib_val,
-            "fibre": fib_val,
             "raw": {
                 "energy_kcal": e_raw,
                 "protein_g": p_raw,
