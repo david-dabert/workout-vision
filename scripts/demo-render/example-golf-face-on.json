@@ -1,0 +1,35 @@
+{
+  "id": "example-golf-face-on",
+  "title": "Golf Face-On Swing (Example)",
+  "subtitle": "Spine & Head Stability Analysis",
+  "caption": "Synthetic demonstration template with zeroed values. Claude authors actual biomechanics.",
+  "badge": "EXAMPLE ONLY",
+  "items": [
+    {
+      "key": "lead_knee_flex",
+      "label": "Lead Knee Flexion",
+      "unit": "deg",
+      "joint": [25, 27],
+      "frames": [
+        { "t_ms": 0, "value": 0, "margin": 0, "refused": null },
+        { "t_ms": 1500, "value": 0, "margin": 0, "refused": null },
+        { "t_ms": 3000, "value": 0, "margin": 0, "refused": null },
+        { "t_ms": 4500, "value": 0, "margin": 0, "refused": null },
+        { "t_ms": 6000, "value": 0, "margin": 0, "refused": null }
+      ]
+    },
+    {
+      "key": "lateral_head_drift",
+      "label": "Lateral Head Sway",
+      "unit": "cm",
+      "joint": [0],
+      "frames": [
+        { "t_ms": 0, "value": 0, "margin": 0, "refused": null },
+        { "t_ms": 1500, "value": 0, "margin": 0, "refused": null },
+        { "t_ms": 3000, "value": null, "margin": null, "refused": "OUT OF RANGE" },
+        { "t_ms": 4500, "value": 0, "margin": 0, "refused": null },
+        { "t_ms": 6000, "value": 0, "margin": 0, "refused": null }
+      ]
+    }
+  ]
+}
