@@ -34,24 +34,26 @@ import {
   PHYSIO_REGIONS,
 } from '../../lib/physioCatalog';
 import { hapticLight, hapticTap } from '../../lib/haptics';
+import { DemoTag, Range } from '../experience/Showcase';
+import { num } from '../experience/showcase-text';
 import './CoachSuite.css';
 
-const SvgUsers = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
-const SvgEuro = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M4 10h12M4 14h9M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12a7.9 7.9 0 0 0 7.8 8 7.7 7.7 0 0 0 5.2-2"/></svg>;
-const SvgSalad = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M7 12V7a5 5 0 0 1 10 0v5"/><path d="M12 7V4"/></svg>;
-const SvgStetho = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M4.5 3v5a3.5 3.5 0 0 0 7 0V3"/><path d="M8 11.5v3a4.5 4.5 0 0 0 9 0v-2"/><circle cx="17" cy="10.5" r="2"/></svg>;
-const SvgCheck = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '5px' }}><polyline points="20 6 9 17 4 12"/></svg>;
+const SvgUsers = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+const SvgEuro = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 10h12M4 14h9M19 6a7.7 7.7 0 0 0-5.2-2A7.9 7.9 0 0 0 6 12a7.9 7.9 0 0 0 7.8 8 7.7 7.7 0 0 0 5.2-2"/></svg>;
+const SvgSalad = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M7 12V7a5 5 0 0 1 10 0v5"/><path d="M12 7V4"/></svg>;
+const SvgStetho = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4.5 3v5a3.5 3.5 0 0 0 7 0V3"/><path d="M8 11.5v3a4.5 4.5 0 0 0 9 0v-2"/><circle cx="17" cy="10.5" r="2"/></svg>;
+const SvgCheck = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>;
 const SvgClose = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
-const SvgDoc = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>;
-const SvgCopy = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>;
-const SvgPrint = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>;
-const SvgDownload = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
-const SvgCamera = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>;
-const SvgBarcode = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M3 5v14M8 5v14M12 5v14M17 5v14M21 5v14"/></svg>;
-const SvgSave = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>;
-const SvgTarget = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
-const SvgBulb = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7z"/></svg>;
-const SvgVideo = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>;
+const SvgDoc = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>;
+const SvgCopy = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>;
+const SvgPrint = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>;
+const SvgDownload = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
+const SvgCamera = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>;
+const SvgBarcode = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 5v14M8 5v14M12 5v14M17 5v14M21 5v14"/></svg>;
+const SvgSave = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>;
+const SvgTarget = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
+const SvgBulb = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7z"/></svg>;
+const SvgVideo = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>;
 
 export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
   const { lang } = useT();
@@ -627,7 +629,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                     <div className="client-card-info">
                       <span className="client-card-name">{cl.name}</span>
                       <span className="client-card-sub">
-                        {cl.weight ? `${cl.weight} kg` : ''} • {clientWorkoutCounts[cl.id] || 0} {fr ? 'séances' : 'sessions'}
+                        {cl.weight ? `${cl.weight}\u00A0kg` : ''} • {clientWorkoutCounts[cl.id] || 0} {fr ? 'séances' : 'sessions'}
                       </span>
                     </div>
                   </div>
@@ -642,8 +644,8 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                       <span className="detail-meta">
                         {selectedClient.sex === 'female' ? (fr ? 'Femme' : 'Female') : (fr ? 'Homme' : 'Male')}
                         {selectedClient.age ? ` • ${selectedClient.age} ${fr ? 'ans' : 'years'}` : ''}
-                        {selectedClient.weight ? ` • ${selectedClient.weight} kg` : ''}
-                        {selectedClient.height ? ` • ${selectedClient.height} cm` : ''}
+                        {selectedClient.weight ? ` • ${selectedClient.weight}\u00A0kg` : ''}
+                        {selectedClient.height ? ` • ${selectedClient.height}\u00A0cm` : ''}
                       </span>
                     </div>
                     <button
@@ -701,7 +703,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                           onChange={e => setSessionNotesInput(e.target.value)}
                           placeholder={fr ? 'Charge augmentée, excellente technique squat...' : 'Progression notes...'}
                         />
-                        <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                        <div className="form-actions-row">
                           <button type="button" className="btn-cancel press" onClick={() => setIsLoggingSession(false)}>
                             {fr ? 'Annuler' : 'Cancel'}
                           </button>
@@ -782,7 +784,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                       <div className="card-top-row">
                         <div>
                           <b>{fr ? 'Contrat de Prestation de Coaching Sportif' : 'Personal Training Agreement'}</b>
-                          <p style={{ margin: 0, fontSize: '12px', color: 'rgba(232, 230, 225, 0.6)' }}>
+                          <p className="section-subtext">
                             {fr ? 'Conforme au Code civil (Art. 1101), Code du Sport (Art. L212-1) et clause d’annulation 24h.' : 'Compliant with French Sports Code, liability insurance, and 24h cancellation terms.'}
                           </p>
                         </div>
@@ -800,12 +802,12 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                       </div>
 
                       <div className="contract-paper-preview">
-                        <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: '11.5px', color: 'rgba(232, 230, 225, 0.85)' }}>
+                        <pre className="contract-text">
                           {generatedContract.contractText}
                         </pre>
                       </div>
 
-                      <div className="contract-modal-actions" style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+                      <div className="contract-modal-actions">
                         <button
                           type="button"
                           className="suite-action-btn press"
@@ -884,51 +886,34 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
 
           {/* Interactive Accounting Tuner */}
           <div className="accounting-tuners-card">
-            <div className="tuner-row">
-              <div className="tuner-item">
-                <div className="tuner-label">
-                  <span>{fr ? 'Redevance Salle Basic-Fit' : 'Monthly Gym Rent'}</span>
-                  <b>{monthlyRent} €</b>
-                </div>
-                <input
-                  type="range"
-                  min="300"
-                  max="1200"
-                  step="50"
-                  value={monthlyRent}
-                  onChange={e => setMonthlyRent(Number(e.target.value))}
-                />
-              </div>
-
-              <div className="tuner-item">
-                <div className="tuner-label">
-                  <span>{fr ? 'Tarif Moyen par Séance' : 'Average Session Price'}</span>
-                  <b>{sessionPrice} €</b>
-                </div>
-                <input
-                  type="range"
-                  min="30"
-                  max="120"
-                  step="5"
-                  value={sessionPrice}
-                  onChange={e => setSessionPrice(Number(e.target.value))}
-                />
-              </div>
-
-              <div className="tuner-item">
-                <div className="tuner-label">
-                  <span>{fr ? 'Séances Livrées / Mois' : 'Monthly Sessions'}</span>
-                  <b>{sessionsCount}</b>
-                </div>
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  step="5"
-                  value={sessionsCount}
-                  onChange={e => setSessionsCount(Number(e.target.value))}
-                />
-              </div>
+            <div className="tuner-row sc-ranges">
+              <Range
+                label={fr ? 'Redevance Salle Basic-Fit' : 'Monthly Gym Rent'}
+                display={`${monthlyRent}\u00A0€`}
+                min="300"
+                max="1200"
+                step="50"
+                value={monthlyRent}
+                onChange={e => setMonthlyRent(Number(e.target.value))}
+              />
+              <Range
+                label={fr ? 'Tarif Moyen par Séance' : 'Average Session Price'}
+                display={`${sessionPrice}\u00A0€`}
+                min="30"
+                max="120"
+                step="5"
+                value={sessionPrice}
+                onChange={e => setSessionPrice(Number(e.target.value))}
+              />
+              <Range
+                label={fr ? 'Séances Livrées / Mois' : 'Monthly Sessions'}
+                display={sessionsCount}
+                min="10"
+                max="100"
+                step="5"
+                value={sessionsCount}
+                onChange={e => setSessionsCount(Number(e.target.value))}
+              />
             </div>
           </div>
 
@@ -936,25 +921,25 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
           <div className="financial-hud-grid">
             <div className="hud-card">
               <span className="hud-label">{fr ? 'Chiffre d’Affaires Brut' : 'Gross Revenue'}</span>
-              <span className="hud-num">{accounting.grossRevenueHt} €</span>
-              <span className="hud-sub">{sessionsCount} séances × {sessionPrice} €</span>
+              <span className="hud-num">{num(accounting.grossRevenueHt, fr)}{'\u00A0'}€</span>
+              <span className="hud-sub">{sessionsCount} séances × {sessionPrice}{'\u00A0'}€</span>
             </div>
 
             <div className="hud-card rent-card">
               <span className="hud-label">{fr ? 'Loyer Basic-Fit Déduit' : 'Facility Rent Paid'}</span>
-              <span className="hud-num negative">- {accounting.gymRent} €</span>
+              <span className="hud-num negative">−{num(accounting.gymRent, fr)}{'\u00A0'}€</span>
               <span className="hud-sub">{fr ? 'Redevance contractuelle' : 'Contractual gym lease'}</span>
             </div>
 
             <div className="hud-card">
               <span className="hud-label">{fr ? 'Cotisations URSSAF + CFP' : 'Social Contributions'}</span>
-              <span className="hud-num negative">- {accounting.socialContributions} €</span>
+              <span className="hud-num negative">−{num(accounting.socialContributions, fr)}{'\u00A0'}€</span>
               <span className="hud-sub">{regime === 'micro' ? '21.3 % du CA brut' : '40 % du bénéfice'}</span>
             </div>
 
             <div className="hud-card take-home-card">
               <span className="hud-label">{fr ? 'Reste à Vivre Net Réel' : 'Net Take-Home Pay'}</span>
-              <span className="hud-num positive">{accounting.netTakeHomePay} €</span>
+              <span className="hud-num positive">{num(accounting.netTakeHomePay, fr)}{'\u00A0'}€</span>
               <span className="hud-sub">{fr ? 'Après loyer, URSSAF & impôt' : 'After rent, tax & charges'}</span>
             </div>
           </div>
@@ -977,13 +962,13 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
             <div className="invoice-builder-header">
               <div>
                 <h4>{fr ? 'Générateur de Factures Légales (Art. L441-9 & Décret 2022-725)' : 'Compliant French Legal Invoice Generator'}</h4>
-                <p style={{ margin: 0, fontSize: '13px', color: 'rgba(232, 230, 225, 0.6)' }}>
+                <p className="section-subtext">
                   {fr
                     ? 'Conforme aux obligations micro-entrepreneur, mention EI, pénalités et indemnité 40 €.'
                     : 'Legally compliant with French tax and commercial code.'}
                 </p>
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div className="invoice-actions">
                 <button
                   type="button"
                   className="copy-invoice-btn press"
@@ -1073,7 +1058,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   <span>{fr ? 'Carte Pro\u00A0:' : 'Sports Card:'} {generatedInvoice.coach.cartePro}</span>
                   <span>{fr ? 'Lieu d’exercice\u00A0:' : 'Facility:'} {generatedInvoice.coach.gymFacility}</span>
                 </div>
-                <div style={{ textAlign: 'right' }}>
+                <div className="inv-client">
                   <strong>{fr ? 'Client\u00A0:' : 'Client:'} {generatedInvoice.client.name}</strong>
                   <span>{fr ? 'Mode de règlement\u00A0: Virement / CB' : 'Payment: Bank Transfer / Card'}</span>
                   <span>Échéance{fr ? '\u00A0:' : ':'} {generatedInvoice.dueDate}</span>
@@ -1093,8 +1078,8 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                     <tr key={idx}>
                       <td>{it.description}</td>
                       <td>{it.quantity}</td>
-                      <td>{it.unitPriceHt} €</td>
-                      <td>{it.quantity * it.unitPriceHt} €</td>
+                      <td>{it.unitPriceHt}{'\u00A0'}€</td>
+                      <td>{it.quantity * it.unitPriceHt}{'\u00A0'}€</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1106,9 +1091,9 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   ))}
                 </div>
                 <div className="inv-amounts">
-                  <span>Total HT{fr ? '\u00A0:' : ':'} {generatedInvoice.totalHt} €</span>
-                  {generatedInvoice.tvaRate > 0 && <span>TVA 20%{fr ? '\u00A0:' : ':'} {generatedInvoice.totalTva} €</span>}
-                  <b className="total-ttc">TOTAL TTC{fr ? '\u00A0:' : ':'} {generatedInvoice.totalTtc} €</b>
+                  <span>Total HT{fr ? '\u00A0:' : ':'} {generatedInvoice.totalHt}{'\u00A0'}€</span>
+                  {generatedInvoice.tvaRate > 0 && <span>TVA 20%{fr ? '\u00A0:' : ':'} {generatedInvoice.totalTva}{'\u00A0'}€</span>}
+                  <b className="total-ttc">TOTAL TTC{fr ? '\u00A0:' : ':'} {generatedInvoice.totalTtc}{'\u00A0'}€</b>
                 </div>
               </div>
             </div>
@@ -1119,7 +1104,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
             <div className="livre-header">
               <div>
                 <h4>{fr ? 'Livre des Recettes Micro-Entrepreneur (Art. L123-28 C. com.)' : 'Official Receipts Ledger'}</h4>
-                <p style={{ margin: 0, fontSize: '13px', color: 'rgba(232, 230, 225, 0.6)' }}>
+                <p className="section-subtext">
                   {fr
                     ? 'Registre obligatoire des encaissements chronologiques pour les éducateurs sportifs auto-entrepreneurs.'
                     : 'Mandatory French chronological receipt registry for tax declaration.'}
@@ -1155,7 +1140,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                         <td>{e.invoiceNumber}</td>
                         <td>{e.clientName}</td>
                         <td>{e.naturePrestation}</td>
-                        <td><b>{e.montantHt} €</b></td>
+                        <td><b>{e.montantHt}{'\u00A0'}€</b></td>
                         <td>{e.modeReglement}</td>
                       </tr>
                     ))}
@@ -1163,7 +1148,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                 </table>
               </div>
             ) : (
-              <p style={{ fontSize: '13px', color: 'rgba(232, 230, 225, 0.5)', marginTop: '12px' }}>
+              <p className="section-subtext">
                 {fr ? 'Aucune recette enregistrée pour l’instant. Cliquez sur "Enregistrer Recette" ci-dessus pour archiver vos factures.' : 'No receipts saved yet.'}
               </p>
             )}
@@ -1174,7 +1159,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
             <div className="annual-pl-header" onClick={() => setShowAnnualPl(!showAnnualPl)}>
               <div>
                 <h4>{fr ? 'Projection Annuelle & Saisonnalité Fitness (12 Mois)' : '12-Month Cash-Flow & Seasonality Forecast'}</h4>
-                <span style={{ fontSize: '12px', color: 'rgba(232, 230, 225, 0.6)' }}>
+                <span className="section-subtext">
                   {fr ? 'Intègre les pics de septembre et janvier et le creux d’août avec la redevance Basic-Fit' : 'Incorporates September/January gym peaks and August slump'}
                 </span>
               </div>
@@ -1201,10 +1186,10 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                       <tr key={m.monthIndex} className={m.seasonFactor > 1.2 ? 'peak-month' : ''}>
                         <td><strong>{m.monthName}</strong></td>
                         <td>{m.sessionsCount}</td>
-                        <td>{m.grossRevenue} €</td>
-                        <td className="negative">- {m.gymRent} €</td>
-                        <td className="negative">- {m.urssafCharges} €</td>
-                        <td className="positive"><b>{m.netIncome} €</b></td>
+                        <td>{m.grossRevenue}{'\u00A0'}€</td>
+                        <td className="negative">−{m.gymRent}{'\u00A0'}€</td>
+                        <td className="negative">−{m.urssafCharges}{'\u00A0'}€</td>
+                        <td className="positive"><b>{m.netIncome}{'\u00A0'}€</b></td>
                       </tr>
                     ))}
                   </tbody>
@@ -1257,7 +1242,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
           {/* Sub-mode 1: Targets & Compliance */}
           {nutritionSubMode === 'targets' && (
             <div>
-              <div className="nutrition-goal-selector" style={{ marginBottom: '16px' }}>
+              <div className="nutrition-goal-selector">
                 <button
                   type="button"
                   className={`goal-btn ${nutritionGoal === 'cut' ? 'active' : ''}`}
@@ -1286,7 +1271,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   <div className="client-target-summary">
                     <span className="summary-client-name">
                       {fr ? 'Cibles pour\u00A0: ' : 'Targets for: '}
-                      <b>{selectedClient ? selectedClient.name : 'Client'}</b> ({selectedClient?.weight || 75} kg)
+                      <b>{selectedClient ? selectedClient.name : 'Client'}</b> ({selectedClient?.weight || 75}{'\u00A0'}kg)
                     </span>
                     <div className="target-macros-grid">
                       <div className="macro-card cal-card">
@@ -1295,19 +1280,19 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                         <span className="macro-name">{fr ? 'Énergie Totale' : 'Total Energy'}</span>
                       </div>
                       <div className="macro-card protein-card">
-                        <span className="macro-val">{clientTargets.protein} g</span>
+                        <span className="macro-val">{clientTargets.protein}{'\u00A0'}g</span>
                         <span className="macro-unit">
                           {(clientTargets.protein / parseFloat(selectedClient?.weight || '75')).toFixed(1)} g/kg
                         </span>
                         <span className="macro-name">{fr ? 'Protéines' : 'Protein'}</span>
                       </div>
                       <div className="macro-card carbs-card">
-                        <span className="macro-val">{clientTargets.carbs} g</span>
+                        <span className="macro-val">{clientTargets.carbs}{'\u00A0'}g</span>
                         <span className="macro-unit">{Math.round((clientTargets.carbs * 4 / clientTargets.calories) * 100)}% cal</span>
                         <span className="macro-name">{fr ? 'Glucides' : 'Carbs'}</span>
                       </div>
                       <div className="macro-card fat-card">
-                        <span className="macro-val">{clientTargets.fat} g</span>
+                        <span className="macro-val">{clientTargets.fat}{'\u00A0'}g</span>
                         <span className="macro-unit">{Math.round((clientTargets.fat * 9 / clientTargets.calories) * 100)}% cal</span>
                         <span className="macro-name">{fr ? 'Lipides' : 'Fats'}</span>
                       </div>
@@ -1318,7 +1303,11 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   <div className="adherence-card">
                     <div className="adherence-header">
                       <b>{fr ? 'Observance Nutritionnelle Client (7 derniers jours)' : 'Weekly Client Compliance'}</b>
-                      <span className="adherence-score-pill">{sampleAdherence.complianceRatePct}%</span>
+                      <span className="adherence-tags">
+                        <span className="adherence-score-pill">{sampleAdherence.complianceRatePct}{fr ? '\u202F' : ''}%</span>
+                        {/* The week shown is a sample written in the code, not the client's log (R8). */}
+                        <DemoTag fr={fr} />
+                      </span>
                     </div>
                     <div className="adherence-bar-container">
                       <div
@@ -1355,7 +1344,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
               <div className="vision-upload-header">
                 <div>
                   <h4>{fr ? 'Analyseur Visuel d’Assiette par Caméra' : 'Plate Computer Vision Macro Estimator'}</h4>
-                  <p style={{ margin: 0, fontSize: '13px', color: 'rgba(232, 230, 225, 0.6)' }}>
+                  <p className="section-subtext">
                     {fr
                       ? 'Prenez une photo de l’assiette. L’algorithme segmente les protéines, féculents et légumes et calcule les portions en grammes.'
                       : 'Snap or upload a meal photo. On-device vision segments food clusters and estimates macros.'}
@@ -1386,11 +1375,15 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   <div className="plate-results-pane">
                     <div className="plate-summary-top">
                       <div>
-                        <span className="plate-cal-num">{plateAnalysis.totalCalories} kcal</span>
-                        <span className="plate-grams-sub">~ {plateAnalysis.totalGrams} g {fr ? 'pesée estimée' : 'estimated meal'}</span>
+                        <span className="plate-cal-num">{plateAnalysis.totalCalories}{'\u00A0'}kcal</span>
+                        <span className="plate-grams-sub">~ {plateAnalysis.totalGrams}{'\u00A0'}g {fr ? 'pesée estimée' : 'estimated meal'}</span>
                       </div>
-                      <span className="plate-conf-tag">
-                        {fr ? 'Confiance Vision\u00A0: Élevée' : 'Vision Confidence: High'}
+                      <span className="plate-tags">
+                        <span className="plate-conf-tag">
+                          {fr ? 'Confiance Vision\u00A0: Élevée' : 'Vision Confidence: High'}
+                        </span>
+                        {/* The confidence is a fixed word in the code, not a measure of this photo (R8). */}
+                        <DemoTag fr={fr} />
                       </span>
                     </div>
 
@@ -1400,10 +1393,10 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                           <div className="comp-header">
                             <span className="comp-dot" style={{ backgroundColor: c.colorHex }} />
                             <strong className="comp-name">{fr ? c.labelFr : c.label}</strong>
-                            <span className="comp-grams">{c.estimatedGrams} g</span>
+                            <span className="comp-grams">{c.estimatedGrams}{'\u00A0'}g</span>
                           </div>
                           <div className="comp-macros-mini">
-                            <span>{c.calories} kcal</span>
+                            <span>{c.calories}{'\u00A0'}kcal</span>
                             {c.proteinG > 0 && <span>• {c.proteinG}g P</span>}
                             {c.carbsG > 0 && <span>• {c.carbsG}g G</span>}
                             {c.fatG > 0 && <span>• {c.fatG}g L</span>}
@@ -1420,7 +1413,6 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                       type="button"
                       className="suite-action-btn press"
                       onClick={handleSaveVisionMeal}
-                      style={{ width: '100%', marginTop: '10px' }}
                       data-testid="btn-save-vision-meal"
                     >
                       <SvgSave />{fr ? `Enregistrer dans le journal de ${selectedClient ? selectedClient.name : 'Client'}` : 'Save Meal to Client Log'}
@@ -1437,7 +1429,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
               <div className="barcode-header-row">
                 <div>
                   <h4>{fr ? 'Scanner de Code-Barres & Produits (Open Food Facts)' : 'Food Packaging Barcode Scanner'}</h4>
-                  <p style={{ margin: 0, fontSize: '13px', color: 'rgba(232, 230, 225, 0.6)' }}>
+                  <p className="section-subtext">
                     {fr
                       ? 'Recherche instantanée des données nutritionnelles officielles via base Open Food Facts avec cache hors-ligne pour la salle.'
                       : 'Instant official packaging nutrition lookup with offline cache for fitness staples.'}
@@ -1464,7 +1456,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
 
               {/* Quick Preset Buttons for Common Gym Staples */}
               <div className="staples-chips-row">
-                <span style={{ fontSize: '12px', color: 'rgba(232, 230, 225, 0.6)', alignSelf: 'center' }}>
+                <span className="staples-label">
                   {fr ? 'Staples Musculation\u00A0: ' : 'Gym Staples: '}
                 </span>
                 <button type="button" className="staple-chip" onClick={() => { setBarcodeInput('5060746500000'); handleLookupBarcode('5060746500000'); }}>
@@ -1519,7 +1511,6 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                     type="button"
                     className="suite-action-btn press"
                     onClick={handleSaveBarcodeMeal}
-                    style={{ width: '100%', marginTop: '12px' }}
                     data-testid="btn-save-barcode-meal"
                   >
                     <SvgSave />{fr ? `Ajouter au journal de ${selectedClient ? selectedClient.name : 'Client'}` : 'Add to Client Log'}
@@ -1544,7 +1535,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                       <span className="meal-date-str">{m.dateStr}</span>
                     </div>
                     <div className="meal-h-right">
-                      <b>{m.calories} kcal</b>
+                      <b>{m.calories}{'\u00A0'}kcal</b>
                       <span>{m.proteinG}g P • {m.carbsG}g G • {m.fatG}g L</span>
                     </div>
                   </div>

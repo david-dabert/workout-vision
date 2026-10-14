@@ -1,1630 +1,246 @@
-/* Coach Professional Suite CSS — Uses design tokens exclusively */
-
-.coach-suite-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
-}
-
-.suite-nav-bar {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 6px;
-  scrollbar-width: none;
-}
-
-.suite-nav-bar::-webkit-scrollbar {
-  display: none;
-}
-
-.suite-tab-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: var(--glass-surface, rgba(255, 255, 255, 0.04));
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  color: var(--text-secondary, rgba(232, 230, 225, 0.6));
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.suite-tab-btn:hover {
-  background: var(--glass-border, rgba(255, 255, 255, 0.09));
-  color: var(--text-primary, #e8e6e1);
-}
-
-.suite-tab-btn.active {
-  background: var(--bio-cyan, #D4A76A);
-  color: var(--void, #08080b);
-  border-color: var(--bio-cyan, #D4A76A);
-  font-weight: 600;
-  box-shadow: 0 0 16px rgba(212, 167, 106, 0.25);
-}
-
-.suite-content-section {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.section-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.section-header-row h3 {
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  margin: 0 0 4px 0;
-  color: var(--text-primary, #e8e6e1);
-}
-
-.section-subtext {
-  font-size: 13px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.55));
-  margin: 0;
-}
-
-.suite-action-btn {
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: var(--bio-cyan, #D4A76A);
-  color: var(--void, #08080b);
-  border: none;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.suite-action-btn:active {
-  transform: scale(0.97);
-}
-
-/* Add Client Form */
-.add-client-card {
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.12));
-  border-radius: 16px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.card-top-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 15px;
-  color: var(--text-primary, #e8e6e1);
-}
-
-.text-close-btn {
-  background: none;
-  border: none;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.55));
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
-}
-
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.input-group.full-width {
-  grid-column: 1 / -1;
-}
-
-.input-group label {
-  font-size: 11.5px;
-  text-transform: uppercase;
-  font-weight: 600;
-  color: var(--text-tertiary, rgba(232, 230, 225, 0.4));
-  letter-spacing: 0.04em;
-}
-
-.input-group input,
-.input-group select,
-.input-group textarea {
-  background: var(--depth-2, #16161a);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: 8px;
-  padding: 8px 12px;
-  color: var(--text-primary, #e8e6e1);
-  font-size: 13px;
-  font-family: inherit;
-}
-
-.inline-inputs {
-  display: flex;
-  gap: 8px;
-}
-
-.inline-inputs input,
-.inline-inputs select {
-  flex: 1;
-}
-
-.form-actions-row {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 6px;
-}
-
-.btn-cancel {
-  background: none;
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  color: var(--text-secondary, rgba(232, 230, 225, 0.6));
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 13px;
-}
-
-.btn-save {
-  background: var(--bio-cyan, #D4A76A);
-  color: var(--void, #08080b);
-  border: none;
-  padding: 8px 18px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* Clients Split Layout */
-.clients-split-layout {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  gap: 16px;
-}
-
-@media (max-width: 680px) {
-  .clients-split-layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-.clients-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 480px;
-  overflow-y: auto;
-}
-
-.client-item-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
-  border-radius: 12px;
-  padding: 10px 14px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.client-item-card:hover {
-  background: var(--depth-2, #16161a);
-  border-color: var(--glass-border, rgba(255, 255, 255, 0.12));
-}
-
-.client-item-card.active {
-  background: var(--depth-2, #16161a);
-  border-color: var(--bio-cyan, #D4A76A);
-  box-shadow: 0 0 12px rgba(212, 167, 106, 0.15);
-}
-
-.client-initials {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(212, 167, 106, 0.15);
-  color: var(--bio-cyan, #D4A76A);
-  border: 1px solid rgba(212, 167, 106, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.client-card-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.client-card-name {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--text-primary, #e8e6e1);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.client-card-sub {
-  font-size: 11.5px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.5));
-}
-
-.client-detail-pane {
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: 16px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.detail-pane-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-}
-
-.detail-pane-header h4 {
-  font-size: 18px;
-  font-weight: 700;
-  margin: 0 0 4px 0;
-  color: var(--text-primary, #e8e6e1);
-}
-
-.detail-meta {
-  font-size: 12.5px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.55));
-}
-
-.delete-client-btn {
-  background: none;
-  border: 1px solid rgba(217, 91, 91, 0.3);
-  color: var(--red, #D95B5B);
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.detail-cards-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-@media (max-width: 540px) {
-  .detail-cards-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.detail-box {
-  background: var(--depth-2, #16161a);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
-  border-radius: 10px;
-  padding: 12px 14px;
-}
-
-.detail-box-label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: var(--bio-cyan, #D4A76A);
-  letter-spacing: 0.04em;
-  display: block;
-  margin-bottom: 4px;
-}
-
-.detail-box p {
-  font-size: 13px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.75));
-  margin: 0;
-  line-height: 1.45;
-}
-
-.detail-action-buttons {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.quick-suite-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
-  color: var(--text-primary, #e8e6e1);
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.quick-suite-btn:hover {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: var(--bio-cyan, #D4A76A);
-}
-
-/* ─── Accounting Styles ─── */
-.regime-toggle {
-  display: flex;
-  gap: 6px;
-  background: var(--depth-1, #0f0f13);
-  padding: 4px;
-  border-radius: 999px;
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-}
-
-.regime-btn {
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: none;
-  border: none;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.55));
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.regime-btn.active {
-  background: var(--bio-cyan, #D4A76A);
-  color: var(--void, #08080b);
-  font-weight: 600;
-}
-
-.accounting-tuners-card {
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: 16px;
-  padding: 18px 20px;
-}
-
-.tuner-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 18px;
-}
-
-.tuner-item {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.tuner-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.7));
-}
-
-.tuner-label b {
-  color: var(--text-primary, #e8e6e1);
-  font-size: 14px;
-}
-
-.tuner-item input[type="range"] {
-  width: 100%;
-  accent-color: var(--bio-cyan, #D4A76A);
-}
-
-.financial-hud-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-}
-
-.hud-card {
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: 14px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.hud-card.take-home-card {
-  border-color: rgba(93, 184, 122, 0.35);
-  background: rgba(93, 184, 122, 0.05);
-}
-
-.hud-card.rent-card {
-  border-color: rgba(212, 167, 106, 0.3);
-}
-
-.hud-label {
-  font-size: 11.5px;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.5));
-  letter-spacing: 0.04em;
-}
-
-.hud-num {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-primary, #e8e6e1);
-}
-
-.hud-num.positive {
-  color: var(--bio-green, #5DB87A);
-}
-
-.hud-num.negative {
-  color: var(--red, #D95B5B);
-}
-
-.hud-sub {
-  font-size: 11.5px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.45));
-}
-
-.break-even-banner {
-  background: rgba(212, 167, 106, 0.08);
-  border: 1px solid rgba(212, 167, 106, 0.25);
-  border-radius: 12px;
-  padding: 12px 16px;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--text-primary, #e8e6e1);
-}
-
-.be-icon {
-  font-size: 18px;
-}
-
-/* Invoice Builder Card */
-.invoice-builder-card {
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: 16px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.invoice-builder-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.invoice-builder-header h4 {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 4px 0;
-  color: var(--text-primary, #e8e6e1);
-}
-
-.copy-invoice-btn {
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: rgba(212, 167, 106, 0.15);
-  color: var(--bio-cyan, #D4A76A);
-  border: 1px solid rgba(212, 167, 106, 0.3);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.invoice-controls-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-}
-
-.invoice-field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.invoice-field label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: var(--text-tertiary, rgba(232, 230, 225, 0.4));
-}
-
-.invoice-field input,
-.invoice-field select {
-  background: var(--depth-2, #16161a);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: 8px;
-  padding: 8px 12px;
-  color: var(--text-primary, #e8e6e1);
-  font-size: 13px;
-}
-
-.invoice-preview-sheet {
-  background: var(--depth-2, #16161a);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
-  border-radius: 12px;
-  padding: 18px;
-  font-family: monospace;
-  font-size: 12px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.8));
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.inv-top {
-  display: flex;
-  justify-content: space-between;
-  font-weight: 700;
-  color: var(--text-primary, #e8e6e1);
-}
-
-.inv-parties {
-  display: flex;
-  justify-content: space-between;
-  line-height: 1.5;
-}
-
-.inv-parties div {
-  display: flex;
-  flex-direction: column;
-}
-
-.inv-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.inv-table th,
-.inv-table td {
-  padding: 8px 6px;
-  text-align: left;
-  border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
-}
-
-.inv-total-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 16px;
-}
-
-.inv-legal-mentions {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  max-width: 60%;
-  font-size: 10px;
-  color: var(--text-tertiary, rgba(232, 230, 225, 0.4));
-}
-
-.inv-amounts {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-}
-
-.total-ttc {
-  font-size: 14px;
-  color: var(--bio-cyan, #D4A76A);
-}
-
-/* ─── Nutrition Tab Styles ─── */
-.nutrition-goal-selector {
-  display: flex;
-  gap: 6px;
-  background: var(--depth-1, #0f0f13);
-  padding: 4px;
-  border-radius: 999px;
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-}
-
-.goal-btn {
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: none;
-  border: none;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.55));
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.goal-btn.active {
-  background: var(--bio-cyan, #D4A76A);
-  color: var(--void, #08080b);
-  font-weight: 600;
-}
-
-.nutrition-cards-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.client-target-summary {
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: 16px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.summary-client-name {
-  font-size: 13.5px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.6));
-}
-
-.summary-client-name b {
-  color: var(--text-primary, #e8e6e1);
-}
-
-.target-macros-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 12px;
-}
-
-.macro-card {
-  background: var(--depth-2, #16161a);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
-  border-radius: 12px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.macro-card.cal-card {
-  border-color: rgba(212, 167, 106, 0.3);
-}
-
-.macro-card.protein-card {
-  border-color: rgba(93, 184, 122, 0.3);
-}
-
-.macro-val {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text-primary, #e8e6e1);
-}
-
-.macro-unit {
-  font-size: 11px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.5));
-  margin-bottom: 4px;
-}
-
-.macro-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--bio-cyan, #D4A76A);
-}
-
-.adherence-card {
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: 16px;
-  padding: 18px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.adherence-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13.5px;
-  color: var(--text-primary, #e8e6e1);
-}
-
-.adherence-score-pill {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: rgba(93, 184, 122, 0.15);
-  color: var(--bio-green, #5DB87A);
-  border: 1px solid rgba(93, 184, 122, 0.3);
-}
-
-.adherence-bar-container {
-  height: 8px;
-  background: var(--depth-2, #16161a);
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.adherence-bar-fill {
-  height: 100%;
-  background: var(--bio-green, #5DB87A);
-  border-radius: 999px;
-  box-shadow: 0 0 8px rgba(93, 184, 122, 0.4);
-}
-
-.adherence-comment {
-  font-size: 12.5px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.6));
-  margin: 0;
-  line-height: 1.45;
-}
-
-/* ─── Physio Catalog Styles ─── */
-.physio-chips-row {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
-
-.physio-chip {
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  color: var(--text-secondary, rgba(232, 230, 225, 0.6));
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.physio-chip.active {
-  background: var(--bio-cyan, #D4A76A);
-  color: var(--void, #08080b);
-  border-color: var(--bio-cyan, #D4A76A);
-  font-weight: 600;
-}
-
-.physio-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-}
-
-.physio-exercise-card {
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: 16px;
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.physio-card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.physio-region-tag {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--bio-cyan, #D4A76A);
-  letter-spacing: 0.04em;
-}
-
-.camera-view-tag {
-  font-size: 11px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.5));
-}
-
-.physio-ex-name {
-  font-size: 15px;
-  font-weight: 600;
-  margin: 0;
-  color: var(--text-primary, #e8e6e1);
-}
-
-.physio-rationale {
-  font-size: 12.5px;
-  line-height: 1.45;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.7));
-  margin: 0;
-}
-
-.physio-progression-box {
-  background: var(--depth-2, #16161a);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.05));
-  border-radius: 10px;
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 12px;
-}
-
-.prog-line {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.75));
-}
-
-.prog-badge {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  padding: 2px 6px;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
-.prog-badge.reg {
-  background: rgba(232, 230, 225, 0.1);
-  color: var(--text-secondary, rgba(232, 230, 225, 0.7));
-}
-
-.prog-badge.prog {
-  background: rgba(93, 184, 122, 0.15);
-  color: var(--bio-green, #5DB87A);
-}
-
-.add-to-prog-btn {
-  margin-top: auto;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
-  color: var(--text-primary, #e8e6e1);
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 12.5px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.add-to-prog-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--bio-cyan, #D4A76A);
-}
-
-.empty-clients-box {
-  background: var(--depth-1, #0f0f13);
-  border: 1px dashed var(--glass-border, rgba(255, 255, 255, 0.1));
-  border-radius: 14px;
-  padding: 28px;
-  text-align: center;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.5));
-  font-size: 13.5px;
-}
-
-/* ─── Compliance Badges & Freelance OS Extensions ─── */
-.compliance-badge-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: -6px;
-  margin-bottom: 4px;
-}
-
-.comp-badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(93, 184, 122, 0.12);
-  color: var(--bio-green, #5DB87A);
-  border: 1px solid rgba(93, 184, 122, 0.25);
-  letter-spacing: 0.02em;
-}
-
-/* ─── Carnet (10-Pack) Credits & Session Logging ─── */
-.carnet-status-card {
-  background: var(--depth-2, #16161a);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: 14px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.carnet-top-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.carnet-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.5));
-}
-
-.carnet-fraction {
-  font-size: 14px;
-  color: var(--text-primary, #e8e6e1);
-  margin-top: 2px;
-}
-
-.carnet-fraction b {
-  font-size: 18px;
-  color: var(--bio-cyan, #D4A76A);
-}
-
-.carnet-remaining-badge {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 6px;
-  background: rgba(212, 167, 106, 0.15);
-  color: var(--bio-cyan, #D4A76A);
-}
-
-.carnet-progress-bar {
-  height: 6px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.carnet-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #D4A76A, #5DB87A);
-  border-radius: 999px;
-  transition: width 0.3s ease;
-}
-
-.carnet-action-bar {
-  display: flex;
-  gap: 8px;
-}
-
-.log-session-btn {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.12));
-  color: var(--text-primary, #e8e6e1);
-  font-size: 12.5px;
-  font-weight: 600;
-  padding: 8px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.log-session-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--bio-cyan, #D4A76A);
-}
-
-.log-session-box {
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
-  border-radius: 10px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 6px;
-}
-
-.log-session-box label {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.6));
-}
-
-.log-session-box input,
-.log-session-box textarea {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
-  border-radius: 6px;
-  color: #fff;
-  padding: 8px;
-  font-size: 13px;
-  font-family: inherit;
-}
-
-.session-history-block {
-  margin-bottom: 16px;
-}
-
-.session-cards-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 8px;
-  max-height: 180px;
-  overflow-y: auto;
-}
-
-.session-history-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--depth-2, #16161a);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.05));
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 12px;
-}
-
-.session-history-date {
-  font-weight: 600;
-  color: var(--bio-cyan, #D4A76A);
-  flex-shrink: 0;
-  width: 90px;
-}
-
-.session-history-desc {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-}
-
-.session-history-desc strong {
-  color: var(--text-primary, #e8e6e1);
-}
-
-.session-history-desc span {
-  color: var(--text-secondary, rgba(232, 230, 225, 0.55));
-}
-
-/* ─── Official Livre des Recettes ─── */
-.livre-recettes-card {
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: 16px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.livre-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.livre-table-wrap {
-  overflow-x: auto;
-  border-radius: 8px;
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
-}
-
-.livre-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12.5px;
-}
-
-.livre-table th, .livre-table td {
-  padding: 10px 12px;
-  text-align: left;
-  border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.05));
-}
-
-.livre-table th {
-  background: rgba(255, 255, 255, 0.03);
-  font-weight: 600;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.6));
-  font-size: 11.5px;
-  text-transform: uppercase;
-}
-
-/* ─── Annual 12-Month P&L Forecast ─── */
-.annual-pl-card {
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: 16px;
-  padding: 16px 20px;
-}
-
-.annual-pl-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-}
-
-.text-toggle-btn {
-  background: transparent;
-  border: none;
-  color: var(--bio-cyan, #D4A76A);
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.annual-table-wrap {
-  margin-top: 14px;
-  overflow-x: auto;
-  border-radius: 8px;
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
-}
-
-.annual-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-.annual-table th, .annual-table td {
-  padding: 8px 10px;
-  text-align: left;
-  border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.04));
-}
-
-.annual-table th {
-  background: rgba(255, 255, 255, 0.02);
-  font-size: 11px;
-  text-transform: uppercase;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.5));
-}
-
-.peak-month {
-  background: rgba(212, 167, 106, 0.06);
-}
-
-/* ─── Nutrition Mode Switcher & Vision Studio ─── */
-.nutrition-mode-switcher {
-  display: flex;
-  gap: 6px;
-  background: var(--depth-1, #0f0f13);
-  padding: 4px;
-  border-radius: 999px;
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
-}
-
-.mode-btn {
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: transparent;
-  border: none;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.6));
-  font-size: 12.5px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.mode-btn.active {
-  background: var(--bio-cyan, #D4A76A);
-  color: var(--void, #08080b);
-  font-weight: 600;
-}
-
-.vision-plate-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: 16px;
-  padding: 20px;
-}
-
-.vision-upload-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.vision-plate-workbench {
-  display: grid;
-  grid-template-columns: 240px 1fr;
-  gap: 20px;
-  margin-top: 8px;
-}
-
-@media (max-width: 680px) {
-  .vision-plate-workbench {
-    grid-template-columns: 1fr;
-  }
-}
-
-.canvas-wrapper {
-  position: relative;
-  width: 240px;
-  height: 240px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 2px dashed var(--glass-border, rgba(255, 255, 255, 0.15));
-  background: #08080b;
-}
-
-.plate-canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.canvas-placeholder {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 16px;
-  cursor: pointer;
-}
-
-.canvas-placeholder span {
-  font-size: 36px;
-  margin-bottom: 8px;
-}
-
-.canvas-placeholder p {
-  font-size: 12px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.5));
-  margin: 0;
-}
-
-.plate-results-pane {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.plate-summary-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  padding-bottom: 10px;
-}
-
-.plate-cal-num {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--bio-cyan, #D4A76A);
-}
-
-.plate-grams-sub {
-  font-size: 13px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.6));
-  margin-left: 8px;
-}
-
-.plate-conf-tag {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 4px;
-  background: rgba(93, 184, 122, 0.15);
-  color: var(--bio-green, #5DB87A);
-}
-
-.components-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.comp-row {
-  background: var(--depth-2, #16161a);
-  border-radius: 8px;
-  padding: 8px 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.comp-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.comp-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.comp-name {
-  font-size: 13px;
-  color: var(--text-primary, #e8e6e1);
-}
-
-.comp-grams {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--bio-cyan, #D4A76A);
-  margin-left: 6px;
-}
-
-.comp-macros-mini {
-  font-size: 11.5px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.6));
-  display: flex;
-  gap: 4px;
-}
-
-.analysis-note-text {
-  font-size: 12.5px;
-  line-height: 1.4;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.7));
-  margin: 0;
-  background: rgba(255, 255, 255, 0.02);
-  border-left: 3px solid var(--bio-cyan, #D4A76A);
-  padding: 8px 12px;
-  border-radius: 0 6px 6px 0;
-}
-
-/* ─── Barcode Scanner Section ─── */
-.barcode-scanner-section {
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: 16px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.barcode-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.barcode-input-bar {
-  display: flex;
-  gap: 10px;
-}
-
-.barcode-input-bar input {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
-  border-radius: 8px;
-  color: #fff;
-  padding: 10px 14px;
-  font-size: 13.5px;
-}
-
-.staples-chips-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.staple-chip {
-  background: var(--depth-2, #16161a);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: 999px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.75));
-  font-size: 11.5px;
-  padding: 4px 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.staple-chip:hover {
-  border-color: var(--bio-cyan, #D4A76A);
-  color: #fff;
-}
-
-.scanned-product-card {
-  background: var(--depth-2, #16161a);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.12));
-  border-radius: 12px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.prod-top-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.prod-brand {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--bio-cyan, #D4A76A);
-}
-
-.prod-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary, #e8e6e1);
-  margin: 2px 0;
-}
-
-.prod-sub {
-  font-size: 12px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.5));
-}
-
-.nutriscore-badge {
-  font-size: 12px;
-  font-weight: 800;
-  padding: 4px 8px;
-  border-radius: 6px;
-}
-
-.nutriscore-badge.ns-a { background: #038141; color: #fff; }
-.nutriscore-badge.ns-b { background: #85bb2f; color: #fff; }
-.nutriscore-badge.ns-c { background: #fecb02; color: #000; }
-.nutriscore-badge.ns-d { background: #ee8100; color: #fff; }
-.nutriscore-badge.ns-e { background: #e63e11; color: #fff; }
-
-.prod-macros-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-
-.prod-m-box {
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.05));
-  border-radius: 8px;
-  padding: 10px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-}
-
-.prod-m-box b {
-  font-size: 16px;
-  color: var(--bio-cyan, #D4A76A);
-}
-
-.prod-m-box span {
-  font-size: 11px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.5));
-}
-
-/* ─── Client Meal History List ─── */
-.meal-history-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.meal-history-section h4 {
-  font-size: 15px;
-  font-weight: 600;
-  margin: 0;
-  color: var(--text-primary, #e8e6e1);
-}
-
-.meals-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.meal-history-card {
-  background: var(--depth-2, #16161a);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
-  border-radius: 10px;
-  padding: 10px 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.meal-h-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.meal-source-tag {
-  font-size: 11px;
-  padding: 3px 6px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.meal-date-str {
-  font-size: 11.5px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.5));
-}
-
-.meal-h-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-}
-
-.meal-h-right b {
-  font-size: 14px;
-  color: var(--bio-cyan, #D4A76A);
-}
-
-.meal-h-right span {
-  font-size: 11px;
-  color: var(--text-secondary, rgba(232, 230, 225, 0.6));
-}
-
-/* ─── Legal Coaching Contract Modal ─── */
-.contract-modal-card {
-  background: var(--depth-1, #0f0f13);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.12));
-  border-radius: 16px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 14px;
-}
-
-.contract-controls-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--depth-2, #16161a);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.06));
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-}
-
-.contract-controls-bar select {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.15));
-  color: #fff;
-  border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 13px;
-}
-
-.contract-paper-preview {
-  background: #08080b;
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: 10px;
-  padding: 16px;
-  max-height: 280px;
-  overflow-y: auto;
-}
+/* Coach business space (CoachSuite.jsx), shown inside Espace pro (Pro.jsx), so inside .wv-experience. It had kept the
+   old app's global tokens (--text-primary, --depth-2, --bio-cyan), which turn light under prefers-color-scheme: light:
+   dark words on the dark ground and white cards. Every rule now takes the experience's tokens (design/SYSTEM.md) and
+   the showcase parts (Showcase.css): hairline cards, 44 px controls, fields on basalt, labels in mono capitals,
+   values in tabular figures, the invoice and the contract on the report's paper. No red: a cost is ash, a gain lamp.
+   Status: convention (the app's design system; no measurement involved). */
+
+.wv-experience .coach-suite-container { display: flex; flex-direction: column; gap: var(--s-5); margin-top: var(--s-5); min-width: 0; color: var(--c-fg); font-family: var(--sans); }
+.wv-experience .coach-suite-container svg { flex: none; }
+.wv-experience .coach-suite-container :is(h3, h4) { margin: 0; font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+/* The four spaces: one rail of chips, from edge to edge (Showcase.css .sc-rail). */
+.wv-experience .coach-suite-container .suite-nav-bar {
+  display: flex; gap: var(--s-2); overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain;
+  margin-inline: calc(var(--gut) * -1); padding: 2px var(--gut); scroll-padding-inline: var(--gut);
+  scroll-snap-type: x proximity; scrollbar-width: none;
+}
+.wv-experience .coach-suite-container .suite-nav-bar::-webkit-scrollbar { display: none; }
+.wv-experience .coach-suite-container .suite-tab-btn {
+  flex: none; min-height: 44px; padding: 8px 14px; border-radius: var(--r-s); border: 1px solid var(--c-rule);
+  font-size: var(--fs-caption); line-height: 1.3; color: var(--bone-2); white-space: nowrap; scroll-snap-align: start;
+}
+.wv-experience .coach-suite-container .suite-tab-btn > span { display: inline-flex; align-items: center; gap: var(--s-2); }
+.wv-experience .coach-suite-container .suite-tab-btn svg { width: 15px; height: 15px; }
+.wv-experience .coach-suite-container .suite-tab-btn.active { border-color: var(--lamp-line-strong); color: var(--lamp-hi); background: color-mix(in srgb, var(--lamp) 10%, transparent); }
+
+/* A space: its head (serif name, caption, its switch), then its blocks, 16 apart. */
+.wv-experience .coach-suite-container .suite-content-section { display: flex; flex-direction: column; gap: var(--s-4); min-width: 0; }
+.wv-experience .coach-suite-container .section-header-row { display: flex; flex-direction: column; align-items: stretch; gap: var(--s-3); }
+.wv-experience .coach-suite-container .section-header-row h3 { font-family: var(--serif); font-size: var(--fs-heading); line-height: 1.1; color: var(--c-fg); text-wrap: balance; }
+.wv-experience .coach-suite-container :is(.invoice-builder-header, .livre-header, .annual-pl-header, .vision-upload-header, .barcode-header-row) h4,
+.wv-experience .coach-suite-container .meal-history-section h4,
+.wv-experience .coach-suite-container .detail-pane-header h4 { font-family: var(--serif); font-size: var(--fs-name); line-height: 1.1; color: var(--c-fg); text-wrap: balance; }
+.wv-experience .coach-suite-container .section-subtext { display: block; margin: var(--s-2) 0 0; font-size: var(--fs-caption); line-height: 1.5; color: var(--c-fg-muted); text-wrap: pretty; }
+.wv-experience .coach-suite-container .section-header-row > :is(button, .regime-toggle, .nutrition-mode-switcher) { align-self: stretch; }
+
+/* Cards: hairline, the large radius for a block, the small one for a value. */
+.wv-experience .coach-suite-container :is(.add-client-card, .carnet-status-card, .contract-modal-card, .accounting-tuners-card, .invoice-builder-card, .livre-recettes-card, .annual-pl-card, .client-target-summary, .adherence-card, .vision-plate-workbench, .barcode-scanner-section, .scanned-product-card, .physio-exercise-card, .break-even-banner) {
+  display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; padding: 16px 18px; border-radius: var(--r-l); border: 1px solid var(--c-rule);
+}
+.wv-experience .coach-suite-container :is(.detail-box, .hud-card, .macro-card, .prod-m-box, .session-history-item, .meal-history-card, .comp-row) { min-width: 0; padding: 12px 14px; border-radius: var(--r-s); border: 1px solid var(--c-rule); }
+.wv-experience .coach-suite-container .empty-clients-box { padding: 22px 18px; border-radius: var(--r-l); border: 1px dashed var(--hair-2); text-align: center; }
+.wv-experience .coach-suite-container .empty-clients-box p { margin: 0; font-size: var(--fs-body); line-height: 1.5; color: var(--c-fg-muted); text-wrap: balance; }
+.wv-experience .coach-suite-container .card-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.wv-experience .coach-suite-container .card-top-row b { font-family: var(--serif); font-weight: 400; font-size: var(--fs-name); line-height: 1.1; color: var(--c-fg); }
+
+/* Buttons: the app's four levels, compact (44 px). */
+.wv-experience .coach-suite-container :is(.suite-action-btn, .quick-suite-btn, .btn-save, .btn-cancel, .copy-invoice-btn, .log-session-btn, .add-to-prog-btn, .delete-client-btn, .text-toggle-btn, .staple-chip) {
+  min-height: 44px; padding: 0 16px; border-radius: var(--r-s); display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
+  font-size: var(--fs-caption); font-weight: 500; line-height: 1.25; text-align: center; text-decoration: none;
+}
+.wv-experience .coach-suite-container :is(.suite-action-btn, .btn-save, .log-session-btn, .add-to-prog-btn) { border: 1px solid var(--lamp-line); color: var(--lamp-hi); }
+.wv-experience .coach-suite-container :is(.quick-suite-btn, .btn-cancel, .copy-invoice-btn, .staple-chip) { border: 1px solid var(--hair-2); color: var(--c-fg); }
+.wv-experience .coach-suite-container :is(.delete-client-btn, .text-toggle-btn) { padding: 0 4px; color: var(--c-fg-muted); }
+.wv-experience .coach-suite-container :is(.suite-action-btn, .quick-suite-btn, .copy-invoice-btn, .btn-save, .btn-cancel) svg { width: 15px; height: 15px; }
+.wv-experience .coach-suite-container .text-close-btn { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--hair-2); color: var(--c-fg); }
+.wv-experience .coach-suite-container .text-close-btn svg { width: 15px; height: 15px; }
+.wv-experience .coach-suite-container .form-actions-row, .wv-experience .coach-suite-container .contract-modal-actions, .wv-experience .coach-suite-container .invoice-actions, .wv-experience .coach-suite-container .detail-action-buttons { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.wv-experience .coach-suite-container .form-actions-row > *, .wv-experience .coach-suite-container .contract-modal-actions > *, .wv-experience .coach-suite-container .invoice-actions > *, .wv-experience .coach-suite-container .detail-action-buttons > * { flex: 1 1 auto; }
+
+/* Fields: basalt, a hairline, 48 px, 16 px words (no iOS zoom). */
+.wv-experience .coach-suite-container :is(input[type="text"], input[type="number"], select, textarea) {
+  width: 100%; min-width: 0; min-height: 48px; padding: 0 14px; border-radius: var(--r-s); border: 1px solid var(--c-rule);
+  background: var(--basalt); color: var(--c-fg); font: 400 16px/1.4 var(--sans); outline: none; -webkit-appearance: none; appearance: none;
+}
+.wv-experience .coach-suite-container textarea { padding: 12px 14px; min-height: 76px; resize: vertical; }
+.wv-experience .coach-suite-container select { padding-right: 36px; background-image: linear-gradient(45deg, transparent 50%, var(--c-fg-muted) 50%), linear-gradient(135deg, var(--c-fg-muted) 50%, transparent 50%); background-position: calc(100% - 20px) 50%, calc(100% - 15px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
+.wv-experience .coach-suite-container :is(input, select, textarea):focus { border-color: var(--lamp-line-strong); }
+.wv-experience .coach-suite-container ::placeholder { color: var(--ash-2); }
+.wv-experience .coach-suite-container :is(.input-group, .invoice-field, .log-session-box, .contract-controls-bar) > label,
+.wv-experience .coach-suite-container :is(.detail-box-label, .carnet-label, .hud-label, .macro-name, .prod-brand, .tuner-label) {
+  display: block; font-family: var(--mono); font-size: var(--fs-label); line-height: 1.4; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-fg-muted);
+}
+.wv-experience .coach-suite-container .form-grid, .wv-experience .coach-suite-container .invoice-controls-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-3); margin: 0; }
+.wv-experience .coach-suite-container .input-group, .wv-experience .coach-suite-container .invoice-field, .wv-experience .coach-suite-container .contract-controls-bar { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.wv-experience .coach-suite-container .inline-inputs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--s-2); }
+@media (min-width: 520px) {
+  .wv-experience .coach-suite-container .form-grid, .wv-experience .coach-suite-container .invoice-controls-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wv-experience .coach-suite-container .form-grid .full-width { grid-column: 1 / -1; }
+}
+
+/* Clients: the list, then the chosen client's file. */
+.wv-experience .coach-suite-container .clients-split-layout { display: flex; flex-direction: column; gap: var(--s-4); }
+.wv-experience .coach-suite-container .clients-sidebar { display: flex; flex-direction: column; gap: var(--s-2); }
+.wv-experience .coach-suite-container .client-item-card { display: grid; grid-template-columns: 40px minmax(0, 1fr); align-items: center; gap: var(--s-3); min-height: 56px; padding: 8px 14px; border-radius: var(--r-s); border: 1px solid var(--c-rule); cursor: pointer; }
+.wv-experience .coach-suite-container .client-item-card.active { border-color: var(--lamp-line-strong); background: color-mix(in srgb, var(--lamp) 8%, transparent); }
+.wv-experience .coach-suite-container .client-initials { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--basalt); border: 1px solid var(--hair-2); font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; color: var(--lamp-hi); }
+.wv-experience .coach-suite-container .client-card-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.wv-experience .coach-suite-container .client-card-name { font-size: var(--fs-body); font-weight: 500; color: var(--c-fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wv-experience .coach-suite-container .client-card-sub, .wv-experience .coach-suite-container .detail-meta { font-size: var(--fs-caption); line-height: 1.4; color: var(--c-fg-muted); font-variant-numeric: tabular-nums; }
+.wv-experience .coach-suite-container .client-detail-pane { display: flex; flex-direction: column; gap: var(--s-4); min-width: 0; }
+.wv-experience .coach-suite-container .detail-pane-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.wv-experience .coach-suite-container .detail-pane-header > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+/* The coaching pack: the count, what is left, a bar in the lamp. */
+.wv-experience .coach-suite-container .carnet-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.wv-experience .coach-suite-container .carnet-fraction { margin-top: 6px; font-size: var(--fs-caption); color: var(--bone-2); font-variant-numeric: tabular-nums; }
+.wv-experience .coach-suite-container .carnet-fraction b { font-size: 21px; font-weight: 600; color: var(--c-fg); }
+.wv-experience .coach-suite-container :is(.carnet-remaining-badge, .adherence-score-pill, .plate-conf-tag, .meal-source-tag, .physio-region-tag, .camera-view-tag, .prog-badge, .comp-badge) {
+  display: inline-flex; align-items: center; gap: 6px; flex: none; max-width: 100%;
+  font-family: var(--mono); font-size: var(--fs-label); line-height: 1.3; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 5px 10px 4px; border-radius: var(--r-pill); border: 1px solid var(--hair-2); color: var(--c-fg-muted);
+}
+.wv-experience .coach-suite-container :is(.carnet-remaining-badge, .adherence-score-pill, .physio-region-tag, .prog-badge.prog) { border-color: var(--lamp-line); color: var(--lamp-hi); }
+.wv-experience .coach-suite-container :is(.comp-badge, .meal-source-tag, .camera-view-tag) svg { width: 12px; height: 12px; }
+.wv-experience .coach-suite-container .carnet-progress-bar, .wv-experience .coach-suite-container .adherence-bar-container { height: 6px; border-radius: 3px; background: var(--hair-2); overflow: hidden; }
+.wv-experience .coach-suite-container .carnet-progress-fill, .wv-experience .coach-suite-container .adherence-bar-fill { height: 100%; border-radius: 3px; background: var(--c-accent); }
+.wv-experience .coach-suite-container .carnet-action-bar { display: flex; }
+.wv-experience .coach-suite-container .carnet-action-bar .log-session-btn { flex: 1; }
+.wv-experience .coach-suite-container .log-session-box { display: flex; flex-direction: column; gap: var(--s-2); padding-top: var(--s-3); border-top: 1px solid var(--hair-0); }
+
+/* The session log and the client's notes. */
+.wv-experience .coach-suite-container .session-history-block { display: flex; flex-direction: column; gap: var(--s-2); }
+.wv-experience .coach-suite-container .session-cards-list { display: flex; flex-direction: column; gap: var(--s-2); }
+.wv-experience .coach-suite-container .session-history-item { display: flex; flex-direction: column; gap: 4px; }
+.wv-experience .coach-suite-container .session-history-date { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; color: var(--c-fg-muted); font-variant-numeric: tabular-nums; }
+.wv-experience .coach-suite-container .session-history-desc { display: flex; flex-direction: column; gap: 2px; font-size: var(--fs-caption); color: var(--bone-2); }
+.wv-experience .coach-suite-container .session-history-desc strong { font-weight: 500; color: var(--c-fg); }
+.wv-experience .coach-suite-container .detail-cards-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-2); }
+.wv-experience .coach-suite-container .detail-box p { margin: 6px 0 0; font-size: var(--fs-caption); line-height: 1.5; color: var(--bone-2); }
+
+/* The contract and the invoice: on the report's paper (Report.css), a document to read, not a screen. */
+.wv-experience .coach-suite-container .contract-paper-preview, .wv-experience .coach-suite-container .invoice-preview-sheet {
+  max-width: 100%; border-radius: var(--r-paper); background: var(--paper); color: var(--paper-ink); padding: 16px; font-size: 12px; line-height: 1.5; font-variant-numeric: tabular-nums;
+}
+.wv-experience .coach-suite-container .contract-paper-preview { max-height: 360px; overflow: auto; overscroll-behavior: contain; }
+.wv-experience .coach-suite-container .contract-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 400 12px/1.55 var(--sans); color: var(--paper-ink); }
+.wv-experience .coach-suite-container .inv-top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s-2); padding-bottom: 10px; border-bottom: 1px solid var(--paper-rule); }
+.wv-experience .coach-suite-container .inv-num { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.12em; color: var(--paper-gold); }
+.wv-experience .coach-suite-container .inv-date { font-size: 11.5px; color: var(--paper-ash); }
+.wv-experience .coach-suite-container .inv-parties { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-3); padding: 12px 0; }
+.wv-experience .coach-suite-container .inv-parties > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.wv-experience .coach-suite-container .inv-parties span { color: var(--paper-ash); }
+.wv-experience .coach-suite-container .inv-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.wv-experience .coach-suite-container .inv-table th { padding: 6px 6px 6px 0; text-align: left; font-family: var(--mono); font-weight: 400; font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--paper-ash); border-bottom: 1px solid var(--paper-rule); }
+.wv-experience .coach-suite-container .inv-table td { padding: 8px 6px 8px 0; border-bottom: 1px solid var(--paper-rule-2); vertical-align: top; }
+.wv-experience .coach-suite-container .inv-table :is(th, td):not(:first-child) { text-align: right; white-space: nowrap; }
+.wv-experience .coach-suite-container .inv-total-row { display: flex; flex-direction: column; gap: var(--s-3); padding-top: 12px; }
+.wv-experience .coach-suite-container .inv-legal-mentions { display: flex; flex-direction: column; gap: 2px; }
+.wv-experience .coach-suite-container .inv-legal-mentions small { font-size: 10px; line-height: 1.45; color: var(--paper-ash); }
+.wv-experience .coach-suite-container .inv-amounts { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.wv-experience .coach-suite-container .total-ttc { margin-top: 4px; font-size: 14px; color: var(--paper-ink); }
+
+/* Accounting: the regime switch, the compliance tags, the three sliders, the four figures. */
+.wv-experience .coach-suite-container .regime-toggle, .wv-experience .coach-suite-container .nutrition-mode-switcher, .wv-experience .coach-suite-container .nutrition-goal-selector {
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; padding: 3px; border-radius: var(--r-s); background: var(--basalt); border: 1px solid var(--c-rule);
+}
+.wv-experience .coach-suite-container :is(.regime-btn, .mode-btn, .goal-btn) {
+  min-height: 44px; padding: 6px 8px; border-radius: 11px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: var(--fs-caption); font-weight: 500; line-height: 1.25; color: var(--bone-2); text-align: center;
+}
+.wv-experience .coach-suite-container :is(.regime-btn, .mode-btn, .goal-btn).active { background: var(--c-accent); color: var(--c-on-accent); }
+.wv-experience .coach-suite-container :is(.mode-btn) svg { width: 14px; height: 14px; }
+.wv-experience .coach-suite-container .compliance-badge-bar { display: flex; flex-wrap: wrap; gap: 6px; }
+.wv-experience .coach-suite-container .comp-badge svg { color: var(--c-accent); }
+.wv-experience .coach-suite-container .financial-hud-grid, .wv-experience .coach-suite-container .target-macros-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-2); }
+.wv-experience .coach-suite-container .hud-card, .wv-experience .coach-suite-container .macro-card { display: flex; flex-direction: column; gap: 6px; }
+.wv-experience .coach-suite-container .take-home-card { border-color: var(--lamp-line); }
+.wv-experience .coach-suite-container :is(.hud-num, .macro-val, .plate-cal-num) { font-weight: 600; font-size: 21px; line-height: 1.15; letter-spacing: -0.01em; color: var(--c-fg); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.wv-experience .coach-suite-container :is(.hud-sub, .macro-unit) { font-size: var(--fs-caption); line-height: 1.4; color: var(--c-fg-muted); font-variant-numeric: tabular-nums; }
+.wv-experience .coach-suite-container .macro-name { order: -1; }
+.wv-experience .coach-suite-container .negative { color: var(--c-fg-muted); }
+.wv-experience .coach-suite-container .positive { color: var(--lamp-hi); }
+.wv-experience .coach-suite-container .break-even-banner { flex-direction: row; align-items: flex-start; gap: var(--s-3); font-size: var(--fs-caption); line-height: 1.5; color: var(--bone-2); background: color-mix(in srgb, var(--lamp) 5%, transparent); }
+.wv-experience .coach-suite-container .break-even-banner strong { font-weight: 600; color: var(--c-fg); }
+.wv-experience .coach-suite-container .be-icon { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--lamp-line); color: var(--c-accent); }
+.wv-experience .coach-suite-container .be-icon svg { width: 14px; height: 14px; }
+
+/* The invoice builder, the ledger and the twelve months: heads that stack, tables that scroll in their own box. */
+.wv-experience .coach-suite-container :is(.invoice-builder-header, .livre-header, .vision-upload-header, .barcode-header-row) { display: flex; flex-direction: column; align-items: stretch; gap: var(--s-3); }
+.wv-experience .coach-suite-container .annual-pl-header { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-2); cursor: pointer; }
+.wv-experience .coach-suite-container .annual-pl-header > div > span { display: block; margin-top: var(--s-2); font-size: var(--fs-caption); line-height: 1.5; color: var(--c-fg-muted); }
+.wv-experience .coach-suite-container .livre-table-wrap, .wv-experience .coach-suite-container .annual-table-wrap { overflow-x: auto; overscroll-behavior-x: contain; margin-inline: -18px; padding-inline: 18px; }
+.wv-experience .coach-suite-container :is(.livre-table, .annual-table) { width: 100%; min-width: 560px; border-collapse: collapse; font-size: var(--fs-caption); font-variant-numeric: tabular-nums; }
+.wv-experience .coach-suite-container :is(.livre-table, .annual-table) th { padding: 0 12px 10px 0; text-align: left; white-space: nowrap; font-family: var(--mono); font-weight: 400; font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-fg-muted); border-bottom: 1px solid var(--c-rule); }
+.wv-experience .coach-suite-container :is(.livre-table, .annual-table) td { padding: 10px 12px 10px 0; color: var(--bone-2); border-bottom: 1px solid var(--hair-0); white-space: nowrap; }
+.wv-experience .coach-suite-container :is(.livre-table, .annual-table) :is(b, strong) { font-weight: 600; color: var(--c-fg); }
+.wv-experience .coach-suite-container .annual-table .peak-month td { background: color-mix(in srgb, var(--lamp) 6%, transparent); }
+
+/* Nutrition: the client's targets, the week's observance, the plate, the barcode. */
+.wv-experience .coach-suite-container .nutrition-cards-layout { display: flex; flex-direction: column; gap: var(--s-3); }
+.wv-experience .coach-suite-container .summary-client-name { font-size: var(--fs-caption); color: var(--c-fg-muted); }
+.wv-experience .coach-suite-container .summary-client-name b { font-weight: 600; color: var(--c-fg); }
+.wv-experience .coach-suite-container .adherence-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.wv-experience .coach-suite-container .adherence-header > b { font-size: var(--fs-body); font-weight: 500; line-height: 1.35; color: var(--c-fg); }
+.wv-experience .coach-suite-container .adherence-tags, .wv-experience .coach-suite-container .plate-tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; flex: none; }
+.wv-experience .coach-suite-container .adherence-comment, .wv-experience .coach-suite-container .analysis-note-text { margin: 0; font-size: var(--fs-caption); line-height: 1.5; color: var(--c-fg-muted); }
+.wv-experience .coach-suite-container .vision-plate-section, .wv-experience .coach-suite-container .barcode-scanner-section { display: flex; flex-direction: column; gap: var(--s-3); }
+.wv-experience .coach-suite-container .vision-plate-workbench { gap: var(--s-4); }
+.wv-experience .coach-suite-container .canvas-wrapper { position: relative; width: min(100%, 280px); aspect-ratio: 1; margin: 0 auto; border-radius: var(--r-l); overflow: hidden; background: var(--well); border: 1px solid var(--c-rule); }
+.wv-experience .coach-suite-container .plate-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.wv-experience .coach-suite-container .canvas-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-2); padding: var(--s-4); text-align: center; cursor: pointer; color: var(--c-fg-muted); }
+.wv-experience .coach-suite-container .canvas-placeholder svg { width: 22px; height: 22px; color: var(--c-accent); }
+.wv-experience .coach-suite-container .canvas-placeholder p { margin: 0; font-size: var(--fs-caption); line-height: 1.45; }
+.wv-experience .coach-suite-container .plate-results-pane { display: flex; flex-direction: column; gap: var(--s-3); }
+.wv-experience .coach-suite-container .plate-summary-top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.wv-experience .coach-suite-container .plate-summary-top > div { display: flex; flex-direction: column; gap: 4px; }
+.wv-experience .coach-suite-container .plate-grams-sub { font-size: var(--fs-caption); color: var(--c-fg-muted); }
+.wv-experience .coach-suite-container .components-list { display: flex; flex-direction: column; gap: var(--s-2); }
+.wv-experience .coach-suite-container .comp-header { display: flex; align-items: center; gap: var(--s-2); }
+.wv-experience .coach-suite-container .comp-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.wv-experience .coach-suite-container .comp-name { flex: 1; min-width: 0; font-size: var(--fs-caption); font-weight: 500; color: var(--c-fg); }
+.wv-experience .coach-suite-container .comp-grams { font-size: var(--fs-caption); font-weight: 600; color: var(--c-fg); font-variant-numeric: tabular-nums; }
+.wv-experience .coach-suite-container .comp-macros-mini { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; font-size: 12px; color: var(--c-fg-muted); font-variant-numeric: tabular-nums; }
+.wv-experience .coach-suite-container :is(.plate-results-pane, .scanned-product-card) > .suite-action-btn { width: 100%; }
+.wv-experience .coach-suite-container .barcode-input-bar { display: flex; gap: var(--s-2); }
+.wv-experience .coach-suite-container .barcode-input-bar input { flex: 1; }
+.wv-experience .coach-suite-container .barcode-input-bar .suite-action-btn { flex: none; }
+.wv-experience .coach-suite-container .staples-chips-row { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.wv-experience .coach-suite-container .staples-label { flex-basis: 100%; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-fg-muted); }
+.wv-experience .coach-suite-container .prod-top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.wv-experience .coach-suite-container .prod-top-row > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.wv-experience .coach-suite-container .prod-name { font-family: var(--serif); font-size: var(--fs-name); line-height: 1.1; color: var(--c-fg); }
+.wv-experience .coach-suite-container .prod-sub { font-size: var(--fs-caption); color: var(--c-fg-muted); font-variant-numeric: tabular-nums; }
+/* The Nutri-Score letter keeps the scheme's own colours: it is the label of the scheme, not a colour of the app. */
+.wv-experience .coach-suite-container .nutriscore-badge { flex: none; padding: 5px 10px 4px; border-radius: var(--r-pill); font-family: var(--mono); font-size: var(--fs-label); font-weight: 700; letter-spacing: 0.06em; }
+.wv-experience .coach-suite-container .nutriscore-badge.ns-a { background: #038141; color: #fff; }
+.wv-experience .coach-suite-container .nutriscore-badge.ns-b { background: #85bb2f; color: #fff; }
+.wv-experience .coach-suite-container .nutriscore-badge.ns-c { background: #fecb02; color: #000; }
+.wv-experience .coach-suite-container .nutriscore-badge.ns-d { background: #ee8100; color: #fff; }
+.wv-experience .coach-suite-container .nutriscore-badge.ns-e { background: #e63e11; color: #fff; }
+.wv-experience .coach-suite-container .prod-macros-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.wv-experience .coach-suite-container .prod-m-box { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px; text-align: center; }
+.wv-experience .coach-suite-container .prod-m-box b { font-size: var(--fs-body); font-weight: 600; color: var(--c-fg); font-variant-numeric: tabular-nums; }
+.wv-experience .coach-suite-container .prod-m-box span { font-size: 11px; color: var(--c-fg-muted); }
+.wv-experience .coach-suite-container .meal-history-section { display: flex; flex-direction: column; gap: var(--s-3); }
+.wv-experience .coach-suite-container .meals-list { display: flex; flex-direction: column; gap: var(--s-2); }
+.wv-experience .coach-suite-container .meal-history-card { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.wv-experience .coach-suite-container .meal-h-left { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; font-size: var(--fs-caption); color: var(--c-fg); }
+.wv-experience .coach-suite-container .meal-h-left strong { font-weight: 500; }
+.wv-experience .coach-suite-container .meal-date-str { font-size: 12px; color: var(--c-fg-muted); }
+.wv-experience .coach-suite-container .meal-h-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex: none; font-size: 12px; color: var(--c-fg-muted); font-variant-numeric: tabular-nums; text-align: right; }
+.wv-experience .coach-suite-container .meal-h-right b { font-size: var(--fs-body); font-weight: 600; color: var(--c-fg); }
+
+/* Physio by joint: the regions as chips, then one card per exercise. */
+.wv-experience .coach-suite-container .physio-chips-row { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.wv-experience .coach-suite-container .physio-chip { min-height: 44px; padding: 8px 14px; border-radius: var(--r-s); border: 1px solid var(--c-rule); font-size: var(--fs-caption); line-height: 1.3; color: var(--bone-2); }
+.wv-experience .coach-suite-container .physio-chip.active { border-color: var(--lamp-line-strong); color: var(--lamp-hi); background: color-mix(in srgb, var(--lamp) 10%, transparent); }
+.wv-experience .coach-suite-container .physio-cards-grid { display: flex; flex-direction: column; gap: var(--s-3); }
+.wv-experience .coach-suite-container .physio-card-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; }
+.wv-experience .coach-suite-container .physio-ex-name { font-family: var(--serif); font-size: var(--fs-name); line-height: 1.1; color: var(--c-fg); text-wrap: balance; }
+.wv-experience .coach-suite-container .physio-rationale { margin: 0; font-size: var(--fs-caption); line-height: 1.55; color: var(--bone-2); }
+.wv-experience .coach-suite-container .physio-progression-box { display: flex; flex-direction: column; gap: var(--s-2); padding-top: var(--s-3); border-top: 1px solid var(--hair-0); }
+.wv-experience .coach-suite-container .prog-line { display: flex; align-items: baseline; gap: var(--s-2); font-size: var(--fs-caption); line-height: 1.45; color: var(--bone-2); }
+.wv-experience .coach-suite-container .prog-line .prog-badge { min-width: 7.5em; justify-content: center; }
+.wv-experience .coach-suite-container .add-to-prog-btn { width: 100%; }
