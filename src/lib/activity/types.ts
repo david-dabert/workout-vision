@@ -142,10 +142,13 @@ export interface MeasureResult {
   /** The value shown, and its margin (±, in the unit); null when refused. */
   value: number | null;
   margin: number | null;
-  /** One value per event. */
+  /** One value per event measured. Kept when only the summary is refused (the highest cannot be named), so each event's
+   *  value can still be shown; empty when the measure is refused whole. */
   values: MeasureValue[];
   /** Why no value is shown (null when one is). */
   refused: Text | null;
+  /** What a mean was taken over: the events measured, among those it applies to. */
+  scope?: Text;
   /** A value flagged by the measure's threshold (a landing check). */
   flagged?: boolean;
 }

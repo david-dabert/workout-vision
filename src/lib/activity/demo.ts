@@ -1,13 +1,16 @@
 /**
  * The volleyball demonstration (docs/VISION.md, the truth lab): the engine run on synthetic jumps whose truth is known
  * by construction (synthetic.ts), at the frame rate the screen picks, with the truth of every value the engine returns.
- * The screen shows a number only with its margin and beside its truth, so the visitor sees each margin hold or fail.
+ * The screen shows each measure with its margin, each count with its check, beside its truth, so the visitor sees each
+ * margin hold or fail.
  *
  * The jumps: four, two standing and two after a three-stride run-up, of 0.45 to 0.70 s in the air, landing as they took
- * off, toes leaving at full speed; every point jitters by a standard deviation of 1 px on a 360x640 frame, seeded so
- * every visit reads the same values. What this seed shows at each rate is pinned by demo.test.ts; how the margins hold
- * over many runs, and in wider conditions, is in volleyball-heldout.test.ts. Status: experimental (level 1 of the truth
- * lab: no pose model, no filmed person).
+ * off, the toes reaching the body's speed 20 ms after they leave the ground (the middle of the toe-off range the engine
+ * allows for, engine.ts TOE_LAG_MAX; a toe leaving at full speed is that range's fast end and reads highest); every
+ * point jitters by a standard deviation of 1 px on a 360x640 frame, seeded so every visit reads the same values. What
+ * this seed shows at each rate is pinned by demo.test.ts; how the margins hold over many runs, and in wider
+ * conditions, is in volleyball-heldout.test.ts. Status: experimental (level 1 of the truth lab: no pose model, no
+ * filmed person).
  */
 import { runActivity } from './engine';
 import { volleyball } from './specs/volleyball';
@@ -27,7 +30,10 @@ export interface DemoRun {
 
 export interface ActivityDemo { spec: ActivitySpec; rates: number[]; rate: number; run: (rate: number) => DemoRun }
 
-const JUMPS: SyntheticJump[] = [{ flight: 0.55 }, { flight: 0.7, approach: 3 }, { flight: 0.45 }, { flight: 0.62, approach: 3 }];
+// The toe-off: 20 ms, the middle of the 0 to 40 ms the engine allows for. Status: experimental (a choice for the demo).
+const TOE_LAG = 0.02;
+const JUMPS: SyntheticJump[] = [{ flight: 0.55 }, { flight: 0.7, approach: 3 }, { flight: 0.45 }, { flight: 0.62, approach: 3 }]
+  .map(j => ({ ...j, toeLag: TOE_LAG }));
 const NOISE_PX = 1;
 const SEED = 7;
 

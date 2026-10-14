@@ -44,16 +44,27 @@ const SPEED_WINDOW_SEC = 1 / 30;
 const LIFT_K = 3;
 const LIFT_BAND = 0.1;
 // The correction: the time the foot takes between the ground and the crossing level ℓ, read with its speed v there.
-// - A touchdown: the foot arrives at speed, so ℓ/v; ARRIVE_SHARE of it is the margin for a speed that is not constant.
+// - A touchdown: the foot arrives at speed, so ℓ/v.
 // - A takeoff: the contact point (the toes) leaves the ground at zero vertical speed and accelerates. If its speed rises
-//   no slower than uniformly, from 0 to the body's v within TOE_LAG_MAX, it covers ℓ in √(2ℓ·TOE_LAG_MAX/v) at most and
-//   ℓ/v at least (a toe that left at full speed): the correction is the middle of that range, and half its width goes
-//   into the margin. The synthetic toe-offs rise faster than uniformly at first, so they lie inside this range.
+//   no slower than uniformly, from 0 to the body's v within TOE_LAG_MAX, it covers ℓ in √(2ℓ·TOE_LAG_MAX/v) at most
+//   (or ℓ/v + TOE_LAG_MAX/2 when ℓ lies beyond the v·TOE_LAG_MAX/2 it covers meanwhile) and ℓ/v at least (the limit of
+//   a toe that leaves at full speed): the correction is the middle of that range, and half its width goes into the
+//   margin. The synthetic toe-offs rise faster than uniformly at first, so they lie inside this range.
+// - At a touchdown the foot's speed is not constant over the samples it is read from: ARRIVE_SHARE of ℓ/v goes into
+//   the margin for it.
+// - At a takeoff the speed is read, on average, `lead` seconds after the crossing (the middle of the samples the slope
+//   is read from), and the toe has slowed by then: in the air the body falls at g, and a toe leaving the ground does
+//   not fall faster than the body, so the toe's speed is at most g·lead lower, g in leg lengths of at least LEG_MIN_M.
+//   The correction ℓ/v may be too long by that share, and it goes into the margin. Without it, a toe that left at full
+//   speed sat at the edge of its margin, the range's half-width being then exactly its offset: at 0 px and 240 a
+//   second, 10 of 400 takeoffs fell just outside (worst 1.02 times the margin). Source: kinematics, with the
+//   assumption that the toe does not fall faster than the body (UNSOURCED). Status: experimental.
 // Sources: kinematics for the ranges; TOE_LAG_MAX UNSOURCED (an assumption, not measured on a filmed foot: a toe that
 // takes longer would fall outside the margin); ARRIVE_SHARE UNSOURCED, set on the tuning runs of the synthetic jumps
-// (volleyball-heldout.test.ts: seeds 1 to 300 per rate, noise 0.5 to 1.5 px, toe-offs of 0 to 30 ms). Status: experimental.
+// (volleyball-heldout.test.ts: seeds 1 to 300 per rate, noise 0.5 to 1.5 px, toe-offs of 0 to 30 ms). Status:
+// experimental.
 const ARRIVE_SHARE = 0.25;
-const TOE_LAG_MAX = 0.04;
+export const TOE_LAG_MAX = 0.04;
 // The speed is a least-squares slope of noisy samples: this many of its standard errors, as a share of the speed; and
 // the crossing is read on noisy samples, the ground line too: this many noise standard deviations over the speed (a
 // term that does not shrink with the frame rate). Source: UNSOURCED, kept from the first version and checked on the same
@@ -70,11 +81,25 @@ const APEX_K = 3;
 // The fit needs at least this many hip samples in the air (a parabola has three unknowns, one more to check it).
 // Source: convention. Status: convention.
 const APEX_MIN_SAMPLES = 4;
+// The fit's own scatter stands for the hip's noise only when it has at least this many degrees of freedom left (samples
+// less the parabola's three unknowns); with fewer, the foot's noise on the ground stands alone. Source: convention (a
+// variance from one residual is not an estimate). Status: convention.
+const RESIDUAL_MIN_DOF = 2;
 // The hip falls at g in the air: the leg length that fall implies (g over twice the parabola's curvature, in leg
 // lengths per second²) must lie between these, in metres, or the hip is not in free flight and no height is read.
 // Source: UNSOURCED (a generous range around adult hip-to-ankle lengths). Status: experimental.
 const LEG_MIN_M = 0.5;
 const LEG_MAX_M = 1.2;
+// ... checked at this many standard errors of the fitted leg length: a fit is refused only when its leg lies outside the
+// range by more than that. Source: convention (two standard errors). Status: convention.
+const LEG_K = 2;
+// The flight time caps the height from above (g·t²/8 at the flight's upper end, measure): when that cap leaves less
+// than this share of the interval from the hip's top, or lies below it, the two readings of one jump disagree (the hip
+// is then not moving as the body's centre of mass) and no height is shown for it. Source: UNSOURCED (a review of 14
+// October 2026 found the cap cutting the interval below a tenth in 5 of 992 heights with the hip rising 2 to 5 cm
+// relative to the centre of mass, all 5 outside their margin, and never with the hip as the centre of mass); how
+// often it fires is printed by volleyball-heldout.test.ts. Status: experimental.
+const CAP_MIN_SHARE = 0.1;
 // The camera faces the person when the shoulders are at least this wide for their torso's length, sees them from the
 // side at most this. Source: UNSOURCED (front 0.8 and side under 0.1 on the synthetic body). Status: experimental.
 const FRONT_MIN = 0.35;
@@ -227,10 +252,11 @@ function slope(values: (number | null)[], t: number[], from: number, to: number)
  * the window, on the contact's side of the flight's top: a sample the next one shows to be the top is left out, so the
  * slope never reads across it. `ground` is the crossing's sample on the ground side: when it is already above `lift` it
  * belongs to the flight (the contact came before it) and is read too. `dir` is +1 at a takeoff (reading forwards), -1 at
- * a landing (reading backwards). At least two samples.
+ * a landing (reading backwards). At least two samples. `lead` is how far the samples' mean time lies from the crossing:
+ * the slope reads the speed there, not at the crossing.
  */
 function contactSpeed(h: (number | null)[], t: number[], x: number, ground: number, air: number,
-  dir: 1 | -1, lift: number, noise: number): { v: number; se: number } | null {
+  dir: 1 | -1, lift: number, noise: number): { v: number; se: number; lead: number } | null {
   const at = (i: number) => (i >= 0 && i < t.length ? h[i] : null);
   let near = air;
   for (let g = ground; g >= 0 && g < t.length && h[g] !== null && (h[g] as number) > lift && Math.abs(t[g] - x) <= SPEED_WINDOW_SEC; g -= dir) near = g;
@@ -252,7 +278,7 @@ function contactSpeed(h: (number | null)[], t: number[], x: number, ground: numb
   const ts: number[] = [];
   for (let i = from; i <= to; i++) if (h[i] !== null) ts.push(t[i]);
   const mt = ts.reduce((s, x2) => s + x2, 0) / ts.length, sxx = ts.reduce((s, x2) => s + (x2 - mt) ** 2, 0);
-  return { v: dir * v, se: sxx > 0 ? noise / Math.sqrt(sxx) : 0 };
+  return { v: dir * v, se: sxx > 0 ? noise / Math.sqrt(sxx) : 0, lead: Math.abs(mt - x) };
 }
 
 /**
@@ -283,7 +309,7 @@ function airborne(ctx: Context, key: string, spec: Extract<EventSpec, { kind: 'a
    * When the slope is missing (it could only be read across the top) or under the chord, the chord bounds the speed
    * from below only: the correction then lies between 0 and ℓ over the chord's speed, and its middle is taken.
    */
-  const contact = (x: number, spacing: number, sp: { v: number; se: number } | null, top: number, level: number, takeoff: boolean) => {
+  const contact = (x: number, spacing: number, sp: { v: number; se: number; lead: number } | null, top: number, level: number, takeoff: boolean) => {
     const span = Math.abs(t[top] - x), chord = span > 0 && h[top] !== null ? ((h[top] as number) - level) / span : 0;
     const bounded = !sp || sp.v < chord;
     if (bounded && !(chord > 0)) return null;
@@ -295,7 +321,10 @@ function airborne(ctx: Context, key: string, spec: Extract<EventSpec, { kind: 'a
     const hi = !takeoff ? atSpeed : level <= (speed.v * TOE_LAG_MAX) / 2 ? Math.sqrt((2 * level * TOE_LAG_MAX) / speed.v) : atSpeed + TOE_LAG_MAX / 2;
     const delta = (lo + hi) / 2;
     if (delta > MAX_CORRECTION_SEC) return null;
-    const model = (hi - lo) / 2 + (takeoff ? 0 : ARRIVE_SHARE * atSpeed);
+    // The speed read: at a touchdown a share of ℓ/v; at a takeoff the toe's slowing between the crossing and the samples
+    // the slope is read from (none when the chord sets the speed: the range then starts at 0).
+    const read = !takeoff ? ARRIVE_SHARE * atSpeed : bounded ? 0 : atSpeed * (G / LEG_MIN_M) * (sp as { lead: number }).lead / speed.v;
+    const model = (hi - lo) / 2 + read;
     // The crossing is read on noisy samples: the noise over the foot's speed there. At a takeoff the toe may still be
     // accelerating at the crossing, as slow as ℓ over the longest time it can have taken (ℓ/hi), not yet at v.
     const slowest = takeoff ? Math.min(speed.v, level / hi) : speed.v;
@@ -360,7 +389,7 @@ function hipApex(h: (number | null)[], t: number[], from: number, to: number, si
   if (!(c[2] < 0)) return null;
   const rss = pts.reduce((s, [ti, y]) => { const u = ti - tm; return s + (y - (c[0] + c[1] * u + c[2] * u * u)) ** 2; }, 0);
   const dof = pts.length - 3;
-  const sigma = Math.max(sigmaFloor, dof >= 2 ? Math.sqrt(rss / dof) : 0);
+  const sigma = Math.max(sigmaFloor, dof >= RESIDUAL_MIN_DOF ? Math.sqrt(rss / dof) : 0);
   const cov = (r: number, q: number) => sigma * sigma * inv[r][q];
   const top = -c[1] / (2 * c[2]);
   // Its standard error, to first order: ∂top/∂c1 = −1/(2·c2), ∂top/∂c2 = c1/(2·c2²).
@@ -368,7 +397,7 @@ function hipApex(h: (number | null)[], t: number[], from: number, to: number, si
   const se = Math.sqrt(Math.max(0, g1 * g1 * cov(1, 1) + 2 * g1 * g2 * cov(1, 2) + g2 * g2 * cov(2, 2)));
   // The hip falls at g: in leg lengths, c2 = −g/(2·L), so the leg is L = −g/(2·c2) metres long, ± its error.
   const leg = -G / (2 * c[2]), legSe = (G / (2 * c[2] * c[2])) * Math.sqrt(cov(2, 2));
-  if (leg + 2 * legSe < LEG_MIN_M || leg - 2 * legSe > LEG_MAX_M) return null;
+  if (leg + LEG_K * legSe < LEG_MIN_M || leg - LEG_K * legSe > LEG_MAX_M) return null;
   return { at: tm + top, se, leg };
 }
 
@@ -457,6 +486,8 @@ function landings(ctx: Context, spec: Extract<EventSpec, { kind: 'landing' }>): 
 // ─── Measures ───
 
 const fps = (rate: number) => Math.round(rate);
+/** A French or English noun in the plural from two on. */
+const plural = (k: number, word: string) => (k > 1 ? `${word}s` : word);
 
 function measure(spec: MeasureSpec, ctx: Context, view: ActivityResult['view']): MeasureResult {
   const base = { key: spec.key, label: spec.label, unit: spec.unit, formulaText: spec.formulaText, source: spec.source, status: spec.status, error: spec.error };
@@ -469,7 +500,13 @@ function measure(spec: MeasureSpec, ctx: Context, view: ActivityResult['view']):
   if (f.kind === 'count') return { ...base, value: events.length, margin: null, values: [], refused: null };
   // French: awaiting David's approval (R10), every line of this function.
   if (!events.length) return refuse({ fr: 'Aucun saut détecté.', en: 'No jump detected.' });
-  let values: MeasureValue[] = [];
+  const values: MeasureValue[] = [];
+  // An event whose value was computed but not shown (its margin too wide): its interval, from which the highest can
+  // still be named when it lies wholly below the others (see below).
+  const unshown: ({ lo: number; hi: number } | null)[] = events.map(() => null);
+  // Why the highest or the lowest cannot be named, in the words of what is measured; and what a mean was taken over.
+  let unnamed: Text = { fr: 'Impossible de désigner la valeur extrême\u00A0: un événement n’est pas mesuré.', en: 'The extreme value cannot be named: an event is not measured.' };
+  let scope: Text | undefined;
   const tooWide = { fr: `Pas mesurable à ${fps(ctx.rate)}${NB}images par seconde\u00A0: la marge dépasserait le quart de la valeur.`, en: `Not measurable at ${fps(ctx.rate)} frames a second: the margin would exceed a quarter of the value.` };
   if (f.kind === 'flightHeight') {
     // The rise from the takeoff to the top of the hip's flight: v0 = g·(top − takeoff), h = v0²/2g. It is the flight-time
@@ -477,32 +514,42 @@ function measure(spec: MeasureSpec, ctx: Context, view: ActivityResult['view']):
     // reduces to g·(top − takeoff), so the touchdown's own error cancels and the margin is the takeoff's and the top's.
     // A body leaves the ground fully extended on its toes and cannot land more extended (Δ ≥ 0), so it never rises more
     // than g·t²/8: when the flight is timed, that height's upper end caps the interval. Source: UNSOURCED (kinematics of
-    // a jump on level ground; a landing on a raised surface would break it). Status: experimental. The value shown is
-    // the middle of the interval, its margin half the interval's width.
-    let whole = 0;
+    // a jump on level ground; a landing on a raised surface would break it). Status: experimental. The cap is also a
+    // check: when it leaves less than CAP_MIN_SHARE of the interval, the two readings disagree and the jump's height is
+    // not shown; and it never makes the margin smaller than the flight-time method's own (heightMarginCm), so two
+    // readings that barely meet do not pass for a precise one. The value shown is the middle of the interval.
+    let whole = 0, disagree = 0;
     events.forEach((e, i) => {
       if (e.takeoff === undefined || e.apex === undefined) return;
       const up = e.apex - e.takeoff, m = (e.takeoffMargin as number) + (e.apexMargin as number);
       if (!(up > 0)) return;
       whole += 1;
       const lo = (G * Math.max(0, up - m) ** 2) / 2 * 100;
-      let hi = (G * (up + m) ** 2) / 2 * 100;
+      let hi = (G * (up + m) ** 2) / 2 * 100, floor = 0;
       if (e.flight !== undefined && e.flightMargin !== undefined) {
         const cap = flightHeightCm(e.flight + e.flightMargin);
-        if (cap >= lo) hi = Math.min(hi, cap);
+        if (cap - lo < CAP_MIN_SHARE * (hi - lo)) { disagree += 1; return; }
+        hi = Math.min(hi, cap);
+        floor = heightMarginCm(e.flight, e.flightMargin);
       }
-      const h = (lo + hi) / 2, margin = (hi - lo) / 2;
+      const h = (lo + hi) / 2, margin = Math.max((hi - lo) / 2, floor);
       if (margin <= f.maxRelError.value * h) values.push({ value: h, margin, event: i });
+      else unshown[i] = { lo: h - margin, hi: h + margin };
     });
-    if (!whole) return refuse({ fr: 'Aucun saut entier dans la vidéo, du décollage au sommet.', en: 'No whole jump in the video, from takeoff to the top.' });
-    if (!values.length) return refuse(tooWide);
+    if (!whole) return refuse({ fr: 'Aucun saut vu du décollage jusqu’au sommet.', en: 'No jump seen from the takeoff to the top.' });
+    if (!values.length) {
+      return refuse(disagree === whole
+        ? { fr: 'Pas de hauteur\u00A0: le temps de vol et la courbe de la hanche ne concordent pas.', en: 'No height: the flight time and the hip\'s curve disagree.' }
+        : tooWide);
+    }
+    unnamed = { fr: `Hauteur mesurée sur ${values.length}${NB}${plural(values.length, 'saut')} sur ${events.length}\u00A0: impossible de désigner le meilleur.`, en: `Height measured on ${values.length} ${plural(values.length, 'jump')} of ${events.length}: the best cannot be named.` };
   } else if (f.kind === 'contactBefore') {
     const before = ctx.events[f.before] ?? [];
     // The flights the `before` events are drawn from (a stride's), and the fewest samples a stride is read from.
     const from = ctx.specs[f.before], stride = from && from.kind === 'stride' ? from : null;
     const flights = stride ? ctx.events[stride.flight] ?? [] : [], minSamples = stride ? stride.minSamples.value : 1;
     if (ctx.rate < f.minRate.value) {
-      return refuse({ fr: `Élan non détecté à ${fps(ctx.rate)}${NB}images par seconde\u00A0: les foulées sont trop rapides pour être vues.`, en: `Run-up not detected at ${fps(ctx.rate)} frames a second: the strides are too quick to be seen.` });
+      return refuse({ fr: `Élan non mesurable à ${fps(ctx.rate)}${NB}images par seconde\u00A0: les foulées sont trop brèves pour cette cadence.`, en: `Run-up not measurable at ${fps(ctx.rate)} frames a second: the strides are too brief for this frame rate.` });
     }
     // A stride's flight clears the ground by a few centimetres only: when the foot's own noise sets the ground band
     // (above its floor), a stride can hide under the band or noise can pass for one. Measured on the synthetic run-ups
@@ -511,13 +558,13 @@ function measure(spec: MeasureSpec, ctx: Context, view: ActivityResult['view']):
     if (ctx.bandFromNoise) {
       return refuse({ fr: 'Pas mesurable sur cette vidéo\u00A0: les pieds bougent trop à l’image pour voir des foulées de quelques centimètres.', en: 'Not measurable on this video: the feet jitter too much in the image to see strides of a few centimetres.' });
     }
-    let seenOne = false, brief = false, undated = false;
+    let seen = 0, brief = false, undated = false;
     events.forEach((e, i) => {
       if (e.takeoff === undefined) return;
       const takeoff = e.takeoff;
       const last = [...before].reverse().find(b => b.end < e.start);
       if (!last || takeoff - ctx.t[last.end] > f.withinSec.value) return;
-      seenOne = true;
+      seen += 1;
       // A rise of the foot between the last stride and the takeoff too brief to be read as a stride (fewer than its
       // minSamples): a step missed, or noise. Either way the last stride read may not be the last one made.
       if (flights.some(x => x.start > last.end && x.end < e.start && x.end - x.start + 1 < minSamples)) { brief = true; return; }
@@ -530,11 +577,16 @@ function measure(spec: MeasureSpec, ctx: Context, view: ActivityResult['view']):
       return refuse(brief
         ? { fr: `Pas mesurable à ${fps(ctx.rate)}${NB}images par seconde\u00A0: juste avant le décollage, le pied se soulève trop brièvement pour savoir si c’est un pas.`, en: `Not measurable at ${fps(ctx.rate)} frames a second: just before the takeoff the foot lifts too briefly to tell whether it is a step.` }
         : undated
-        ? { fr: `Pas mesurable à ${fps(ctx.rate)}${NB}images par seconde\u00A0: la pose du dernier appui ne peut pas être datée.`, en: `Not measurable at ${fps(ctx.rate)} frames a second: the touchdown of the last step cannot be timed.` }
-        : seenOne
+        ? { fr: `Pas mesurable à ${fps(ctx.rate)}${NB}images par seconde\u00A0: le moment où le pied se repose au dernier appui ne peut pas être daté.`, en: `Not measurable at ${fps(ctx.rate)} frames a second: the moment the foot comes down on the last step cannot be timed.` }
+        : seen
         ? tooWide
         : { fr: `Aucun élan détecté\u00A0: saut sans course d’élan, ou foulées trop brèves pour ${fps(ctx.rate)}${NB}images par seconde.`, en: `No run-up detected: a standing jump, or strides too brief for ${fps(ctx.rate)} frames a second.` });
     }
+    // A mean says what it was taken over: the run-ups measured, among those detected.
+    const n = values.length;
+    scope = n === seen
+      ? { fr: `Moyenne sur ${n}${NB}${plural(n, 'élan')}.`, en: `Mean of ${n} ${plural(n, 'run-up')}.` }
+      : { fr: `Moyenne sur ${n} des ${seen}${NB}élans détectés.`, en: `Mean of ${n} of the ${seen} run-ups detected.` };
   } else if (f.kind === 'widthRatio') {
     const num = ctx.widths[f.num], den = ctx.widths[f.den];
     events.forEach((e, i) => {
@@ -546,22 +598,30 @@ function measure(spec: MeasureSpec, ctx: Context, view: ActivityResult['view']):
       if (Number.isFinite(n) && Number.isFinite(d) && d > 0) { const r = n / d; values.push({ value: r, margin: null, event: i, flag: r < f.below.value }); }
     });
     if (!values.length) return refuse({ fr: 'Genoux ou chevilles non vus à la réception.', en: 'Knees or ankles not seen on landing.' });
+    unnamed = { fr: `Genoux vus sur ${values.length}${NB}${plural(values.length, 'réception')} sur ${events.length}\u00A0: impossible de désigner celle où ils rentrent le plus.`, en: `Knees seen on ${values.length} ${plural(values.length, 'landing')} of ${events.length}: the one where they come in most cannot be named.` };
   }
-  // The highest or the lowest names one event among all: with an event left unmeasured, it cannot be named.
-  if ((spec.summary === 'max' || spec.summary === 'min') && values.length < events.length) {
-    return refuse({ fr: `Mesurable sur ${values.length} des ${events.length}${NB}sauts seulement\u00A0: le meilleur ne peut pas être désigné.`, en: `Measurable on ${values.length} of the ${events.length} jumps only: the best cannot be named.` });
+  // The highest or the lowest names one event among all. With an event left unshown it can still be named when every
+  // event left unshown has an interval wholly below the highest lower bound among those shown (for the lowest, above
+  // the lowest upper bound): none of them can then be the true highest. Otherwise the summary is refused, and each
+  // event's value is kept, so the values that were measured are still shown event by event.
+  if (spec.summary === 'max' || spec.summary === 'min') {
+    const max = spec.summary === 'max';
+    const known = values.every(v => v.margin !== null);
+    const bound = known ? (max ? Math.max(...values.map(v => v.value - (v.margin as number))) : Math.min(...values.map(v => v.value + (v.margin as number)))) : NaN;
+    const named = events.every((_, i) => values.some(v => v.event === i) || (known && unshown[i] !== null
+      && (max ? (unshown[i] as { hi: number }).hi < bound : (unshown[i] as { lo: number }).lo > bound)));
+    if (!named) return { ...base, value: null, margin: null, values, refused: unnamed };
   }
   const pick = spec.summary === 'max' ? values.reduce((a, b) => (b.value > a.value ? b : a))
     : spec.summary === 'min' ? values.reduce((a, b) => (b.value < a.value ? b : a)) : null;
   const value = pick ? pick.value : values.reduce((s, v) => s + v.value, 0) / values.length;
   const margins = values.map(v => v.margin).filter((m): m is number => m !== null);
   const known = margins.length === values.length;
-  // The highest value shown lies within the largest margin of the true highest (each value within its own margin), and
-  // a mean within the mean of the margins of the mean of the truths.
+  // The highest value shown lies within the largest margin of the true highest (each value within its own margin, and
+  // no event left unshown can be the highest), and a mean within the mean of the margins of the mean of the truths.
   const margin = !known ? null : pick ? Math.max(...margins) : margins.reduce((s, m) => s + m, 0) / margins.length;
   const flagged = values.some(v => v.flag) ? true : values.some(v => v.flag === false) ? false : undefined;
-  values = values.slice();
-  return { ...base, value, margin, values, refused: null, ...(flagged === undefined ? {} : { flagged }) };
+  return { ...base, value, margin, values, refused: null, ...(scope ? { scope } : {}), ...(flagged === undefined ? {} : { flagged }) };
 }
 
 /**

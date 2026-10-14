@@ -11,7 +11,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { gaussian, seeded } from '../../counting/__tests__/synthetic';
-import { flightHeightCm, heightMarginCm, riseCm, runActivity } from '../engine';
+import { flightHeightCm, G, heightMarginCm, riseCm, runActivity } from '../engine';
 import { volleyball } from '../specs/volleyball';
 import { syntheticJumps, type SyntheticJump } from '../synthetic';
 
@@ -57,35 +57,55 @@ describe('volleyball on synthetic jumps', () => {
     });
   }
 
-  it('reads the frame rate it was given, and a noiseless jump at 240 samples a second inside its margin', () => {
-    const read = syntheticJumps({ jumps: [{ flight: 0.6 }], rate: 240, phase: 0.001 });
-    const r = runActivity(volleyball, read);
-    expect(r.rate).toBeCloseTo(240, 0);
-    const h = measure(r, 'height');
-    expect(Math.abs((h.value ?? 0) - read.truth.jumps[0].heightCm)).toBeLessThanOrEqual(h.margin ?? 0);
-    // Not knowing how fast the toe left the ground costs about ±1 cm here (the margin is ±2 to ±3.5 cm).
-    expect(h.margin).toBeLessThan(3.5);
+  it('reads the frame rate it was given, and a noiseless jump at 240 samples a second inside its margin, at both toe-offs', () => {
+    for (const toeLag of [0, 0.02]) {
+      const read = syntheticJumps({ jumps: [{ flight: 0.6, toeLag }], rate: 240, phase: 0.001 });
+      const r = runActivity(volleyball, read);
+      expect(r.rate).toBeCloseTo(240, 0);
+      const h = measure(r, 'height'), j = r.events.jump[0], truth = read.truth.jumps[0];
+      expect(Math.abs(j.takeoff! - truth.takeoff), `toe-off ${toeLag}`).toBeLessThanOrEqual(j.takeoffMargin!);
+      expect(Math.abs((h.value ?? 0) - truth.heightCm), `toe-off ${toeLag}`).toBeLessThanOrEqual(h.margin ?? 0);
+      // Not knowing how fast the toe left the ground is the largest term here. Measured (14 October 2026): toes leaving
+      // at full speed, the fast end of the range the engine allows for, the takeoff reads 10.5 ms early against a
+      // margin of ±11.6 ms and the height 1.7 cm high against ±2.2 cm; reaching the body's speed in 20 ms, the middle
+      // of that range, the takeoff reads 2.8 ms early and the height 0.04 cm low against ±2.6 cm.
+      expect(h.margin, `toe-off ${toeLag}`).toBeLessThan(3);
+    }
   });
 
   // History (14 October 2026): the first version timed the height from the flight alone, h = g·t²/8, which assumes the
   // hip lands where it took off. With the hip 5 cm lower at touchdown, 6 of 300 heights at 240 a second fell inside
   // their margin (117 of 300 at 120), all too high by about 2.5 cm. The height is now the rise to the top of the hip's
   // flight, which is that formula corrected for Δ read on the hip's parabola.
+  // The toes reach the body's speed 20 ms after leaving the ground here, the middle of the range the engine allows for:
+  // at the fast end (toe-off 0) the takeoff reads about 9 ms early, which moves the drop read by g·t times half of it
+  // (2 to 3.6 cm over these flights) and adds g·t/4 times it (1 to 2 cm) to g·t²/8 on this engine's flight time;
+  // volleyball-heldout.test.ts checks that end against first principles.
   it('corrects a landing lower than the takeoff: the drop is read from the hip, the height stays inside its margin', () => {
     const rows: string[] = [];
     for (const rate of [30, 60, 120, 240]) {
-      let inside = 0, shown = 0, oldInside = 0, bias = 0, oldBias = 0, dropErr = 0, drops = 0;
+      let inside = 0, shown = 0, oldInside = 0, bias = 0, methodBias = 0, engineBias = 0, timed = 0, dropErr = 0, drops = 0, dropsWithin = 0;
       for (let seed = 1; seed <= 100; seed++) {
         const rng = seeded(31 * rate + seed);
         const flight = 0.45 + 0.35 * rng(), drop = 0.05 + 0.03 * rng();
-        const read = syntheticJumps({ jumps: [{ flight, drop }], rate, phase: rng() / rate, noisePx: 1, noise: noiseOf(seed) });
+        const read = syntheticJumps({ jumps: [{ flight, drop, toeLag: 0.02 }], rate, phase: rng() / rate, noisePx: 1, noise: noiseOf(seed) });
         const r = runActivity(volleyball, read);
         const j = r.events.jump[0], truth = read.truth.jumps[0];
-        if (j?.drop !== undefined) { dropErr += j.drop - drop; drops += 1; }
-        // What the flight-time formula alone would read, with its own margin.
+        // The flight-time method's own error, on the exact flight time: about Δ/2 (g·t²/8 − v0²/2g = Δ/2 − Δ²/(2g·t²)).
+        methodBias += flightHeightCm(truth.flight) - truth.heightCm;
+        if (j?.drop !== undefined) {
+          // The drop, Δ = g·t·(mid-flight − top), read from the takeoff, the touchdown and the top, each known to its
+          // margin: from first principles it is known to g·(their sum)·|mid-flight − top| + g·t·(half the two contacts'
+          // margins plus the top's).
+          const err = j.drop - drop, mid = (j.takeoff! + j.landing!) / 2, contacts = j.takeoffMargin! + j.landingMargin!;
+          const bound = G * contacts * Math.abs(mid - j.apex!) + G * j.flight! * (contacts / 2 + j.apexMargin!);
+          dropErr += err; drops += 1;
+          if (Math.abs(err) <= bound) dropsWithin += 1;
+        }
+        // The flight-time formula on this engine's flight time, with its own margin (the takeoff's correction included).
         if (j?.flight !== undefined) {
           const e = flightHeightCm(j.flight) - truth.heightCm;
-          oldBias += e;
+          engineBias += e; timed += 1;
           if (Math.abs(e) <= heightMarginCm(j.flight, j.flightMargin as number)) oldInside += 1;
         }
         const h = measure(r, 'height');
@@ -94,14 +114,16 @@ describe('volleyball on synthetic jumps', () => {
         bias += h.value - truth.heightCm;
         if (Math.abs(h.value - truth.heightCm) <= (h.margin as number)) inside += 1;
       }
-      rows.push(`${String(rate).padStart(3)} /s  corrected: shown ${shown} of 100, inside ${inside}, bias ${(bias / shown).toFixed(2)} cm, drop read ${(100 * dropErr / drops).toFixed(1)} cm off on average  |  g·t²/8 alone: inside ${oldInside} of 100, bias +${(oldBias / 100).toFixed(2)} cm`);
+      rows.push(`${String(rate).padStart(3)} /s  corrected: shown ${shown} of 100, inside ${inside}, bias ${(bias / shown).toFixed(2)} cm, drop read ${(100 * dropErr / drops).toFixed(2)} cm off on average, ${dropsWithin} of ${drops} within their bound`
+        + `  |  g·t²/8 on the true flight time: bias +${(methodBias / 100).toFixed(2)} cm  |  g·t²/8 on this engine's flight time: inside ${oldInside} of ${timed}, bias +${(engineBias / timed).toFixed(2)} cm`);
       expect(inside, `rate ${rate}`).toBe(shown);
       if (rate >= 60) expect(shown, `rate ${rate}`).toBeGreaterThanOrEqual(80);
-      // The drop itself is read coarsely (on average within 3 cm from 60 a second): the height does not depend on it,
-      // since Δ and the touchdown's error cancel in v0 = (g·t²/2 − Δ)/t.
-      if (rate >= 60) expect(Math.abs(dropErr / drops), `rate ${rate}`).toBeLessThan(0.03);
+      expect(dropsWithin, `rate ${rate}`).toBe(drops);
+      // The method's own error is about half the drop (5 to 8 cm here): 2.4 to 4 cm, 3.25 cm on average.
+      expect(methodBias / 100, `rate ${rate}`).toBeGreaterThan(2.9);
+      expect(methodBias / 100, `rate ${rate}`).toBeLessThan(3.6);
     }
-    console.log(`Jumps landing 5 to 8 cm lower than they took off, flights of 0.45 to 0.80 s, noise 1 px:\n${rows.join('\n')}`);
+    console.log(`Jumps landing 5 to 8 cm lower than they took off, flights of 0.45 to 0.80 s, toe-off 20 ms, noise 1 px:\n${rows.join('\n')}`);
   }, 30000);
 
   it('a squat is no jump, and a foot point that leaves the ground for one sample is no jump', () => {
@@ -146,7 +168,7 @@ describe('volleyball on synthetic jumps', () => {
       const at15 = syntheticJumps({ jumps: [{ flight: 0.6, approach: 3 }], rate: 15, phase: (seed / 11) / 15, noisePx: 1, noise: noiseOf(seed) });
       const m15 = measure(runActivity(volleyball, at15), 'approach');
       expect(m15.value, `seed ${seed}`).toBeNull();
-      expect(m15.refused?.fr, `seed ${seed}`).toMatch(/^Élan non détecté à 15\u00A0images par seconde/);
+      expect(m15.refused?.fr, `seed ${seed}`).toMatch(/^Élan non mesurable à 15\u00A0images par seconde/);
     }
   });
 
@@ -267,6 +289,32 @@ describe('volleyball on synthetic jumps', () => {
     expect(measure(side, 'landing').refused?.en).toMatch(/front/);
     // From the side the jumps are still counted and timed.
     expect(measure(side, 'jumps').value).toBe(1);
+  });
+
+  it('names the knee check\'s refusal for what it measures when a landing\'s knees are not seen', () => {
+    const read = syntheticJumps({ jumps: [{ flight: 0.6, knees: 0.6 }, { flight: 0.6, knees: 0.6 }], rate: 30, noisePx: 1, noise: noiseOf(12) });
+    const second = read.truth.jumps[1];
+    read.timestamps.forEach((t, i) => {
+      if (t > second.landing && t < second.landing + 0.9) for (const k of [25, 26]) read.landmarks[i]![k] = { ...read.landmarks[i]![k], visibility: 0.1 };
+    });
+    const r = runActivity(volleyball, read);
+    expect(measure(r, 'jumps').value).toBe(2);
+    const k = measure(r, 'landing');
+    expect(k.value).toBeNull();
+    expect(k.values.length).toBe(1);
+    expect(k.refused?.fr).toBe('Genoux vus sur 1\u00A0réception sur 2\u00A0: impossible de désigner celle où ils rentrent le plus.');
+  });
+
+  it('refuses a height when the flight time and the hip\'s curve disagree (a hip rising 15 cm relative to the centre of mass)', () => {
+    let refused = 0;
+    for (let seed = 1; seed <= 20; seed++) {
+      const read = syntheticJumps({ jumps: [{ flight: 0.6, hipShift: 0.15 }], rate: 240, phase: seed / 21 / 240, noisePx: 1, noise: noiseOf(seed) });
+      const r = runActivity(volleyball, read), h = measure(r, 'height'), j = r.events.jump[0];
+      if (h.value === null && /disagree/.test(h.refused?.en ?? '')) refused += 1;
+      // A height still shown keeps at least the flight-time method's own margin: the cap never makes it falsely tight.
+      if (h.value !== null) expect(h.margin as number, `seed ${seed}`).toBeGreaterThanOrEqual(heightMarginCm(j.flight!, j.flightMargin!) - 1e-9);
+    }
+    expect(refused).toBeGreaterThan(10);
   });
 
   it('refuses a read where the feet are never seen, rather than guessing', () => {
