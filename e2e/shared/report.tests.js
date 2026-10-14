@@ -87,6 +87,10 @@ export default function reportTests(test, expect) {
     await expect(page.locator('.sh-people > span')).toHaveText(['EntraînementEn binôme', 'PartenaireSam', 'NiveauConfirmé']);
     const text = await page.locator('.report-screen').textContent();
     expect(text).not.toContain('—');
+    // The layout once settled: the tap on "Confirmé" may scroll the form under the sticky bar, whose title fades in as the
+    // test-version pill fades out (0.3 s, Entry.css); mid-fade the two overlap by design (honesty pass, 14 October 2026:
+    // the 0-10 pain scale made the form one row shorter, and the tap now scrolls).
+    await page.evaluate(() => Promise.all(document.getAnimations().map(a => a.finished.catch(() => {}))));
     expect((await page.evaluate(layoutFaults)).filter(f => !f.startsWith('note: '))).toEqual([]);
   });
 
