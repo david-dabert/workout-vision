@@ -90,3 +90,4 @@ smoke-shots/
 !public/demo/**/*.mp4
 !public/demo/**/*.jpg
 !public/demo/**/*.png
+public/footage-tmp/
