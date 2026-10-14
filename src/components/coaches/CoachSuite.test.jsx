@@ -69,3 +69,33 @@ describe('the office after the honesty pass', () => {
     });
   }
 });
+
+describe('nutrition after the honesty pass (NUT-1 to NUT-7)', () => {
+  async function renderNutrition(props) {
+    vi.stubGlobal('localStorage', { getItem: () => null, setItem: () => {}, removeItem: () => {} });
+    const { default: CoachNutrition } = await import('./CoachNutrition');
+    return decode(renderToStaticMarkup(<CoachNutrition fr meals={[]} onLogMeal={async () => {}} onUpdateClient={async () => {}} {...props} />));
+  }
+  it('fills in nothing for a client: missing data are asked for, and no target is shown', async () => {
+    const html = await renderNutrition({ client: { id: 'c1', name: 'Alex', age: '', sex: '', weight: '', height: '' } });
+    expect(html).toContain('data-testid="needs-missing"');
+    expect(html).not.toMatch(/kcal\/j|75 kg|2[.,]5 g\/kg|Schoenfeld|Carence/);
+  });
+  it('waits for the coach’s activity level before an estimate', async () => {
+    const html = await renderNutrition({ client: { id: 'c1', name: 'Alex', age: '34', sex: 'female', weight: '62', height: '168' } });
+    expect(html).toContain('Choisissez son niveau d’activité');
+    expect(html).not.toContain('data-testid="needs"');
+  });
+  it('the plate photo shows no number and says it is not available', async () => {
+    const html = await renderNutrition({ client: null, initialMode: 'photo' });
+    expect(html).toContain('Pas encore disponible');
+    expect(html).not.toMatch(/\d+\s*kcal|Confiance|Élevée|équilibrée/);
+  });
+  it('the barcode starts empty, names no brand, and old photo meals show no number', async () => {
+    const html = await renderNutrition({ client: { id: 'c1', name: 'Alex' }, initialMode: 'barcode', meals: [{ id: 'm', source: 'vision_plate', title: 'Repas Détecté par Vision Assiette', calories: 1108, dateStr: '2026-10-13' }] });
+    expect(html).not.toMatch(/5060746500000|Optimum|Danone|Fleury|Taureau|officielles/);
+    expect(html).toContain('Seul le code-barres est envoyé.');
+    expect(html).not.toContain('1108');
+    expect(html).toContain('Ancienne estimation par photo, non fiable');
+  });
+});

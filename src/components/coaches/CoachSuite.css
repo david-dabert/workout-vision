@@ -274,3 +274,14 @@
 .wv-experience .coach-suite-container .client-item-card .client-card-sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wv-experience .coach-suite-container .carnet-status-card > .office-strong { margin: 0; }
 .wv-experience .coach-suite-container .carnet-action-bar .quick-suite-btn { flex: 1; }
+/* The barcode: its field (with its label) beside the button, aligned on the field's foot. */
+.wv-experience .coach-suite-container .barcode-input-bar { align-items: flex-end; }
+.wv-experience .coach-suite-container .office-grow { flex: 1; min-width: 0; }
+.wv-experience .coach-suite-container .office-end { justify-content: flex-end; }
+.wv-experience .coach-suite-container .office-end .suite-action-btn { width: 100%; }
+.wv-experience .coach-suite-container .office-link { color: var(--lamp-hi); text-decoration: underline; text-underline-offset: 3px; }
+.wv-experience .coach-suite-container .vision-plate-workbench > .office-flush { margin: 0; }
+.wv-experience .coach-suite-container .office-stack { display: flex; flex-direction: column; gap: var(--s-2); }
+/* A logged meal: its name and date, then what it holds, on one line under it at phone width. */
+.wv-experience .coach-suite-container .meal-history-card { flex-direction: column; align-items: stretch; gap: var(--s-2); }
+.wv-experience .coach-suite-container .meal-history-card .meal-h-right { flex-direction: row; flex-wrap: wrap; align-items: baseline; justify-content: flex-start; gap: 4px 10px; text-align: left; }

@@ -288,8 +288,9 @@ export function calculateMacros(food, grams) {
 }
 
 /**
- * Activity level multipliers for TDEE (Harris-Benedict adapted).
- * Single source of truth — imported by storage.js and planner.js.
+ * Activity level multipliers for TDEE. Single source of truth: imported by storage.js and planner.js, and offered to
+ * the coach in the office (CoachNutrition.jsx), who chooses one for each client (NUT-5: it was fixed at "moderate").
+ * Status: convention (the activity factors commonly paired with Mifflin-St Jeor; UNSOURCED, not measured by us).
  */
 export const ACTIVITY_MULTIPLIERS = {
   sedentary: 1.2,
@@ -300,8 +301,9 @@ export const ACTIVITY_MULTIPLIERS = {
 };
 
 /**
- * Calculate BMR using Mifflin-St Jeor (1990).
- * Single source of truth — used by getDailyTargets, storage.js baselines, and planner.js analysis.
+ * Calculate BMR using Mifflin-St Jeor: Mifflin MD et al. 1990, Am J Clin Nutr 51(2):241-247.
+ * Status: literature (a published equation; its error for one person not measured by us).
+ * Single source of truth: used by estimateDailyNeeds, storage.js baselines, and planner.js analysis.
  *
  * @param {number} weightKg
  * @param {number} heightCm
@@ -327,105 +329,58 @@ export function calculateTDEE(bmr, activityLevel) {
   return bmr * (ACTIVITY_MULTIPLIERS[activityLevel] || ACTIVITY_MULTIPLIERS.moderate);
 }
 
+/** The energy change for each goal, in kcal a day, shown as computed ("−500 kcal/j", not "20 %": NUT-5).
+ *  Status: convention (common coaching offsets; UNSOURCED). */
+export const GOAL_OFFSET_KCAL = Object.freeze({ cut: -500, maintain: 0, bulk: 300 });
+
+/** Protein for a trained adult, in g per kg of body weight a day: Morton RW et al. 2018, Br J Sports Med 52(6):376-384
+ *  (a meta-analysis: gains plateau near 1.6 g/kg, the upper bound of its interval near 2.2 g/kg). Status: literature.
+ *  Shown as a range, never as one target (NUT-5: 2.5 g/kg on a cut, outside the source the code cited). */
+export const PROTEIN_G_PER_KG = Object.freeze([1.6, 2.2]);
+
 /**
- * Calculate daily macro targets based on profile and goal.
- * Sources: ISSN position stand (Aragon et al. 2017), Helms et al. 2014.
- *
- * Goals: 'maintain', 'cut', 'bulk'
+ * A client's estimated daily needs, or null when the age, the sex, the weight, the height or the activity level is
+ * missing: nothing is filled in for them (NUT-5: 75 kg, 175 cm and 30 years were). An estimate from a published
+ * equation and the coach's choices, not a measure of the client.
+ * @returns {null | { bmr: number, tdee: number, calories: number, offset: number, factor: number, proteinG: [number, number] }}
  */
-export function getDailyTargets(profile, goal) {
+export function estimateDailyNeeds(profile, { goal = 'maintain', activity = '' } = {}) {
   if (!profile) return null;
-  const weightKg = parseFloat(profile.weight) || 70;
-  const heightCm = parseFloat(profile.height) || 170;
-  const age = parseFloat(profile.age) || 30;
-  const sex = profile.sex || 'male';
-  const activity = profile.activityLevel || 'moderate';
-
-  // Map profile.goal to nutrition goal if no explicit goal passed
-  if (!goal && profile.goal) {
-    const goalMap = { weight_loss: 'cut', hypertrophy: 'bulk', strength: 'bulk', endurance: 'maintain', general: 'maintain' };
-    goal = goalMap[profile.goal] || 'maintain';
-  }
-  if (!goal) goal = 'maintain';
-
+  const weightKg = parseFloat(profile.weight), heightCm = parseFloat(profile.height), age = parseFloat(profile.age);
+  const sex = profile.sex;
+  if (!(weightKg > 0 && heightCm > 0 && age > 0) || (sex !== 'male' && sex !== 'female')) return null;
+  const factor = ACTIVITY_MULTIPLIERS[activity];
+  if (!factor) return null;
   const bmr = calculateBMR(weightKg, heightCm, age, sex);
-  const tdee = calculateTDEE(bmr, activity);
-
-  let targetCal;
-  switch (goal) {
-    case 'cut': targetCal = tdee - 500; break;
-    case 'bulk': targetCal = tdee + 300; break;
-    default: targetCal = tdee;
-  }
-  targetCal = Math.round(targetCal);
-
-  // Protein scaled by goal (Aragon et al. 2017 ISSN; Helms et al. 2014)
-  // Capped at 200g/day to avoid excessive recommendations for high body-fat users
-  const proteinPerKg = goal === 'cut' ? 2.5 : goal === 'bulk' ? 1.8 : 2.0;
-  const protein = Math.min(200, Math.round(weightKg * proteinPerKg));
-  // Fat: 25-30% of calories
-  const fat = Math.round((targetCal * 0.27) / 9);
-  // Carbs: remainder
-  const carbs = Math.round((targetCal - protein * 4 - fat * 9) / 4);
-
+  const tdee = bmr * factor;
+  const offset = GOAL_OFFSET_KCAL[goal] ?? 0;
   return {
-    calories: targetCal,
-    protein,
-    carbs,
-    fat,
-    tdee: Math.round(tdee),
     bmr: Math.round(bmr),
+    tdee: Math.round(tdee),
+    calories: Math.round(tdee + offset),
+    offset,
+    factor,
+    proteinG: [Math.round(weightKg * PROTEIN_G_PER_KG[0]), Math.round(weightKg * PROTEIN_G_PER_KG[1])],
   };
 }
 
 /**
- * Fetch nutrition data from OpenFoodFacts by barcode.
- * Free API, no key required.
- */
-export async function fetchBarcodeNutrition(barcode) {
-  try {
-    const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (data.status !== 1 || !data.product) return null;
-
-    const p = data.product;
-    const n = p.nutriments || {};
-    return {
-      name: p.product_name || p.product_name_en || p.product_name_fr || 'Unknown product',
-      brand: p.brands || '',
-      barcode,
-      image: p.image_front_small_url || p.image_url || null,
-      servingSize: p.serving_size || '100g',
-      per100g: {
-        cal: Math.round(n['energy-kcal_100g'] || n.energy_100g / 4.184 || 0),
-        protein: Math.round((n.proteins_100g || 0) * 10) / 10,
-        carbs: Math.round((n.carbohydrates_100g || 0) * 10) / 10,
-        fat: Math.round((n.fat_100g || 0) * 10) / 10,
-        fiber: Math.round((n.fiber_100g || 0) * 10) / 10,
-        sugar: Math.round((n.sugars_100g || 0) * 10) / 10,
-      },
-      nutriScore: p.nutriscore_grade || null,
-    };
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Calculates client adherence compliance rate over recent logged days.
- * @param {Array<{ date: string, adherent: boolean, actualCalories?: number, actualProteinGrams?: number }>} logs
- * @returns {{ daysLogged: number, adherentDays: number, complianceRatePct: number, status: 'excellent' | 'good' | 'needs_attention' }}
+ * Calculates client adherence compliance rate over recent logged days, or no rate at all without a log (NUT-6: an
+ * empty log gave 100 % "good"). Not shown on any screen since 14 October 2026: what counts as a day "respected" has
+ * no source yet.
+ * @param {Array<{ date: string, adherent: boolean }>} logs
+ * @returns {{ daysLogged: number, adherentDays: number, complianceRatePct: number | null, status: 'excellent' | 'good' | 'needs_attention' | 'no_data' }}
  */
 export function calculateAdherenceScore(logs) {
   if (!logs || logs.length === 0) {
-    return { daysLogged: 0, adherentDays: 0, complianceRatePct: 100, status: 'good' };
+    return { daysLogged: 0, adherentDays: 0, complianceRatePct: null, status: 'no_data' };
   }
 
   const daysLogged = logs.length;
   const adherentDays = logs.filter(l => l.adherent).length;
   const complianceRatePct = Math.round((adherentDays / daysLogged) * 100);
 
+  // Bands: UNSOURCED, convention.
   let status = 'good';
   if (complianceRatePct >= 85) status = 'excellent';
   else if (complianceRatePct < 60) status = 'needs_attention';
@@ -437,4 +392,3 @@ export function calculateAdherenceScore(logs) {
     status,
   };
 }
-
