@@ -407,5 +407,20 @@ The honesty pass left both screens as labelled demos: nothing is analysed on a v
 - The demonstration clips: replace the third-party footage (broadcast tennis with TennisOne and adidas marks, the
   "PERSONAL SWIMMING" watermark, the "Slow Motion of Drive Phase" title card, a pro-team baseball uniform, spectators
   in the ridden clip) with footage David owns or properly attributed clips, and add a credits file in public/demo.
-- The painted "analysed" files and HUD posters in public/demo (left out of the built site since 14 October,
-  scripts/omit-painted-demos.js): removing them from the repository needs David's approval (R5).
+- The painted "analysed" files and HUD posters in public/demo: shown again since 14 October (evening, David) as
+  previews of where the app is going, under an « Aperçu » badge and a note that their figures are not measured
+  (#181). To replace, sport by sport, by clips our own pipeline reads, with only what it measures on them
+  (« Mesuré sur cette vidéo »); the footage candidates come from .github/workflows/footage-commons.yml.
+
+## 14 October 2026 (evening): ideas from a webcam golf coach seen by David (Anh Tran, "Kinematic Vision AI")
+Not built until the current phase is done (R7). Taken from the post only; its code was not read.
+- Named phases of a movement: for golf, address, top, impact and finish from the wrist's path and the frame times,
+  which give the swing tempo (backswing to downswing), the golf measure a phone can take at 120 to 240 frames a second.
+- A filming routine for someone 2 to 3 m away with equipment in hand: a countdown, a spoken cue, a fixed capture
+  window, full screen, and a floor guide for stance and placement; for every sport and for gym sets.
+- One priority after the movement, not a table of figures; and a decision on what shows live and what after.
+- Not to copy: club path and wrist lag (the pose model does not see the club; the club blurs at normal frame
+  rates), unsourced "PGA benchmarks", and scores or drills written by a language model on movement it did not
+  measure (R8). A language model may only phrase feedback from measured values, and sending data to a server
+  changes the on-device promise: David's decision.
+
