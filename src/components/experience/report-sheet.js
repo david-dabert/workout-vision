@@ -232,11 +232,13 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   }
   // The person's own pain and effort, as they gave them on the form, always printed (a typed, refused or flagged set has
   // no measure, but the physiotherapist still needs these), labelled as theirs and never graded (honesty audit of 14
-  // October 2026, CORE-20 and the missed item on report-sheet.js:339). Awaiting David's approval of the words (R10).
+  // October 2026, CORE-20 and the missed item on report-sheet.js:339). The sheet is read by a coach or a
+  // physiotherapist, so it names the person in the third person, as its "confirmée par la personne" does: "selon vous"
+  // would credit the rating to its reader (second round of the same day). Awaiting David's approval of the words (R10).
   const outOf10 = v => (Number.isFinite(v) ? (fr ? `${v} sur 10` : `${v} out of 10`) : null);
   const own = [];
-  if (outOf10(pain)) own.push([fr ? 'Douleur, selon vous' : 'Pain, as you rated it', outOf10(pain)]);
-  if (outOf10(rpe)) own.push([fr ? 'Effort perçu (RPE), selon vous' : 'Perceived exertion (RPE), as you rated it', outOf10(rpe)]);
+  if (outOf10(pain)) own.push([fr ? 'Douleur, selon la personne' : 'Pain, as the person rated it', outOf10(pain)]);
+  if (outOf10(rpe)) own.push([fr ? 'Effort perçu (RPE), selon la personne' : 'Perceived exertion (RPE), as the person rated it', outOf10(rpe)]);
 
   return {
     fr,

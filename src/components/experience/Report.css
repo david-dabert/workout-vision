@@ -26,9 +26,10 @@
 .wv-experience .report-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; border-radius: var(--r-s); background: var(--basalt); border: 1px solid var(--c-rule); }
 .wv-experience .report-seg button { min-height: 44px; padding: 4px 6px; border-radius: 11px; font-size: var(--fs-caption); font-weight: 500; line-height: 1.25; color: var(--bone-2); text-align: center; text-wrap: balance; }
 .wv-experience .report-seg button[aria-pressed="true"] { background: var(--c-accent); color: var(--c-on-accent); }
-/* A 0 to 10 scale (pain) or the effort scale: one key per value, six to a row, each 44 px tall and about 54 px wide at 390 px. */
-.wv-experience .report-seg.is-scale { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-.wv-experience .report-seg.is-scale button { font-variant-numeric: tabular-nums; }
+/* A scale (pain 0 to 10, effort 6 to 10): one key per value, --cols to a row (Report.jsx, Choice), each 44 px tall, the
+   last row centred, so effort's five keys fill one row and pain's eleven stand as 6 + 5 with no empty cell. */
+.wv-experience .report-seg.is-scale { display: flex; flex-wrap: wrap; justify-content: center; }
+.wv-experience .report-seg.is-scale button { flex: 0 0 calc((100% - (var(--cols, 6) - 1) * 3px) / var(--cols, 6)); font-variant-numeric: tabular-nums; }
 /* The partner's field fades in where it stands: a field that rose into place would pass over the level below it (CI run 149). */
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 .wv-experience .fade-in { animation: fade-in var(--d-ui) var(--ease) both; }

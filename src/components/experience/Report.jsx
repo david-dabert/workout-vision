@@ -177,9 +177,9 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
       {/* The person's pain, 0 to 10, every value offered (honesty audit of 14 October 2026, CORE-20: it was 0, 2, 4, 6, 8
           under a "VAS" label, then graded). Printed as given, as theirs. Awaiting David's approval of the words (R10). */}
       <Choice id="fPain" label={fr ? 'Douleur ressentie, de 0 à 10' : 'Pain felt, from 0 to 10'} value={pain === null ? '' : String(pain)} onChange={v => setPain(v === '' ? null : Number(v))}
-        options={Array.from({ length: 11 }, (_, i) => [String(i), String(i)])} wrap />
+        options={Array.from({ length: 11 }, (_, i) => [String(i), String(i)])} cols={6} />
       <Choice id="fRpe" label={fr ? 'Effort perçu (RPE)' : 'Perceived exertion (RPE)'} value={rpe === null ? '' : String(rpe)} onChange={v => setRpe(v === '' ? null : Number(v))}
-        options={[['6', '6'], ['7', '7'], ['8', '8'], ['9', '9'], ['10', '10']]} wrap />
+        options={[['6', '6'], ['7', '7'], ['8', '8'], ['9', '9'], ['10', '10']]} cols={5} />
       <div className="field">
         <label htmlFor="fNotes">Notes</label>
         <textarea id="fNotes" ref={notesRef} rows="3" autoCapitalize="sentences" maxLength={NOTES_MAX}
@@ -242,11 +242,12 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
   </div>;
 }
 
-// One answer among a few, or none: a second tap on the chosen one clears it, since every answer is optional.
-function Choice({ id, label, value, onChange, options, wrap = false }) {
+// One answer among a few, or none: a second tap on the chosen one clears it, since every answer is optional. cols: a
+// scale's keys to a row (Report.css, is-scale), the last row centred: effort's five on one row, pain's eleven as 6 + 5.
+function Choice({ id, label, value, onChange, options, cols = 0 }) {
   return <div className="field">
     <span className="field-label" id={id}>{label}</span>
-    <div className={`report-seg${wrap ? ' is-scale' : ''}`} role="group" aria-labelledby={id}>
+    <div className={`report-seg${cols ? ' is-scale' : ''}`} style={cols ? { '--cols': cols } : undefined} role="group" aria-labelledby={id}>
       {options.map(([key, text]) => <button key={key} type="button" className="press" aria-pressed={value === key}
         onClick={() => onChange(value === key ? '' : key)}>{text}</button>)}
     </div>

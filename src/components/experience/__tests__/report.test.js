@@ -46,15 +46,15 @@ describe('reportSheet', () => {
   it('prints the person\'s own pain and effort as theirs, never graded, on every sheet (honesty audit, 14 October 2026)', () => {
     const reps = [{ startTime: 0, endTime: 2, romDegrees: 80, concentricSec: 1, eccentricSec: 1 }];
     const fr = reportSheet({ ...base, context: 'physio', pain: 7, rpe: 8, reps });
-    expect(fr.own).toEqual([['Douleur, selon vous', '7 sur 10'], ['Effort perçu (RPE), selon vous', '8 sur 10']]);
-    expect(reportSheet({ ...base, pain: 0, reps }).own).toEqual([['Douleur, selon vous', '0 sur 10']]);
-    expect(reportSheet({ ...base, lang: 'en', pain: 10, rpe: 6, reps }).own).toEqual([['Pain, as you rated it', '10 out of 10'], ['Perceived exertion (RPE), as you rated it', '6 out of 10']]);
+    expect(fr.own).toEqual([['Douleur, selon la personne', '7 sur 10'], ['Effort perçu (RPE), selon la personne', '8 sur 10']]);
+    expect(reportSheet({ ...base, pain: 0, reps }).own).toEqual([['Douleur, selon la personne', '0 sur 10']]);
+    expect(reportSheet({ ...base, lang: 'en', pain: 10, rpe: 6, reps }).own).toEqual([['Pain, as the person rated it', '10 out of 10'], ['Perceived exertion (RPE), as the person rated it', '6 out of 10']]);
     // No grade of the answer ("légère", "sévère"), and nothing of it among the app's measures.
     expect(JSON.stringify(fr)).not.toMatch(/légère|modérée|sévère|EVA/);
     // A set with no measured rep (typed by hand after a refusal, flagged by the body check, saved before step 3c) keeps
     // the answers: they were silently dropped before (audit, missed item on report-sheet.js:339).
     for (const extra of [{ reps: [] }, { reps: null }, { reps: [], source: 'manual', afterRefusal: true, counted: null }, { reps, measures: false }]) {
-      expect(reportSheet({ ...base, pain: 6, rpe: 9, ...extra }).own).toEqual([['Douleur, selon vous', '6 sur 10'], ['Effort perçu (RPE), selon vous', '9 sur 10']]);
+      expect(reportSheet({ ...base, pain: 6, rpe: 9, ...extra }).own).toEqual([['Douleur, selon la personne', '6 sur 10'], ['Effort perçu (RPE), selon la personne', '9 sur 10']]);
     }
     expect(reportSheet({ ...base, reps }).own).toEqual([]);
     // The PDF sets them as labelled pairs, like the count's details.
