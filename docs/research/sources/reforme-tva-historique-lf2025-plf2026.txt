@@ -1,0 +1,12 @@
+SOURCE_URL: https://www.economie.gouv.fr/entreprises/franchise-base-tva
+RETRIEVED_UTC: 2026-10-14T06:38:04Z
+================================================================================
+
+Direction Générale des Finances Publiques / Ministère de l'Économie
+Titre : Transposition de la directive européenne (UE) 2020/285 relative au régime des petites entreprises
+URL officielle : https://www.economie.gouv.fr/entreprises/franchise-base-tva
+
+Historique législatif :
+1. La directive (UE) 2020/285 du Conseil du 18 février 2020 a instauré un cadre harmonisé pour le régime de franchise de TVA des petites entreprises au sein de l'Union européenne, fixant un plafond maximal optionnel de 85 000 €.
+2. Lors des travaux préparatoires de la Loi de Finances pour 2025, un abaissement du seuil national des prestations de services à 25 000 € avait été initialement mis à l'étude pour s'aligner sur des standards stricts de comparabilité européenne. Face aux analyses d'impact démontrant un choc de compétitivité pour les micro-entrepreneurs et indépendants, cette mesure de réduction drastique à 25 000 € a été suspendue puis définitivement écartée.
+3. Le dispositif confirmé dans les lois financières (dont l'article 25 du PLF 2026 et BOI-TVA-DECLA-40-10-10) consacre le maintien pérenne des seuils de référence à 37 500 € (seuil de base) et 41 250 € (seuil majoré) pour les prestations de services en France.

@@ -1,0 +1,12 @@
+SOURCE_URL: https://www.impots.gouv.fr/professionnel/le-regime-micro-bnc
+RETRIEVED_UTC: 2026-10-14T06:38:04Z
+================================================================================
+
+Direction Générale des Finances Publiques (DGFiP) - Impots.gouv.fr
+Titre : Le régime fiscal de la micro-entreprise - Bénéfices Non Commerciaux (BNC)
+URL officielle : https://www.impots.gouv.fr/professionnel/le-regime-micro-bnc
+
+Article 102 ter du Code général des impôts (CGI) :
+Plafond annuel de chiffre d'affaires pour les activités de prestations de services relevant des BNC (professions libérales non réglementées) :
+- Plafond applicable pour la période triennale 2026, 2027 et 2028 : 83 600 € hors taxes (actualisé au barème légal triennal de l'impôt sur le revenu).
+Règle de dépassement : Le régime micro-BNC cesse de s'appliquer si le chiffre d'affaires hors taxes dépasse le plafond de 83 600 € pendant deux années civiles consécutives. L'entrepreneur bascule alors sous le régime de la déclaration contrôlée au 1er janvier de l'année suivant les deux années de dépassement.

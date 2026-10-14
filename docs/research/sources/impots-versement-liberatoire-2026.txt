@@ -1,0 +1,17 @@
+SOURCE_URL: https://entreprendre.service-public.fr/vosdroits/F23267
+RETRIEVED_UTC: 2026-10-14T06:38:04Z
+================================================================================
+
+Direction Générale des Finances Publiques - Impots.gouv.fr / Service-Public Entreprendre
+Titre : Option pour le versement libératoire de l'impôt sur le revenu
+URL officielle : https://entreprendre.service-public.fr/vosdroits/F23267
+
+Article 151-0 du Code général des impôts (CGI) :
+1. Taux du versement libératoire :
+- Pour les prestations de services relevant des BNC : 2,2 % du chiffre d'affaires hors taxes.
+2. Condition de ressources pour l'imposition des revenus de l'année 2026 :
+- Le revenu fiscal de référence (RFR) du foyer fiscal de l'avant-dernière année (soit le RFR de 2024 déclaré en 2025) doit être inférieur ou égal à la limite supérieure de la deuxième tranche du barème de l'impôt sur le revenu par part de quotient familial.
+- Pour 2026 (sur les revenus 2024), ce seuil s'établit à 29 315 € par part de quotient familial.
+- Majoration : seuil majoré de 50 % par demi-part additionnelle (soit +14 657,50 €) et de 25 % par quart de part additionnelle (soit +7 328,75 €).
+3. Délais d'option :
+- L'option doit être exercée au plus tard le 30 septembre de l'année N-1 pour une application au 1er janvier de l'année N, ou dans les trois mois suivant la déclaration de création de l'entreprise.

@@ -1,0 +1,19 @@
+SOURCE_URL: https://bofip.impots.gouv.fr/bofip/1030-PGP.html
+RETRIEVED_UTC: 2026-10-14T06:38:04Z
+================================================================================
+
+BOFiP-Impôts - BOI-TVA-DECLA-40-10-10
+Titre : TVA - Régimes d'imposition et régimes de franchise - Franchise en base de TVA
+URL officielle : https://bofip.impots.gouv.fr/bofip/1030-PGP.html
+
+Article 293 B du Code général des impôts (CGI) modifié par la loi de finances :
+1. Pour les assujettis dont l'activité principale est de réaliser des prestations de services (relevant des BIC ou des BNC), les seuils d'application de la franchise en base de TVA sont fixés comme suit à compter du 1er janvier 2025 :
+- Seuil de franchise de base : 37 500 € de chiffre d'affaires annuel hors taxes.
+- Seuil majoré de franchise : 41 250 € de chiffre d'affaires annuel hors taxes.
+
+2. Règles de sortie de la franchise en base :
+- Dépassement du seuil majoré (41 250 €) : la TVA est due à compter de la date exacte à laquelle ce seuil est dépassé. L'assujetti devient redevable de la TVA dès le premier jour du mois de dépassement pour les opérations réalisées à compter de cette date.
+- Chiffre d'affaires compris entre 37 500 € et 41 250 € : le bénéfice de la franchise est maintenu pour l'année civile en cours. Toutefois, si le chiffre d'affaires de l'année suivante se maintient au-delà du seuil de base (37 500 €), la franchise prend fin au 1er janvier de l'année suivante.
+
+3. Mention obligatoire sur les factures :
+« TVA non applicable, art. 293 B du CGI »

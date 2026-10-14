@@ -1,0 +1,19 @@
+SOURCE_URL: https://www.legifrance.gouv.fr/codes/id/LEGITEXT000005634379
+RETRIEVED_UTC: 2026-10-14T06:38:04Z
+================================================================================
+
+Légifrance - Code de commerce et Livre des procédures fiscales
+Titre : Règles de facturation entre professionnels et conservation des pièces comptables
+URL officielle : https://www.legifrance.gouv.fr/codes/id/LEGITEXT000005634379
+
+1. Article L. 441-10 du Code de commerce (Pénalités de retard) :
+Les conditions de règlement doivent obligatoirement préciser le taux d'intérêt des pénalités de retard exigibles en cas de non-respect de la date de paiement. Le taux d'intérêt ne peut être inférieur à trois fois le taux de l'intérêt légal. Sauf disposition contraire, le taux est égal au taux d'intérêt appliqué par la Banque centrale européenne à son opération de refinancement la plus récente majoré de 10 points de pourcentage.
+
+2. Article D. 441-5 du Code de commerce (Frais de recouvrement) :
+« Le montant de l'indemnité forfaitaire pour frais de recouvrement prévue au douzième alinéa du I de l'article L. 441-10 est fixé à 40 euros. »
+
+3. Article L. 123-22 du Code de commerce (Conservation comptable) :
+« Les documents comptables et les pièces justificatives sont conservés pendant dix ans. »
+
+4. Article L. 102 B du Livre des procédures fiscales (Délai fiscal) :
+Les livres, registres, documents ou pièces sur lesquels peuvent s'exercer les droits de communication, d'enquête et de contrôle de l'administration fiscale doivent être conservés pendant un délai de six ans.

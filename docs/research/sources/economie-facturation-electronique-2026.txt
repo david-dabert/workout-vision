@@ -1,0 +1,23 @@
+SOURCE_URL: https://www.economie.gouv.fr/cedef/facturation-electronique-entreprises
+RETRIEVED_UTC: 2026-10-14T06:38:04Z
+================================================================================
+
+Ministère de l'Économie, des Finances et de la Souveraineté Industrielle et Numérique
+Titre : La généralisation de la facturation électronique entre entreprises (B2B)
+URL officielle : https://www.economie.gouv.fr/cedef/facturation-electronique-entreprises
+
+Loi n° 2023-1322 du 29 décembre 2023 de finances pour 2024 (article 91) :
+1. Calendrier officiel d'entrée en vigueur :
+- 1er septembre 2026 : obligation de réception universelle des factures électroniques pour toutes les entreprises établies en France, quelle que soit leur taille (y compris les micro-entrepreneurs).
+- 1er septembre 2026 : obligation d'émission pour les grandes entreprises et les ETI.
+- 1er septembre 2027 : obligation d'émission pour les PME et les micro-entreprises.
+
+2. Modalités d'échange et rôle des plateformes :
+Les échanges directs de factures dématérialisées s'opèrent par l'intermédiaire des Plateformes de Dématérialisation Partenaires (PDP) immatriculées par l'administration fiscale. Le portail public est recentré sur les fonctions d'annuaire national et de concentrateur des données de facturation et de e-reporting pour l'administration.
+
+3. Quatre nouvelles mentions obligatoires sur les factures (CGI Annexe II art. 242 nonies A modifié par décret n° 2022-1299 du 7 octobre 2022) :
+À compter du 1er septembre 2026, toute facture émise doit obligatoirement comporter :
+- Le numéro SIREN du client assujetti ;
+- L'adresse de livraison des biens ou de réalisation des prestations de services, lorsqu'elle est différente de l'adresse de facturation du client ;
+- La nature de l'opération : livraison de biens, prestation de services, ou opération mixte ;
+- La mention expresse de l'option pour le paiement de la taxe d'après les débits, lorsque le prestataire applique cette option.

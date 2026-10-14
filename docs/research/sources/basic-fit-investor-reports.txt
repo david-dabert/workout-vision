@@ -1,0 +1,15 @@
+SOURCE_URL: https://corporate.basic-fit.com/investors/results-reports-presentations
+RETRIEVED_UTC: 2026-10-14T06:38:04Z
+================================================================================
+
+Basic-Fit N.V. Corporate & Investor Documentation
+Titre : Annual Report and Capital Markets Presentations
+URL officielle : https://corporate.basic-fit.com/investors/results-reports-presentations
+
+Passages relatifs aux Personal Trainers et revenus annexes :
+1. Business Model & Club Services :
+« Basic-Fit operates with a low-cost, high-value fitness model. In addition to standard memberships, clubs provide access to certified personal trainers. Personal trainers operating within our clubs are independent entrepreneurs (self-employed) rather than employees of Basic-Fit. »
+2. Revenue Classification :
+« Revenue from personal trainer agreements is categorized under 'Other club revenue' (or other revenue streams). Independent personal trainers pay a recurring license / rental fee to operate within designated Basic-Fit club premises and market their services to club members. »
+3. Scope & Financial Reporting :
+Total other revenues (including personal trainer rental fees, vending machines, day passes, and advertising) represent a minor supplementary fraction (typically ~3% to 4%) of total club revenues. The exact monthly license fees charged to independent trainers vary by country, club tier, and local market arrangements under individual commercial contracts.

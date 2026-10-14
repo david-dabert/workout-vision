@@ -1,0 +1,13 @@
+SOURCE_URL: https://www.autoentrepreneur.urssaf.fr/portail/accueil/une-question/toutes-les-fiches-pratiques/les-taux-de-cotisations-sociale.html
+RETRIEVED_UTC: 2026-10-14T06:38:04Z
+================================================================================
+
+URSSAF - Portail Auto-entrepreneur
+Titre : Les taux de cotisations sociales en vigueur
+URL officielle : https://www.autoentrepreneur.urssaf.fr/portail/accueil/une-question/toutes-les-fiches-pratiques/les-taux-de-cotisations-sociale.html
+
+Taux applicables pour les prestations de services et professions libérales :
+Activités de prestations de services relevant des BNC (bénéfices non commerciaux) et professions libérales non réglementées relevant de la Sécurité sociale des indépendants (Régime général) :
+- Taux global de cotisations sociales applicable à compter du 1er janvier 2026 : 25,6 % du chiffre d'affaires.
+- Contribution à la formation professionnelle (CFP) : 0,2 % du chiffre d'affaires pour les prestations de services libérales.
+Total des prélèvements sociaux de base hors impôt : 25,8 %.

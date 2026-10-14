@@ -1,0 +1,26 @@
+SOURCE_URL: https://www.legifrance.gouv.fr/codes/id/LEGISCTA000006167038
+RETRIEVED_UTC: 2026-10-14T06:38:04Z
+================================================================================
+
+Légifrance - Code du sport
+Titre : Enseignement et encadrement des activités physiques et sportives contre rémunération
+URL officielle : https://www.legifrance.gouv.fr/codes/id/LEGISCTA000006167038
+
+1. Article L. 212-1 :
+« Seuls peuvent, contre rémunération, enseigner, animer ou encadrer une activité physique ou sportive ou entraîner ses pratiquants [...] les titulaires d'un diplôme, titre à finalité professionnelle ou certificat de qualification :
+1° Garantissant la compétence de son titulaire en matière de sécurité des pratiquants et des tiers dans l'activité considérée ;
+2° Et enregistré au répertoire national des certifications professionnelles [...]. »
+
+2. Article L. 212-8 :
+« Est puni d'un an d'emprisonnement et de 15 000 euros d'amende le fait pour toute personne d'exercer contre rémunération l'une des fonctions de professeur, moniteur, éducateur, entraîneur ou animateur [...] sans posséder la qualification requise au premier alinéa de l'article L. 212-1 [...]. »
+
+3. Article L. 212-11 :
+« Les personnes exerçant contre rémunération les activités mentionnées au premier alinéa de l'article L. 212-1 déclarent leur activité à l'autorité administrative. Un décret en Conseil d'Etat fixe les modalités de cette déclaration. »
+
+4. Article R. 212-86 :
+« Le préfet délivre une carte professionnelle d'éducateur sportif aux personnes mentionnées à l'article R. 212-85 [...] La carte professionnelle a une durée de validité de cinq ans. »
+
+5. Annexe II-1 du Code du sport (Arrêté du 22 janvier 2016 et actualisations) :
+Fixe la liste des diplômes et leurs conditions d'exercice :
+- BPJEPS Activités de la Forme (options Cours collectifs et Haltérophilie/Musculation) : encadrement et entraînement sans limitation de public ou de volume horaire.
+- CQP Instructeur Fitness (délivré par la branche professionnelle) : encadrement en autonomie, assorti de limitations d'exercice et de volume hebdomadaire prévues par l'accord de branche.
