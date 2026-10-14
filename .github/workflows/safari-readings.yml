@@ -1,0 +1,39 @@
+# Real Safari, the browser iPhone users run, read through the app's harness on the five public demo clips, against
+# Chromium on the same Mac (14 October 2026; scripts/benchmarks/safari-readings.mjs and safari-compare.ts). Measures,
+# decides nothing: the table goes to the job summary. Runs on a branch when its files change.
+name: Safari readings
+
+on:
+  push:
+    branches: ['claude/**']
+    paths:
+      - .github/workflows/safari-readings.yml
+      - scripts/benchmarks/safari-readings.mjs
+      - scripts/benchmarks/safari-compare.ts
+
+jobs:
+  safari:
+    name: Real Safari vs Chromium (macos-latest)
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install chromium
+      - run: npm install --no-save selenium-webdriver@4
+      - run: sudo safaridriver --enable
+      - name: Serve the app
+        run: |
+          npx vite --port 5173 --strictPort > vite.log 2>&1 &
+          for i in $(seq 90); do curl -sf http://localhost:5173/workout-vision/test/real-phone/harness.html > /dev/null && break; sleep 2; done
+          curl -sf -o /dev/null http://localhost:5173/workout-vision/demo/dip-13.mp4 && echo served
+      - run: node scripts/benchmarks/safari-readings.mjs --browser=safari --runs=2 --out=readings
+      - run: node scripts/benchmarks/safari-readings.mjs --browser=chromium --runs=1 --out=readings
+      - name: Compare
+        run: npx tsx scripts/benchmarks/safari-compare.ts readings | tee -a "$GITHUB_STEP_SUMMARY"
+      - if: always()
+        run: tail -n 40 vite.log
