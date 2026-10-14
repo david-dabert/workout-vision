@@ -1,17 +1,24 @@
 /**
  * Synthetic jumps with known truth (docs/VISION.md, the truth lab, level 1): the landmarks of a 1.75 m body whose hip
  * follows a ballistic arc in the air and whose toes leave and touch the ground at instants known exactly, sampled at a
- * chosen rate and phase, with optional Gaussian noise on every point. The flight-time method assumes the body lands as
- * it took off; here it does, so h = g·t²/8 is the truth by construction.
+ * chosen rate and phase, with optional Gaussian noise on every point.
  *
  * What it models: a countermovement (the hip drops, then drives up to the toes), the heels rising before the toes
- * leave, the knees tucking in the air, the toes touching first on landing, the landing absorbed by the hips and knees,
- * a run-up of short strides with a brief flight each, and the knees coming in on landing (the knee gap as a share of the
- * ankle gap). What it does not: the pose model's own errors (motion blur, a foot point that lags or slips), the arms,
- * perspective, a moving camera. Those are level 2 (rendered bodies through the pose model) and level 3 (filmed people).
+ * leave, a toe-off whose speed rises from zero (toeLag), the knees tucking in the air, a touchdown with the hip lower
+ * than at takeoff (drop: the legs land more bent than they left), the toes touching first on landing, the landing
+ * absorbed by the hips and knees, a run-up of short strides with a brief flight each and a last contact of chosen
+ * length (plant), the knees coming in on landing (the knee gap as a share of the ankle gap), and, on request, a hip
+ * that moves relative to the centre of mass in the air (hipShift, metres, up positive: the arms or legs moving in the
+ * air move the centre of mass relative to the hip, so the hip moves the other way relative to it). A toe-off of 0 (the default) is a limit, not a movement: a real toe leaves the
+ * ground at zero vertical speed, so toeLag 0 is the fastest end of the range the engine allows for. What it does not
+ * model: the pose model's own errors (motion blur, a foot point that lags or slips), the arms, perspective, a moving
+ * camera. Those are level 2 (rendered bodies through the pose model) and level 3 (filmed people).
  *
- * The body's proportions are a convention (a 1.75 m adult: hip 0.92 m, ankle 0.075 m above the sole), UNSOURCED;
- * status experimental. Nothing here is read by a count.
+ * The truth of a height is the hip's rise above its takeoff level, v0²/2g, with v0 = (g·t²/2 − drop)/t: h = g·t²/8 only
+ * when the hip lands where it took off (drop 0).
+ *
+ * Every body proportion and timing below is a convention for a 1.75 m adult, UNSOURCED; status experimental. Nothing
+ * here is read by a count.
  */
 import type { Landmark, PoseRead } from './types';
 import { G } from './engine';
@@ -25,6 +32,17 @@ export interface SyntheticJump {
   knees?: number;
   /** A squat instead of a jump: the hip goes down and up, the feet never leave the ground. */
   squat?: boolean;
+  /** Metres the hip is lower at touchdown than at takeoff (absent: 0, the body lands as it took off). */
+  drop?: number;
+  /** Seconds the toe takes to reach the hip's speed after it leaves the ground, from zero vertical speed (absent: 0,
+   *  the toe leaves at the hip's speed). */
+  toeLag?: number;
+  /** Seconds of the last contact of a run-up, from the last stride's touchdown to the takeoff (absent: 0.3). */
+  plant?: number;
+  /** Metres the hip rises relative to the body's centre of mass over the flight, and comes back over the landing
+   *  (absent: 0, the hip moves as the centre of mass). The truth stays the centre of mass's rise: this is the error of
+   *  taking the hip for the centre of mass, which the engine does (engine.ts, hipApex). */
+  hipShift?: number;
 }
 
 export interface SyntheticOptions {
@@ -45,7 +63,10 @@ export interface SyntheticTruthJump {
   takeoff: number;
   landing: number;
   flight: number;
+  /** The hip's rise above its takeoff level, v0²/2g, in centimetres (g·t²/8 when drop is 0). */
   heightCm: number;
+  /** Metres the hip is lower at touchdown than at takeoff. */
+  drop: number;
   /** Takeoff less the touchdown of the last run-up stride (null for a standing jump). */
   plant: number | null;
   knees: number;
@@ -53,7 +74,8 @@ export interface SyntheticTruthJump {
 
 export interface SyntheticRead extends PoseRead { truth: { jumps: SyntheticTruthJump[]; duration: number } }
 
-// The body, in metres (convention, UNSOURCED).
+// The body, in metres, and its timings, in seconds. Source: UNSOURCED, a convention for a 1.75 m adult chosen so the
+// movement looks like a jump; none is measured on a filmed person. Status: experimental (every line below).
 const HIP = 0.92;          // hip height standing
 const ANKLE = 0.075;       // ankle above the sole
 const TOES = 0.08;         // how far the heels, and with them the hip, rise when the body is on its toes
@@ -62,7 +84,14 @@ const ABSORB = 0.3;        // how far the hip sinks to absorb a landing
 const TUCK = 0.1;          // how far the feet rise towards the hip at the top of the flight
 const STRIDE_DIP = 0.06;   // the hip during a run-up, below standing
 const STRIDE_LIFT = 0.05;  // the lowest foot at the top of a stride's flight
-const STRIDE_CONTACT = 0.24, STRIDE_FLIGHT = 0.1; // a run-up stride, seconds
+const STRIDE_CONTACT = 0.24, STRIDE_FLIGHT = 0.1; // a run-up stride: its contact and its flight
+const STAND = 1;           // standing still before the first jump and after each one
+const DOWN = 0.35, UP = 0.25; // a standing jump's countermovement: the hip going down, then driving up to the toes
+const PLANT = 0.3;         // a run-up's last contact (its default), half down, half up
+const HEEL_RISE = 0.1;     // the heels rise over the last tenth of a second before the toes leave
+const LAND = 0.3, RISE = 0.6; // the landing absorbed, then the body back to standing
+const HEEL_DOWN = 0.08;    // the heels come down this long after the toes touch
+const SQUAT = 0.6, SQUAT_DEPTH = 0.35; // a squat: each way, and how far the hip goes down
 const STATURE = 1.75;
 
 const ease = (u: number) => (1 - Math.cos(Math.PI * Math.min(1, Math.max(0, u)))) / 2;
@@ -82,18 +111,20 @@ function timeline(jumps: SyntheticJump[]) {
   let t = 0;
   const add = (dur: number, at: (tau: number) => Body) => { pieces.push({ t0: t, t1: t + dur, at }); t += dur; };
   const stand = (dur: number) => add(dur, () => ({ hip: HIP, toe: 0, heel: 0, knees: 1, flex: 0 }));
-  stand(1);
+  stand(STAND);
   for (const jump of jumps) {
     const knees = jump.knees ?? 1;
     if (jump.squat) {
-      add(0.6, tau => ({ hip: HIP - 0.35 * ease(tau / 0.6), toe: 0, heel: 0, knees: 1, flex: ease(tau / 0.6) }));
-      add(0.6, tau => ({ hip: HIP - 0.35 * (1 - ease(tau / 0.6)), toe: 0, heel: 0, knees: 1, flex: 1 - ease(tau / 0.6) }));
-      stand(1);
+      add(SQUAT, tau => ({ hip: HIP - SQUAT_DEPTH * ease(tau / SQUAT), toe: 0, heel: 0, knees: 1, flex: ease(tau / SQUAT) }));
+      add(SQUAT, tau => ({ hip: HIP - SQUAT_DEPTH * (1 - ease(tau / SQUAT)), toe: 0, heel: 0, knees: 1, flex: 1 - ease(tau / SQUAT) }));
+      stand(STAND);
       continue;
     }
-    const v0 = (G * jump.flight) / 2;
+    const T = jump.flight, drop = jump.drop ?? 0, lag = jump.toeLag ?? 0, shift = jump.hipShift ?? 0;
+    // Takeoff at the hip's level H0, touchdown at H0 − drop, T seconds later: v0 = (g·T²/2 − drop)/T.
+    const v0 = (G * T * T / 2 - drop) / T;
     const strides = jump.approach ?? 0;
-    let start = HIP, down = 0.35, up = 0.25, lastTouch: number | null = null;
+    let start = HIP, down = DOWN, up = UP, lastTouch: number | null = null;
     if (strides > 0) {
       for (let s = 0; s < strides; s++) {
         const from = s === 0 ? HIP : HIP - STRIDE_DIP;
@@ -104,30 +135,52 @@ function timeline(jumps: SyntheticJump[]) {
         });
       }
       lastTouch = t;
-      start = HIP - STRIDE_DIP; down = 0.15; up = 0.15;
+      const plant = jump.plant ?? PLANT;
+      start = HIP - STRIDE_DIP; down = plant / 2; up = plant / 2;
     }
-    const low = HIP - DIP;
+    const low = HIP - DIP, H0 = HIP + TOES;
     add(down, tau => ({ hip: start + (low - start) * ease(tau / down), toe: 0, heel: 0, knees: 1, flex: ease(tau / down) }));
-    const heelFrom = up - 0.1;
-    add(up, tau => ({ hip: hermite(low, 0, HIP + TOES, v0, up, tau), toe: 0, heel: TOES * ease((tau - heelFrom) / 0.1), knees: 1, flex: 1 - ease(tau / up) }));
+    const heelFrom = up - HEEL_RISE;
+    add(up, tau => ({ hip: hermite(low, 0, H0, v0, up, tau), toe: 0, heel: TOES * ease((tau - heelFrom) / HEEL_RISE), knees: 1, flex: 1 - ease(tau / up) }));
     const takeoff = t;
-    add(jump.flight, tau => {
-      const hip = HIP + TOES + v0 * tau - (G * tau * tau) / 2;
-      const toe = hip - (HIP + TOES) + TUCK * Math.sin((Math.PI * tau) / jump.flight) ** 2;
-      return { hip, toe, heel: toe + TOES, knees: 1, flex: 0.3 * Math.sin((Math.PI * tau) / jump.flight) ** 2 };
+    add(T, tau => {
+      const hip = H0 + v0 * tau - (G * tau * tau) / 2;
+      // The toe follows the hip, tucks up towards it mid-flight, and reaches down by `drop` at touchdown (the legs land
+      // more bent). With a lag it leaves the ground at zero vertical speed, the foot finishing its push: its speed below
+      // the hip's is v0·(1 − u)² at u = τ/lag, so it rises from 0 at a constant acceleration at first and meets the
+      // hip's at τ = lag. The toe then trails by v0·lag/3 (4 cm at 40 ms and 3 m/s), and the foot comes back under the
+      // body over the flight, so it touches down when the hip is at H0 − drop.
+      const u = lag > 0 ? Math.min(1, tau / lag) : 1;
+      const trail = lag > 0 ? (v0 * lag * (1 - (1 - u) ** 3)) / 3 * (1 - ease(tau / T)) : 0;
+      const toe = hip - H0 + TUCK * Math.sin((Math.PI * tau) / T) ** 2 + drop * ease(tau / T) - trail;
+      // The hip landmark moves by `shift` relative to the centre of mass over the flight; the feet follow the centre.
+      return { hip: hip + shift * ease(tau / T), toe, heel: toe + TOES, knees: 1, flex: 0.3 * Math.sin((Math.PI * tau) / T) ** 2 };
     });
     const landing = t;
-    truth.push({ takeoff, landing, flight: jump.flight, heightCm: (G * jump.flight ** 2) / 8 * 100, plant: lastTouch === null ? null : takeoff - lastTouch, knees });
-    const top = HIP + TOES, bottom = HIP - ABSORB;
-    add(0.3, tau => {
-      const hip = hermite(top, -v0, bottom, 0, 0.3, tau);
+    truth.push({ takeoff, landing, flight: T, heightCm: (v0 * v0) / (2 * G) * 100, drop, plant: lastTouch === null ? null : takeoff - lastTouch, knees });
+    // The landing starts where the flight ends: the hip at H0 − drop, falling at g·T − v0.
+    const top = H0 - drop, bottom = HIP - ABSORB, vLand = G * T - v0;
+    add(LAND, tau => {
+      // The centre of mass lands as above; the hip landmark comes back to it over the landing.
+      const hip = hermite(top, -vLand, bottom, 0, LAND, tau) + shift * (1 - ease(tau / LAND));
       const depth = Math.min(1, Math.max(0, (top - hip) / (top - bottom)));
-      return { hip, toe: 0, heel: TOES * (1 - ease(tau / 0.08)), knees: 1 + (knees - 1) * depth, flex: depth };
+      return { hip, toe: 0, heel: TOES * (1 - ease(tau / HEEL_DOWN)), knees: 1 + (knees - 1) * depth, flex: depth };
     });
-    add(0.6, tau => ({ hip: bottom + (HIP - bottom) * ease(tau / 0.6), toe: 0, heel: 0, knees: 1 + (knees - 1) * (1 - ease(tau / 0.6)), flex: 1 - ease(tau / 0.6) }));
-    stand(1);
+    add(RISE, tau => ({ hip: bottom + (HIP - bottom) * ease(tau / RISE), toe: 0, heel: 0, knees: 1 + (knees - 1) * (1 - ease(tau / RISE)), flex: 1 - ease(tau / RISE) }));
+    stand(STAND);
   }
   return { pieces, truth, duration: t };
+}
+
+/**
+ * The body of `jumps` at `t` seconds, in metres above the ground: the hip, and the feet's lowest point (the lower of
+ * the toes and heels). The truth a test reads a contact's timing from (when the feet cross a level), at any precision.
+ */
+export function syntheticBodyAt(jumps: SyntheticJump[], t: number): { hip: number; feet: number } {
+  const { pieces } = timeline(jumps);
+  const piece = pieces.find(p => t < p.t1) ?? pieces[pieces.length - 1];
+  const b = piece.at(t - piece.t0);
+  return { hip: b.hip, feet: Math.min(b.toe, b.heel) };
 }
 
 /** The body's landmarks (33, MediaPipe order) in metres: x lateral or forward, z up. */
@@ -162,7 +215,7 @@ function bodyPoints(b: Body, view: 'front' | 'side'): [number, number][] {
 
 /**
  * The jumps sampled at `rate` per second from `phase`, as a pose read (normalised landmarks, seconds, frame size),
- * with each jump's truth: takeoff, landing, flight, height from h = g·t²/8, the run-up's last contact, the knee ratio.
+ * with each jump's truth: takeoff, landing, flight, the hip's rise, the drop, the run-up's last contact, the knee ratio.
  */
 export function syntheticJumps(opts: SyntheticOptions): SyntheticRead {
   const { jumps, rate, phase = 0, view = 'front', noisePx = 0, noise, width = 360, height = 640 } = opts;

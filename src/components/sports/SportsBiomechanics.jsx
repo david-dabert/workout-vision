@@ -711,7 +711,7 @@ export default function SportsBiomechanics({ onClose, onOpenEquine, onOpenVolley
                   {fr ? t.fr : t.en}
                 </button>
               ))}
-              {/* Volleyball opens the activity engine's screen: its numbers are measured on synthetic jumps. */}
+              {/* Volleyball opens the activity engine's screen: its numbers are measured on synthetic jumps. French 'Volley-ball': written 14 October 2026, awaiting David's approval (R10). */}
               {onOpenVolleyball && (
                 <button
                   type="button"

@@ -47,19 +47,21 @@ export type EventSpec =
 export type FormulaSpec =
   /** How many events. */
   | { kind: 'count' }
-  /** Height from flight time, h = g·t²/8, in centimetres, per event. */
-  | { kind: 'flightHeight' }
+  /** Height from the flight, in centimetres, per event: h = g·t²/8 corrected for a landing lower than the takeoff,
+   *  v0 = (g·t²/2 − Δ)/t and h = v0²/2g, with Δ read on the hip's parabola (engine.ts); only when the margin is at most
+   *  `maxRelError` of the value. */
+  | { kind: 'flightHeight'; maxRelError: Setting }
   /** Time on the ground between the landing of the last `before` event and the takeoff of each event, in seconds;
-   *  only when the last `before` event lands within `withinSec`, and only when the margin is at most `maxRelError` of
-   *  the value. */
-  | { kind: 'contactBefore'; before: string; withinSec: Setting; maxRelError: Setting }
+   *  only when the last `before` event lands within `withinSec`, only from `minRate` samples a second, and only when
+   *  the margin is at most `maxRelError` of the value. */
+  | { kind: 'contactBefore'; before: string; withinSec: Setting; maxRelError: Setting; minRate: Setting }
   /** num / den of two width signals at each event's sample, read only from the front; flagged below `below`. */
   | { kind: 'widthRatio'; num: string; den: string; below: Setting };
 
 /**
  * The error model, as the screen states it. `sampling`: the margin follows from the samples actually read (a contact
- * falls somewhere between two samples) and from the foot points' own noise in that read, computed per value (engine.ts,
- * airborne). `none`: no margin can be computed; the value says how it was checked in `note`.
+ * falls somewhere between two samples) and from the body points' own noise in that read, computed per value (engine.ts,
+ * airborne, hipApex). `none`: no margin can be computed; the value says how it was checked in `note`.
  */
 export interface ErrorSpec { kind: 'sampling' | 'none'; note: Text }
 
@@ -119,6 +121,12 @@ export interface FoundEvent {
   flightMargin?: number;
   /** The sample the event is read at (the landing's deepest point). */
   at?: number;
+  /** For a jump: the time of the top of the hip's flight and its margin (seconds), the leg length its fall at g implies
+   *  (metres), and how much lower the hip lands than it took off (metres, read on the same parabola). */
+  apex?: number;
+  apexMargin?: number;
+  legM?: number;
+  drop?: number;
 }
 
 export interface MeasureValue { value: number; margin: number | null; event: number; flag?: boolean }
@@ -134,10 +142,16 @@ export interface MeasureResult {
   /** The value shown, and its margin (±, in the unit); null when refused. */
   value: number | null;
   margin: number | null;
-  /** One value per event. */
+  /** One value per event measured. Kept when only the summary is refused (the highest cannot be named), so each event's
+   *  value can still be shown; empty when the measure is refused whole. */
   values: MeasureValue[];
   /** Why no value is shown (null when one is). */
   refused: Text | null;
+  /** What a mean was taken over: the events measured, among those it applies to. */
+  scope?: Text;
+  /** Why an event has no value, one entry per event left without one, so each withheld cell of the table says why
+   *  (R8). Set when `values` is. */
+  withheld?: { event: number; reason: Text }[];
   /** A value flagged by the measure's threshold (a landing check). */
   flagged?: boolean;
 }

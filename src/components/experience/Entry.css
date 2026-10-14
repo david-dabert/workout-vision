@@ -265,6 +265,9 @@ html, body { background: #080706; color-scheme: dark; }
 .wv-leaving:has(+ .wv-return) { z-index: 3; }
 /* After a browser back swipe the screen is simply there: Safari already animated it. */
 .wv-instant .screen.is-active, .wv-instant [data-reveal] { animation: none !important; opacity: 1; }
+/* A screen shown without its entrance leaves without it too (ScreenFade.jsx): losing .wv-return or .wv-instant replayed
+   it from transparent under the fade, and the stage showed bare (tour, t09-to-guide, 14 October 2026). */
+.wv-still .screen.is-active, .wv-still [data-reveal] { animation: none !important; opacity: 1; }
 /* A report on its way out still takes the taps, so a double tap on Back cannot fall through. */
 .wv-experience.is-leaving { opacity: 0; transition: opacity var(--d-ui) var(--ease); }
 /* The report opens over the result: its whole layer fades in, ground included,
@@ -324,14 +327,15 @@ html, body { background: #080706; color-scheme: dark; }
   position: absolute; left: calc(var(--gut) + 56px); right: calc(var(--gut) + 56px); bottom: 14px;
   overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center;
   font: 500 var(--fs-body)/1.2 var(--sans); color: var(--c-fg); pointer-events: none;
-  opacity: 0; translate: 0 6px; transition: opacity 0.3s var(--ease), translate 0.3s var(--ease);
+  opacity: 0; translate: 0 6px; transition: opacity 0.15s var(--ease), translate 0.3s var(--ease);
 }
-.wv-experience .topbar.is-condensed .topbar-title { opacity: 1; translate: 0 0; }
+.wv-experience .topbar.is-condensed .topbar-title { opacity: 1; translate: 0 0; transition-delay: 0.15s; }
 /* The topbar keeps its buttons above the title it shows. */
 .wv-experience .topbar.is-sticky > :not(.topbar-title) { position: relative; z-index: 1; }
-/* Condensed, the bar gives the test-version pill's room to the title; the pill is back at the top. */
-.wv-experience .topbar.is-sticky .pill { transition: opacity 0.3s var(--ease); }
-.wv-experience .topbar.is-condensed .pill { opacity: 0; }
+/* Condensed, the bar gives the test-version pill's room to the title; the pill is back at the top. They take turns,
+   never cross-fade: the centred title runs under the pill below about 430 px (report.tests.js, 14 October 2026). */
+.wv-experience .topbar.is-sticky .pill { transition: opacity 0.15s var(--ease) 0.15s; }
+.wv-experience .topbar.is-condensed .pill { opacity: 0; transition-delay: 0s; }
 /* A sticky topbar needs a screen that is not itself a scroll box: these screens let the page scroll,
    so they clip sideways instead of scrolling (the page's own overflow-x keeps the width). */
 .wv-experience :is(.guide-screen, .history-screen, .report-screen) { overflow-x: clip; overflow-y: visible; }
