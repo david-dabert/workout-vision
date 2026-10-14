@@ -22,6 +22,7 @@ import {
 import { programmePdf, programmeSheet, programmeFileName, programmeQr, packNow, QR_MAX_VERSION, QR_SIDE, QR_BLOCK_MAX, QR_MODULE_MIN } from '../programme-pdf';
 import { draftFromResults, isEmptyDraft, loadDrafts, saveDraft, newDraft, newItem, HOLD_START, MAX_DRAFTS, keepReceived, loadReceived } from '../programme-store';
 import catalogue from '../../../lib/guide-catalog.json';
+import { DRAWING_8PX } from './fixtures/drawing-8px';
 import { reportSheet } from '../report-sheet';
 import { reportPdf } from '../report-pdf';
 import { savedSet } from '../saved-set';
@@ -291,7 +292,9 @@ describe('the programme’s PDF', () => {
     expect(blob.size).toBeGreaterThan(2000);
     expect(pages).toBe(1);
     const flat = text.replace(/\s/g, '');
-    for (const s of ['PROGRAMME', '6OCTOBRE2026', 'Hautducorps', 'POUR', 'Camille', 'EXERCICE', 'SÉRIES×RÉP.', 'RÉCUP.', 'Squat', 'Descendrelentement', '3×10', '4×12', '1min30', '1min', 'NOTE', 'Échauffement10min.', 'Boireentrelesséries.']) expect(flat).toContain(s);
+    for (const s of ['PROGRAMME', '6OCTOBRE2026', 'Hautducorps', 'POUR', 'Camille', 'EXERCICES', 'Squat', 'Descendrelentement', '3×10', '4×12', 'Récup.1min30', 'Récup.1min', 'NOTE', 'Échauffement10min.', 'Boireentrelesséries.']) expect(flat).toContain(s);
+    // One block per exercise since the exercise sheet (14 October 2026): no table heading.
+    for (const s of ['SÉRIES×RÉP.', 'RÉCUP.']) expect(flat).not.toContain(s);
     expect(text).not.toMatch(/Workout ?Vision/i);
   });
 
@@ -300,7 +303,7 @@ describe('the programme’s PDF', () => {
     const { text, pages } = await drawn(() => programmePdf(long, { lang: 'en', date }));
     expect(pages).toBeGreaterThan(1);
     expect(text).toContain(`1 / ${pages}`);
-    expect(text.replace(/\s/g, '')).toContain('SETS×REPS');
+    expect(text.replace(/\s/g, '')).toContain('Rest45s');
   });
 
   it('prints the link as a QR code with how to use it, and leaves it out without a link or for one too long to scan', async () => {
@@ -368,7 +371,11 @@ describe('the programme’s PDF', () => {
   it('reads its words from the copy, and names its file in ASCII', () => {
     const s = programmeSheet(sample, { lang: 'fr', date });
     expect(s.people).toEqual([['Pour', 'Camille'], ['Exercices', '2']]);
-    expect(s.rows[0]).toEqual({ index: '01', name: 'Squat', note: 'Descendre lentement', target: `3${NBSP}×${NBSP}10`, rest: `1${NBSP}min${NBSP}30` });
+    expect(s.rows[0]).toEqual({
+      index: '01', name: 'Squat', note: 'Descendre lentement', target: `3${NBSP}×${NBSP}10`, rest: `1${NBSP}min${NBSP}30`,
+      details: `Récup. 1${NBSP}min${NBSP}30`, filmed: true, hold: 0, side: 'both', drawing: null,
+    });
+    expect([s.foot, s.credit]).toEqual([PRO.fr.pdfFoot, '']);
     expect(programmeFileName(sample, { lang: 'fr', date })).toBe('programme-camille-2026-10-06.pdf');
     expect(programmeFileName({ ...sample, who: '' }, { lang: 'en', date })).toBe('programme-haut-du-corps-semaine-1-2026-10-06.pdf');
   });
@@ -792,5 +799,95 @@ describe('the exercise sheet’s model', () => {
     expect(PRO.en.pdfCredit).toBe('Drawings: Bryl Lim, workout-guide, CC BY-SA 4.0');
     // David's file holds every sample written out: no NaN, no undefined, no em dash.
     for (const lang of ['fr', 'en']) for (const s of allStrings(lang)) expect(s, s).not.toMatch(/NaN|undefined|—/);
+  });
+});
+
+// The exercise sheet's PDF (14 October 2026): each exercise with the guide's drawings, made ready before the tap and
+// handed in (sheet-drawings.js); here an 8 × 8 JPEG of the same form stands in for every frame.
+describe('the exercise sheet’s PDF', () => {
+  async function drawn(run) {
+    const texts = [];
+    const hook = ['preProcessText', ({ text }) => { texts.push(Array.isArray(text) ? text.join('') : text); }];
+    jsPDF.API.events.push(hook);
+    let blob;
+    try { blob = run(); } finally { jsPDF.API.events.splice(jsPDF.API.events.indexOf(hook), 1); }
+    const file = Buffer.from(await blob.arrayBuffer()).toString('latin1');
+    return { text: texts.join(''), flat: texts.join('').replace(/\s/g, ''), pages: file.match(/\/Type \/Page\b/g).length, images: (file.match(/\/Subtype \/Image\b/g) || []).length, blob };
+  }
+  const date = new Date(2026, 9, 14);
+  const frame = (slug, n) => ({ data: DRAWING_8PX, format: 'JPEG', alias: `g-${slug}-${n}` });
+  const art = (slug, similar = false) => ({ start: frame(slug, 1), end: frame(slug, 3), similar });
+  const sheet = {
+    title: 'Dos et gainage', who: 'Camille', note: '', frequency: { times: 3, per: 'week' },
+    items: [
+      { key: 'squat', sets: 3, reps: 10, rest: 90, note: 'Descendre lentement', side: 'each' },
+      { key: 'plank', sets: 3, reps: 10, rest: 45, note: 'Dos plat', holdSec: 45 },
+      { key: 'machine_seated_back_extension', sets: 3, reps: 12, rest: 60, note: '' },
+    ],
+  };
+  const drawings = new Map([['squat', art('squat')], ['plank', art('plank')], ['machine_seated_back_extension', null]]);
+
+  it('prints a hold, a side, the frequency and a missing drawing, with the drawings’ credit', async () => {
+    const { flat, images, text } = await drawn(() => programmePdf(sheet, { lang: 'fr', date, drawings }));
+    for (const s of ['3×45s', 'Maintien·récup.45s·sansfilmer', 'chaquecôté', 'Récup.1min30·chaquecôté', 'sansfilmer', 'FRÉQUENCE', '3foisparsemaine',
+      'Extensionlombaireassiseàlamachine', 'Dessins:BrylLim,workout-guide,CCBY-SA4.0', 'saufmention«sansfilmer»']) expect(flat, s).toContain(s);
+    // The squat's and the plank's two frames; the back extension has none.
+    expect(images).toBe(4);
+    expect(text).not.toMatch(/Workout ?Vision/i);
+    const en = await drawn(() => programmePdf(sheet, { lang: 'en', date, drawings }));
+    for (const s of ['3×45s', 'eachside', 'withoutfilming', 'FREQUENCY', '3timesaweek', 'Drawings:BrylLim,workout-guide,CCBY-SA4.0']) expect(en.flat, s).toContain(s);
+  });
+
+  it('embeds an exercise’s two frames once, however often it comes', async () => {
+    const twice = { ...sheet, items: [sheet.items[0], sheet.items[1], { ...sheet.items[0], reps: 12 }] };
+    expect((await drawn(() => programmePdf(twice, { lang: 'fr', date, drawings }))).images).toBe(4);
+    // A frame alone goes in the first place, and is embedded alone.
+    const one = new Map([['squat', { start: null, end: frame('squat', 3), similar: false }]]);
+    expect((await drawn(() => programmePdf({ ...sheet, items: [sheet.items[0]] }, { lang: 'fr', date, drawings: one }))).images).toBe(1);
+  });
+
+  it('prints no drawing and no credit when none was made, and never fails for it', async () => {
+    const none = new Map([['squat', { start: null, end: null, similar: false }], ['plank', null]]);
+    for (const d of [none, new Map(), undefined]) {
+      const r = await drawn(() => programmePdf(sheet, { lang: 'fr', date, drawings: d }));
+      expect(r.images).toBe(0);
+      expect(r.flat).not.toContain('BrylLim');
+      expect(r.flat).toContain('3×45s');
+    }
+  });
+
+  it('says a borrowed drawing shows a similar movement', async () => {
+    const p = { ...sheet, items: [{ key: 'wall_ball', sets: 3, reps: 15, rest: 60, note: '' }] };
+    const r = await drawn(() => programmePdf(p, { lang: 'fr', date, drawings: new Map([['wall_ball', art('squat', true)]]) }));
+    expect(r.flat).toContain('Dessind’unmouvementproche');
+    expect((await drawn(() => programmePdf(p, { lang: 'fr', date, drawings }))).flat).not.toContain('mouvementproche');
+  });
+
+  it('asks to film every set, every set but those marked, or nothing, as the exercises are filmed', () => {
+    const footOf = items => programmeSheet({ ...sheet, items }, { lang: 'fr', date }).foot;
+    expect(footOf([sheet.items[0]])).toBe(PRO.fr.pdfFoot);
+    expect(footOf(sheet.items)).toBe(PRO.fr.pdfFootSome);
+    expect(footOf([sheet.items[1], { key: 'childs_pose', sets: 1, reps: 1, rest: 0, note: '' }])).toBe('');
+    const rows = programmeSheet(sheet, { lang: 'fr', date, drawings }).rows;
+    expect(rows.map(r => [r.filmed, r.hold, r.side, !!r.drawing])).toEqual([[true, 0, 'each', true], [false, 45, 'both', true], [true, 0, 'both', false]]);
+    expect(programmeSheet(sheet, { lang: 'fr', date }).people).toEqual([['Pour', 'Camille'], ['Exercices', '3'], ['Fréquence', `3${NBSP}fois par semaine`]]);
+  });
+
+  it('keeps 24 exercises with their drawings to six pages, seven with cues, a note and a large code', async () => {
+    const keys = catalogue.filter(e => !e.noDrawing && !e.drawing && knownExercise(e.key)).slice(0, LIMITS.items).map(e => e.key);
+    const all = new Map(keys.map(k => [k, art(k)]));
+    const linkOf = p => `https://david-dabert.github.io/workout-vision/#programme=${packNow(p)}`;
+    // 24 exercises, their code at the top (version 13 measured).
+    const bare = { ...sheet, items: keys.map(key => ({ key, sets: 3, reps: 10, rest: 60, note: '' })) };
+    const plain = await drawn(() => programmePdf(bare, { lang: 'fr', date, drawings: all, link: linkOf(bare) }));
+    expect(plain.images).toBe(48);
+    expect(plain.pages).toBeLessThanOrEqual(6);
+    expect(plain.flat).toContain('Dessins:BrylLim');
+    // A two-line cue on every other exercise and a general note: the code passes version 15 and goes to the end.
+    const long = { ...bare, note: 'Échauffement 10 min.', items: bare.items.map((i, k) => ({ ...i, note: k % 2 ? 'Une consigne assez longue pour tenir sur deux lignes du bloc' : '' })) };
+    expect(programmeQr(linkOf(long)).top).toBe(false);
+    const cued = await drawn(() => programmePdf(long, { lang: 'fr', date, drawings: all, link: linkOf(long) }));
+    expect(cued.pages).toBeLessThanOrEqual(7);
+    expect(cued.flat).toContain('OUVRIRLEPROGRAMME');
   });
 });

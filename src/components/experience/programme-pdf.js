@@ -1,13 +1,19 @@
-// The coach's programme as a PDF, in the session report's design (report-pdf.js, through pdf-kit.js): the same A5
-// paper, the same type, the same header line, title, labelled pairs, rules and footer. One table: the exercise and its
-// cue, the target set like the report's count (serif, gold), the rest. Loaded with jsPDF, on demand (Pro.jsx).
+// The coach's programme as a PDF, the exercise sheet a client is handed, in the session report's design (report-pdf.js,
+// through pdf-kit.js): the same A5 paper, the same type, the same header line, title, labelled pairs, rules and footer.
+// One block per exercise (14 October 2026): the guide's drawings of its first and last poses, its name, its target set
+// like the report's count (serif, gold) with the rest, the side and whether it is filmed beside it, and its cue.
+// Loaded with jsPDF, on demand (Pro.jsx).
 import { PAGE_H, COLUMN, MARGIN, GAP, COLOR, pdfDoc, wrapText } from './pdf-kit';
 import { exerciseName } from './exercise-info';
 import { PRO } from './pro-copy';
 import { fileSlug } from './report-sheet';
 import QRCode from 'qrcode';
 import { gzipSync } from 'fflate';
-import { compact, toBase64url } from './programme';
+import { compact, filmable, frequencyOf, holdOf, sideOf, toBase64url } from './programme';
+
+// The drawings, made ready before the tap (sheet-drawings.js): Pro.jsx reaches them through this module, which it
+// loads already, so they stay out of the first screen's code.
+export { drawings } from './sheet-drawings';
 
 /**
  * The programme's link payload, packed at once: "z" and the gzip of its compact JSON in base64url, or "j" and the
@@ -56,27 +62,47 @@ export function programmeQr(link) {
 
 const NBSP = ' ';
 
-/** The words and numbers the PDF sets, apart from the drawing, so the tests can read them. */
-export function programmeSheet(programme, { lang, date }) {
+/**
+ * The words and numbers the PDF sets, so the tests can read them. drawings: Map from an exercise's key to its frames
+ * ({ start, end, similar }, sheet-drawings.js, of), or to null; an exercise missing from it is printed without one.
+ * Each row: its target (sets × reps, or sets × the hold), its details (rest, hold, side, and "without filming" for an
+ * exercise the client does not film), whether it is filmed, its hold, its side, its drawing. The foot asks to film
+ * each set when every exercise is filmed, each set but those marked when some are, and nothing when none is; the
+ * drawings' credit goes with the foot when the sheet prints one.
+ */
+export function programmeSheet(programme, { lang, date, drawings = new Map() }) {
   const fr = lang === 'fr', c = PRO[fr ? 'fr' : 'en'];
+  const frequency = frequencyOf(programme);
+  const rows = programme.items.map((item, i) => {
+    const hold = holdOf(item), side = sideOf(item), filmed = filmable(item), drawing = drawings.get(item.key) || null;
+    return {
+      index: String(i + 1).padStart(2, '0'),
+      name: exerciseName(item.key, fr ? 'fr' : 'en'),
+      note: item.note || '',
+      target: hold ? c.holdTarget(item.sets, hold) : `${item.sets}${NBSP}×${NBSP}${item.reps}`,
+      rest: c.restText(item.rest),
+      details: c.pdfDetails(item.rest, hold, side, filmed),
+      filmed, hold, side,
+      drawing: drawing && (drawing.start || drawing.end) ? drawing : null,
+    };
+  });
+  const filmed = rows.filter(r => r.filmed).length;
   return {
     fr,
     kicker: c.pdfKicker,
     date: date.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
     title: programme.title,
-    people: [...(programme.who ? [[c.pdfWho, programme.who]] : []), [c.pdfCount, String(programme.items.length)]],
-    columns: c.pdfColumns,
-    rows: programme.items.map((item, i) => ({
-      index: String(i + 1).padStart(2, '0'),
-      name: exerciseName(item.key, fr ? 'fr' : 'en'),
-      note: item.note || '',
-      target: `${item.sets}${NBSP}×${NBSP}${item.reps}`,
-      rest: c.restText(item.rest),
-    })),
+    people: [
+      ...(programme.who ? [[c.pdfWho, programme.who]] : []), [c.pdfCount, String(programme.items.length)],
+      ...(frequency ? [[c.pdfFrequency, c.frequency(frequency.times, frequency.per)]] : []),
+    ],
+    rows,
     noteLabel: c.pdfNote,
     note: programme.note || '',
     qrLabel: c.pdfQrLabel,
-    foot: c.pdfFoot,
+    foot: filmed === rows.length ? c.pdfFoot : filmed ? c.pdfFootSome : '',
+    similar: c.pdfSimilar,
+    credit: rows.some(r => r.drawing) ? c.pdfCredit : '',
   };
 }
 
@@ -88,14 +114,20 @@ export function programmeFileName(programme, { lang, date }) {
   return [PRO[lang === 'fr' ? 'fr' : 'en'].fileName, slug, day].filter(Boolean).join('-') + '.pdf';
 }
 
+// An exercise's block (14 October 2026): its two drawings ART points square, ART_GAP apart, in a column ART_W wide,
+// then the text column, ART_GUTTER further; PAD above and under; the index INDEX_W before the name. 64 pt is 22.6 mm,
+// a drawing a client reads on an A5 sheet held in the hand. All UNSOURCED, convention.
+const ART = 64, ART_GAP = 6, ART_W = 2 * ART + ART_GAP, ART_GUTTER = 14, PAD = 8, INDEX_W = 22;
+
 /**
- * Builds the PDF of a programme. Synchronous, so the share stays within the tap. `link`, the programme's link as the
- * coach shares it (Pro.jsx), adds its QR code (programmeQr: at the top right, or with the foot at the end); `qr`,
- * that code when the caller has made it already. Without either, the sheet is as before.
+ * Builds the PDF of a programme. Synchronous, so the share stays within the tap: the drawings come made already
+ * (`drawings`, sheet-drawings.js, of), and an exercise without one is printed without one. `link`, the programme's
+ * link as the coach shares it (Pro.jsx), adds its QR code (programmeQr: at the top right, or with the foot at the
+ * end); `qr`, that code when the caller has made it already. Without either, the sheet has no code.
  */
-export function programmePdf(programme, { lang, date = new Date(), link = null, qr = programmeQr(link) }) {
-  const sheet = programmeSheet(programme, { lang, date });
-  const { doc, upper, width, write, lines, drawLine, paint } = pdfDoc({ title: sheet.title, fr: sheet.fr });
+export function programmePdf(programme, { lang, date = new Date(), link = null, qr = programmeQr(link), drawings = new Map() }) {
+  const sheet = programmeSheet(programme, { lang, date, drawings });
+  const { doc, upper, width, write, lines, drawLine, paint, baseline } = pdfDoc({ title: sheet.title, fr: sheet.fr });
   paint();
   let y = MARGIN;
   const FOOTER = 22, FOOT_Y = PAGE_H - MARGIN - 12;
@@ -140,69 +172,80 @@ export function programmePdf(programme, { lang, date = new Date(), link = null, 
   titleLines.forEach(line => { write(line, MARGIN, y, 'serif', 30, 1.05, COLOR.ink); y += 30 * 1.05; });
   y += GAP - 30 * 0.05;
 
-  // For whom, and how many exercises: labelled pairs, two to a row, as the report's people.
+  // For whom, how many exercises and how often: labelled pairs, two to a row, as the report's people.
   const w2 = (side - 8) / 2;
-  const row = sheet.people.map(([name, value]) => ({ name, block: lines(value, 12, w2) }));
-  const pairH = 13.5 + 18 * Math.max(...row.map(r => r.block.lines.length));
-  row.forEach(({ name, block }, i) => {
-    const x = MARGIN + i * (w2 + 8);
-    write(upper(name), x, y, 'mono', 9, 1.5, COLOR.ash, 9 * 0.16);
-    block.lines.forEach((line, k) => drawLine(line, block.raster, x, y + 13.5 + k * 18, 12, 1.5, COLOR.ink));
-  });
-  y += pairH + GAP;
+  for (let first = 0; first < sheet.people.length; first += 2) {
+    const row = sheet.people.slice(first, first + 2).map(([name, value]) => ({ name, block: lines(value, 12, w2) }));
+    const pairH = 13.5 + 18 * Math.max(...row.map(r => r.block.lines.length));
+    row.forEach(({ name, block }, i) => {
+      const x = MARGIN + i * (w2 + 8);
+      write(upper(name), x, y, 'mono', 9, 1.5, COLOR.ash, 9 * 0.16);
+      block.lines.forEach((line, k) => drawLine(line, block.raster, x, y + 13.5 + k * 18, 12, 1.5, COLOR.ink));
+    });
+    y += pairH + GAP;
+  }
   if (beside) y = Math.max(y, top + QR_SIDE + 4 + 8.5 * 1.5 + GAP);
 
-  // The table: index (8%), exercise and cue (44%), sets × reps (30%), rest (18%). The heading as the report's table's,
-  // each exercise's row as tall as its name and cue, a light rule under each; a row that does not fit opens a page,
-  // which repeats the heading.
-  const widths = [COLUMN * 0.08, COLUMN * 0.44, COLUMN * 0.3, COLUMN * 0.18];
-  const colX = k => MARGIN + widths.slice(0, k).reduce((a, b) => a + b, 0);
-  // A heading wider than its column wraps there, as the report's labels do, and never runs into the next.
-  const heads = sheet.columns.map((c, k) => (c ? wrapText(upper(c), widths[k] - 6, t => width(t, 'mono', 9, 9 * 0.12)) : []));
-  const HEAD = 12 + 13.5 * Math.max(1, ...heads.map(h => h.length));
-  const heading = () => {
-    rule();
-    y += 1;
-    heads.forEach((h, k) => h.forEach((line, i) => write(line, colX(k), y + 6 + i * 13.5, 'mono', 9, 1.5, COLOR.ash, 9 * 0.12)));
-    y += HEAD - 1;
-    rule();
-    y += 1;
+  // One block per exercise: its drawings at the left, the text beside them (across the column without a drawing).
+  // The text: the index, the name; the target set like the report's figures (serif, in the count's gold) with the
+  // details beside it where they fit, else under it; the cue. A block is as tall as its drawings or its text, never
+  // split across pages; a light rule under each, a rule over the first of each page.
+  const TARGET = 18, TARGET_LH = 1.1, DETAIL = 11, DETAIL_LH = 1.4, NAME_LH = 13 * 1.4, NOTE_LH = 10.5 * 1.45, CAPTION_LH = 8.5 * 1.4;
+  const detailDrop = baseline('serif', TARGET, TARGET_LH, 0) - baseline('sans', DETAIL, DETAIL_LH, 0);
+  const blocks = sheet.rows.map(r => {
+    const frames = r.drawing ? [r.drawing.start, r.drawing.end].filter(Boolean) : [];
+    const x = frames.length ? MARGIN + ART_W + ART_GUTTER : MARGIN, w = MARGIN + COLUMN - x;
+    const name = lines(r.name, 13, w - INDEX_W);
+    const targetW = width(r.target, 'serif', TARGET), besideW = w - targetW - 10;
+    const details = lines(r.details, DETAIL, besideW >= 70 ? besideW : w);
+    const rowH = besideW >= 70
+      ? Math.max(TARGET * TARGET_LH, detailDrop + details.lines.length * DETAIL * DETAIL_LH)
+      : TARGET * TARGET_LH + 2 + details.lines.length * DETAIL * DETAIL_LH;
+    const note = r.note ? lines(r.note, 10.5, w) : null;
+    const caption = frames.length && r.drawing.similar ? wrapText(sheet.similar, ART_W, s => width(s, 'sans', 8.5)).slice(0, 2) : [];
+    const textH = name.lines.length * NAME_LH + 3 + rowH + (note ? 3 + note.lines.length * NOTE_LH : 0);
+    const artH = frames.length ? ART + (caption.length ? 4 + caption.length * CAPTION_LH : 0) : 0;
+    return { r, frames, x, w, name, targetW, details, beside: besideW >= 70, rowH, note, caption, h: PAD + Math.max(artH, textH) + PAD };
+  });
+  const drawBlock = b => {
+    const top = y + PAD;
+    // The first pose in the first place, the last beside it; a frame that did not load leaves its place to the other.
+    b.frames.forEach((f, k) => doc.addImage(f.data, f.format, MARGIN + k * (ART + ART_GAP), top, ART, ART, f.alias, 'FAST'));
+    b.caption.forEach((line, k) => write(line, MARGIN, top + ART + 4 + k * CAPTION_LH, 'sans', 8.5, 1.4, COLOR.ash));
+    write(b.r.index, b.x, top + 1, 'mono', 10, 1.4, COLOR.ash, 10 * 0.08);
+    b.name.lines.forEach((line, k) => drawLine(line, b.name.raster, b.x + INDEX_W, top + k * NAME_LH, 13, 1.4, COLOR.ink));
+    const rowTop = top + b.name.lines.length * NAME_LH + 3;
+    write(b.r.target, b.x, rowTop, 'serif', TARGET, TARGET_LH, COLOR.count);
+    const dx = b.beside ? b.x + b.targetW + 10 : b.x, dy = b.beside ? rowTop + detailDrop : rowTop + TARGET * TARGET_LH + 2;
+    b.details.lines.forEach((line, k) => drawLine(line, b.details.raster, dx, dy + k * DETAIL * DETAIL_LH, DETAIL, DETAIL_LH, COLOR.ink));
+    if (b.note) b.note.lines.forEach((line, k) => drawLine(line, b.note.raster, b.x, rowTop + b.rowH + 3 + k * NOTE_LH, 10.5, 1.45, COLOR.ash));
   };
-  const nameW = widths[1] - 10;
-  const rowsOut = sheet.rows.map(r => ({ ...r, nameBlock: lines(r.name, 13, nameW), noteBlock: r.note ? lines(r.note, 10.5, nameW) : null }));
-  const heightOf = r => 10 + r.nameBlock.lines.length * 13 * 1.4 + (r.noteBlock ? 3 + r.noteBlock.lines.length * 10.5 * 1.45 : 0) + 10;
-  if (room() < HEAD + heightOf(rowsOut[0]) && y > MARGIN) newPage();
-  heading();
-  for (const r of rowsOut) {
-    const h = Math.max(heightOf(r), 44);
-    if (room() < h) { newPage(); heading(); }
-    const top = y + 10;
-    write(r.index, colX(0), top + 1, 'mono', 10, 1.4, COLOR.ash, 10 * 0.08);
-    r.nameBlock.lines.forEach((line, k) => drawLine(line, r.nameBlock.raster, colX(1), top + k * 13 * 1.4, 13, 1.4, COLOR.ink));
-    if (r.noteBlock) {
-      const noteTop = top + r.nameBlock.lines.length * 13 * 1.4 + 3;
-      r.noteBlock.lines.forEach((line, k) => drawLine(line, r.noteBlock.raster, colX(1), noteTop + k * 10.5 * 1.45, 10.5, 1.45, COLOR.ash));
-    }
-    // The target, set like the report's figures: serif, in the count's gold; the rest in ink.
-    write(r.target, colX(2), top - 2, 'serif', 20, 1, COLOR.count);
-    const rest = lines(r.rest, 11.5, widths[3]);
-    rest.lines.forEach((line, k) => drawLine(line, rest.raster, colX(3), top + 1 + k * 11.5 * 1.4, 11.5, 1.4, COLOR.ink));
-    y += h;
+  const opening = () => { rule(); y += 1; };
+  if (room() < 1 + blocks[0].h && y > MARGIN) newPage();
+  opening();
+  for (const b of blocks) {
+    if (room() < b.h) { newPage(); opening(); }
+    drawBlock(b);
+    y += b.h;
     doc.setDrawColor(COLOR.rowRule); doc.setLineWidth(1); doc.line(MARGIN, y - 0.5, MARGIN + COLUMN, y - 0.5);
   }
   y += GAP;
 
   // The general note, labelled as the report's notes; then the foot, which never stands alone on a page. A larger code
   // (past QR_MAX_VERSION) goes with the foot, at the left under its rule: its label and the foot's words beside it
-  // where the column leaves them room, else under it. The whole end keeps to one page.
+  // where the column leaves them room, else under it. The drawings' credit closes the sheet, under the foot. The whole
+  // end keeps to one page.
   const sansW = s => width(s, 'sans', 10);
-  const foot = wrapText(sheet.foot, COLUMN, sansW);
+  const wrapFoot = w => (sheet.foot ? wrapText(sheet.foot, w, sansW) : []);
+  const foot = wrapFoot(COLUMN);
+  const credit = sheet.credit ? wrapText(sheet.credit, COLUMN, s => width(s, 'sans', 8.5)) : [];
+  const creditH = credit.length ? 4 + credit.length * CAPTION_LH : 0;
   const quiet = qr ? 4 * (qr.side / (qr.size + 8)) : 0;
   const textX = qr ? MARGIN + qr.side + 14 : MARGIN, textW = MARGIN + COLUMN - textX;
   const end = !qr || beside ? { kind: 'plain', h: 15 * foot.length }
-    : textW >= 150 ? (() => { const words = wrapText(sheet.foot, textW, sansW); return { kind: 'beside', words, h: Math.max(qr.side, quiet + 8.5 * 1.5 + 6 + 15 * words.length) }; })()
+    : textW >= 150 ? (() => { const words = wrapFoot(textW); return { kind: 'beside', words, h: Math.max(qr.side, quiet + 8.5 * 1.5 + 6 + 15 * words.length) }; })()
     : { kind: 'under', h: qr.side + 4 + 8.5 * 1.5 + GAP + 15 * foot.length };
-  const footH = GAP + 1 + 10 + end.h;
+  const footH = GAP + 1 + 10 + end.h + creditH;
   if (sheet.note) {
     const block = lines(sheet.note, 12.5, COLUMN), NL = 12.5 * 1.5;
     const need = i => { const left = block.lines.length - i; return left <= 2 ? left * NL + footH : NL; };
@@ -230,6 +273,11 @@ export function programmePdf(programme, { lang, date = new Date(), link = null, 
       y += qr.side + 4 + 8.5 * 1.5 + GAP;
     }
     foot.forEach(line => { write(line, MARGIN, y, 'sans', 10, 1.5, COLOR.ash); y += 15; });
+  }
+  // The drawings' credit (CC BY-SA 4.0), on the sheet that prints them.
+  if (credit.length) {
+    y += 4;
+    credit.forEach(line => { write(line, MARGIN, y, 'sans', 8.5, 1.4, COLOR.ash); y += CAPTION_LH; });
   }
 
   // Every page's number when there are several, where the report puts it.

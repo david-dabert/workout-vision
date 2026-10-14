@@ -128,7 +128,6 @@ export const PRO = {
     pdfKicker: 'Programme',
     pdfWho: 'Pour',
     pdfCount: 'Exercices',
-    pdfColumns: ['', 'Exercice', 'Séries × rép.', 'Récup.'],
     pdfNote: 'Note',
     // The programme's QR code on its PDF (programme-pdf.js; French approved by David on 9 October, R10).
     pdfQrLabel: 'Ouvrir le programme',
@@ -322,7 +321,6 @@ export const PRO = {
     pdfKicker: 'Programme',
     pdfWho: 'For',
     pdfCount: 'Exercises',
-    pdfColumns: ['', 'Exercise', 'Sets × reps', 'Rest'],
     pdfNote: 'Note',
     pdfQrLabel: 'Open the programme',
     pdfFoot: 'Film each set with your phone: the reps are counted, and the session report shows what was planned beside what was counted.',
