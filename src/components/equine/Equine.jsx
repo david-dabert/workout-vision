@@ -4,7 +4,7 @@ import { analyzeEquineGait, calculateCircleLean, simulateTrot } from '../../lib/
 import { hapticLight } from '../../lib/haptics';
 import { useCondensingTopbar } from '../experience/topbar';
 import { RGB, HEX, rgba } from '../experience/palette';
-import { Topbar, DemoTag, GroupHead, Metric, Range } from '../experience/Showcase';
+import { Topbar, DemoTag, PreviewTag, GroupHead, Metric, Range } from '../experience/Showcase';
 import { num, reducedMotion, NBSP } from '../experience/showcase-text';
 import { EQUINE_COPY } from './equine-copy';
 import './Equine.css';
@@ -21,6 +21,9 @@ import './Equine.css';
 // 3. A calculator for the lean on the circle, from the radius and speed typed in, and what a real reading would need.
 
 const RIDDEN_RAW_URL = `${import.meta.env.BASE_URL || '/'}demo/workoutvision-ridden-dressage-raw.mp4`;
+// The analysed version of the same ridden clip, shown since 14 October 2026 as a preview of where the app is going,
+// labelled « Aperçu »: its markers and figures are illustrations, never a reading of a horse (David, 14 October).
+const RIDDEN_PREVIEW_URL = `${import.meta.env.BASE_URL || '/'}demo/workoutvision-ridden-dressage-analyzed.mp4`;
 // The frame rates the simulation can be read at. Status: convention (common phone video rates; display only).
 const RATES = [25, 30, 60];
 const SCENARIOS = ['sound', 'fore', 'hind'];
@@ -41,20 +44,28 @@ const sec = (ms, fr) => num((ms / 1000).toFixed(2), fr);
  */
 export function EquineVideoBand({ lang, own, reduced, onOpen, onClose }) {
   const c = EQUINE_COPY[lang] ?? EQUINE_COPY.en, fr = lang === 'fr';
+  // The preview first; a visitor's own video is never shown with any marker or figure (no reading of a horse).
+  const [view, setView] = useState('preview');
   return (
     <section className="sc-section equine-hero" data-testid="equine-player" data-reveal style={{ '--i': 2 }}>
-      <GroupHead title={c.videoHead}>{own ? null : <DemoTag fr={fr} />}</GroupHead>
+      <GroupHead title={c.videoHead}>{own ? null : view === 'preview' ? <PreviewTag fr={fr} /> : <DemoTag fr={fr} />}</GroupHead>
       {own ? (
         <div className="sc-file">
           <span className="sc-file-name"><SvgVideo /><span>{own.name}</span></span>
           <button type="button" className="btn-ghost is-s press" onClick={onClose} data-testid="equine-close-video">{c.close}</button>
         </div>
-      ) : <h2 className="sc-name">{c.demoName}</h2>}
+      ) : <>
+        <h2 className="sc-name">{c.demoName}</h2>
+        <div className="sc-chips equine-view" role="group" aria-label={c.viewLabel}>
+          <button type="button" className="sc-chip press" aria-pressed={view === 'preview'} onClick={() => { hapticLight(); setView('preview'); }} data-testid="equine-view-preview">{c.viewPreview}</button>
+          <button type="button" className="sc-chip press" aria-pressed={view === 'raw'} onClick={() => { hapticLight(); setView('raw'); }} data-testid="equine-view-raw">{c.viewRaw}</button>
+        </div>
+      </>}
       <div className="sc-frame">
         {own
           // #t=0.1 shows a clip's first frame on iOS before it plays (the visitor's video, or the demo under Reduce Motion).
           ? <video key={own.url} src={`${own.url}#t=0.1`} controls playsInline preload="metadata" data-testid="equine-own-video" />
-          : <video ref={muteVideo} src={`${RIDDEN_RAW_URL}#t=0.1`} controls playsInline muted loop autoPlay={!reduced} preload="metadata" data-testid="equine-demo-video" />}
+          : <video key={view} ref={muteVideo} src={`${view === 'preview' ? RIDDEN_PREVIEW_URL : RIDDEN_RAW_URL}#t=0.1`} controls playsInline muted loop autoPlay={!reduced} preload="metadata" data-testid="equine-demo-video" />}
       </div>
       {own ? (
         <div className="sc-card equine-own" role="status" data-testid="equine-own-statement">
@@ -64,7 +75,7 @@ export function EquineVideoBand({ lang, own, reduced, onOpen, onClose }) {
         </div>
       ) : (
         <>
-          <p className="sc-frame-note is-quiet">{c.demoNote}</p>
+          <p className="sc-frame-note is-quiet" data-testid="equine-demo-note">{view === 'preview' ? c.previewNote : c.demoNote}</p>
           <button type="button" className="sc-card equine-upload press" onClick={onOpen} data-testid="equine-upload-card">
             <SvgUpload />
             <span className="equine-upload-title">{c.open}</span>
