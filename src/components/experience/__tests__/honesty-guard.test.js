@@ -28,3 +28,24 @@ describe('the withdrawn fields reach no screen of the core product', () => {
     }
   });
 });
+
+// R13: the README's numbers are the scoreboards' own. A commit that moves a count updates the README with it.
+describe('the README quotes the scoreboards, and only them', () => {
+  const root = f => readFileSync(resolve(__dirname, '../../../..', f), 'utf8');
+  const readme = root('README.md');
+  it('makes none of the claims of 13 October 2026', () => {
+    expect(readme).not.toMatch(/100\s?%|74\/74|clinical-grade|Sub-Degree|McNemar Invariant|HIPAA|zero tolerance|certified judge|Wolf|Israetel|Bilateral Asymmetry Index/i);
+  });
+  it('gives the stored sets, the real videos, the public half and the synthetic sets as the files do', () => {
+    const board = root('test/real-phone/accuracy/scoreboard.txt');
+    const [, decide, exact] = board.match(/of the (\d+) sets in the baseline that decide, (\d+) exact now/);
+    expect(readme).toContain(`${exact} of the ${decide} that decide are exact`);
+    const [, videos, videoExact] = board.match(/Real video, 7 October[^\n]*?of the (\d+) sets in the baseline, (\d+) exact now/);
+    const [, refused] = board.match(/Real video, 7 October[^\n]*?; (\d+) refused of/);
+    expect(readme).toContain(`${videoExact} of ${videos} exact, ${refused} refused`);
+    const [, sets, pubExact, pct] = root('test/real-phone/accuracy/public-scoreboard.txt').match(/(\d+) build sets, (\d+) exact \((\d+)%\)/);
+    expect(readme).toContain(`${sets} sets, ${pubExact} exact (${pct} %)`);
+    const [, n, synthExact, synthPct, off3] = root('test/real-phone/synth/synth.txt').match(/^all\s+n\s+(\d+)\s+count exact\s+(\d+) \((\d+) %\), off >= 3: (\d+)/m);
+    expect(readme).toContain(`${n} sets: ${synthExact} exact (${synthPct} %), ${off3} off by 3 or more`);
+  });
+});
