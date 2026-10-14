@@ -394,3 +394,18 @@ after the second honesty review of PR #166 the same day, since no current phase 
 - Volleyball on rendered bodies too, before any filmed jump.
 - Why not now: outside the current phase; volleyball is still at level 1, and its screen and French await David's
   check on his iPhone.
+
+## 14 October 2026: EquiVision and the sports lab after the honesty pass (deferred, R7)
+
+The honesty pass left both screens as labelled demos: nothing is analysed on a visitor's video. Deferred:
+- A real reading of a horse: a vision model that finds the head, withers, pelvis and hooves (or tap-to-track markers
+  placed by the person), then an agreement study against inertial sensors or motion capture before one millimetre is
+  shown (equine-copy.js, "Pour analyser un vrai cheval").
+- Real reads for the sports where a phone video could measure something: rowing stroke rate and drive to recovery
+  ratio, cycling cadence and knee bend at the bottom of the stroke, golf tempo (sports-copy.js, "later" lists). Each
+  needs its own labelled clips and a scoreboard before a number is shown (R2, R8).
+- The demonstration clips: replace the third-party footage (broadcast tennis with TennisOne and adidas marks, the
+  "PERSONAL SWIMMING" watermark, the "Slow Motion of Drive Phase" title card, a pro-team baseball uniform, spectators
+  in the ridden clip) with footage David owns or properly attributed clips, and add a credits file in public/demo.
+- The painted "analysed" files and HUD posters in public/demo (left out of the built site since 14 October,
+  scripts/omit-painted-demos.js): removing them from the repository needs David's approval (R5).

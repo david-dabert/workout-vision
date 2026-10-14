@@ -238,8 +238,9 @@ function AppInner() {
     key = 'equine';
     screen = <Equine onClose={() => go('dashboard')} />;
   } else if (page === 'sports' || page === 'golf' || page === 'tennis' || page === 'padel' || page === 'cycling' || page === 'baseball' || page === 'rowing' || page === 'skiing' || page === 'swimming') {
-    key = 'sports';
-    screen = <SportsBiomechanics onClose={() => go('dashboard')} onOpenEquine={() => go('equine')} onOpenVolleyball={() => go('volleyball')} />;
+    // A sport's own address opens on that sport (#rowing opens rowing); a new address is a new screen.
+    key = page === 'sports' ? 'sports' : `sports:${page}`;
+    screen = <SportsBiomechanics sport={page} onClose={() => go('dashboard')} onOpenEquine={() => go('equine')} onOpenVolleyball={() => go('volleyball')} />;
   } else if (page === 'volleyball') {
     key = 'volleyball';
     screen = <Activity activity="volleyball" onClose={() => go('sports')} />;
