@@ -58,8 +58,8 @@ export type FormulaSpec =
 
 /**
  * The error model, as the screen states it. `sampling`: the margin follows from the samples actually read (a contact
- * falls somewhere between two samples), computed per value. `none`: no margin can be computed; the value says how it
- * was checked in `note`.
+ * falls somewhere between two samples) and from the foot points' own noise in that read, computed per value (engine.ts,
+ * airborne). `none`: no margin can be computed; the value says how it was checked in `note`.
  */
 export interface ErrorSpec { kind: 'sampling' | 'none'; note: Text }
 

@@ -23,12 +23,30 @@ export const G = 9.80665;
 // Perception settings. Each: source, then R9 status.
 // A landmark below this visibility is unseen: the counting core's floor (VIS_THRESHOLD, core.ts). Status: convention.
 const VIS = 0.5;
-// A contact's time is corrected for the ground band with the foot's speed over this long after takeoff or before
-// touchdown (at least two samples). Source: UNSOURCED (short enough that the speed barely changes). Status: experimental.
-const SPEED_WINDOW_SEC = 0.06;
-// The band correction is itself uncertain: this share of it is added to the contact's margin. Source: UNSOURCED (the
-// foot's speed at a contact read from two samples, off by up to a fifth on the synthetic jumps). Status: experimental.
+// A contact's time is corrected for the ground band with the foot's speed, read from the samples off the ground within
+// this long of the band crossing, on the contact's side of the flight's apex (at least two samples). Source: UNSOURCED
+// (set on the synthetic jumps: a run-up stride's 0.1 s flight decelerates within 0.06 s, which the first version of this
+// window read across the apex, giving no speed at all). Status: experimental.
+const SPEED_WINDOW_SEC = 1 / 30;
+// A sample reads on the ground when the foot is under this many of its own noise standard deviations above the ground
+// line (or a tenth of the band, whichever is larger): a contact never lies beyond the first such sample by more than the
+// time the foot takes to cover that height. Source: UNSOURCED (three standard deviations, a convention for noise).
+// Status: experimental.
+const LIFT_K = 3;
+const LIFT_BAND = 0.1;
+// The band correction is uncertain three ways, each added to the contact's margin. Source: UNSOURCED for all three, set
+// so that the margin covers the errors measured on the synthetic jumps at 15 to 240 samples a second (volleyball.test.ts).
+// Status: experimental.
+// - The foot's speed is not constant between the ground and the band: this share of the correction.
 const BAND_SHARE = 0.25;
+// - The speed is a least-squares slope of noisy samples: this many of its standard errors, as a share of the speed.
+const SPEED_SE_K = 2;
+// - The crossing itself is read on noisy samples, the ground line too: this many noise standard deviations over the speed.
+//   This term does not shrink with the frame rate; at 240 samples a second it is larger than the sampling term.
+const NOISE_K = 1;
+// No correction is longer than this. Source: UNSOURCED (a foot that takes 0.1 s to cross a few centimetres is not
+// leaving or reaching the ground). Status: experimental.
+const MAX_CORRECTION_SEC = 0.1;
 // The camera faces the person when the shoulders are at least this wide for their torso's length, sees them from the
 // side at most this. Source: UNSOURCED (front 0.8 and side under 0.1 on the synthetic body). Status: experimental.
 const FRONT_MIN = 0.35;
@@ -133,7 +151,11 @@ interface Context {
   heights: Record<string, (number | null)[]>;
   widths: Record<string, (number | null)[]>;
   band: number;
+  /** The foot's noise on the ground (standard deviation, leg lengths), and whether it, not the floor, set the band. */
+  noise: number;
+  bandFromNoise: boolean;
   events: Record<string, FoundEvent[]>;
+  specs: Record<string, EventSpec>;
   /** Per airborne event key, each sample's state: true in the air, false on the ground, null unseen. */
   states: Record<string, (boolean | null)[]>;
 }
@@ -150,14 +172,52 @@ function slope(values: (number | null)[], t: number[], from: number, to: number)
 }
 
 /**
+ * The foot's speed through the ground band at a contact, in leg lengths per second, with its standard error: the
+ * least-squares slope of the samples within SPEED_WINDOW_SEC of the band crossing `x`, from the sample in the air
+ * (`air`) to the highest sample of the window, so the read never crosses the flight's apex. `ground` is the crossing's
+ * sample on the ground side: when it is already above `lift` it belongs to the flight (the contact came before it) and
+ * is read too. `dir` is +1 at a takeoff (reading forwards), -1 at a landing (reading backwards). At least two samples.
+ */
+function contactSpeed(h: (number | null)[], t: number[], x: number, ground: number, air: number,
+  dir: 1 | -1, lift: number, noise: number): { v: number; se: number } | null {
+  let near = air;
+  for (let g = ground; g >= 0 && g < t.length && h[g] !== null && (h[g] as number) > lift && Math.abs(t[g] - x) <= SPEED_WINDOW_SEC; g -= dir) near = g;
+  let far = air;
+  for (let i = air + dir; i >= 0 && i < t.length && Math.abs(t[i] - x) <= SPEED_WINDOW_SEC; i += dir) {
+    if (h[i] !== null && (h[far] === null || (h[i] as number) > (h[far] as number))) far = i;
+  }
+  // At a low frame rate the window may hold no other sample: the next one is read if the foot is still rising.
+  const next = air + dir;
+  if (far === near && next >= 0 && next < t.length && h[next] !== null && (h[next] as number) > (h[air] as number)) far = next;
+  if (far === near) return null;
+  const from = Math.min(near, far), to = Math.max(near, far);
+  const v = slope(h, t, from, to);
+  if (v === null || dir * v <= 0) return null;
+  const ts: number[] = [];
+  for (let i = from; i <= to; i++) if (h[i] !== null) ts.push(t[i]);
+  const mt = ts.reduce((s, x2) => s + x2, 0) / ts.length, sxx = ts.reduce((s, x2) => s + (x2 - mt) ** 2, 0);
+  return { v: dir * v, se: sxx > 0 ? noise / Math.sqrt(sxx) : 0 };
+}
+
+/**
  * Airborne phases: runs of samples whose signal is above the band. A contact lies between the last sample on one side
  * and the first on the other: its time is their midpoint, moved by the time the foot takes to cross the band (the band
- * over the foot's speed), and its margin is half their spacing plus a share of that correction.
+ * over the foot's speed, never past the first sample that reads on the ground), and its margin is half their spacing
+ * plus the correction's own uncertainty (BAND_SHARE, SPEED_SE_K, NOISE_K). Without a speed there is no correction, and
+ * the contact is left undefined: its margin could not be stated.
  */
 function airborne(ctx: Context, key: string, spec: Extract<EventSpec, { kind: 'airborne' }>): FoundEvent[] {
   const h = ctx.heights[spec.signal], t = ctx.t, n = t.length;
   const state = h.map(v => (v === null ? null : v > ctx.band));
   ctx.states[key] = state;
+  const lift = Math.max(LIFT_K * ctx.noise, LIFT_BAND * ctx.band);
+  /** The crossing at `x` moved by the band correction, capped at the ground-level sample `g`; and its margin. */
+  const contact = (x: number, spacing: number, sp: { v: number; se: number } | null, g: number | null) => {
+    if (!sp) return null;
+    const reach = g === null ? MAX_CORRECTION_SEC : Math.abs(t[g] - x) + lift / sp.v;
+    const delta = Math.min(MAX_CORRECTION_SEC, ctx.band / sp.v, reach);
+    return { delta, margin: spacing / 2 + (BAND_SHARE + SPEED_SE_K * sp.se / sp.v) * delta + NOISE_K * ctx.noise / sp.v };
+  };
   const out: FoundEvent[] = [];
   for (let i = 0; i < n; i++) {
     if (state[i] !== true || (i > 0 && state[i - 1] === true)) continue;
@@ -166,21 +226,19 @@ function airborne(ctx: Context, key: string, spec: Extract<EventSpec, { kind: 'a
     const b = i, a = b - 1, d = c + 1;
     const ev: FoundEvent = { start: b, end: c };
     if (a >= 0 && state[a] === false) {
-      let k = b + 1;
-      while (k + 1 <= c && t[k + 1] - t[b] <= SPEED_WINDOW_SEC) k += 1;
-      const v = (k <= c ? slope(h, t, b, k) : null) ?? slope(h, t, a, b);
-      const delta = v && v > 0 ? Math.min(0.1, ctx.band / v) : 0;
-      ev.takeoff = (t[a] + t[b]) / 2 - delta;
-      ev.takeoffMargin = (t[b] - t[a]) / 2 + BAND_SHARE * delta;
+      const x = (t[a] + t[b]) / 2;
+      // The last sample before the takeoff that still reads on the ground.
+      let g = a;
+      while (g >= 0 && h[g] !== null && (h[g] as number) > lift) g -= 1;
+      const k = contact(x, t[b] - t[a], contactSpeed(h, t, x, a, b, 1, lift, ctx.noise), g >= 0 && h[g] !== null ? g : null);
+      if (k) { ev.takeoff = x - k.delta; ev.takeoffMargin = k.margin; }
     }
     if (d < n && state[d] === false) {
-      let k = c - 1;
-      while (k - 1 >= b && t[c] - t[k - 1] <= SPEED_WINDOW_SEC) k -= 1;
-      const s = (k >= b ? slope(h, t, k, c) : null) ?? slope(h, t, c, d);
-      const v = s === null ? null : -s;
-      const delta = v && v > 0 ? Math.min(0.1, ctx.band / v) : 0;
-      ev.landing = (t[c] + t[d]) / 2 + delta;
-      ev.landingMargin = (t[d] - t[c]) / 2 + BAND_SHARE * delta;
+      const x = (t[c] + t[d]) / 2;
+      let g = d;
+      while (g < n && h[g] !== null && (h[g] as number) > lift) g += 1;
+      const k = contact(x, t[d] - t[c], contactSpeed(h, t, x, d, c, -1, lift, ctx.noise), g < n && h[g] !== null ? g : null);
+      if (k) { ev.landing = x + k.delta; ev.landingMargin = k.margin; }
     }
     if (ev.takeoff !== undefined && ev.landing !== undefined) {
       ev.flight = ev.landing - ev.takeoff;
@@ -277,18 +335,31 @@ function measure(spec: MeasureSpec, ctx: Context, view: ActivityResult['view']):
     if (!values.length) return refuse({ fr: 'Aucun envol entier dans la vidéo.', en: 'No whole flight in the video.' });
   } else if (f.kind === 'contactBefore') {
     const before = ctx.events[f.before] ?? [];
-    let seenOne = false;
+    // The flights the `before` events are drawn from (a stride's): one between the last of them and the takeoff is a
+    // step too brief to be read as one, so the contact found would be a step early.
+    const from = ctx.specs[f.before], flights = from && from.kind === 'stride' ? ctx.events[from.flight] ?? [] : [];
+    // A stride's flight clears the ground by a few centimetres only: when the foot's own noise sets the ground band
+    // (above its floor), a stride can hide under the band or noise can pass for one. Measured on the synthetic run-ups
+    // without this check (800 at 30 to 240 a second): at 2.5 px of noise 3 of the 65 values shown fell outside their
+    // margin, at 2 px 1 of 199. Source: UNSOURCED. Status: experimental.
+    if (ctx.bandFromNoise) {
+      return refuse({ fr: 'Pas mesurable sur cette vidéo\u00A0: les pieds bougent trop à l’image pour lire des foulées de quelques centimètres.', en: 'Not measurable on this video: the feet jitter too much in the image to read strides of a few centimetres.' });
+    }
+    let seenOne = false, hidden = false;
     events.forEach((e, i) => {
       if (e.takeoff === undefined) return;
       const last = [...before].reverse().find(b => b.landing !== undefined && (b.landing as number) < (e.takeoff as number));
       if (!last || (e.takeoff as number) - (last.landing as number) > f.withinSec.value) return;
       seenOne = true;
+      if (flights.some(x => x.start > last.end && x.end < e.start)) { hidden = true; return; }
       const value = (e.takeoff as number) - (last.landing as number);
       const margin = (e.takeoffMargin as number) + (last.landingMargin as number);
       if (margin <= f.maxRelError.value * value) values.push({ value, margin, event: i });
     });
     if (!values.length) {
-      return refuse(seenOne
+      return refuse(hidden && !values.length
+        ? { fr: `Pas mesurable à ${fps(ctx.rate)} images par seconde\u00A0: un pas trop bref pour être lu précède l’envol.`, en: `Not measurable at ${fps(ctx.rate)} frames a second: a step too brief to read comes before the takeoff.` }
+        : seenOne
         ? { fr: `Pas mesurable à ${fps(ctx.rate)} images par seconde : la marge dépasserait le quart de la valeur.`, en: `Not measurable at ${fps(ctx.rate)} frames a second: the margin would exceed a quarter of the value.` }
         : { fr: `Pas d’élan lu : un saut sans course, ou des foulées trop brèves pour ${fps(ctx.rate)} images par seconde.`, en: `No run-up read: a standing jump, or strides too brief for ${fps(ctx.rate)} frames a second.` });
     }
@@ -344,13 +415,16 @@ export function runActivity(spec: ActivitySpec, read: PoseRead): ActivityResult 
   }
   // The ground band: the airborne event's floor, or its noise on the ground if that is larger.
   const air = Object.values(spec.events).find((e): e is Extract<EventSpec, { kind: 'airborne' }> => e.kind === 'airborne');
-  let band = 0;
+  let band = 0, noise = 0, bandFromNoise = false;
   if (air) {
     const near = (heights[air.signal] ?? []).filter((v): v is number => v !== null && Math.abs(v) < NEAR_GROUND);
     const m = median(near), mad = median(near.map(v => Math.abs(v - m)));
-    band = Math.max(air.floor.value, air.noiseK.value * 1.4826 * (Number.isFinite(mad) ? mad : 0));
+    // 1.4826: the median absolute deviation's factor to a standard deviation for Gaussian noise. Status: convention.
+    noise = 1.4826 * (Number.isFinite(mad) ? mad : 0);
+    band = Math.max(air.floor.value, air.noiseK.value * noise);
+    bandFromNoise = air.noiseK.value * noise > air.floor.value;
   }
-  const ctx: Context = { read, t, dt, rate, heights, widths, band, events: {}, states: {} };
+  const ctx: Context = { read, t, dt, rate, heights, widths, band, noise, bandFromNoise, events: {}, specs: spec.events, states: {} };
   // Events in the order declared: an event reads only those declared before it.
   for (const [key, e] of Object.entries(spec.events)) {
     ctx.events[key] = e.kind === 'airborne' ? airborne(ctx, key, e)

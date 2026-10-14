@@ -57,7 +57,13 @@ describe('volleyball on synthetic jumps', () => {
     expect(Math.abs((h.value ?? 0) - read.truth.jumps[0].heightCm)).toBeLessThan(1);
   });
 
-  it('keeps each height inside its stated margin at 15, 30 and 60 samples a second (200 jumps each)', () => {
+  // The margin per contact is half a sample plus the band correction's uncertainty (engine.ts, BAND_SHARE, SPEED_SE_K,
+  // NOISE_K). The noise term does not shrink with the frame rate: at 240 samples a second it is larger than the sampling
+  // term, so the stated margin there is about 2 cm, not the ±0.6 cm that sampling alone gives at 0.60 s.
+  // History: this test once failed at 240 on the bias line, +0.34 cm against a limit of 0.21. The cause was the foot's
+  // speed, read over 0.06 s after a takeoff or before a touchdown, which mixed samples far from the contact; read
+  // within 1/30 s of the band crossing and capped at the first sample that reads on the ground, the bias is +0.16 cm.
+  it('keeps each height inside its stated margin at 15, 30, 60, 120 and 240 samples a second (200 jumps each)', () => {
     const rows: string[] = [];
     for (const rate of [15, 30, 60, 120, 240]) {
       const errors: number[] = [], margins: number[] = [];
@@ -78,12 +84,13 @@ describe('volleyball on synthetic jumps', () => {
       const mean = abs.reduce((s, v) => s + v, 0) / abs.length;
       const bias = errors.reduce((s, v) => s + v, 0) / errors.length;
       const p95 = abs[Math.floor(0.95 * (abs.length - 1))];
-      rows.push(`${String(rate).padStart(3)} /s  mean |error| ${mean.toFixed(1)} cm  bias ${bias >= 0 ? '+' : ''}${bias.toFixed(1)} cm  95th ${p95.toFixed(1)} cm  max ${abs.at(-1)!.toFixed(1)} cm  stated margin at 0.60 s ±${heightMarginCm(0.6, 1 / rate).toFixed(1)} cm  inside the stated margin ${inside} of 200`);
+      const stated = margins.reduce((s, v) => s + v, 0) / margins.length;
+      rows.push(`${String(rate).padStart(3)} /s  mean |error| ${mean.toFixed(2)} cm  bias ${bias >= 0 ? '+' : ''}${bias.toFixed(2)} cm  95th ${p95.toFixed(2)} cm  max ${abs.at(-1)!.toFixed(2)} cm  mean stated margin ±${stated.toFixed(2)} cm (sampling alone at 0.60 s ±${heightMarginCm(0.6, 1 / rate).toFixed(2)})  inside the stated margin ${inside} of 200`);
       expect(inside / 200, `rate ${rate}`).toBeGreaterThanOrEqual(0.95);
       expect(Math.abs(bias), `rate ${rate}`).toBeLessThan(heightMarginCm(0.6, 1 / rate) / 3);
     }
     console.log(`Jump height from flight time, synthetic jumps of 0.40 to 0.80 s, noise 1.5 px on a 360x640 frame:\n${rows.join('\n')}`);
-  });
+  }, 30000);
 
   it('a squat is no jump, and a foot point that leaves the ground for one sample is no jump', () => {
     const read = syntheticJumps({ jumps: [{ flight: 0, squat: true }, { flight: 0, squat: true }], rate: 30, noisePx: 1, noise: noiseOf(3) });
@@ -110,6 +117,12 @@ describe('volleyball on synthetic jumps', () => {
     expect(Math.abs((measure(r, 'height').value ?? 0) - t.heightCm)).toBeLessThan((measure(r, 'height').margin ?? 0) + 0.5);
   });
 
+  // History: this test once failed, 0.024 s off against a margin of 0.019 s. A run-up stride's flight lasts 0.1 s and
+  // clears the ground by 5 cm, so at 60 a second its touchdown lies about one sample past the band crossing. The foot's
+  // speed was read over 0.06 s before the touchdown, across the top of the stride, where it rises then falls: the slope
+  // came out at zero or rising, the band correction was dropped, and nothing in the margin stood for it. Over 200 such
+  // run-ups at 60 a second the first version was 34 ms short on average and 14 of 200 values fell inside their margin
+  // (0 of 200 at 120 and 240). The speed is now read within 1/30 s of the crossing and never across the stride's top.
   it('times the last contact of a run-up at 60 samples a second, within its margin, and does not at 15', () => {
     const at60 = syntheticJumps({ jumps: [{ flight: 0.6, approach: 3 }], rate: 60, phase: 0.004, noisePx: 1, noise: noiseOf(7) });
     const m60 = measure(runActivity(volleyball, at60), 'approach');
@@ -120,6 +133,46 @@ describe('volleyball on synthetic jumps', () => {
     for (let seed = 1; seed <= 10; seed++) {
       const at15 = syntheticJumps({ jumps: [{ flight: 0.6, approach: 3 }], rate: 15, phase: (seed / 11) / 15, noisePx: 1, noise: noiseOf(seed) });
       expect(measure(runActivity(volleyball, at15), 'approach').value, `seed ${seed}`).toBeNull();
+    }
+  });
+
+  it('keeps every run-up timing it shows inside its margin at 30, 60, 120 and 240 samples a second (200 run-ups each)', () => {
+    const rows: string[] = [];
+    for (const rate of [30, 60, 120, 240]) {
+      const errors: number[] = [], margins: number[] = [];
+      let inside = 0;
+      for (let seed = 1; seed <= 200; seed++) {
+        const rng = seeded(7000 * rate + seed);
+        const flight = 0.4 + 0.4 * rng();
+        const read = syntheticJumps({ jumps: [{ flight, approach: 3 }], rate, phase: rng() / rate, noisePx: 1, noise: noiseOf(seed) });
+        const m = measure(runActivity(volleyball, read), 'approach');
+        if (m.value === null) continue;
+        const error = m.value - (read.truth.jumps[0].plant as number);
+        errors.push(error);
+        margins.push(m.margin as number);
+        if (Math.abs(error) <= (m.margin as number)) inside += 1;
+      }
+      const abs = errors.map(Math.abs).sort((a, b) => a - b);
+      const ms = (v: number) => (1000 * v).toFixed(1);
+      rows.push(`${String(rate).padStart(3)} /s  shown ${errors.length} of 200  mean |error| ${ms(abs.reduce((s, v) => s + v, 0) / abs.length)} ms  max ${ms(abs.at(-1)!)} ms  mean stated margin ±${ms(margins.reduce((s, v) => s + v, 0) / margins.length)} ms  inside ${inside} of ${errors.length}`);
+      // Every value shown is inside its margin: a step missed between the last one read and the takeoff is refused,
+      // not timed from the step before it (without that check, 35 of the 92 values shown at 30 a second were more
+      // than 0.2 s off, and 1 of 179 at 60).
+      expect(inside, `rate ${rate}`).toBe(errors.length);
+      if (rate >= 60) expect(errors.length, `rate ${rate}`).toBeGreaterThanOrEqual(150);
+    }
+    console.log(`Last contact of a run-up, synthetic run-ups of three strides, noise 1 px on a 360x640 frame:\n${rows.join('\n')}`);
+  }, 30000);
+
+  it('refuses to time a run-up when the feet are too noisy to read strides of a few centimetres', () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const read = syntheticJumps({ jumps: [{ flight: 0.6, approach: 3 }], rate: 120, phase: (seed % 7) / 7 / 120, noisePx: 2.5, noise: noiseOf(seed) });
+      const r = runActivity(volleyball, read);
+      expect(measure(r, 'approach').value, `seed ${seed}`).toBeNull();
+      expect(measure(r, 'approach').refused?.en, `seed ${seed}`).toMatch(/jitter/);
+      // The jump itself is still counted and its height still shown, with its margin.
+      expect(measure(r, 'jumps').value, `seed ${seed}`).toBe(1);
+      expect(measure(r, 'height').margin, `seed ${seed}`).not.toBeNull();
     }
   });
 

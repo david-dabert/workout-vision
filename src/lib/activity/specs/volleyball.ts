@@ -75,7 +75,7 @@ export const volleyball: ActivitySpec = {
       status: 'literature',
       error: {
         kind: 'sampling',
-        note: { fr: 'Chaque contact tombe entre deux images lues\u00A0: la marge suit la cadence de la vidéo.', en: 'Each contact falls between two frames read: the margin follows the video\'s frame rate.' },
+        note: { fr: 'Chaque contact tombe entre deux images lues, et les points des pieds bougent un peu d’une image à l’autre\u00A0: la marge tient compte des deux.', en: 'Each contact falls between two frames read, and the foot points jitter a little from frame to frame: the margin covers both.' },
       },
     },
     {
