@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { DEMOS } from './about-copy';
+import { DEMOS, DEMOS_NOTE } from './about-copy';
 
 // Real sets as the app saw them: each the app's own replay exported by David (DEMOS, about-copy.js), muted and
 // looping, with the two counts under it. Shown on the About page and under the entry's drawn example.
@@ -20,4 +20,7 @@ export function DemoVideo({ d, fr }) {
   </figure>;
 }
 
-export const DemoVideos = ({ fr }) => DEMOS.map(d => <DemoVideo key={d.file} d={d} fr={fr} />);
+export const DemoVideos = ({ fr }) => <>
+  {DEMOS.map(d => <DemoVideo key={d.file} d={d} fr={fr} />)}
+  <p className="about-demo-note" data-testid="demo-note">{fr ? DEMOS_NOTE.fr : DEMOS_NOTE.en}</p>
+</>;

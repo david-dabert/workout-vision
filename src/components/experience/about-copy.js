@@ -112,6 +112,14 @@ export const PHOTOS = {
 // video). Captions to be confirmed by David on his iPhone (R10, 6 October). Five, the ones whose count David gave and the
 // replay matches; each names the gym where it was filmed (David, 7 October). The
 // reverse curl (app 9, label 10) and the chest-supported row (app 5, label 6, David, 7 October) are held.
+// Under the five sets: the counts are the early-October app's, not today's. The engine of 14 October, run on the same
+// five videos (stability matrix, PR #174), counts 3 of them exactly in Chromium and 2 in WebKit, so the captions stay
+// true only with their date (R13; assessment of 14 October 2026). Awaiting David's approval (R10).
+export const DEMOS_NOTE = {
+  fr: 'Rejeux exportés par l’appli début octobre. La version d’aujourd’hui ne retrouve pas toujours le même nombre sur ces vidéos.',
+  en: 'Replays exported by the app in early October. Today’s version does not always reach the same count on these videos.',
+};
+
 export const DEMOS = [
   { file: 'dip-13', width: 404, height: 720, app: 13, kept: 13,
     fr: `Dips · 13${NB}répétitions comptées par l’appli, 13 par moi · filmé chez Basic-Fit`, en: `Dips · 13${NB}reps counted by the app, 13 by me · filmed at Basic-Fit` },
