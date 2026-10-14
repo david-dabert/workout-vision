@@ -7,7 +7,7 @@ import { liftDefinition } from '../../lib/counting/core';
 import { poseAt } from './replay-track';
 import { drawSkeleton, litSides, trailPoints, LAMP } from './replay-draw';
 import { steadyFrames, trailAt } from './replay-smooth';
-import { overlayLines } from './replay-labels';
+import { overlayLines, skeletonCaption } from './replay-labels';
 import { RGB, rgba } from './palette';
 
 const MIMES = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'];
@@ -51,7 +51,9 @@ export function exportSetVideo({ file, result, lift, fr = false, saved = null, o
   return new Promise((resolve, reject) => {
     const mime = pickMime(m => MediaRecorder.isTypeSupported(m));
     if (!mime) { reject(new Error('no-format')); return; }
-    const def = liftDefinition(lift), sides = litSides(def, result.arm);
+    // As on the replay (Replay.jsx): nothing lit for an exercise the core does not offer, read by the universal engine,
+    // even one the core defines (walking lunge), whose lit joint would claim a count the app did not make.
+    const def = result.universal ? null : liftDefinition(lift), sides = litSides(def, result.arm);
     const times = result.timestamps || [], frames = steadyFrames(result.imageLandmarks || [], times);
     const reps = (!result.refused && result.reps) || [];
     // Without a video on screen (a test page), one is made and laid over the page at full size, under everything.
@@ -89,6 +91,17 @@ export function exportSetVideo({ file, result, lift, fr = false, saved = null, o
     };
     signal?.addEventListener('abort', () => finish(new DOMException('aborted', 'AbortError')));
 
+    // What the drawing is, at the foot of every frame (skeletonCaption), so the video says it away from the app.
+    const drawCaption = (W, H, u) => {
+      const caption = skeletonCaption(fr), pad = 16 * u;
+      ctx.font = `${Math.round(13 * u)}px system-ui, sans-serif`;
+      ctx.textBaseline = 'bottom';
+      const cw = Math.min(ctx.measureText(caption).width, W - 2 * pad);
+      ctx.fillStyle = rgba(RGB.void, 0.55);
+      ctx.fillRect(pad - 10 * u, H - pad - 22 * u, cw + 20 * u, 28 * u);
+      ctx.fillStyle = rgba(RGB.bone, 0.92);
+      ctx.fillText(caption, pad, H - pad, W - 2 * pad);
+    };
     const draw = t => {
       const W = canvas.width, H = canvas.height, u = W / 390;
       ctx.drawImage(video, 0, 0, W, H);
@@ -96,8 +109,9 @@ export function exportSetVideo({ file, result, lift, fr = false, saved = null, o
       const lm = poseAt(frames, times, t);
       if (lm) {
         const trails = trailPoints(def, sides).map(k => trailAt(frames, times, t, k, lm[k]));
-          drawSkeleton(ctx, lm, { ox: 0, oy: 0, w: W, h: H }, sides, def, u, trails);
+        drawSkeleton(ctx, lm, { ox: 0, oy: 0, w: W, h: H }, sides, def, u, trails);
       }
+      drawCaption(W, H, u);
       if (reps.length) {
         // The reps begun so far, as the replay's chip shows them: "3 / 8"; after a correction, a second
         // line says both counts, so the video explains itself away from the app (replay-labels.js).
