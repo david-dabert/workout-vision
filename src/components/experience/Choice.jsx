@@ -196,16 +196,17 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{fr ? 'Le Manifeste WorkoutVision' : 'The WorkoutVision Manifesto'}</b><small>{fr ? 'La science, l’histoire et la mécanique du mouvement' : 'The science, history, and mechanics of optimal lifting'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {/* Equine Veterinary Gait Analysis */}
+        {/* EquiVision: a demo on a simulated horse; the app reads no horse from a video (honesty pass, 14 October 2026,
+            EQ-16). French of this row and of the footer links below awaiting David's approval (R10). */}
         {onEquine && <button className="row-link press" onClick={onEquine} data-testid="choice-equine">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M8 12l3 3 5-5" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'EquiVision\u00A0: Allures & Vétérinaire' : 'EquiVision: Veterinary Locomotion'}</b><small>{fr ? 'Cinématique objective du trot et asymétries en longe' : 'Objective trot kinematics & circle lunge symmetry'}</small></span>
+          <span className="row-txt"><b>{fr ? 'EquiVision\u00A0: le trot du cheval' : 'EquiVision: the horse’s trot'}</b><small>{fr ? 'Une démo sur un cheval simulé. L’appli ne lit pas encore votre cheval.' : 'A demo on a simulated horse. The app cannot read your horse yet.'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {/* Precision Sports Biomechanics (Golf, Tennis, Padel, Cycling) */}
+        {/* Precision sports: demonstration clips; the app reads none of these sports on a video yet (SP-25). */}
         {onSports && <button className="row-link press" onClick={onSports} data-testid="choice-sports">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'Sports de Précision\u00A0: Golf, Tennis & Padel' : 'Precision Sports: Golf, Tennis & Padel'}</b><small>{fr ? 'X-Factor, tempo 3:1, pose trophée et étude posturale' : 'X-Factor stretch, 3:1 tempo, trophy pose & bike fit'}</small></span>
+          <span className="row-txt"><b>{fr ? 'Sports de précision' : 'Precision sports'}</b><small>{fr ? 'Golf, tennis, aviron et d’autres sports, en démo' : 'Golf, tennis, rowing and more, as demos'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Coach & Physio Matcher */}
@@ -238,8 +239,8 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           {onAbout && <button type="button" className="about-link press" onClick={onAbout} data-testid="about-link">{ABOUT[fr ? 'fr' : 'en'].link}</button>}
           {onManifesto && <button type="button" className="about-link press" onClick={onManifesto} data-testid="manifesto-link">{fr ? 'Le Manifeste' : 'Manifesto'}</button>}
           {onCoaches && <button type="button" className="about-link press" onClick={onCoaches} data-testid="coaches-link">{fr ? 'Coaches & Kinés' : 'Find Coach'}</button>}
-          {onEquine && <button type="button" className="about-link press" onClick={onEquine} data-testid="equine-link">{fr ? 'Allures Équines' : 'Equine AI'}</button>}
-          {onSports && <button type="button" className="about-link press" onClick={onSports} data-testid="sports-link">{fr ? 'Golf & Tennis' : 'Sports AI'}</button>}
+          {onEquine && <button type="button" className="about-link press" onClick={onEquine} data-testid="equine-link">{fr ? 'Allures équines' : 'Equine gaits'}</button>}
+          {onSports && <button type="button" className="about-link press" onClick={onSports} data-testid="sports-link">{fr ? 'Sports' : 'Sports'}</button>}
           {onBuddies && <button type="button" className="about-link press" onClick={onBuddies} data-testid="buddies-link">{fr ? 'Gym Buddy' : 'Gym Buddy'}</button>}
           {onErgonomics && <button type="button" className="about-link press" onClick={onErgonomics} data-testid="ergo-link">{fr ? 'Ergonomie' : 'Ergonomics'}</button>}
           {onChat && <button type="button" className="about-link press" onClick={onChat} data-testid="chat-link">{fr ? 'Chat P2P' : 'P2P Chat'}</button>}

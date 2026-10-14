@@ -187,4 +187,4 @@ WorkoutVision operates entirely under a **Local-First, Zero-Surveillance** parad
   - *Bishop et al. (2018)*: Bilateral Asymmetry Index and inter-limb asymmetries.
   - *Wolf et al. (2023) & Pedrosa et al. (2022)*: Hypertrophy adaptations at long muscle lengths (Lengthened Partials).
   - *McNemar, Q. (1947)*: Note on the sampling error of the difference between correlated proportions.
-  - *Dyson & Greve (2016)*: Subjective assessment of lameness in horses on the lunge and circle kinematics.
+  - *Dyson & Greve (2016)*, J Equine Vet Sci 38:1-7: subjective gait assessment of 57 sports horses in hand, on the lunge and ridden (EquiVision cites it for one point: a horse that moves evenly in a straight line can be lame on the lunge or ridden. The paper defines no asymmetry index or threshold).
