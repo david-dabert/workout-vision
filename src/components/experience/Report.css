@@ -26,6 +26,8 @@
 .wv-experience .report-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 3px; border-radius: var(--r-s); background: var(--basalt); border: 1px solid var(--c-rule); }
 .wv-experience .report-seg button { min-height: 44px; padding: 4px 6px; border-radius: 11px; font-size: var(--fs-caption); font-weight: 500; line-height: 1.25; color: var(--bone-2); text-align: center; text-wrap: balance; }
 .wv-experience .report-seg button[aria-pressed="true"] { background: var(--c-accent); color: var(--c-on-accent); }
+/* Four answers (Training): two rows of two, so "Séance kiné" does not stand alone under three. */
+.wv-experience .report-seg.is-pairs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 /* A scale (pain 0 to 10, effort 6 to 10): one key per value, --cols to a row (Report.jsx, Choice), each 44 px tall, the
    last row centred, so effort's five keys fill one row and pain's eleven stand as 6 + 5 with no empty cell. */
 .wv-experience .report-seg.is-scale { display: flex; flex-wrap: wrap; justify-content: center; }
@@ -128,6 +130,8 @@
 .wv-experience .sheet .sh-own { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 /* A label that wraps ("COMPTÉ PAR L’APP") keeps the three values on one line, as in the PDF. */
 .wv-experience .sheet .sh-details > span { display: flex; flex-direction: column; justify-content: space-between; gap: 2px; }
+/* A long value ("proposée par l’appli, confirmée par la personne", report-sheet.js wideDetail) takes the whole row. */
+.wv-experience .sheet .sh-details > span.is-wide { grid-column: 1 / -1; }
 .wv-experience .sheet .sh-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding-top: 12px; border-top: 1px solid var(--paper-rule); }
 .wv-experience .sheet .sh-stats em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-ash); }
 .wv-experience .sheet .sh-stats b { display: block; margin-top: 4px; font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1; color: var(--paper-gold); font-variant-numeric: lining-nums tabular-nums; }

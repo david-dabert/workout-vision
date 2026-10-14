@@ -222,8 +222,12 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   const more = summary.filter(line => !statLabels.some(l => line.startsWith(`${l}${colon}`)));
   // How the count was made, as labelled details under it, like the people above it: who counted, and the limb followed.
   const details = [];
+  // A universal proposal (an exercise the core does not offer, universalProposal.js) says why the app proposed rather than
+  // counted, on the sheet and the PDF as in the history and the file (honesty pass, second round, 14 October 2026: the
+  // words sat in `corrected`, which no screen prints). Awaiting David's approval of the words (R10).
+  if (source === 'manual' && afterRefusal && proposed && proposedBy === 'universal') details.push([fr ? 'Saisie' : 'Entry', fr ? 'proposée par l’appli, qui ne compte pas encore cet exercice, puis confirmée par la personne' : 'proposed by the app, which does not count this exercise yet, then confirmed by the person']);
   // The app's proposal on a refused set, confirmed as it stood (History.jsx; French approved by David on 9 October 2026, R10).
-  if (source === 'manual' && afterRefusal && proposed) details.push([fr ? 'Saisie' : 'Entry', fr ? 'proposée par l’appli, confirmée par la personne' : 'proposed by the app, confirmed by the person']);
+  else if (source === 'manual' && afterRefusal && proposed) details.push([fr ? 'Saisie' : 'Entry', fr ? 'proposée par l’appli, confirmée par la personne' : 'proposed by the app, confirmed by the person']);
   else if (source === 'manual' && afterRefusal) details.push([fr ? 'Saisie' : 'Entry', fr ? 'à la main, l’appli n’a pas pu compter' : 'by hand, the app could not count']);
   else if (counted != null && counted !== count) details.push([fr ? 'Compté par l’appli' : 'Counted by the app', String(counted)], [fr ? 'Corrigé' : 'Corrected', String(count)]);
   if (arm === 'left' || arm === 'right') {
@@ -297,6 +301,13 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
 }
 
 /**
+ * A detail of how the count was made too long for a third of the sheet ("proposée par l'appli, confirmée par la
+ * personne"): set across the row on the sheet (Report.jsx, is-wide) and in the PDF (report-pdf.js), not wrapped into a
+ * third with two thirds empty (honesty pass, second round, 14 October 2026). Layout only.
+ */
+export const wideDetail = value => String(value).length > 24;
+
+/**
  * The set as a JSON file (Report.jsx, "Mesures de la série"; honesty audit of 14 October 2026, CORE-15): every value says
  * where it comes from, the app's count and its experimental per-rep measures apart from what the person confirmed or
  * typed. No derived metric the app cannot measure (the withdrawn symmetry, consistency, SPARC, form checks, loads,
@@ -319,11 +330,19 @@ export function measuresFile({ fr, lift, date, count, counted = null, source, af
     : app !== null && app !== count ? tr('corrigé par la personne', 'corrected by the person') : tr('compté par l’appli, confirmé par la personne', 'counted by the app, confirmed by the person');
   const tenth = v => (Number.isFinite(v) ? Math.round(v * 10) / 10 : null);
   const whole = v => (Number.isFinite(v) ? Math.round(v) : null);
-  const values = (reps || []).map(r => ({
-    index: r.index ?? null, startTime: tenth(r.startTime), endTime: tenth(r.endTime), romDegrees: whole(r.romDegrees),
-    concentricSec: tenth(r.concentricSec), eccentricSec: tenth(r.eccentricSec), peakSpeed: whole(r.peakSpeed), meanSpeed: whole(r.meanSpeed),
-    ...(r.side ? { side: r.side } : {}), ...(r.clipped ? { clipped: true } : {}),
-  }));
+  // A rep the sheet does not time (filmed in part, or under tempo.js's partialIn rule) has no tempo and no speed here
+  // either, as in repTable ('…'); every key names its unit, the speeds being joint angles per second, not m/s (honesty
+  // pass, second round, 14 October 2026: the file held what the sheet withholds, unitless).
+  const untimed = partialIn(reps);
+  const values = (reps || []).map(r => {
+    const timed = !r.clipped && !untimed(r);
+    return {
+      index: r.index ?? null, startSec: tenth(r.startTime), endSec: tenth(r.endTime), romDegrees: whole(r.romDegrees),
+      concentricSec: timed ? tenth(r.concentricSec) : null, eccentricSec: timed ? tenth(r.eccentricSec) : null,
+      peakDegPerSec: timed ? whole(r.peakSpeed) : null, meanDegPerSec: timed ? whole(r.meanSpeed) : null,
+      ...(r.side ? { side: r.side } : {}), ...(r.clipped ? { clipped: true } : !timed ? { timed: false } : {}),
+    };
+  });
   const lr = sidesLines(sides, fr, lift) ? sides : null;
   const p = person || {};
   return {

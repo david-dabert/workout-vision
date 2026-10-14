@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { exerciseName } from './exercise-info';
-import { reportSheet, reportFileName, measuresFile, NAME_MAX, NOTES_MAX } from './report-sheet';
+import { reportSheet, reportFileName, measuresFile, wideDetail, NAME_MAX, NOTES_MAX } from './report-sheet';
 import { knownSets, loadSets, previousSet } from './sets';
 import { liftDefinition } from '../../lib/counting/core';
 import { track } from '../../lib/events';
@@ -166,7 +166,7 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
           placeholder={fr ? 'Prénom et nom' : 'First and last name'} value={name} onChange={e => setName(e.target.value)} onKeyDown={next(notesRef)} />
       </div>
       <Choice id="fWith" label={fr ? 'Entraînement' : 'Training'} value={context} onChange={v => { setContext(v); setPartner(''); }}
-        options={[['alone', fr ? 'En solo' : 'Alone'], ['friend', fr ? 'En binôme' : 'With a friend'], ['coach', fr ? 'Avec un coach' : 'With a coach'], ['physio', fr ? 'Séance kiné' : 'Physiotherapy']]} />
+        options={[['alone', fr ? 'En solo' : 'Alone'], ['friend', fr ? 'En binôme' : 'With a friend'], ['coach', fr ? 'Avec un coach' : 'With a coach'], ['physio', fr ? 'Séance kiné' : 'Physiotherapy']]} pairs />
       {(context === 'friend' || context === 'coach' || context === 'physio') && <div className="field fade-in">
         <label htmlFor="fPartner">{context === 'physio' ? (fr ? 'Nom du kinésithérapeute' : 'Physiotherapist’s name') : context === 'coach' ? (fr ? 'Nom du coach' : 'Coach’s name') : (fr ? 'Nom du partenaire' : 'Friend’s name')}</label>
         <input id="fPartner" ref={partnerRef} type="text" autoComplete="off" autoCapitalize="words" autoCorrect="off" spellCheck={false} enterKeyHint="next" maxLength={NAME_MAX}
@@ -200,7 +200,7 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
         {sheet.opener && <p className="sh-opener">{sheet.opener}</p>}
         {/* How the count was made, labelled like the people above (David's iPhone, 5 October: four grey sentences of equal weight). */}
         {sheet.details.length > 0 && <div className="sh-people sh-details">
-          {sheet.details.map(([label, value]) => <span key={label}><em>{label}</em><span>{value}</span></span>)}
+          {sheet.details.map(([label, value]) => <span key={label} className={wideDetail(value) ? 'is-wide' : undefined}><em>{label}</em><span>{value}</span></span>)}
         </div>}
         {/* The person's own pain and effort, as they gave them: theirs, never graded, on every sheet. */}
         {sheet.own.length > 0 && <div className="sh-people sh-details sh-own" data-testid="sh-own">
@@ -244,10 +244,11 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
 
 // One answer among a few, or none: a second tap on the chosen one clears it, since every answer is optional. cols: a
 // scale's keys to a row (Report.css, is-scale), the last row centred: effort's five on one row, pain's eleven as 6 + 5.
-function Choice({ id, label, value, onChange, options, cols = 0 }) {
+// pairs: four answers as two rows of two (Training), so none stands alone on a second row.
+function Choice({ id, label, value, onChange, options, cols = 0, pairs = false }) {
   return <div className="field">
     <span className="field-label" id={id}>{label}</span>
-    <div className={`report-seg${cols ? ' is-scale' : ''}`} style={cols ? { '--cols': cols } : undefined} role="group" aria-labelledby={id}>
+    <div className={`report-seg${cols ? ' is-scale' : pairs ? ' is-pairs' : ''}`} style={cols ? { '--cols': cols } : undefined} role="group" aria-labelledby={id}>
       {options.map(([key, text]) => <button key={key} type="button" className="press" aria-pressed={value === key}
         onClick={() => onChange(value === key ? '' : key)}>{text}</button>)}
     </div>

@@ -446,11 +446,23 @@ describe('measuresFile', () => {
   });
   it('rounds the reps as the screen shows them, and keeps no partial-rep field', () => {
     const f = measuresFile({ ...set, fr: false });
-    expect(f.reps.values[0]).toEqual({ index: 1, startTime: 0, endTime: 1.5, romDegrees: 88, concentricSec: 0.4, eccentricSec: 0.8, peakSpeed: 349, meanSpeed: 129 });
-    expect(f.reps.values[1]).toMatchObject({ index: 2, startTime: 3, clipped: true });
+    expect(f.reps.values[0]).toEqual({ index: 1, startSec: 0, endSec: 1.5, romDegrees: 88, concentricSec: 0.4, eccentricSec: 0.8, peakDegPerSec: 349, meanDegPerSec: 129 });
+    // Filmed in part: its range, no tempo and no speed, as the sheet prints '…' (second round of the honesty pass).
+    expect(f.reps.values[1]).toEqual({ index: 2, startSec: 3, endSec: 4.5, romDegrees: 88, concentricSec: null, eccentricSec: null, peakDegPerSec: null, meanDegPerSec: null, clipped: true });
     expect(JSON.stringify(f)).not.toMatch(/partial|romFraction/i);
     expect(JSON.stringify(f.reps)).not.toMatch(/\d\.\d{2,}/);
     expect(f.count).toEqual({ value: 2, source: 'counted by the app, confirmed by the person' });
+  });
+  it('withholds the tempo and speeds of a rep the sheet does not time, as the sheet does', () => {
+    // Rep 1 of a curl, its lift 0.1 s (under tempo.js MIN_PHASE_SEC): the sheet prints '…', the file holds null.
+    const quick = { ...rep(1, 0), concentricSec: 0.1, eccentricSec: 0.5, peakSpeed: 491, meanSpeed: 137 };
+    const reps = [quick, rep(2, 2), rep(3, 4)];
+    const sheet = reportSheet({ ...base, lift: 'bicep_curl', reps });
+    expect(sheet.rows[0]).toEqual(['1', '…', '88°', '…', '…']);
+    const f = measuresFile({ ...set, reps, count: 3, counted: 3, fr: true });
+    expect(f.reps.values[0]).toEqual({ index: 1, startSec: 0, endSec: 1.5, romDegrees: 88, concentricSec: null, eccentricSec: null, peakDegPerSec: null, meanDegPerSec: null, timed: false });
+    expect(f.reps.values[1]).toMatchObject({ concentricSec: 0.4, peakDegPerSec: 349 });
+    expect(JSON.stringify(f)).not.toMatch(/"(peakSpeed|meanSpeed|startTime|endTime)"/);
   });
   it('says none for a set with no measured rep, and speaks the person\'s language', () => {
     const typed = measuresFile({ fr: true, lift: 'squat', date: day, count: 8, counted: null, source: 'manual', afterRefusal: true, reps: [], person: { pain: 3, rpe: 8 } });

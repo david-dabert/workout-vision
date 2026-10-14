@@ -84,7 +84,10 @@ describe('a confirmed universal proposal keeps its provenance once read back', (
     const props = { source: back.source, afterRefusal: back.afterRefusal, proposed: proposedBy(back) !== null, proposedBy: proposedBy(back) };
     const base = { lang: 'fr', date: new Date('2026-10-14T10:00:00Z'), notes: '', liftName: 'Oiseau', count: back.reps, counted: null, reps: [], lift, ...props };
     const fr = reportSheet(base);
-    expect(fr.details).toContainEqual(['Saisie', 'proposée par l’appli, confirmée par la personne']);
+    // The sheet and its PDF print the details: the universal reason stands there, apart from a PSC proposal's.
+    expect(fr.details).toContainEqual(['Saisie', 'proposée par l’appli, qui ne compte pas encore cet exercice, puis confirmée par la personne']);
+    expect(reportSheet({ ...base, lang: 'en' }).details).toContainEqual(['Entry', 'proposed by the app, which does not count this exercise yet, then confirmed by the person']);
+    expect(reportSheet({ ...base, proposedBy: 'psc' }).details).toContainEqual(['Saisie', 'proposée par l’appli, confirmée par la personne']);
     expect(fr.corrected).toBe('Proposé par l’appli, qui ne compte pas encore cet exercice, puis confirmé à la main.');
     expect(JSON.stringify(fr)).not.toMatch(/à la main, l’appli n’a pas pu compter|Saisi à la main/);
     expect(reportSheet({ ...base, lang: 'en' }).corrected).toBe('Proposed by the app, which does not count this exercise yet, then confirmed by hand.');
