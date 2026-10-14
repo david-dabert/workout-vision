@@ -667,15 +667,15 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   </span>
                 </div>
                 <h4 className="physio-ex-name">{fr ? item.nameFr : item.nameEn}</h4>
-                <p className="physio-rationale">{t.physioMuscles}{fr ? '\u00A0: ' : ': '}{item.primaryMuscles.join(', ')}</p>
+                <p className="physio-rationale">{t.physioMuscles}{fr ? '\u00A0: ' : ': '}{(fr ? item.primaryMuscles : item.primaryMusclesEn).join(', ')}</p>
                 <div className="physio-progression-box">
                   <div className="prog-line">
                     <span className="prog-badge reg">{t.regression}</span>
-                    <span>{item.regression}</span>
+                    <span>{fr ? item.regression : item.regressionEn}</span>
                   </div>
                   <div className="prog-line">
                     <span className="prog-badge prog">{t.progression}</span>
-                    <span>{item.progression}</span>
+                    <span>{fr ? item.progression : item.progressionEn}</span>
                   </div>
                 </div>
                 {onAddToProgramme && (

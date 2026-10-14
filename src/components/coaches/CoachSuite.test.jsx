@@ -177,5 +177,8 @@ describe('strengthening by area (PHY-1)', () => {
     const text = JSON.stringify([PHYSIO_CATALOG, PHYSIO_REGIONS]);
     expect(text).not.toMatch(/clinicalRationale|LCA|ACL|Achille|valid|amnésie|conflit/i);
     expect(PHYSIO_CATALOG.every(i => i.primaryMuscles.length > 0)).toBe(true);
+    // Second review: English fields for what English mode shows, and French names without English in brackets.
+    expect(PHYSIO_CATALOG.every(i => i.primaryMusclesEn.length === i.primaryMuscles.length && i.progressionEn && i.regressionEn)).toBe(true);
+    expect(PHYSIO_CATALOG.filter(i => /\(| [A-ZÉ][a-zé]/.test(i.nameFr)).map(i => i.nameFr)).toEqual(['Gainage ventral (planche)']);
   });
 });
