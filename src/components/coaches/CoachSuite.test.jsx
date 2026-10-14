@@ -99,3 +99,12 @@ describe('nutrition after the honesty pass (NUT-1 to NUT-7)', () => {
     expect(html).toContain('Ancienne estimation par photo, non fiable');
   });
 });
+
+describe('strengthening by area (PHY-1)', () => {
+  it('claims no treatment or validation: no rationale is left, the areas name no injury', async () => {
+    const { PHYSIO_CATALOG, PHYSIO_REGIONS } = await import('../../lib/physioCatalog');
+    const text = JSON.stringify([PHYSIO_CATALOG, PHYSIO_REGIONS]);
+    expect(text).not.toMatch(/clinicalRationale|LCA|ACL|Achille|valid|amnésie|conflit/i);
+    expect(PHYSIO_CATALOG.every(i => i.primaryMuscles.length > 0)).toBe(true);
+  });
+});

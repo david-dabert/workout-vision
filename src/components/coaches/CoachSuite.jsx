@@ -246,7 +246,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
           onClick={() => { hapticLight(); setActiveSubTab('physio'); }}
           data-testid="tab-physio"
         >
-          <span><SvgStetho />{fr ? 'Kiné par Zone' : 'Physio by Joint'}</span>
+          <span><SvgStetho />{t.physioTab}</span>
         </button>
       </div>
 
@@ -627,12 +627,9 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
         <div className="suite-content-section" data-testid="section-physio">
           <div className="section-header-row">
             <div>
-              <h3>{fr ? 'Rééducation par Zone Anatomique' : 'Physiotherapy & Joint Rehab Catalog'}</h3>
-              <p className="section-subtext">
-                {fr
-                  ? 'Exercices thérapeutiques validés avec angles de vue caméra recommandés et filières de progression.'
-                  : 'Clinically validated exercises with camera angle guidelines and progression hierarchies.'}
-              </p>
+              <h3>{t.physioTitle}</h3>
+              <p className="section-subtext">{t.physioSub}</p>
+              <p className="sc-frame-note" data-testid="physio-note">{t.physioNote}</p>
             </div>
           </div>
 
@@ -662,7 +659,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                   </span>
                 </div>
                 <h4 className="physio-ex-name">{fr ? item.nameFr : item.nameEn}</h4>
-                <p className="physio-rationale">{fr ? item.clinicalRationaleFr : item.clinicalRationaleEn}</p>
+                <p className="physio-rationale">{t.physioMuscles}{fr ? '\u00A0: ' : ': '}{item.primaryMuscles.join(', ')}</p>
                 <div className="physio-progression-box">
                   <div className="prog-line">
                     <span className="prog-badge reg">{fr ? 'Régression' : 'Regression'}</span>
@@ -683,7 +680,7 @@ export default function CoachSuite({ onAddToProgramme, onSelectClient }) {
                     }}
                     data-testid={`add-physio-${item.key}`}
                   >
-                    + {fr ? 'Ajouter à la fiche d’exercices' : 'Add to Programme'}
+                    + {t.physioAdd}
                   </button>
                 )}
               </div>
