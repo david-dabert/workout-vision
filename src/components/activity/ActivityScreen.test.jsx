@@ -82,6 +82,21 @@ describe('the activity screen', () => {
     }
   });
 
+  it('gives every cell of the table without a number its reason, at every rate the demo offers', async () => {
+    for (const rate of [15, 30, 60, 240]) {
+      const { result, truth } = volleyballDemo.run(rate);
+      const html = decode(await withLang('fr', ({ ActivityView }) => <ActivityView spec={volleyball} result={result} truth={truth} demo />));
+      const table = html.includes('<tbody>') ? html.slice(html.indexOf('<tbody>'), html.indexOf('</tbody>')) : '';
+      const cells = table.split('<td').slice(1).filter(cell => cell.includes('Pas de chiffre'));
+      for (const cell of cells) expect(cell, `rate ${rate}: ${cell}`).toMatch(/data-testid="activity-withheld-[a-z]+-\d+">[^<]+\.</);
+      if (rate === 30) {
+        // The case the third review found: jump 3's height computed, its margin over a quarter of it.
+        expect(cells.length, 'rate 30').toBeGreaterThan(0);
+        expect(table).toContain('data-testid="activity-withheld-height-3">La marge dépasse le quart de la valeur.<');
+      }
+    }
+  });
+
   it('shows no number at all, and the reason, when the engine refuses the read', async () => {
     const read = syntheticJumps({ jumps: [{ flight: 0.6 }], rate: 30 });
     for (const frame of read.landmarks) for (const i of [27, 28, 29, 30, 31, 32]) frame[i] = { ...frame[i], visibility: 0.1 };

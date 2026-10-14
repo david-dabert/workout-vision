@@ -149,6 +149,9 @@ export interface MeasureResult {
   refused: Text | null;
   /** What a mean was taken over: the events measured, among those it applies to. */
   scope?: Text;
+  /** Why an event has no value, one entry per event left without one, so each withheld cell of the table says why
+   *  (R8). Set when `values` is. */
+  withheld?: { event: number; reason: Text }[];
   /** A value flagged by the measure's threshold (a landing check). */
   flagged?: boolean;
 }

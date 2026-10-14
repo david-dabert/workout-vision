@@ -158,13 +158,16 @@ describe('volleyball margins, tuning and held-out runs', () => {
     console.log(`No noise, toe-off 0 ms, held-out flights and drops, 400 jumps per rate:\n${lines.join('\n')}`);
   }, 120000);
 
-  // The bias, across noise levels and toe-offs. The takeoff's correction is the middle of the range a toe-off of 0 to
-  // 40 ms allows (engine.ts, TOE_LAG_MAX): a toe that leaves at full speed reads high, by an offset known from first
-  // principles; one that takes 40 ms reads near zero. Neither end is removed, since the video does not show the
-  // toe-off: the margin covers both. Bounds: on development seeds 8001 to 8100 the mean bias over the held-out
-  // conditions was +0.45 to +0.96 cm at every noise level and rate; the bounds allow ±0.75 cm around that for the
-  // sampling error of a mean of 100 to 200 heights (a +3 cm regression, as a landing bias would be, fails them).
-  it('states the height bias at each noise level and checks the two ends of the toe-off range against first principles', () => {
+  // The bias, across noise levels, on the generator's toe-offs. The takeoff's correction is the middle of the range a
+  // toe-off of 0 to 40 ms allows when the toe's speed rises no slower than uniformly (engine.ts, TOE_LAG_MAX). A toe
+  // that leaves at full speed, the range's fast end, reads high by an offset known from first principles, checked here.
+  // The generator's toe speed rises faster than uniformly at first (synthetic.ts), so its 40 ms toe-off lies inside the
+  // range, not at its slow end (a speed rising uniformly over 40 ms, not generated, so not checked): it is checked only
+  // to read within 1 cm of zero. The bias therefore depends on the toe-off profile, which the video does not show; the
+  // figures below are the generator's profile's. Bounds: on development seeds 8001 to 8100 the mean bias over the
+  // held-out conditions was +0.45 to +0.96 cm at every noise level and rate; the bounds allow ±0.75 cm around that for
+  // the sampling error of a mean of 100 to 200 heights (a +3 cm regression, as a landing bias would be, fails them).
+  it('states the height bias on the generator\'s toe-offs at each noise level; checks a toe leaving at full speed against first principles and the generator\'s 40 ms toe-off within 1 cm of zero', () => {
     const lines: string[] = [];
     for (const rate of [30, 60, 120, 240]) {
       const cells: string[] = [];
@@ -176,19 +179,20 @@ describe('volleyball margins, tuning and held-out runs', () => {
         expect(bias, `rate ${rate} noise ${noise}`).toBeLessThan(1.75);
         expect(w.inside / w.shown, `rate ${rate} noise ${noise}`).toBeGreaterThanOrEqual(0.99);
       }
-      // The two ends at 1 px, with the hip landing 5 to 8 cm lower, so the flight-time cap does not clip the offset.
+      // A toe leaving at full speed and the generator's 40 ms toe-off at 1 px, with the hip landing 5 to 8 cm lower, so
+      // the flight-time cap does not clip the offset.
       const ends = { ...HELD_OUT, noise: [1, 1] as Range, drop: [0.05, 0.08] as Range };
       const fast = runSet(rate, 430001, 100, { ...ends, lag: [0, 0] });
       const slow = runSet(rate, 430001, 100, { ...ends, lag: [TOE_LAG_MAX, TOE_LAG_MAX] });
       cells.push(`toe-off 0 ms ${signed(mean(fast.errors))} (expected ${signed(mean(fast.expected))}), ${TOE_LAG_MAX * 1000} ms ${signed(mean(slow.errors))}`);
-      // Measured on development seeds 7001 to 7060: within 0.4 cm of the expected offset at the fast end, and within
-      // 0.65 cm of zero at the slow end.
+      // Measured on development seeds 7001 to 7060: within 0.4 cm of the expected offset for a toe at full speed, and
+      // within 0.65 cm of zero for the generator's 40 ms toe-off.
       expect(Math.abs(mean(fast.errors) - mean(fast.expected)), `rate ${rate}`).toBeLessThan(0.6);
       expect(Math.abs(mean(slow.errors)), `rate ${rate}`).toBeLessThan(1);
       expect((fast.inside + slow.inside) / (fast.shown + slow.shown), `rate ${rate}`).toBeGreaterThanOrEqual(0.99);
       lines.push(`${String(rate).padStart(3)} /s  ${cells.join('  ')}`);
     }
-    console.log(`Height bias in cm (mean stated margin), held-out conditions, by noise; then the two ends of the toe-off range at 1 px, the hip landing 5 to 8 cm lower:\n${lines.join('\n')}`);
+    console.log(`Height bias in cm (mean stated margin), held-out conditions, by noise; then a toe at full speed and the generator's 40 ms toe-off at 1 px, the hip landing 5 to 8 cm lower:\n${lines.join('\n')}`);
   }, 240000);
 
   // The engine takes the hip for the body's centre of mass. On a person the arms and legs move the centre of mass

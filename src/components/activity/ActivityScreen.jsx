@@ -57,8 +57,9 @@ function MeasureTile({ m, spec, truth, lang }) {
  * Each event's values, with their truths: one row per event of the activity's counted event, one column per measure.
  * A cell holds the value with its margin, then its truth and its verdict, so the table stays three columns wide. A
  * measure whose summary is refused (the best jump cannot be named) still has its column: the engine keeps each value
- * it measured. At phone width a measure that does not apply to an event takes no room in its card, unless no measure
- * applies to it, so a card never holds its title alone.
+ * it measured. A cell without a value says why under "no number", in the engine's words for that event (R8). At
+ * phone width a measure that does not apply to an event takes no room in its card, unless no measure applies to it,
+ * so a card never holds its title alone.
  */
 function EventTable({ result, spec, truth, lang }) {
   const fr = lang === 'fr', c = ACTIVITY_COPY[lang];
@@ -87,8 +88,10 @@ function EventTable({ result, spec, truth, lang }) {
               if (na(m)) return <td key={m.key} className="act-na" data-label={nameOf(m)}>{none ? c.notApplicable : <span aria-hidden="true">–</span>}</td>;
               // A value where the truth has none (a run-up read on a standing jump) is outside any margin.
               const inside = v && t !== null && Math.abs(v.value - t) <= v.margin;
+              const why = v ? null : m.withheld?.find(x => x.event === i)?.reason[lang] ?? null;
               return <td key={m.key} data-label={nameOf(m)}>
                 <span>{v ? withUnit(`${fmt(v.value, d, fr)}${NBSP}±${NBSP}${fmtMargin(v.margin, d, fr)}`, m.unit) : c.noNumber}</span>
+                {why ? <span className="act-in" data-testid={`activity-withheld-${m.key}-${i + 1}`}>{why}</span> : null}
                 {truth ? <span className="act-in">{c.truth(t !== null ? withUnit(fmt(t, d, fr), m.unit) : c.none)}</span> : null}
                 {truth && v ? <span className={`act-in${inside ? '' : ' act-out'}`}>{inside ? c.inside : c.outside}</span> : null}
               </td>;

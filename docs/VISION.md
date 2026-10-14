@@ -185,14 +185,20 @@ the 82 to 113 smaller ones per rate were counted too. A height not shown was ref
 quarter of the value) or belongs to a jump not counted; a run-up not timed was refused with its reason (the rate, the
 feet too noisy to read strides, a step too brief to read, a margin over a quarter).
 
-The bias is set by the toe-off, which the video does not show. The takeoff's correction is the middle of the range a
-toe-off of 0 to 40 ms allows, so a toe that leaves at full speed (the fast end) reads high and one that takes 40 ms
-reads near zero. With the hip landing 5 to 8 cm lower, at 1 px, the fast end reads +2.80 to +3.18 cm high (expected
-from first principles +2.63 to +3.03: the takeoff early by half the range, times v₀) and the slow end −0.20 to +0.09 cm
-(30 to 240 a second). Over the whole toe-off range the mean bias stays positive, +0.73 to +1.18 cm at every noise
-level from 0 to 2 px (30 to 240 a second). The margin covers both ends; the bias is not removed, since the toe-off is
-not known. With no noise and the toes leaving at full speed, every takeoff and every height was inside its margin
-(worst 0.98 of the margin at 60 and 240 a second).
+The bias is set by the toe-off, which the video does not show: its sign and size depend on how fast the toes' speed
+rises. The takeoff's correction is the middle of the range a toe-off of 0 to 40 ms allows when that speed rises no
+slower than uniformly (engine.ts). A toe that leaves at full speed, the range's fast end, reads high: with the hip
+landing 5 to 8 cm lower, at 1 px, +2.80 to +3.18 cm (expected from first principles +2.63 to +3.03: the takeoff early by
+half the range, times v₀; 30 to 240 a second). The range's slow end, a speed rising uniformly over 40 ms, is not
+generated, so neither its bias nor its margin is checked; from first principles its takeoff would be read late by half
+the range, and its height low. The generator's toe-offs rise faster than uniformly at first (synthetic.ts), so its
+40 ms toe-off lies inside the range, not at its slow end: it reads −0.20 to +0.09 cm, and only its distance from zero
+(under 1 cm) is checked, not a first-principles value. Over the generator's toe-offs of 0 to 40 ms the mean bias is
++0.73 to +1.18 cm at every noise level from 0 to 2 px (30 to 240 a second): a figure of the generator's toe-off
+profile, not of a person's. At least 99 heights in 100 were inside their margin on the generator's toe-offs at each
+noise level, and over the toe leaving at full speed and the generator's 40 ms toe-off taken together; the bias is not
+removed, since the toe-off is not known. With no noise and the toes leaving at full speed, every takeoff and every
+height was inside its margin (worst 0.98 of the margin at 60 and 240 a second).
 
 The hip is the generator's centre of mass unless asked otherwise. Moving the hip relative to it over the flight, at 60
 and 240 a second: 1 cm down or up keeps every height inside its margin (bias +0.27 to +1.08 cm); 3 cm down too (bias

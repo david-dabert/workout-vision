@@ -504,6 +504,10 @@ function measure(spec: MeasureSpec, ctx: Context, view: ActivityResult['view']):
   // An event whose value was computed but not shown (its margin too wide): its interval, from which the highest can
   // still be named when it lies wholly below the others (see below).
   const unshown: ({ lo: number; hi: number } | null)[] = events.map(() => null);
+  // Why each event left without a value has none, in a few words, for its cell in the table. French: written after
+  // the third review (14 October 2026), awaiting David's approval (R10), as every reason below.
+  const withheld: { event: number; reason: Text }[] = [];
+  const marginTooWide = { fr: 'La marge dépasse le quart de la valeur.', en: 'The margin exceeds a quarter of the value.' };
   // Why the highest or the lowest cannot be named, in the words of what is measured; and what a mean was taken over.
   let unnamed: Text = { fr: 'Impossible de désigner la valeur extrême\u00A0: un événement n’est pas mesuré.', en: 'The extreme value cannot be named: an event is not measured.' };
   let scope: Text | undefined;
@@ -519,22 +523,27 @@ function measure(spec: MeasureSpec, ctx: Context, view: ActivityResult['view']):
     // not shown; and it never makes the margin smaller than the flight-time method's own (heightMarginCm), so two
     // readings that barely meet do not pass for a precise one. The value shown is the middle of the interval.
     let whole = 0, disagree = 0;
+    const unseen = { fr: 'Décollage ou sommet de la hanche non vu.', en: 'Takeoff or top of the hip not seen.' };
     events.forEach((e, i) => {
-      if (e.takeoff === undefined || e.apex === undefined) return;
+      if (e.takeoff === undefined || e.apex === undefined) { withheld.push({ event: i, reason: unseen }); return; }
       const up = e.apex - e.takeoff, m = (e.takeoffMargin as number) + (e.apexMargin as number);
-      if (!(up > 0)) return;
+      if (!(up > 0)) { withheld.push({ event: i, reason: unseen }); return; }
       whole += 1;
       const lo = (G * Math.max(0, up - m) ** 2) / 2 * 100;
       let hi = (G * (up + m) ** 2) / 2 * 100, floor = 0;
       if (e.flight !== undefined && e.flightMargin !== undefined) {
         const cap = flightHeightCm(e.flight + e.flightMargin);
-        if (cap - lo < CAP_MIN_SHARE * (hi - lo)) { disagree += 1; return; }
+        if (cap - lo < CAP_MIN_SHARE * (hi - lo)) {
+          disagree += 1;
+          withheld.push({ event: i, reason: { fr: 'Le temps de vol et la courbe de la hanche ne concordent pas.', en: 'The flight time and the hip\'s curve disagree.' } });
+          return;
+        }
         hi = Math.min(hi, cap);
         floor = heightMarginCm(e.flight, e.flightMargin);
       }
       const h = (lo + hi) / 2, margin = Math.max((hi - lo) / 2, floor);
       if (margin <= f.maxRelError.value * h) values.push({ value: h, margin, event: i });
-      else unshown[i] = { lo: h - margin, hi: h + margin };
+      else { unshown[i] = { lo: h - margin, hi: h + margin }; withheld.push({ event: i, reason: marginTooWide }); }
     });
     if (!whole) return refuse({ fr: 'Aucun saut vu du décollage jusqu’au sommet.', en: 'No jump seen from the takeoff to the top.' });
     if (!values.length) {
@@ -560,18 +569,30 @@ function measure(spec: MeasureSpec, ctx: Context, view: ActivityResult['view']):
     }
     let seen = 0, brief = false, undated = false;
     events.forEach((e, i) => {
-      if (e.takeoff === undefined) return;
+      if (e.takeoff === undefined) { withheld.push({ event: i, reason: { fr: 'Décollage non vu.', en: 'Takeoff not seen.' } }); return; }
       const takeoff = e.takeoff;
       const last = [...before].reverse().find(b => b.end < e.start);
-      if (!last || takeoff - ctx.t[last.end] > f.withinSec.value) return;
+      if (!last || takeoff - ctx.t[last.end] > f.withinSec.value) {
+        withheld.push({ event: i, reason: { fr: 'Aucun élan détecté avant ce saut.', en: 'No run-up detected before this jump.' } });
+        return;
+      }
       seen += 1;
       // A rise of the foot between the last stride and the takeoff too brief to be read as a stride (fewer than its
       // minSamples): a step missed, or noise. Either way the last stride read may not be the last one made.
-      if (flights.some(x => x.start > last.end && x.end < e.start && x.end - x.start + 1 < minSamples)) { brief = true; return; }
-      if (last.landing === undefined) { undated = true; return; }
+      if (flights.some(x => x.start > last.end && x.end < e.start && x.end - x.start + 1 < minSamples)) {
+        brief = true;
+        withheld.push({ event: i, reason: { fr: 'Juste avant le décollage, le pied se soulève trop brièvement pour savoir si c’est un pas.', en: 'Just before the takeoff the foot lifts too briefly to tell whether it is a step.' } });
+        return;
+      }
+      if (last.landing === undefined) {
+        undated = true;
+        withheld.push({ event: i, reason: { fr: 'Le moment où le pied se repose au dernier appui ne peut pas être daté.', en: 'The moment the foot comes down on the last step cannot be timed.' } });
+        return;
+      }
       const value = takeoff - last.landing;
       const margin = (e.takeoffMargin as number) + (last.landingMargin as number);
       if (margin <= f.maxRelError.value * value) values.push({ value, margin, event: i });
+      else withheld.push({ event: i, reason: marginTooWide });
     });
     if (!values.length) {
       return refuse(brief
@@ -589,15 +610,17 @@ function measure(spec: MeasureSpec, ctx: Context, view: ActivityResult['view']):
       : { fr: `Moyenne sur ${n} des ${seen}${NB}élans détectés.`, en: `Mean of ${n} of the ${seen} run-ups detected.` };
   } else if (f.kind === 'widthRatio') {
     const num = ctx.widths[f.num], den = ctx.widths[f.den];
+    const kneesUnseen = { fr: 'Genoux ou chevilles non vus à la réception.', en: 'Knees or ankles not seen on landing.' };
     events.forEach((e, i) => {
-      if (e.at === undefined) return;
+      if (e.at === undefined) { withheld.push({ event: i, reason: kneesUnseen }); return; }
       const window: number[] = [];
       for (let k = e.at - RATIO_WINDOW; k <= e.at + RATIO_WINDOW; k++) window.push(k);
       const around = (s: (number | null)[]) => median(window.map(k => s[k]).filter((v): v is number => v !== null && v !== undefined));
       const n = around(num), d = around(den);
       if (Number.isFinite(n) && Number.isFinite(d) && d > 0) { const r = n / d; values.push({ value: r, margin: null, event: i, flag: r < f.below.value }); }
+      else withheld.push({ event: i, reason: kneesUnseen });
     });
-    if (!values.length) return refuse({ fr: 'Genoux ou chevilles non vus à la réception.', en: 'Knees or ankles not seen on landing.' });
+    if (!values.length) return refuse(kneesUnseen);
     unnamed = { fr: `Genoux vus sur ${values.length}${NB}${plural(values.length, 'réception')} sur ${events.length}\u00A0: impossible de désigner celle où ils rentrent le plus.`, en: `Knees seen on ${values.length} ${plural(values.length, 'landing')} of ${events.length}: the one where they come in most cannot be named.` };
   }
   // The highest or the lowest names one event among all. With an event left unshown it can still be named when every
@@ -610,7 +633,7 @@ function measure(spec: MeasureSpec, ctx: Context, view: ActivityResult['view']):
     const bound = known ? (max ? Math.max(...values.map(v => v.value - (v.margin as number))) : Math.min(...values.map(v => v.value + (v.margin as number)))) : NaN;
     const named = events.every((_, i) => values.some(v => v.event === i) || (known && unshown[i] !== null
       && (max ? (unshown[i] as { hi: number }).hi < bound : (unshown[i] as { lo: number }).lo > bound)));
-    if (!named) return { ...base, value: null, margin: null, values, refused: unnamed };
+    if (!named) return { ...base, value: null, margin: null, values, refused: unnamed, withheld };
   }
   const pick = spec.summary === 'max' ? values.reduce((a, b) => (b.value > a.value ? b : a))
     : spec.summary === 'min' ? values.reduce((a, b) => (b.value < a.value ? b : a)) : null;
@@ -621,7 +644,7 @@ function measure(spec: MeasureSpec, ctx: Context, view: ActivityResult['view']):
   // no event left unshown can be the highest), and a mean within the mean of the margins of the mean of the truths.
   const margin = !known ? null : pick ? Math.max(...margins) : margins.reduce((s, m) => s + m, 0) / margins.length;
   const flagged = values.some(v => v.flag) ? true : values.some(v => v.flag === false) ? false : undefined;
-  return { ...base, value, margin, values, refused: null, ...(scope ? { scope } : {}), ...(flagged === undefined ? {} : { flagged }) };
+  return { ...base, value, margin, values, refused: null, withheld, ...(scope ? { scope } : {}), ...(flagged === undefined ? {} : { flagged }) };
 }
 
 /**

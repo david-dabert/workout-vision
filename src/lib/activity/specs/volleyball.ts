@@ -78,9 +78,11 @@ export const volleyball: ActivitySpec = {
         kind: 'flightHeight',
         maxRelError: { value: 0.25, source: 'UNSOURCED: as for the run-up, a height known to more than a quarter of itself says nothing a coach can use', status: 'experimental' },
       },
-      // French: second review (14 October 2026), awaiting David's approval (R10). The formula as the engine computes it
-      // (v₀ from the time to the hip's top), then the flight-time form it is equal to.
-      formulaText: { fr: 'h = v₀²/2g, v₀ = g·(t_sommet − t_décollage) la vitesse au décollage, t_sommet le sommet de la courbe de la hanche. Revient à v₀ = (g·t²/2 − Δ)/t, t le temps de vol, Δ l’écart de hauteur de la hanche entre décollage et réception.', en: 'h = v₀²/2g, v₀ = g·(t_top − t_takeoff) the takeoff speed, t_top the top of the hip\'s curve. The same as v₀ = (g·t²/2 − Δ)/t, t the flight time, Δ how much lower the hip lands than it took off.' },
+      // French: rewritten after the third review (14 October 2026), awaiting David's approval (R10). What the engine
+      // computes (engine.ts, flightHeight), no more: the hip's rise time u gives h = g·u²/2; u's margin (the
+      // takeoff's and the top's) gives an interval, whose upper end is capped, when the flight is timed, by g·t²/8 at
+      // the long end of the flight time's margin; the value shown is the middle of that interval.
+      formulaText: { fr: 'h = g·u²/2, u = t_sommet − t_décollage, le temps de montée de la hanche. La marge sur u donne un intervalle, plafonné par g·t²/8 quand le temps de vol t est mesuré, t pris au plus long de sa marge. Valeur affichée\u00A0: le milieu de cet intervalle.', en: 'h = g·u²/2, u = t_top − t_takeoff, the hip\'s rise time. The margin on u gives an interval, capped by g·t²/8 when the flight time t is measured, t taken at the long end of its margin. Value shown: the middle of that interval.' },
       unit: 'cm',
       summary: 'max',
       source: 'Flight-time method, h = g·t²/8 (literature): Bosco, Luhtanen & Komi, Eur J Appl Physiol 1983;50:273-282. A phone video\'s flight time agrees with a force plate\'s flight time: Balsalobre-Fernández, Glaister & Lockey, J Sports Sci 2015;33(15):1574-1579. The method assumes the body lands as it took off; a lower landing lengthens t and overstates h. The correction for it is ours (experimental): Δ is read on the parabola of the hip\'s flight, which reduces the height to the rise from the takeoff to the top of the hip; it takes the hip for the body\'s centre of mass in the air, not yet measured on a filmed person.',
