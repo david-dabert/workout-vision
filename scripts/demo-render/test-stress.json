@@ -1,0 +1,64 @@
+{
+  "id": "test-stress-5-items",
+  "title": "Évaluation de Stress du Rendu Typographique",
+  "subtitle": "Test 5 Mesures Multi-Lignes et Refus Biomécaniques",
+  "caption": "Vérification automatisée de l'absence de chevauchement, du retour à la ligne et des refus explicites.",
+  "badge": "STRESS TEST",
+  "items": [
+    {
+      "key": "x_factor",
+      "label": "Séparation X-Factor Tronc / Bassin",
+      "unit": "°",
+      "decimals": 1,
+      "joint": [11, 12, 23, 24],
+      "frames": [
+        { "t_ms": 0, "until_ms": 2500, "value": 46.2, "margin": 1.5, "refused": null },
+        { "t_ms": 2500, "until_ms": 5000, "value": null, "margin": null, "refused": "OCCLUSION DU TRONC AU FINISH" }
+      ]
+    },
+    {
+      "key": "pelvic_turn",
+      "label": "Rotation Pelvienne",
+      "unit": "°",
+      "decimals": 0,
+      "joint": [23, 24],
+      "frames": [
+        { "t_ms": 0, "until_ms": null, "value": 38, "margin": 3, "refused": null }
+      ]
+    },
+    {
+      "key": "wrist_lead",
+      "label": "Flexion / Extension Poignet Avant",
+      "unit": "°",
+      "decimals": 1,
+      "joint": [15],
+      "frames": [
+        { "t_ms": 0, "until_ms": 1500, "value": null, "margin": null, "refused": "OCCLUSION DU POIGNET AU SOMMET DU BACKSWING" },
+        { "t_ms": 1500, "until_ms": 3500, "value": 14.8, "margin": 2.0, "refused": null },
+        { "t_ms": 3500, "until_ms": 5000, "value": null, "margin": null, "refused": "VITESSE ANGULAIRE HORS LIMITE CAPTEUR" }
+      ]
+    },
+    {
+      "key": "camera_angle",
+      "label": "Orthogonalité de l'Angle Caméra",
+      "unit": "%",
+      "decimals": 0,
+      "joint": [],
+      "frames": [
+        { "t_ms": 0, "until_ms": 3000, "value": null, "margin": null, "refused": "Refusé: l'angle de caméra s'écarte de plus de 15° de la normale DTL" },
+        { "t_ms": 3000, "until_ms": 5300, "value": 98, "margin": 2, "refused": null }
+      ]
+    },
+    {
+      "key": "tempo_ratio",
+      "label": "Ratio Rythmique Backswing / Downswing",
+      "unit": "",
+      "decimals": 2,
+      "joint": [11, 13, 15],
+      "frames": [
+        { "t_ms": 0, "until_ms": 2000, "value": 3.05, "margin": 0.12, "refused": null },
+        { "t_ms": 2000, "until_ms": 4000, "value": null, "margin": null, "refused": "IMPACT NON DÉTECTÉ DANS L'INTERVALLE" }
+      ]
+    }
+  ]
+}

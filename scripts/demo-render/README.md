@@ -9,17 +9,18 @@ Ce dossier contient les outils d'extraction cinématique hors-ligne et de rendu 
 1. **Aucun repère synthétique ou flottant :** Le squelette est tracé directement à partir des coordonnées réelles calculées image par image par MediaPipe Pose Landmarker en mode `VIDEO`.
 2. **Plancher de visibilité à 0,5 :** Un segment (os) ou un point articulaire n'est rendu que si la confiance de visibilité (`visibility`) est d'au moins **0,50** (le seuil de sécurité de l'application). Aucun point occlus ou interpolé artificiellement n'est dessiné.
 3. **Séparation stricte rendu / mesure :** Le script de rendu `render.py` ne calcule aucun chiffre, ne pose aucun diagnostic et n'embarque aucun texte en dur. Tous les bandeaux, labels, valeurs, marges d'erreur et motifs de refus proviennent exclusivement du fichier de mesures JSON rédigé par Claude.
-4. **Charte visuelle fidèle à l'application :** Tracés fins, cartouche sombre semi-transparente en bas de cadre (`rgba(12, 14, 18, 0.88)`), typographie lisible sur écran de smartphone (390 px de large), aucun bandeau HUD agressif, aucune mention fallacieuse ("AI", "Neural Cloud", "GDPR Equine").
+4. **Charte visuelle fidèle à l'application :** Tracés fins anti-aliasés, cartouche sombre semi-transparente en bas de cadre (`rgba(12, 14, 18, 0.88)`), typographie lisible sur écran de smartphone (390 px de large), préservation de la casse exacte des chaînes, rendu intégral des motifs de refus.
 
 ---
 
 ## 2. Installation de l'Environnement
 
-Conformément au protocole de non-interférence, aucun paquet npm n'est installé dans le projet. L'exécution Python s'effectue dans l'environnement virtuel dédié :
+L'exécution Python s'effectue dans un environnement virtuel standard :
 
 ```bash
-# Activation de l'environnement externe
-source ~/wv-tools/.venv/bin/activate
+# Création et activation de l'environnement virtuel
+python3 -m venv .venv
+source .venv/bin/activate
 
 # Installation des dépendances
 pip install -r scripts/demo-render/requirements.txt
@@ -29,35 +30,22 @@ pip install -r scripts/demo-render/requirements.txt
 * `opencv-python-headless` (I/O vidéo)
 * `numpy` (calculs matriciels et normalisation)
 * `Pillow` (composition graphique et typographie anti-aliasée)
-* `mediapipe >= 0.10.0` (Pose Landmarker en mode VIDEO)
-* `ffmpeg` (encodage final H.264 / yuv420p / faststart)
+* `mediapipe == 1.1.0` (Pose Landmarker en mode VIDEO)
+* `ffmpeg` (encodage final H.264 / yuv420p / faststart avec métadonnées BT.709)
 
 ---
 
 ## 3. Guide d'Exécution
 
 ### Étape 1 : Extraction des Points Clés MediaPipe (Hors-Ligne)
-L'extraction s'appuie sur le modèle officiel servi par l'application :
-`public/mediapipe/pose_landmarker_full.task` (lu en lecture seule).
+L'extraction s'appuie sur le modèle officiel de l'application :
+`public/mediapipe/pose_landmarker_full.task` (SHA-256 : `5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1`).
 
 ```bash
-# Exemple d'extraction en mode VIDEO
-python3 -c "
-import cv2, json, mediapipe as mp
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
-
-base_options = python.BaseOptions(model_asset_path='public/mediapipe/pose_landmarker_full.task')
-options = vision.PoseLandmarkerOptions(
-    base_options=base_options,
-    running_mode=vision.RunningMode.VIDEO,
-    num_poses=1
-)
-# Traitement de chaque frame avec t_ms croissant...
-"
+python3 scripts/demo-render/extract.py \
+  --video public/demo/v2/golf/golf_full_swing_dtl_16632575.mp4 \
+  --out data/demo-v2/landmarks/golf_full_swing_dtl_16632575.json
 ```
-Les fichiers de points clés sont enregistrés dans :
-`data/demo-v2/landmarks/<clip_id>.json`
 
 ---
 
@@ -90,9 +78,11 @@ python3 scripts/demo-render/render.py \
 ## 4. Spécification du Fichier de Mesures (JSON)
 
 Claude rédige ces fichiers ; le moteur de rendu applique les règles d'affichage suivantes :
-* Si `value` est `null` et `refused` est renseigné : affiche le texte de refus en couleur ambre.
-* Si `value` et `margin` sont présents : affiche `"value ± margin unit"`.
-* Met en surbrillance (cercle or) exclusivement les articulations listées dans `joint`.
+* Si `refused` est une chaîne non vide : affiche l'explication intégrale du refus (ambre), sans jamais afficher de nombre.
+* Si `value` et `margin` sont présents : affiche `"value ± margin unit"`, formaté avec le nombre de décimales spécifié dans `decimals` (défaut 0).
+* Durée de vie : affiche la mesure de `t_ms` jusqu'au prochain `t_ms` (ou `until_ms`). Ne retient pas la dernière valeur indéfiniment sauf si `until_ms: null` est explicitement spécifié.
+* Met en surbrillance (or ambre) exclusivement les articulations listées dans `joint`.
+* Ajustement automatique : retour à la ligne et réduction progressive de la police afin qu'aucun texte ne soit tronqué.
 
 ```json
 {
@@ -106,10 +96,11 @@ Claude rédige ces fichiers ; le moteur de rendu applique les règles d'affichag
       "key": "x_factor",
       "label": "X-Factor Separation",
       "unit": "deg",
+      "decimals": 1,
       "joint": [11, 12, 23, 24],
       "frames": [
-        { "t_ms": 0, "value": 0, "margin": 0, "refused": null },
-        { "t_ms": 2000, "value": null, "margin": null, "refused": "TOP OCCLUDED" }
+        { "t_ms": 0, "until_ms": 2000, "value": 0, "margin": 0, "refused": null },
+        { "t_ms": 2000, "until_ms": 3000, "value": null, "margin": null, "refused": "TOP OCCLUDED" }
       ]
     }
   ]
@@ -122,7 +113,6 @@ Claude rédige ces fichiers ; le moteur de rendu applique les règles d'affichag
 
 La couverture mesure la proportion d'images où **l'ensemble des 12 articulations majeures du corps** (épaules, coudes, poignets, hanches, genoux et chevilles bilatérales) présentent une confiance de visibilité $\ge 0{,}50$ :
 
-| Séquence Vidéo | Vue de caméra | Fréquence & Durée | Total Frames | Couverture intégrale des 12 articulations majeures ($\text{vis} \ge 0{,}5$) | Explication biomécanique des occlusions |
+| Séquence Vidéo | Vue de caméra | Fréquence & Durée | Total Frames | Couverture intégrale ($\text{vis} \ge 0{,}5$) | Plages d'images avec articulations majeures occluses |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`golf_full_swing_dtl_16632575`** | Down-The-Line (DTL) | 60.00 fps / 5,30 s | 318 frames | **28,9 %** (92 / 318) | En vue DTL, le bras et le poignet arrière sont masqués par le buste au sommet du backswing et au finish. MediaPipe abaisse fidèlement la visibilité sous 0,5 sans hallucination. |
-| **`golf_full_swing_face_on_14980434`** | Face-On (Face) | 29.97 fps / 6,01 s | 180 frames | **47,2 %** (85 / 180) | En vue de face, le croisement des bras à l'impact et au sommet réduit transitoirement la visibilité du coude/poignet arrière. |
+| **`golf_full_swing_dtl_16632575`** | Down-The-Line (DTL) | 60.00 fps / 5,30 s | 318 frames | **28,6 %** (91 / 318) | Frames 0 à 192 (0 à 3200 ms), frames 262 à 271 (4367 à 4517 ms), frames 294 à 317 (4900 à 5300 ms). |
