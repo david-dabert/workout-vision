@@ -56,9 +56,20 @@ describe('the Manifesto', () => {
     const { MANIFESTO } = await import('../manifesto-copy');
     const board = readFileSync(resolve(__dirname, '../../../../test/real-phone/accuracy/scoreboard.txt'), 'utf8');
     const [, videos, exact] = board.match(/Real video, 7 October[^\n]*?of the (\d+) sets in the baseline, (\d+) exact now/);
-    expect(MANIFESTO.fr.conclusion.text1).toContain(`${exact} fois sur ${videos}`);
-    expect(MANIFESTO.en.conclusion.text1).toContain(`${exact} times in ${videos}`);
+    expect(MANIFESTO.fr.conclusion.text1).toContain(`Sur les ${videos} vraies vidéos filmées par le créateur de l’appli, elle trouve le bon nombre sur ${exact} (tableau du`);
+    expect(MANIFESTO.en.conclusion.text1).toContain(`On the ${videos} real videos filmed by the app’s maker, it finds the right number on ${exact} (scoreboard of`);
+    // When it doubts it may propose a number to check (Result.jsx): the promise says so, never "no number".
+    expect(MANIFESTO.fr.conclusion.text1).toContain('Quand elle doute, elle le dit\u00A0: tout au plus, elle vous propose un nombre à vérifier, jamais une note.');
+    expect(MANIFESTO.en.conclusion.text1).toContain('When it is unsure, it says so: at most it suggests a number for you to check, never a grade.');
+    expect(MANIFESTO.fr.conclusion.text1).not.toMatch(/ne donne pas de chiffre/);
+    expect(MANIFESTO.en.conclusion.text1).not.toMatch(/gives no number/);
     const all = JSON.stringify(MANIFESTO);
+    // The eccentric prescription the app's own set note contradicts (set-notes.js, source 3) is gone.
+    expect(all).not.toMatch(/2 to 3 seconds|2 à 3 secondes/);
     expect(all).not.toMatch(/injury rates|risque de blessure|tendinopathy|protège les articulations|exactitude absolue|approximations|below 10%|inférieure à 10/);
+    // Its buttons open the lift for filming, which counts reps: no "line of pull", tempo or turnaround to test.
+    for (const lang of ['fr', 'en']) for (const r of MANIFESTO[lang].chapter4.rules) expect(r.liftLabel).toMatch(/^(Filmer|Film) (un|a) /);
+    // The left-right gap is the app's own: relative to the mean of the two ranges (sides-line.js), not to the larger.
+    for (const lang of ['fr', 'en']) expect(MANIFESTO[lang].chapter3.principles[3].formula).not.toContain('\\max');
   });
 });
