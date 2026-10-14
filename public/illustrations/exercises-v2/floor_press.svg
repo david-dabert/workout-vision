@@ -1,12 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Flat Bench Press: bar on lower sternum, elbows 90 deg -->
-  <line x1="8" y1="42" x2="52" y2="42"/>
-  <line x1="14" y1="42" x2="14" y2="52"/><line x1="46" y1="42" x2="46" y2="52"/>
-  <circle cx="16" cy="38" r="3.5"/>
-  <line x1="19.5" y1="39" x2="36" y2="39"/>
-  <path d="M 36 39 L 44 42 L 44 52 L 50 52"/>
-  <path d="M 24 39 L 24 45 L 28 32"/>
-  <line x1="16" y1="32" x2="40" y2="32"/>
-  <line x1="16" y1="28" x2="16" y2="36"/><line x1="40" y1="28" x2="40" y2="36"/>
-  <path d="M 28 28 L 28 16 M 25 19 L 28 16 L 31 19"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<line x1="8" y1="58" x2="56" y2="58" stroke-width="1.5"/>
+  <circle cx="28" cy="28" r="3.5"/>
+  <circle cx="31" cy="20" r="4"/>
+  <line x1="31" y1="24" x2="26" y2="34"/>
+  <line x1="26" y1="34" x2="16" y2="44"/>
+  <polyline points="16,44 24,46 22,58"/>
+  <polyline points="28,28 32,36 29,38"/>
+  <path d="M 12 36 L 12 44 L 16 44"/>
 </svg>

@@ -1,12 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Deadlift: mid-shin liftoff setup, flat back, bar in hands -->
-  <circle cx="24" cy="22" r="3.5"/>
-  <line x1="24" y1="25.5" x2="16" y2="36"/>
-  <line x1="16" y1="36" x2="28" y2="40"/>
-  <line x1="28" y1="40" x2="26" y2="52"/>
-  <line x1="26" y1="52" x2="34" y2="52"/>
-  <line x1="24" y1="27" x2="32" y2="45"/>
-  <circle cx="32" cy="45" r="5"/>
-  <line x1="24" y1="45" x2="40" y2="45"/>
-  <path d="M 46 48 L 46 32 M 43 35 L 46 32 L 49 35"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<line x1="8" y1="58" x2="56" y2="58" stroke-width="1.5"/>
+  <circle cx="32" cy="22" r="4"/>
+  <line x1="32" y1="26" x2="32" y2="38"/>
+  <polyline points="20,58 26,46 32,38 38,46 44,58"/>
+  <line x1="10" y1="10" x2="54" y2="10"/>
+  <circle cx="10" cy="10" r="3.5"/>
+  <circle cx="54" cy="10" r="3.5"/>
+  <polyline points="32,26 20,18 16,10"/>
+  <polyline points="32,26 44,18 48,10"/>
 </svg>

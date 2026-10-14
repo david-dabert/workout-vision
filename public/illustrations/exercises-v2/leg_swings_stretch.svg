@@ -1,9 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Kettlebell Swing: hip hinge drive, bell swinging upward -->
-  <circle cx="34" cy="22" r="3.5"/>
-  <line x1="34" y1="25.5" x2="22" y2="34"/>
-  <path d="M 22 34 L 20 44 L 22 52"/>
-  <path d="M 32 28 L 36 36 L 44 34"/>
-  <circle cx="46" cy="34" r="3.5"/>
-  <path d="M 44 42 C 50 38 52 32 48 26 M 51 29 L 48 26 L 46 30"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<line x1="8" y1="58" x2="56" y2="58" stroke-width="1.5"/>
+  <circle cx="38" cy="50" r="4"/>
+  <polyline points="16,58 24,52 34,54"/>
+  <polyline points="34,54 44,58 52,58"/>
 </svg>

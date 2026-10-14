@@ -1,9 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Dips: bottom dip position on parallel bars -->
-  <line x1="18" y1="34" x2="18" y2="52"/><line x1="46" y1="34" x2="46" y2="52"/>
-  <circle cx="32" cy="18" r="3.5"/>
-  <line x1="32" y1="21.5" x2="32" y2="38"/>
-  <path d="M 32 26 L 24 30 L 22 34"/>
-  <path d="M 32 38 L 30 46 L 36 50"/>
-  <path d="M 40 28 L 40 16 M 37 19 L 40 16 L 43 19"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<line x1="8" y1="58" x2="56" y2="58" stroke-width="1.5"/>
+  <circle cx="50" cy="38" r="4"/>
+  <polyline points="45,42 45,58 51,58"/>
+  <line x1="45" y1="42" x2="16" y2="58"/>
+  <line x1="45" y1="42" x2="45" y2="24"/>
+  <path d="M 45 20 L 45 14 L 42 17"/>
 </svg>

@@ -1,8 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Leg Curl: prone on bench, heels curling toward glutes -->
-  <line x1="10" y1="40" x2="46" y2="40"/>
-  <circle cx="16" cy="34" r="3.5"/>
-  <line x1="19.5" y1="36" x2="38" y2="36"/>
-  <path d="M 38 36 L 48 36 L 44 24"/>
-  <path d="M 50 32 C 50 26 47 22 42 22 M 45 25 L 42 22 L 45 19"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<line x1="8" y1="58" x2="56" y2="58" stroke-width="1.5"/>
+  <rect x="10" y="54" width="10" height="4"/>
+  <circle cx="48" cy="34" r="4"/>
+  <polyline points="14,58 24,58 44,38"/>
+  <polyline points="44,38 40,46 44,52"/>
 </svg>

@@ -1,9 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Lateral Raise: arms abducted 90 deg horizontal, upward arc -->
-  <circle cx="32" cy="18" r="3.5"/>
-  <line x1="32" y1="21.5" x2="32" y2="40"/>
-  <line x1="32" y1="40" x2="28" y2="52"/><line x1="32" y1="40" x2="36" y2="52"/>
-  <line x1="14" y1="26" x2="50" y2="26"/>
-  <circle cx="14" cy="26" r="2.5"/><circle cx="50" cy="26" r="2.5"/>
-  <path d="M 46 36 C 48 32 50 28 50 24 M 47 27 L 50 24 L 53 27"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<line x1="8" y1="58" x2="56" y2="58" stroke-width="1.5"/>
+  <circle cx="32" cy="15" r="4"/>
+  <line x1="32" y1="19" x2="32" y2="38"/>
+  <polyline points="26,58 28,48 32,38 36,48 38,58"/>
+  <path d="M 22 22 Q 32 18 42 22"/>
+  <line x1="22" y1="22" x2="22" y2="40"/>
+  <line x1="42" y1="22" x2="42" y2="40"/>
+  <rect x="20" y="40" width="4" height="6" rx="1"/>
+  <rect x="40" y="40" width="4" height="6" rx="1"/>
+  <path d="M 18 28 L 18 20 L 15 23"/>
+  <path d="M 46 28 L 46 20 L 49 23"/>
 </svg>

@@ -1,10 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Overhead Press: bar racked at clavicles, vertical upward arrow -->
-  <circle cx="32" cy="18" r="3.5"/>
-  <line x1="32" y1="21.5" x2="32" y2="38"/>
-  <line x1="32" y1="38" x2="28" y2="52"/><line x1="32" y1="38" x2="36" y2="52"/>
-  <path d="M 32 24 L 26 28 L 26 23"/>
-  <line x1="14" y1="23" x2="50" y2="23"/>
-  <line x1="14" y1="19" x2="14" y2="27"/><line x1="50" y1="19" x2="50" y2="27"/>
-  <path d="M 40 20 L 40 8 M 37 11 L 40 8 L 43 11"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<line x1="8" y1="58" x2="56" y2="58" stroke-width="1.5"/>
+  <circle cx="28" cy="28" r="3.5"/>
+  <circle cx="31" cy="20" r="4"/>
+  <line x1="31" y1="24" x2="26" y2="34"/>
+  <line x1="26" y1="34" x2="16" y2="44"/>
+  <polyline points="16,44 24,46 22,58"/>
+  <polyline points="28,28 32,36 29,38"/>
+  <path d="M 12 36 L 12 44 L 16 44"/>
 </svg>

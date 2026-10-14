@@ -1,9 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Lat Pulldown: seated, bar pulled down to clavicle -->
-  <line x1="16" y1="16" x2="48" y2="16"/>
-  <circle cx="32" cy="24" r="3.5"/>
-  <line x1="32" y1="27.5" x2="32" y2="42"/>
-  <path d="M 32 42 L 26 52 M 32 42 L 38 52"/>
-  <path d="M 20 18 L 26 26 L 38 26 L 44 18"/>
-  <path d="M 44 22 L 44 32 M 41 29 L 44 32 L 47 29"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<line x1="8" y1="58" x2="56" y2="58" stroke-width="1.5"/>
+  <line x1="50" y1="12" x2="50" y2="58" stroke-width="1.5"/>
+  <circle cx="28" cy="20" r="4"/>
+  <line x1="28" y1="24" x2="24" y2="38"/>
+  <polyline points="24,38 26,48 24,58"/>
+  <line x1="28" y1="26" x2="38" y2="44"/>
+  <circle cx="38" cy="44" r="2.5"/>
+  <line x1="50" y1="14" x2="38" y2="44"/>
 </svg>

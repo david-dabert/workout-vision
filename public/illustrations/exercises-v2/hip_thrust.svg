@@ -1,10 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <!-- Hip Thrust: shoulders on bench, hips raised in horizontal bridge -->
-  <line x1="10" y1="36" x2="18" y2="36"/><line x1="14" y1="36" x2="14" y2="48"/>
-  <circle cx="18" cy="30" r="3.5"/>
-  <line x1="20" y1="34" x2="34" y2="34"/>
-  <line x1="34" y1="34" x2="44" y2="34"/>
-  <line x1="44" y1="34" x2="44" y2="48"/>
-  <circle cx="34" cy="31" r="3"/>
-  <path d="M 34 26 L 34 16 M 31 19 L 34 16 L 37 19"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<line x1="8" y1="58" x2="56" y2="58" stroke-width="1.5"/>
+  <rect x="12" y="42" width="14" height="16" stroke-width="1.5"/>
+  <circle cx="24" cy="38" r="4"/>
+  <line x1="24" y1="42" x2="38" y2="42"/>
+  <polyline points="38,42 46,42 46,58"/>
+  <circle cx="38" cy="40" r="3.5"/>
+  <path d="M 38 48 L 38 42 L 35 44"/>
 </svg>
