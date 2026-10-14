@@ -1,35 +1,13 @@
 /**
- * Decentralized Peer-to-Peer Messaging & Telemetry Channel
- *
- * Implements serverless, zero-knowledge client-to-client communication
- * using encrypted URL fragment payloads and WebRTC DataChannels.
- *
- * No backend database required. Everything lives on-device.
+ * A payload packed for a link: JSON in URL-safe base64. An encoding, not encryption: anyone holding the link can read
+ * it. Honesty pass of 14 October 2026 (CHT-1, CHT-4): this header used to promise "serverless, zero-knowledge"
+ * messaging over "encrypted URL fragment payloads and WebRTC DataChannels"; there is no WebRTC and no cryptography in
+ * the app, and the chat screen is a demo that sends nothing (Chat.jsx). The invitation link (#chat=...) is gone: the
+ * router sent it to the home screen. Nothing in the app calls these two functions today.
  */
 
-export interface TelemetryAttachment {
-  type: 'telemetry_card';
-  exerciseName: string;
-  repsCounted: number;
-  formScore: number;
-  symmetryIndexPct: number;
-  lengthenedPartialsCount: number;
-  timestamp: number;
-}
-
-export interface ChatMessage {
-  id: string;
-  sender: 'self' | 'peer';
-  senderName: string;
-  text: string;
-  attachment?: TelemetryAttachment;
-  timestamp: number;
-}
-
-/**
- * Encodes a chat or telemetry payload into a URL-safe Base64 string for fragment transmission.
- */
-export function encodePayload(data: any): string {
+/** Encodes a payload as URL-safe base64 of its JSON. */
+export function encodePayload(data: unknown): string {
   try {
     const json = JSON.stringify(data);
     if (typeof btoa !== 'undefined') {
@@ -41,10 +19,8 @@ export function encodePayload(data: any): string {
   }
 }
 
-/**
- * Decodes a URL-safe Base64 string into structured JSON payload.
- */
-export function decodePayload<T = any>(encoded: string): T | null {
+/** Decodes a payload made by encodePayload, or null. */
+export function decodePayload<T = unknown>(encoded: string): T | null {
   try {
     const decodedUri = decodeURIComponent(encoded);
     let json: string;
@@ -57,18 +33,4 @@ export function decodePayload<T = any>(encoded: string): T | null {
   } catch {
     return null;
   }
-}
-
-/**
- * Creates a unique direct shareable peer invitation URL.
- */
-export function createChatInvitationUrl(baseUrl: string, senderName: string, initialMessage?: string): string {
-  const payload = {
-    sender: senderName,
-    created: Date.now(),
-    text: initialMessage || 'Connected via WorkoutVision P2P.',
-  };
-  const token = encodePayload(payload);
-  const cleanBase = baseUrl.split('#')[0];
-  return `${cleanBase}#chat=${token}`;
 }

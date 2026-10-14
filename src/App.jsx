@@ -254,7 +254,7 @@ function AppInner() {
     screen = <Ergonomics onClose={() => go('dashboard')} />;
   } else if (page === 'chat') {
     key = 'chat';
-    screen = <Chat onClose={() => go('dashboard')} />;
+    screen = <Chat onClose={() => go('dashboard')} onHistory={() => go('history')} />;
   } else {
     // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
     // the old live capture (LiveCapture.jsx) and the dashboard; "live" without a lift, or in a build without VITE_LIVE, too. Every other page falls through to the choice of lift.
