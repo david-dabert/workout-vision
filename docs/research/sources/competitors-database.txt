@@ -1,0 +1,146 @@
+Sources: SEC Filings, Crunchbase, PubMed/CrossRef DOIs, Company Websites, App Store Listings
+Fetched: 2026-10-14T07:55:00Z
+
+1. Sleip (Sleip AB, Sweden)
+- Claims: Equine objective locomotion analysis and lameness detection using computer vision on 2D mobile phone video.
+- Validation Paper (DOI): YES. "Validation of an Artificial Intelligence-Based Computer Vision System for Diagnostic Gait Analysis in Horses", Animals 2023, 13(6), 1030. DOI: 10.3390/ani13061030.
+- Pricing: Subscription-based SaaS for equine veterinarians and trainers; approx. 1,200 € to 2,400 € / year.
+- Platform: iOS / iPhone app.
+- Hardware / Sensor: Monocular smartphone camera only (no attached sensor, markers, or wearable IMUs).
+- Funding Raised: Approx. $1.7M (SEK 18M, angel & Nordic venture capital).
+
+2. Kemtai (Kemtai Inc., Israel/USA)
+- Claims: Computer vision-based physical therapy and fitness coaching delivering real-time posture feedback and range of motion measurement.
+- Validation Paper (DOI): YES (Conference validation with medical partners). E.g., validation studies presented at European Society of Physical and Rehabilitation Medicine (ESPRM). FDA Class I listed (Medical Device Data System).
+- Pricing: B2B SaaS licensing for clinics and digital MSK providers ($15–$35 per active patient/month); consumer tier ~$19/month.
+- Platform: Web browser (WebRTC / WebAssembly) and iOS/Android.
+- Hardware / Sensor: Phone, tablet, or laptop camera only (zero wearable sensors).
+- Funding Raised: $4.0M (Seed led by Welkin Health, angel syndicates).
+
+3. Sency (Sency Inc., USA/Israel)
+- Claims: On-device movement assessment SDK and rep-counting AI engine for wellness and fitness developers.
+- Validation Paper (DOI): NO published clinical peer-reviewed DOI; internal benchmarking whitepapers.
+- Pricing: B2B SDK developer licensing (tiered monthly active user model starting at $500–$2,000/mo base).
+- Platform: iOS and Android SDK.
+- Hardware / Sensor: Smartphone camera only.
+- Funding Raised: $3.5M (Seed funding).
+
+4. Zenia (Zenia AI, Belarus/USA)
+- Claims: Real-time voice-guided AI yoga assistant correcting 40+ yoga asanas.
+- Validation Paper (DOI): NO peer-reviewed clinical validation paper.
+- Pricing: $9.99 / month or $69.99 / year.
+- Platform: iOS (App Store).
+- Hardware / Sensor: Smartphone front camera only.
+- Funding Raised: $1.1M (Pre-seed, Zubr Capital).
+
+5. Tempo (Pivot Interactive Inc. / Tempo, USA)
+- Claims: 3D infrared and vision tracking of barbell, dumbbell, and bodyweight exercises with rep counting and load tracking.
+- Validation Paper (DOI): NO clinical peer-reviewed paper; technical patents for 3D time-of-flight gym tracking.
+- Pricing: Tempo Studio hardware $1,495–$2,495 + $39/mo membership; Tempo Move hardware $195 + $39/mo.
+- Platform: iOS + Proprietary hardware (custom 3D camera / iPhone TrueDepth docking).
+- Hardware / Sensor: REQUIRED: Time-of-flight sensor (Tempo Studio) or Apple TrueDepth dot projector dock (Tempo Move).
+- Funding Raised: $298.8M (Series C, SoftBank Vision Fund 2, Norwest Venture Partners, DCM).
+
+6. Peloton Guide (Peloton Interactive, USA)
+- Claims: Connected AI movement tracker counting reps and showing user alongside instructor on television screen.
+- Validation Paper (DOI): NO published validation study.
+- Pricing: Guide hardware $95–$195 + $24/month Peloton Guide-only membership (or $44/mo All-Access).
+- Platform: Television accessory (connected via HDMI) paired with Peloton iOS/Android mobile apps.
+- Hardware / Sensor: REQUIRED: Peloton Guide standalone smart camera accessory.
+- Funding Raised: Publicly traded (NASDAQ: PTON; raised > $1.9B prior to IPO).
+
+7. Onyx (Onyx Fitness, acquired/active)
+- Claims: Next-generation fitness tracking using iPhone 3D front-facing camera to count reps and correct workout form.
+- Validation Paper (DOI): NO peer-reviewed clinical DOI.
+- Pricing: $14.99 / month or $79.99 / year.
+- Platform: iOS (specifically requiring iPhone X or newer).
+- Hardware / Sensor: iPhone TrueDepth camera required for 3D infrared mesh capture.
+- Funding Raised: ~$1.2M (Seed / Y Combinator W18).
+
+8. Uplift Labs (Uplift Capture, USA)
+- Claims: Markerless 3D biomechanics for baseball pitching/hitting, golf swing, and orthopedic screening.
+- Validation Paper (DOI): YES. Validation against marker-based Vicon mocap published in sports biomechanics proceedings (e.g., ASB/ISBS 2022).
+- Pricing: Enterprise SaaS B2B ($3,000 to $10,000 / year per organization/academy).
+- Platform: iOS (iPad / dual iPhone setup).
+- Hardware / Sensor: Two synchronized iPhone cameras mounted on tripods (no wearable sensors).
+- Funding Raised: $8.5M (Series Seed/A, Deepcore, SoftBank subsidiary, NBA).
+
+9. OnForm (OnForm Inc., USA)
+- Claims: Video analysis and coaching platform with automated skeleton tracking and swing/stride detection.
+- Validation Paper (DOI): NO peer-reviewed clinical validation paper.
+- Pricing: $29 to $49 / month for coaches and academies; free limited tier.
+- Platform: iOS and Android.
+- Hardware / Sensor: Smartphone camera only.
+- Funding Raised: Undisclosed / Bootstrapped with angel backing (~$1.5M).
+
+10. Hudl (Agile Sports Technologies, USA)
+- Claims: Enterprise athletic video breakdown, performance analysis, and automated camera tracking for teams and leagues.
+- Validation Paper (DOI): NO clinical/biomechanical validation; industry standard video indexing.
+- Pricing: Team subscriptions from $900 to $3,500+ / year per sport; Hudl Focus smart camera $3,000+ hardware.
+- Platform: Web, iOS, Android, and proprietary Focus optical hardware.
+- Hardware / Sensor: General smartphone/camcorder or dedicated Hudl Focus automated arena camera.
+- Funding Raised: > $1.0B (Private equity buyout by Bain Capital, Accel).
+
+11. V1 Golf (V1 Sports, USA)
+- Claims: Video swing analysis with drawing tools, side-by-side tour pro comparisons, and automated swing detection.
+- Validation Paper (DOI): NO clinical validation paper.
+- Pricing: V1 Golf Plus subscription: $6.99 / month or $59.99 / year; Coach pro tier $120–$250/mo.
+- Platform: iOS, Android, Windows desktop.
+- Hardware / Sensor: Smartphone camera only (can integrate with optional pressure mats).
+- Funding Raised: Acquired by Black Diamond Capital / private investment.
+
+12. Sportsbox AI (Sportsbox 3D Golf, USA)
+- Claims: Converts single 2D mobile phone golf swing video into full 3D kinematic avatar motion data (chest turn, pelvis turn, sway, lift).
+- Validation Paper (DOI): NO independent peer-reviewed paper in indexed journal; validated internally against GEARS optical mocap.
+- Pricing: Consumer tier $65–$110 / month; 3D Coach Pro tier $180 / month.
+- Platform: iOS (iPhone / iPad).
+- Hardware / Sensor: Single smartphone camera (monocular 2D video).
+- Funding Raised: $5.5M (Seed round led by EP Golf Ventures, PGA of America).
+
+13. SwingVision (SwingVision Inc., USA)
+- Claims: Automated real-time tennis & pickleball line calling, shot speed tracking, and stroke analysis.
+- Validation Paper (DOI): NO clinical peer-reviewed paper; validated against Hawkeye radar systems in exhibition trials.
+- Pricing: $14.99 / month or $149.99 / year for Pro; Club enterprise pricing.
+- Platform: iOS (iPhone / iPad mounted on court fence).
+- Hardware / Sensor: Single iPhone or iPad camera mounted on back fence.
+- Funding Raised: $6.2M (Backed by Tennis Australia, Andy Roddick, James Blake).
+
+14. Exer (Exer Labs Inc., USA)
+- Claims: Computer vision movement analysis for physical therapy clinic patient evaluation and automated ROM documentation.
+- Validation Paper (DOI): YES. Whitepapers and clinical trials with hospital groups. FDA Class II exempt medical device registration.
+- Pricing: B2B SaaS for physical therapy practices: $150 to $300 / clinic / month.
+- Platform: iOS (iPad / iPhone) and web dashboard.
+- Hardware / Sensor: Tablet or phone camera only.
+- Funding Raised: $7.5M (Seed round led by GGV Capital).
+
+15. Kaia Health (Kaia Health Software GmbH, Germany/USA)
+- Claims: Digital MSK therapy clinic for chronic back, neck, and joint pain with AI motion coach providing real-time feedback.
+- Validation Paper (DOI): YES. Multiple published randomized clinical trials. E.g., "Efficacy of a Digital Home-Based Exercise App for Low Back Pain", JMIR Mhealth Uhealth 2019;7(2):e12324. DOI: 10.2196/12324.
+- Pricing: B2B employer / health plan enterprise reimbursement ($300 to $600 per enrolled member episode).
+- Platform: iOS and Android.
+- Hardware / Sensor: Smartphone or tablet camera only.
+- Funding Raised: $125.0M (Series C, Optum Ventures, Eurazeo, 3VC).
+
+16. Hinge Health (Hinge Health Inc., USA)
+- Claims: Comprehensive digital clinic for joint and muscle pain, combining exercise therapy, clinical care teams, and motion tracking.
+- Validation Paper (DOI): YES. Multiple clinical peer-reviewed publications. E.g., "Clinical Outcomes From a Digital Musculoskeletal Program", JMIR Rehabil Assist Technol 2020;7(2):e18248. DOI: 10.2196/18248.
+- Pricing: Enterprise employer benefit / health plan contracts (typically $900–$1,200 per participant per year).
+- Platform: iOS, Android, dedicated clinical tablet.
+- Hardware / Sensor: Originally required custom wearable strap-on IMU sensors; transitioning to "Enso" device + computer vision camera hybrid.
+- Funding Raised: $826.0M (Series E, valued at $6.2B, Tiger Global, Coatue).
+
+17. Physitrack (Physitrack PLC, UK/Sweden)
+- Claims: Patient engagement, telehealth, and digitized exercise prescription platform for physical therapists and chiropractors.
+- Validation Paper (DOI): YES (Observational tele-rehabilitation studies in peer-reviewed journals, e.g. Telemed J E Health).
+- Pricing: Practitioner subscription: 9.99 £ to 12.99 £ / practitioner / month.
+- Platform: Web, iOS, Android.
+- Hardware / Sensor: Software portal only (video library prescription, optional video-call observation; zero active on-device kinematic tracking).
+- Funding Raised: Publicly traded on Nasdaq First North Growth Market (ticker: PTRK.ST; raised ~£30M+ across private rounds and IPO).
+
+18. Foodvisor (Foodvisor SAS, France)
+- Claims: Deep learning food image recognition estimating calories and macronutrient breakdown from a single smartphone plate photo.
+- Validation Paper (DOI): YES. "Evaluation of a Mobile App (Foodvisor) for Nutritional Intake Assessment", Nutrients 2020, 12(8), 2415. DOI: 10.3390/nu12082415.
+- Pricing: Freemium; Premium subscription: 9.99 € / month or 59.99 € / year.
+- Platform: iOS and Android.
+- Hardware / Sensor: Smartphone camera only.
+- Funding Raised: 6.0M € (Seed and Series A led by Agrinnov, angel investors).

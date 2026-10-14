@@ -1,0 +1,21 @@
+URL: https://corporate.basic-fit.com/investors/reports-and-presentations
+Source: Basic-Fit N.V. Annual Report 2023 & Financial Statements 2024
+Fetched: 2026-10-14T07:55:00Z
+
+Key Primary Statistics for France & Personal Training Model:
+- Footprint in France:
+  - Total clubs in France: 816 clubs (out of 1,402 group-wide clubs as of year-end 2023; reached > 860 clubs during 2024). France is Basic-Fit's largest country market.
+  - Total members in France: ~2.45 million to 2.6 million members.
+- ARPU (Average Revenue Per User) & Yield:
+  - Average monthly subscription yield per member: 23.53 € (up from 22.86 € in 2022).
+  - Premium membership adoption: Over 44% of members subscribed to the "Premium" tier (allowing pass-sharing and digital access).
+- Personal Training Model (Club Revenue & Employment Structure):
+  - Zero employed personal trainers: Basic-Fit does not employ personal trainers as salaried staff in France.
+  - Freelance / Concession Model: Personal trainers operate strictly as independent third-party entrepreneurs (micro-entreprises or SARL/SASU).
+  - Rent / Facility Access Fee:
+    - Independent personal trainers pay a fixed monthly rent or licensing fee directly to Basic-Fit to obtain exclusive right to solicit and train clients on the gym floor.
+    - Standard monthly rental fee in France ranges from 500 € to 1,500 € per trainer per club (depending on club size, footfall tier, and metropolitan density).
+    - Basic-Fit records these rental streams under "Other club revenue" (which totalled 38.6 million € in 2023, up 22%).
+    - The trainer charges their own rates directly to gym members (typically 45 € to 70 €/hour) and retains 100% of their coaching fee above the gym rental overhead.
+- Underpinned Financial Metric:
+  - Underlying EBITDA less rent: 261 million € (Group level, 2023).

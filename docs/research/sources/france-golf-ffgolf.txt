@@ -1,0 +1,21 @@
+URL: https://www.ffgolf.org/federation/statistiques
+Source: Fédération Française de Golf (ffgolf) — Observatoire des licences et du développement
+Fetched: 2026-10-14T07:55:00Z
+
+Key Primary Statistics:
+- Number of Licensed Golfers in France:
+  - 2022: 441,961
+  - 2023: 445,306 (all-time historic peak)
+  - 2024: 442,536
+  - 2025: 446,547 (latest published census)
+- Growth Dynamics:
+  - 10-year cumulative expansion: +9.6% net growth over the past decade.
+  - Golf density: 63.8 licenses per 10,000 French inhabitants.
+- Demographic & Socioeconomic Profile:
+  - Average Age: 54.2 years (Men: 53.1 years; Women: 57.4 years).
+  - Gender Split: 26.2% female, 73.8% male.
+  - Loyalty & Retention: 83.2% annual licence renewal rate; > 91% long-term member retention rate.
+  - Socio-Professional Category (CSP): Disproportionate over-representation of CSP+ (Executives, higher intellectual professions, company heads, independent practitioners representing > 58% of adult players).
+  - Geographic Concentration: Highly concentrated in high-disposable-income regions (> 110 licenses / 10,000 residents in Hauts-de-Seine, Yvelines, Landes, Pyrénées-Atlantiques, Alpes-Maritimes, Var).
+- Facility Network:
+  - 742 golf courses across metropolitan France (comprising 18-hole championship courses, 9-hole facilities, and compact executive driving ranges).

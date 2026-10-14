@@ -1,0 +1,26 @@
+URL: https://sports.gouv.fr/politiques-sportives/professionnels-du-sport/la-carte-professionnelle-d-educateur-sportif/
+Sources:
+1. Ministère des Sports et des Jeux Olympiques et Paralympiques — Téléservice EAPS (Établissements et Activités Physiques et Sportives)
+2. INJEP (Institut National de la Jeunesse et de l'Éducation Populaire) — Baromètre national de l'emploi et de la formation dans le sport (Édition 2024)
+3. INSEE — Enquête Emploi & Répertoire des Professions et Catégories Socioprofessionnelles (PCS 2020, Code 42C3: Éducateurs sportifs, sportifs professionnels)
+4. France Travail (Pôle Emploi) — Fiche Métier G1204 (Éducation et animation d'activités sportives)
+Fetched: 2026-10-14T07:55:00Z
+
+Key Primary Statistics:
+- Total Active Professional Cards (Cartes Professionnelles EAPS):
+  - Approximately 110,000 to 125,000 active registered cards across France (statutory 5-year validity with mandatory criminal background / casier B2 check under Article L. 212-1 of the Code du Sport).
+  - Annual renewals and new declarations: ~25,000/year.
+- Status Breakdown:
+  - Salaried (Associations & Clubs): ~48% (predominantly in sports federations, municipal sports directions, and commercial fitness centers).
+  - Self-employed / Freelance (Micro-entrepreneurs / Entreprises individuelles): ~52% (growing rapidly from 34% in 2017 to over 50% post-2021).
+  - Commercial Gyms / Fitness Chains: Approximately 22,000 personal trainers and group fitness coaches operate inside private fitness centers.
+- Economics of Independent Personal Trainers in France:
+  - Typical Hourly Rate (Séance 1 heure):
+    - Regional cities: 40 € to 60 € / hour.
+    - Paris / Île-de-France: 60 € to 100 € / hour.
+  - Active Client Roster Size:
+    - Typical full-time independent trainer maintains an active roster of 15 to 25 weekly clients (representing 20–35 billable sessions per week).
+  - Client Churn Rate:
+    - Average quarterly client churn: 30% to 45%.
+    - Average client retention lifetime: 4 to 7 months for 1-on-1 private coaching.
+  - Principal Attrition Factor: Administrative friction (invoicing, scheduling, tracking workout logs) and client drop-off due to perceived lack of objective progress measurement.
