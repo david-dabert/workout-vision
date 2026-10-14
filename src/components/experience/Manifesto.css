@@ -49,6 +49,12 @@
   font-family: var(--mono);
   padding: 4px 10px;
   cursor: pointer;
+  /* Every control at least 44 px to touch (design/SYSTEM.md). */
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .wv-experience .manifesto-tool-btn:hover {
@@ -130,11 +136,15 @@
 }
 
 .wv-experience .manifesto-toc-link {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-height: 44px;
   text-decoration: none;
   font-size: 14px;
   color: var(--bone-2);
-  padding: 4px 0;
+  padding: 6px 0;
   border-bottom: 1px dashed var(--hair-2);
   transition: color var(--d-ui);
 }
@@ -276,14 +286,23 @@
 
 .wv-experience .manifesto-formula-code {
   display: block;
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--c-accent);
+  font-family: var(--sans);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  color: var(--lamp-hi);
   text-align: center;
   margin-bottom: 4px;
-  overflow-x: auto;
-  padding: 4px 0;
+  padding: 6px 0;
+  font-variant-numeric: tabular-nums;
 }
+
+/* The formula drawn as math (Formula.jsx): a fraction stacks its numerator over a rule above its denominator, a
+   subscript sits lower and smaller. Long words wrap inside their half of the fraction. */
+.wv-experience .mf { overflow-wrap: break-word; }
+.wv-experience .mf-frac { display: inline-flex; flex-direction: column; align-items: stretch; max-width: 100%; margin: 0 4px; vertical-align: middle; text-align: center; font-size: 0.9em; line-height: 1.35; }
+.wv-experience .mf-num { padding: 0 4px 3px; border-bottom: 1px solid currentColor; }
+.wv-experience .mf-den { padding: 3px 4px 0; }
+.wv-experience .mf sub { font-size: 0.72em; line-height: 0; vertical-align: -0.3em; }
 
 .wv-experience .manifesto-formula-note {
   margin: 0;
@@ -348,7 +367,8 @@
   color: var(--ink);
   font-size: 13px;
   font-weight: 600;
-  padding: 8px 14px;
+  padding: 8px 16px;
+  min-height: 44px;
   border-radius: var(--r-pill);
   border: none;
   cursor: pointer;

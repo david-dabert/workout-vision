@@ -216,14 +216,15 @@ export function drawSportsBiomechanicsSkeleton(
   const la = toPx(landmarks[MP_LEFT_ANKLE]);
   const ra = toPx(landmarks[MP_RIGHT_ANKLE]);
 
-  // Connect limbs with glowing aesthetics
+  // Connect limbs. Colours: the app's palette (src/components/experience/palette.js: lamp #E8BD7E, lampHi #F7DCAE,
+  // bone #EFE8DC); the app has no red, a warning is drawn in the lamp (design/SYSTEM.md). Presentation only.
   ctx.save();
   ctx.lineWidth = 3;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
   // Torso / Spine
-  ctx.strokeStyle = 'rgba(212, 167, 106, 0.8)'; // Amber
+  ctx.strokeStyle = 'rgba(232, 189, 126, 0.8)'; // Lamp
   ctx.beginPath();
   ctx.moveTo(ls.x, ls.y);
   ctx.lineTo(rs.x, rs.y);
@@ -233,7 +234,7 @@ export function drawSportsBiomechanicsSkeleton(
   ctx.stroke();
 
   // Right Arm (Lead/Dominant)
-  ctx.strokeStyle = sport === 'baseball' ? '#E05D5D' : '#5DB87A'; // Emerald or Coral Red
+  ctx.strokeStyle = sport === 'baseball' ? '#F7DCAE' : 'rgba(239, 232, 220, 0.85)'; // Lamp-hi (throwing arm) or bone
   ctx.beginPath();
   ctx.moveTo(rs.x, rs.y);
   ctx.lineTo(re.x, re.y);
@@ -241,7 +242,7 @@ export function drawSportsBiomechanicsSkeleton(
   ctx.stroke();
 
   // Left Arm
-  ctx.strokeStyle = '#4E95D4'; // Cyan
+  ctx.strokeStyle = 'rgba(239, 232, 220, 0.5)'; // Bone, dimmed
   ctx.beginPath();
   ctx.moveTo(ls.x, ls.y);
   ctx.lineTo(le.x, le.y);
@@ -249,7 +250,7 @@ export function drawSportsBiomechanicsSkeleton(
   ctx.stroke();
 
   // Legs
-  ctx.strokeStyle = '#5DB87A';
+  ctx.strokeStyle = 'rgba(239, 232, 220, 0.85)';
   ctx.beginPath();
   ctx.moveTo(rh.x, rh.y);
   ctx.lineTo(rk.x, rk.y);
@@ -265,12 +266,12 @@ export function drawSportsBiomechanicsSkeleton(
   // Glowing joint circles
   const keypoints = [ls, rs, lh, rh, re, rw, rk, ra];
   for (const kp of keypoints) {
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = '#EFE8DC';
     ctx.beginPath();
     ctx.arc(kp.x, kp.y, 4, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.strokeStyle = 'rgba(212, 167, 106, 0.6)';
+    ctx.strokeStyle = 'rgba(232, 189, 126, 0.6)';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(kp.x, kp.y, 7, 0, Math.PI * 2);
@@ -278,34 +279,34 @@ export function drawSportsBiomechanicsSkeleton(
   }
 
   // Sport-specific angle arc annotations
-  ctx.font = 'bold 11px -apple-system, sans-serif';
+  ctx.font = '600 11px Geist, system-ui, sans-serif';
   if (sport === 'golf') {
     const kine = extractGolfKinematicsFromLandmarks(landmarks);
-    ctx.fillStyle = '#5DB87A';
+    ctx.fillStyle = '#F7DCAE';
     ctx.fillText(`X-Factor: ${kine.xFactorDeg}°`, ls.x - 30, ls.y - 15);
-    ctx.fillStyle = 'rgba(232, 230, 225, 0.7)';
+    ctx.fillStyle = 'rgba(239, 232, 220, 0.72)';
     ctx.fillText(`Shoulders: ${kine.shoulderTurnDeg}° | Pelvis: ${kine.pelvisTurnDeg}°`, ls.x - 30, ls.y - 2);
   } else if (sport === 'tennis') {
     const kine = extractTennisKinematicsFromLandmarks(landmarks);
-    ctx.fillStyle = kine.isTrophyPoseSound ? '#5DB87A' : '#D4A76A';
+    ctx.fillStyle = kine.isTrophyPoseSound ? '#EFE8DC' : '#E8BD7E';
     ctx.fillText(`Tilt: ${kine.shoulderTiltDeg}°`, rs.x + 10, rs.y - 5);
     ctx.fillText(`Knee: ${kine.rearKneeFlexionDeg}°`, rk.x + 10, rk.y);
   } else if (sport === 'cycling') {
     const kine = extractBikeFitKinematicsFromLandmarks(landmarks);
-    ctx.fillStyle = kine.saddleHeightVerdict === 'optimal' ? '#5DB87A' : '#E05D5D';
+    ctx.fillStyle = kine.saddleHeightVerdict === 'optimal' ? '#EFE8DC' : '#E8BD7E';
     ctx.fillText(`BDC Knee: ${kine.bdcKneeAngleDeg}°`, rk.x + 12, rk.y);
     ctx.fillText(`Torso: ${kine.torsoAngleDeg}°`, rs.x - 25, rs.y - 12);
   } else if (sport === 'baseball') {
     const kine = extractBaseballPitchFromLandmarks(landmarks);
-    ctx.fillStyle = kine.uclSafetyVerdict === 'optimal_safe' ? '#5DB87A' : '#E05D5D';
+    ctx.fillStyle = kine.uclSafetyVerdict === 'optimal_safe' ? '#EFE8DC' : '#E8BD7E';
     ctx.fillText(`Shoulder: ${kine.shoulderAbductionDeg}°`, rs.x - 45, rs.y - 12);
     ctx.fillText(`Elbow: ${kine.elbowFlexionDeg}° (UCL: ${kine.estimatedUclStressNm} Nm)`, re.x + 10, re.y);
   } else if (sport === 'skiing') {
-    ctx.fillStyle = '#5DB87A';
+    ctx.fillStyle = '#F7DCAE';
     ctx.fillText(`Carving Edge: 54° | G-Force: 1.7G`, ls.x - 40, ls.y - 12);
     ctx.fillText(`Knee Angulation: 24°`, rk.x + 10, rk.y);
   } else if (sport === 'swimming') {
-    ctx.fillStyle = '#5DB87A';
+    ctx.fillStyle = '#F7DCAE';
     ctx.fillText(`EVF Catch: 115° | Body Roll: 42°`, ls.x - 40, ls.y - 12);
     ctx.fillText(`Propulsion: 94%`, re.x + 10, re.y);
   }

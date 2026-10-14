@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { MANIFESTO } from './manifesto-copy';
+import Formula from './Formula';
 import './Manifesto.css';
 
 /**
@@ -102,7 +103,7 @@ export default function Manifesto({ onClose, onChoose }) {
                     className="manifesto-toc-link"
                     onClick={(e) => { e.preventDefault(); jumpTo(ch.id); }}
                   >
-                    <b>{ch.title}</b> — <small>{ch.subtitle}</small>
+                    <b>{ch.title}</b><small>{ch.subtitle}</small>
                   </a>
                 </li>
               ))}
@@ -136,7 +137,7 @@ export default function Manifesto({ onClose, onChoose }) {
                         <p className="manifesto-card-desc">{fig.desc}</p>
                         {fig.formula && (
                           <div className="manifesto-formula-box">
-                            <code className="manifesto-formula-code">{fig.formula}</code>
+                            <div className="manifesto-formula-code"><Formula tex={fig.formula} fr={fr} /></div>
                             {fig.formulaNote && <p className="manifesto-formula-note">{fig.formulaNote}</p>}
                           </div>
                         )}
@@ -185,7 +186,7 @@ export default function Manifesto({ onClose, onChoose }) {
                     <p className="manifesto-rule-desc">{pr.desc}</p>
                     {pr.formula && (
                       <div className="manifesto-formula-box">
-                        <code className="manifesto-formula-code">{pr.formula}</code>
+                        <div className="manifesto-formula-code"><Formula tex={pr.formula} fr={fr} /></div>
                       </div>
                     )}
                     <div className="manifesto-rule-app">
