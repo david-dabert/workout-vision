@@ -4,6 +4,7 @@
 .wv-experience .about-photo { margin: 0; }
 .wv-experience .about-photo img { display: block; width: 100%; height: auto; border-radius: var(--r-m); background: var(--well); border: 1px solid var(--c-rule); }
 .wv-experience .about-photo figcaption { margin-top: var(--s-2); font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--c-fg-muted); }
+.wv-experience .about-demo-note { margin: var(--s-2) 0 0; font-size: var(--fs-small, 13px); line-height: 1.5; color: var(--c-fg-muted); }
 /* The portrait leads the page at a modest size; the two dated photos sit in the text, a little narrower than the
    column so the tall Dordogne frame stays within a screen. */
 .wv-experience .about-portrait { width: min(56%, 220px); margin-top: var(--s-4); }

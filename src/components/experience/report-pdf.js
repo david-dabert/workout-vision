@@ -108,18 +108,21 @@ export function reportPdf(sheet) {
   pairs(sheet.details || [], 3, wideDetail);
   // The person's own pain and effort (report-sheet.js, own), labelled the same way.
   pairs(sheet.own || [], 2);
-  // The set's two figures, set like the count: a rule, two columns, a label in capitals over a serif value in gold.
+  // The set's two experimental figures: a rule, two columns, a label in capitals over a serif value in ink, smaller
+  // than the count and not in its gold. On synthetic bodies with a known truth, time under tension reads 30 to 59 %
+  // short and phase times 45 to 54 % short (synth.txt), so they are not set like the count (R8; assessment of
+  // 14 October 2026).
   if (sheet.stats?.length) {
-    const H = 1 + 12 + 13.5 + 4 + 26;
+    const H = 1 + 12 + 13.5 + 4 + 17;
     if (room() < H && y > MARGIN) newPage();
     rule();
     y += 1 + 12;
     sheet.stats.forEach(([name, value], i) => {
       const x = MARGIN + i * (colW + 8);
       label(name, x, y);
-      write(value, x, y + 13.5 + 4, 'serif', 26, 1, COLOR.count);
+      write(value, x, y + 13.5 + 4, 'serif', 17, 1, COLOR.ink);
     });
-    y += 13.5 + 4 + 26 + GAP;
+    y += 13.5 + 4 + 17 + GAP;
   }
   measuresBegun = true;
 

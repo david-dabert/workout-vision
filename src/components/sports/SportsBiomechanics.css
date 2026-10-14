@@ -40,3 +40,4 @@
 @media (prefers-reduced-motion: reduce) {
   .wv-experience .sports-bar-seg { transition: none; }
 }
+.wv-experience .sports-view { margin: var(--s-2) 0 var(--s-3); }

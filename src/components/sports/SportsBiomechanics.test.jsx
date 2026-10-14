@@ -50,15 +50,18 @@ const CALQUES_FR = ['ne lit ', 'lire ', ' lu ', 'Hors de portée', 'ma vidéo', 
 describe('the sports lab', () => {
   for (const lang of ['en', 'fr']) {
     for (const sport of SPORTS) {
-      it(`${sport} (${lang}): the raw clip under a Démo badge, no false claim, nothing analysed`, async () => {
+      // Since 14 October 2026 (David) the analysed clip opens first as a preview of where the app is going, under an
+      // « Aperçu » badge and a note that its figures are not measured; the plain clip is one tap away.
+      it(`${sport} (${lang}): the preview under an Aperçu badge and its note, the plain clip offered, no false claim in text`, async () => {
         const html = decode(await render(lang, sport));
         const t = text(html);
         expect(html).toContain(`aria-pressed="true" data-testid="tab-${sport}"`);
-        expect(html).toContain(`demo/sports/${sport}-demo-raw.mp4#t=0.1`);
-        expect(html).not.toMatch(/analyzed/i);
+        expect(html).toContain(`demo/sports/${sport}-demo-analyzed.mp4#t=0.1`);
+        expect(html).toContain('data-testid="preview-badge"');
+        expect(html).toContain('data-testid="sports-view-raw"');
+        expect(t).toContain(lang === 'fr' ? 'Ils ne sont pas encore mesurés.' : 'They are not measured yet.');
         expect(html).not.toContain('poster=');
         expect(html).not.toContain('download=');
-        expect(html).toContain('data-testid="demo-badge"');
         expect(html).toContain('data-testid="sports-reach"');
         for (const w of FALSE_CLAIMS) expect(t, `${sport} ${lang}: ${w}`).not.toContain(w);
         if (lang === 'fr') for (const w of CALQUES_FR) expect(t, `${sport}: ${w}`).not.toContain(w);

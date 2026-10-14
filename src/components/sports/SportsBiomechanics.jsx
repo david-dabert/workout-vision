@@ -3,7 +3,7 @@ import { useT } from '../../lib/LanguageContext';
 import { golfTempoRatio, rowingRhythmRatio, GOLF_TEMPO_REFERENCE, ROWING_RATIO_REFERENCE } from '../../lib/sports/kinematics';
 import { hapticLight } from '../../lib/haptics';
 import { useCondensingTopbar } from '../experience/topbar';
-import { Topbar, DemoTag, Metric, Range } from '../experience/Showcase';
+import { Topbar, DemoTag, PreviewTag, Metric, Range } from '../experience/Showcase';
 import { num, reducedMotion, NBSP } from '../experience/showcase-text';
 import { SPORTS_COPY } from './sports-copy';
 // The screen's own styles, in the experience's wrapper with its tokens (Showcase.css, design/SYSTEM.md).
@@ -25,6 +25,10 @@ const BASE_URL = import.meta.env.BASE_URL || '/';
 const SPORTS = ['golf', 'tennis', 'padel', 'baseball', 'cycling', 'rowing', 'skiing', 'swimming'];
 // The raw clip, as filmed. #t=0.1 shows its first frame on iOS when it does not play on its own (Reduce Motion).
 const clipUrl = s => `${BASE_URL}demo/sports/${s}-demo-raw.mp4#t=0.1`;
+// The analysed version of the same clip: skeleton and figures burned into the picture by an earlier tool (commit
+// 5109027), shown since 14 October 2026 as a preview of where the app is going, labelled « Aperçu », never as measured
+// (David: "it sends a message about what we are trying to build").
+const previewUrl = s => `${BASE_URL}demo/sports/${s}-demo-analyzed.mp4#t=0.1`;
 
 // The muted attribute itself, not only React's property: iOS lets a clip play on its own only when it is muted, and
 // React writes muted as a property (status convention: WebKit's autoplay policy; to confirm on David's iPhone).
@@ -128,6 +132,8 @@ export default function SportsBiomechanics({ sport, onClose, onOpenEquine, onOpe
   const [reduced] = useState(reducedMotion);
   // A sport's own address (#golf, #rowing...) opens on that sport (SP-27).
   const [activeSport, setActiveSport] = useState(SPORTS.includes(sport) ? sport : 'golf');
+  // The preview first, so the screen shows at once what the app aims to do; the plain clip one tap away.
+  const [view, setView] = useState('preview');
   const sp = c.sports[activeSport];
 
   // The visitor's video: an object URL, released when another replaces it, when it is closed and when the screen goes.
@@ -211,16 +217,21 @@ export default function SportsBiomechanics({ sport, onClose, onOpenEquine, onOpe
             </div>
           </div>
 
-          {/* The sport's demonstration clip, as filmed: nothing drawn on it, nothing read from it. */}
+          {/* The sport's clip: as a preview of where the app is going (skeleton and figures drawn on it, illustrations, not
+              measures), or as filmed, with nothing read from it. */}
           <section className="sc-section sports-hero" data-testid="sports-demo-player-card" data-reveal style={{ '--i': 4 }}>
             <div className="sports-name-row">
               <h2 className="sc-name">{sp.name}</h2>
-              <DemoTag fr={fr} />
+              {view === 'preview' ? <PreviewTag fr={fr} /> : <DemoTag fr={fr} />}
+            </div>
+            <div className="sc-chips sports-view" role="group" aria-label={c.viewLabel}>
+              <button type="button" className="sc-chip press" aria-pressed={view === 'preview'} onClick={() => { hapticLight(); setView('preview'); }} data-testid="sports-view-preview">{c.viewPreview}</button>
+              <button type="button" className="sc-chip press" aria-pressed={view === 'raw'} onClick={() => { hapticLight(); setView('raw'); }} data-testid="sports-view-raw">{c.viewRaw}</button>
             </div>
             <div className="sc-frame">
-              <video key={activeSport} ref={muteVideo} src={clipUrl(activeSport)} controls playsInline muted loop autoPlay={!reduced} preload="metadata" className="sports-demo-video" data-testid="sports-demo-player" />
+              <video key={`${activeSport}-${view}`} ref={muteVideo} src={view === 'preview' ? previewUrl(activeSport) : clipUrl(activeSport)} controls playsInline muted loop autoPlay={!reduced} preload="metadata" className="sports-demo-video" data-testid="sports-demo-player" />
             </div>
-            <p className="sc-frame-note is-quiet" data-testid="sports-demo-note">{sp.clip} {c.demoNote}</p>
+            <p className="sc-frame-note is-quiet" data-testid="sports-demo-note">{view === 'preview' ? c.previewNote : `${sp.clip} ${c.demoNote}`}</p>
           </section>
 
           {/* What a phone video could measure once built, and what it cannot, with the reason. */}

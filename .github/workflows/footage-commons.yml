@@ -1,0 +1,44 @@
+# Demo footage from Wikimedia Commons (no key), read by the app's pose pipeline and ranked (14 October 2026;
+# scripts/footage/commons.mjs). Measures, decides nothing: the ranking goes to the job summary, the clips to an
+# artifact. Runs on a branch when its files change.
+name: Footage from Commons
+
+on:
+  push:
+    branches: ['claude/**']
+    paths:
+      - .github/workflows/footage-commons.yml
+      - scripts/footage/commons.mjs
+      - scripts/benchmarks/safari-readings.mjs
+
+jobs:
+  footage:
+    name: Commons footage, ranked
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # The pose model downloaded and checked before the server starts: the dev server's own copy races the first read
+      # (run 1 of 14 October: "Pose model integrity mismatch" in Chromium, a failed model fetch in Safari).
+      - run: node scripts/copy-models.js
+      - name: Serve the app
+        run: |
+          npx vite --port 5173 --strictPort > vite.log 2>&1 &
+          for i in $(seq 90); do curl -sf http://localhost:5173/workout-vision/test/real-phone/harness.html > /dev/null && break; sleep 2; done
+      - name: Fetch, read and rank
+        run: node scripts/footage/commons.mjs | tee footage.log
+      - run: sed -n '/### Commons footage/,$p' footage.log >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: commons-footage
+          path: |
+            public/footage-tmp/
+            data/footage/commons.json
+          retention-days: 14

@@ -20,6 +20,9 @@ export function Topbar({ fr, onBack, backTestId, children }) {
 /** The badge beside a group of values fixed in the code rather than measured from the person's video (R8). */
 export const DemoTag = ({ fr }) => <span className="sc-tag is-demo" data-testid="demo-badge">{fr ? 'Démo' : 'Demo'}</span>;
 
+/** A preview of where the app is going: a demo video whose figures are illustrations, not measures (14 October 2026). */
+export const PreviewTag = ({ fr }) => <span className="sc-tag is-demo" data-testid="preview-badge">{fr ? 'Aperçu' : 'Preview'}</span>;
+
 /** A verdict as a tag: an ok verdict in ash, one that asks for attention in the gold outline. */
 export const Verdict = ({ ok, children, testId }) => <span className={`sc-tag ${ok ? 'is-good' : 'is-warn'}`} data-testid={testId}>{children}</span>;
 

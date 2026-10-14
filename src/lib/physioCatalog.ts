@@ -166,7 +166,9 @@ export const PHYSIO_CATALOG: PhysioExerciseItem[] = [
     regressionEn: 'Static lunge, both feet on the floor',
   },
   {
-    key: 'lunge',
+    // The catalogue's reverse lunge: 'lunge' is a counting definition, not a guide key, so programmes dropped it
+    // (assessment of 14 October 2026).
+    key: 'reverse_lunge',
     nameFr: 'Fente arrière',
     nameEn: 'Reverse Lunge',
     region: 'knee',

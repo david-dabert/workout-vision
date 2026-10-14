@@ -47,8 +47,10 @@ describe('EquiVision', () => {
       expect(html).toContain('data-testid="equine-simulation"');
       expect(html).toContain('data-testid="equine-circle"');
       for (const s of ['sound', 'fore', 'hind']) expect(html).toContain(`data-testid="scenario-${s}"`);
-      // Démo on the video band, the simulation band, its chart and its figures.
-      expect(html.match(/data-testid="demo-badge"/g)?.length).toBeGreaterThanOrEqual(4);
+      // Aperçu on the video band (the preview opens first, 14 October 2026), Démo on the simulation band, its chart and
+      // its figures.
+      expect(html).toContain('data-testid="preview-badge"');
+      expect(html.match(/data-testid="demo-badge"/g)?.length).toBeGreaterThanOrEqual(3);
       expect(html).toContain('data-testid="equine-upload-card"');
     });
 
@@ -64,11 +66,14 @@ describe('EquiVision', () => {
       expect(t).toContain(lang === 'fr' ? 'Images par seconde de la simulation' : 'Frames per second of the simulation');
     });
 
-    it(`serves no painted "analysed" video and offers no download, in ${lang}`, async () => {
-      const html = await render(lang);
-      expect(html).not.toMatch(/analyzed/i);
+    // The analysed ridden clip is shown as a preview (David, 14 October 2026), labelled, its figures said not measured;
+    // the plain clip one tap away; still no download of either.
+    it(`shows the analysed clip as a labelled preview and offers no download, in ${lang}`, async () => {
+      const html = decode(await render(lang));
+      expect(html).toContain('workoutvision-ridden-dressage-analyzed.mp4');
+      expect(html).toContain('data-testid="equine-view-raw"');
+      expect(text(html)).toContain(lang === 'fr' ? 'Ils ne sont pas encore mesurés.' : 'They are not measured yet.');
       expect(html).not.toContain('download=');
-      expect(html).toContain('workoutvision-ridden-dressage-raw.mp4');
     });
 
     it(`sets each read value beside the value the simulation was written with, in ${lang}`, async () => {

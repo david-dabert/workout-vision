@@ -32,3 +32,4 @@
 .wv-experience .equine-upload { width: 100%; align-items: center; text-align: center; gap: var(--s-2); padding: 22px 18px; border-style: dashed; border-color: var(--hair-2); }
 .wv-experience .equine-upload .upload-icon { width: 22px; height: 22px; color: var(--c-accent); }
 .wv-experience .equine-upload-title { font-size: var(--fs-body); font-weight: 600; color: var(--c-fg); text-wrap: balance; }
+.wv-experience .equine-view { margin: var(--s-2) 0 var(--s-3); }

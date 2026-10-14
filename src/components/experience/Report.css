@@ -134,7 +134,8 @@
 .wv-experience .sheet .sh-details > span.is-wide { grid-column: 1 / -1; }
 .wv-experience .sheet .sh-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding-top: 12px; border-top: 1px solid var(--paper-rule); }
 .wv-experience .sheet .sh-stats em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-ash); }
-.wv-experience .sheet .sh-stats b { display: block; margin-top: 4px; font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1; color: var(--paper-gold); font-variant-numeric: lining-nums tabular-nums; }
+/* Experimental figures (time under tension, tempo): smaller than the count and in ink, not its gold (R8, 14 October). */
+.wv-experience .sheet .sh-stats b { display: block; margin-top: 4px; font-family: var(--serif); font-weight: 400; font-size: 17px; line-height: 1; color: var(--paper-ink); font-variant-numeric: lining-nums tabular-nums; }
 .wv-experience .sheet .sh-foot-notes { margin: -4px 0 0; font-size: 10px; color: var(--paper-ash); white-space: pre-wrap; }
 .wv-experience .sheet .sh-exp { margin: 0; padding-top: 10px; border-top: 1px solid var(--paper-rule); font-size: 9.5px; line-height: 1.5; color: var(--paper-ash); }
 .wv-experience .sh-wave .strip-key { display: inline-flex; align-items: center; gap: 6px; }
