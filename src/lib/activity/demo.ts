@@ -3,10 +3,11 @@
  * by construction (synthetic.ts), at the frame rate the screen picks, with the truth of every value the engine returns.
  * The screen shows a number only with its margin and beside its truth, so the visitor sees each margin hold or fail.
  *
- * The jumps: four, two standing and two after a three-stride run-up, of 0.45 to 0.70 s in the air; every point jitters
- * by a standard deviation of 1 px on a 360x640 frame, seeded so every visit reads the same values. At that noise the
- * run-up timing is measured within its margin at 30 to 240 samples a second (volleyball.test.ts). Status: experimental
- * (level 1 of the truth lab: no pose model, no filmed person).
+ * The jumps: four, two standing and two after a three-stride run-up, of 0.45 to 0.70 s in the air, landing as they took
+ * off, toes leaving at full speed; every point jitters by a standard deviation of 1 px on a 360x640 frame, seeded so
+ * every visit reads the same values. What this seed shows at each rate is pinned by demo.test.ts; how the margins hold
+ * over many runs, and in wider conditions, is in volleyball-heldout.test.ts. Status: experimental (level 1 of the truth
+ * lab: no pose model, no filmed person).
  */
 import { runActivity } from './engine';
 import { volleyball } from './specs/volleyball';
@@ -60,11 +61,15 @@ export function runVolleyballDemo(rate: number): DemoRun {
       return j && of ? of(j) : null;
     });
     const each = m.values.map(v => byEvent[v.event] ?? null);
-    // The value shown is one event's (the highest, the lowest) or the mean of all: its truth is read the same way.
+    // The truth of the value shown: the true highest (or lowest) of all the jumps made, whichever jump the engine picked;
+    // for a mean, the mean of the truths of the values it averaged.
     let value: number | null = null;
     if (m.value !== null && each.length) {
       if (spec?.summary === 'mean') value = each.every(x => x !== null) ? (each as number[]).reduce((s, x) => s + x, 0) / each.length : null;
-      else value = each[m.values.findIndex(v => v.value === m.value)] ?? null;
+      else {
+        const all = read.truth.jumps.map(j => (of ? of(j) : null)).filter((x): x is number => x !== null);
+        value = all.length ? (spec?.summary === 'max' ? Math.max(...all) : Math.min(...all)) : null;
+      }
     }
     truth[m.key] = { value, each, byEvent };
   }
