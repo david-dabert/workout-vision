@@ -75,6 +75,13 @@ describe('the lift of a limb against gravity', () => {
     expect(countReps(frames, timestamps(n, sps), 'prone_y_raise').count).toBe(0);
   });
 
+  it('keeps the better seen arm when it stays still and the far arm wobbles slowly (review of 14 October)', () => {
+    // As above with a 2 s wobble, long enough to pass minRepSec: the still-side rule (countReps) read it 9.
+    const rng = seeded(8), sps = 15, n = 20 * sps;
+    const frames = Array.from({ length: n }, (_, i) => prone(-3 + gaussian(rng, 2), 1, -3 + 6 * Math.sin((2 * Math.PI * i) / sps / 2), 0.7));
+    expect(countReps(frames, timestamps(n, sps), 'prone_y_raise').count).toBe(0);
+  });
+
   it('counts prone Y raise accurately even when wrists/hands are out of frame by falling back to elbows', () => {
     const sps = 30;
     const lifts = sample(cycles({ rest: -3, work: 13, firstSec: 1.2, secondSec: 0.8 }), -3, sps);

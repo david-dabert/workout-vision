@@ -39,3 +39,58 @@ describe('a one-limb exercise is counted on the working limb, even when the idle
     expect(result.arm).toBe(working);
   });
 });
+
+// A two-arm lift done one arm at a time (review of PR #175, 14 October 2026): the idle arm, better seen and still,
+// counts nothing, so the working arm counts. A set whose better seen arm counts reps keeps it.
+describe('a two-arm lift counts the working arm when the better seen arm stays still', () => {
+  it.each((['bicep_curl', 'lateral_raise'] as const).flatMap(key => (['left', 'right'] as Side[]).map(working => [key, working] as const)))('%s, working %s', (key, working) => {
+    const def = liftDefinition(key)!;
+    expect(def.eitherSide || def.together || def.bothSides, key).toBeFalsy();
+    const rest = def.rest === 'high' ? 170 : 20;
+    const work = def.rest === 'high' ? rest - 90 : rest + 90;
+    const sps = 30;
+    const moving = sample(cycles({ rest, work, firstSec: 1.2, secondSec: 0.8 }), rest, sps);
+    const rng = seeded(7);
+    const idle: Side = working === 'left' ? 'right' : 'left';
+    const frames = moving.map(a => {
+      const frame = jointFrame(def.joint, { [working]: a, [idle]: rest + (rng() - 0.5) })!;
+      for (const i of JOINT_POINTS[def.joint][working]) frame[i] = { ...frame[i], visibility: 0.8 };
+      return frame;
+    });
+    const result = countReps(frames, timestamps(moving.length, sps), key);
+    expect(result.count).toBe(10);
+    expect(result.arm).toBe(working);
+  });
+
+  // The better seen arm moves (35 degrees, under its own detection's reach as a slow drift) but counts no rep: it is
+  // not still, so the count stays its own and the app asks (the first form of the rule switched here, review of 14 October).
+  it('keeps a better seen arm that moves but counts nothing', () => {
+    const def = liftDefinition('bicep_curl')!;
+    const sps = 30;
+    const ten = sample(cycles({ rest: 170, work: 80, firstSec: 1.2, secondSec: 0.8 }), 170, sps);
+    const frames = ten.map((a, i) => {
+      const drift = 170 - 35 * Math.min(1, i / ten.length * 2) * (i < ten.length / 2 ? 1 : (ten.length - i) / (ten.length / 2));
+      const frame = jointFrame(def.joint, { left: drift, right: a })!;
+      for (const j of JOINT_POINTS[def.joint].right) frame[j] = { ...frame[j], visibility: 0.8 };
+      return frame;
+    });
+    const result = countReps(frames, timestamps(ten.length, sps), 'bicep_curl');
+    expect(result.arm).toBe('left');
+  });
+
+  // The working arm seen on fewer than half the samples does not take the count: summarizeCount would refuse it.
+  it('does not switch to a working arm seen on fewer than half the samples', () => {
+    const def = liftDefinition('bicep_curl')!;
+    const sps = 30;
+    const ten = sample(cycles({ rest: 170, work: 80, firstSec: 1.2, secondSec: 0.8 }), 170, sps);
+    const rng = seeded(9);
+    const frames = ten.map((a, i) => {
+      const frame = jointFrame(def.joint, { left: 170 + (rng() - 0.5), right: a })!;
+      for (const j of JOINT_POINTS[def.joint].right) frame[j] = { ...frame[j], visibility: i % 3 === 0 ? 0.8 : 0.1 };
+      return frame;
+    });
+    const result = countReps(frames, timestamps(ten.length, sps), 'bicep_curl');
+    expect(result.arm).toBe('left');
+    expect(result.count).toBe(0);
+  });
+});

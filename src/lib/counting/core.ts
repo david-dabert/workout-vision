@@ -15,7 +15,8 @@
  * Musculoskeletal System, 3rd ed., 2017). No per-lift parameter is set.
  *
  * Side selection: the side whose three joint landmarks have the highest average
- * visibility across the set. Short dropouts (< bridgeGap) are filled with the last
+ * visibility across the set, unless that side stays still and counts nothing while the other moves and counts
+ * (countReps, 14 October 2026). Short dropouts (< bridgeGap) are filled with the last
  * valid angle; the side never alternates frame by frame. The alternating curl, and every guide
  * exercise whose pattern counts both sides (liftDefinition), count both sides and join them
  * (countBothSides). An either-side exercise (push-up, pull-up, a one-limb exercise) is counted on each side and keeps
@@ -245,7 +246,8 @@ const PATTERNS = guidePatterns as Record<string, string>;
 // landscape batch (test/real-phone/synth/motions/lift-angle.test.ts), in the rest windows (1 to 3 s before the first rep
 // and after the last) the arm facing the camera spread 0 to 5.8 degrees and the far arm up to 12.7; the plainly dressed
 // body's lifting arm spread 13 to 20 (arms read poorly, 3 to 8). 10 degrees, about twice the near arm's rest, for the
-// set and for each rep; the far arm's rest can pass it, so the better seen arm is counted, never the one with more reps.
+// set and for each rep; the far arm's rest can pass it, so the better seen arm is counted, never the one with more reps,
+// nor the other when the better seen one stays still (countReps exempts a lift read).
 // No set held still from start to end was rendered. Source: measured on rendered sets only, no person filmed.
 // Status: experimental.
 const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRepRomDeg' | 'minRangeDeg' | 'together' | 'eitherSide' | 'togetherMinCorrelation' | 'minRepSec' | 'noSplit'>> = {
@@ -361,6 +363,12 @@ const PERCENTILE_LOW = 10;        // for threshold from set's own range
 const PERCENTILE_HIGH = 90;
 const THRESHOLD_MARGIN = 0.20;    // fraction of range added as hysteresis band
 const MIN_ROM_DEGREES = 20;       // minimum ROM to accept a rep
+// Under this 95th minus 5th percentile spread of its smoothed angle, the better seen side of a one-side lift is still,
+// and the other side may count (countReps). About twice the near arm's rest spread on the renders of 8 October
+// (0 to 5.8 degrees, DETECTION prone_y_raise); the idle elbow of IntelliRehabDS ird_s101_g00_stand spread 3; the
+// better seen side of every set the first form of the rule moved spread 13 or more (review of 14 October).
+// Source: UNSOURCED. Status: experimental.
+const STILL_SIDE_DEG = 10;
 const VIS_THRESHOLD = 0.5;        // per-joint visibility floor
 // Rest band, 2 October 2026 (David's order on tempo, PLAN.md): 10 % and 3° timed only the fast middle of each
 // phase, so a 0.15 s hold at the turn read 0.53 s (median) and phases 0.7 s short on 96 synthetic sets
@@ -454,7 +462,22 @@ export function countReps(
     // The knees do not move together: counted as eitherSide, below.
   }
   const mine = countSide(worldLandmarks, timestamps, def, seen, tuning);
-  if (!def.eitherSide && !def.together) return mine;
+  const countable = (r: CountResult) => r.angles.filter(a => a !== null).length >= worldLandmarks.length / 2;
+  if (!def.eitherSide && !def.together) {
+    // A still limb counts nothing. When the better seen side counts no rep and stays still (STILL_SIDE_DEG), the
+    // other side counts if it is seen on at least half the samples, moves at least MIN_ROM_DEGREES and counts one or
+    // more: a one-arm curl or raise filmed from the front sees both arms alike, and the idle one, held still, read 0
+    // (IntelliRehabDS, Zenodo record 4610859, review of PR #175 on 14 October 2026: on ird_s101_g00_stand, 6 elbow
+    // flexions, the elbow kept spanned 160 to 163 degrees while the other spanned 20 to 167). Only a set the app does
+    // not count today (it asks how many, Result.jsx) can change. A side that moves, even too little to count, is
+    // kept: the first form of this rule (any count of 0) turned 13 asked sets into numbers, 9 of them wrong, on sets
+    // whose better seen side moved 13 to 85 degrees (review of 14 October). An arm's lift read (prone raises) never
+    // switches: its far arm's rest wanders past the 10-degree floor (DETECTION, prone_y_raise).
+    // Source: UNSOURCED (no published rule). Status: experimental.
+    if (mine.count > 0 || def.lift || spreadDeg(mine.smoothedAngles) >= STILL_SIDE_DEG) return mine;
+    const other = countSide(worldLandmarks, timestamps, def, seen === 'left' ? 'right' : 'left', tuning);
+    return other.count > 0 && countable(other) && spreadDeg(other.smoothedAngles) >= MIN_ROM_DEGREES ? other : mine;
+  }
   // The side with more reps; on a tie, the better seen. A side seen in fewer than half the samples, which the count
   // refuses (summarizeCount), is never kept over one seen in more: its extra reps would turn a set the better side
   // counts into a refusal (3 October: a push-up seen 91 % on one elbow and 49 % on the other; a public pull-up
@@ -465,7 +488,6 @@ export function countReps(
   // refused although the other elbow, seen on every sample, counted the same 6). Measured on 3 October with
   // variant-eval: no count moved on David's sets, either public half or the synthetic sets.
   const other = countSide(worldLandmarks, timestamps, def, seen === 'left' ? 'right' : 'left', tuning);
-  const countable = (r: CountResult) => r.angles.filter(a => a !== null).length >= worldLandmarks.length / 2;
   const mineSeen = countable(mine), otherSeen = countable(other);
   if (mineSeen !== otherSeen) return otherSeen ? other : mine;
   return other.count > mine.count ? other : mine;
@@ -589,7 +611,8 @@ export function jointRange(worldLandmarks: WorldLandmarkFrame[], timestamps: num
       .filter((a): a is number => a !== null).sort((a, b) => a - b);
     return xs.length < 3 ? NaN : xs[Math.floor(xs.length * 0.95)] - xs[Math.floor(xs.length * 0.05)];
   };
-  if (!def.eitherSide && !def.together) return range(selectSide(worldLandmarks, def.joint));
+  // The side the count tracks, which is the other one when the better seen limb stays still (countReps).
+  if (!def.eitherSide && !def.together) return range(countReps(worldLandmarks, timestamps, lift).arm as 'left' | 'right');
   // An either-side or together lift can be counted on either side (countReps), so the larger of the two ranges:
   // a still, better seen limb beside a working one no longer warns beside a count (third audit, C03, 3 October).
   const both = [range('left'), range('right')].filter(x => !Number.isNaN(x));
@@ -749,6 +772,12 @@ function selectSide(worldLandmarks: WorldLandmarkFrame[], joint: Joint): 'left' 
   }
   if (count === 0) return 'left';
   return lVis >= rVis ? 'left' : 'right';
+}
+
+/** The 95th minus the 5th percentile of the angles seen, in degrees, as jointRange reads it; 0 under 3 angles. */
+function spreadDeg(angles: (number | null)[]): number {
+  const xs = angles.filter((a): a is number => a !== null).sort((a, b) => a - b);
+  return xs.length < 3 ? 0 : xs[Math.floor(xs.length * 0.95)] - xs[Math.floor(xs.length * 0.05)];
 }
 
 function vis(p: WorldLandmark): number {
