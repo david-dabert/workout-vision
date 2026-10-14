@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { exerciseName } from './exercise-info';
-import { reportSheet, reportFileName, NAME_MAX, NOTES_MAX } from './report-sheet';
+import { reportSheet, reportFileName, measuresFile, NAME_MAX, NOTES_MAX } from './report-sheet';
 import { knownSets, loadSets, previousSet } from './sets';
 import { liftDefinition } from '../../lib/counting/core';
 import { track } from '../../lib/events';
@@ -25,7 +25,7 @@ export function warmReportPdf() {
  * count: the number the visitor confirmed or corrected; counted: what the app counted.
  * reps: the app's reps, when their details were measured with step 3c's boundaries.
  */
-export default function Report({ lift, count, counted, arm, date, source, afterRefusal = false, proposed = false, leaving, onBack, reps, setId, sides = null, wave = null, planned = null }) {
+export default function Report({ lift, count, counted, arm, date, source, afterRefusal = false, proposed = false, proposedBy = null, leaving, onBack, reps, setId, sides = null, wave = null, planned = null }) {
   const { lang } = useT(), fr = lang === 'fr';
   const [name, setName] = useState('');
   const [context, setContext] = useState(''); // '' | alone | friend | coach | physio
@@ -65,7 +65,7 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
     loadSets().then(all => { if (live) setPrevious(previousOf(all)); }, () => { if (live) setPrevious(null); });
     return () => { live = false; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, afterRefusal, proposed, first, previousSet: previous ?? null, sides, lift, wave, planned, rpe, pain });
+  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, afterRefusal, proposed, proposedBy, first, previousSet: previous ?? null, sides, lift, wave, planned, rpe, pain });
   const sheetRef = useRef(sheet);
   sheetRef.current = sheet;
 
@@ -130,26 +130,10 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
     download(blob, fileName);
   }
 
-  // The set as a file (honesty audit of 14 October 2026, CORE-15): every value says where it comes from, the app's count
-  // and its experimental per-rep measures apart from what the person confirmed or typed. No derived metric the app cannot
-  // measure (the withdrawn symmetry, consistency, SPARC, form checks, loads, certificate and VBT), no landmark. Its name
-  // says what it holds: the set's measures, not "raw telemetry".
+  // The set as a file (measuresFile, report-sheet.js): every value says where it comes from.
   function exportJson() {
-    const app = counted ?? null;
-    const how = source === 'manual' && afterRefusal
-      ? (proposed ? 'proposed by the app, which could not count the set, then confirmed by the person' : 'typed by the person; the app could not count the set')
-      : app !== null && app !== count ? 'corrected by the person' : 'counted by the app, confirmed by the person';
-    const payload = {
-      format: 'workoutvision-set-measures/1',
-      lift,
-      date: when.toISOString(),
-      count: { value: count, source: how },
-      countedByApp: app !== null && !(source === 'manual' && afterRefusal) ? { value: app, source: 'counted by the app' } : null,
-      reps: { source: 'measured by the app on the video, experimental, not validated', values: reps || [] },
-      sides: sides ? { source: 'measured by the app, front view only, experimental', value: sides } : null,
-      planned: planned ? { source: 'the coach\'s programme', value: planned } : null,
-      person: { source: 'typed by the person on the report form', name: name || null, context: context || null, partner: partner || null, level: level || null, pain: pain ?? null, rpe: rpe ?? null, notes: notes || null },
-    };
+    const payload = measuresFile({ fr, lift, date: when, count, counted, source, afterRefusal, proposed, proposedBy, reps, sides, planned,
+      person: { name, context, partner, level, pain, rpe, notes } });
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const day = when.toISOString().slice(0, 10);
     const fileName = `${fr ? 'mesures-serie' : 'set-measures'}-${lift}-${day}.json`;

@@ -287,6 +287,49 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   };
 }
 
+/**
+ * The set as a JSON file (Report.jsx, "Mesures de la série"; honesty audit of 14 October 2026, CORE-15): every value says
+ * where it comes from, the app's count and its experimental per-rep measures apart from what the person confirmed or
+ * typed. No derived metric the app cannot measure (the withdrawn symmetry, consistency, SPARC, form checks, loads,
+ * certificate and VBT), no partial rep, no landmark. Second round of the same day: the sources are in the person's
+ * language; the reps' values are rounded as the screen shows them (whole degrees and degrees per second, tenths of a
+ * second), not to fourteen decimals a reader would take for precision; a set with no measured rep says none (null); left
+ * and right are exported only where the sheet prints them (sidesLines: this lift, the current rule), never a comparison
+ * the app withdrew. The French sources await David's approval (R10).
+ */
+export function measuresFile({ fr, lift, date, count, counted = null, source, afterRefusal = false, proposed = false, proposedBy = null, reps = null, sides = null, planned = null, person = {} }) {
+  const app = counted ?? null;
+  const typed = source === 'manual' && afterRefusal;
+  const tr = (frText, enText) => (fr ? frText : enText);
+  const how = typed
+    ? (proposed && proposedBy === 'universal'
+      ? tr('proposé par l’appli, qui ne compte pas encore cet exercice, puis confirmé par la personne', 'proposed by the app, which does not count this exercise yet, then confirmed by the person')
+      : proposed
+        ? tr('proposé par l’appli, qui n’a pas pu compter la série, puis confirmé par la personne', 'proposed by the app, which could not count the set, then confirmed by the person')
+        : tr(`saisi par la personne${NBSP}: l’appli n’a pas pu compter la série`, 'typed by the person; the app could not count the set'))
+    : app !== null && app !== count ? tr('corrigé par la personne', 'corrected by the person') : tr('compté par l’appli, confirmé par la personne', 'counted by the app, confirmed by the person');
+  const tenth = v => (Number.isFinite(v) ? Math.round(v * 10) / 10 : null);
+  const whole = v => (Number.isFinite(v) ? Math.round(v) : null);
+  const values = (reps || []).map(r => ({
+    index: r.index ?? null, startTime: tenth(r.startTime), endTime: tenth(r.endTime), romDegrees: whole(r.romDegrees),
+    concentricSec: tenth(r.concentricSec), eccentricSec: tenth(r.eccentricSec), peakSpeed: whole(r.peakSpeed), meanSpeed: whole(r.meanSpeed),
+    ...(r.side ? { side: r.side } : {}), ...(r.clipped ? { clipped: true } : {}),
+  }));
+  const lr = sidesLines(sides, fr, lift) ? sides : null;
+  const p = person || {};
+  return {
+    format: 'workoutvision-set-measures/1',
+    lift,
+    date: (date instanceof Date ? date : new Date(date)).toISOString(),
+    count: { value: count, source: how },
+    countedByApp: app !== null && !typed ? { value: app, source: tr('compté par l’appli', 'counted by the app') } : null,
+    reps: values.length ? { source: tr('mesuré par l’appli sur la vidéo, expérimental, non validé', 'measured by the app on the video, experimental, not validated'), values } : null,
+    sides: lr ? { source: tr('mesuré par l’appli, série filmée de face seulement, expérimental', 'measured by the app, front view only, experimental'), value: { left: lr.left, right: lr.right, gapPercent: Math.abs(Math.round(lr.si)) } } : null,
+    planned: planned ? { source: tr('le programme du coach', 'the coach’s programme'), value: planned } : null,
+    person: { source: tr('saisi par la personne sur le formulaire du rapport', 'typed by the person on the report form'), name: p.name || null, context: p.context || null, partner: p.partner || null, level: p.level || null, pain: p.pain ?? null, rpe: p.rpe ?? null, notes: p.notes || null },
+  };
+}
+
 // "Prévu : 3 × 10" (pro-copy.js), or '' for a set saved outside a programme or a target the set does not hold whole.
 function plannedLine(planned, fr) {
   const ok = n => Number.isInteger(n) && n > 0;

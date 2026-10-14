@@ -3,7 +3,8 @@
  * its file name, its line breaking, and the PDF itself.
  */
 import { describe, it, expect, vi } from 'vitest';
-import { reportSheet, reportFileName, setMeasures } from '../report-sheet';
+import { reportSheet, reportFileName, setMeasures, measuresFile } from '../report-sheet';
+import { SIDES_VERSION } from '../../../lib/counting/symmetry';
 import { reportPdf, wrapText } from '../report-pdf';
 
 const day = new Date(2026, 8, 26, 14, 32);
@@ -425,5 +426,39 @@ describe('wrapText and the no-break spaces', () => {
     expect(wrapText('écart 17 %', 6 * 8, six)).toEqual(['écart 17', ' %']); // wider than the line: cut as overflow-wrap does
     expect(wrapText('écart 17 %', 6 * 10, six)).toEqual(['écart 17 %']);
     expect(wrapText('un écart 17 %', 6 * 10, six)).toEqual(['un', 'écart 17 %']);
+  });
+});
+
+// The set as a JSON file ("Mesures de la série", Report.jsx; second round of the honesty pass, 14 October 2026).
+describe('measuresFile', () => {
+  const rep = (i, t) => ({ index: i, startTime: t + 0.0123, endTime: t + 1.5371, romDegrees: 88.40924395507963, concentricSec: 0.3959999999999999, eccentricSec: 0.7919999999999998, peakSpeed: 348.64004361885276, meanSpeed: 129.00875533482827, isPartial: false, partialType: 'lengthened', romFraction: 0.4 });
+  const set = { lift: 'bicep_curl', date: day, count: 2, counted: 2, source: 'counter-core', reps: [rep(1, 0), { ...rep(2, 3), clipped: true }] };
+  it('exports left and right only where the sheet prints them: this lift, the current rule', () => {
+    // A curl saved before 2 October 2026 (no version): withdrawn, the sheet prints none, the file holds none.
+    const old = { left: 120, right: 70, si: 53, reps: 7 };
+    expect(reportSheet({ ...base, lift: 'bicep_curl', sides: old, reps: set.reps }).summary.join(' ')).not.toMatch(/gauche|droite/);
+    expect(measuresFile({ ...set, fr: true, sides: old }).sides).toBeNull();
+    expect(measuresFile({ ...set, fr: true, sides: { ...old, v: SIDES_VERSION } }).sides).toBeNull();
+    expect(measuresFile({ ...set, fr: true, lift: 'lateral_raise', sides: { ...old, v: SIDES_VERSION - 1 } }).sides).toBeNull();
+    // A lateral raise filmed from the front under the current rule: the two ranges and their gap, as the sheet says them.
+    const raise = measuresFile({ ...set, fr: true, lift: 'lateral_raise', sides: { left: 80, right: 72, si: 10.5, reps: 7, v: SIDES_VERSION } });
+    expect(raise.sides.value).toEqual({ left: 80, right: 72, gapPercent: 11 });
+  });
+  it('rounds the reps as the screen shows them, and keeps no partial-rep field', () => {
+    const f = measuresFile({ ...set, fr: false });
+    expect(f.reps.values[0]).toEqual({ index: 1, startTime: 0, endTime: 1.5, romDegrees: 88, concentricSec: 0.4, eccentricSec: 0.8, peakSpeed: 349, meanSpeed: 129 });
+    expect(f.reps.values[1]).toMatchObject({ index: 2, startTime: 3, clipped: true });
+    expect(JSON.stringify(f)).not.toMatch(/partial|romFraction/i);
+    expect(JSON.stringify(f.reps)).not.toMatch(/\d\.\d{2,}/);
+    expect(f.count).toEqual({ value: 2, source: 'counted by the app, confirmed by the person' });
+  });
+  it('says none for a set with no measured rep, and speaks the person\'s language', () => {
+    const typed = measuresFile({ fr: true, lift: 'squat', date: day, count: 8, counted: null, source: 'manual', afterRefusal: true, reps: [], person: { pain: 3, rpe: 8 } });
+    expect(typed.reps).toBeNull();
+    expect(typed.countedByApp).toBeNull();
+    expect(typed.count.source).toBe(`saisi par la personne${NBSP}: l’appli n’a pas pu compter la série`);
+    expect(typed.person).toMatchObject({ source: 'saisi par la personne sur le formulaire du rapport', pain: 3, rpe: 8 });
+    expect(measuresFile({ ...set, fr: true }).reps.source).toBe('mesuré par l’appli sur la vidéo, expérimental, non validé');
+    expect(measuresFile({ ...set, fr: true, count: 3 }).count.source).toBe('corrigé par la personne');
   });
 });
