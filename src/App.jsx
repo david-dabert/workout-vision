@@ -245,7 +245,7 @@ function AppInner() {
     screen = <Activity activity="volleyball" onClose={() => go('sports')} />;
   } else if (page === 'coaches' || page === 'coach' || page === 'physio') {
     key = 'coaches';
-    screen = <CoachFinder onClose={() => go('dashboard')} />;
+    screen = <CoachFinder onClose={() => go('dashboard')} onHistory={() => go('history')} />;
   } else if (page === 'buddies' || page === 'buddy') {
     key = 'buddies';
     screen = <GymBuddy onClose={() => go('dashboard')} />;

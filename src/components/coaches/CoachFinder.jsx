@@ -1,240 +1,116 @@
 import { useState, useMemo, useRef } from 'react';
 import { useT } from '../../lib/LanguageContext';
-import {
-  findNearestCoaches,
-  VERIFIED_COACH_REGISTRY,
-} from '../../lib/coaches';
-import { useSets } from '../experience/sets';
+import { DEMO_CITIES, demoProfilesFor } from '../../lib/coaches';
 import { hapticLight } from '../../lib/haptics';
 import { useCondensingTopbar } from '../experience/topbar';
 import { Topbar, DemoTag, GroupHead } from '../experience/Showcase';
-import { num } from '../experience/showcase-text';
+import SendToCoach from './SendToCoach';
 import './CoachFinder.css';
 
-const CheckIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>;
+// Trouver un coach (honesty pass of 14 October 2026, FND-1 to FND-4 and the missed filter item): a demo of the
+// directory to come, with fictional placeholders only (src/lib/coaches/matcher.ts), the city chosen by the person, a
+// specialty that filters, and the one way that works today to send a set to a coach (SendToCoach). No "verified", no
+// geolocation, no encryption, no network roll-out is claimed: none exists. French awaiting David's approval (R10).
 
-const CITIES = [
-  { name: 'Paris', coords: { latitude: 48.8566, longitude: 2.3522 } },
-  { name: 'London', coords: { latitude: 51.5074, longitude: -0.1278 } },
-  { name: 'New York', coords: { latitude: 40.7128, longitude: -74.006 } },
-  { name: 'Berlin', coords: { latitude: 52.52, longitude: 13.405 } },
-  { name: 'Cambridge', coords: { latitude: 52.2053, longitude: 0.1218 } },
+const SPECIALTIES = [
+  { id: 'all', fr: 'Toutes', en: 'All' },
+  { id: 'rehab', fr: 'Kinésithérapie', en: 'Physiotherapy' },
+  { id: 'hypertrophy', fr: 'Musculation', en: 'Bodybuilding' },
+  { id: 'strength', fr: 'Force', en: 'Strength' },
 ];
 
-const SPECIALTY_FILTERS = [
-  { id: 'all', labelEn: 'All Specialties', labelFr: 'Toutes Spécialités' },
-  { id: 'rehab', labelEn: 'Physical Therapy & Rehab', labelFr: 'Kinésithérapie & Rééducation', keys: ['rotator_cuff_shoulder', 'lumbar_spine', 'knee_acl_recovery'] },
-  { id: 'hypertrophy', labelEn: 'Hypertrophy & Physique', labelFr: 'Hypertrophie & Culturisme', keys: ['hypertrophy_physique'] },
-  { id: 'strength', labelEn: 'Strength & Barbell', labelFr: 'Force & Haltérophilie', keys: ['strength_powerlifting', 'olympic_weightlifting'] },
-  { id: 'veterinary', labelEn: 'Equine & Veterinary', labelFr: 'Équin & Vétérinaire', keys: ['equine_veterinary'] },
-];
+const COPY = {
+  fr: {
+    eyebrow: 'Trouver un coach',
+    title: 'Coachs et kinés',
+    sub: 'L’annuaire est en préparation. Les profils ci-dessous sont fictifs, pour montrer à quoi il ressemblera.',
+    plan: 'Plus tard, les coachs s’inscriront eux-mêmes et leur carte professionnelle sera vérifiée. Aucun n’est inscrit pour l’instant.',
+    city: 'Ville',
+    specialty: 'Spécialité',
+    fictional: 'Profil fictif',
+    none: 'Aucun profil fictif pour ce choix.',
+  },
+  en: {
+    eyebrow: 'Find a coach',
+    title: 'Coaches and physios',
+    sub: 'The directory is being prepared. The profiles below are fictional, to show what it will look like.',
+    plan: 'Later, coaches will sign up themselves and their professional card will be checked. None has signed up yet.',
+    city: 'City',
+    specialty: 'Specialty',
+    fictional: 'Fictional profile',
+    none: 'No fictional profile for this choice.',
+  },
+};
 
-export default function CoachFinder({ onClose }) {
+export default function CoachFinder({ onClose, onHistory }) {
   const { lang } = useT();
   const fr = lang === 'fr';
-  const sets = useSets();
-
-  const [selectedCity, setSelectedCity] = useState(CITIES[0]);
-  const [activeFilter, setActiveFilter] = useState('all');
-  const [copiedId, setCopiedId] = useState(null);
+  const c = COPY[fr ? 'fr' : 'en'];
+  const [city, setCity] = useState(DEMO_CITIES[0].name);
+  const [specialty, setSpecialty] = useState('all');
   // The title condenses into the topbar as the page scrolls under it (topbar.js), as on Guide, History and Pro.
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [lang]);
-
-  // Extract latest real workout set telemetry if available
-  const latestTelemetry = useMemo(() => {
-    if (!sets || !sets.length) return null;
-    const s = sets[0];
-    return {
-      exerciseName: s.exercise || s.exerciseKey || (fr ? 'Développé Couché' : 'Bench Press'),
-      reps: s.reps ?? 8,
-      partialReps: s.partialReps || s.lengthenedPartials || s.partialCount || 0,
-      formScore: s.formScore || s.score || (s.confidence ? Math.round(s.confidence * 100) : 92),
-      symmetry: s.symmetry || s.bioAnalysis?.symmetry || (s.bilateralSymmetry ? Math.round(s.bilateralSymmetry * 100) : 96),
-      timestamp: s.createdAt || s.date || Date.now(),
-      // True when one of the values above is the code's fixed stand-in, not the set's own (shown with Demo, R8).
-      filled: s.reps == null || !(s.formScore || s.score || s.confidence) || !(s.symmetry || s.bioAnalysis?.symmetry || s.bilateralSymmetry),
-    };
-  }, [sets, fr]);
-
-  // Compute matched coaches
-  const matches = useMemo(() => {
-    const filterObj = SPECIALTY_FILTERS.find(f => f.id === activeFilter);
-    const requiredSpecialties = filterObj && filterObj.keys ? filterObj.keys : [];
-
-    return findNearestCoaches(
-      {
-        userLocation: selectedCity.coords,
-        maxDistanceKm: 1500,
-        requiredSpecialties,
-      },
-      VERIFIED_COACH_REGISTRY
-    );
-  }, [selectedCity, activeFilter]);
-
-  const handleShareTelemetry = (coach) => {
-    hapticLight();
-    const teleParams = latestTelemetry
-      ? `&ex=${encodeURIComponent(latestTelemetry.exerciseName)}&reps=${latestTelemetry.reps}&partials=${latestTelemetry.partialReps}&form=${latestTelemetry.formScore}&sym=${latestTelemetry.symmetry}`
-      : '&demo=1';
-    const telemetryUrl = `${window.location.origin}${window.location.pathname}#programme=telemetry_share&coach=${coach.id}${teleParams}&t=${Date.now()}`;
-    navigator.clipboard.writeText(telemetryUrl).then(() => {
-      setCopiedId(coach.id);
-      setTimeout(() => setCopiedId(null), 2500);
-    });
-  };
-
-  const handleConnectCoach = (coach) => {
-    hapticLight();
-    // Seamlessly navigate to P2P encrypted chat with the selected coach
-    window.location.hash = `#chat?peer=${coach.id}&name=${encodeURIComponent(coach.name)}&title=${encodeURIComponent(coach.title)}`;
-  };
-
-  // The profiles, their rates and ratings are written in the code (src/lib/coaches): the list carries Demo. The linked
-  // set's values come from the phone's last set, except where the set lacks one and the code puts a fixed value.
-  const pct = (v) => `${v}${fr ? ' ' : ''}%`;
-  const km = (d) => (d < 1 ? '< 1 km' : `${num(d.toFixed(1), fr)} km`);
-  const filterLabel = SPECIALTY_FILTERS.find(f => f.id === activeFilter)?.[fr ? 'labelFr' : 'labelEn'] ?? '';
+  const profiles = useMemo(() => demoProfilesFor(city, specialty), [city, specialty]);
+  const specialtyLabel = SPECIALTIES.find(s => s.id === specialty)?.[fr ? 'fr' : 'en'] ?? '';
+  const initials = (name) => name.split(' ').map(w => w[0]).filter(ch => /[A-Z]/.test(ch)).slice(0, 2).join('');
 
   return (
     <div className="wv-experience">
       <section ref={screenRef} className="screen is-active sc-screen coach-screen" data-testid="coach-finder-screen">
         <div className="wrap">
-          <Topbar
-            fr={fr}
-            backTestId="coach-back-btn"
-            onBack={() => {
-              hapticLight();
-              if (onClose) onClose();
-              else window.location.hash = '';
-            }}
-          />
+          <Topbar fr={fr} backTestId="coach-back-btn" onBack={() => { hapticLight(); if (onClose) onClose(); else window.location.hash = ''; }}>
+            <DemoTag fr={fr} />
+          </Topbar>
 
-          <p className="eyebrow" data-reveal style={{ '--i': 0 }}>{fr ? 'Trouver un Coach & Kiné' : 'Coach & Physio Matcher'}</p>
-          <h1 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Spécialistes & Kinésithérapeutes du Sport' : 'Verified Sports Physios & Strength Coaches'}</h1>
-          <p className="sub" data-reveal style={{ '--i': 1 }}>
-            {fr
-              ? 'Algorithme de proximité géospatiale (100 % sur l’appareil). Partagez vos scores d’asymétrie et vos amplitudes articulaires directement avec un professionnel certifié.'
-              : 'Local-first proximity matching engine. Share your form scores, range of motion, and bilateral asymmetry directly with a certified practitioner.'}
-          </p>
+          <p className="eyebrow" data-reveal style={{ '--i': 0 }}>{c.eyebrow}</p>
+          <h1 className="title" data-reveal style={{ '--i': 0 }}>{c.title}</h1>
+          <p className="sub" data-reveal style={{ '--i': 1 }}>{c.sub}</p>
 
-          {/* Network Onboarding Beta Banner */}
           <div className="sc-section" data-reveal style={{ '--i': 2 }}>
-            <div className="sc-card" data-testid="coach-beta-banner">
-              <span className="sc-tag is-on coach-beta-tag">{fr ? 'Bêta Publique • Réseau en Déploiement' : 'Public Beta • Network Onboarding'}</span>
-              <p className="sc-caption">
-                {fr
-                  ? 'L’algorithme géospatial de matching et le partage chiffré de télémétrie sont opérationnels. Le registre des kinésithérapeutes du sport et entraîneurs certifiés est en cours d’intégration progressive.'
-                  : 'Local proximity matching and encrypted telemetry sharing are active. The verified registry of sports physiotherapists and strength coaches is actively onboarding practitioners.'}
-              </p>
-            </div>
-
-            {/* Real Telemetry Attachment Indicator */}
-            <div className="sc-card coach-telemetry">
-              {latestTelemetry ? (
-                <p className="sc-caption">
-                  {fr ? 'Dernière série liée : ' : 'Linked Set Telemetry: '}
-                  <b>{latestTelemetry.exerciseName}</b> ({latestTelemetry.reps} reps
-                  {latestTelemetry.partialReps > 0 ? ` + ${latestTelemetry.partialReps} ${fr ? 'partielles' : 'partials'}` : ''}) • {pct(latestTelemetry.formScore)} {fr ? 'forme' : 'form'} • {pct(latestTelemetry.symmetry)} {fr ? 'symétrie' : 'symmetry'}
-                </p>
-              ) : (
-                <p className="sc-caption">
-                  {fr ? 'Télémétrie prête : Enregistrez une série pour joindre vos vidéos et biomécanique en 1-clic.' : 'Telemetry Ready: Record a set to attach on-device form scores and angles.'}
-                </p>
-              )}
-              {latestTelemetry?.filled ? <DemoTag fr={fr} /> : null}
-            </div>
+            <p className="sc-frame-note is-quiet" data-testid="coach-plan">{c.plan}</p>
+            <SendToCoach onHistory={onHistory} />
           </div>
 
-          {/* Cities, then specialties: two rails */}
           <div className="sc-section coach-filters" data-reveal style={{ '--i': 3 }}>
-            <div className="sc-rail" role="group" aria-label={fr ? 'Ville' : 'City'}>
-              {CITIES.map(city => (
-                <button
-                  key={city.name}
-                  type="button"
-                  className="sc-chip press"
-                  aria-pressed={selectedCity.name === city.name}
-                  onClick={() => {
-                    hapticLight();
-                    setSelectedCity(city);
-                  }}
-                  data-testid={`city-${city.name.toLowerCase()}`}
-                >
-                  {city.name}
+            <div className="sc-rail" role="group" aria-label={c.city}>
+              {DEMO_CITIES.map(x => (
+                <button key={x.name} type="button" className="sc-chip press" aria-pressed={city === x.name} onClick={() => { hapticLight(); setCity(x.name); }} data-testid={`city-${x.name.toLowerCase()}`}>
+                  {x.name}
                 </button>
               ))}
             </div>
-            <div className="sc-rail" role="group" aria-label={fr ? 'Spécialité' : 'Specialty'}>
-              {SPECIALTY_FILTERS.map(f => (
-                <button
-                  key={f.id}
-                  type="button"
-                  className="sc-chip press"
-                  aria-pressed={activeFilter === f.id}
-                  onClick={() => {
-                    hapticLight();
-                    setActiveFilter(f.id);
-                  }}
-                  data-testid={`filter-${f.id}`}
-                >
-                  {fr ? f.labelFr : f.labelEn}
+            <div className="sc-rail" role="group" aria-label={c.specialty}>
+              {SPECIALTIES.map(s => (
+                <button key={s.id} type="button" className="sc-chip press" aria-pressed={specialty === s.id} onClick={() => { hapticLight(); setSpecialty(s.id); }} data-testid={`filter-${s.id}`}>
+                  {fr ? s.fr : s.en}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Matches List */}
           <section className="sc-section coach-matches" data-reveal style={{ '--i': 4 }}>
-            <GroupHead title={`${selectedCity.name} · ${filterLabel}`}><DemoTag fr={fr} /></GroupHead>
-            <div className="coach-list">
-              {matches.map(({ coach, score }) => (
-                <article key={coach.id} className="sc-card coach-card" data-testid={`coach-card-${coach.id}`}>
-                  <div className="coach-card-head">
-                    <div className="coach-name-block">
-                      <h2 className="sc-name">{coach.name}</h2>
-                      <p className="sc-caption">{coach.title} • {coach.organization || coach.city}</p>
+            <GroupHead title={`${city} · ${specialtyLabel}`}><DemoTag fr={fr} /></GroupHead>
+            {profiles.length === 0 ? <p className="sc-caption" data-testid="coach-none">{c.none}</p> : (
+              <div className="coach-list">
+                {profiles.map(p => (
+                  <article key={p.id} className="sc-card coach-card" data-testid={`coach-card-${p.id}`}>
+                    <div className="coach-card-head">
+                      <span className="coach-avatar" aria-hidden="true">{initials(p.name)}</span>
+                      <div className="coach-name-block">
+                        <h2 className="sc-name">{p.name}</h2>
+                        <p className="sc-caption">{fr ? p.roleFr : p.roleEn} · {p.city}</p>
+                      </div>
+                      <span className="sc-tag coach-fictional">{c.fictional}</span>
                     </div>
-                    <span className="sc-tag coach-distance">{km(score.distanceKm)}</span>
-                  </div>
-
-                  <div className="coach-credentials">
-                    {coach.credentials.map(c => (
-                      <span key={c} className="sc-tag">{c}</span>
-                    ))}
-                  </div>
-
-                  <p className="sc-text coach-bio">{fr ? coach.bioFr : coach.bioEn}</p>
-
-                  <div className="coach-card-foot">
-                    <div className="coach-rate">
-                      <span className="coach-rate-value">{coach.hourlyRate}<span className="sc-unit">{' '}{coach.currency} / {fr ? 'séance' : 'session'}</span></span>
-                      <span className="coach-rating">
-                        <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
-                        {num(coach.rating.toFixed(2), fr)} ({coach.reviewCount} {fr ? 'avis' : 'reviews'})
-                      </span>
+                    <div className="coach-credentials">
+                      {p.specialties.map(s => <span key={s} className="sc-tag">{SPECIALTIES.find(x => x.id === s)?.[fr ? 'fr' : 'en']}</span>)}
                     </div>
-                    <div className="coach-actions">
-                      <button
-                        type="button"
-                        className="btn-ghost is-s press"
-                        onClick={() => handleShareTelemetry(coach)}
-                        data-testid={`share-telemetry-${coach.id}`}
-                      >
-                        {copiedId === coach.id ? <><CheckIcon />{fr ? 'Lien Copié' : 'Link Copied'}</> : (fr ? 'Partager mon profil' : 'Share Telemetry Card')}
-                      </button>
-                      <button
-                        type="button"
-                        className="btn-line coach-connect press"
-                        onClick={() => handleConnectCoach(coach)}
-                      >
-                        {fr ? 'Contacter' : 'Connect'}
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+                    <p className="sc-text coach-bio">{fr ? p.bioFr : p.bioEn}</p>
+                  </article>
+                ))}
+              </div>
+            )}
           </section>
         </div>
       </section>

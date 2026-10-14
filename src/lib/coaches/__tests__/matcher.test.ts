@@ -1,64 +1,32 @@
 import { describe, it, expect } from 'vitest';
-import {
-  calculateHaversineDistanceKm,
-  calculateDistanceScore,
-  calculateSpecialtyScore,
-  findNearestCoaches,
-  VERIFIED_COACH_REGISTRY,
-} from '../matcher';
+import { calculateHaversineDistanceKm, demoProfilesFor, DEMO_COACH_PROFILES, DEMO_CITIES } from '../matcher';
+import * as matcher from '../matcher';
 
-describe('Coach & Physio Proximity Matchmaker Engine', () => {
-  it('calculates Haversine distances accurately between landmarks', () => {
-    // Paris (48.8566, 2.3522) to London (51.5074, -0.1278) ~ 343 km
-    const paris = { latitude: 48.8566, longitude: 2.3522 };
-    const london = { latitude: 51.5074, longitude: -0.1278 };
-    const dist = calculateHaversineDistanceKm(paris, london);
-    expect(dist).toBeGreaterThan(330);
-    expect(dist).toBeLessThan(360);
+// Honesty pass of 14 October 2026 (FND-1, FND-2): fictional placeholders only, filtered for real.
+describe('the coach directory demo', () => {
+  it('holds fictional placeholders only: no credential, register, price, rating or review', () => {
+    expect('VERIFIED_COACH_REGISTRY' in matcher).toBe(false);
+    for (const p of DEMO_COACH_PROFILES) {
+      expect(p.fictional).toBe(true);
+      expect(p.name).toMatch(/exemple [A-Z]$/);
+      expect(Object.keys(p)).not.toEqual(expect.arrayContaining(['rating']));
+    }
+    expect(JSON.stringify(DEMO_COACH_PROFILES)).not.toMatch(/rating|review|credential|RAMP|NAVP|FCCA|DPT|CSCS|Dr\.|hourlyRate|organization/i);
   });
-
-  it('computes distance decay properly', () => {
-    expect(calculateDistanceScore(0)).toBe(100);
-    expect(calculateDistanceScore(10)).toBe(50); // d = d0 -> 50%
-    expect(calculateDistanceScore(30)).toBeLessThan(20);
+  it('lists a city’s profiles, and only those of the specialty chosen', () => {
+    const paris = demoProfilesFor('Paris');
+    expect(paris.length).toBeGreaterThan(1);
+    expect(paris.every(p => p.city === 'Paris')).toBe(true);
+    const rehab = demoProfilesFor('Paris', 'rehab');
+    expect(rehab.length).toBeGreaterThan(0);
+    expect(rehab.every(p => p.specialties.includes('rehab'))).toBe(true);
+    expect(demoProfilesFor('Paris', 'strength').some(p => p.specialties.includes('rehab') && !p.specialties.includes('strength'))).toBe(false);
+    expect(demoProfilesFor('Nowhere')).toEqual([]);
+    for (const c of DEMO_CITIES) expect(demoProfilesFor(c.name).length).toBeGreaterThan(0);
   });
-
-  it('computes Jaccard specialty similarity correctly', () => {
-    const coachSpecialties = ['rotator_cuff_shoulder', 'lumbar_spine', 'knee_acl_recovery'] as any;
-    const req1 = ['rotator_cuff_shoulder', 'lumbar_spine'] as any;
-    const req2 = ['olympic_weightlifting'] as any;
-
-    expect(calculateSpecialtyScore(coachSpecialties, req1)).toBeCloseTo(66.6, 0);
-    expect(calculateSpecialtyScore(coachSpecialties, req2)).toBe(0);
-    expect(calculateSpecialtyScore(coachSpecialties, [])).toBe(80); // baseline
-  });
-
-  it('finds and ranks nearest coaches in Paris', () => {
-    // User in Paris near Châtelet (48.8584, 2.3470)
-    const userLocation = { latitude: 48.8584, longitude: 2.347 };
-    const matches = findNearestCoaches({
-      userLocation,
-      maxDistanceKm: 20,
-      requiredSpecialties: ['hypertrophy_physique'],
-    });
-
-    expect(matches.length).toBeGreaterThanOrEqual(2);
-    // Closest Paris coach should be ranked at the top
-    expect(matches[0].coach.city).toBe('Paris');
-    expect(matches[0].score.distanceKm).toBeLessThan(5);
-    expect(matches[0].score.totalScore).toBeGreaterThan(60);
-  });
-
-  it('ranks Cambridge equine specialist when searching for veterinary kinematics', () => {
-    // User looking for equine locomotion specialist in the UK
-    const userLocation = { latitude: 52.2053, longitude: 0.1218 }; // Cambridge
-    const matches = findNearestCoaches({
-      userLocation,
-      requiredSpecialties: ['equine_veterinary'],
-    });
-
-    expect(matches.length).toBeGreaterThanOrEqual(1);
-    expect(matches[0].coach.name).toContain('Sarah Smith');
-    expect(matches[0].coach.specialties).toContain('equine_veterinary');
+  it('measures great-circle distances (kept for the real directory)', () => {
+    const d = calculateHaversineDistanceKm({ latitude: 48.8566, longitude: 2.3522 }, { latitude: 51.5074, longitude: -0.1278 });
+    expect(d).toBeGreaterThan(330);
+    expect(d).toBeLessThan(360);
   });
 });
