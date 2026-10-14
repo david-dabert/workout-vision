@@ -208,6 +208,13 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // "Proposition de l'appli", and nothing is saved until the person confirms or changes it (R8: a number to confirm,
   // never a silent count, no grade, no measure). Status: validated on the bench (TRIED.md, 8 October).
   const proposal = result.refused && Number.isInteger(result.proposal?.count) && result.proposal.count > 0 ? result.proposal.count : null;
+  // An exercise the core does not offer (universalProposal.js; counting research of 14 October 2026): refused, its number
+  // at most a proposal. That engine's number is right on 10 of 35 labelled sets, so the slot opens empty and the number
+  // is offered as one key labelled "Proposition de l'appli": confirming it takes a tap on it, then on Confirm (second
+  // round of the honesty pass, 14 October 2026). A hold (plank, wall sit...) gets no slot: the app does not measure the
+  // time held, and a number typed there would be saved as reps. Status: convention (R8).
+  const uni = result.refused && result.universal ? result.universal : null;
+  const uniHold = !!uni?.hold;
   // The numbers of the app the person may confirm as they stand: the proposal, or a flagged set's two counts.
   const offeredBy = n => n > 0 && (n === proposal || (toCheck && n === result.count) || (flagged && n === second));
   const c = RESULT[fr ? 'fr' : 'en'];
@@ -237,7 +244,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     target.focus({ preventScroll: true, focusVisible: false });
   }, [step]);
   // 0 stands for "no number chosen yet" on the low-confidence screen ("–"); otherwise the app's count to confirm.
-  const [trueN, setTrueN] = useState(blindN ?? (low ? (proposal ?? (toCheck ? result.count : 0)) : result.count));
+  const [trueN, setTrueN] = useState(blindN ?? (low ? ((uni ? null : proposal) ?? (toCheck ? result.count : 0)) : result.count));
   // The typed digits while the numeral is open to the keyboard ('' until a digit is typed); null when not
   // typing. The number it opened on is kept, so an empty field means "unchanged".
   const [typed, setTyped] = useState(null);
@@ -576,7 +583,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const status = <div className="res-status" data-testid="res-status">
     <p className="res-status-state">{step === 'saved'
       ? <><i className={`res-mark is-sq${typedSaved ? '' : ' is-measured'}`} aria-hidden="true" />{c.saved}</>
-      : <><i className={`res-mark is-ring${!low && step === 'ask' ? ' is-measured' : ''}`} aria-hidden="true" />{low && !offeredBy(trueN) ? c.yourCount : c.toConfirm}</>}</p>
+      : <><i className={`res-mark is-ring${!low && step === 'ask' ? ' is-measured' : ''}`} aria-hidden="true" />{uniHold ? c.notCounted : low && !offeredBy(trueN) ? c.yourCount : c.toConfirm}</>}</p>
     <p className="res-status-where">{where}</p>
   </div>;
   const tierLine = tierOf(lift) ? <div className="res-tierline"><p className={`tier tier-${tierOf(lift)}`}>{tierLabel(tierOf(lift), fr)}</p></div> : null;
@@ -621,18 +628,31 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const previous = before?.[0]?.reps;
   const quick = quickKeys(centre ?? previous);
   const centreLine = centre ? c.planSays(centre) : quick.length ? c.lastSet(previous) : '';
-  const lowAsk = (manual, cause) => <div key="count" className="res-low" data-testid="fix-card">
-    <h2 className="res-low-title refused-title" data-testid={manual ? undefined : 'res-uncounted'}>{liveDiffers || proposal || toCheck ? c.notSure : c.noCount}</h2>
+  // title: the screen's own (an exercise the core does not offer says so, universalTitle); slot: false for a hold, which
+  // shows its title and cause, then its one key right under them: no number to ask for, nothing to save, so no dock at
+  // the foot of an empty screen (second round of the honesty pass, 14 October 2026).
+  const lowAsk = (manual, cause, { title = null, slot = true } = {}) => <div key="count" className="res-low" data-testid="fix-card">
+    <h2 className="res-low-title refused-title" data-testid={manual ? undefined : 'res-uncounted'}>{title ?? (liveDiffers || proposal || toCheck ? c.notSure : c.noCount)}</h2>
     <div className="res-cause">
       <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.5" /><path d="M10 5.5v5.5" /><circle className="dot" cx="10" cy="14.2" r=".6" /></svg>
       <div>{cause.map(l => <p key={l}>{l}</p>)}</div>
     </div>
+    {!slot && <div className="res-keys res-keys-inline">
+      <button type="button" className="res-key is-primary press" data-testid="change-lift" onClick={() => release().then(onChangeLift)}>{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
+    </div>}
+    {slot && <>
     <p className="ask-q res-ask" id="res-ask">{c.howMany}</p>
     {hero(trueN > 0
       ? <span key={trueN} className="res-typed" data-testid="res-typed" aria-hidden="true">{trueN}</span>
       : <span className="res-empty" data-testid="res-empty" aria-hidden="true"><i /></span>, true)}
     <p className="sr" aria-live="polite" aria-atomic="true">{trueN > 0 ? trueN : c.empty}</p>
-    {proposal && <p className="res-state is-proposal" data-testid="res-proposal">{c.proposal(proposal)}</p>}
+    {proposal && !uni && <p className="res-state is-proposal" data-testid="res-proposal">{c.proposal(proposal)}</p>}
+    {/* The universal engine's number, one key to take it into the slot; the slot itself opened empty (uni, above). */}
+    {proposal && uni && <div className="res-cands" role="group" aria-labelledby="res-ask" data-testid="res-proposal-key">
+      <button type="button" className={`res-cand press${trueN === proposal ? ' is-on' : ''}`} aria-pressed={trueN === proposal} onClick={() => adjust(proposal)}>
+        <span className="res-cand-n">{proposal}</span><span className="res-cand-from">{c.proposalKey}</span>
+      </button>
+    </div>}
     {/* A flagged set: the app's count, labelled; with the spec-guided count, the two as keys, each with where it
         comes from (the counted joint, the whole body), neither chosen over the other by its look. */}
     {toCheck && !second && <p className="res-state is-proposal" data-testid="res-bodycount">{c.bodyCounted(count)}</p>}
@@ -641,11 +661,12 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
         <span className="res-cand-n">{n}</span><span className="res-cand-from">{from}</span>
       </button>)}
     </div>}
-    {proposal && trueN === proposal ? <p className="res-hint" data-testid="res-proposal-note">{result.proposal?.by === 'universal' ? c.universalNote : c.proposalNote}</p>
+    {proposal && trueN === proposal ? (uni ? null : <p className="res-hint" data-testid="res-proposal-note">{c.proposalNote}</p>)
       : toCheck && offeredBy(trueN) ? <p className="res-hint" data-testid="res-body-note">{c.bodyNote}</p>
       : trueN > 0 ? <p className="res-state is-typed">{c.typedBy}</p> : <p className="res-hint">{quick.length > 0 ? c.quickHint : c.typeHint}</p>}
     {quick.length > 0 && <div className="res-quick" role="group" aria-labelledby="res-ask">{quick.map(k => <button key={k} type="button" className={`res-qk press${trueN === k ? ' is-on' : ''}`} aria-pressed={trueN === k} onClick={() => adjust(k)}>{k}</button>)}</div>}
     {centreLine && <p className="res-hint res-centre">{centreLine}</p>}
+    </>}
   </div>;
   const lowDock = manual => [<div key="dock" className="res-dock" data-testid="res-dock">{closing && unsaved ? closeCard : <div className="res-keys">
     <button type="button" className="res-key is-primary press" data-testid="res-save" disabled={trueN === 0} onClick={() => { if (trueN === 0) return; navigator.vibrate?.(10); doSave(trueN, toCheck ? trueN !== count : true, manual); }}>{trueN > 0 ? (offeredBy(trueN) ? c.confirmN(trueN) : c.saveN(trueN)) : c.save}</button>
@@ -679,8 +700,10 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
               : (fr ? `Votre ${armLabel} était caché${e} pendant la plus grande partie de la série.` : `Your ${armLabel} was hidden for most of the set.`)));
     // An exercise the core does not offer (universalProposal.js): what the app does not do yet, then whether it proposes a
     // number; no filming fix, since none is known to make it count. A video with nobody in it says so, as above.
-    const universal = !notRead && result.universal && why.cause !== 'nobody' ? result.universal : null;
-    const fix = universal ? (result.universal.hold ? c.universalHold : proposal ? c.universalProposes : c.universalUnseen) : result.notRead ? '' : why.hips
+    // One title, one line under it (second round of the honesty pass, 14 October 2026: the title, the cause and two notes
+    // said the same doubt four times).
+    const universal = !notRead && result.universal && (uniHold || why.cause !== 'nobody') ? result.universal : null;
+    const fix = universal ? (uniHold ? c.universalHold : proposal ? c.universalProposes : c.universalUnseen) : result.notRead ? '' : why.hips
       ? (fr ? 'Reculez pour que vos hanches soient dans l’image, puis refilmez.' : 'Step back so your hips are in the picture, then record again.')
       : why.cause === 'nobody'
         ? (fr ? 'Posez le téléphone face à vous, placez-vous dans l’image, puis refilmez.' : 'Stand the phone facing you, step into the picture, then record again.')
@@ -695,8 +718,10 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
         <Topbar fr={fr} onClose={askClose} onReplay={onReplay} replayRef={replayRef} badge={false} />
         {status}
         {tierLine}
-        {step !== 'saved' && lowAsk(true, [universal ? c.universalCause : text, fix].filter(Boolean))}
-        {step !== 'saved' && lowDock(true)}
+        {step !== 'saved' && (universal
+          ? lowAsk(true, [fix], { title: c.universalTitle, slot: !uniHold })
+          : lowAsk(true, [text, fix].filter(Boolean)))}
+        {step !== 'saved' && !(universal && uniHold) && lowDock(true)}
         <div ref={cardRef}>
           {step === 'saved' && <div className="saved appear" data-testid="saved-card">
             <p className="saved-msg">{proposal && trueN === proposal ? c.savedConfirmed(trueN) : fr ? `Merci. ${trueN} ${trueN > 1 ? 'répétitions enregistrées, saisies' : 'répétition enregistrée, saisie'} à la main.` : `Thank you. ${trueN} ${trueN === 1 ? 'rep' : 'reps'} saved, typed by hand.`}</p>
@@ -706,7 +731,8 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
           </div>}
           {saveError && <p role="alert" className="save-error">{saveError}</p>}
         </div>
-        {report && <ReportCount fr={fr} report={report} />}
+        {/* Nothing was counted or proposed on a hold: no count to report (second round of the honesty pass). */}
+        {report && !(universal && uniHold) && <ReportCount fr={fr} report={report} />}
       </div></section>
     </div>;
   }

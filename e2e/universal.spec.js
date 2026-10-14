@@ -1,7 +1,8 @@
 // An exercise the counter does not offer (counting research of 14 October 2026): the guide lists it as "Non compté", and
 // filming it never gives a counted result. Read by the universal engine (src/lib/universalProposal.js), the set is
-// refused; its number is offered as "Proposition de l'appli" to confirm when the joints it needs were seen on at least
-// half the samples, and nothing is shown when they were not. No numeral of a counted set, no measure, no grade (R8).
+// refused; its number is offered as one key, "Proposition de l'appli", under an empty slot when the joints it needs were
+// seen on at least half the samples, and nothing is shown when they were not. A hold gets no slot at all. No numeral of a
+// counted set, no measure, no grade (R8; second round of the honesty pass, 14 October 2026).
 // The pose worker answers with David's real biceps curl landmarks (e2e/shared/filmed-set.js), or with them all unseen.
 import { test, expect } from '@playwright/test';
 import { start, chooseDrawnVideo, fakeWorker, workerOf } from './shared/filmed-set.js';
@@ -32,12 +33,32 @@ test('a non-offered exercise read clearly gives a proposal to confirm, never a c
   await filmFromGuide(page, 'kickback');
   await chooseDrawnVideo(page);
   await expect(page.locator('.result-screen')).toBeVisible({ timeout: 60000 });
-  await expect(page.getByTestId('res-proposal')).toContainText('Proposition de l’appli');
-  await expect(page.getByText('L’appli ne compte pas encore cet exercice.')).toBeVisible();
-  await expect(page.getByTestId('res-proposal-note')).toHaveText('Ce nombre n’est pas un comptage validé. Vérifiez-le avant d’enregistrer.');
-  await expect(page.getByTestId('res-numeral')).toHaveCount(0);
-  await expect(page.getByTestId('res-yes')).toHaveCount(0);
-  for (const id of ['res-exp', 'set-account', 'level-table', 'res-sides']) await expect(page.getByTestId(id)).toHaveCount(0);
+  await expect(page.locator('.res-low-title')).toHaveText('L’appli ne compte pas encore cet exercice.');
+  await expect(page.getByText('Elle propose un nombre à vérifier.')).toBeVisible();
+  // The slot opens empty; the app's number is one key, taken by a tap, then confirmed.
+  await expect(page.getByTestId('res-empty')).toBeVisible();
+  await expect(page.getByTestId('res-save')).toBeDisabled();
+  const key = page.getByTestId('res-proposal-key').getByRole('button');
+  await expect(key).toContainText('Proposition de l’appli');
+  const n = Number((await key.locator('.res-cand-n').textContent()).trim());
+  expect(n).toBeGreaterThan(0);
+  await key.click();
+  await expect(page.getByTestId('res-typed')).toHaveText(String(n));
+  await expect(page.getByTestId('res-save')).toHaveText(`Confirmer ${n} ${n > 1 ? 'répétitions' : 'répétition'}`);
+  for (const id of ['res-numeral', 'res-yes', 'res-proposal-note', 'res-exp', 'set-account', 'level-table', 'res-sides']) await expect(page.getByTestId(id)).toHaveCount(0);
+});
+
+test('a hold the app does not time offers no number and no slot, only a way back to the exercises', async ({ page }) => {
+  test.setTimeout(120_000);
+  await start(page, { worker: fakeWorker });
+  await filmFromGuide(page, 'Planche');
+  await chooseDrawnVideo(page);
+  await expect(page.locator('.result-screen')).toBeVisible({ timeout: 60000 });
+  await expect(page.getByTestId('res-status')).toContainText('Non compté');
+  await expect(page.getByText('Elle ne mesure pas encore le temps de maintien.')).toBeVisible();
+  await expect(page.getByTestId('change-lift')).toBeVisible();
+  for (const id of ['res-empty', 'res-save', 'res-proposal-key', 'res-dock', 'report-count']) await expect(page.getByTestId(id)).toHaveCount(0);
+  await expect(page.getByText('Combien en avez-vous fait')).toHaveCount(0);
 });
 
 test('a non-offered exercise whose joints were mostly unseen gives no number at all', async ({ page }) => {

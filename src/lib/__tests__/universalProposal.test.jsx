@@ -7,7 +7,6 @@ import { validateWorkout } from '../validateSchema';
 import { proposedBy } from '../../components/experience/sets';
 import { measuresFile, reportSheet } from '../../components/experience/report-sheet';
 
-
 // An exercise the core does not offer is read by the universal engine, whose number is never a counted result
 // (counting research of 14 October 2026: it gave David's prone Y raise 21 for 10, from wrists seen on 44-46 % of the
 // samples). It is refused under the core's coverage rule, and otherwise offered as "Proposition de l'appli" (R8).
@@ -107,31 +106,54 @@ async function render(lang, result, lift = 'bent_over_rear_delt_raise') {
 }
 
 describe('the result screen of a universal read', () => {
-  it('with a proposal: the cause, the proposal labelled, its note, a key to confirm; no counted numeral, no measure', async () => {
+  it('with a proposal: one title, one line, the slot empty and the proposal as one key; no counted numeral, no measure', async () => {
     const fr = await render('fr', universalAsProposal(read(100, 80), 'bent_over_rear_delt_raise'));
-    expect(fr).toContain(RESULT.fr.universalCause);
+    expect(fr).toContain(`>${RESULT.fr.universalTitle}</h2>`);
     expect(fr).toContain(RESULT.fr.universalProposes);
-    expect(fr).toContain(RESULT.fr.proposal(21));
-    expect(fr).toContain(RESULT.fr.universalNote);
-    expect(fr).toContain('Confirmer 21 répétitions');
+    // Neither the core's doubt ("avec certitude"), nor a second or third disclaimer, nor warranty words.
+    expect(fr).not.toMatch(/avec certitude|sans garantie|comptage validé|sans avoir bien vu/);
+    expect(fr.match(/<p>/g)).toHaveLength(1);
+    // The slot opens empty: the proposal is taken by a tap on its key, then confirmed.
+    expect(fr).toContain('data-testid="res-empty"');
+    expect(fr).toContain('data-testid="res-proposal-key"');
+    expect(fr).toMatch(new RegExp(`aria-pressed="false"><span class="res-cand-n">21</span><span class="res-cand-from">${RESULT.fr.proposalKey}</span>`));
+    expect(fr).toMatch(/data-testid="res-save" disabled="">Enregistrer<\/button>/);
     expect(fr).not.toContain('data-testid="res-numeral"');
     expect(fr).not.toMatch(/data-testid="(res-exp|set-account|res-sides|level-table|level-speed|saved-card)"/);
     const en = await render('en', universalAsProposal(read(100, 80), 'bent_over_rear_delt_raise'));
-    expect(en).toContain(RESULT.en.proposal(21));
-    expect(en).toContain(RESULT.en.universalNote);
+    expect(en).toContain(`>${RESULT.en.universalTitle}</h2>`);
+    expect(en).toContain(`<span class="res-cand-from">${RESULT.en.proposalKey}</span>`);
   });
-  it('without one (the prone Y raise\'s 44 %): the cause, no number, Save waits for the person\'s', async () => {
+  it('a lift the core defines but does not offer (walking lunge) reads the same: no counted result', async () => {
+    const fr = await render('fr', universalAsProposal(read(100, 80), 'walking_lunge'), 'walking_lunge');
+    expect(fr).toContain(`>${RESULT.fr.universalTitle}</h2>`);
+    expect(fr).not.toContain('data-testid="res-numeral"');
+  });
+  it('without one (the prone Y raise\'s 44 %): the title, the cause, no number, Save waits for the person\'s', async () => {
     const fr = await render('fr', universalAsProposal(read(100, 44), 'bent_over_rear_delt_raise'));
-    expect(fr).toContain(RESULT.fr.universalCause);
+    expect(fr).toContain(`>${RESULT.fr.universalTitle}</h2>`);
     expect(fr).toContain(RESULT.fr.universalUnseen);
     expect(fr).not.toContain('21');
-    expect(fr).not.toContain('data-testid="res-proposal"');
+    expect(fr).not.toMatch(/data-testid="res-proposal(-key)?"/);
     expect(fr).toContain('data-testid="res-empty"');
     expect(fr).toMatch(/data-testid="res-save" disabled="">Enregistrer<\/button>/);
   });
-  it('a hold: says hold times are not measured, and offers no number', async () => {
+  it('a hold: says hold times are not measured, offers no number and no slot, and goes back to the exercises', async () => {
     const fr = await render('fr', universalAsProposal(read(100, 100, { count: 45, isIsometric: true }), 'plank'), 'plank');
+    expect(fr).toContain(`>${RESULT.fr.universalTitle}</h2>`);
     expect(fr).toContain(RESULT.fr.universalHold);
-    expect(fr).not.toContain('data-testid="res-proposal"');
+    expect(fr).not.toMatch(/data-testid="res-(proposal|proposal-key|empty|save)"|Combien en avez-vous fait/);
+    expect(fr).toContain('data-testid="change-lift">Changer d’exercice</button>');
+    // Its one key stands under the cause, in the card: no dock at the foot of an empty screen; the status says it is
+    // not counted (the guide's words), and there is no count to report.
+    expect(fr).toMatch(/<div class="res-keys res-keys-inline"><button[^>]*data-testid="change-lift"/);
+    expect(fr).not.toMatch(/data-testid="(res-dock|report-count)"|À vous de compter/);
+    expect(fr).toContain(`</i>${RESULT.fr.notCounted}</p>`);
+    // Even with nobody in sight: a hold is never offered a slot that would save seconds as reps.
+    const nobody = universalAsProposal(read(100, 0, { count: 0 }), 'plank');
+    nobody.worldLandmarks = nobody.worldLandmarks.map(() => null);
+    nobody.imageLandmarks = nobody.worldLandmarks;
+    const fr2 = await render('fr', nobody, 'plank');
+    expect(fr2).not.toMatch(/data-testid="res-(empty|save)"/);
   });
 });
