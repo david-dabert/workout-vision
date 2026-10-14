@@ -203,7 +203,7 @@ export const MANIFESTO = {
     subtitle: 'La Science, l’Histoire et la Mécanique de la Musculation Optimale',
     readTime: '8 min de lecture',
     lead: 'Bienvenue sur WorkoutVision. Vous tenez entre les mains un plan directeur conçu pour combler le fossé entre la physiologie universitaire et le plateau de musculation.',
-    introP1: 'Pendant des décennies, le monde du fitness a été dicté par des traditions dogmatiques, des récits anecdotiques et des croyances empiriques sans vérification. Aujourd’hui, nous vivons dans l’ère de la musculation scientifique — une discipline fondée sur la biomécanique, la synthèse des protéines musculaires, la physique et les données probantes.',
+    introP1: 'Pendant des décennies, le monde du fitness a été dicté par des traditions dogmatiques, des récits anecdotiques et des croyances empiriques sans vérification. Aujourd’hui, nous vivons dans l’ère de la musculation scientifique, une discipline fondée sur la biomécanique, la synthèse des protéines musculaires, la physique et les données probantes.',
     introP2: 'Ce guide retrace l’histoire des sciences du sport, les pionniers qui ont bâti cette discipline, pourquoi l’entraînement factuel surpasse les méthodes traditionnelles, et comment exécuter chaque mouvement avec une rigueur chirurgicale.',
 
     tocTitle: 'Sommaire',
@@ -217,7 +217,7 @@ export const MANIFESTO = {
 
     chapter1: {
       number: 'Chapitre 1',
-      title: 'L’Évolution des Sciences du Sport — Un Aperçu Historique',
+      title: 'L’Évolution des Sciences du Sport\u00A0: Un Aperçu Historique',
       intro: 'Le mouvement humain a toujours fasciné, mais la quantification systématique de l’exercice physique est une conquête scientifique remarquablement récente.',
       sections: [
         {
@@ -328,7 +328,7 @@ export const MANIFESTO = {
         },
         {
           title: '2. La Tension Mécanique comme Moteur Principal',
-          desc: 'Des décennies de biologie cellulaire et d’études cliniques prouvent que la tension mécanique — l’étirement et la contraction sous charge captés par les mécanorécepteurs des costamères — est le stimulus primaire de l’hypertrophie. Le stress métabolique ("la brûlure") et les courbatures ne sont que des sous-produits secondaires.',
+          desc: 'Des décennies de biologie cellulaire et d’études cliniques prouvent que la tension mécanique (l’étirement et la contraction sous charge captés par les mécanorécepteurs des costamères) est le stimulus primaire de l’hypertrophie. Le stress métabolique ("la brûlure") et les courbatures ne sont que des sous-produits secondaires.',
           highlight: 'Rechercher la fatigue pure ou la douleur aiguë n’est pas un indicateur de croissance musculaire.',
         },
         {
@@ -347,7 +347,7 @@ export const MANIFESTO = {
 
     chapter4: {
       number: 'Chapitre 4',
-      title: 'La Mécanique des Gains Optimaux — L’Exécution Parfaite',
+      title: 'La Mécanique des Gains Optimaux\u00A0: L’Exécution Parfaite',
       intro: 'Pour maximiser les gains musculaires, chaque exercice doit être exécuté dans le respect absolu des lois de Newton et de la cinématique articulaire. Voici les règles d’or dictées par la science du sport\u00A0:',
       rules: [
         {
@@ -370,7 +370,7 @@ export const MANIFESTO = {
           num: '03',
           name: 'Alignement Articulaire et Ligne de Tirage',
           body: 'La résistance doit s’opposer directement au plan anatomique des faisceaux musculaires cibles. Tout désalignement disperse les forces sous forme de cisaillement articulaire.',
-          application: 'Au Tirage Poitrine (Lat Pulldown), l’humérus doit voyager exactement dans le plan des fibres du grand dorsal — coudes tirés vers le bas et légèrement vers les poches, et non écartés vers l’arrière.',
+          application: 'Au Tirage Poitrine (Lat Pulldown), l’humérus doit voyager exactement dans le plan des fibres du grand dorsal\u00A0: coudes tirés vers le bas et légèrement vers les poches, et non écartés vers l’arrière.',
           liftKey: 'lat_pulldown',
           liftLabel: 'Tester la Ligne de Tirage sur le Tirage Poitrine',
         },
