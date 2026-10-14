@@ -268,6 +268,62 @@ export function invoiceLines(inv: Invoice): string[] {
   return lines;
 }
 
+/**
+ * A credit note (avoir) that cancels an issued invoice in full (second review of 14 October 2026, INV-3: an issued
+ * invoice could be neither cancelled nor corrected). The invoice is kept as issued, never deleted or renumbered; the
+ * avoir has its own number in its own sequence (A-2026-0001…, coachStorage.issueCreditNoteNumber) and names the
+ * invoice it cancels. Status: convention (French invoicing practice; UNSOURCED here, to check with the accountant).
+ * Only an invoice not yet paid is cancelled this way: a refund is not handled.
+ */
+export interface CreditNote {
+  kind: 'avoir';
+  number: string;
+  issueDate: string;
+  cancels: string;
+  cancelsDate: string;
+  coach: Invoice['coach'];
+  client: Invoice['client'];
+  items: InvoiceItem[];
+  total: number;
+  mentions: string[];
+}
+
+export function buildCreditNote(inv: Invoice, number: string, issueDate: string = localIsoDate()): CreditNote | null {
+  if (!inv || !number) return null;
+  // French copy: awaiting David's approval (R10).
+  return {
+    kind: 'avoir', number, issueDate, cancels: inv.number, cancelsDate: inv.issueDate,
+    coach: { ...inv.coach }, client: { ...inv.client }, items: inv.items.map(i => ({ ...i })), total: inv.total,
+    mentions: [`Avoir annulant la facture n° ${inv.number} du ${paperDate(inv.issueDate)}.`, 'TVA non applicable, art. 293 B du CGI'],
+  };
+}
+
+/** The credit note as plain text, line by line, as invoiceLines does for an invoice. French awaiting David's approval. */
+export function creditNoteLines(cn: CreditNote): string[] {
+  const lines = [
+    `AVOIR N° ${cn.number}`,
+    `Date d’émission\u00A0: ${paperDate(cn.issueDate)}`,
+    `Annule la facture n° ${cn.cancels} du ${paperDate(cn.cancelsDate)}`,
+    '',
+    cn.coach.legalName,
+    `SIRET\u00A0: ${siretText(cn.coach.siret)}`,
+    cn.coach.address,
+    `Carte professionnelle d’éducateur sportif n° ${cn.coach.cartePro}`,
+  ];
+  if (cn.coach.rcpPro) lines.push(`Assurance responsabilité civile professionnelle\u00A0: ${cn.coach.rcpPro}`);
+  if (cn.coach.gym) lines.push(`Lieu d’exercice\u00A0: ${cn.coach.gym}`);
+  lines.push('', `Client\u00A0: ${cn.client.name}`, cn.client.address, '');
+  for (const i of cn.items) lines.push(`${i.description}\u00A0: ${i.quantity} × ${euros(i.unitPrice)} = ${euros(i.quantity * i.unitPrice)}`);
+  lines.push('', `Montant de l’avoir (TVA non applicable)\u00A0: ${euros(cn.total)}`, '', ...cn.mentions);
+  return lines;
+}
+
+/** A rate as the screen writes it, from RATES (so the words cannot drift from the arithmetic): 25,6 % or 25.6%. */
+export function ratePct(rate: number, fr = true): string {
+  const v = Math.round(rate * 1000) / 10;
+  return fr ? `${String(v).replace('.', ',')}\u00A0%` : `${v}%`;
+}
+
 export type PaymentMode = 'virement' | 'carte' | 'cheque' | 'especes';
 export const PAYMENT_MODES: PaymentMode[] = ['virement', 'carte', 'cheque', 'especes'];
 export const PAYMENT_MODE_FR: Record<PaymentMode, string> = { virement: 'Virement', carte: 'Carte bancaire', cheque: 'Chèque', especes: 'Espèces' };

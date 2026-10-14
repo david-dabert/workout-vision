@@ -3,7 +3,8 @@
 // the phone's share sheet as the programme's PDF is (Pro.jsx). Before (INV-7), "Imprimer / PDF" called window.print()
 // with no print rule: the whole dark screen was printed. Whether the share sheet works in the Home Screen app is
 // David's check on his iPhone (R3). Presentation only: the words are the invoice's and the contract's own lines.
-import { PAGE_H, COLUMN, MARGIN, COLOR, pdfDoc } from '../experience/pdf-kit';
+import { PAGE_H, COLUMN, MARGIN, GAP, COLOR, pdfDoc } from '../experience/pdf-kit';
+import { euros, paperDate, siretText } from '../../lib/accounting';
 
 const BODY = 10, LEAD = 1.5, TITLE = 20;
 
@@ -32,6 +33,107 @@ export function documentPdf({ title, lines, fr = true }) {
       else drawLine(part, block.raster, MARGIN, y, BODY, LEAD, COLOR.ink);
       y += BODY * LEAD;
     }
+  }
+  return doc.output('blob');
+}
+
+/**
+ * An invoice or a credit note (avoir) as a sheet with a table (second review of 14 October 2026: the PDF was a bare list
+ * of lines, unlike the paper on screen, and the number in the title's serif read "000l"). The kind and the date on the
+ * header line; the number in the sans, whose 1 cannot be taken for an l; the dates; the coach and the client side by
+ * side; designation, quantity, price and total in columns, figures to the right; the total; the mentions. The same
+ * words as invoiceLines / creditNoteLines (accounting.ts), French; awaiting David's approval (R10).
+ */
+export function invoicePdf(inv) {
+  const avoir = inv.kind === 'avoir';
+  const kind = avoir ? 'Avoir' : 'Facture';
+  const { doc, upper, width, write, lines: wrap, drawLine, paint } = pdfDoc({ title: `${kind} ${inv.number}`, fr: true });
+  paint();
+  let y = MARGIN;
+  const bottom = PAGE_H - MARGIN;
+  const right = MARGIN + COLUMN;
+  const room = h => { if (y + h > bottom) { doc.addPage('a5'); paint(); y = MARGIN; } };
+  const rule = (color = COLOR.rule) => { doc.setDrawColor(color); doc.setLineWidth(1); doc.line(MARGIN, y + 0.5, right, y + 0.5); };
+  const label = (s, x, top) => write(upper(s), x, top, 'mono', 9, 1.5, COLOR.ash, 9 * 0.14);
+  const flushRight = (s, xr, top, key, size, color) => write(s, xr - width(s, key, size), top, key, size, 1.4, color);
+
+  // The header line: the kind on the left, the issue date on the right.
+  write(upper(kind), MARGIN, y, 'mono', 9.5, 1.5, COLOR.ash, 9.5 * 0.2);
+  const day = paperDate(inv.issueDate);
+  write(day, right - width(day, 'mono', 9.5, 9.5 * 0.2), y, 'mono', 9.5, 1.5, COLOR.ash, 9.5 * 0.2);
+  y += 9.5 * 1.5 + GAP;
+  write(kind, MARGIN, y, 'serif', 30, 1.05, COLOR.ink);
+  y += 30 * 1.05 + 2;
+  write(`N° ${inv.number}`, MARGIN, y, 'sansMedium', 14, 1.4, COLOR.ink);
+  y += 14 * 1.4 + GAP;
+
+  // Labelled pairs, two to a row: the dates, or the invoice a credit note cancels.
+  const w2 = (COLUMN - 8) / 2;
+  const pairs = avoir
+    ? [['Date d’émission', paperDate(inv.issueDate)], ['Annule la facture', `${inv.cancels} du ${paperDate(inv.cancelsDate)}`]]
+    : [['Date d’émission', paperDate(inv.issueDate)], ['Date de la prestation', paperDate(inv.serviceDate)]];
+  const pairBlocks = pairs.map(([, v]) => wrap(v, 11.5, w2));
+  pairs.forEach(([name], i) => {
+    const x = MARGIN + i * (w2 + 8);
+    label(name, x, y);
+    pairBlocks[i].lines.forEach((line, k) => drawLine(line, pairBlocks[i].raster, x, y + 13.5 + k * 16, 11.5, 1.4, COLOR.ink));
+  });
+  y += 13.5 + 16 * Math.max(...pairBlocks.map(b => b.lines.length)) + GAP;
+
+  // The two parties side by side.
+  const coachLines = [inv.coach.legalName, `SIRET\u00A0: ${siretText(inv.coach.siret)}`, inv.coach.address, `Carte professionnelle n° ${inv.coach.cartePro}`,
+    ...(inv.coach.rcpPro ? [`Assurance RC pro\u00A0: ${inv.coach.rcpPro}`] : []), ...(inv.coach.gym ? [`Lieu d’exercice\u00A0: ${inv.coach.gym}`] : [])];
+  const clientLines = [inv.client.name, inv.client.address];
+  const party = arr => arr.filter(Boolean).flatMap((s, k) => { const b = wrap(s, 10, w2); return b.lines.map(line => ({ line, raster: b.raster, first: k === 0 })); });
+  const parties = [['Prestataire', party(coachLines)], ['Client', party(clientLines)]];
+  const partyH = 13.5 + 14.5 * Math.max(...parties.map(([, l]) => l.length));
+  room(partyH);
+  parties.forEach(([name, rows], i) => {
+    const x = MARGIN + i * (w2 + 8);
+    label(name, x, y);
+    rows.forEach((r, k) => drawLine(r.line, r.raster, x, y + 13.5 + k * 14.5, 10, 1.45, r.first ? COLOR.ink : COLOR.ash));
+  });
+  y += partyH + GAP;
+
+  // The table: designation (50 %), quantity (12 %), unit price (19 %), total (19 %), figures flush right.
+  const widths = [COLUMN * 0.5, COLUMN * 0.12, COLUMN * 0.19, COLUMN * 0.19];
+  const colX = k => MARGIN + widths.slice(0, k).reduce((a, b) => a + b, 0);
+  const colR = k => colX(k) + widths[k];
+  room(30);
+  rule();
+  y += 6;
+  label('Désignation', colX(0), y);
+  ['Qté', 'Prix', 'Total'].forEach((h, i) => { const t = upper(h); write(t, colR(i + 1) - width(t, 'mono', 9, 9 * 0.14), y, 'mono', 9, 1.5, COLOR.ash, 9 * 0.14); });
+  y += 13.5 + 5;
+  rule();
+  for (const it of inv.items) {
+    const name = wrap(it.description, 10.5, widths[0] - 8);
+    const h = 8 + name.lines.length * 10.5 * 1.4 + 8;
+    room(h);
+    const top = y + 8;
+    name.lines.forEach((line, k) => drawLine(line, name.raster, colX(0), top + k * 10.5 * 1.4, 10.5, 1.4, COLOR.ink));
+    flushRight(String(it.quantity), colR(1), top, 'sans', 10.5, COLOR.ink);
+    flushRight(euros(it.unitPrice), colR(2), top, 'sans', 10.5, COLOR.ink);
+    flushRight(euros(it.quantity * it.unitPrice), colR(3), top, 'sans', 10.5, COLOR.ink);
+    y += h;
+    rule(COLOR.rowRule);
+  }
+  y += 10;
+
+  // The total, its words on the left and the amount on the right.
+  room(24);
+  const totalWords = avoir ? 'Montant de l’avoir (TVA non applicable)' : 'Total à payer (TVA non applicable)';
+  const amount = euros(inv.total);
+  const words = wrap(totalWords, 10.5, COLUMN - width(amount, 'sansMedium', 15) - 16);
+  words.lines.forEach((line, k) => drawLine(line, words.raster, MARGIN, y + 2 + k * 10.5 * 1.4, 10.5, 1.4, COLOR.ink));
+  flushRight(amount, right, y, 'sansMedium', 15, COLOR.ink);
+  y += Math.max(15 * 1.4, words.lines.length * 10.5 * 1.4) + GAP;
+
+  // The mentions, quiet.
+  for (const m of inv.mentions) {
+    const block = wrap(m, 9, COLUMN);
+    for (const line of block.lines) { room(9 * 1.5); drawLine(line, block.raster, MARGIN, y, 9, 1.5, COLOR.ash); y += 9 * 1.5; }
+    y += 3;
   }
   return doc.output('blob');
 }

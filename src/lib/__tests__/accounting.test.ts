@@ -105,3 +105,30 @@ describe('the receipts book (INV-6)', () => {
     expect(receiptsCsv([]).split('\r\n')).toHaveLength(1);
   });
 });
+
+// Second review of 14 October 2026: the credit note, and rates written from RATES.
+describe('the credit note (avoir)', () => {
+  it('names the invoice it cancels, keeps its amounts and the franchise line', async () => {
+    const { buildInvoice, buildCreditNote, creditNoteLines } = await import('../accounting');
+    const inv = buildInvoice({
+      coach: { name: 'Camille Martin', siret: '12345678901237', address: '1 rue de l’Exemple, 69001 Lyon', cartePro: '06912ED0001' },
+      client: { name: 'Alex Durand', address: '2 rue B, 69002 Lyon' },
+      items: [{ description: 'Séance de coaching individuel', quantity: 2, unitPrice: 50 }],
+      serviceDate: '2026-10-13', issueDate: '2026-10-14',
+    }, 'F-2026-0003');
+    const cn = buildCreditNote(inv!, 'A-2026-0001', '2026-10-15')!;
+    expect(cn).toMatchObject({ kind: 'avoir', number: 'A-2026-0001', cancels: 'F-2026-0003', total: 100 });
+    const text = creditNoteLines(cn).join('\n');
+    expect(text).toContain('AVOIR N° A-2026-0001');
+    expect(text).toContain('Annule la facture n° F-2026-0003 du 14/10/2026');
+    expect(text).toContain('EI Camille Martin');
+    expect(text).toContain('TVA non applicable, art. 293 B du CGI');
+    expect(text).not.toContain('—');
+  });
+  it('writes the rates from the table', async () => {
+    const { ratePct, RATES } = await import('../accounting');
+    expect(ratePct(RATES.ssiBnc)).toBe('25,6 %');
+    expect(ratePct(RATES.cfp)).toBe('0,2 %');
+    expect(ratePct(RATES.versementLiberatoire, false)).toBe('2.2%');
+  });
+});

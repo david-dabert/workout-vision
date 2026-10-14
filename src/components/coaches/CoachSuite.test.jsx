@@ -61,6 +61,21 @@ describe('the office after the honesty pass', () => {
     expect(html).toContain('le nom du client');
     expect(html).not.toContain('un SIRET valide');
   });
+  it('says the simulator opens on an example, writes no default description, and warns the invoices live on this phone', async () => {
+    const html = await renderAccounting('fr');
+    expect(html).toContain('data-testid="acc-sim-tag">Exemple<');
+    expect(html).toContain('Valeurs d’exemple');
+    expect(html).not.toContain('(1 h)');
+    expect(html).toContain('placeholder="ex.\u00A0: séance de coaching individuel"');
+    expect(html).toContain('gardez le PDF de chaque facture et exportez le livre régulièrement');
+    expect(html).toContain('à confirmer');
+  });
+  it('the break-even line says what each session leaves after contributions, and after tax with the versement libératoire', async () => {
+    const { OFFICE } = await import('./office-copy');
+    expect(OFFICE.fr.breakEven(9, '600 €', '72,00 €', true)).toContain('vous laisse 72,00 € après cotisations et impôt.');
+    expect(OFFICE.fr.breakEven(9, '600 €', '74,20 €', false)).toContain('vous laisse 74,20 € après cotisations, avant impôt.');
+    expect(OFFICE.en.breakEven(9, '€600', '€72.00', true)).toContain('leaves you €72.00 after contributions and tax.');
+  });
   for (const lang of ['en', 'fr']) {
     it(`the clients tab promises no telemetry and counts no linked set (${lang})`, async () => {
       const html = decode(await render(lang));
