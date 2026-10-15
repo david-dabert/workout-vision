@@ -136,7 +136,8 @@ describe('the result screen of a universal read', () => {
     const fr = await render('fr', universalAsProposal(read(100, 44), 'bent_over_rear_delt_raise'));
     expect(fr).toContain(`>${RESULT.fr.universalTitle}</h2>`);
     expect(fr).toContain(RESULT.fr.universalUnseen);
-    expect(fr).not.toContain('21');
+    // Not the 21 the 80 % read proposes, as text; an attribute can hold "21" by chance (the build hash in the report links, ffe21c0 in CI run 38689115243).
+    expect(fr).not.toMatch(/>[^<]*\b21\b[^<]*</);
     expect(fr).not.toMatch(/data-testid="res-proposal(-key)?"/);
     expect(fr).toContain('data-testid="res-empty"');
     expect(fr).toMatch(/data-testid="res-save" disabled="">Enregistrer<\/button>/);
