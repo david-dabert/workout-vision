@@ -51,11 +51,41 @@ export function eventsOrigin(url) {
   return u.origin;
 }
 
+/**
+ * Vite plugin: the pages' Content-Security-Policy lets them load the physiotherapist's reference videos, posters and
+ * poses from the media address the build names (VITE_KINE_MEDIA_URL, src/lib/kine/library.js), and no other. Without
+ * it the policy is left as written. https only (http for localhost); anything else fails the build.
+ */
+export function kineMediaCspPlugin(fixed) {
+  let origin = '';
+  return {
+    name: 'kine-media-csp',
+    configResolved(config) { origin = kineMediaOrigin(fixed ?? config.env.VITE_KINE_MEDIA_URL ?? ''); },
+    transformIndexHtml(html) {
+      if (!origin) return html;
+      return html
+        .replace(/(connect-src [^;"]*)/, `$1 ${origin}`)
+        .replace(/(media-src [^;"]*)/, `$1 ${origin}`)
+        .replace(/(img-src [^;"]*)/, `$1 ${origin}`);
+    },
+  };
+}
+
+/** The origin of the media address, or '' when none is set. Throws on a URL that is not https (http only locally). */
+export function kineMediaOrigin(url) {
+  if (!url) return '';
+  let u;
+  try { u = new URL(url); } catch { throw new Error(`VITE_KINE_MEDIA_URL is not a URL: ${url}`); }
+  const local = u.hostname === 'localhost' || u.hostname === '127.0.0.1';
+  if (!(u.protocol === 'https:' || (u.protocol === 'http:' && local))) throw new Error(`VITE_KINE_MEDIA_URL must be https: ${url}`);
+  return u.origin;
+}
+
 export default defineConfig({
   // The analysed demo videos ship again since 14 October 2026 (David): shown as previews of where the app is going,
   // labelled « Aperçu », never as measured (SportsBiomechanics.jsx, Equine.jsx). scripts/omit-painted-demos.js still
   // names them (isPaintedDemo) for tests.
-  plugins: [react(), copyModelsPlugin(), eventsCspPlugin()],
+  plugins: [react(), copyModelsPlugin(), eventsCspPlugin(), kineMediaCspPlugin()],
   // jsPDF's optional modules, used only by doc.html() and addSvgAsImage(), which the app never calls: stubbed
   // (src/lib/jspdf-optional-stub.js, C9 of the design review of 7 October 2026).
   resolve: {

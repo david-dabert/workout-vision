@@ -18,7 +18,10 @@ const PATTERNS = [/https?:\/\/[^\s"'`<>);]*\.workers\.dev[^\s"'`<>);]*/g, /https
 // page (index.html) also names Open Food Facts, for the office's barcode lookup (src/lib/openFoodFacts.js, 14 October
 // 2026): that origin, and only it, is taken out before the comparison; it is no events server.
 const CONNECT_SRC = "connect-src 'self' blob:";
-const LOOKUP_ORIGINS = ['https://world.openfoodfacts.org'];
+// The physiotherapist's media address (VITE_KINE_MEDIA_URL, vite.config.js kineMediaCspPlugin), when the build names
+// one, is a store of videos the page reads, not an events server: its origin is taken out too.
+const kineOrigin = (() => { try { return process.env.VITE_KINE_MEDIA_URL ? new URL(process.env.VITE_KINE_MEDIA_URL).origin : ''; } catch { return ''; } })();
+const LOOKUP_ORIGINS = ['https://world.openfoodfacts.org', ...(kineOrigin ? [kineOrigin] : [])];
 const withoutLookups = src => LOOKUP_ORIGINS.reduce((s, o) => s.replace(` ${o}`, ''), src);
 
 // The notice of the counts (src/components/experience/UsageNotice.jsx) carries this marker in its built chunk.

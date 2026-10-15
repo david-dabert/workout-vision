@@ -70,8 +70,12 @@ jobs:
     #   then allows that origin only, and fails when the built notice does not name its host (PRIV-3).
     # - VITE_LIVE and VITE_CONTRIBUTE (src/lib/buildFlags.js) are left unset: no live counting until Phase 6 (WP6.5),
     #   contributions paused until Phase 2 (WP0.4). Each is switched on by VITE_LIVE: '1' or VITE_CONTRIBUTE: '1' here.
+    # - VITE_KINE_MEDIA_URL, where the physiotherapist's reference videos are served (src/lib/kine/library.js; 15 October
+    #   2026), is the repository variable. Unset, the physiotherapist's workspace says the videos are not online yet;
+    #   set (https), the pages may load media from that origin and no other (vite.config.js, kineMediaCspPlugin).
     env:
       VITE_EVENTS_URL: ${{ vars.VITE_EVENTS_URL }}
+      VITE_KINE_MEDIA_URL: ${{ vars.VITE_KINE_MEDIA_URL }}
     steps:
       - uses: actions/checkout@v4
         with:

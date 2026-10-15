@@ -63,12 +63,15 @@ const SportsBiomechanics = lazyScreen(() => import('./components/sports/SportsBi
 const CoachFinder = lazyScreen(() => import('./components/coaches/CoachFinder.jsx'));
 const GymBuddy = lazyScreen(() => import('./components/buddies/GymBuddy.jsx'));
 const Ergonomics = lazyScreen(() => import('./components/ergonomics/Ergonomics.jsx'));
-// Reference exercises (#kine): a patient's video compared with the physiotherapist's (ReferenceCompare.jsx).
-const ReferenceCompare = lazyScreen(() => import('./components/reference/ReferenceCompare.jsx'));
+// The physiotherapist's workspace (#kine), the patient's programme from its link (#kine-p=) and a patient's result on
+// the physiotherapist's phone (#kine-r=), 15 October 2026 (components/kine/).
+const KineWorkspace = lazyScreen(() => import('./components/kine/KineWorkspace.jsx'));
+const KinePatient = lazyScreen(() => import('./components/kine/KinePatient.jsx'));
+const KineResult = lazyScreen(() => import('./components/kine/KineResult.jsx'));
 const Chat = lazyScreen(() => import('./components/chat/Chat.jsx'));
 // The activity engine's screen (docs/VISION.md): volleyball on synthetic jumps, opened from the sports rail.
 const Activity = lazyScreen(() => import('./components/activity/ActivityScreen.jsx'));
-const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto, equine: Equine, veterinary: Equine, sports: SportsBiomechanics, golf: SportsBiomechanics, tennis: SportsBiomechanics, padel: SportsBiomechanics, cycling: SportsBiomechanics, baseball: SportsBiomechanics, rowing: SportsBiomechanics, skiing: SportsBiomechanics, swimming: SportsBiomechanics, coaches: CoachFinder, coach: CoachFinder, physio: CoachFinder, buddies: GymBuddy, buddy: GymBuddy, ergonomics: Ergonomics, workplace: Ergonomics, kine: ReferenceCompare, reeducation: ReferenceCompare, chat: Chat, volleyball: Activity, comptage: UsageNotice };
+const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto, equine: Equine, veterinary: Equine, sports: SportsBiomechanics, golf: SportsBiomechanics, tennis: SportsBiomechanics, padel: SportsBiomechanics, cycling: SportsBiomechanics, baseball: SportsBiomechanics, rowing: SportsBiomechanics, skiing: SportsBiomechanics, swimming: SportsBiomechanics, coaches: CoachFinder, coach: CoachFinder, physio: CoachFinder, buddies: GymBuddy, buddy: GymBuddy, ergonomics: Ergonomics, workplace: Ergonomics, kine: KineWorkspace, reeducation: KineWorkspace, kinep: KinePatient, kiner: KineResult, chat: Chat, volleyball: Activity, comptage: UsageNotice };
 
 // Hidden, not deleted: lazy imports for features outside the core path
 // const ManualLog = safeLazy(() => import('./components/ManualLog'));
@@ -262,7 +265,14 @@ function AppInner() {
     screen = <Ergonomics onClose={() => go('dashboard')} />;
   } else if (page === 'kine' || page === 'reeducation') {
     key = 'kine';
-    screen = <ReferenceCompare onClose={() => go('dashboard')} />;
+    screen = <KineWorkspace onClose={() => go('dashboard')} />;
+  } else if (page === 'kinep') {
+    // One screen per link: another programme opened over this one is read afresh.
+    key = `kinep:${window.location.hash}`;
+    screen = <KinePatient onClose={() => go('dashboard')} />;
+  } else if (page === 'kiner') {
+    key = `kiner:${window.location.hash}`;
+    screen = <KineResult onClose={() => go('kine')} />;
   } else if (page === 'chat') {
     key = 'chat';
     screen = <Chat onClose={() => go('dashboard')} onHistory={() => go('history')} />;

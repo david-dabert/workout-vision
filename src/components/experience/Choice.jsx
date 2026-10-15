@@ -196,11 +196,11 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{fr ? 'Le Manifeste WorkoutVision' : 'The WorkoutVision Manifesto'}</b><small>{fr ? 'La science, l’histoire et la mécanique du mouvement' : 'The science, history, and mechanics of optimal lifting'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {/* Reference exercises (15 October 2026): the patient's video compared with the physiotherapist's, measured on
-            the person's own videos (ReferenceCompare.jsx), above the demos. */}
+        {/* The physiotherapist's workspace (15 October 2026, components/kine/): programmes sent as links, the patient's
+            video compared with the physiotherapist's, measured on the person's own videos, above the demos. */}
         {onReference && <button className="row-link press" onClick={onReference} data-testid="choice-reference">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="9" height="14" rx="2" /><rect x="13" y="5" width="9" height="14" rx="2" /><path d="M6.5 9v6M17.5 9l-2 6M17.5 9l2 6" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'Rééducation\u00A0: refaire le geste' : 'Rehabilitation: repeat the movement'}</b><small>{fr ? 'La vidéo du patient comparée à celle du kinésithérapeute' : 'The patient’s video compared with the physiotherapist’s'}</small></span>
+          <span className="row-txt"><b>{fr ? 'Espace kiné' : 'Physio workspace'}</b><small>{fr ? 'Vos exercices en vidéo, le programme en un lien, le geste du patient comparé au vôtre' : 'Your exercises on video, the programme in one link, the patient’s movement compared with yours'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* EquiVision: a demo on a simulated horse; the app analyses no horse on a video (honesty pass, 14 October 2026,
