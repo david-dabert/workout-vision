@@ -1,7 +1,7 @@
 // Where programmes are kept: on this phone only, in localStorage. The coach's drafts under wv_pro_drafts; the
 // programmes a client received under wv_programmes. Every read and write is guarded: a private window, a full or
 // refused storage leaves the screens working, with nothing kept (the screens say so where it matters).
-import { DEFAULT_ITEM, LIMITS, cleanText, fromCompact, compact, programmeId } from './programme';
+import { DEFAULT_HOLD, DEFAULT_ITEM, LIMITS, cleanText, fromCompact, compact, programmeId } from './programme';
 
 const DRAFTS = 'wv_pro_drafts', RECEIVED = 'wv_programmes';
 // At most this many of each are kept. Received programmes: the oldest go first (a list on one phone, not an archive).
@@ -21,8 +21,12 @@ const newId = () => `d${Date.now().toString(36)}${Math.random().toString(36).sli
 
 /** A new, empty draft. */
 export const newDraft = (now = Date.now()) => ({ id: newId(), updatedAt: now, title: '', who: '', note: '', items: [] });
-/** A new item of a draft, at the default target. */
-export const newItem = key => ({ key, ...DEFAULT_ITEM });
+// The exercises a new item starts as a hold: PLAN.md, category A, "Isometric holds to be timed (12)", the list of the
+// guide's holds that need a timer, not a rep counter (status: convention). The coach can set any of them in reps.
+export const HOLD_START = new Set(['plank', 'side_plank', 'wall_sit', 'farmer_carry', 'cable_pallof_hold', 'superman_hold',
+  'dead_hang', 'active_hang', 'hollow_body_hold', 'bear_plank', 'l_sit_hold', 'copenhagen_plank']);
+/** A new item of a draft, at the default target: a hold of DEFAULT_HOLD for the holds of HOLD_START. */
+export const newItem = key => ({ key, ...DEFAULT_ITEM, ...(HOLD_START.has(key) ? { holdSec: DEFAULT_HOLD } : {}) });
 
 /** Creates a pre-populated draft from a biomechanically balanced template. */
 export const createFromTemplate = (templateId, now = Date.now()) => {
@@ -97,7 +101,12 @@ export function draftFromResults(results, now = Date.now()) {
   const same = loadDrafts().find(d => cleanText(d.title).slice(0, LIMITS.title) === results.title
     && cleanText(d.who).slice(0, LIMITS.who) === (results.who || ''));
   if (same) return { draft: same, kept: true, rebuilt: false };
-  const draft = { ...newDraft(now), title: results.title, who: results.who || '', items: results.items.map(i => ({ ...newItem(i.key), sets: i.sets, reps: i.reps })) };
+  // A hold comes back as sent (results' g), and an exercise sent in reps stays in reps, a hold of HOLD_START included.
+  const item = i => {
+    const { holdSec: _start, ...fresh } = newItem(i.key);
+    return { ...fresh, sets: i.sets, reps: i.reps, ...(i.holdSec > 0 ? { holdSec: i.holdSec } : {}) };
+  };
+  const draft = { ...newDraft(now), title: results.title, who: results.who || '', items: results.items.map(item) };
   return { draft, kept: saveDraft(draft), rebuilt: true };
 }
 export function removeDraft(id) { return write(DRAFTS, read(DRAFTS).filter(d => d?.id !== id)); }

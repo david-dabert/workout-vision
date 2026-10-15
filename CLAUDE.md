@@ -1,11 +1,12 @@
 PLAN.md on counter-core prevails over this file.
 # WorkoutVision Standing Rules
 
-Source: DIRECTIVES.md Part 2, Version 1, 24 September 2026.
+Source: DIRECTIVES.md Part 2, Version 1, 24 September 2026; amended 15 October 2026 by David (R1, R8, R11, R14).
 Every session starts by reading CLAUDE.md, DIRECTIVES.md and STATE.md.
 
 **R1. Ground truth is sacred.**
 Never modify a label. Never delete a test clip. Never set or adjust a label from the app's output, a video title, a thumbnail or a guess. Labels come only from David, or from human-annotated public datasets (Countix). If a label looks wrong, report it to David and wait.
+Amended 15 October 2026 (David): the count David gives in the app before it shows its own (blind.js, on the #collecte phone) is a label; the scoreboard's blind section decides like the others.
 
 **R2. Measure every counting change.**
 Any change that can affect a rep count is run through npm run scoreboard before and after, and the per-clip diff is shown in the report. A change ships only if the real-phone exact count does not decrease and no clip becomes a catastrophic error (off by 3 or more).
@@ -29,6 +30,7 @@ New ideas go into BACKLOG.md with a date. They are not built until the current p
 
 **R8. Honest interface.**
 Never display a number the app cannot measure reliably. When confidence is low, the app asks the user to confirm and shows no grade.
+Amended 15 October 2026 (David, his decision of 14 October): a screen may show numbers the app does not measure only when it labels them as a goal (« Aperçu de l’objectif ») and the plain video is one tap away.
 
 **R9. Science.**
 Every threshold, form check and coaching statement carries, in a code comment: its source, and a status among validated (measured on our real clips), literature (published, not yet measured by us), convention (accepted coaching practice without a specific source), experimental. Never invent a citation; write UNSOURCED when unsure.
@@ -38,9 +40,13 @@ French is written as a French coach speaks in a gym, never translated word for w
 
 **R11. Session hygiene.**
 Keep sessions short and focused on one step. After any context compaction, re-read STATE.md before acting. End every session with the report format in DIRECTIVES.md Part 5.
+Amended 15 October 2026 (David): one task per session; when the task is done, the session ends with its report and the next task starts a fresh session (the weekly token budget).
 
 **R12. Stop conditions.**
 Stop and report to David if: a task would break a rule; a gate fails twice; a label seems wrong; the work drifts outside the current phase; a fix requires deleting data.
 
 **R13. Public claims.**
 Numbers in the README, the site and any external document come only from the latest scoreboard output, with its date.
+
+**R14. Read what was tried.**
+Before proposing any counting, measurement or data idea, read TRIED.md: it lists what was tried and closed, with the evidence. Added 15 October 2026 (David).

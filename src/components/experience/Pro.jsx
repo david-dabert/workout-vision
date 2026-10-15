@@ -3,7 +3,10 @@ import { useT } from '../../lib/LanguageContext';
 import { PRO } from './pro-copy';
 import { exerciseName, guideExercise } from './exercise-info';
 import { Thumb } from './Guide';
-import { LIMITS, MAX_PAYLOAD, encodeProgramme, plainPayload, programmeLink, programmeOf, fixItem, programmable } from './programme';
+import {
+  LIMITS, MAX_PAYLOAD, SIDES, encodeProgramme, plainPayload, programmeLink, programmeOf, fixItem, fixHold, fixTimes, programmable,
+  filmable, guideOnly, holdOf, sideOf, withKind, withSide,
+} from './programme';
 import { MAX_DRAFTS, isEmptyDraft, loadDrafts, saveDraft, removeDraft, newDraft, newItem, createFromTemplate } from './programme-store';
 import { useCondensingTopbar } from './topbar';
 // The form's fields are the report's (Report.css: .field), so the two forms read alike.
@@ -205,15 +208,29 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, on
 }
 
 // A whole number typed in a field of its own; brought into bounds when the field is left (programme.js, fixItem).
-function NumField({ id, label, longLabel, value, onCommit }) {
+// bare: no label of its own (the frequency's, whose label names the pair), only its long label for a screen reader.
+function NumField({ id, label, longLabel, value, onCommit, bare = false }) {
   // While the field is being typed in, its own text; otherwise the draft's number.
   const [text, setText] = useState(null);
   return <div className="pro-num">
-    <label htmlFor={id} aria-label={longLabel}>{label}</label>
+    {!bare && <label htmlFor={id} aria-label={longLabel}>{label}</label>}
     <input id={id} type="text" inputMode="numeric" pattern="[0-9]*" autoComplete="off" enterKeyHint="done" maxLength={3}
+      aria-label={bare ? longLabel : undefined}
       value={text ?? String(value)} onFocus={() => setText(String(value))} onChange={e => setText(e.target.value.replace(/[^0-9]/g, ''))}
       onBlur={() => { if (text !== null) onCommit(text); setText(null); }}
       onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }} />
+  </div>;
+}
+
+// A choice among a few, in the numbers' own box (Pro.css, .pro-select): a label above, the system's own list.
+function Choice({ id, label, value, options, onChange }) {
+  return <div className="pro-num">
+    <label htmlFor={id}>{label}</label>
+    <span className="pro-select">
+      <select id={id} value={value} onChange={e => onChange(e.target.value)}>
+        {options.map(([v, words]) => <option key={v} value={v}>{words}</option>)}
+      </select>
+    </span>
   </div>;
 }
 
@@ -253,6 +270,18 @@ function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, o
     warmProgrammePdf().then(() => setStatus('ready'), () => setStatus('error'));
     return () => clearTimeout(noteTimer.current);
   }, []);
+  // The guide's drawings of the programme's exercises, made ready for the PDF before the tap (sheet-drawings.js): the
+  // PDF button says it is preparing until each has loaded, failed, or taken LOAD_TIMEOUT_MS.
+  const drawSig = useMemo(() => (shape ? [...new Set(JSON.parse(shape).items.map(i => i.key))].join(' ') : ''), [shape]);
+  const [drawnSig, setDrawnSig] = useState('');
+  useEffect(() => {
+    if (status !== 'ready' || !drawSig) return undefined;
+    let live = true;
+    kit.drawings.warm(drawSig.split(' ')).then(() => { if (live) setDrawnSig(drawSig); });
+    return () => { live = false; };
+  }, [drawSig, status]);
+  const drawn = !drawSig || drawnSig === drawSig || (!!kit && kit.drawings.ready(drawSig.split(' ')));
+  const busy = status === 'preparing' || (status === 'ready' && !drawn);
 
   const say = (text, ms = 4000) => { clearTimeout(noteTimer.current); setNote(text); noteTimer.current = setTimeout(() => setNote(''), ms); };
   const set = (field, value) => onChange({ ...draft, [field]: value });
@@ -278,6 +307,8 @@ function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, o
   function sharePdf() {
     if (!programme) return;
     if (!kit) { setStatus('preparing'); warmProgrammePdf().then(() => setStatus('ready'), () => { setStatus('error'); say(c.pdfError); }); return; }
+    // The drawings still loading (an exercise just added): the button says so, and the tap waits for the next one.
+    if (!kit.drawings.ready(programme.items.map(i => i.key))) return;
     let blob;
     const date = new Date();
     if (tooSoon('pdf')) return;
@@ -287,7 +318,7 @@ function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, o
     try {
       const pdfLink = linkOf(kit.packNow(programme));
       qr = pdfLink === 'too-long' ? null : kit.programmeQr(pdfLink);
-      blob = kit.programmePdf(programme, { lang, date, qr });
+      blob = kit.programmePdf(programme, { lang, date, qr, drawings: kit.drawings.of(programme) });
     } catch (e) { console.error('[programme pdf]', e); say(c.pdfError); return; }
     // A sheet with no code says so: the client could not open the programme from the paper (excellence hunt, 9 October).
     const warning = qr ? '' : c.pdfNoQr;
@@ -342,22 +373,50 @@ function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, o
         <input ref={whoRef} id="pWho" type="text" autoComplete="off" autoCapitalize="words" autoCorrect="off" spellCheck={false} enterKeyHint="next" maxLength={LIMITS.who}
           placeholder={c.whoPlaceholder} value={draft.who} onChange={e => set('who', e.target.value)} />
       </div>
+      {/* How often (the exercise sheet, 14 October 2026): optional, none until a number is typed. */}
+      <div className="field pro-freq">
+        <label htmlFor="pFreq">{c.freqLabel}</label>
+        <div className="pro-freq-row">
+          <NumField bare id="pFreq" longLabel={c.freqTimesLong} value={draft.frequency?.times ?? ''}
+            onCommit={text => set('frequency', { times: fixTimes(text), per: draft.frequency?.per ?? 'week' })} />
+          <span className="pro-select">
+            <select id="pFreqPer" aria-label={c.freqPerLabel} value={draft.frequency?.per ?? 'week'}
+              onChange={e => set('frequency', { times: draft.frequency?.times ?? null, per: e.target.value })}>
+              <option value="day">{c.perOptions.day}</option>
+              <option value="week">{c.perOptions.week}</option>
+            </select>
+          </span>
+        </div>
+      </div>
 
       <h2 className="section-head">{c.exercisesHead}</h2>
       {draft.items.length === 0 && <p className="pro-empty">{c.noExercise}</p>}
       <ol className="pro-items">{draft.items.map((item, i) => {
-        const n = name(item.key), e = guideExercise(item.key);
+        const n = name(item.key), e = guideExercise(item.key), hold = holdOf(item);
         const commit = field => text => { const v = fixItem({ ...item, [field]: text === '' ? NaN : Number(text) })[field]; setItem(i, { [field]: v }); };
+        // Why the client will not film it: withdrawn from the count, of the guide only, or set as a hold.
+        const why = filmable(item) ? null : !programmable(item.key) ? (guideOnly(item.key) ? c.guideOnlyPro : c.notCountedPro) : c.holdPro;
         return <li key={`${item.key}-${i}`} className="pro-item" data-testid="pro-item">
           <div className="pro-item-head">
             {e ? <Thumb exercise={e} /> : <span className="thumb" />}
-            <span className="pro-item-name"><span className="pro-index mono">{String(i + 1).padStart(2, '0')}</span>{n}</span>
+            <span className="pro-item-title">
+              <span className="pro-item-name"><span className="pro-index mono">{String(i + 1).padStart(2, '0')}</span>{n}</span>
+              {why && <span className="pro-tag" data-testid="pro-not-filmed">{c.notCountedTag}</span>}
+            </span>
           </div>
-          {!programmable(item.key) && <p className="programme-cue" data-testid="pro-not-counted">{c.notCountedPro}</p>}
+          {why && <p className="programme-cue" data-testid="pro-not-counted">{why}</p>}
           <div className="pro-nums">
             <NumField id={`p${i}s`} label={c.sets} longLabel={c.setsLong} value={item.sets} onCommit={commit('sets')} />
-            <NumField id={`p${i}r`} label={c.reps} longLabel={c.repsLong} value={item.reps} onCommit={commit('reps')} />
+            {hold
+              ? <NumField key="hold" id={`p${i}h`} label={c.hold} longLabel={c.holdLong} value={hold} onCommit={text => setItem(i, { holdSec: fixHold(text) })} />
+              : <NumField key="reps" id={`p${i}r`} label={c.reps} longLabel={c.repsLong} value={item.reps} onCommit={commit('reps')} />}
             <NumField id={`p${i}t`} label={c.rest} longLabel={c.restLong} value={item.rest} onCommit={commit('rest')} />
+          </div>
+          <div className="pro-opts">
+            <Choice id={`p${i}k`} label={c.kindLabel} value={hold ? 'hold' : 'reps'} onChange={kind => setItem(i, withKind(item, kind))}
+              options={[['reps', c.kindReps], ['hold', c.kindHold]]} />
+            <Choice id={`p${i}c`} label={c.sideLabel} value={sideOf(item)} onChange={side => setItem(i, withSide(item, side))}
+              options={SIDES.map(s => [s, c.sideOptions[s]])} />
           </div>
           <input className="pro-item-note" type="text" autoComplete="off" autoCapitalize="sentences" maxLength={LIMITS.itemNote}
             aria-label={`${c.itemNotePlaceholder}, ${n}`} placeholder={c.itemNotePlaceholder} value={item.note} onChange={ev => setItem(i, { note: ev.target.value })} />
@@ -381,9 +440,9 @@ function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, o
 
       <div className="pro-share">
         <p className="pro-status" role="status">{note || (!programme ? c.needs : '')}</p>
-        <button type="button" className={`btn-primary press${status === 'preparing' ? ' is-busy' : ''}`} aria-disabled={!programme || status === 'preparing' || undefined} onClick={sharePdf} data-testid="pro-pdf">
+        <button type="button" className={`btn-primary press${busy ? ' is-busy' : ''}`} aria-disabled={!programme || busy || undefined} onClick={sharePdf} data-testid="pro-pdf">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 15V3.5" /><path d="M7.5 8L12 3.5 16.5 8" /><path d="M5 12v7.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V12" /></svg>
-          <span>{status === 'preparing' ? c.preparing : c.sharePdf}</span>
+          <span>{busy ? c.preparing : c.sharePdf}</span>
         </button>
         <div className="pro-link-row">
           <button type="button" className="btn-line press" aria-disabled={!linkReady || undefined} onClick={shareLink} data-testid="pro-link">
@@ -426,7 +485,8 @@ function Picker({ c, onBack, onChoose }) {
         <button ref={backRef} className="icon-btn press" onClick={onBack} aria-label={c.pickBack}><BackIcon /></button>
         <span className="pill">{c.eyebrow}</span>
       </div>
-      <Suspense fallback={<div aria-busy="true" />}><ExerciseList onChoose={onChoose} /></Suspense>
+      {/* Every exercise of the guide (the exercise sheet, 14 October 2026), those the app does not count marked. */}
+      <Suspense fallback={<div aria-busy="true" />}><ExerciseList all copy={{ title: c.pickTitle, note: c.pickNote, tag: c.notCountedTag }} onChoose={onChoose} /></Suspense>
     </div></section>
   </div>;
 }

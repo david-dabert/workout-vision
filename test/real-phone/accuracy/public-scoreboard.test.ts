@@ -8,7 +8,7 @@ import { expect, test } from 'vitest';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { summarizeCount } from '../../../src/lib/coreAnalysis';
-import { benchSets, countInWindow, decides, doubtLine, PRESS_DECIDES_NOTHING, publicSets } from './sets';
+import { benchSets, countInWindow, decides, doubtLine, PRESS_DECIDES_NOTHING, publicSets, writeScoreboard } from './sets';
 import { liftDefinition } from '../../../src/lib/counting/core';
 import { pairedLine, type Pair } from './paired';
 
@@ -124,7 +124,7 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
   const paired = pairedLine(pairs, "Countix's two readings of a clip counted as two sets, as in the headline");
   const text = [head, paired, doubtLine(doubts), '', ...honestLines(sets, live), '', ...table, '', ...rows, ...missing.map(m => `MISSING ${m}`), ...absent.map(m => `MISSING ${m} (recorded as written, no file)`), ...unreadable.map(u => `UNREADABLE ${u}`),
     ...(notScored.length ? ['', `Not scored (${notScored.length}), each with its reason:`, ...notScored] : []), '', ...repCountSection()].join('\n') + '\n';
-  writeFileSync(resolve(__dirname, 'public-scoreboard.txt'), text);
+  writeScoreboard(resolve(__dirname, 'public-scoreboard.txt'), text);
   process.stdout.write(text);
   expect(exactNow).toBeGreaterThanOrEqual(exactBefore);
   expect(became).toBe(0);
