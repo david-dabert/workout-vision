@@ -6,12 +6,16 @@ The videos and their pose landmarks stay out of this public repository (his cons
 
 | Landmark file (local) | Exercise | Pose found | Joints the app reads well enough |
 |---|---|---|---|
-| `olivier-1-supine-clasped` | On the back, hands clasped: arms up, hands to the forehead, overhead | 100 % | Near arm (right): shoulder and elbow. The far arm, partly hidden, is left out (seen 61 % and 68 %). |
-| `olivier-2-side-lying` | On the side, forearm lifting | 100 % | None that follow the movement: the elbow angle read moves, the forearm's rotation is not read. |
-| `olivier-3-prone-y-t` | Face down, one arm from Y to T, filmed from the head end | 93 % | None that follow the movement: the shoulder read moves 14.5 degrees for a Y-to-T sweep. |
-| `olivier-4-supine-staged-raise` | On the back, straight arms raised in stages to overhead | 100 % | Near arm (right): shoulder (range 126 degrees) and elbow. |
+Angles are read in the picture plane (compare.js): in MediaPipe's 3D space, depth is unreliable for a person lying down.
 
-References 2 and 3 are to be filmed again from an angle where the arm sweeps across the picture (video 3 from the side, at table height).
+| Landmark file (local) | Exercise | Pose found | Joints the app reads well enough |
+|---|---|---|---|
+| `olivier-1-supine-clasped` | On the back, hands clasped: arms up, hands to the forehead, overhead | 100 % | Near arm (right): shoulder (range 151 degrees) and elbow. The far arm, partly hidden, is left out (seen 61 % and 68 %). |
+| `olivier-2-side-lying` | On the side, forearm lifting | 100 % | Left elbow only; the forearm's rotation, which is the exercise, is not an angle the app reads. |
+| `olivier-3-prone-y-t` | Face down, one arm from Y to T, filmed from the head end | 93 % | Left shoulder (range 83 degrees) and elbow; the pose is lost on 7 % of samples. |
+| `olivier-4-supine-staged-raise` | On the back, straight arms raised in stages to overhead | 100 % | Near arm (right): shoulder (range 162 degrees) and elbow. Holds read at 106, 152 and 176 degrees. |
+
+Reference 2 is to be filmed again from an angle where the forearm sweeps across the picture; reference 3 would read better from the side, at table height.
 The engine still builds a reference from them, on joints that do not follow the movement: a reference needs a person to check its replay before patients use it.
 
 Bench: `REFERENCE_LANDMARKS=<local folder> node test/real-phone/reference/bench.mjs` prints the tables; the four landmark tests in `src/lib/reference/__tests__/compare.test.js` run when the same variable is set, and are skipped otherwise.

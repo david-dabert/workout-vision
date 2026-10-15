@@ -11,36 +11,38 @@ if (dir === '/') throw new Error('Set REFERENCE_LANDMARKS to the folder holding 
 const names = fs.readdirSync(dir).filter(f => f.endsWith('.json.gz')).sort();
 const load = f => JSON.parse(gunzipSync(fs.readFileSync(dir + f)));
 const videos = Object.fromEntries(names.map(f => [f.replace('.json.gz', ''), load(f)]));
+// Picture-plane angles (compare.js): each video's image landmarks and its own width over height.
+const opts = v => ({ aspect: v.metadata.extractedWidth / v.metadata.extractedHeight });
 
 // The same movement 1.3 times slower, with 3 s of the first pose before and 3 s of the last after.
 function slower(v, factor = 1.3, pad = 3) {
   const ts = [], wl = [];
   const dt = v.timestamps[1] - v.timestamps[0];
-  for (let t = 0; t < pad; t += dt) { ts.push(t); wl.push(v.worldLandmarks[0]); }
-  v.timestamps.forEach((t, i) => { ts.push(pad + t * factor); wl.push(v.worldLandmarks[i]); });
+  for (let t = 0; t < pad; t += dt) { ts.push(t); wl.push(v.imageLandmarks[0]); }
+  v.timestamps.forEach((t, i) => { ts.push(pad + t * factor); wl.push(v.imageLandmarks[i]); });
   const last = ts.at(-1);
-  for (let t = dt; t < pad; t += dt) { ts.push(last + t); wl.push(v.worldLandmarks.at(-1)); }
-  return { timestamps: ts, worldLandmarks: wl };
+  for (let t = dt; t < pad; t += dt) { ts.push(last + t); wl.push(v.imageLandmarks.at(-1)); }
+  return { timestamps: ts, imageLandmarks: wl, metadata: v.metadata };
 }
 
 const f1 = x => (x == null ? '-' : x.toFixed(1));
 const f2 = x => (x == null ? '-' : x.toFixed(2));
 const lines = ['# Reference comparison bench', '', `Engine: src/lib/reference/compare.js. Videos: ${names.length}, landmarks only.`, ''];
 for (const [name, v] of Object.entries(videos)) {
-  const ref = buildReference(v.worldLandmarks, v.timestamps);
+  const ref = buildReference(v.imageLandmarks, v.timestamps, opts(v));
   lines.push(`## Reference ${name}`, '', `Joints used: ${ref.joints.map(j => `${j.name} (${j.kind}, range ${f1(j.range)} deg)`).join(', ') || 'none'}.`,
     `Joints not used (seen under 80 %): ${ref.unused.map(u => `${u.name} ${f2(u.seenShare)}`).join(', ') || 'none'}.`, '',
     '| Attempt | Verdict | Reasons | Tempo | Joints: within tolerance / p90 gap / range reached |', '|---|---|---|---|---|');
   const attempts = [[`${name} (itself)`, v], [`${name} slower x1.3, padded`, slower(v)],
     ...Object.entries(videos).filter(([o]) => o !== name)];
   for (const [label, a] of attempts) {
-    const r = compareAttempt(ref, a.worldLandmarks, a.timestamps);
+    const r = compareAttempt(ref, a.imageLandmarks, a.timestamps, opts(a));
     const js = r.joints.map(j => `${j.name} ${f2(j.within)} / ${f1(j.gapP90)} / ${f2(j.rangeShare)}`).join('; ');
     lines.push(`| ${label} | ${r.verdict} | ${r.reasons.join(', ') || '-'} | ${f2(r.tempo)} | ${js || '-'} |`);
   }
   // Faulty attempts made from the reference's own curves: the first moving joint stopped at 70 % of its range,
   // then the elbows held 30 degrees more bent throughout.
-  const own = curves(v.worldLandmarks, v.timestamps);
+  const own = curves(v.imageLandmarks, v.timestamps, opts(v));
   const moving = ref.joints.find(j => j.kind === 'moving');
   if (moving) {
     const lo = Math.min(...moving.curve);

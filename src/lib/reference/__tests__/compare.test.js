@@ -65,6 +65,14 @@ describe('reference comparison', () => {
     expect(referenceFromCurves(c).unused.map(u => u.name)).toEqual(['leftShoulder']);
   });
 
+  it('lists the positions the reference holds, with the attempt\'s angle and time at each', () => {
+    const r = compareCurves(ref, staged(0.5));
+    const held = r.holds.filter(h => h.refAngle > 50).map(h => [Math.round(h.refAngle), Math.round(h.attAngle)]);
+    expect(held).toEqual([[90, 90], [170, 170]]);
+    const top = r.holds.find(h => h.refAngle > 160);
+    expect(top.attSec / top.refSec).toBeGreaterThan(1.6);
+  });
+
   it('aligns a stretch of the attempt to the whole reference', () => {
     const path = align([[0, 10, 20, 10, 0]], [[5, 5, 0, 10, 20, 10, 0, 5]]);
     expect(path[0]).toEqual([0, 2]);
@@ -80,11 +88,12 @@ describe('reference comparison', () => {
 // (REFERENCE_LANDMARKS, the folder of test/real-phone/reference/README.md).
 const local = process.env.REFERENCE_LANDMARKS;
 const read = name => JSON.parse(gunzipSync(fs.readFileSync(`${local}/${name}.json.gz`)));
+const opts = v => ({ aspect: v.metadata.extractedWidth / v.metadata.extractedHeight });
 describe.skipIf(!local || !fs.existsSync(`${local}/olivier-4-supine-staged-raise.json.gz`))('Olivier video 4 (local landmarks)', () => {
   let v, ref;
   beforeAll(() => {
     v = read('olivier-4-supine-staged-raise');
-    ref = buildReference(v.worldLandmarks, v.timestamps);
+    ref = buildReference(v.imageLandmarks, v.timestamps, opts(v));
   });
 
   it('uses the arm nearest the camera', () => {
@@ -92,12 +101,12 @@ describe.skipIf(!local || !fs.existsSync(`${local}/olivier-4-supine-staged-raise
   });
 
   it('matches the reference replayed 1.3 times slower', () => {
-    const r = compareAttempt(ref, v.worldLandmarks, v.timestamps.map(t => t * 1.3));
+    const r = compareAttempt(ref, v.imageLandmarks, v.timestamps.map(t => t * 1.3), opts(v));
     expect(r.verdict).toBe('match');
   });
 
   it('does not match another exercise (video 1)', () => {
     const other = read('olivier-1-supine-clasped');
-    expect(compareAttempt(ref, other.worldLandmarks, other.timestamps).verdict).toBe('revise');
+    expect(compareAttempt(ref, other.imageLandmarks, other.timestamps, opts(other)).verdict).toBe('revise');
   });
 });

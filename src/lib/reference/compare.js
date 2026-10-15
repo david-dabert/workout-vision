@@ -39,22 +39,28 @@ export const TOLERANCE_DEG = 15;
 export const TOLERANCE_SHARE = 0.9;
 export const MIN_RANGE_SHARE = 0.85;
 
-function angleAt(a, b, c) {
-  const v1 = [a.x - b.x, a.y - b.y, a.z - b.z];
-  const v2 = [c.x - b.x, c.y - b.y, c.z - b.z];
+// Angles in the picture plane (image landmarks, x scaled by the picture's width over its height), not in MediaPipe's
+// 3D world space: for a person lying down its depth is unreliable (video 4's arms overhead read 155 degrees in 3D,
+// about 178 in the picture, which shows them flat on the table). The patient films from the reference's angle, so
+// the two pictures' angles compare. Source: the four reference videos, read frame by frame on 15 October 2026.
+// Status: experimental. Without an aspect, world landmarks and 3D angles (for callers that hold only those).
+function angleAt(a, b, c, aspect) {
+  const z = aspect ? 0 : 1, k = aspect ?? 1;
+  const v1 = [(a.x - b.x) * k, a.y - b.y, (a.z - b.z) * z];
+  const v2 = [(c.x - b.x) * k, c.y - b.y, (c.z - b.z) * z];
   const n = Math.hypot(...v1) * Math.hypot(...v2);
   if (!n) return null;
   const cos = (v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2]) / n;
   return (Math.acos(Math.max(-1, Math.min(1, cos))) * 180) / Math.PI;
 }
 
-/** Raw angle of each joint per sample, null where a point of it is unseen. */
-export function jointAngles(worldLandmarks, joints = JOINTS) {
+/** Raw angle of each joint per sample, null where a point of it is unseen; `aspect` = width / height of the picture. */
+export function jointAngles(landmarks, { joints = JOINTS, aspect } = {}) {
   const out = {};
   for (const [name, [a, b, c]] of Object.entries(joints)) {
-    out[name] = worldLandmarks.map(lm => {
+    out[name] = landmarks.map(lm => {
       if (!lm || [a, b, c].some(i => (lm[i]?.visibility ?? 0) < SEEN_VISIBILITY)) return null;
-      return angleAt(lm[a], lm[b], lm[c]);
+      return angleAt(lm[a], lm[b], lm[c], aspect);
     });
   }
   return out;
@@ -112,9 +118,9 @@ function percentile(values, p) {
 
 const range = values => percentile(values, 0.95) - percentile(values, 0.05);
 
-/** Smoothed curves at SAMPLE_HZ of every joint, from a video's landmarks. */
-export function curves(worldLandmarks, timestamps, joints = JOINTS) {
-  const raw = jointAngles(worldLandmarks, joints);
+/** Smoothed curves at SAMPLE_HZ of every joint, from a video's landmarks (see jointAngles for the options). */
+export function curves(landmarks, timestamps, options = {}) {
+  const raw = jointAngles(landmarks, options);
   const out = {};
   for (const [name, values] of Object.entries(raw)) out[name] = median5(resample(timestamps, values));
   return out;
@@ -124,8 +130,8 @@ export function curves(worldLandmarks, timestamps, joints = JOINTS) {
  * The reference model: the joints the reference shows well enough, each "moving" or "held", with its curve.
  * Returns { joints: [{ name, kind, range, curve }], duration, unused: [{ name, seenShare }] }.
  */
-export function buildReference(worldLandmarks, timestamps, joints = JOINTS) {
-  return referenceFromCurves(curves(worldLandmarks, timestamps, joints));
+export function buildReference(landmarks, timestamps, options = {}) {
+  return referenceFromCurves(curves(landmarks, timestamps, options));
 }
 
 export function referenceFromCurves(curveByJoint) {
@@ -195,11 +201,14 @@ export function compareCurves(reference, attemptCurves) {
   const att = reference.joints.map(j => fillGaps(attemptCurves[j.name]));
   const path = align(ref, att);
   const start = path[0][1], end = path.at(-1)[1];
-  const joints = reference.joints.map((j, k) => {
-    // The attempt's value at each moment of the reference: the mean of the attempt samples matched to it.
-    const sums = new Float64Array(ref[k].length), counts = new Uint16Array(ref[k].length);
+  // The attempt's value at each moment of the reference: the mean of the attempt samples matched to it.
+  const matchedByJoint = ref.map((curve, k) => {
+    const sums = new Float64Array(curve.length), counts = new Uint16Array(curve.length);
     for (const [ri, ai] of path) { sums[ri] += att[k][ai]; counts[ri]++; }
-    const matched = Array.from(sums, (s, i) => s / counts[i]);
+    return Array.from(sums, (s, i) => s / counts[i]);
+  });
+  const joints = reference.joints.map((j, k) => {
+    const matched = matchedByJoint[k];
     const gaps = matched.map((v, i) => Math.abs(v - ref[k][i]));
     const within = gaps.filter(g => g <= TOLERANCE_DEG).length / gaps.length;
     let worst = 0;
@@ -218,10 +227,70 @@ export function compareCurves(reference, attemptCurves) {
     verdict: reasons.length ? 'revise' : 'match', reasons, joints,
     start: start / SAMPLE_HZ, end: end / SAMPLE_HZ,
     tempo: (end - start + 1) / ref[0].length,
+    path,
+    reference: reference.joints.map(j => j.curve),
+    matched: matchedByJoint,
+    holds: holds(reference, att, path),
   };
 }
 
-/** Attempt landmarks against a reference model. */
-export function compareAttempt(reference, worldLandmarks, timestamps) {
-  return compareCurves(reference, curves(worldLandmarks, timestamps));
+// A hold: the reference's main joint (its largest range) moving under this speed for at least this long. Source: the
+// four reference videos (their holds last 2 to 5 s, their raises 1 to 3 s). Status: experimental, UNSOURCED.
+export const HOLD_SPEED_DEG_S = 10;
+export const HOLD_MIN_SEC = 1;
+// A hold is kept when the attempt's angle is within TOLERANCE_DEG of the reference's and it lasts this share of the
+// reference's time. Status: experimental, UNSOURCED; to be set with the physiotherapist.
+export const HOLD_TIME_SHARE = 0.8;
+
+/**
+ * The positions the reference holds, each with what the attempt did at the same moment: the reference's angle and
+ * time held, the attempt's mean angle and the time its matched samples span.
+ */
+export function holds(reference, attCurves, path) {
+  const moving = reference.joints.map((j, k) => [j, k]).filter(([j]) => j.kind === 'moving');
+  if (!moving.length) return [];
+  const [main, k] = moving.reduce((a, b) => (b[0].range > a[0].range ? b : a));
+  const c = main.curve, a = attCurves[k];
+  // Speed over 0.6 s, centred: one-sample jitter of the pose model is not movement.
+  const h = 3;
+  const stillOf = curve => curve.map((_, i) => {
+    const x = curve[Math.max(0, i - h)], y = curve[Math.min(curve.length - 1, i + h)];
+    return (Math.abs(y - x) * SAMPLE_HZ) / (2 * h) < HOLD_SPEED_DEG_S;
+  });
+  const still = stillOf(c), attStill = stillOf(a);
+  const out = [];
+  for (let i = 0; i < c.length;) {
+    if (!still[i]) { i++; continue; }
+    let e = i;
+    while (e + 1 < c.length && still[e + 1]) e++;
+    if ((e - i + 1) / SAMPLE_HZ >= HOLD_MIN_SEC) {
+      const ai = path.filter(([ri]) => ri >= i && ri <= e).map(([, x]) => x).sort((x, y) => x - y);
+      const attAngle = ai.reduce((sum, x) => sum + a[x], 0) / ai.length;
+      // The attempt's own hold: from the middle of its matched samples, as far as it stays still. The alignment
+      // gives a long hold's extra samples to the reference's moments around it, so its span alone would hide them.
+      let lo = ai[Math.floor(ai.length / 2)], hi = lo;
+      if (attStill[lo]) {
+        while (lo > 0 && attStill[lo - 1]) lo--;
+        while (hi + 1 < a.length && attStill[hi + 1]) hi++;
+      }
+      out.push({
+        joint: main.name,
+        startSec: i / SAMPLE_HZ,
+        refSec: (e - i + 1) / SAMPLE_HZ,
+        refAngle: c.slice(i, e + 1).reduce((sum, v) => sum + v, 0) / (e - i + 1),
+        attSec: attStill[lo] ? (hi - lo + 1) / SAMPLE_HZ : 0,
+        attAngle,
+      });
+      const hold = out.at(-1);
+      hold.status = Math.abs(hold.attAngle - hold.refAngle) > TOLERANCE_DEG ? 'angle'
+        : hold.attSec < hold.refSec * HOLD_TIME_SHARE ? 'short' : 'held';
+    }
+    i = e + 1;
+  }
+  return out;
+}
+
+/** Attempt landmarks against a reference model (the same kind of landmarks and options as the reference's). */
+export function compareAttempt(reference, landmarks, timestamps, options = {}) {
+  return compareCurves(reference, curves(landmarks, timestamps, options));
 }
