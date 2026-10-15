@@ -5,7 +5,7 @@ compatibility_date = "2024-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "workout-vision-feedback"
-database_id = "" # Fill after: npx wrangler d1 create workout-vision-feedback
+database_id = "45746008-6632-4f02-bfb5-4f621508eef2"
 
 # Secrets, set with `npx wrangler secret put <NAME>`, never written here (README.md, Deploy):
 #   STATS_TOKEN  reads /stats, /dashboard and /feedback (at least 16 characters)
