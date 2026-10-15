@@ -118,6 +118,15 @@ jobs:
         if: always()
         # The two gated heights only: 548 px is recorded by a local run, never gated (David, 29 September: weigh every run's cost).
         run: WV_SIZES=390x664,390x745 node test/real-phone/tour-ci/film-button.mjs
+      # The notice of the anonymous usage counts (UsageNotice.jsx; WP2.3), on a build that names an events server the
+      # script answers itself (.invalid never resolves), at the three sizes, in French and English, with the same checks.
+      - name: The notice of the usage counts at the three sizes
+        if: always()
+        run: |
+          VITE_EVENTS_URL=https://events.invalid/event npx vite build --outDir dist-events --emptyOutDir
+          npx vite preview --outDir dist-events --port 4177 --strictPort &
+          npx --yes wait-on@8 http://127.0.0.1:4177/workout-vision/ --timeout 60000
+          node test/real-phone/tour-ci/usage-notice.mjs
       - name: Keep the shots and results
         if: always()
         uses: actions/upload-artifact@v4

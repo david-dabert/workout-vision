@@ -83,6 +83,8 @@
 .wv-experience .usage-note { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .wv-experience .usage-note p { margin: 0; }
 .wv-experience .usage-note .text-btn { font: inherit; display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; color: var(--bone-2); text-decoration: underline; text-underline-offset: 3px; border-radius: var(--r-pill); }
+/* Its two keys side by side: turn off, and the notice (UsageNotice.jsx). */
+.wv-experience .usage-keys { display: flex; justify-content: center; flex-wrap: wrap; }
 /* The link to "À propos" (About.jsx) and "Le Manifeste" (Manifesto.jsx) at the foot of the choice. */
 .wv-experience .choice-foot-links { display: flex; justify-content: center; align-items: center; gap: var(--s-3); flex-wrap: wrap; margin-top: var(--s-3); }
 .wv-experience .about-link { align-self: center; display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; font-size: var(--fs-caption); color: var(--bone-2); text-decoration: underline; text-underline-offset: 3px; border-radius: var(--r-pill); }

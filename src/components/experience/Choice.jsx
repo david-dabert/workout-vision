@@ -90,7 +90,7 @@ function LiftCard({ children, onClick, label, describedBy, cardRef }) {
   </button>;
 }
 
-export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, onProgramme, onManifesto, onEquine, onSports, onCoaches, onBuddies, onErgonomics, onChat, held = null }) {
+export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, onProgramme, onManifesto, onEquine, onSports, onCoaches, onBuddies, onErgonomics, onChat, onUsage, held = null }) {
   const { lang, tExercise } = useT(), fr = lang === 'fr';
   const railRef = useRef(null), dotsRef = useRef(null), cards = useRef([]);
   // The guide's names load after the choice; until then a set of an exercise without a card is not
@@ -229,7 +229,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Before the long list of every exercise, where it is read on the first scroll, not after 181 rows. */}
-        <UsageNote fr={fr} />
+        <UsageNote fr={fr} onUsage={onUsage} />
         <CollectSwitched fr={fr} />
         <Suspense fallback={null}><ExerciseList onChoose={onChoose} /></Suspense>
         {/* Installing the app (Install.jsx): a quiet row at the foot of the list, never once the app is installed. */}
@@ -238,6 +238,8 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
         <div className="choice-foot-links">
           {/* Why the app exists, in David's words (About.jsx). */}
           {onAbout && <button type="button" className="about-link press" onClick={onAbout} data-testid="about-link">{ABOUT[fr ? 'fr' : 'en'].link}</button>}
+          {/* The notice of the anonymous counts (UsageNotice.jsx), whenever the build sends them. */}
+          {onUsage && eventsConfigured() && <button type="button" className="about-link press" onClick={onUsage} data-testid="usage-link">{fr ? 'Comptage anonyme' : 'Anonymous counts'}</button>}
           {onManifesto && <button type="button" className="about-link press" onClick={onManifesto} data-testid="manifesto-link">{fr ? 'Le Manifeste' : 'Manifesto'}</button>}
           {onCoaches && <button type="button" className="about-link press" onClick={onCoaches} data-testid="coaches-link">{fr ? 'Coachs et kinés (démo)' : 'Coaches (demo)'}</button>}{/* As their rows above say (second review, 14 October 2026); French awaiting David's approval (R10) */}
           {onEquine && <button type="button" className="about-link press" onClick={onEquine} data-testid="equine-link">{fr ? 'Allures équines' : 'Equine gaits'}</button>}
@@ -254,7 +256,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
 // What the app sends about its use, where the build sends it (src/lib/events.js), and the way to stop it on this
 // phone. A browser that asks sites not to track sends nothing, and is not asked. Approved by David on 9 October 2026
 // (test/real-phone/swarm/copy-analytics.md).
-function UsageNote({ fr }) {
+function UsageNote({ fr, onUsage }) {
   const [off, setOff] = useState(countingOff);
   if (!eventsConfigured() || browserRefuses()) return null;
   const toggle = () => { setCountingOff(!off); setOff(!off); };
@@ -262,10 +264,14 @@ function UsageNote({ fr }) {
     <p role="status">{off
       ? (fr ? 'Comptage anonyme désactivé sur ce téléphone.' : 'Anonymous counting is off on this phone.')
       : (fr ? 'Pour s’améliorer, l’appli compte de façon anonyme l’usage de ses écrans et de ses analyses\u00A0: ni identité, ni vidéo, ni mouvement.' : 'To improve, the app counts anonymously how often its screens and analyses are used: no identity, no video, no movement data.')}</p>
-    <button type="button" className="text-btn press" onClick={toggle}
-      aria-label={off ? (fr ? 'Réactiver le comptage anonyme' : 'Turn anonymous counting back on') : (fr ? 'Désactiver le comptage anonyme' : 'Turn off anonymous counting')}>
-      {off ? (fr ? 'Réactiver' : 'Turn on') : (fr ? 'Désactiver' : 'Turn off')}
-    </button>
+    <div className="usage-keys">
+      <button type="button" className="text-btn press" onClick={toggle}
+        aria-label={off ? (fr ? 'Réactiver le comptage anonyme' : 'Turn anonymous counting back on') : (fr ? 'Désactiver le comptage anonyme' : 'Turn off anonymous counting')}>
+        {off ? (fr ? 'Réactiver' : 'Turn on') : (fr ? 'Désactiver' : 'Turn off')}
+      </button>
+      {/* What is counted, where it goes (UsageNotice.jsx; PRIV-3). */}
+      {onUsage && <button type="button" className="text-btn press" onClick={onUsage} data-testid="usage-more">{fr ? 'Ce qui est compté' : 'What is counted'}</button>}
+    </div>
   </div>;
 }
 

@@ -64,13 +64,14 @@ jobs:
     permissions:
       contents: read
     # What the published build may do, set once for every step below (WP0.3, docs/SPEC-production.md):
-    # - VITE_EVENTS_URL, the anonymous usage counts (src/lib/events.js), is pinned empty until David decides D6 and
-    #   WP2.3 gives the counts their notice. To switch them on is this one line: VITE_EVENTS_URL: ${{ vars.VITE_EVENTS_URL }}
-    #   (feedback-worker/README.md, Deploy); the check of dist/ below then allows that origin only.
+    # - VITE_EVENTS_URL, the anonymous usage counts (src/lib/events.js), is the repository variable (D6, 15 October 2026;
+    #   WP2.3). Unset, the app sends nothing; set, the counts go to that worker, with their notice (UsageNotice.jsx).
+    #   To switch them on or off is the variable alone (feedback-worker/README.md, Deploy); the check of dist/ below
+    #   then allows that origin only, and fails when the built notice does not name its host (PRIV-3).
     # - VITE_LIVE and VITE_CONTRIBUTE (src/lib/buildFlags.js) are left unset: no live counting until Phase 6 (WP6.5),
     #   contributions paused until Phase 2 (WP0.4). Each is switched on by VITE_LIVE: '1' or VITE_CONTRIBUTE: '1' here.
     env:
-      VITE_EVENTS_URL: ''
+      VITE_EVENTS_URL: ${{ vars.VITE_EVENTS_URL }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -82,12 +83,13 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
-      # The anonymous usage counts go to the server the job's VITE_EVENTS_URL names, pinned empty above: the app sends
+      # The anonymous usage counts go to the server the job's VITE_EVENTS_URL names, if any: unset, the app sends
       # nothing and its page policy is unchanged. The flags of the job's env reach the build.
       - run: npm run build
-      # Fails when dist/ holds any events URL while VITE_EVENTS_URL is pinned empty, the repository variable's value
-      # included, set or not (scripts/check-dist-events.mjs); prints the length of VITE_EVENTS_URL, never its value.
-      - name: No events URL in the published build (D6)
+      # Unset: fails when dist/ holds any events URL. Set: fails when dist/ holds any other events origin, or when the
+      # built notice of the counts does not name the variable's host (PRIV-3) (scripts/check-dist-events.mjs); prints
+      # the length of VITE_EVENTS_URL, never its value.
+      - name: Only the configured events URL, and a notice naming its host (D6, PRIV-3)
         env:
           EVENTS_URL_VAR: ${{ vars.VITE_EVENTS_URL }}
         run: node scripts/check-dist-events.mjs dist

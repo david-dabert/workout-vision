@@ -1,0 +1,25 @@
+/* The notice of the anonymous usage counts (UsageNotice.jsx): one column, the design system's tokens only (design/SYSTEM.md).
+   Sized to hold on one screen at 390 px wide with its steps folded. */
+.wv-experience .usage-notice-screen .wrap { padding-bottom: var(--s-6); }
+.wv-experience .usage-notice-screen .un-title { margin-top: var(--s-4); color: var(--c-fg); font-size: var(--fs-heading); line-height: 1.05; }
+.wv-experience .un-lead { margin: var(--s-2) 0 0; font-family: var(--serif); font-style: italic; font-size: 19px; line-height: 1.25; color: var(--bone-2); text-wrap: pretty; }
+.wv-experience .un-body { margin-top: var(--s-3); }
+/* Section heads: the mono label of the app's kickers, gold, a hairline above. */
+.wv-experience .un-h { margin: var(--s-3) 0 0; padding-top: var(--s-3); border-top: 1px solid var(--c-rule); font-family: var(--mono); font-weight: 400; font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--c-accent); }
+.wv-experience .un-p { margin: 6px 0 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--bone-2); text-wrap: pretty; }
+/* The fields sent, one per line: the field's name, its values in ash, in two columns. */
+.wv-experience .un-fields { margin: 6px 0 0; display: grid; gap: 3px; }
+.wv-experience .un-field { display: grid; grid-template-columns: 8.8em 1fr; gap: 10px; align-items: baseline; }
+.wv-experience .un-field dt { font-size: var(--fs-caption); font-weight: 500; color: var(--c-fg); }
+.wv-experience .un-field dd { margin: 0; font-size: var(--fs-caption); line-height: 1.35; color: var(--c-fg-muted); }
+/* The steps counted, folded: a tap opens them as pills. */
+.wv-experience .un-events summary { display: inline-flex; align-items: center; min-height: 44px; font-size: var(--fs-caption); color: var(--bone-2); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; list-style: none; }
+.wv-experience .un-events summary::-webkit-details-marker { display: none; }
+.wv-experience .un-events ul { margin: 0 0 var(--s-2); padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.wv-experience .un-events li { font-size: var(--fs-caption); padding: 5px 10px 4px; border: 1px solid var(--hair-2); border-radius: var(--r-pill); color: var(--bone-2); background: var(--well); }
+/* The state and the switch, side by side; the switch is 44 px tall. */
+.wv-experience .un-stop { margin-top: 2px; display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); }
+.wv-experience .un-state { margin: 0; font-size: var(--fs-body); line-height: 1.4; color: var(--c-fg); }
+.wv-experience .un-toggle { flex-shrink: 0; min-height: 44px; padding: 0 18px; font: inherit; font-size: var(--fs-caption); color: var(--c-fg); background: var(--well); border: 1px solid var(--hair-2); border-radius: var(--r-pill); cursor: pointer; transition: border-color var(--d-ui), color var(--d-ui); }
+.wv-experience .un-toggle.is-on { border-color: var(--lamp-line); }
+.wv-experience .un-note { margin: 0; font-size: var(--fs-caption); line-height: 1.4; color: var(--c-fg-muted); text-wrap: pretty; }
