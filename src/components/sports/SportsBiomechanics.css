@@ -41,3 +41,7 @@
   .wv-experience .sports-bar-seg { transition: none; }
 }
 .wv-experience .sports-view { margin: var(--s-2) 0 var(--s-3); }
+
+/* Golf: the putt below the swing, as filmed, with its credit line (as the volleyball clip's, ActivityScreen.css). */
+.wv-experience .sports-credit { margin: 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); text-wrap: pretty; }
+.wv-experience .sports-credit a { color: var(--c-accent); text-decoration: underline; text-underline-offset: 2px; }
