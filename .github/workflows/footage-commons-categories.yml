@@ -1,0 +1,42 @@
+# Demo footage from Wikimedia Commons by category (15 October 2026; scripts/footage/commons-categories.mjs), replacing
+# the hand-typed table of PR #189. Measures, decides nothing: the table goes to the job summary, the JSON to an
+# artifact. Runs on a branch when its files change.
+name: Footage from Commons, by category
+
+on:
+  push:
+    branches: ['claude/**']
+    paths:
+      - .github/workflows/footage-commons-categories.yml
+      - scripts/footage/commons-categories.mjs
+
+jobs:
+  footage:
+    name: Commons footage by category, measured
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # The pose model downloaded and checked before the server starts (see footage-commons.yml).
+      - run: node scripts/copy-models.js
+      - name: Serve the app
+        run: |
+          npx vite --port 5173 --strictPort > vite.log 2>&1 &
+          for i in $(seq 90); do curl -sf http://localhost:5173/workout-vision/test/real-phone/harness.html > /dev/null && break; sleep 2; done
+      - name: Fetch, read and tabulate
+        run: node scripts/footage/commons-categories.mjs | tee footage.log
+      - run: sed -n '/### Commons footage by category/,$p' footage.log >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: commons-footage-categories
+          path: |
+            data/footage/commons-categories.json
+            footage.log
+          retention-days: 14
