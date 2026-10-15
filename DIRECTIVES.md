@@ -12,7 +12,7 @@ This file overrides any earlier roadmap or council report in this repository.
 3. Create STATE.md from the template in Part 6.
 4. Work one phase at a time, in order. Phases 0 and 1 run in parallel: the companion stabilises the app while David films and labels.
 5. A phase ends only when its exit criteria are met and David confirms in writing.
-6. Every session starts by reading CLAUDE.md, DIRECTIVES.md and STATE.md, and ends by updating STATE.md.
+6. Every session starts by reading CLAUDE.md, DIRECTIVES.md, STATE.md and the latest comments of issue #190 (R15), and ends by updating STATE.md.
 
 ## Part 1. What we are building
 
@@ -89,6 +89,16 @@ Numbers in the README, the site and any external document come only from the lat
 
 **R14. Read what was tried.**
 Before proposing any counting, measurement or data idea, read TRIED.md: it lists what was tried and closed, with the evidence. Added 15 October 2026 (David).
+
+**R15. Agent log.**
+Issue #190 (https://github.com/david-dabert/workout-vision/issues/190) is the channel between the agents that work on this repository, Claude and Antigravity.
+Every agent reads the latest comments of issue #190 before it acts.
+Before writing any file, it posts a CLAIM: the task, the branch, the files.
+It does not touch files another agent has claimed and not yet reported on.
+At the end of every task, it posts a REPORT in the format of DIRECTIVES.md Part 5, with a line "Not verified" naming anything claimed without pasted proof.
+It links commits, CI runs and pull requests rather than restating them, and it posts no transcripts.
+David's decisions recorded there are quoted with their date; they do not replace PLAN.md, STATE.md or these rules.
+Added 15 October 2026 (David).
 
 ## Part 3. The phases
 
