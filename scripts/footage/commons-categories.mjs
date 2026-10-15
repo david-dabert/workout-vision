@@ -10,6 +10,7 @@
  * subject's own travel (a runner crossing a still frame moves too), so it is reported as hip motion, not as camera.
  * Animals are not read: the pose model is human; their rows are metadata only, and fixed or moving camera and whole
  * animal in view stay for David to judge on the clip. Writes data/footage/commons-categories.json and prints Markdown.
+ * Ogg files (Commons' mime application/ogg) are re-encoded to WebM with ffmpeg first, so the read does not depend on Chromium's Theora support (deprecated).
  * Runs in CI (.github/workflows/footage-commons-categories.yml), where Commons is reachable.
  * Its helpers repeat those of commons.mjs so that a change here does not trigger that 70-minute job.
  *
@@ -19,6 +20,7 @@ import { mkdirSync, writeFileSync, createWriteStream } from 'node:fs';
 import { join } from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
+import { execFileSync } from 'node:child_process';
 
 const arg = (n, d) => (process.argv.find(a => a.startsWith(`--${n}=`)) ?? `=${d}`).split('=')[1];
 const PER_SUBJECT = Number(arg('per', '6'));
@@ -162,7 +164,7 @@ for (const [subject, { categories, listed }] of Object.entries(SUBJECTS)) {
   const all = await info([...new Set([...listedTitles, ...from.keys()])]);
   const isListed = f => listedTitles.some(t => t.replace(/_/g, ' ') === f.title);
   const rows = all.map(f => ({ subject, ...f, listed: isListed(f), foundIn: from.get(f.title) ?? null }));
-  const eligible = rows.filter(f => !f.missing && openLicence(f.licence) && f.bytes <= MAX_MB * 1e6 && /video/.test(f.mime));
+  const eligible = rows.filter(f => !f.missing && openLicence(f.licence) && f.bytes <= MAX_MB * 1e6 && (/video/.test(f.mime) || /application\/ogg/.test(f.mime)));
   tallies[subject] = { inCategories: from.size, missingListed: rows.filter(r => r.listed && r.missing).length,
     closedLicence: rows.filter(r => !r.missing && !openLicence(r.licence)).length, tooBig: rows.filter(r => !r.missing && r.bytes > MAX_MB * 1e6).length,
     eligible: eligible.length };
@@ -171,14 +173,19 @@ for (const [subject, { categories, listed }] of Object.entries(SUBJECTS)) {
   eligible.sort((a, b) => (b.listed - a.listed) || (b.width * b.height) - (a.width * a.height));
   const chosen = new Set(eligible.slice(0, Math.max(PER_SUBJECT, eligible.filter(e => e.listed).length)));
   for (const f of rows) {
-    if (!chosen.has(f)) { if (f.listed) results.push({ ...f, read: false, why: f.missing ? 'not on Commons' : !openLicence(f.licence) ? `licence ${f.licence || 'none'}` : f.bytes > MAX_MB * 1e6 ? 'over size' : 'not video' }); continue; }
+    if (!chosen.has(f)) { if (f.listed) results.push({ ...f, read: false, why: f.missing ? 'not on Commons' : !openLicence(f.licence) ? `licence ${f.licence || 'none'}` : f.bytes > MAX_MB * 1e6 ? 'over size' : `not video (${f.mime})` }); continue; }
     let m = null, error = null;
     if (HUMAN(subject)) {
-      const name = `${subject}--${f.title.replace(/^File:/, '').replace(/[^\w.-]+/g, '_')}`;
+      let name = `${subject}--${f.title.replace(/^File:/, '').replace(/[^\w.-]+/g, '_')}`;
       try {
         const r = await fetch(f.url, { headers: { 'User-Agent': UA } });
         if (!r.ok) throw new Error(`download ${r.status}`);
         await pipeline(Readable.fromWeb(r.body), createWriteStream(join(CLIPS, name)));
+        // An Ogg file is re-encoded to VP9 WebM, frames kept, before the harness reads it (Theora support in Chromium is deprecated).
+        if (/\.(ogv|ogg)$/i.test(name)) {
+          execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', join(CLIPS, name), '-an', '-c:v', 'libvpx-vp9', '-crf', '30', '-b:v', '0', '-deadline', 'realtime', '-cpu-used', '8', join(CLIPS, `${name}.webm`)]);
+          name = `${name}.webm`;
+        }
         const page = await browser.newPage();
         await page.goto(HARNESS);
         await page.waitForFunction(() => window._harnessReady === true, null, { timeout: 60000 });
