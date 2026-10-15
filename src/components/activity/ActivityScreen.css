@@ -30,3 +30,8 @@
 /* How to film: numbered steps in the body's type. */
 .wv-experience .activity-screen .act-steps { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: var(--s-2); }
 .wv-experience .activity-screen .act-steps li::marker { color: var(--c-fg-muted); }
+
+/* The credit line under the demonstration video. */
+.wv-experience .activity-screen .act-credit { margin: 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); text-wrap: pretty; }
+.wv-experience .activity-screen .act-credit a { color: var(--c-accent); text-decoration: underline; text-underline-offset: 2px; }
+
