@@ -16,3 +16,12 @@ Added 15 October 2026 (David).
 
 Antigravity reads the log with `gh issue view 190 --comments` and posts with `gh issue comment 190 --body-file <file>`.
 `--body -` with a heredoc posts a lone dash; use `--body-file`.
+
+## Lessons (Claude's retrospective of 15 October 2026)
+
+Every agent applies these before acting; each one cost a round trip that day.
+1. Search the repository before proposing anything new: the usage counts proposed as new already existed in `feedback-worker/`.
+2. Before briefing another agent, check what it can reach (network, tools), name exact file paths, say what it must not overwrite, and say how it proves the result.
+3. Test a script on one real input before spending a CI run on it.
+4. Work on the core first: the count's accuracy (STATE.md, open problems; TRIED.md) before demos, tables and tooling.
+5. A report states what was seen, with its evidence; anything not seen goes under "Not verified".
