@@ -1,0 +1,73 @@
+/* Reference comparison (ReferenceCompare.jsx): the showcase parts of Showcase.css and the experience's tokens
+   (Entry.css, design/SYSTEM.md); only the screen's own parts are here. Status: convention (no measurement involved). */
+
+.wv-experience .rc-picks { display: flex; flex-direction: column; gap: var(--s-3); }
+.wv-experience .rc-pick { display: flex; align-items: center; gap: var(--s-3); padding: 14px 16px; border: 1px solid var(--c-rule); border-radius: var(--r-m); background: var(--basalt); }
+.wv-experience .rc-pick-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.wv-experience .rc-pick-txt b { font-weight: 600; font-size: var(--fs-body); color: var(--bone); }
+.wv-experience .rc-pick-txt small { font-size: var(--fs-caption); color: var(--ash); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.wv-experience .rc-btn { min-height: 44px; padding: 0 18px; border-radius: var(--r-pill); border: 1px solid var(--hair-2); background: transparent; color: var(--bone); font: 600 var(--fs-caption)/1 var(--sans); letter-spacing: 0.02em; }
+.wv-experience .rc-btn.is-primary { border-color: transparent; background: var(--lamp); color: var(--ink); }
+.wv-experience .rc-btn.is-wide { width: 100%; min-height: 52px; font-size: var(--fs-body); }
+.wv-experience .rc-btn:disabled { opacity: 0.4; }
+.wv-experience .rc-link { background: none; border: 0; padding: 6px 0; color: var(--lamp-hi); font: 500 var(--fs-caption)/1.2 var(--sans); text-decoration: underline; text-underline-offset: 3px; }
+
+.wv-experience .rc-progress { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: var(--s-2) var(--s-3); font-size: var(--fs-caption); color: var(--bone-2); }
+.wv-experience .rc-bar { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: var(--hair); overflow: hidden; }
+.wv-experience .rc-bar i { display: block; height: 100%; background: var(--lamp); transition: width 0.2s var(--ease); }
+.wv-experience .rc-error { font-size: var(--fs-caption); color: var(--lamp-hi); }
+.wv-experience .rc-error small { display: block; color: var(--ash); overflow-wrap: anywhere; }
+
+.wv-experience .rc-reasons { margin: var(--s-3) 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--s-2); }
+.wv-experience .rc-reasons li { padding-left: 14px; position: relative; font-size: var(--fs-caption); line-height: 1.45; color: var(--bone-2); }
+.wv-experience .rc-reasons li::before { content: ""; position: absolute; left: 0; top: 0.55em; width: 6px; height: 6px; border-radius: 50%; background: var(--lamp); }
+
+/* The stage: the patient's video and its canvas, the reference in the top corner. */
+.wv-experience .rc-stage { position: relative; width: 100%; max-height: 72svh; margin: 0 auto; border-radius: var(--r-m); overflow: hidden; background: var(--well); }
+.wv-experience .rc-stage > video { display: block; width: 100%; height: 100%; object-fit: contain; }
+.wv-experience .rc-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.wv-experience .rc-inset { position: absolute; top: 10px; right: 10px; width: 34%; border-radius: var(--r-s); overflow: hidden; border: 1px solid var(--hair-2); background: var(--void); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45); }
+.wv-experience .rc-inset video { display: block; width: 100%; height: 100%; object-fit: contain; }
+.wv-experience .rc-inset-tag { position: absolute; left: 6px; bottom: 6px; padding: 2px 6px; border-radius: 6px; background: rgba(8, 7, 6, 0.72); font: 500 var(--fs-label)/1.3 var(--sans); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--bone-2); }
+
+.wv-experience .rc-controls { display: flex; align-items: center; gap: var(--s-3); margin-top: var(--s-3); }
+.wv-experience .rc-play { flex: none; width: 48px; height: 48px; border-radius: 50%; border: 0; background: var(--lamp); display: grid; place-items: center; }
+.wv-experience .rc-play svg { width: 22px; height: 22px; fill: var(--ink); }
+.wv-experience .rc-scrub { flex: 1; min-width: 0; accent-color: var(--lamp); }
+.wv-experience .rc-time { font: 500 var(--fs-caption)/1 var(--mono); color: var(--bone-2); font-variant-numeric: tabular-nums; }
+.wv-experience .rc-toggle { display: flex; align-items: center; gap: var(--s-2); margin-top: var(--s-3); min-height: 44px; font-size: var(--fs-caption); color: var(--bone-2); }
+.wv-experience .rc-toggle input { width: 20px; height: 20px; accent-color: var(--lamp); }
+
+.wv-experience .rc-joints, .wv-experience .rc-holds { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+.wv-experience .rc-joints li { display: grid; grid-template-columns: minmax(0, 1fr) repeat(3, auto); grid-template-areas: "name name name go" "a b c go"; gap: 6px var(--s-4); align-items: end; padding: 12px 0; border-bottom: 1px solid var(--hair-0); }
+.wv-experience .rc-joints b { grid-area: name; font-weight: 600; font-size: var(--fs-body); color: var(--bone); }
+.wv-experience .rc-joints span { display: flex; flex-direction: column; gap: 2px; font: 600 var(--fs-body)/1.2 var(--sans); color: var(--bone); font-variant-numeric: tabular-nums; }
+.wv-experience .rc-joints span small { font: 400 11px/1.2 var(--sans); color: var(--ash); }
+.wv-experience .rc-joints .rc-go { grid-area: go; align-self: end; }
+.wv-experience .rc-joints .rc-go .rc-link { padding: 0; font-size: var(--fs-body); }
+
+.wv-experience .rc-hold { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name tag" "vals tag"; gap: 4px var(--s-3); align-items: center; padding: 12px 0; border: 0; border-bottom: 1px solid var(--hair-0); background: none; text-align: left; color: inherit; }
+.wv-experience .rc-hold-name { grid-area: name; font-weight: 600; font-size: var(--fs-body); color: var(--bone); }
+.wv-experience .rc-hold-name small { font: 400 var(--fs-caption)/1 var(--mono); color: var(--ash); margin-left: 6px; }
+.wv-experience .rc-hold-vals { grid-area: vals; display: flex; flex-direction: column; gap: 2px; font-size: var(--fs-caption); color: var(--bone-2); font-variant-numeric: tabular-nums; }
+.wv-experience .rc-hold .sc-tag { grid-area: tag; }
+
+.wv-experience .rc-timeline { display: flex; flex-direction: column; gap: var(--s-4); }
+.wv-experience .rc-chart { margin: 0; }
+.wv-experience .rc-chart figcaption { font-size: var(--fs-caption); color: var(--bone-2); margin-bottom: 6px; }
+.wv-experience .rc-chart svg { display: block; width: 100%; height: 96px; border-radius: var(--r-s); background: var(--basalt); cursor: pointer; }
+.wv-experience .rc-band { fill: rgba(239, 232, 220, 0.07); }
+.wv-experience .rc-off { fill: rgba(232, 189, 126, 0.28); }
+.wv-experience .rc-line-ref { fill: none; stroke: var(--ash); stroke-width: 1.5; vector-effect: non-scaling-stroke; stroke-dasharray: 3 3; }
+.wv-experience .rc-line-att { fill: none; stroke: var(--lamp); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.wv-experience .rc-playhead { stroke: var(--bone); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.wv-experience .rc-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0; font-size: 12px; color: var(--ash); }
+.wv-experience .rc-key { display: inline-block; width: 16px; height: 0; border-top: 2px solid var(--lamp); }
+.wv-experience .rc-key.is-ref { border-top: 2px dashed var(--ash); }
+.wv-experience .rc-hint { flex-basis: 100%; }
+
+/* The verdict, in the display serif: in the lamp when the attempt is to revise. */
+.wv-experience .rc-verdict { margin: var(--s-3) 0 0; font: 400 var(--fs-heading)/1.1 var(--serif); color: var(--bone); }
+.wv-experience .rc-verdict.is-revise { color: var(--lamp-hi); }
+.wv-experience .rc-verdict.is-refused { color: var(--ash); }

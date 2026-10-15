@@ -439,3 +439,15 @@ Other proposals, not built (R7):
 - a guided first run, since most people skip instructions;
 - clubs (basketball, rugby) as first customers before the mass market: validate the technical tool first.
 His caveat: 95 % of people will not film themselves more than a few times.
+
+## 15 October 2026: physiotherapist reference exercises (Olivier)
+
+Olivier, physiotherapist, sent four exercise videos his patients are to reproduce as closely as possible; the app is to tell each patient whether the attempt matches.
+Built (PR #203): the comparison engine (`src/lib/reference/compare.js`), the comparison screen, and the physiotherapist's workspace `#kine` (his four exercises with his transcribed instructions, programme sent as a link and a PDF with QR code, note d'honoraires, free comparison), the patient's programme `#kine-p=` (his videos, steps, personal notes, attempt filmed and compared, result sent back as `#kine-r=`).
+The videos are served from `VITE_KINE_MEDIA_URL` (docs/kine-media.md); committing them to this public repository was refused by the environment's safety check on 15 October.
+Next, in order:
+- references 2 and 3 filmed again from an angle the pose model reads (README of the bench);
+- patients' attempts measured against references 1 and 4, then the tolerances set with Olivier (all experimental and UNSOURCED today);
+- the screens: the physiotherapist records and checks a reference; the patient follows it, films the attempt and gets the verdict per joint, with both skeletons replayed side by side;
+- a programme file the physiotherapist sends to the patient, so nothing goes through a server.
+Regulatory caution: wording stays "follows the programme, angle reached", never an assessment of the rehabilitation.

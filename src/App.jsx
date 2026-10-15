@@ -63,10 +63,15 @@ const SportsBiomechanics = lazyScreen(() => import('./components/sports/SportsBi
 const CoachFinder = lazyScreen(() => import('./components/coaches/CoachFinder.jsx'));
 const GymBuddy = lazyScreen(() => import('./components/buddies/GymBuddy.jsx'));
 const Ergonomics = lazyScreen(() => import('./components/ergonomics/Ergonomics.jsx'));
+// The physiotherapist's workspace (#kine), the patient's programme from its link (#kine-p=) and a patient's result on
+// the physiotherapist's phone (#kine-r=), 15 October 2026 (components/kine/).
+const KineWorkspace = lazyScreen(() => import('./components/kine/KineWorkspace.jsx'));
+const KinePatient = lazyScreen(() => import('./components/kine/KinePatient.jsx'));
+const KineResult = lazyScreen(() => import('./components/kine/KineResult.jsx'));
 const Chat = lazyScreen(() => import('./components/chat/Chat.jsx'));
 // The activity engine's screen (docs/VISION.md): volleyball on synthetic jumps, opened from the sports rail.
 const Activity = lazyScreen(() => import('./components/activity/ActivityScreen.jsx'));
-const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto, equine: Equine, veterinary: Equine, sports: SportsBiomechanics, golf: SportsBiomechanics, tennis: SportsBiomechanics, padel: SportsBiomechanics, cycling: SportsBiomechanics, baseball: SportsBiomechanics, rowing: SportsBiomechanics, skiing: SportsBiomechanics, swimming: SportsBiomechanics, coaches: CoachFinder, coach: CoachFinder, physio: CoachFinder, buddies: GymBuddy, buddy: GymBuddy, ergonomics: Ergonomics, workplace: Ergonomics, chat: Chat, volleyball: Activity, comptage: UsageNotice };
+const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto, equine: Equine, veterinary: Equine, sports: SportsBiomechanics, golf: SportsBiomechanics, tennis: SportsBiomechanics, padel: SportsBiomechanics, cycling: SportsBiomechanics, baseball: SportsBiomechanics, rowing: SportsBiomechanics, skiing: SportsBiomechanics, swimming: SportsBiomechanics, coaches: CoachFinder, coach: CoachFinder, physio: CoachFinder, buddies: GymBuddy, buddy: GymBuddy, ergonomics: Ergonomics, workplace: Ergonomics, kine: KineWorkspace, reeducation: KineWorkspace, kinep: KinePatient, kiner: KineResult, chat: Chat, volleyball: Activity, comptage: UsageNotice };
 
 // Hidden, not deleted: lazy imports for features outside the core path
 // const ManualLog = safeLazy(() => import('./components/ManualLog'));
@@ -258,6 +263,16 @@ function AppInner() {
   } else if (page === 'ergonomics' || page === 'workplace') {
     key = 'ergonomics';
     screen = <Ergonomics onClose={() => go('dashboard')} />;
+  } else if (page === 'kine' || page === 'reeducation') {
+    key = 'kine';
+    screen = <KineWorkspace onClose={() => go('dashboard')} />;
+  } else if (page === 'kinep') {
+    // One screen per link: another programme opened over this one is read afresh.
+    key = `kinep:${window.location.hash}`;
+    screen = <KinePatient onClose={() => go('dashboard')} />;
+  } else if (page === 'kiner') {
+    key = `kiner:${window.location.hash}`;
+    screen = <KineResult onClose={() => go('kine')} />;
   } else if (page === 'chat') {
     key = 'chat';
     screen = <Chat onClose={() => go('dashboard')} onHistory={() => go('history')} />;
@@ -265,7 +280,7 @@ function AppInner() {
     // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
     // the old live capture (LiveCapture.jsx) and the dashboard; "live" without a lift, or in a build without VITE_LIVE, too. Every other page falls through to the choice of lift.
     key = 'choice';
-    screen = <Choice held={heldProgramme} onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro', () => setProStart(null))} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} onUsage={() => go('comptage')} onManifesto={() => go('manifesto')} onEquine={() => go('equine')} onSports={() => go('sports')} onCoaches={() => go('coaches')} onBuddies={() => go('buddies')} onErgonomics={() => go('ergonomics')} onChat={() => go('chat')} />;
+    screen = <Choice held={heldProgramme} onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro', () => setProStart(null))} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} onUsage={() => go('comptage')} onManifesto={() => go('manifesto')} onEquine={() => go('equine')} onSports={() => go('sports')} onCoaches={() => go('coaches')} onBuddies={() => go('buddies')} onErgonomics={() => go('ergonomics')} onReference={() => go('kine')} onChat={() => go('chat')} />;
   }
 
   // The screen on show, a breadcrumb of the crash log on the phone (crashLog.js); the analysis marks its phases itself.

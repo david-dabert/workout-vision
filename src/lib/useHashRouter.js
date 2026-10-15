@@ -4,7 +4,7 @@ const VALID_PAGES = new Set([
   'dashboard', 'analyze', 'exercises', 'coach', 'log', 'history', 'rest', 'profile', 'validate', 'weekly',
   'film', 'prs', 'onboarding', 'live', 'about', 'pro', 'programme', 'resultats', 'manifesto', 'science',
   'equine', 'veterinary', 'sports', 'golf', 'tennis', 'padel', 'cycling', 'baseball', 'rowing', 'skiing', 'swimming', 'coaches', 'physio',
-  'buddies', 'buddy', 'ergonomics', 'workplace', 'chat', 'volleyball', 'comptage',
+  'buddies', 'buddy', 'ergonomics', 'workplace', 'kine', 'reeducation', 'chat', 'volleyball', 'comptage',
 ]);
 
 function readHash() {
@@ -13,6 +13,10 @@ function readHash() {
   if (raw.startsWith('programme=')) return 'programme';
   // A client's results open on the coach's phone from their link, #resultats=<payload> (programme.js, 9 October).
   if (raw.startsWith('resultats=')) return 'resultats';
+  // A physiotherapist's programme opens on the patient's phone, #kine-p=<payload>; a patient's result on the
+  // physiotherapist's, #kine-r=<payload> (lib/kine/links.js, 15 October 2026).
+  if (raw.startsWith('kine-p=')) return 'kinep';
+  if (raw.startsWith('kine-r=')) return 'kiner';
   return VALID_PAGES.has(raw) ? raw : 'dashboard';
 }
 

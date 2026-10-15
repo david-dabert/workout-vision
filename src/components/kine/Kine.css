@@ -1,0 +1,44 @@
+/* The physiotherapist's workspace and the patient's programme (components/kine/): the showcase parts (Showcase.css),
+   the comparison's parts (ReferenceCompare.css) and the experience's tokens (Entry.css). Status: convention. */
+
+.wv-experience .kn-fields { display: flex; flex-direction: column; gap: var(--s-3); }
+.wv-experience .kn-row { display: flex; gap: var(--s-3); }
+.wv-experience .kn-row > * { flex: 1; min-width: 0; }
+.wv-experience .kn-field, .wv-experience .kn-num { display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-caption); color: var(--bone-2); }
+.wv-experience .kn-field input, .wv-experience .kn-field textarea, .wv-experience .kn-field select, .wv-experience .kn-num input {
+  width: 100%; min-height: 48px; padding: 12px 14px; border-radius: var(--r-s); border: 1px solid var(--c-rule); background: var(--basalt);
+  color: var(--bone); font: 400 16px/1.4 var(--sans); }
+.wv-experience .kn-field textarea { resize: vertical; }
+.wv-experience .kn-num input { font-variant-numeric: tabular-nums; }
+.wv-experience .kn-line .kn-amount { flex: 0 0 34%; }
+
+.wv-experience .kn-cards { display: flex; flex-direction: column; gap: var(--s-4); }
+.wv-experience .kn-card { border: 1px solid var(--c-rule); border-radius: var(--r-m); background: var(--basalt); overflow: hidden; }
+.wv-experience .kn-video { display: block; width: 100%; max-height: 60svh; background: var(--well); object-fit: contain; }
+.wv-experience .kn-card-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: var(--s-2); }
+.wv-experience .kn-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.wv-experience .kn-card-title { margin: 0; font: 600 var(--fs-body)/1.35 var(--sans); color: var(--bone); }
+.wv-experience .kn-card-meta { margin: 4px 0 0; font-size: var(--fs-caption); color: var(--ash); }
+.wv-experience .kn-on { color: var(--lamp-hi); }
+.wv-experience .kn-off { color: var(--ash); }
+.wv-experience .kn-card .rc-link { align-self: flex-start; }
+.wv-experience .kn-detail { font-size: var(--fs-caption); line-height: 1.5; color: var(--bone-2); }
+.wv-experience .kn-detail p { margin: 0 0 var(--s-2); }
+.wv-experience .kn-detail b { color: var(--bone); font-weight: 600; }
+.wv-experience .kn-detail ol { margin: 0 0 var(--s-2); padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+.wv-experience .kn-camera { color: var(--ash); }
+
+.wv-experience .kn-items { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--s-3); }
+.wv-experience .kn-item { padding: 14px 16px; border: 1px solid var(--lamp-line); border-radius: var(--r-m); display: flex; flex-direction: column; gap: var(--s-3); }
+.wv-experience .kn-item-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s-3); }
+.wv-experience .kn-item-head b { font-weight: 600; font-size: var(--fs-body); color: var(--bone); }
+
+.wv-experience .kn-send { margin-top: var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); align-items: stretch; }
+.wv-experience .kn-qr { width: 180px; height: 180px; align-self: center; border-radius: var(--r-s); }
+.wv-experience .kn-total { display: flex; justify-content: space-between; align-items: baseline; margin: var(--s-2) 0 0; padding-top: var(--s-3); border-top: 1px solid var(--hair); color: var(--bone-2); }
+.wv-experience .kn-total b { font: 400 var(--fs-heading)/1 var(--serif); color: var(--lamp-hi); font-variant-numeric: tabular-nums; }
+
+.wv-experience .kn-note { margin: var(--s-3) 0 0; padding: 12px 14px; border-left: 2px solid var(--lamp); background: color-mix(in srgb, var(--lamp) 6%, transparent); border-radius: 0 var(--r-s) var(--r-s) 0; font-size: var(--fs-caption); line-height: 1.5; color: var(--bone); white-space: pre-line; }
+.wv-experience .kn-contact { margin-top: var(--s-3); }
+.wv-experience .kn-contact .rc-btn { display: inline-grid; place-items: center; text-decoration: none; }
+.wv-experience .kn-attempt { margin-top: var(--s-3); display: flex; flex-direction: column; gap: var(--s-3); }
