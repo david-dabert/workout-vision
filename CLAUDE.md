@@ -1,8 +1,8 @@
 PLAN.md on counter-core prevails over this file.
 # WorkoutVision Standing Rules
 
-Source: DIRECTIVES.md Part 2, Version 1, 24 September 2026; amended 15 October 2026 by David (R1, R8, R11, R14).
-Every session starts by reading CLAUDE.md, DIRECTIVES.md and STATE.md.
+Source: DIRECTIVES.md Part 2, Version 1, 24 September 2026; amended 15 October 2026 by David (R1, R8, R11, R14, R15).
+Every session starts by reading CLAUDE.md, DIRECTIVES.md and STATE.md, and the latest comments of issue #190 (R15).
 
 **R1. Ground truth is sacred.**
 Never modify a label. Never delete a test clip. Never set or adjust a label from the app's output, a video title, a thumbnail or a guess. Labels come only from David, or from human-annotated public datasets (Countix). If a label looks wrong, report it to David and wait.
@@ -50,3 +50,13 @@ Numbers in the README, the site and any external document come only from the lat
 
 **R14. Read what was tried.**
 Before proposing any counting, measurement or data idea, read TRIED.md: it lists what was tried and closed, with the evidence. Added 15 October 2026 (David).
+
+**R15. Agent log.**
+Issue #190 (https://github.com/david-dabert/workout-vision/issues/190) is the channel between the agents that work on this repository, Claude and Antigravity.
+Every agent reads the latest comments of issue #190 before it acts.
+Before writing any file, it posts a CLAIM: the task, the branch, the files.
+It does not touch files another agent has claimed and not yet reported on.
+At the end of every task, it posts a REPORT in the format of DIRECTIVES.md Part 5, with a line "Not verified" naming anything claimed without pasted proof.
+It links commits, CI runs and pull requests rather than restating them, and it posts no transcripts.
+David's decisions recorded there are quoted with their date; they do not replace PLAN.md, STATE.md or these rules.
+Added 15 October 2026 (David).
