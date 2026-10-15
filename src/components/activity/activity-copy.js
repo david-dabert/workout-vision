@@ -2,13 +2,22 @@
 // app: typographic apostrophes, a no-break space before a colon and between a number and its noun or unit, no em dash.
 // Status of every French line below: written on 14 October 2026, reworded the same day after the honesty
 // review of PR #161, awaiting David's approval (R10); `made` and `notApplicable` reworded or added after the second
-// review the same day, with the same status. The names, taglines, formulas, error notes and refusals of an activity
+// review the same day, with the same status. Demonstration video lines added 15 October 2026, awaiting David's approval (R10).
+// The names, taglines, formulas, error notes and refusals of an activity
 // live in its specification (src/lib/activity/specs) and its engine, with the same status.
 const NB = '\u00A0';
 
 export const ACTIVITY_COPY = {
   fr: {
     eyebrow: 'Analyse du mouvement',
+    // The demonstration video and its credit line (15 October 2026, David's request). Awaiting David's approval (R10).
+    viewRaw: 'Vidéo seule', // Awaiting David's approval (R10)
+    demoClip: 'Un service de volley-ball.', // Awaiting David's approval (R10)
+    demoNote: `Clip de démonstration${NB}: l’appli n’analyse rien sur cette vidéo.`, // Awaiting David's approval (R10)
+    creditAuthor: `Auteur${NB}: Shev123`, // Awaiting David's approval (R10)
+    creditLicense: `Licence${NB}: CC0 (domaine public)`, // Awaiting David's approval (R10)
+    creditFilePage: 'Fiche du fichier sur Wikimedia Commons', // Awaiting David's approval (R10)
+    creditUrl: 'https://commons.wikimedia.org/wiki/File:Paris_Volley_-_Chaumont,_18_February_2014_-_43_-_Ace.webm', // Awaiting David's approval (R10)
     syntheticHead: 'Des sauts de synthèse',
     synthetic: `Ces sauts ne sont pas filmés${NB}: c’est un corps simulé, dont on connaît chaque décollage et chaque réception. L’appli les analyse comme une vidéo, puis compare chaque valeur à la valeur réelle.`,
     notShown: `Limite de la démo${NB}: sur une vraie vidéo, la détection du corps se trompe aussi, et ces erreurs s’ajoutent aux marges.`,
@@ -36,6 +45,13 @@ export const ACTIVITY_COPY = {
   },
   en: {
     eyebrow: 'Movement analysis',
+    viewRaw: 'Video only',
+    demoClip: 'A volleyball serve.',
+    demoNote: 'Demonstration clip: the app analyses nothing on this video.',
+    creditAuthor: 'Author: Shev123',
+    creditLicense: 'Licence: CC0 (public domain)',
+    creditFilePage: 'File page on Wikimedia Commons',
+    creditUrl: 'https://commons.wikimedia.org/wiki/File:Paris_Volley_-_Chaumont,_18_February_2014_-_43_-_Ace.webm',
     syntheticHead: 'Synthetic jumps',
     synthetic: 'These jumps are not filmed: they are a simulated body whose every takeoff and landing is known. The app analyses them as it would a video, then compares each value with the true one.',
     notShown: 'The demo’s limit: on a real video, the body detection also errs, and those errors add to these margins.',

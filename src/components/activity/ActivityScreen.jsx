@@ -4,9 +4,18 @@ import { hapticLight } from '../../lib/haptics';
 import { volleyballDemo } from '../../lib/activity/demo';
 import { useCondensingTopbar } from '../experience/topbar';
 import { Topbar, DemoTag, GroupHead, Metric } from '../experience/Showcase';
-import { num, NBSP } from '../experience/showcase-text';
+import { num, reducedMotion, NBSP } from '../experience/showcase-text';
 import { ACTIVITY_COPY } from './activity-copy';
 import './ActivityScreen.css';
+
+const BASE_URL = import.meta.env.BASE_URL || '/';
+// Real volleyball demonstration clip: Wikimedia Commons (CC0, author Shev123).
+// Shown as video only; the app draws no skeleton and no numbers on it.
+const VOLLEYBALL_RAW_URL = `${BASE_URL}demo/sports/volleyball-demo-raw.mp4#t=0.1`;
+const VOLLEYBALL_POSTER_URL = `${BASE_URL}demo/sports/volleyball-demo-poster.jpg`;
+
+// WebKit's autoplay policy on iOS requires muted to be set as an attribute as well as a property.
+const muteVideo = el => { if (el) { el.muted = true; el.setAttribute('muted', ''); } };
 
 // The activity screen (docs/VISION.md, "The screens"): any activity specification (src/lib/activity/types.ts) and the
 // engine's result on it, every measure with its margin or the reason it is withheld (R8), every count with how it was
@@ -126,6 +135,7 @@ export default function ActivityScreen({ activity = 'volleyball', onClose }) {
   const fr = lang === 'fr', c = ACTIVITY_COPY[lang];
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [lang]);
+  const [reduced] = useState(reducedMotion);
   const demo = DEMOS[activity] ?? volleyballDemo;
   const { spec } = demo;
   const [rate, setRate] = useState(demo.rate);
@@ -140,7 +150,34 @@ export default function ActivityScreen({ activity = 'volleyball', onClose }) {
           <h1 className="title" data-reveal style={{ '--i': 0 }}>{spec.name[lang]}</h1>
           <p className="sub" data-reveal style={{ '--i': 1 }}>{spec.tagline[lang]}</p>
 
-          <section className="sc-section" data-testid="activity-synthetic" data-reveal style={{ '--i': 2 }}>
+          {/* Real volleyball demonstration clip, shown as video only with no skeleton and no numbers drawn on it. */}
+          <section className="sc-section act-demo-section" data-testid="activity-demo-card" data-reveal style={{ '--i': 2 }}>
+            <div className="sc-card-top">
+              <h2 className="act-card-title">{c.viewRaw}</h2>
+              <DemoTag fr={fr} />
+            </div>
+            <div className="sc-frame">
+              <video
+                ref={muteVideo}
+                src={VOLLEYBALL_RAW_URL}
+                poster={VOLLEYBALL_POSTER_URL}
+                controls
+                playsInline
+                muted
+                loop
+                autoPlay={!reduced}
+                preload="metadata"
+                className="activity-demo-video"
+                data-testid="activity-demo-video"
+              />
+            </div>
+            <p className="sc-frame-note is-quiet" data-testid="activity-demo-note">{c.demoClip} {c.demoNote}</p>
+            <p className="sc-caption act-credit" data-testid="activity-video-credit">
+              {c.creditAuthor} · {c.creditLicense} · <a href={c.creditUrl} target="_blank" rel="noreferrer" data-testid="activity-credit-link">{c.creditFilePage}</a>
+            </p>
+          </section>
+
+          <section className="sc-section" data-testid="activity-synthetic" data-reveal style={{ '--i': 3 }}>
             <div className="sc-card">
               <div className="sc-card-top">
                 <h2 className="act-card-title">{c.syntheticHead}</h2>
@@ -151,7 +188,7 @@ export default function ActivityScreen({ activity = 'volleyball', onClose }) {
             </div>
           </section>
 
-          <section className="sc-section" data-reveal style={{ '--i': 3 }}>
+          <section className="sc-section" data-reveal style={{ '--i': 4 }}>
             <GroupHead title={c.rateHead} />
             <div className="sc-seg" role="group" aria-label={c.rateGroup}>
               {demo.rates.map(r => (

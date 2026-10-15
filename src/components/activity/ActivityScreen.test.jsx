@@ -63,8 +63,33 @@ describe('the activity screen', () => {
       expect(html).not.toContain(lang === 'fr' ? 'comme sur une vraie vidéo' : 'as on a real video');
       // The run-up's mean says what it was taken over.
       expect(tile(html, 'approach')).toContain(lang === 'fr' ? 'Moyenne sur 2\u00A0élans.' : 'Mean of 2 run-ups.');
+      // The real demonstration video: shown as video only, with poster and Wikimedia Commons credit line.
+      expect(html).toContain('data-testid="activity-demo-card"');
+      expect(html).toContain(lang === 'fr' ? 'Vidéo seule' : 'Video only');
+      expect(html).toContain('data-testid="activity-demo-video"');
+      expect(html).toContain('volleyball-demo-raw.mp4');
+      expect(html).toContain('volleyball-demo-poster.jpg');
+      expect(html).toContain('data-testid="activity-demo-note"');
+      expect(html).toContain(lang === 'fr' ? 'Clip de démonstration\u00A0: l’appli n’analyse rien sur cette vidéo.' : 'Demonstration clip: the app analyses nothing on this video.');
+      expect(html).toContain('data-testid="activity-video-credit"');
+      expect(html).toContain(lang === 'fr' ? 'Auteur\u00A0: Shev123' : 'Author: Shev123');
+      expect(html).toContain(lang === 'fr' ? 'Licence\u00A0: CC0 (domaine public)' : 'Licence: CC0 (public domain)');
+      expect(html).toContain('data-testid="activity-credit-link"');
+      expect(html).toContain('https://commons.wikimedia.org/wiki/File:Paris_Volley_-_Chaumont,_18_February_2014_-_43_-_Ace.webm');
     });
   }
+
+  it('renders the real volleyball demo video as video only with no skeleton, no drawn numbers, and CC0 attribution', async () => {
+    const html = decode(await withLang('fr', ({ default: ActivityScreen }) => <ActivityScreen activity="volleyball" onClose={() => {}} />));
+    expect(html).toContain('data-testid="activity-demo-video"');
+    expect(html).toContain('volleyball-demo-raw.mp4');
+    expect(html).toContain('volleyball-demo-poster.jpg');
+    expect(html).toContain('Vidéo seule');
+    expect(html).toContain('Clip de démonstration\u00A0: l’appli n’analyse rien sur cette vidéo.');
+    expect(html).toContain('Auteur\u00A0: Shev123');
+    expect(html).toContain('Licence\u00A0: CC0 (domaine public)');
+    expect(html).toContain('https://commons.wikimedia.org/wiki/File:Paris_Volley_-_Chaumont,_18_February_2014_-_43_-_Ace.webm');
+  });
 
   it('keeps each jump\'s height in the table when the best jump cannot be named, and never leaves a card holding its title alone', async () => {
     for (const rate of [15, 20, 30, 60, 240]) {
