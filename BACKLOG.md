@@ -439,3 +439,14 @@ Other proposals, not built (R7):
 - a guided first run, since most people skip instructions;
 - clubs (basketball, rugby) as first customers before the mass market: validate the technical tool first.
 His caveat: 95 % of people will not film themselves more than a few times.
+
+## 15 October 2026: physiotherapist reference exercises (Olivier)
+
+Olivier, physiotherapist, sent four exercise videos his patients are to reproduce as closely as possible; the app is to tell each patient whether the attempt matches.
+Built: the comparison engine (`src/lib/reference/compare.js`, bench `test/real-phone/reference/`), not on any screen. His videos and landmarks stay out of this public repository.
+Next, in order:
+- references 2 and 3 filmed again from an angle the pose model reads (README of the bench);
+- patients' attempts measured against references 1 and 4, then the tolerances set with Olivier (all experimental and UNSOURCED today);
+- the screens: the physiotherapist records and checks a reference; the patient follows it, films the attempt and gets the verdict per joint, with both skeletons replayed side by side;
+- a programme file the physiotherapist sends to the patient, so nothing goes through a server.
+Regulatory caution: wording stays "follows the programme, angle reached", never an assessment of the rehabilitation.
