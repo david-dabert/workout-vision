@@ -34,7 +34,8 @@ function phone({ url = URL_, nav = {}, store = {}, keepalive = true } = {}) {
   const all = () => [...beacons, ...fetches.map(f => ({ u: f.u, body: f.init.body }))];
   return { writes, beacons, fetches, fire, sent, store, get posts() { return all(); } };
 }
-const load = () => import('../events.js');
+// The module, with the language the app shows set as App.jsx sets it from React state (null: not yet rendered).
+const load = async (lang = 'fr') => { const ev = await import('../events.js'); if (lang) ev.setEventsLang(lang); return ev; };
 
 describe('track', () => {
   it('sends nothing, and stores nothing, when the build names no server', async () => {
@@ -188,11 +189,73 @@ describe('track', () => {
     expect(p.posts).toEqual([]);
   });
 
-  it('counts in the language the app shows', async () => {
-    const p = phone({ store: { wv_lang: 'en' } });
-    const ev = await load();
+  it('counts in the language the app shows, from its state, never from wv_lang (PRIV-4)', async () => {
+    const p = phone({ store: { wv_lang: 'fr' } });
+    const ev = await load('en');
     ev.track('open');
+    ev.setEventsLang('fr');
+    ev.track('guide_open');
+    ev.setEventsLang('de');
+    ev.track('history_open');
     ev.flushEvents();
-    expect(p.sent()[0].lang).toBe('en');
+    expect(p.sent().map(e => [e.event, e.lang])).toEqual([['open', 'en'], ['guide_open', 'fr'], ['history_open', 'fr']]);
+  });
+
+  it('counts nothing before the app has shown its language; the opening waits for it, once', async () => {
+    const p = phone({ store: { wv_lang: 'fr' } });
+    const ev = await load(null);
+    expect(ev.track('guide_open')).toBe(false);
+    ev.startEvents();
+    vi.runAllTimers();
+    ev.flushEvents();
+    expect(p.posts).toEqual([]);
+    ev.setEventsLang('en');
+    ev.setEventsLang('en');
+    ev.flushEvents();
+    expect(p.sent()).toEqual([{ event: 'open', appVersion: expect.any(String), lang: 'en' }]);
+  });
+});
+
+describe('no event at all, the first opening included, when the person or the browser refuses (PRIV-4)', () => {
+  const refusals = [
+    ['Global Privacy Control', { nav: { globalPrivacyControl: true } }],
+    ['Do Not Track', { nav: { doNotTrack: '1' } }],
+    ['the opt-out of an earlier visit', { store: { wv_count_off: '1' } }],
+  ];
+  for (const [name, opts] of refusals) {
+    for (const langFirst of [true, false]) {
+      it(`${name}, the language known ${langFirst ? 'before' : 'after'} the start: no opening, no listener, nothing sent`, async () => {
+        const p = phone(opts);
+        const ev = await load(langFirst ? 'fr' : null);
+        ev.startEvents();
+        if (!langFirst) ev.setEventsLang('fr');
+        ev.track('choose_lift', { lift: 'squat' });
+        p.fire('pagehide');
+        p.fire('doc:visibilitychange');
+        vi.runAllTimers();
+        ev.flushEvents();
+        expect(p.posts).toEqual([]);
+        expect(p.writes).toEqual([]);
+      });
+    }
+  }
+
+  it('the opt-out tapped before the app shows its language drops the waiting opening', async () => {
+    const p = phone();
+    const ev = await load(null);
+    ev.startEvents();
+    ev.setCountingOff(true);
+    ev.setEventsLang('fr');
+    p.fire('pagehide');
+    vi.runAllTimers();
+    expect(p.posts).toEqual([]);
+  });
+
+  it('names the host the counts go to, and none when the build names no server', async () => {
+    phone();
+    const ev = await load();
+    expect(ev.eventsHost()).toBe('events.example.workers.dev');
+    expect(ev.eventsHost('')).toBe('');
+    expect(ev.eventsHost('not a url')).toBe('');
   });
 });

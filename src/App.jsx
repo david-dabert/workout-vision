@@ -1,7 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, Suspense } from 'react';
 import { flushSync } from 'react-dom';
 import { ProfileProvider, useProfile } from './lib/ProfileContext';
-import { LanguageProvider } from './lib/LanguageContext';
+import { LanguageProvider, useT } from './lib/LanguageContext';
 import useHashRouter from './lib/useHashRouter';
 // Hidden: challenges are not part of core path
 // import { parseChallengeFromURL, parseResponseFromURL } from './lib/challenges';
@@ -22,7 +22,7 @@ import { loadSets, knownSets } from './components/experience/sets';
 import { levelView, readLevel } from './components/experience/level';
 import { whenQuiet } from './lib/whenQuiet';
 import { warmPoseFiles } from './lib/pose-files';
-import { track } from './lib/events';
+import { track, setEventsLang } from './lib/events';
 import { liveBuild } from './lib/buildFlags';
 import { payloadOf, resultsPayloadOf } from './components/experience/programme';
 import { draftFromResults } from './components/experience/programme-store';
@@ -46,6 +46,8 @@ const ExperienceFilm = lazyScreen(() => import('./components/experience/Film'));
 const History = lazyScreen(() => import('./components/experience/History'));
 // "À propos": why the app exists, reached from the foot of the choice.
 const About = lazyScreen(() => import('./components/experience/About'));
+// The notice of the anonymous usage counts (#comptage), reached from the choice of lift (UsageNotice.jsx).
+const UsageNotice = lazyScreen(() => import('./components/experience/UsageNotice'));
 // The WorkoutVision Manifesto: The Science, History, and Mechanics of Optimal Lifting
 const Manifesto = lazyScreen(() => import('./components/experience/Manifesto'));
 // Live counting (Film screen, "En direct"): the camera, the count as the set goes, then the same result.
@@ -64,7 +66,7 @@ const Ergonomics = lazyScreen(() => import('./components/ergonomics/Ergonomics.j
 const Chat = lazyScreen(() => import('./components/chat/Chat.jsx'));
 // The activity engine's screen (docs/VISION.md): volleyball on synthetic jumps, opened from the sports rail.
 const Activity = lazyScreen(() => import('./components/activity/ActivityScreen.jsx'));
-const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto, equine: Equine, veterinary: Equine, sports: SportsBiomechanics, golf: SportsBiomechanics, tennis: SportsBiomechanics, padel: SportsBiomechanics, cycling: SportsBiomechanics, baseball: SportsBiomechanics, rowing: SportsBiomechanics, skiing: SportsBiomechanics, swimming: SportsBiomechanics, coaches: CoachFinder, coach: CoachFinder, physio: CoachFinder, buddies: GymBuddy, buddy: GymBuddy, ergonomics: Ergonomics, workplace: Ergonomics, chat: Chat, volleyball: Activity };
+const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto, equine: Equine, veterinary: Equine, sports: SportsBiomechanics, golf: SportsBiomechanics, tennis: SportsBiomechanics, padel: SportsBiomechanics, cycling: SportsBiomechanics, baseball: SportsBiomechanics, rowing: SportsBiomechanics, skiing: SportsBiomechanics, swimming: SportsBiomechanics, coaches: CoachFinder, coach: CoachFinder, physio: CoachFinder, buddies: GymBuddy, buddy: GymBuddy, ergonomics: Ergonomics, workplace: Ergonomics, chat: Chat, volleyball: Activity, comptage: UsageNotice };
 
 // Hidden, not deleted: lazy imports for features outside the core path
 // const ManualLog = safeLazy(() => import('./components/ManualLog'));
@@ -231,6 +233,9 @@ function AppInner() {
   } else if (page === 'manifesto' || page === 'science') {
     key = 'manifesto';
     screen = <Manifesto onClose={() => go('dashboard')} onChoose={l => chooseLift(l)} />;
+  } else if (page === 'comptage') {
+    key = 'comptage';
+    screen = <UsageNotice onClose={() => go('dashboard')} />;
   } else if (page === 'about') {
     key = 'about';
     screen = <About onClose={() => go('dashboard')} onManifesto={() => go('manifesto')} />;
@@ -260,7 +265,7 @@ function AppInner() {
     // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
     // the old live capture (LiveCapture.jsx) and the dashboard; "live" without a lift, or in a build without VITE_LIVE, too. Every other page falls through to the choice of lift.
     key = 'choice';
-    screen = <Choice held={heldProgramme} onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro', () => setProStart(null))} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} onManifesto={() => go('manifesto')} onEquine={() => go('equine')} onSports={() => go('sports')} onCoaches={() => go('coaches')} onBuddies={() => go('buddies')} onErgonomics={() => go('ergonomics')} onChat={() => go('chat')} />;
+    screen = <Choice held={heldProgramme} onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro', () => setProStart(null))} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} onUsage={() => go('comptage')} onManifesto={() => go('manifesto')} onEquine={() => go('equine')} onSports={() => go('sports')} onCoaches={() => go('coaches')} onBuddies={() => go('buddies')} onErgonomics={() => go('ergonomics')} onChat={() => go('chat')} />;
   }
 
   // The screen on show, a breadcrumb of the crash log on the phone (crashLog.js); the analysis marks its phases itself.
@@ -287,6 +292,13 @@ function EntryGate({ children }) {
 // The on-device instrument, only with ?perf=1 (read once at start; nothing is sent).
 const SHOW_PERF = perfRequested();
 
+// The usage counts carry the language the app shows, from its state, not from storage (PRIV-4; src/lib/events.js).
+// Set during render, before any screen's effect can count: an idempotent assignment, and the opening, waiting for it.
+function EventsLang() {
+  setEventsLang(useT().lang);
+  return null;
+}
+
 function App() {
   // Hidden: ?validate URL param entry point
   return (
@@ -294,6 +306,7 @@ function App() {
       {SHOW_PERF && <PerfOverlay />}
       <ErrorBoundary>
         <LanguageProvider>
+          <EventsLang />
           {/* The profile loads during the entry, so nothing waits for it after. */}
           <ProfileProvider>
             <EntryGate>

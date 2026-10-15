@@ -4,7 +4,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { findEventsUrls } from '../check-dist-events.mjs';
+import { findEventsUrls, noticeMissingHost } from '../check-dist-events.mjs';
 
 const made = [];
 afterAll(() => { for (const d of made) rmSync(d, { recursive: true, force: true }); });
@@ -51,5 +51,19 @@ describe('a build given an events URL (after D6)', () => {
     expect(await findEventsUrls(ok, { url })).toEqual([]);
     const other = site({ 'assets/a.js': `const E="${url}";const F="https://other.dd.workers.dev/event";` });
     expect(await findEventsUrls(other, { url })).toEqual([{ file: 'assets/a.js', found: 'https://other.dd.workers.dev/event' }]);
+  });
+});
+
+describe('the notice names the host the counts go to (PRIV-3)', () => {
+  const url = 'https://wv.dd.workers.dev/event';
+  it('passes when the notice chunk names the host, and when the build names no server', async () => {
+    const dir = site({ 'assets/UsageNotice-a1.js': 'const M="wv-usage-notice",H="wv.dd.workers.dev";', 'assets/index-b2.js': 'x' });
+    expect(await noticeMissingHost(dir, url)).toEqual([]);
+    expect(await noticeMissingHost(site({ 'assets/a.js': 'x' }), '')).toEqual([]);
+  });
+  it('fails when the notice chunk does not name the host, or no chunk carries the notice', async () => {
+    const dir = site({ 'assets/UsageNotice-a1.js': 'const M="wv-usage-notice",H="other.dd.workers.dev";', 'assets/index-b2.js': 'const H="wv.dd.workers.dev";' });
+    expect(await noticeMissingHost(dir, url)).toEqual([{ file: 'assets/UsageNotice-a1.js' }]);
+    expect(await noticeMissingHost(site({ 'assets/index-b2.js': 'const H="wv.dd.workers.dev";' }), url)).toEqual([{ file: null }]);
   });
 });

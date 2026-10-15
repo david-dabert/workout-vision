@@ -92,3 +92,44 @@ test('turned off, nothing is sent, in this visit or the next; the entry speaks o
   expect(events.filter(e => e.event !== 'open')).toEqual([]);
   expect(events.length).toBeLessThanOrEqual(1);
 });
+
+// PRIV-4: under Global Privacy Control, or after the opt-out of an earlier visit, no event at all, the opening included.
+for (const [name, init] of [
+  ['Global Privacy Control', () => { Object.defineProperty(Navigator.prototype, 'globalPrivacyControl', { get: () => true }); localStorage.setItem('wv_seen_entry', 'true'); }],
+  ['the opt-out of an earlier visit', () => { localStorage.setItem('wv_count_off', '1'); localStorage.setItem('wv_seen_entry', 'true'); }],
+]) {
+  test(`${name}: not even the opening is sent`, async ({ page }) => {
+    const { events } = await listen(page);
+    let requests = 0;
+    page.on('request', r => { if (r.url().startsWith('https://events.invalid/')) requests += 1; });
+    await page.addInitScript(init);
+    await page.goto(APP);
+    await expect(page.locator('.altar').first()).toBeVisible({ timeout: 20000 });
+    await page.getByRole('button', { name: /Vos séries|Your sets/ }).click();
+    await pagehide(page);
+    await page.waitForTimeout(5000);
+    expect(events).toEqual([]);
+    expect(requests).toBe(0);
+  });
+}
+
+test('the notice opens from the line under the choice and from the footer, names the host, and turns the counts off', async ({ page }) => {
+  const { events } = await listen(page);
+  await page.addInitScript(() => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', 'fr'); });
+  await page.goto(APP);
+  await page.getByTestId('usage-more').click();
+  await expect(page.getByTestId('usage-notice')).toBeVisible({ timeout: 20000 });
+  await expect(page.getByTestId('usage-notice-host')).toContainText('events.invalid');
+  await expect(page.getByRole('heading', { name: 'Ce qui est envoyé' })).toBeVisible();
+  await page.getByRole('button', { name: 'Retour' }).first().click();
+  await page.getByTestId('usage-link').click();
+  await expect(page.getByTestId('usage-notice')).toBeVisible({ timeout: 20000 });
+  await page.getByRole('button', { name: 'Désactiver le comptage anonyme' }).click();
+  await expect(page.getByText('Désactivé sur ce téléphone.')).toBeVisible();
+  const before = events.length;
+  await pagehide(page);
+  await page.waitForTimeout(5000);
+  // The opening may have left before the tap; nothing after it, not even the visit's end.
+  expect(events.length).toBeLessThanOrEqual(before);
+  expect(events.filter(e => e.event !== 'open')).toEqual([]);
+});
