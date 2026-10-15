@@ -25,3 +25,4 @@ Every agent applies these before acting; each one cost a round trip that day.
 3. Test a script on one real input before spending a CI run on it.
 4. Work on the core first: the count's accuracy (STATE.md, open problems; TRIED.md) before demos, tables and tooling.
 5. A report states what was seen, with its evidence; anything not seen goes under "Not verified".
+6. A count David entered (collector, blind count, or in a message) is the label and final (R1). Never ask him to re-check or re-label a set because the app, or its landmarks, disagree: the disagreement is the app's to solve. 15 October: two of his labels were questioned this way and he had already ruled on it that morning.
