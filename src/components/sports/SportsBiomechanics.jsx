@@ -30,6 +30,13 @@ const clipUrl = s => `${BASE_URL}demo/sports/${s}-demo-raw.mp4#t=0.1`;
 // (David: "it sends a message about what we are trying to build").
 const previewUrl = s => `${BASE_URL}demo/sports/${s}-demo-analyzed.mp4#t=0.1`;
 
+// The putt, a second golf clip, shown as filmed below the swing (15 October 2026, David): no skeleton, no figure.
+// Source: Wikimedia Commons, File:Golfputt.ogv, author Grillo, CC BY-SA 3.0 (read from the Commons API, #190).
+const PUTT_URL = `${BASE_URL}demo/sports/golf-putt-demo-raw.mp4#t=0.1`;
+const PUTT_POSTER_URL = `${BASE_URL}demo/sports/golf-putt-demo-poster.jpg`;
+const PUTT_FILE_PAGE = 'https://commons.wikimedia.org/wiki/File:Golfputt.ogv';
+const PUTT_LICENSE_URL = 'https://creativecommons.org/licenses/by-sa/3.0/';
+
 // The muted attribute itself, not only React's property: iOS lets a clip play on its own only when it is muted, and
 // React writes muted as a property (status convention: WebKit's autoplay policy; to confirm on David's iPhone).
 const muteVideo = el => { if (el) { el.muted = true; el.setAttribute('muted', ''); } };
@@ -233,6 +240,24 @@ export default function SportsBiomechanics({ sport, onClose, onOpenEquine, onOpe
             </div>
             <p className="sc-frame-note is-quiet" data-testid="sports-demo-note">{view === 'preview' ? c.previewNote : `${sp.clip} ${c.demoNote}`}</p>
           </section>
+
+          {/* Golf only: the putt as filmed, with its credit (CC BY-SA asks for the author and the licence). It does not play
+              on its own: the swing above already does. */}
+          {activeSport === 'golf' && (
+            <section className="sc-section" data-testid="sports-putt-card">
+              <div className="sc-head">
+                <h2 className="sc-head-title">{c.puttHead}</h2>
+                <span className="sc-head-tags"><DemoTag fr={fr} /></span>
+              </div>
+              <div className="sc-frame">
+                <video ref={muteVideo} src={PUTT_URL} poster={PUTT_POSTER_URL} controls playsInline muted preload="metadata" className="sports-demo-video" data-testid="sports-putt-video" />
+              </div>
+              <p className="sc-frame-note is-quiet" data-testid="sports-putt-note">{c.puttClip} {c.demoNote}</p>
+              <p className="sc-caption sports-credit" data-testid="sports-putt-credit">
+                {c.puttAuthor} · <a href={PUTT_LICENSE_URL} target="_blank" rel="noreferrer" data-testid="sports-putt-license-link">{c.puttLicense}</a> · <a href={PUTT_FILE_PAGE} target="_blank" rel="noreferrer" data-testid="sports-putt-credit-link">{c.puttFilePage}</a>
+              </p>
+            </section>
+          )}
 
           {/* What a phone video could measure once built, and what it cannot, with the reason. */}
           <section className="sc-section sports-reach" data-testid="sports-reach">

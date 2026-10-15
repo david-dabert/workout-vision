@@ -157,6 +157,14 @@ export const SPORTS_COPY = {
     volleyball: 'Volley-ball',
     equine: 'Équitation',
     demoNote: `Clip de démonstration${NB}: l’appli n’analyse rien sur cette vidéo.`,
+    // The putt, a second golf clip shown as filmed (15 October 2026, David). Its description: validated, looked at on
+    // 15 October 2026. Credit: File:Golfputt.ogv, read from the Commons API by Antigravity (#190, comment 6185757489);
+    // CC BY-SA 3.0 asks for the author and the licence. New lines, for David to read (R10, his decision of 15 October).
+    puttHead: 'Un putt, filmé tel quel',
+    puttClip: `Un putt sur le green, filmé de face${NB}; la caméra suit ensuite la balle vers le trou.`,
+    puttAuthor: `Auteur${NB}: Grillo`,
+    puttLicense: 'CC BY-SA 3.0',
+    puttFilePage: 'Page du fichier sur Wikimedia Commons',
     // The preview switch (14 October 2026, David). Awaiting David's approval (R10).
     viewLabel: 'Affichage de la vidéo',
     viewPreview: 'Aperçu',
@@ -198,6 +206,11 @@ export const SPORTS_COPY = {
     volleyball: 'Volleyball',
     equine: 'Equestrian',
     demoNote: 'Demonstration clip: the app analyses nothing on this video.',
+    puttHead: 'A putt, as filmed',
+    puttClip: 'A putt on the green, filmed face-on; the camera then follows the ball towards the hole.',
+    puttAuthor: 'Author: Grillo',
+    puttLicense: 'CC BY-SA 3.0',
+    puttFilePage: 'File page on Wikimedia Commons',
     viewLabel: 'Video display',
     viewPreview: 'Preview',
     viewRaw: 'Video only',

@@ -60,7 +60,8 @@ describe('the sports lab', () => {
         expect(html).toContain('data-testid="preview-badge"');
         expect(html).toContain('data-testid="sports-view-raw"');
         expect(t).toContain(lang === 'fr' ? 'Ils ne sont pas encore mesurés.' : 'They are not measured yet.');
-        expect(html).not.toContain('poster=');
+        // The analysed posters (HUD burned in) stay off; the putt's plain poster is checked below.
+        expect(html).not.toContain(`${sport}-demo-poster.jpg`);
         expect(html).not.toContain('download=');
         expect(html).toContain('data-testid="sports-reach"');
         for (const w of FALSE_CLAIMS) expect(t, `${sport} ${lang}: ${w}`).not.toContain(w);
@@ -74,6 +75,32 @@ describe('the sports lab', () => {
         const html = await render(lang, sport);
         expect(html.includes('data-testid="sports-calc-'), sport).toBe(sport === 'golf' || sport === 'rowing');
       }
+    });
+
+    // The putt (15 October 2026, David): golf only, as filmed, under a Démo badge, with its note and its CC BY-SA credit.
+    it(`shows the putt as filmed on golf only, with its poster, note and credit, in ${lang}`, async () => {
+      for (const sport of SPORTS) {
+        const html = decode(await render(lang, sport));
+        expect(html.includes('data-testid="sports-putt-card"'), sport).toBe(sport === 'golf');
+        expect(html.includes('golf-putt-demo-raw.mp4'), sport).toBe(sport === 'golf');
+      }
+      const html = decode(await render(lang, 'golf'));
+      const card = html.slice(html.indexOf('data-testid="sports-putt-card"'), html.indexOf('data-testid="sports-reach"'));
+      const t = text(card);
+      expect(card).toContain('src="/demo/sports/golf-putt-demo-raw.mp4#t=0.1"');
+      expect(card).toContain('poster="/demo/sports/golf-putt-demo-poster.jpg"');
+      expect(card).toMatch(/<video[^>]*controls=""[^>]*playsinline=""[^>]*muted=""/i);
+      expect(card).not.toMatch(/autoplay/i);
+      expect(card).not.toContain('analyzed');
+      expect(card).toContain('data-testid="demo-badge"');
+      expect(t).toContain(lang === 'fr' ? 'Un putt, filmé tel quel' : 'A putt, as filmed');
+      expect(t).toContain(lang === 'fr' ? 'l’appli n’analyse rien sur cette vidéo' : 'the app analyses nothing on this video');
+      expect(t).toContain('Grillo');
+      expect(t).toContain('CC BY-SA 3.0');
+      expect(card).toContain('href="https://creativecommons.org/licenses/by-sa/3.0/"');
+      expect(card).toMatch(/href="https:\/\/commons\.wikimedia\.org\/wiki\/File:Golfputt\.ogv"[^>]*data-testid="sports-putt-credit-link"/);
+      expect(card).toContain('rel="noreferrer"');
+      expect(t).not.toMatch(/\d+\s*(ms|%|°)/);
     });
 
     it(`keeps the links to volleyball and equitation, in ${lang}`, async () => {
