@@ -4,9 +4,11 @@ import { renderToStaticMarkup } from 'react-dom/server';
 vi.mock('./Kine.css', () => ({}));
 vi.mock('../reference/ReferenceCompare.css', () => ({}));
 vi.mock('../../lib/reference/readPose', () => ({ readPose: vi.fn() }));
-afterEach(() => { vi.unstubAllGlobals(); vi.resetModules(); });
+// Without a media address, as CI builds; the deploy job sets the repository variable.
+afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.resetModules(); });
 
 async function render(name, hash = '', lang = 'fr') {
+  vi.stubEnv('VITE_KINE_MEDIA_URL', '');
   const store = { wv_lang: lang };
   vi.stubGlobal('localStorage', { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } });
   vi.stubGlobal('window', Object.assign(globalThis.window ?? {}, { location: { hash, origin: 'https://example.org', pathname: '/app/' } }));
