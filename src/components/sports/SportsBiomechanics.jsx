@@ -21,7 +21,7 @@ import './SportsBiomechanics.css';
 // disk (R5); their removal from the repository is David's call (PLAN.md, no video file tracked).
 
 const BASE_URL = import.meta.env.BASE_URL || '/';
-// The sports of the rail, in its order; volleyball and equitation open their own screens.
+// The sports of the rail, in its order; then equitation and, last, volleyball, which open their own screens.
 const SPORTS = ['golf', 'tennis', 'padel', 'baseball', 'cycling', 'rowing', 'skiing', 'swimming'];
 // The raw clip, as filmed. #t=0.1 shows its first frame on iOS when it does not play on its own (Reduce Motion).
 const clipUrl = s => `${BASE_URL}demo/sports/${s}-demo-raw.mp4#t=0.1`;
@@ -203,15 +203,15 @@ export default function SportsBiomechanics({ sport, onClose, onOpenEquine, onOpe
                   {c.sports[k].name}
                 </button>
               ))}
-              {/* Volleyball opens the activity engine's screen: its numbers are measured on synthetic jumps. French 'Volley-ball': written 14 October 2026, awaiting David's approval (R10). */}
-              {onOpenVolleyball && (
-                <button type="button" className="sc-chip press" onClick={() => { hapticLight(); onOpenVolleyball(); }} data-testid="tab-volleyball-link">
-                  {c.volleyball}<ArrowIcon />
-                </button>
-              )}
               {onOpenEquine && (
                 <button type="button" className="sc-chip press" onClick={() => { hapticLight(); onOpenEquine(); }} data-testid="tab-equine-link">
                   {c.equine}<ArrowIcon />
+                </button>
+              )}
+              {/* Volleyball last (David, 15 October 2026): it leaves this screen, so the chips that stay come first. It opens the activity engine's screen: its numbers are measured on synthetic jumps. French 'Volley-ball': written 14 October 2026, awaiting David's approval (R10). */}
+              {onOpenVolleyball && (
+                <button type="button" className="sc-chip press" onClick={() => { hapticLight(); onOpenVolleyball(); }} data-testid="tab-volleyball-link">
+                  {c.volleyball}<ArrowIcon />
                 </button>
               )}
             </div>

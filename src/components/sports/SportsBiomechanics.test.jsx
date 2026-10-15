@@ -81,6 +81,10 @@ describe('the sports lab', () => {
       expect(html).toContain('data-testid="tab-volleyball-link"');
       expect(html).toContain('data-testid="tab-equine-link"');
       expect(html).toContain('aria-pressed="true" data-testid="tab-golf"');
+      // Volleyball last: it leaves this screen, so every chip that stays, and equitation, come before it (David, 15 October 2026).
+      const rail = html.slice(html.indexOf('class="sc-rail"'), html.indexOf('data-testid="tab-volleyball-link"'));
+      for (const k of ['golf', 'tennis', 'padel', 'baseball', 'cycling', 'rowing', 'skiing', 'swimming']) expect(rail).toContain(`data-testid="tab-${k}"`);
+      expect(rail).toContain('data-testid="tab-equine-link"');
     });
   }
 
