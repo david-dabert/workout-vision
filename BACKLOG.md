@@ -424,3 +424,18 @@ Not built until the current phase is done (R7). Taken from the post only; its co
   measure (R8). A language model may only phrase feedback from measured values, and sending data to a server
   changes the on-device promise: David's decision.
 
+
+## 15 October 2026: meeting with Martin, coach at Elevate Premium Fitness (David's transcript)
+
+What he would pay for, in his words: a motor-capacity assessment ("bilan de capacité motrice"). The client films a battery of tests; the app reports the angles and ranges; the same battery six to eight weeks later shows the progress. Also for remote fitness tests (police and army entry): a filmed test that validates each rep against a standard.
+His offer: to film his own test battery from angles the app can read, and send the videos.
+What he saw fail in the live demo: a 6-rep RDL miscounted at first, with people passing behind; the start of the video. His fix: let the person mark where the set starts and ends before the analysis (measurement handed to the count-edges task, 15 October).
+Other proposals, not built (R7):
+- calibrate each person's segment lengths on first use, so a foreshortened segment is not read as a shorter one;
+- fewer interactions for people training in circuits; effort and pain questions switchable per client;
+- an in-app flag ("slow, stuck, wrong number") that sends a code to the developer;
+- a live spoken cue while filming ("back not straight enough");
+- a coach directory by city and specialty;
+- a guided first run, since most people skip instructions;
+- clubs (basketball, rugby) as first customers before the mass market: validate the technical tool first.
+His caveat: 95 % of people will not film themselves more than a few times.
