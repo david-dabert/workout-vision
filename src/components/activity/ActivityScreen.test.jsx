@@ -65,7 +65,7 @@ describe('the activity screen', () => {
       expect(tile(html, 'approach')).toContain(lang === 'fr' ? 'Moyenne sur 2\u00A0élans.' : 'Mean of 2 run-ups.');
       // The real demonstration video: shown as video only, with poster and Wikimedia Commons credit line.
       expect(html).toContain('data-testid="activity-demo-card"');
-      expect(html).toContain(lang === 'fr' ? 'Vidéo seule' : 'Video only');
+      expect(html).toContain(lang === 'fr' ? 'Un service, filmé en match' : 'A serve, filmed during a match');
       expect(html).toContain('data-testid="activity-demo-video"');
       expect(html).toContain('volleyball-demo-raw.mp4');
       expect(html).toContain('volleyball-demo-poster.jpg');
@@ -75,6 +75,7 @@ describe('the activity screen', () => {
       expect(html).toContain(lang === 'fr' ? 'Auteur\u00A0: Shev123' : 'Author: Shev123');
       expect(html).toContain(lang === 'fr' ? 'Licence\u00A0: CC0 (domaine public)' : 'Licence: CC0 (public domain)');
       expect(html).toContain('data-testid="activity-credit-link"');
+      expect(html).toContain(lang === 'fr' ? 'Page du fichier sur Wikimedia Commons' : 'File page on Wikimedia Commons');
       expect(html).toContain('https://commons.wikimedia.org/wiki/File:Paris_Volley_-_Chaumont,_18_February_2014_-_43_-_Ace.webm');
     });
   }
@@ -84,10 +85,11 @@ describe('the activity screen', () => {
     expect(html).toContain('data-testid="activity-demo-video"');
     expect(html).toContain('volleyball-demo-raw.mp4');
     expect(html).toContain('volleyball-demo-poster.jpg');
-    expect(html).toContain('Vidéo seule');
+    expect(html).toContain('Un service, filmé en match');
     expect(html).toContain('Clip de démonstration\u00A0: l’appli n’analyse rien sur cette vidéo.');
     expect(html).toContain('Auteur\u00A0: Shev123');
     expect(html).toContain('Licence\u00A0: CC0 (domaine public)');
+    expect(html).toContain('Page du fichier sur Wikimedia Commons');
     expect(html).toContain('https://commons.wikimedia.org/wiki/File:Paris_Volley_-_Chaumont,_18_February_2014_-_43_-_Ace.webm');
   });
 
