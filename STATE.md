@@ -18,6 +18,7 @@ French register: the screens use "vous". On 9 October 2026 David approved every 
 
 David's order of 9 October 2026 (four pillars), state at the end of that day:
 - Blind counts: asked before the app's count on the #collecte phone only (blind.js); David's blind sets get a scoreboard section that decides nothing until he amends R1. Contributions stay paused; no upload sink exists (his accounts, a PLAN.md amendment, the legal items).
+- David's ruling of 15 October 2026 (R1, "Yes to all of them", in reply to "Do your blind counts count as labels for the scoreboard?"): his blind counts are labels. The blind section of the scoreboard is to decide like the others once it holds sets; it holds 0 on 15 October. The same message approved the French lines of PR #187 (R10).
 - One tap: result-choices.js; choices.txt measures the list; the neighbour keys show on the #collecte phone only. Copy pending (copy-blind.md, copy-choices.md).
 - Live: replay.txt (final = batch count everywhere); live stays off in production; the frame-choice proxy failed on compression noise (TRIED.md).
 - GPU: check.html prints time per sample and a fingerprint, ?delegate=gpu reads on the GPU; the iPhone measurement is David's (docs/IPHONE-CHIPS.md).
