@@ -2,7 +2,7 @@
 // test/real-phone/sets-*/ (David's collected sets, one folder per session) and the build clips in
 // landmarks/. A set is never dropped quietly: a file whose lift or count cannot be read is returned in
 // `unreadable`, and the scoreboard fails on it (reviews, 30 September).
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
 
@@ -15,6 +15,17 @@ export type LabelledSet = { name: string; lift: string; label: number; wl: any[]
 // another lift and decides. Status: convention (David's order, recorded in PLAN.md), not a threshold.
 export const PRESS_DECIDES_NOTHING = '(press: measured, decides nothing, PLAN.md)';
 export const decides = (lift: string) => lift !== 'bench_press' && lift !== 'overhead_press';
+
+/**
+ * Writes a scoreboard's text file only when something other than its first line's date moved, so a re-run with the
+ * same counts leaves the working tree clean (David's rule change of 15 October 2026: both agents had to discard the
+ * date-only change a run left behind). The date in the file is then the day its counts last changed (R13).
+ */
+export function writeScoreboard(path: string, text: string) {
+  const undated = (t: string) => t.replace(/^([^\n]*?) \d{4}-\d{2}-\d{2}:/, '$1:');
+  if (existsSync(path) && undated(readFileSync(path, 'utf8')) === undated(text)) return;
+  writeFileSync(path, text);
+}
 
 // R1 (9 October 2026, pillar 1): a file whose count was given after the app showed its own (labelKind 'after-app': the
 // result screen's collection, phoneCollect.js, and the contributions, contribute.js) holds no label. Such a file in a

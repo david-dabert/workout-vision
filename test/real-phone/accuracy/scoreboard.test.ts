@@ -25,7 +25,7 @@ import { resolve } from 'node:path';
 import { summarizeCount, withProposal, withBodyCheck } from '../../../src/lib/coreAnalysis';
 import { countChoices, inList } from '../../../src/components/experience/result-choices';
 import { gunzipSync } from 'node:zlib';
-import { blindSets, decides, doubtLine, labelledSets, PRESS_DECIDES_NOTHING, videoSets } from './sets';
+import { blindSets, decides, doubtLine, labelledSets, PRESS_DECIDES_NOTHING, videoSets, writeScoreboard } from './sets';
 import { pairedLine, type Pair } from './paired';
 
 const BASELINE = resolve(__dirname, 'scoreboard-baseline.json');
@@ -134,7 +134,7 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   const blList = listLine(blind.sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il) })));
   // The paired line (paired.ts) on the same sets as "exact now, before": printed only, the gate below is unchanged.
   const text = [head, pairedLine(b.pairs), doubtLine(b.doubts), bList, ...b.rows, '', vhead, pairedLine(v.pairs), vList, ...v.rows, '', mhead, pairedLine(m.pairs), ...m.rows, '', bhead, blList, ...brows].join('\n') + '\n';
-  writeFileSync(resolve(__dirname, 'scoreboard.txt'), text);
+  writeScoreboard(resolve(__dirname, 'scoreboard.txt'), text);
   process.stdout.write(text);
   // R2: a change ships only if the exact count does not decrease and no set becomes catastrophic; a set newly
   // refused counts as catastrophic (third audit, C31). The two sections the app reads as; the VIDEO-mode one is shown.
