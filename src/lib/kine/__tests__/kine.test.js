@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LIBRARY, exerciseById } from '../library.js';
 import { cleanProgramme, cleanResult, pack, payloadAfter, programmeLink, PROGRAMME_KEY, resultLink, RESULT_KEY, unpack } from '../links.js';
 
@@ -65,10 +65,21 @@ describe('programme and result links', () => {
 });
 
 describe('the media address', () => {
+  // The deploy job builds with the repository variable set, CI without it: each case sets its own value.
+  afterEach(() => { vi.unstubAllEnvs(); vi.resetModules(); });
+
   it('gives no media URL without an address set for the build', async () => {
+    vi.stubEnv('VITE_KINE_MEDIA_URL', '');
     vi.resetModules();
     const { mediaUrl, hasMedia } = await import('../library.js');
     expect(hasMedia()).toBe(false);
     expect(mediaUrl(exerciseById('mains-jointes'))).toBeNull();
+  });
+
+  it('reads the videos from the address the build names', async () => {
+    vi.stubEnv('VITE_KINE_MEDIA_URL', 'https://media.example.org');
+    vi.resetModules();
+    const { mediaUrl } = await import('../library.js');
+    expect(mediaUrl(exerciseById('mains-jointes'))).toBe('https://media.example.org/olivier-1-mains-jointes.mp4');
   });
 });
