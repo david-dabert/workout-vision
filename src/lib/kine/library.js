@@ -7,9 +7,12 @@
 // The videos and their poses are not in this public repository. They are read from the media address of the build
 // (VITE_KINE_MEDIA_URL, set by David) or chosen on the phone; see mediaUrl().
 //
-// `compare`: whether the app compares a patient's attempt with this reference. Measured on the reference's own
-// landmarks (test/real-phone/reference/README.md): exercise 2's forearm rotation is not an angle the app reads, and
-// exercise 3's arm, filmed from the head end, does not read the same twice, so neither has a comparison (R8).
+// `compare`: whether the app compares a patient's attempt with this reference (test/real-phone/reference/README.md).
+// `measures`: what is compared, when not the default shoulder and elbow angles (src/lib/reference/compare.js):
+// exercises 2 and 3 are compared on where a segment points, which their two pose readings agree on (16 October 2026);
+// their joint angles do not (R8).
+// `side`: the arm the reference works, for an exercise done with one arm. The physiotherapist sets the patient's side
+// in the programme; the other side is compared as the reference seen in a mirror (compare.js, compareAttempt).
 
 export const LIBRARY = Object.freeze([
   {
@@ -54,7 +57,12 @@ export const LIBRARY = Object.freeze([
   {
     id: 'rotation-externe',
     file: 'olivier-2-rotation-externe',
-    compare: false,
+    compare: true,
+    // The forearm (left elbow to left wrist). Two readings of the reference (normal, and a copy 1.2 times slower) agree
+    // to 2.6 degrees (90th percentile, its elbow angle to 29); below the horizontal the forearm crosses the face and the
+    // pose is lost, so that position is not judged. Status: experimental (no patient attempt yet).
+    measures: { joints: {}, directions: { leftForearm: { from: 13, to: 15 } } },
+    side: 'left',
     dosage: { reps: 10, sets: 3 },
     holds: [{ sec: 3 }, { sec: 3 }],
     fr: {
@@ -66,7 +74,7 @@ export const LIBRARY = Object.freeze([
         'Descendre en dessous de l’horizontale et maintenir 3 secondes.',
         'Alterner au-dessus et en dessous de l’horizontale.',
       ],
-      camera: 'Vidéo de démonstration\u00A0: l’appli ne lit pas encore cette rotation de l’avant-bras.',
+      camera: 'Téléphone posé face au patient, à hauteur de la table, comme sur la vidéo de référence. La position sous l’horizontale, où l’avant-bras passe devant le visage, n’est pas jugée.',
     },
     en: {
       title: 'External rotation, side-lying',
@@ -77,16 +85,19 @@ export const LIBRARY = Object.freeze([
         'Go below the horizontal and hold 3 seconds.',
         'Alternate above and below the horizontal.',
       ],
-      camera: 'Demonstration video: the app does not read this forearm rotation yet.',
+      camera: 'Phone facing the patient, at table height, as in the reference video. The position below the horizontal, where the forearm crosses the face, is not judged.',
     },
   },
   {
     id: 'abduction-horizontale',
     file: 'olivier-3-abduction-horizontale',
-    // No comparison (R8): the same movement, the reference against itself replayed 1.2 times slower and read again by
-    // the pose model, was asked to revise; filmed from the head end, the working arm reads 149 degrees at the elbow in
-    // one reading and 95 in the other while it is straight (16 October 2026, demo recording). Status: measured.
-    compare: false,
+    // The arm (left shoulder to left wrist), not its joint angles: filmed from the head end, the straight arm read 149
+    // degrees at the elbow in one reading and 95 in the other (16 October 2026, demo recording). Its direction, without
+    // the moments when the lowered arm lies on the other one, agrees to 6.5 degrees between the two readings (90th
+    // percentile). Status: experimental (no patient attempt yet).
+    compare: true,
+    measures: { joints: {}, directions: { leftArm: { from: 11, to: 15, apartFrom: 16 } } },
+    side: 'left',
     dosage: { reps: 10, sets: 3 },
     holds: [{ sec: 5 }],
     tempo: { downSec: 5 },
@@ -99,7 +110,7 @@ export const LIBRARY = Object.freeze([
         'Rester dans le plan horizontal 5 secondes.',
         'Remonter à la verticale à vitesse normale, et recommencer.',
       ],
-      camera: 'Vidéo de démonstration\u00A0: filmé dans l’axe de la tête, ce bras n’est pas lu de façon fiable par l’appli.',
+      camera: 'Téléphone posé dans l’axe de la tête, comme sur la vidéo de référence, le bras entier dans l’image. Les moments où les deux bras se superposent dans l’image ne sont pas jugés.',
     },
     en: {
       title: 'Arm lowered over 5 seconds, side-lying',
@@ -110,7 +121,7 @@ export const LIBRARY = Object.freeze([
         'Stay in the horizontal plane for 5 seconds.',
         'Return to vertical at normal speed, and repeat.',
       ],
-      camera: 'Demonstration video: filmed in line with the head, the app does not read this arm reliably.',
+      camera: 'Phone in line with the head, as in the reference video, the whole arm in the picture. The moments when the two arms overlap in the picture are not judged.',
     },
   },
   {

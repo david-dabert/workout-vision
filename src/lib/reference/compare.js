@@ -54,9 +54,50 @@ function angleAt(a, b, c, aspect) {
   return (Math.acos(Math.max(-1, Math.min(1, cos))) * 180) / Math.PI;
 }
 
-/** Raw angle of each joint per sample, null where a point of it is unseen; `aspect` = width / height of the picture. */
-export function jointAngles(landmarks, { joints = JOINTS, aspect } = {}) {
+// Segment directions: where a body segment points in the picture, for movements that a joint angle does not show
+// (16 October 2026, Olivier's videos 2 and 3, each read twice by the pose model, normally and replayed 1.2 times slower;
+// 90th percentile of the gap between the two readings):
+// - video 3, filmed from the head end: the hip is hidden behind the body and the head covers the shoulders, so the
+//   shoulder angle (hip-shoulder-elbow) differs by 34 degrees between readings; the arm's direction (shoulder to
+//   wrist), without the moments when the two wrists overlap, by 6.5;
+// - video 2: the forearm's rotation barely changes the elbow angle (29 degrees between readings) but sweeps the
+//   forearm (elbow to wrist) through about 55 degrees in the picture, read to 2.6.
+// The direction is measured against the body's own line (left shoulder to right shoulder, its median over the whole
+// video), so that a phone propped a little askew reads the same; the patient films from the reference's side.
+// Status: experimental (measured on two readings of each reference video; no patient attempt yet).
+// `apartFrom`: a landmark the segment's end must stay apart from, by this share of the picture's height, or the
+// sample is dropped (video 3: the lowered arm lies on the other arm, and the model swaps the two wrists).
+// Status: experimental, UNSOURCED.
+export const APART_SHARE = 0.08;
+// A direction sample further than this from the median of the second around it is a jump of the pose model, dropped.
+// Status: experimental, UNSOURCED (the reference's fastest move, about 90 degrees a second, stays well under it).
+export const JUMP_DEG = 20;
+
+const wrap = d => ((((d + 180) % 360) + 360) % 360) - 180;
+
+function directionOf(a, b, k) {
+  return (Math.atan2(-(b.y - a.y), (b.x - a.x) * k) * 180) / Math.PI;
+}
+
+/** The video's body line: median direction of left shoulder to right shoulder over the samples that show both. */
+export function bodyLine(landmarks, aspect = 1) {
+  return circularMedian(landmarks.map(lm => (lm && (lm[11]?.visibility ?? 0) >= SEEN_VISIBILITY && (lm[12]?.visibility ?? 0) >= SEEN_VISIBILITY
+    ? directionOf(lm[11], lm[12], aspect) : null)));
+}
+
+/** Raw angle of each joint and direction of each segment per sample, null where a point is unseen; `aspect` = width / height of the picture. */
+export function jointAngles(landmarks, { joints = JOINTS, directions = {}, aspect } = {}) {
   const out = {};
+  if (Object.keys(directions).length) {
+    const k = aspect ?? 1, line = bodyLine(landmarks, k);
+    for (const [name, { from, to, apartFrom }] of Object.entries(directions)) {
+      out[name] = landmarks.map(lm => {
+        if (!lm || [from, to].some(i => (lm[i]?.visibility ?? 0) < SEEN_VISIBILITY)) return null;
+        if (apartFrom != null && lm[apartFrom] && Math.hypot((lm[to].x - lm[apartFrom].x) * k, lm[to].y - lm[apartFrom].y) < APART_SHARE) return null;
+        return wrap(directionOf(lm[from], lm[to], k) - line);
+      });
+    }
+  }
   for (const [name, [a, b, c]] of Object.entries(joints)) {
     out[name] = landmarks.map(lm => {
       if (!lm || [a, b, c].some(i => (lm[i]?.visibility ?? 0) < SEEN_VISIBILITY)) return null;
@@ -118,11 +159,45 @@ function percentile(values, p) {
 
 const range = values => percentile(values, 0.95) - percentile(values, 0.05);
 
-/** Smoothed curves at SAMPLE_HZ of every joint, from a video's landmarks (see jointAngles for the options). */
+/** A direction's samples kept on one side of the circle: each within 180 degrees of their circular median. */
+export function unwrapAround(values, centre = circularMedian(values)) {
+  return values.map(v => (v == null ? null : centre + wrap(v - centre)));
+}
+
+function circularMedian(values) {
+  const seen = values.filter(v => v != null);
+  if (!seen.length) return 0;
+  const r = Math.PI / 180;
+  const mean = Math.atan2(seen.reduce((s, d) => s + Math.sin(d * r), 0), seen.reduce((s, d) => s + Math.cos(d * r), 0)) / r;
+  const around = seen.map(d => mean + wrap(d - mean)).sort((x, y) => x - y);
+  return around[Math.floor(around.length / 2)];
+}
+
+/**
+ * Samples further than JUMP_DEG from the median of the second around them, dropped. The window is kept symmetric (as
+ * many seen samples on each side), so that a steady move next to a gap or an end is not taken for a jump.
+ */
+export function dropJumps(values, half = Math.round(SAMPLE_HZ / 2)) {
+  return values.map((v, i) => {
+    if (v == null) return null;
+    const before = values.slice(Math.max(0, i - half), i).filter(x => x != null);
+    const after = values.slice(i + 1, i + half + 1).filter(x => x != null);
+    const n = Math.min(before.length, after.length);
+    if (!n) return v;
+    const w = [...before.slice(before.length - n), v, ...after.slice(0, n)].sort((a, b) => a - b);
+    return Math.abs(v - w[n]) > JUMP_DEG ? null : v;
+  });
+}
+
+/** Smoothed curves at SAMPLE_HZ of every joint and direction, from a video's landmarks (see jointAngles for the options). */
 export function curves(landmarks, timestamps, options = {}) {
   const raw = jointAngles(landmarks, options);
   const out = {};
-  for (const [name, values] of Object.entries(raw)) out[name] = median5(resample(timestamps, values));
+  for (const [name, values] of Object.entries(raw)) {
+    out[name] = options.directions?.[name]
+      ? median5(dropJumps(resample(timestamps, unwrapAround(values))))
+      : median5(resample(timestamps, values));
+  }
   return out;
 }
 
@@ -131,10 +206,10 @@ export function curves(landmarks, timestamps, options = {}) {
  * Returns { joints: [{ name, kind, range, curve }], duration, unused: [{ name, seenShare }] }.
  */
 export function buildReference(landmarks, timestamps, options = {}) {
-  return referenceFromCurves(curves(landmarks, timestamps, options));
+  return referenceFromCurves(curves(landmarks, timestamps, options), Object.keys(options.directions ?? {}));
 }
 
-export function referenceFromCurves(curveByJoint) {
+export function referenceFromCurves(curveByJoint, directionNames = []) {
   const used = [], unused = [];
   let length = 0;
   for (const [name, curve] of Object.entries(curveByJoint)) {
@@ -142,7 +217,9 @@ export function referenceFromCurves(curveByJoint) {
     const share = seenShare(curve);
     if (share < REFERENCE_SEEN_SHARE) { unused.push({ name, seenShare: share }); continue; }
     const r = range(curve);
-    used.push({ name, kind: r >= MOVING_RANGE_DEG ? 'moving' : 'held', range: r, curve: fillGaps(curve) });
+    const joint = { name, kind: r >= MOVING_RANGE_DEG ? 'moving' : 'held', range: r, curve: fillGaps(curve), seen: curve.map(v => v != null) };
+    if (directionNames.includes(name)) joint.direction = true;
+    used.push(joint);
   }
   return { joints: used, duration: length / SAMPLE_HZ, unused };
 }
@@ -198,7 +275,8 @@ export function compareCurves(reference, attemptCurves) {
   }
   if (reasons.length) return { verdict: 'refused', reasons, joints: [] };
   const ref = reference.joints.map(j => j.curve);
-  const att = reference.joints.map(j => fillGaps(attemptCurves[j.name]));
+  // A direction's samples set on the reference's side of the circle.
+  const att = reference.joints.map((j, k) => fillGaps(j.direction ? unwrapAround(attemptCurves[j.name], circularMedian(ref[k])) : attemptCurves[j.name]));
   const path = align(ref, att);
   const start = path[0][1], end = path.at(-1)[1];
   // The attempt's value at each moment of the reference: the mean of the attempt samples matched to it.
@@ -207,15 +285,19 @@ export function compareCurves(reference, attemptCurves) {
     for (const [ri, ai] of path) { sums[ri] += att[k][ai]; counts[ri]++; }
     return Array.from(sums, (s, i) => s / counts[i]);
   });
+  // Judged only at the moments the reference shows: where its pose was lost, its curve is a filled line, not
+  // Olivier's movement (video 2: the forearm crossing the face below the horizontal). R8.
   const joints = reference.joints.map((j, k) => {
     const matched = matchedByJoint[k];
-    const gaps = matched.map((v, i) => Math.abs(v - ref[k][i]));
-    const within = gaps.filter(g => g <= TOLERANCE_DEG).length / gaps.length;
-    let worst = 0;
-    for (let i = 1; i < gaps.length; i++) if (gaps[i] > gaps[worst]) worst = i;
-    const rangeShare = j.kind === 'moving' ? range(matched) / j.range : null;
+    const shown = i => j.seen?.[i] ?? true;
+    const gaps = matched.map((v, i) => (shown(i) ? Math.abs(v - ref[k][i]) : null));
+    const judged = gaps.filter(g => g != null);
+    const within = judged.filter(g => g <= TOLERANCE_DEG).length / judged.length;
+    let worst = gaps.findIndex(g => g != null);
+    for (let i = worst + 1; i < gaps.length; i++) if (gaps[i] != null && gaps[i] > gaps[worst]) worst = i;
+    const rangeShare = j.kind === 'moving' ? range(matched.map((v, i) => (shown(i) ? v : null))) / j.range : null;
     return {
-      name: j.name, kind: j.kind, within, gapP90: percentile(gaps, 0.9), rangeShare,
+      name: j.name, kind: j.kind, direction: !!j.direction, within, gapP90: percentile(gaps, 0.9), rangeShare, shown: judged.length / gaps.length,
       worst: { atSec: worst / SAMPLE_HZ, reference: ref[k][worst], attempt: matched[worst] },
     };
   });
@@ -225,10 +307,13 @@ export function compareCurves(reference, attemptCurves) {
   }
   return {
     verdict: reasons.length ? 'revise' : 'match', reasons, joints,
+    cost: path.reduce((sum, [i, x]) => sum + ref.reduce((t, curve, k) => t + Math.abs(curve[i] - att[k][x]), 0), 0) / path.length / ref.length,
     start: start / SAMPLE_HZ, end: end / SAMPLE_HZ,
     tempo: (end - start + 1) / ref[0].length,
     path,
     reference: reference.joints.map(j => j.curve),
+    // Per measure, whether the reference shows each of its moments; the screens judge and label only those (R8).
+    seen: reference.joints.map(j => j.seen ?? j.curve.map(() => true)),
     matched: matchedByJoint,
     holds: holds(reference, att, path),
   };
@@ -241,6 +326,8 @@ export const HOLD_MIN_SEC = 1;
 // A hold is kept when the attempt's angle is within TOLERANCE_DEG of the reference's and it lasts this share of the
 // reference's time. Status: experimental, UNSOURCED; to be set with the physiotherapist.
 export const HOLD_TIME_SHARE = 0.8;
+// A reference hold is judged only if its pose is seen on this share of it. Status: experimental, UNSOURCED.
+export const HOLD_SHOWN_SHARE = 0.8;
 
 /**
  * The positions the reference holds, each with what the attempt did at the same moment: the reference's angle and
@@ -263,18 +350,27 @@ export function holds(reference, attCurves, path) {
     if (!still[i]) { i++; continue; }
     let e = i;
     while (e + 1 < c.length && still[e + 1]) e++;
-    if ((e - i + 1) / SAMPLE_HZ >= HOLD_MIN_SEC) {
+    // A hold the reference does not show (its curve filled across a lost pose) is not one to judge (R8).
+    const shownShare = main.seen ? main.seen.slice(i, e + 1).filter(Boolean).length / (e - i + 1) : 1;
+    if ((e - i + 1) / SAMPLE_HZ >= HOLD_MIN_SEC && shownShare >= HOLD_SHOWN_SHARE) {
       const ai = path.filter(([ri]) => ri >= i && ri <= e).map(([, x]) => x).sort((x, y) => x - y);
       const attAngle = ai.reduce((sum, x) => sum + a[x], 0) / ai.length;
       // The attempt's own hold: from the middle of its matched samples, as far as it stays still. The alignment
       // gives a long hold's extra samples to the reference's moments around it, so its span alone would hide them.
-      let lo = ai[Math.floor(ai.length / 2)], hi = lo;
+      // From the still sample nearest the middle of the matched ones, looked for up to half a second beyond them: the
+      // alignment can give a whole hold to the last sample of the move into it (video 3, re-read slower, 16 October 2026).
+      const mid = ai[Math.floor(ai.length / 2)], reach = Math.round(SAMPLE_HZ / 2);
+      const near = [];
+      for (let x = Math.max(0, ai[0] - reach); x <= Math.min(a.length - 1, ai.at(-1) + reach); x++) if (attStill[x]) near.push(x);
+      const still = near.sort((x, y) => Math.abs(x - mid) - Math.abs(y - mid));
+      let lo = still[0] ?? mid, hi = lo;
       if (attStill[lo]) {
         while (lo > 0 && attStill[lo - 1]) lo--;
         while (hi + 1 < a.length && attStill[hi + 1]) hi++;
       }
       out.push({
         joint: main.name,
+        direction: !!main.direction,
         startSec: i / SAMPLE_HZ,
         refSec: (e - i + 1) / SAMPLE_HZ,
         refAngle: c.slice(i, e + 1).reduce((sum, v) => sum + v, 0) / (e - i + 1),
@@ -290,7 +386,63 @@ export function holds(reference, attCurves, path) {
   return out;
 }
 
-/** Attempt landmarks against a reference model (the same kind of landmarks and options as the reference's). */
-export function compareAttempt(reference, landmarks, timestamps, options = {}) {
-  return compareCurves(reference, curves(landmarks, timestamps, options));
+// MediaPipe Pose's 33 points, each with its other-side twin (0 the nose has none).
+export const MIRROR = Object.freeze([0, 4, 5, 6, 1, 2, 3, 8, 7, 10, 9, 12, 11, 14, 13, 16, 15, 18, 17, 20, 19, 22, 21, 24, 23, 26, 25, 28, 27, 30, 29, 32, 31]);
+
+/** Landmarks of the picture seen in a mirror: x turned over, left and right points exchanged. */
+export function mirrorLandmarks(landmarks) {
+  return landmarks.map(lm => lm && lm.map((_, i) => { const p = lm[MIRROR[i]]; return p && { ...p, x: 1 - p.x }; }));
 }
+
+// How much clearer the mirror reading must see the measured points to be kept over a plain reading that has a verdict.
+// Status: experimental, UNSOURCED (video 4: near arm seen at 0.9 and more, far arm at 0.72 on average).
+export const NEARER_MARGIN = 0.1;
+
+/** Mean visibility, over the attempt, of the points the reference's measures are read from. */
+function seenScore(reference, landmarks, { joints = JOINTS, directions = {} } = {}) {
+  const points = [...new Set(reference.joints.flatMap(j => (directions[j.name] ? [directions[j.name].from, directions[j.name].to] : joints[j.name] ?? [])))];
+  let sum = 0, n = 0;
+  for (const lm of landmarks) {
+    if (!lm) continue;
+    for (const i of points) { sum += lm[i]?.visibility ?? 0; n++; }
+  }
+  return n ? sum / n : 0;
+}
+
+const otherSide = name => (name.startsWith('left') ? `right${name.slice(4)}` : name.startsWith('right') ? `left${name.slice(5)}` : name);
+
+/**
+ * Attempt landmarks against a reference model (the same kind of landmarks and options as the reference's). The attempt
+ * is read as in a mirror when the physiotherapist set the reference's other side (`mirror`), when the plain reading
+ * gives no verdict, or when the mirror reading sees the measured points clearly better: a patient filmed from the
+ * other side, or lying the other way round, shows the reference's arm on the other side of the body. Never because a
+ * reading fits better: on a side-on video the mirror reading is the far arm, which the reference itself leaves out as
+ * the pose model's guess, and keeping the closer of two readings would let a wrong movement of one arm pass on the
+ * other (R8). The mirrored result names the
+ * patient's side (`measure` keeps the reference's name) and says `mirrored`.
+ */
+export function compareAttempt(reference, landmarks, timestamps, options = {}) {
+  // `mirror`: the patient is known to work the reference's other side (set by the physiotherapist): only the mirrored
+  // reading is made.
+  const flipped = mirrorLandmarks(landmarks);
+  const plain = options.mirror ? null : compareCurves(reference, curves(landmarks, timestamps, options));
+  if (plain?.reasons.includes('reference-unseen')) return { ...plain, mirrored: false };
+  // The reference judges the arm nearest its camera (the one it sees); so does the attempt: the mirror reading is
+  // kept when it sees the measured points clearly better (a patient filmed from the other side), never because it
+  // fits the reference better.
+  const nearer = plain && plain.verdict !== 'refused'
+    && seenScore(reference, flipped, options) > seenScore(reference, landmarks, options) + NEARER_MARGIN;
+  if (plain && plain.verdict !== 'refused' && !nearer) return { ...plain, mirrored: false };
+  const m = compareCurves(reference, curves(flipped, timestamps, options));
+  if (plain && m.verdict === 'refused') return { ...plain, mirrored: false };
+  return {
+    ...m,
+    mirrored: true,
+    joints: m.joints.map(j => ({ ...j, name: otherSide(j.name), measure: j.name })),
+    reasons: m.reasons.map(r => { const [kind, name] = r.split(':'); return name ? `${kind}:${otherSide(name)}` : r; }),
+    holds: (m.holds ?? []).map(h => ({ ...h, joint: otherSide(h.joint) })),
+  };
+}
+
+/** An angle as the screens show it: a direction, measured against the body line, as its angle to that line (0 to 180). */
+export const shownAngle = (value, direction) => (direction ? Math.abs(wrap(value)) : value);

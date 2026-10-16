@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { hapticLight } from '../../lib/haptics';
 import { Verdict, GroupHead, Metric } from '../experience/Showcase';
-import { buildReference, compareAttempt, curves, SAMPLE_HZ, TOLERANCE_DEG } from '../../lib/reference/compare';
+import { buildReference, compareAttempt, curves, MIRROR, SAMPLE_HZ, shownAngle, TOLERANCE_DEG } from '../../lib/reference/compare';
 import { EDGES, ghostPoints, nearestIndex, pathMaps, refTimeFor } from '../../lib/reference/overlay';
 import { COPY, JOINT_NAMES, clock, deg, pct } from './reference-copy';
 import './ReferenceCompare.css';
@@ -15,6 +15,12 @@ import './ReferenceCompare.css';
 // R8: no verdict when a joint is not seen well enough; the tolerance is said to be provisional.
 
 const JOINT_POINTS = { leftShoulder: 11, rightShoulder: 12, leftElbow: 13, rightElbow: 14 };
+// The point a measure is drawn at: a joint's own point, a direction's end (the wrist); the other side's twin when the
+// attempt was read as in a mirror (compareAttempt).
+const pointOf = (name, measures, mirrored) => {
+  const i = measures?.directions?.[name]?.to ?? JOINT_POINTS[name];
+  return mirrored ? MIRROR[i] : i;
+};
 
 function cssVar(el, name, fallback) {
   const v = el ? getComputedStyle(el).getPropertyValue(name).trim() : '';
@@ -50,10 +56,10 @@ function Timeline({ result, names, c, refNow, onSeekRef }) {
       const y = v => pad + (1 - (v - lo) / Math.max(1, hi - lo)) * (H - 2 * pad);
       const line = arr => arr.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
       const band = `${ref.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v + TOLERANCE_DEG).toFixed(1)}`).join('')}${ref.map((v, i) => [i, v]).reverse().map(([i, v]) => `L${x(i).toFixed(1)},${y(v - TOLERANCE_DEG).toFixed(1)}`).join('')}Z`;
-      // Stretches out of tolerance, each one band.
+      // Stretches out of tolerance, at moments the reference shows (R8).
       const runs = [];
       att.forEach((v, i) => {
-        if (Math.abs(v - ref[i]) <= TOLERANCE_DEG) return;
+        if (!result.seen[k][i] || Math.abs(v - ref[i]) <= TOLERANCE_DEG) return;
         const last = runs.at(-1);
         if (last && last[1] === i - 1) last[1] = i; else runs.push([i, i]);
       });
@@ -77,19 +83,21 @@ function Timeline({ result, names, c, refNow, onSeekRef }) {
   </div>;
 }
 
-export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onResult }) {
+// `measures`: what the reference is compared on (library.js), when not the default joints.
+// `mirror`: the patient works the reference's other side, so the attempt is read as in a mirror (compareAttempt).
+export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onResult, measures, mirror = false }) {
   const { lang } = useT();
   const fr = lang === 'fr';
   const c = COPY[fr ? 'fr' : 'en'];
   const names = JOINT_NAMES[fr ? 'fr' : 'en'];
   const rootRef = useRef(null);
-  const reference = useMemo(() => (refPose ? buildReference(refPose.imageLandmarks, refPose.timestamps, { aspect: refPose.aspect }) : null), [refPose]);
-  const result = useMemo(() => (reference && attPose ? compareAttempt(reference, attPose.imageLandmarks, attPose.timestamps, { aspect: attPose.aspect }) : null), [reference, attPose]);
+  const reference = useMemo(() => (refPose ? buildReference(refPose.imageLandmarks, refPose.timestamps, { ...measures, aspect: refPose.aspect }) : null), [refPose, measures]);
+  const result = useMemo(() => (reference && attPose ? compareAttempt(reference, attPose.imageLandmarks, attPose.timestamps, { ...measures, aspect: attPose.aspect, mirror }) : null), [reference, attPose, measures, mirror]);
   const maps = useMemo(() => {
     if (!result?.path || !attPose) return null;
-    const attLength = curves(attPose.imageLandmarks, attPose.timestamps, { aspect: attPose.aspect })[result.joints[0].name].length;
+    const attLength = curves(attPose.imageLandmarks, attPose.timestamps, { ...measures, aspect: attPose.aspect })[result.joints[0].name].length;
     return { ...pathMaps(result.path, attLength), attT0: attPose.timestamps[0], refT0: refPose.timestamps[0] };
-  }, [result, attPose, refPose]);
+  }, [result, attPose, refPose, measures]);
 
   // Player: the patient's video drives; the reference's video is kept at the matching moment.
   const attVideo = useRef(null), refVideo = useRef(null), attCanvas = useRef(null), refCanvas = useRef(null);
@@ -125,7 +133,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
         const rlm = refPose.imageLandmarks[nearestIndex(refPose.timestamps, tr)];
         // Gap of each compared joint at this moment of the reference.
         const off = {};
-        result.joints.forEach((j, k) => { off[JOINT_POINTS[j.name]] = Math.abs(result.matched[k][ri] - result.reference[k][ri]) > TOLERANCE_DEG; });
+        result.joints.forEach((j, k) => { off[pointOf(j.measure ?? j.name, measures, result.mirrored)] = result.seen[k][ri] && Math.abs(result.matched[k][ri] - result.reference[k][ri]) > TOLERANCE_DEG; });
         if (ghost && lm && rlm) {
           const g = ghostPoints(rlm, { w: 1, h: refPose.height / refPose.width }, lm, { w, h: w * (attPose.height / attPose.width) });
           if (g) drawSkeleton(ctx, g, { color: ash, width: 6, dash: [2, 8], alpha: 0.75 });
@@ -137,12 +145,13 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
           // Each joint's label, named, beside its point; a label that would cover one already set moves down.
           const placed = [];
           result.joints.forEach((j, k) => {
-            const p = pts[JOINT_POINTS[j.name]];
+            // No label where the reference's pose was lost: its value there is a filled line, not a measure (R8).
+            const p = result.seen[k][ri] ? pts[pointOf(j.measure ?? j.name, measures, result.mirrored)] : null;
             if (!p) return;
-            const bad = off[JOINT_POINTS[j.name]];
+            const bad = off[pointOf(j.measure ?? j.name, measures, result.mirrored)];
             ctx.fillStyle = bad ? lamp : bone;
             ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill();
-            const label = `${names[j.name].split(' ')[0]} ${deg(result.matched[k][ri])} · ${c.refShort} ${deg(result.reference[k][ri])}`;
+            const label = `${names[j.name].split(' ')[0]} ${deg(shownAngle(result.matched[k][ri], j.direction))} · ${c.refShort} ${deg(shownAngle(result.reference[k][ri], j.direction))}`;
             const bw = ctx.measureText(label).width + 10, bh = 20;
             let bx = Math.min(p.x + 9, w - bw - 4), by = Math.max(4, p.y - 21);
             while (placed.some(r => bx < r.x + r.w && r.x < bx + bw && by < r.y + r.h && r.y < by + bh)) by += bh + 3;
@@ -169,7 +178,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [result, maps, ghost, attPose, refPose, c.refShort, names]);
+  }, [result, maps, ghost, attPose, refPose, c.refShort, names, measures]);
 
   const toggle = () => {
     const v = attVideo.current;
@@ -188,7 +197,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
   const reasons = result ? result.reasons.map(r => {
     const [kind, name] = r.split(':');
     const j = result.joints.find(x => x.name === name);
-    if (kind === 'off' && j) return c.off(names[name], j.within, j.worst);
+    if (kind === 'off' && j) return c.off(names[name], j.within, { ...j.worst, reference: shownAngle(j.worst.reference, j.direction), attempt: shownAngle(j.worst.attempt, j.direction) });
     if (kind === 'range' && j) return c.range(names[name], j.rangeShare);
     return null;
   }).filter(Boolean) : [];
@@ -252,7 +261,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
                   {result.holds.map((h, i) => <li key={i} data-testid={`rc-hold-${i}`}>
                     <button type="button" className="rc-hold press" onClick={() => seekRefIndex(Math.round(h.startSec * SAMPLE_HZ))}>
                       <span className="rc-hold-name">{c.holdRow(i)} <small>{clock(h.startSec)}</small></span>
-                      <span className="rc-hold-vals"><small>{c.holdRef(h.refAngle, h.refSec)}</small><small>{c.holdAtt(h.attAngle, h.attSec)}</small></span>
+                      <span className="rc-hold-vals"><small>{c.holdRef(shownAngle(h.refAngle, h.direction), h.refSec)}</small><small>{c.holdAtt(shownAngle(h.attAngle, h.direction), h.attSec)}</small></span>
                       <Verdict ok={h.status === 'held'}>{h.status === 'held' ? c.holdOk : h.status === 'short' ? c.holdShort : c.holdOff}</Verdict>
                     </button>
                   </li>)}

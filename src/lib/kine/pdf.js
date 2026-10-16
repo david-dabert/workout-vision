@@ -58,6 +58,7 @@ export function programmePdf(p, { lang = 'fr', link }) {
     k.write(fr ? `${it.sets} séries de ${it.reps} répétitions` : `${it.sets} sets of ${it.reps} repetitions`, MARGIN, y, 'serif', 14, 1.2, COLOR.count);
     y += 20;
     y = textBlock(k, t.position, MARGIN, y, COLUMN, 8.5, COLOR.ash) + 2;
+    if (e.side && it.side && it.side !== e.side) y = textBlock(k, fr ? `Côté à travailler\u00A0: ${it.side === 'left' ? 'gauche' : 'droit'}.` : `Side to work: ${it.side}.`, MARGIN, y, COLUMN, 8.5, COLOR.count) + 2;
     t.steps.forEach((s, n) => { newPageIfNeeded(14); y = textBlock(k, `${n + 1}. ${s}`, MARGIN + 6, y, COLUMN - 6, 8.5, COLOR.ink); });
     if (it.note) { newPageIfNeeded(24); y = textBlock(k, (fr ? 'Conseil\u00A0: ' : 'Advice: ') + it.note, MARGIN, y + 4, COLUMN, 8.5, COLOR.count); }
     y += 10;

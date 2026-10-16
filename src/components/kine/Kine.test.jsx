@@ -43,8 +43,18 @@ describe('the patient programme', () => {
     expect(html).toContain('2 fois par jour, pendant 6 semaines');
     expect(html).toContain('Bien relâcher.');
     expect(html).toContain('href="tel:0600000000"');
-    // The rotation is shown, not compared (R8).
-    expect(html).toContain('ne compare pas encore votre geste');
+    // Without a media address, no attempt can be filmed yet.
+    expect(html).not.toContain('ne compare pas encore votre geste');
+    expect(html).not.toContain('data-testid="kn-film-');
+  });
+
+  it('tells the patient which side to work when it is not the video\'s', async () => {
+    const { programmeLink } = await import('../../lib/kine/links');
+    const link = programmeLink('https://example.org/app/', { kine: { name: 'Olivier' }, patient: 'C', items: [{ id: 'rotation-externe', side: 'right' }, { id: 'abduction-horizontale', side: 'left' }] });
+    const html = await render('KinePatient', link.slice(link.indexOf('#')));
+    expect(html).toContain('data-testid="kn-side-note-rotation-externe"');
+    expect(html).toContain('Côté à travailler');
+    expect(html).not.toContain('data-testid="kn-side-note-abduction-horizontale"');
   });
 
   it('says so when the link does not open', async () => {

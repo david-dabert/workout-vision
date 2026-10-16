@@ -10,6 +10,7 @@ import { attemptsOf, logAttempt } from '../../lib/kine/store';
 import { readPose } from '../../lib/reference/readPose';
 import { useObjectUrl } from '../../lib/reference/useObjectUrl';
 import ComparisonView from '../reference/ComparisonView';
+import { shownAngle } from '../../lib/reference/compare';
 import { COPY } from '../reference/reference-copy';
 import ExerciseCard from './ExerciseCard';
 import { KINE } from './kine-copy';
@@ -24,7 +25,8 @@ import './Kine.css';
 const fnv = s => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); };
 const weekAgo = () => Date.now() - 7 * 864e5;
 
-function Attempt({ ex, programme, programmeId, fr, k, onLogged }) {
+// `mirror`: the patient works the side opposite the reference's (the programme's side, library.js `side`).
+function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror }) {
   const c = COPY[fr ? 'fr' : 'en'];
   const input = useRef(null);
   const [file, setFile] = useState(null);
@@ -65,7 +67,7 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged }) {
     const link = resultLink(`${window.location.origin}${window.location.pathname}`, {
       id: ex.id, patient: programme.patient, kine: programme.kine.name, date: new Date().toISOString().slice(0, 16), verdict: result.verdict, tempo: result.tempo,
       joints: result.joints.map(j => ({ name: j.name, within: j.within, range: j.rangeShare })),
-      holds: result.holds.map(h => ({ ref: h.refAngle, att: h.attAngle, refSec: h.refSec, attSec: h.attSec, status: h.status })),
+      holds: result.holds.map(h => ({ ref: shownAngle(h.refAngle, h.direction), att: shownAngle(h.attAngle, h.direction), refSec: h.refSec, attSec: h.attSec, status: h.status })),
     });
     const verdict = result.verdict === 'match' ? c.match : result.verdict === 'revise' ? c.revise : c.refused;
     const text = k.pSendText(ex[fr ? 'fr' : 'en'].title, verdict);
@@ -84,7 +86,7 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged }) {
     </div>}
     {phase === 'error' && <p className="rc-error" role="alert">{c.failed} <small>{error}</small></p>}
     {phase === 'done' && <>
-      <ComparisonView refPose={refPose} attPose={attPose} refUrl={mediaUrl(ex, 'mp4')} attUrl={attUrl} onResult={onResult} />
+      <ComparisonView refPose={refPose} attPose={attPose} refUrl={mediaUrl(ex, 'mp4')} attUrl={attUrl} onResult={onResult} measures={ex.measures} mirror={mirror} />
       {result && <button type="button" className="rc-btn is-wide press" onClick={send} data-testid={`kn-send-${ex.id}`}>{k.pSend}</button>}
     </>}
   </div>;
@@ -124,7 +126,8 @@ export default function KinePatient({ onClose }) {
                 <GroupHead title={`${n + 1} · ${k.dosage(it.reps, it.sets)}`} />
                 <ExerciseCard ex={{ ...ex, dosage: { reps: it.reps, sets: it.sets } }} fr={fr} k={k} open stepsLabel={k.howTo} />
                 {it.note && <p className="kn-note">{it.note}</p>}
-                {ex.compare && hasMedia() ? <Attempt ex={ex} programme={programme} programmeId={programmeId} fr={fr} k={k} onLogged={refresh} />
+                {ex.side && it.side && it.side !== ex.side && <p className="kn-note" data-testid={`kn-side-note-${it.id}`}>{k.pSide(it.side, ex.side)}</p>}
+                {ex.compare && hasMedia() ? <Attempt ex={ex} programme={programme} programmeId={programmeId} fr={fr} k={k} onLogged={refresh} mirror={!!(ex.side && it.side && it.side !== ex.side)} />
                   : <p className="sc-caption">{ex.compare ? k.noMedia : k.pNoCompare}</p>}
               </section>;
             })}
