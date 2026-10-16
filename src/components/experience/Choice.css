@@ -90,3 +90,4 @@
 .wv-experience .about-link { align-self: center; display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; font-size: var(--fs-caption); color: var(--bone-2); text-decoration: underline; text-underline-offset: 3px; border-radius: var(--r-pill); }
 /* The note after the app restarted during a session (Choice.jsx, CrashNote): the usage note's line, its two keys side by side. */
 .wv-experience .crash-keys { display: flex; justify-content: center; flex-wrap: wrap; }
+.wv-experience .choose-head + .row-link { margin-top: 0; border-top: 0; }
