@@ -149,7 +149,7 @@ export default function History({ onClose }) {
           <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
         </div>
         <h1 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Vos séries.' : 'Your sets.'}</h1>
-        <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Enregistrées sur ce téléphone, elles n’en sortent que si vous les partagez.' : 'Saved on this phone, they leave it only if you share them.'}{sets?.length ? (fr ? ' Touchez une série pour en faire le rapport.' : ' Tap a set to make its report.') : ''}</p>
+        <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Enregistrées sur ce téléphone, elles n’en sortent que si vous les partagez.' : 'Saved on this phone, they leave it only if you share them.'}{sets?.length ? (fr ? ' Touchez une série pour préparer son rapport.' : ' Tap a set to make its report.') : ''}</p>
         {/* The level, changeable here at any time: it sets how much the result screen shows (level.js). */}
         <div data-reveal style={{ '--i': 2 }} data-testid="history-level">
           <LevelPick id="hist-level" label={fr ? 'Votre niveau' : 'Your level'} value={level} onChange={l => { if (writeLevel(l)) setLevel(l); }} fr={fr} />

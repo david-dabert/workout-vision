@@ -21,7 +21,7 @@ describe('the tier on the result screen', () => {
     const en = await render('en', 'lateral_raise');
     expect(en?.slice(1)).toEqual(['experimental', 'Experimental: we are still learning this exercise']);
     const fr = await render('fr', 'lateral_raise');
-    expect(fr?.slice(1)).toEqual(['experimental', 'Expérimental : nous apprenons encore cet exercice']);
+    expect(fr?.slice(1)).toEqual(['experimental', 'Expérimental : nous apprenons encore à le compter']);
   });
   it('labels a Beta lift Beta', async () => {
     expect((await render('en', 'squat'))?.slice(1)).toEqual(['beta', 'Beta']);

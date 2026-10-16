@@ -14,7 +14,7 @@ const PHASES = {
 };
 
 export const CRASH = {
-  fr: { copy: 'Copier le détail', copied: 'Détail copié.', copyFailed: 'La copie n’a pas marché.', dismiss: 'Masquer', dismissLabel: 'Masquer cette note', kept: 'Le détail est gardé sur ce téléphone.' },
+  fr: { copy: 'Copier le détail', copied: 'Détail copié.', copyFailed: 'La copie a échoué.', dismiss: 'Masquer', dismissLabel: 'Masquer cette note', kept: 'Le détail est gardé sur ce téléphone.' },
   en: { copy: 'Copy the details', copied: 'Details copied.', copyFailed: 'Copying did not work.', dismiss: 'Dismiss', dismissLabel: 'Dismiss this note', kept: 'The details are kept on this phone.' },
 };
 

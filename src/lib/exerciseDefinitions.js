@@ -308,7 +308,7 @@ export const EXERCISE_DEFINITIONS = {
     downThreshold: 80,
     upThreshold: 150,
     formChecks: [
-      { name: 'Depth', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 75, good: 'Bar at chest level', bad: 'Lower the bar further', severity: 'major', citation: 'Larsen S et al, 2021, Int J Environ Res Public Health', safetyNote: { en: 'If you have shoulder issues, do not lower beyond a comfortable range.', fr: 'En cas de problème d\\\'épaule, ne descendez pas au-delà d\\\'une amplitude confortable.' } },
+      { name: 'Depth', type: 'below', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 75, good: 'Bar at chest level', bad: 'Lower the bar further', severity: 'major', citation: 'Larsen S et al, 2021, Int J Environ Res Public Health', safetyNote: { en: 'If you have shoulder issues, do not lower beyond a comfortable range.', fr: 'En cas de problème d’épaule, ne descendez pas au-delà d’une amplitude confortable.' } },
       { name: 'Lockout', type: 'above', useBestSide: true, left: 'leftElbow', right: 'rightElbow', visLeft: '_visLeftElbow', visRight: '_visRightElbow', threshold: 160, good: 'Full lockout at top', bad: 'Extend arms fully at top', severity: 'minor', citation: 'Larsen S et al, 2021, Int J Environ Res Public Health', phase: 'top' },
     ],
     scienceNotes: 'Full ROM bench press produces greater pec activation than partial reps (Larsen 2021). Best detected from side camera angle.',

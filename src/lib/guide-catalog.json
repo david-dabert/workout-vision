@@ -186,7 +186,7 @@
       "Triceps",
       "Core"
     ],
-    "fr": "Pompe",
+    "fr": "Pompes",
     "aliases": [
       "push-up",
       "pompe",
@@ -288,7 +288,7 @@
       "Shoulders",
       "Upper Back"
     ],
-    "fr": "Élévation latérale",
+    "fr": "Élévations latérales",
     "aliases": [
       "lateral raise",
       "élévation latérale",
@@ -313,7 +313,7 @@
       "Shoulders",
       "Upper Back"
     ],
-    "fr": "Élévation latérale à la poulie",
+    "fr": "Élévations latérales à la poulie",
     "aliases": [
       "cable lateral raise",
       "élévation latérale à la poulie",
@@ -333,7 +333,7 @@
       "Shoulders",
       "Chest"
     ],
-    "fr": "Élévation frontale",
+    "fr": "Élévations frontales",
     "aliases": [
       "front raise",
       "élévation frontale",
@@ -397,7 +397,7 @@
       "Rear Delts",
       "Shoulders"
     ],
-    "fr": "Face Pull",
+    "fr": "Face pull",
     "aliases": [
       "face pull",
       "face pull",
@@ -702,7 +702,7 @@
       "Biceps",
       "Core"
     ],
-    "fr": "Traction",
+    "fr": "Tractions",
     "aliases": [
       "pull-up",
       "traction",
@@ -759,7 +759,7 @@
       "Biceps",
       "Lats"
     ],
-    "fr": "Traction supination",
+    "fr": "Tractions en supination",
     "aliases": [
       "chin-up",
       "traction supination",
@@ -781,7 +781,7 @@
       "Upper Back",
       "Forearms"
     ],
-    "fr": "Haussement d'épaules",
+    "fr": "Haussement d’épaules",
     "aliases": [
       "barbell shrug",
       "haussement d'épaules",
@@ -961,7 +961,7 @@
     "muscles": [
       "Quads"
     ],
-    "fr": "Extension de jambe machine",
+    "fr": "Leg extension",
     "aliases": [
       "leg extension",
       "extension de jambe machine",
@@ -981,7 +981,7 @@
       "Hamstrings",
       "Calves"
     ],
-    "fr": "Curl de jambe machine",
+    "fr": "Leg curl",
     "aliases": [
       "leg curl",
       "curl de jambe machine",
@@ -1019,7 +1019,7 @@
       "Glutes",
       "Hamstrings"
     ],
-    "fr": "Hip Thrust",
+    "fr": "Hip thrust",
     "aliases": [
       "hip thrust",
       "hip thrust",
@@ -1363,7 +1363,7 @@
       "Core",
       "Shoulders"
     ],
-    "fr": "Planche",
+    "fr": "Gainage",
     "aliases": [
       "plank",
       "planche",
@@ -1384,7 +1384,7 @@
       "Core",
       "Shoulders"
     ],
-    "fr": "Planche latérale",
+    "fr": "Gainage latéral",
     "aliases": [
       "side plank",
       "planche latérale",
@@ -1780,7 +1780,7 @@
       "Shoulders",
       "Chest"
     ],
-    "fr": "Élévation frontale à la poulie",
+    "fr": "Élévations frontales à la poulie",
     "aliases": [
       "cable front raise",
       "élévation frontale à la poulie",
@@ -1797,7 +1797,7 @@
       "Shoulders",
       "Chest"
     ],
-    "fr": "Élévation frontale avec disque",
+    "fr": "Élévations frontales avec disque",
     "aliases": [
       "plate front raise",
       "élévation frontale avec disque",
@@ -3723,7 +3723,7 @@
       "Shoulders",
       "Core"
     ],
-    "fr": "Pompe inclinée",
+    "fr": "Pompes inclinées",
     "aliases": [
       "incline push-up",
       "pompe inclinée",
@@ -3761,7 +3761,7 @@
       "Triceps",
       "Core"
     ],
-    "fr": "Pompe large",
+    "fr": "Pompes mains écartées",
     "aliases": [
       "wide push-up",
       "pompe large",
@@ -3780,7 +3780,7 @@
       "Shoulders",
       "Core"
     ],
-    "fr": "Pompe diamant",
+    "fr": "Pompes diamant",
     "aliases": [
       "diamond push-up",
       "pompe diamant",
@@ -3820,7 +3820,7 @@
       "Chest",
       "Core"
     ],
-    "fr": "Pompe pike",
+    "fr": "Pompes pike",
     "aliases": [
       "pike push-up",
       "pompe pike",
@@ -3858,7 +3858,7 @@
       "Shoulders",
       "Core"
     ],
-    "fr": "Pompe archer",
+    "fr": "Pompes archer",
     "aliases": [
       "archer push-up",
       "pompe archer",
@@ -4279,7 +4279,7 @@
       "Upper Back",
       "Core"
     ],
-    "fr": "Traction commando",
+    "fr": "Tractions commando",
     "aliases": [
       "commando pull-up",
       "traction commando",
@@ -4355,7 +4355,7 @@
       "Hamstrings",
       "Core"
     ],
-    "fr": "Squat pistol",
+    "fr": "Pistol squat",
     "aliases": [
       "pistol squat",
       "squat pistol",
@@ -4572,7 +4572,7 @@
     "muscles": [
       "Calves"
     ],
-    "fr": "Mollets debout",
+    "fr": "Extension des mollets",
     "aliases": [
       "calf raise",
       "mollets debout",
@@ -5311,7 +5311,7 @@
       "Quads",
       "Cardio"
     ],
-    "fr": "Marche de l'ours",
+    "fr": "Marche de l’ours",
     "aliases": [
       "bear crawl",
       "marche de l'ours",

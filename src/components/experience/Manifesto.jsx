@@ -192,7 +192,7 @@ export default function Manifesto({ onClose, onChoose }) {
                       </div>
                     )}
                     <div className="manifesto-rule-app">
-                      <b>{fr ? 'Implication clé\u00A0:' : 'Key takeaway:'}</b> {pr.highlight}
+                      <b>{fr ? 'À retenir\u00A0:' : 'Key takeaway:'}</b> {pr.highlight}
                     </div>
                   </div>
                 ))}

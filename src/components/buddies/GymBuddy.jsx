@@ -14,7 +14,7 @@ import './GymBuddy.css';
 // kg instead; bios in French typography; English gym names. French awaiting David's approval (R10).
 
 const SPLIT_FILTERS = [
-  { id: 'all', en: 'All splits', fr: 'Tous formats' },
+  { id: 'all', en: 'All splits', fr: 'Tous les programmes' },
   { id: 'ppl', en: 'Push Pull Legs (PPL)', fr: 'Push Pull Legs (PPL)' },
   { id: 'upper_lower', en: 'Upper / Lower', fr: 'Haut / Bas' },
   { id: 'powerlifting', en: 'Powerlifting', fr: 'Force athlétique' },
@@ -24,7 +24,7 @@ const COPY = {
   fr: {
     eyebrow: 'Partenaires d’entraînement',
     title: 'Trouvez un partenaire de salle',
-    sub: 'Comparez vos charges de travail avec des profils fictifs, par format d’entraînement.',
+    sub: 'Comparez vos charges de travail avec des profils fictifs, par type de programme.',
     banner: 'Ces profils et leurs salles sont fictifs. Aucun partenaire réel n’est inscrit, et l’appli ne met encore personne en relation.',
     loads: 'Mes charges de travail',
     byHand: 'Saisi à la main',
@@ -33,8 +33,8 @@ const COPY = {
     typeLoads: 'Indiquez vos charges pour les comparer.',
     gap: (b, sq) => `Par rapport à vos charges\u00A0: DC ${b}, squat ${sq}`,
     fictional: 'Profil fictif',
-    none: 'Aucun profil fictif pour ce format.',
-    split: 'Format d’entraînement',
+    none: 'Aucun profil fictif pour ce programme.',
+    split: 'Type de programme',
     benchShort: 'DC',
     deadliftShort: 'SdT',
   },

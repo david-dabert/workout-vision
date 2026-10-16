@@ -18,10 +18,10 @@ export function momentLine({ n, before, fr = false, kept = true }) {
   }
   const best = Math.max(...past.map(w => w.reps));
   if (n > best) {
-    return { kind: 'record', text: fr ? `Record : ${n}. Votre meilleur était ${best}.` : `Personal best: ${n}. Your best was ${best}.` };
+    return { kind: 'record', text: fr ? `Nouveau record : ${n}. L’ancien était ${best}.` : `Personal best: ${n}. Your best was ${best}.` };
   }
   if (n === best) {
-    return { kind: 'equal', text: fr ? `${n}, votre meilleur égalé.` : `${n}, your best equalled.` };
+    return { kind: 'equal', text: fr ? `${n}, vous égalez votre record.` : `${n}, your best equalled.` };
   }
   return null;
 }
