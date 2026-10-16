@@ -18,9 +18,9 @@ const result = (patient, id, date, within, verdict = within >= 0.9 ? 'match' : '
 describe('the follow-up', () => {
   it('keeps each result once, and groups them by patient and exercise in date order', async () => {
     const { keepResult, followUp, hasResult } = await import('../store.js');
-    expect(keepResult(result('Christophe', 'mains-jointes', '2026-10-20T09:00', 0.62))).toBe(true);
-    expect(keepResult(result(' christophe ', 'mains-jointes', '2026-10-16T09:00', 0.4))).toBe(true);
-    expect(keepResult(result('Christophe', 'mains-jointes', '2026-10-20T09:00', 0.62))).toBe(false);
+    expect(keepResult(result('Christophe', 'mains-jointes', '2026-10-20T09:00', 0.62))).toBe('kept');
+    expect(keepResult(result(' christophe ', 'mains-jointes', '2026-10-16T09:00', 0.4))).toBe('kept');
+    expect(keepResult(result('Christophe', 'mains-jointes', '2026-10-20T09:00', 0.62))).toBe('already');
     expect(hasResult(result('Christophe', 'mains-jointes', '2026-10-20T09:00', 0.62))).toBe(true);
     keepResult(result('Anne', 'elevation-paliers', '2026-10-18T10:00', 0.95));
     const f = followUp();
@@ -30,9 +30,22 @@ describe('the follow-up', () => {
 
   it('refuses what is not a result', async () => {
     const { keepResult, readResults } = await import('../store.js');
-    expect(keepResult({ id: 'nope' })).toBe(false);
-    expect(keepResult(null)).toBe(false);
+    expect(keepResult({ id: 'nope' })).toBe('invalid');
+    expect(keepResult(null)).toBe('invalid');
     expect(readResults()).toEqual([]);
+  });
+
+  it('says so when the storage is blocked or full, instead of claiming the result was kept', async () => {
+    localStorage.setItem = () => { throw new Error('QuotaExceededError'); };
+    const { keepResult } = await import('../store.js');
+    expect(keepResult(result('Christophe', 'mains-jointes', '2026-10-16T09:00', 0.5))).toBe('failed');
+  });
+
+  it('keeps two patients with no name apart, by their programme', async () => {
+    const { keepResult, followUp } = await import('../store.js');
+    keepResult({ ...result('', 'mains-jointes', '2026-10-16T09:00', 0.5), prog: 'abc1' });
+    keepResult({ ...result('', 'mains-jointes', '2026-10-16T09:00', 0.5), prog: 'xyz2' });
+    expect(followUp().map(p => p.key).sort()).toEqual(['#abc1', '#xyz2']);
   });
 
   it('takes the share within tolerance of a session from its measure furthest from the reference', async () => {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { useCondensingTopbar } from '../experience/topbar';
 import { Topbar, GroupHead, Verdict } from '../experience/Showcase';
@@ -6,7 +6,7 @@ import { exerciseById } from '../../lib/kine/library';
 import { RESULT_KEY, cleanResult, payloadAfter, unpack } from '../../lib/kine/links';
 import { COPY, JOINT_NAMES, pct } from '../reference/reference-copy';
 import { TOLERANCE_DEG } from '../../lib/reference/compare';
-import { hasResult, keepResult, patientKey, requestFollowUp } from '../../lib/kine/store';
+import { keepResult, patientKey, requestFollowUp } from '../../lib/kine/store';
 import { KINE } from './kine-copy';
 import '../reference/ReferenceCompare.css';
 import './Kine.css';
@@ -24,10 +24,14 @@ export default function KineResult({ onClose }) {
   useCondensingTopbar(screenRef, [lang]);
   const r = useMemo(() => cleanResult(unpack(payloadAfter(window.location.hash, RESULT_KEY))), []);
   const ex = r ? exerciseById(r.id) : null;
-  // Whether this phone's follow-up already had the result, read before it is kept.
-  const [already] = useState(() => (r && ex ? hasResult(r) : null));
-  useEffect(() => { if (r && ex) keepResult(r); }, [r, ex]);
-  const openFollowUp = () => { requestFollowUp(patientKey(r.patient)); window.location.hash = 'kine'; };
+  // Kept in this browser's follow-up when the screen first renders: 'kept', 'already' or 'failed'. React keeps the
+  // first result of a state initialiser (a second run in development finds it 'already' and is dropped).
+  const [kept] = useState(() => (r && ex ? keepResult(r) : null));
+  const [copied, setCopied] = useState(false);
+  const openFollowUp = () => { requestFollowUp(patientKey(r)); window.location.hash = 'kine'; };
+  // On an iPhone, the app installed on the home screen does not share Safari's storage: the link is copied, to be
+  // pasted in the app's follow-up.
+  const copyLink = async () => { try { await navigator.clipboard.writeText(window.location.href); setCopied(true); } catch { /* blocked */ } };
   const when = r?.date ? new Date(r.date).toLocaleString(fr ? 'fr-FR' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }) : '';
 
   return (
@@ -57,9 +61,11 @@ export default function KineResult({ onClose }) {
               </div></li>)}</ul>
             </section>}
             <p className="sc-caption">{c.note(TOLERANCE_DEG)}</p>
-            {already != null && <section className="sc-section">
-              <p className="sc-caption" data-testid="kn-result-kept">{already ? k.rAlready : k.rSaved}</p>
-              <button type="button" className="rc-btn is-primary is-wide press" onClick={openFollowUp} data-testid="kn-result-follow">{k.rOpenFollow}</button>
+            {kept != null && <section className="sc-section">
+              <p className="sc-caption" data-testid="kn-result-kept">{kept === 'kept' ? k.rSaved : kept === 'already' ? k.rAlready : k.rFailed}</p>
+              {kept !== 'failed' && <button type="button" className="rc-btn is-primary is-wide press" onClick={openFollowUp} data-testid="kn-result-follow">{k.rOpenFollow}</button>}
+              <button type="button" className="rc-btn is-wide press" onClick={copyLink} data-testid="kn-result-copy">{copied ? k.copied : k.rCopy}</button>
+              <p className="sc-caption">{k.rInstalled}</p>
             </section>}
           </>}
         </div>

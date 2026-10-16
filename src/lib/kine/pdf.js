@@ -127,6 +127,7 @@ const pctText = (x, fr) => (x == null ? '–' : `${Math.round(x * 100)}${fr ? '\
 export function followUpPdf(patient, { lang = 'fr', practitioner = {} }) {
   const fr = lang === 'fr';
   const names = JOINT_NAMES[fr ? 'fr' : 'en'];
+  const nameOf = m => (Object.hasOwn(names, m) ? names[m] : m);
   const k = pdfDoc({ title: fr ? `Suivi · ${patient.name}` : `Follow-up · ${patient.name}`, fr });
   const { doc } = k;
   k.paint();
@@ -148,17 +149,18 @@ export function followUpPdf(patient, { lang = 'fr', practitioner = {} }) {
     y += 10;
     k.write(e[fr ? 'fr' : 'en'].title, MARGIN, y, 'sansMedium', 11, 1.3, COLOR.ink);
     y += 16;
-    const first = sessionWithin(sessions[0]), last = sessionWithin(sessions.at(-1));
-    if (sessions.length > 1 && first != null && last != null) {
-      y = textBlock(k, fr ? `Dans la tolérance\u00A0: ${pctText(first, fr)} au premier essai, ${pctText(last, fr)} au dernier (${sessions.length} essais).` : `Within tolerance: ${pctText(first, fr)} at the first attempt, ${pctText(last, fr)} at the last (${sessions.length} attempts).`, MARGIN, y, COLUMN, 9, COLOR.count) + 4;
+    const dated = sessions.filter(s => s.date);
+    const first = dated.length > 1 ? sessionWithin(dated[0]) : null, last = dated.length > 1 ? sessionWithin(dated.at(-1)) : null;
+    if (first != null && last != null) {
+      y = textBlock(k, fr ? `Mesure la plus éloignée de la référence, part dans la tolérance\u00A0: ${pctText(first, fr)} au premier essai, ${pctText(last, fr)} au dernier (${sessions.length} essais).` : `Measure furthest from the reference, share within tolerance: ${pctText(first, fr)} at the first attempt, ${pctText(last, fr)} at the last (${sessions.length} attempts).`, MARGIN, y, COLUMN, 9, COLOR.count) + 4;
     }
     for (const s of sessions) {
-      newPageIfNeeded(40);
+      newPageIfNeeded(20 + 13 * (s.joints.length + (s.holds.length ? 1 : 0)));
       const date = s.date ? new Date(s.date).toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '–';
       k.write(`${date} · ${verdict(s.verdict)}`, MARGIN, y, 'sansMedium', 9, 1.4, COLOR.ink);
       y += 13;
       for (const j of s.joints) {
-        y = textBlock(k, `${names[j.name] || j.name}\u00A0: ${fr ? 'dans la tolérance' : 'within tolerance'} ${pctText(j.within, fr)}, ${fr ? 'amplitude atteinte' : 'range reached'} ${pctText(j.range == null ? null : Math.min(j.range, 9.99), fr)}`, MARGIN + 8, y, COLUMN - 8, 8.5, COLOR.ink);
+        y = textBlock(k, `${nameOf(j.name)}\u00A0: ${fr ? 'dans la tolérance' : 'within tolerance'} ${pctText(j.within, fr)}, ${fr ? 'amplitude atteinte' : 'range reached'} ${pctText(j.range == null ? null : Math.min(j.range, 9.99), fr)}`, MARGIN + 8, y, COLUMN - 8, 8.5, COLOR.ink);
       }
       if (s.holds.length) {
         const held = s.holds.filter(h => h.status === 'held').length;

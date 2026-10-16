@@ -180,7 +180,7 @@ export default function KineWorkspace({ onClose }) {
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [lang]);
   // A result opened on this phone (KineResult.jsx) can ask for its patient's follow-up.
-  const [followUpOf] = useState(takeFollowUpRequest);
+  const [followUpOf, setFollowUpOf] = useState(takeFollowUpRequest);
   const [tab, setTab] = useState(followUpOf != null ? 'followup' : 'programme');
   const [profile, setProfile] = useState(readProfile);
   const save = p => { saveProfile(p); setProfile(p); };
@@ -196,7 +196,7 @@ export default function KineWorkspace({ onClose }) {
           {!hasMedia() && <p className="sc-frame-note" data-testid="kn-no-media">{k.noMedia}</p>}
           <div className="sc-section">
             <div className="sc-rail" role="tablist">
-              {Object.entries(k.tabs).map(([id, label]) => <button key={id} type="button" role="tab" className="sc-chip press" aria-pressed={tab === id} aria-selected={tab === id} onClick={() => { hapticLight(); setTab(id); }} data-testid={`kn-tab-${id}`}>{label}</button>)}
+              {Object.entries(k.tabs).map(([id, label]) => <button key={id} type="button" role="tab" className="sc-chip press" aria-pressed={tab === id} aria-selected={tab === id} onClick={() => { hapticLight(); setTab(id); setFollowUpOf(null); }} data-testid={`kn-tab-${id}`}>{label}</button>)}
             </div>
           </div>
           {tab === 'programme' && <ProgrammeTab fr={fr} k={k} profile={profile} />}

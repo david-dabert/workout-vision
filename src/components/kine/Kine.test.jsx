@@ -76,6 +76,13 @@ describe('the follow-up', () => {
     expect(html).toContain('55\u00A0% au premier essai, 93\u00A0% au dernier');
     expect(html).toContain('data-testid="kn-follow-pdf"');
   });
+
+  it('opens a patient whose stored result names a measure no screen knows, without breaking', async () => {
+    const hostile = JSON.stringify([{ id: 'mains-jointes', patient: 'Eve', date: '2026-10-16T09:00', verdict: 'match', joints: [{ name: '__proto__', within: 0.95, range: 1 }, { name: 'rightShoulder', within: 0.95, range: 1 }], holds: [] }]);
+    const html = await render('KineWorkspace', '', 'fr', { wv_kine_results: hostile, 's:wv_kine_open_follow_up': 'eve' });
+    expect(html).toContain('Épaule droite');
+    expect(html).not.toContain('__proto__');
+  });
 });
 
 describe('a patient result', () => {
@@ -89,5 +96,6 @@ describe('a patient result', () => {
     // Kept in this phone's follow-up, with the way to it.
     expect(html).toContain('data-testid="kn-result-kept"');
     expect(html).toContain('data-testid="kn-result-follow"');
+    expect(html).toContain('data-testid="kn-result-copy"');
   });
 });

@@ -9,7 +9,8 @@ const PROFILE = 'wv_kine_profile', INVOICE_SEQ = 'wv_kine_invoice_seq', ATTEMPTS
 const read = (key, fallback) => {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
 };
-const write = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage blocked */ } };
+/** Writes a value; false when the storage is blocked or full. */
+const write = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch { return false; } };
 
 export const EMPTY_PROFILE = Object.freeze({ name: '', title: 'Masseur-kinésithérapeute', address: '', phone: '', email: '', rpps: '', siret: '', fee: 0 });
 export const readProfile = () => ({ ...EMPTY_PROFILE, ...read(PROFILE, {}) });
@@ -33,18 +34,25 @@ export function logAttempt(programmeId, entry) {
 export const attemptsOf = programmeId => read(ATTEMPTS, {})[programmeId] || [];
 
 // The follow-up: every result the physiotherapist opens (#kine-r=, KineResult.jsx) or pastes, kept once, the last 1000.
-const resultKey = r => [patientKey(r.patient), r.id, r.date, r.verdict].join('|');
-/** The key a patient's results are grouped under: the name as the programme gave it, without case or outer spaces. */
-export const patientKey = name => String(name || '').trim().toLowerCase();
+// The same result twice: the same patient, exercise, minute, verdict and figures.
+const resultKey = r => JSON.stringify([patientKey(r), r.id, r.date, r.verdict, r.joints, r.holds]);
+/**
+ * The key a patient's results are grouped under: the name as the programme gave it, without case or outer spaces; a
+ * result with no name, by its programme (two unnamed patients stay apart). Two patients given the same name in their
+ * programmes are one to this phone: the name is the physiotherapist's to make distinct.
+ */
+export const patientKey = r => {
+  const name = String(r?.patient || '').trim().toLowerCase();
+  return name || (r?.prog ? `#${r.prog}` : '');
+};
 
-/** Keeps a received result; false when it is already kept (the same patient, exercise, moment and verdict). */
+/** Keeps a received result: 'kept', 'already' (kept before), 'failed' (storage blocked or full) or 'invalid'. */
 export function keepResult(result) {
   const r = cleanResult(result);
-  if (!r) return false;
+  if (!r) return 'invalid';
   const all = read(RESULTS, []);
-  if (all.some(x => resultKey(x) === resultKey(r))) return false;
-  write(RESULTS, [...all, r].slice(-1000));
-  return true;
+  if (all.some(x => resultKey(x) === resultKey(r))) return 'already';
+  return write(RESULTS, [...all, r].slice(-1000)) ? 'kept' : 'failed';
 }
 
 /** Whether a result is already kept. */
@@ -68,7 +76,7 @@ export const readResults = () => read(RESULTS, []).map(cleanResult).filter(Boole
 
 /** Removes one patient's results from this phone. */
 export function forgetPatient(key) {
-  write(RESULTS, read(RESULTS, []).filter(r => patientKey(r.patient) !== key));
+  write(RESULTS, read(RESULTS, []).filter(r => patientKey(r) !== key));
 }
 
 /**
@@ -78,7 +86,7 @@ export function forgetPatient(key) {
 export function followUp(results = readResults()) {
   const byPatient = new Map();
   for (const r of results) {
-    const key = patientKey(r.patient);
+    const key = patientKey(r);
     if (!byPatient.has(key)) byPatient.set(key, { key, name: r.patient.trim(), last: '', count: 0, byExercise: new Map() });
     const p = byPatient.get(key);
     p.count++;

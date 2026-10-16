@@ -24,6 +24,8 @@ import './Kine.css';
 
 const fnv = s => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); };
 const weekAgo = () => Date.now() - 7 * 864e5;
+// The attempt's local time to the minute ("2026-10-16T09:05"), read back as local time by the physiotherapist's phone.
+const localMinute = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
 // `mirror`: the patient works the side opposite the reference's (the programme's side, library.js `side`).
 function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror }) {
@@ -65,7 +67,7 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror }) {
   const send = async () => {
     hapticLight();
     const link = resultLink(`${window.location.origin}${window.location.pathname}`, {
-      id: ex.id, patient: programme.patient, kine: programme.kine.name, date: new Date().toISOString().slice(0, 16), verdict: result.verdict, tempo: result.tempo,
+      id: ex.id, patient: programme.patient, kine: programme.kine.name, date: localMinute(), prog: programmeId, verdict: result.verdict, tempo: result.tempo,
       joints: result.joints.map(j => ({ name: j.name, within: j.within, range: j.rangeShare })),
       holds: result.holds.map(h => ({ ref: shownAngle(h.refAngle, h.direction), att: shownAngle(h.attAngle, h.direction), refSec: h.refSec, attSec: h.attSec, status: h.status })),
     });

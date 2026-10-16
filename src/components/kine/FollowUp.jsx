@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { hapticLight } from '../../lib/haptics';
 import { GroupHead, Verdict } from '../experience/Showcase';
 import { exerciseById } from '../../lib/kine/library';
-import { RESULT_KEY, payloadAfter, unpack } from '../../lib/kine/links';
+import { resultPayload, unpack } from '../../lib/kine/links';
 import { followUp, forgetPatient, keepResult, sessionWithin } from '../../lib/kine/store';
 import { TOLERANCE_DEG, TOLERANCE_SHARE } from '../../lib/reference/compare';
 import { COPY, JOINT_NAMES, pct } from '../reference/reference-copy';
@@ -12,6 +12,9 @@ import { COPY, JOINT_NAMES, pct } from '../reference/reference-copy';
 // carries (lib/kine/links.js cleanResult): verdict, share within tolerance and range reached per measure, positions
 // held. The tolerance stays provisional and is said so (R8); nothing leaves the phone but the PDF the physiotherapist
 // exports.
+
+// A measure's name; one this screen does not know is shown as it came (cleanResult admits only known ones).
+const nameOf = (names, m) => (Object.hasOwn(names, m) ? names[m] : m);
 
 const when = (iso, fr) => (iso ? new Date(iso).toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '–');
 
@@ -34,23 +37,25 @@ function Trend({ sessions, names, k, fr }) {
         </g>;
       })}
     </svg>
-    <p className="rc-legend">{measures.map((m, n) => <span key={m} className="kn-legend"><span className={`rc-key kn-key is-${n % 3}`} />{names[m] || m}</span>)}<span className="kn-legend"><span className="rc-key kn-key is-threshold" />{k.fThreshold} {pct(TOLERANCE_SHARE, fr)}</span></p>
+    <p className="rc-legend">{measures.map((m, n) => <span key={m} className="kn-legend"><span className={`rc-key kn-key is-${n % 3}`} />{nameOf(names, m)}</span>)}<span className="kn-legend"><span className="rc-key kn-key is-threshold" />{k.fThreshold} {pct(TOLERANCE_SHARE, fr)}</span></p>
   </figure>;
 }
 
 function Exercise({ id, sessions, fr, k, c, names }) {
   const ex = exerciseById(id);
-  const first = sessionWithin(sessions[0]), last = sessionWithin(sessions.at(-1));
+  // Progress from the first dated attempt to the last.
+  const dated = sessions.filter(s => s.date);
+  const first = dated.length > 1 ? sessionWithin(dated[0]) : null, last = dated.length > 1 ? sessionWithin(dated.at(-1)) : null;
   return <section className="sc-section" data-testid={`kn-follow-ex-${id}`}>
     <GroupHead title={`${ex[fr ? 'fr' : 'en'].title} · ${k.fCount(sessions.length)}`} />
-    {sessions.length > 1 && first != null && last != null && <p className="sc-caption" data-testid={`kn-follow-progress-${id}`}>{k.fFromTo(pct(first, fr), pct(last, fr))}</p>}
+    {first != null && last != null && <p className="sc-caption" data-testid={`kn-follow-progress-${id}`}>{k.fFromTo(pct(first, fr), pct(last, fr))}</p>}
     <Trend sessions={sessions} names={names} k={k} fr={fr} />
     <ul className="kn-sessions">
       {[...sessions].reverse().map((s, i) => {
         const held = s.holds.filter(h => h.status === 'held').length;
         return <li key={i} className="kn-session">
           <span className="kn-session-head"><b>{when(s.date, fr)}</b><Verdict ok={s.verdict === 'match'}>{s.verdict === 'match' ? c.match : s.verdict === 'revise' ? c.revise : c.refused}</Verdict></span>
-          {s.joints.map(j => <span key={j.name} className="kn-session-row">{names[j.name] || j.name}<small>{k.rWithin} {j.within == null ? '–' : pct(j.within, fr)} · {k.rRange} {j.range == null ? '–' : pct(Math.min(j.range, 9.99), fr)}</small></span>)}
+          {s.joints.map(j => <span key={j.name} className="kn-session-row">{nameOf(names, j.name)}<small>{k.rWithin} {j.within == null ? '–' : pct(j.within, fr)} · {k.rRange} {j.range == null ? '–' : pct(Math.min(j.range, 9.99), fr)}</small></span>)}
           {s.holds.length > 0 && <span className="kn-session-row"><small>{k.fHolds(held, s.holds.length)}</small></span>}
         </li>;
       })}
@@ -68,19 +73,17 @@ export default function FollowUp({ fr, k, profile, initial = null }) {
 
   const add = () => {
     hapticLight();
-    const hash = paste.slice(Math.max(0, paste.indexOf('#')));
-    const payload = payloadAfter(hash.startsWith('#') ? hash : `#${hash}`, RESULT_KEY);
-    const r = payload ? unpack(payload) : null;
-    if (!r) { setNote(k.fBad); return; }
-    const kept = keepResult(r);
-    setNote(kept ? k.fOk : k.fDup);
-    if (kept) { setPaste(''); refresh(); }
+    const payload = resultPayload(paste);
+    const kept = payload ? keepResult(unpack(payload)) : 'invalid';
+    setNote({ kept: k.fOk, already: k.fDup, failed: k.fFailed, invalid: k.fBad }[kept]);
+    if (kept === 'kept') { setPaste(''); refresh(); }
   };
 
   const patient = patients.find(p => p.key === open);
   const exportPdf = async () => {
     hapticLight();
-    const { followUpPdf } = await import('../../lib/kine/pdf');
+    let followUpPdf;
+    try { ({ followUpPdf } = await import('../../lib/kine/pdf')); } catch { setNote(k.fPdfFailed); return; }
     followUpPdf(patient, { lang: fr ? 'fr' : 'en', practitioner: profile }).save(`suivi-${(patient.name || 'patient').replace(/[^\p{L}\p{N}]+/gu, '-').toLowerCase()}.pdf`);
   };
   const forget = () => {
@@ -101,6 +104,7 @@ export default function FollowUp({ fr, k, profile, initial = null }) {
       <section className="sc-section">
         <p className="sc-caption">{c.note(TOLERANCE_DEG)}</p>
         <button type="button" className="rc-btn is-primary is-wide press" onClick={exportPdf} data-testid="kn-follow-pdf">{k.fPdf}</button>
+        {note && <p className="sc-caption" role="status">{note}</p>}
         <button type="button" className="rc-link press kn-forget" onClick={forget} data-testid="kn-follow-forget">{k.fForget}</button>
       </section>
     </>;
@@ -122,10 +126,11 @@ export default function FollowUp({ fr, k, profile, initial = null }) {
           </li>;
         })}
       </ul>
+      {patients.length > 0 && <p className="sc-caption">{c.note(TOLERANCE_DEG)}</p>}
     </section>
     <section className="sc-section">
       <div className="kn-fields">
-        <label className="kn-field"><span>{k.fPaste}</span><input value={paste} onChange={e => { setPaste(e.target.value); setNote(''); }} placeholder={k.fPastePh} data-testid="kn-follow-paste" /></label>
+        <label className="kn-field"><span>{k.fPaste}</span><input value={paste} onChange={e => { setPaste(e.target.value); setNote(''); }} placeholder={k.fPastePh} autoCapitalize="off" autoCorrect="off" spellCheck={false} data-testid="kn-follow-paste" /></label>
         <button type="button" className="rc-btn press" onClick={add} disabled={!paste.trim()} data-testid="kn-follow-add">{k.fAdd}</button>
         {note && <p className="sc-caption" role="status" data-testid="kn-follow-note">{note}</p>}
       </div>
