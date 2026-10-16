@@ -10,6 +10,7 @@ import { cleanProgramme, programmeLink } from '../../lib/kine/links';
 import { readProfile, saveProfile, nextInvoiceNumber, takeFollowUpRequest, EMPTY_PROFILE } from '../../lib/kine/store';
 import ReferenceCompare from '../reference/ReferenceCompare';
 import FollowUp from './FollowUp';
+import Calibration from './Calibration';
 import { KINE } from './kine-copy';
 import '../reference/ReferenceCompare.css';
 import './Kine.css';
@@ -201,6 +202,7 @@ export default function KineWorkspace({ onClose }) {
           </div>
           {tab === 'programme' && <ProgrammeTab fr={fr} k={k} profile={profile} />}
           {tab === 'followup' && <FollowUp fr={fr} k={k} profile={profile} initial={followUpOf} />}
+          {tab === 'calibration' && <Calibration fr={fr} k={k} />}
           {tab === 'library' && <section className="sc-section"><div className="kn-cards">{LIBRARY.map(ex => <ExerciseCard key={ex.id} ex={ex} fr={fr} k={k} open />)}</div></section>}
           {tab === 'invoice' && <InvoiceTab fr={fr} k={k} profile={profile} onProfile={() => setTab('profile')} />}
           {tab === 'compare' && <section className="sc-section"><p className="sc-caption">{k.compareHint}</p><ReferenceCompare embedded /></section>}

@@ -24,7 +24,7 @@ describe('the physiotherapist workspace', () => {
   it('opens on the programme, with the five tabs and Olivier\'s four exercises to add', async () => {
     const html = await render('KineWorkspace');
     expect(html).toContain('data-testid="kine-screen"');
-    for (const tab of ['programme', 'followup', 'library', 'invoice', 'compare', 'profile']) expect(html).toContain(`data-testid="kn-tab-${tab}"`);
+    for (const tab of ['programme', 'followup', 'calibration', 'library', 'invoice', 'compare', 'profile']) expect(html).toContain(`data-testid="kn-tab-${tab}"`);
     for (const id of ['mains-jointes', 'rotation-externe', 'abduction-horizontale', 'elevation-paliers']) expect(html).toContain(`data-testid="kn-add-${id}"`);
     // No link to send before an exercise is chosen.
     expect(html).not.toContain('data-testid="kn-send"');
@@ -99,6 +99,34 @@ describe('the backup', () => {
     expect(html).toContain('si ce téléphone est perdu, le suivi l’est aussi');
     expect(html).toContain('clé USB');
     expect(html).toContain('data-testid="kn-backup-make"');
+  });
+});
+
+describe('the calibration', () => {
+  async function renderCal(extra) {
+    vi.stubEnv('VITE_KINE_MEDIA_URL', '');
+    const store = { wv_lang: 'fr', ...extra };
+    vi.stubGlobal('localStorage', { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } });
+    const { default: Calibration } = await import('./Calibration.jsx');
+    const { KINE } = await import('./kine-copy.js');
+    return renderToStaticMarkup(<Calibration fr k={KINE.fr} />);
+  }
+
+  it('says how to start when no attempt is kept', async () => {
+    const html = await renderCal({});
+    expect(html).toContain('data-testid="kn-cal-summary"');
+    expect(html).toContain('trois essais corrects et trois essais avec une erreur');
+  });
+
+  it('shows the agreement per exercise and the tolerance closest to the physiotherapist\'s eye', async () => {
+    const hist = within => { const h = new Array(61).fill(0); h[5] = within; h[40] = 100 - within; return h; };
+    const t = (w, label) => ({ v: 1, exercise: 'mains-jointes', label, fault: '', side: '', date: '2026-10-16T09:00', app: 'match', joints: [{ name: 'rightShoulder', kind: 'moving', rangeShare: 1, hist: hist(w), n: 100 }] });
+    const trials = [t(100, 'match'), t(98, 'match'), t(96, 'match'), t(80, 'revise'), t(70, 'revise'), t(60, 'revise')];
+    const html = await renderCal({ wv_kine_calibration: JSON.stringify(trials) });
+    expect(html).toContain('data-testid="kn-cal-ex-mains-jointes"');
+    expect(html).toContain('6 essais');
+    expect(html).toContain('data-testid="kn-cal-best-mains-jointes"');
+    expect(html).toContain('d’accord 6 fois sur 6');
   });
 });
 
