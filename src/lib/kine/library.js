@@ -8,8 +8,8 @@
 // (VITE_KINE_MEDIA_URL, set by David) or chosen on the phone; see mediaUrl().
 //
 // `compare`: whether the app compares a patient's attempt with this reference. Measured on the reference's own
-// landmarks (test/real-phone/reference/README.md): exercise 2's forearm rotation is not an angle the app reads, so it
-// has no comparison (R8).
+// landmarks (test/real-phone/reference/README.md): exercise 2's forearm rotation is not an angle the app reads, and
+// exercise 3's arm, filmed from the head end, does not read the same twice, so neither has a comparison (R8).
 
 export const LIBRARY = Object.freeze([
   {
@@ -83,7 +83,10 @@ export const LIBRARY = Object.freeze([
   {
     id: 'abduction-horizontale',
     file: 'olivier-3-abduction-horizontale',
-    compare: true,
+    // No comparison (R8): the same movement, the reference against itself replayed 1.2 times slower and read again by
+    // the pose model, was asked to revise; filmed from the head end, the working arm reads 149 degrees at the elbow in
+    // one reading and 95 in the other while it is straight (16 October 2026, demo recording). Status: measured.
+    compare: false,
     dosage: { reps: 10, sets: 3 },
     holds: [{ sec: 5 }],
     tempo: { downSec: 5 },
@@ -96,7 +99,7 @@ export const LIBRARY = Object.freeze([
         'Rester dans le plan horizontal 5 secondes.',
         'Remonter à la verticale à vitesse normale, et recommencer.',
       ],
-      camera: 'Téléphone posé dans l’axe de la tête, à hauteur de la table, comme sur la vidéo.',
+      camera: 'Vidéo de démonstration\u00A0: filmé dans l’axe de la tête, ce bras n’est pas lu de façon fiable par l’appli.',
     },
     en: {
       title: 'Arm lowered over 5 seconds, side-lying',
@@ -107,7 +110,7 @@ export const LIBRARY = Object.freeze([
         'Stay in the horizontal plane for 5 seconds.',
         'Return to vertical at normal speed, and repeat.',
       ],
-      camera: 'Phone in line with the head, at table height, as in the video.',
+      camera: 'Demonstration video: filmed in line with the head, the app does not read this arm reliably.',
     },
   },
   {

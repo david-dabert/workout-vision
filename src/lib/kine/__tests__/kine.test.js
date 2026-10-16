@@ -12,8 +12,10 @@ describe('the reference library', () => {
     }
   });
 
-  it('offers no comparison for the side-lying rotation, which the app does not read (R8)', () => {
+  it('offers no comparison for the two exercises the app does not read reliably (R8)', () => {
     expect(exerciseById('rotation-externe').compare).toBe(false);
+    expect(exerciseById('abduction-horizontale').compare).toBe(false);
+    expect(LIBRARY.filter(e => e.compare).map(e => e.id)).toEqual(['mains-jointes', 'elevation-paliers']);
   });
 });
 
