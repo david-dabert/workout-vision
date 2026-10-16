@@ -1,10 +1,12 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 vi.mock('./Kine.css', () => ({}));
 vi.mock('../reference/ReferenceCompare.css', () => ({}));
 vi.mock('../../lib/reference/readPose', () => ({ readPose: vi.fn() }));
 // Without a media address, as CI builds; the deploy job sets the repository variable.
+// Set before any test imports the library (links.js imports it): the deploy job builds with the address set.
+beforeEach(() => { vi.stubEnv('VITE_KINE_MEDIA_URL', ''); });
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.resetModules(); });
 
 async function render(name, hash = '', lang = 'fr', extra = {}) {
