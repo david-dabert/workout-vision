@@ -59,22 +59,35 @@ export function cleanProgramme(p) {
 export const programmeLink = (base, p) => `${String(base).split('#')[0]}#${PROGRAMME_KEY}${pack(cleanProgramme(p))}`;
 
 /** A patient's result of one exercise, as sent back: the verdict and its figures, never a video or a skeleton. */
+/** The result payload inside pasted text (a message may carry words, other links or '#' around it): its last one. */
+export function resultPayload(text) {
+  const all = [...String(text || '').matchAll(/kine-r=([A-Za-z0-9_-]+)/g)];
+  return all.length ? all.at(-1)[1] : null;
+}
+
+// The measures a result may name (src/lib/reference/compare.js joints and the library's directions, either side): any
+// other name in a link is dropped, so that it can never reach a lookup by name (a forged "__proto__").
+export const MEASURES = Object.freeze(['leftShoulder', 'rightShoulder', 'leftElbow', 'rightElbow', 'leftArm', 'rightArm', 'leftForearm', 'rightForearm']);
+const share = (v, hi) => (Number.isFinite(v) ? Math.round(Math.min(hi, Math.max(0, v)) * 100) / 100 : null);
+
 export function cleanResult(r) {
   if (!r || typeof r !== 'object' || !exerciseById(r.id)) return null;
   const verdicts = ['match', 'revise', 'refused'];
+  const date = clip(r.date, 16);
   return {
     v: 1,
     id: r.id,
     patient: clip(r.patient, 60),
     kine: clip(r.kine, 80),
-    date: clip(r.date, 16),
+    // The patient's local time of the attempt, to the minute; anything else is no date.
+    date: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(date) && !Number.isNaN(new Date(date).getTime()) ? date : '',
+    // The programme the attempt belongs to (KinePatient.jsx), so that two patients with no name stay apart.
+    prog: /^[a-z0-9]{1,13}$/.test(r.prog ?? '') ? r.prog : '',
     verdict: verdicts.includes(r.verdict) ? r.verdict : 'refused',
     tempo: Number.isFinite(r.tempo) ? Math.round(r.tempo * 100) / 100 : null,
-    joints: (Array.isArray(r.joints) ? r.joints : []).slice(0, 4).map(j => ({
-      name: clip(j.name, 20),
-      within: Number.isFinite(j.within) ? Math.round(j.within * 100) / 100 : null,
-      range: Number.isFinite(j.range) ? Math.round(j.range * 100) / 100 : null,
-    })),
+    joints: (Array.isArray(r.joints) ? r.joints : [])
+      .filter((j, i, all) => MEASURES.includes(j?.name) && all.findIndex(x => x?.name === j.name) === i).slice(0, 4)
+      .map(j => ({ name: j.name, within: share(j.within, 1), range: share(j.range, 10) })),
     holds: (Array.isArray(r.holds) ? r.holds : []).slice(0, 12).map(h => ({
       ref: Math.round(Number(h.ref) || 0), att: Math.round(Number(h.att) || 0),
       refSec: Math.round((Number(h.refSec) || 0) * 10) / 10, attSec: Math.round((Number(h.attSec) || 0) * 10) / 10,

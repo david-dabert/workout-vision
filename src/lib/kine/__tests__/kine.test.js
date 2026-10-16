@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LIBRARY, exerciseById } from '../library.js';
-import { cleanProgramme, cleanResult, pack, payloadAfter, programmeLink, PROGRAMME_KEY, resultLink, RESULT_KEY, unpack } from '../links.js';
+import { cleanProgramme, cleanResult, pack, payloadAfter, programmeLink, PROGRAMME_KEY, resultLink, resultPayload, RESULT_KEY, unpack } from '../links.js';
 
 describe('the reference library', () => {
   it('holds Olivier\'s four exercises, each with steps in both languages and its dosage', () => {
@@ -64,6 +64,19 @@ describe('programme and result links', () => {
     const r = cleanResult(unpack(payloadAfter(link.slice(link.indexOf('#')), RESULT_KEY)));
     expect(r).toMatchObject({ verdict: 'revise', tempo: 1.35, joints: [{ name: 'rightShoulder', within: 0.52, range: 0.65 }], holds: [{ ref: 106, att: 91, status: 'short' }] });
     expect(JSON.stringify(r)).not.toContain('must not travel');
+  });
+
+  it('admits only known measure names, clamps shares, and drops a date that is not one', () => {
+    const r = cleanResult({ id: 'mains-jointes', date: 'not a date at all', joints: [{ name: '__proto__', within: 0.9 }, { name: 'rightShoulder', within: 42, range: -1 }, { name: 'rightShoulder', within: 0.1 }] });
+    expect(r.joints).toEqual([{ name: 'rightShoulder', within: 1, range: 0 }]);
+    expect(r.date).toBe('');
+  });
+
+  it('finds the result link in pasted text, words and other "#" around it', () => {
+    const link = resultLink('https://example.org/app/', { id: 'mains-jointes', verdict: 'match', joints: [], holds: [] });
+    const payload = link.slice(link.indexOf(RESULT_KEY) + RESULT_KEY.length);
+    expect(resultPayload(`Séance #2 : ${link} merci !`)).toBe(payload);
+    expect(resultPayload('rien ici')).toBeNull();
   });
 
   it('packs to the shorter of plain and gzip', () => {

@@ -1,11 +1,14 @@
-// The physiotherapist's two documents, on the app's paper (components/experience/pdf-kit.js): the patient's exercise
-// sheet, with the QR code of the programme's link, and the note d'honoraires. Loaded on demand (KineWorkspace.jsx).
+// The physiotherapist's documents, on the app's paper (components/experience/pdf-kit.js): the patient's exercise
+// sheet, with the QR code of the programme's link, the note d'honoraires, and a patient's follow-up sheet. Loaded on demand (KineWorkspace.jsx).
 // The note's legal mentions are those a French physiotherapist's note of fees carries: the practitioner's identity and
 // RPPS/ADELI number, the patient, the date, each act and its fee, the total, and the exemption from VAT of medical
 // care (Code général des impôts, article 261-4-1°). Source: CGI art. 261-4-1°. Status: literature.
 import QRCode from 'qrcode';
 import { pdfDoc, PAGE_W, PAGE_H, MARGIN, COLUMN, COLOR } from '../../components/experience/pdf-kit';
 import { exerciseById } from './library';
+import { sessionWithin } from './store';
+import { TOLERANCE_DEG, TOLERANCE_SHARE } from '../reference/compare';
+import { JOINT_NAMES } from '../../components/reference/reference-copy';
 
 const euro = (n, fr) => new Intl.NumberFormat(fr ? 'fr-FR' : 'en-GB', { style: 'currency', currency: 'EUR' }).format(n || 0);
 const day = (iso, fr) => {
@@ -111,5 +114,63 @@ export function invoicePdf(inv, { lang = 'fr' }) {
   y += 30;
   if (inv.paid) y = textBlock(k, fr ? `Acquittée le ${day(inv.date, fr)}${inv.method ? ` par ${inv.method}` : ''}.` : `Paid on ${day(inv.date, fr)}${inv.method ? ` by ${inv.method}` : ''}.`, MARGIN, y, COLUMN, 9, COLOR.ink) + 4;
   textBlock(k, fr ? 'TVA non applicable, article 261-4-1° du Code général des impôts.' : 'VAT not applicable (French tax code, article 261-4-1°).', MARGIN, y, COLUMN, 8, COLOR.ash);
+  return doc;
+}
+
+const pctText = (x, fr) => (x == null ? '–' : `${Math.round(x * 100)}${fr ? '\u00A0%' : '%'}`);
+
+/**
+ * A patient's follow-up sheet (FollowUp.jsx): per exercise, each attempt received with its verdict, share within
+ * tolerance and range reached per measure, and positions held; the first and last shares; the tolerance said to be
+ * provisional (R8).
+ */
+export function followUpPdf(patient, { lang = 'fr', practitioner = {} }) {
+  const fr = lang === 'fr';
+  const names = JOINT_NAMES[fr ? 'fr' : 'en'];
+  const nameOf = m => (Object.hasOwn(names, m) ? names[m] : m);
+  const k = pdfDoc({ title: fr ? `Suivi · ${patient.name}` : `Follow-up · ${patient.name}`, fr });
+  const { doc } = k;
+  k.paint();
+  let y = MARGIN;
+  const newPageIfNeeded = need => { if (y + need > PAGE_H - MARGIN) { doc.addPage(); k.paint(); y = MARGIN; } };
+  k.write(k.upper(fr ? 'Suivi du patient' : 'Patient follow-up'), MARGIN, y, 'mono', 7, 1.4, COLOR.ash, 1.2);
+  y += 16;
+  k.write(patient.name || (fr ? 'Patient sans nom' : 'Unnamed patient'), MARGIN, y, 'serif', 22, 1.1, COLOR.ink);
+  y += 30;
+  const who = [practitioner.name, practitioner.title, practitioner.phone].filter(Boolean).join(' · ');
+  if (who) y = textBlock(k, who, MARGIN, y, COLUMN, 8.5, COLOR.ash) + 2;
+  y = textBlock(k, fr ? `Édité le ${day(null, fr)}.` : `Printed on ${day(null, fr)}.`, MARGIN, y, COLUMN, 8.5, COLOR.ash) + 10;
+  const verdict = v => (v === 'match' ? (fr ? 'Conforme à la référence' : 'Matches the reference') : v === 'revise' ? (fr ? 'À revoir' : 'To revise') : (fr ? 'Pas de verdict' : 'No verdict'));
+  for (const { id, sessions } of patient.exercises) {
+    const e = exerciseById(id);
+    if (!e) continue;
+    newPageIfNeeded(70);
+    doc.setDrawColor(COLOR.rule); doc.setLineWidth(0.5); doc.line(MARGIN, y, MARGIN + COLUMN, y);
+    y += 10;
+    k.write(e[fr ? 'fr' : 'en'].title, MARGIN, y, 'sansMedium', 11, 1.3, COLOR.ink);
+    y += 16;
+    const dated = sessions.filter(s => s.date);
+    const first = dated.length > 1 ? sessionWithin(dated[0]) : null, last = dated.length > 1 ? sessionWithin(dated.at(-1)) : null;
+    if (first != null && last != null) {
+      y = textBlock(k, fr ? `Mesure la plus éloignée de la référence, part dans la tolérance\u00A0: ${pctText(first, fr)} au premier essai, ${pctText(last, fr)} au dernier (${sessions.length} essais).` : `Measure furthest from the reference, share within tolerance: ${pctText(first, fr)} at the first attempt, ${pctText(last, fr)} at the last (${sessions.length} attempts).`, MARGIN, y, COLUMN, 9, COLOR.count) + 4;
+    }
+    for (const s of sessions) {
+      newPageIfNeeded(20 + 13 * (s.joints.length + (s.holds.length ? 1 : 0)));
+      const date = s.date ? new Date(s.date).toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '–';
+      k.write(`${date} · ${verdict(s.verdict)}`, MARGIN, y, 'sansMedium', 9, 1.4, COLOR.ink);
+      y += 13;
+      for (const j of s.joints) {
+        y = textBlock(k, `${nameOf(j.name)}\u00A0: ${fr ? 'dans la tolérance' : 'within tolerance'} ${pctText(j.within, fr)}, ${fr ? 'amplitude atteinte' : 'range reached'} ${pctText(j.range == null ? null : Math.min(j.range, 9.99), fr)}`, MARGIN + 8, y, COLUMN - 8, 8.5, COLOR.ink);
+      }
+      if (s.holds.length) {
+        const held = s.holds.filter(h => h.status === 'held').length;
+        y = textBlock(k, fr ? `${held}/${s.holds.length} positions tenues` : `${held}/${s.holds.length} positions held`, MARGIN + 8, y, COLUMN - 8, 8.5, COLOR.ash);
+      }
+      y += 6;
+    }
+    y += 6;
+  }
+  newPageIfNeeded(30);
+  textBlock(k, fr ? `Mesures de l’application, comparées au geste de référence du kinésithérapeute. La tolérance (${TOLERANCE_DEG} degrés, ${pctText(TOLERANCE_SHARE, true)} du geste) est provisoire\u00A0: elle n’est pas encore fixée sur des essais de patients.` : `The app’s measures, compared with the physiotherapist’s reference movement. The tolerance (${TOLERANCE_DEG} degrees, ${pctText(TOLERANCE_SHARE, false)} of the movement) is provisional: it is not yet set on patients’ attempts.`, MARGIN, y, COLUMN, 7.5, COLOR.ash);
   return doc;
 }
