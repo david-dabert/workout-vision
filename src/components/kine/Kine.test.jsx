@@ -75,7 +75,7 @@ describe('the follow-up', () => {
     const html = await render('KineWorkspace', '', 'fr', { wv_kine_results: results, 's:wv_kine_open_follow_up': 'christophe' });
     expect(html).toContain('data-testid="kn-follow-patient"');
     expect(html).toContain('Christophe');
-    expect(html).toContain('55\u00A0% au premier essai, 93\u00A0% au dernier');
+    expect(html).toContain('55\u00A0% du geste dans la tolérance au premier essai, 93\u00A0% au dernier');
     expect(html).toContain('data-testid="kn-follow-pdf"');
   });
 
