@@ -130,7 +130,6 @@ export default function Pro({ onClose, start = null }) {
 function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, onSetProTab, onAddPhysio }) {
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [fr, proTab]);
-  const day = t => new Date(t).toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short' });
   return <div className="wv-experience">
     <section ref={screenRef} className="screen is-active pro-screen" data-testid="pro-screen"><div className="wrap">
       <div className="topbar">
@@ -195,7 +194,7 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, on
             <h2 className="section-head">{c.draftsHead}</h2>
             <ul className="pro-drafts">{drafts.map(d => <li key={d.id}>
               <button type="button" className="pro-draft press" onClick={() => onOpen(d.id)}>
-                <span className="row-txt"><b>{d.title.trim() || c.untitled}</b><small>{[d.who.trim(), c.draftMeta(d.items.length, day(d.updatedAt))].filter(Boolean).join(' · ')}</small></span>
+                <span className="row-txt"><b>{d.title.trim() || c.untitled}</b><small>{[d.who.trim(), c.draftMeta(d.items.length)].filter(Boolean).join(' · ')}</small></span>
                 <Arrow />
               </button>
             </li>)}</ul>
