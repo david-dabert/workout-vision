@@ -38,7 +38,10 @@ export function cleanProgramme(p) {
   if (!p || typeof p !== 'object') return null;
   const items = (Array.isArray(p.items) ? p.items : []).map(it => {
     if (!exerciseById(it?.id)) return null;
-    return { id: it.id, reps: int(it.reps, 1, 100, 10), sets: int(it.sets, 1, 20, 3), note: clip(it.note, 400) };
+    const item = { id: it.id, reps: int(it.reps, 1, 100, 10), sets: int(it.sets, 1, 20, 3), note: clip(it.note, 400) };
+    // The treated side, for an exercise done with one arm (library.js `side`).
+    if (exerciseById(it.id).side && (it.side === 'left' || it.side === 'right')) item.side = it.side;
+    return item;
   }).filter(Boolean).slice(0, 20);
   if (!items.length) return null;
   return {

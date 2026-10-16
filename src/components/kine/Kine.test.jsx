@@ -48,6 +48,15 @@ describe('the patient programme', () => {
     expect(html).not.toContain('data-testid="kn-film-');
   });
 
+  it('tells the patient which side to work when it is not the video\'s', async () => {
+    const { programmeLink } = await import('../../lib/kine/links');
+    const link = programmeLink('https://example.org/app/', { kine: { name: 'Olivier' }, patient: 'C', items: [{ id: 'rotation-externe', side: 'right' }, { id: 'abduction-horizontale', side: 'left' }] });
+    const html = await render('KinePatient', link.slice(link.indexOf('#')));
+    expect(html).toContain('data-testid="kn-side-note-rotation-externe"');
+    expect(html).toContain('Côté à travailler');
+    expect(html).not.toContain('data-testid="kn-side-note-abduction-horizontale"');
+  });
+
   it('says so when the link does not open', async () => {
     expect(await render('KinePatient', '#kine-p=zbroken')).toContain('data-testid="kn-bad-link"');
   });

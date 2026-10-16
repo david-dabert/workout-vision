@@ -26,13 +26,16 @@ Reading the same file twice gives the same landmarks to within one degree; the s
 | 2 | Forearm direction, elbow to wrist | 2.6 degrees |
 
 Directions are measured against the body line (left shoulder to right shoulder, its median over the video), so that a phone propped a little askew reads the same.
-Through the whole engine, the slower reading matches its reference on both videos, also seen in a mirror (90th percentile gap: 1.1 degrees on video 2, 1.6 on video 3), and three faults built from it (the range cut to 70 % from either end, the segment 25 degrees off) are asked to revise.
+Through the whole engine, the slower reading matches its reference on both videos (90th percentile gap after alignment: 1.1 degrees on video 2, 1.7 on video 3), also seen in a mirror when read on the side the physiotherapist sets, and three faults built from it (the range cut to 70 % from either end, the segment 25 degrees off) are asked to revise.
+
+An attempt is read as in a mirror in three cases only: the physiotherapist set the patient's side opposite the reference's (exercises 2 and 3, done with one arm); the plain reading gives no verdict; or the mirror reading sees the measured points clearly better (mean visibility 0.1 higher: a patient filmed from the other side, whose near arm is then the other one).
+It is never chosen because it fits better: on a side-on video the mirror reading is the far arm, which the reference itself leaves out, and a short raise of the near arm would pass on the far one (found in review, 16 October 2026).
 Exercise 2's position below the horizontal is not judged: the reference does not show it.
 Exercise 3's horizontal hold is judged only on the moments when the lowered arm is apart from the other one.
 
 Bench: `REFERENCE_LANDMARKS=<local folder> node test/real-phone/reference/bench.mjs` prints the tables; the four landmark tests in `src/lib/reference/__tests__/compare.test.js` run when the same variable is set, and are skipped otherwise.
 Each reference is compared on the measures `src/lib/kine/library.js` sets for it, with itself, with itself 1.3 times slower with 3 s of extra footage before and after, with itself seen in a mirror, with the other three videos, and with faulty versions of itself (the first moving measure cut to 70 % of its range from either end, or 25 degrees off throughout; on references 1 and 4, the elbows 30 degrees more bent).
-On all four references (16 October 2026): itself, slower and mirrored match; the other videos are asked to revise or given no verdict; every fault is asked to revise, on the measure that carries it.
+On all four references (16 October 2026): itself, slower and mirrored match (12 of 12); the other videos are asked to revise or given no verdict, and every fault is asked to revise, on the measure that carries it (28 of 28).
 No patient attempt has been measured yet: the tolerances (`src/lib/reference/compare.js`) are experimental and UNSOURCED (R9).
 
 ## Olivier's stated angles against the app's reading (video 4)

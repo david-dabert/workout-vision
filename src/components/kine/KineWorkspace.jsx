@@ -94,6 +94,11 @@ function ProgrammeTab({ fr, k, profile }) {
               <NumberField label={k.sets} value={it.sets} onChange={v => set(it.id, { sets: v })} min={1} max={20} />
               <NumberField label={k.reps} value={it.reps} onChange={v => set(it.id, { reps: v })} min={1} max={100} />
             </div>
+            {ex.side && <label className="kn-field"><span>{k.side}</span>
+              <select value={it.side ?? ex.side} onChange={e => set(it.id, { side: e.target.value })} data-testid={`kn-side-${it.id}`}>
+                {['left', 'right'].map(s => <option key={s} value={s}>{k.sides[s]}</option>)}
+              </select>
+            </label>}
             <label className="kn-field"><span>{k.itemNote}</span><textarea rows={2} value={it.note} onChange={e => set(it.id, { note: e.target.value })} placeholder={k.itemNotePh} /></label>
           </li>;
         })}

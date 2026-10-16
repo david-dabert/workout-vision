@@ -64,7 +64,7 @@ function angleAt(a, b, c, aspect) {
 //   forearm (elbow to wrist) through about 55 degrees in the picture, read to 2.6.
 // The direction is measured against the body's own line (left shoulder to right shoulder, its median over the whole
 // video), so that a phone propped a little askew reads the same; the patient films from the reference's side.
-// Status: measured (two readings of the reference; no patient attempt yet).
+// Status: experimental (measured on two readings of each reference video; no patient attempt yet).
 // `apartFrom`: a landmark the segment's end must stay apart from, by this share of the picture's height, or the
 // sample is dropped (video 3: the lowered arm lies on the other arm, and the model swaps the two wrists).
 // Status: experimental, UNSOURCED.
@@ -173,12 +173,19 @@ function circularMedian(values) {
   return around[Math.floor(around.length / 2)];
 }
 
-/** Samples further than JUMP_DEG from the median of the second around them, dropped. */
+/**
+ * Samples further than JUMP_DEG from the median of the second around them, dropped. The window is kept symmetric (as
+ * many seen samples on each side), so that a steady move next to a gap or an end is not taken for a jump.
+ */
 export function dropJumps(values, half = Math.round(SAMPLE_HZ / 2)) {
   return values.map((v, i) => {
     if (v == null) return null;
-    const w = values.slice(Math.max(0, i - half), i + half + 1).filter(x => x != null).sort((a, b) => a - b);
-    return w.length >= 3 && Math.abs(v - w[Math.floor(w.length / 2)]) > JUMP_DEG ? null : v;
+    const before = values.slice(Math.max(0, i - half), i).filter(x => x != null);
+    const after = values.slice(i + 1, i + half + 1).filter(x => x != null);
+    const n = Math.min(before.length, after.length);
+    if (!n) return v;
+    const w = [...before.slice(before.length - n), v, ...after.slice(0, n)].sort((a, b) => a - b);
+    return Math.abs(v - w[n]) > JUMP_DEG ? null : v;
   });
 }
 
@@ -290,7 +297,7 @@ export function compareCurves(reference, attemptCurves) {
     for (let i = worst + 1; i < gaps.length; i++) if (gaps[i] != null && gaps[i] > gaps[worst]) worst = i;
     const rangeShare = j.kind === 'moving' ? range(matched.map((v, i) => (shown(i) ? v : null))) / j.range : null;
     return {
-      name: j.name, kind: j.kind, within, gapP90: percentile(gaps, 0.9), rangeShare, shown: judged.length / gaps.length,
+      name: j.name, kind: j.kind, direction: !!j.direction, within, gapP90: percentile(gaps, 0.9), rangeShare, shown: judged.length / gaps.length,
       worst: { atSec: worst / SAMPLE_HZ, reference: ref[k][worst], attempt: matched[worst] },
     };
   });
@@ -305,6 +312,8 @@ export function compareCurves(reference, attemptCurves) {
     tempo: (end - start + 1) / ref[0].length,
     path,
     reference: reference.joints.map(j => j.curve),
+    // Per measure, whether the reference shows each of its moments; the screens judge and label only those (R8).
+    seen: reference.joints.map(j => j.seen ?? j.curve.map(() => true)),
     matched: matchedByJoint,
     holds: holds(reference, att, path),
   };
@@ -348,13 +357,20 @@ export function holds(reference, attCurves, path) {
       const attAngle = ai.reduce((sum, x) => sum + a[x], 0) / ai.length;
       // The attempt's own hold: from the middle of its matched samples, as far as it stays still. The alignment
       // gives a long hold's extra samples to the reference's moments around it, so its span alone would hide them.
-      let lo = ai[Math.floor(ai.length / 2)], hi = lo;
+      // From the still sample nearest the middle of the matched ones, looked for up to half a second beyond them: the
+      // alignment can give a whole hold to the last sample of the move into it (video 3, re-read slower, 16 October 2026).
+      const mid = ai[Math.floor(ai.length / 2)], reach = Math.round(SAMPLE_HZ / 2);
+      const near = [];
+      for (let x = Math.max(0, ai[0] - reach); x <= Math.min(a.length - 1, ai.at(-1) + reach); x++) if (attStill[x]) near.push(x);
+      const still = near.sort((x, y) => Math.abs(x - mid) - Math.abs(y - mid));
+      let lo = still[0] ?? mid, hi = lo;
       if (attStill[lo]) {
         while (lo > 0 && attStill[lo - 1]) lo--;
         while (hi + 1 < a.length && attStill[hi + 1]) hi++;
       }
       out.push({
         joint: main.name,
+        direction: !!main.direction,
         startSec: i / SAMPLE_HZ,
         refSec: (e - i + 1) / SAMPLE_HZ,
         refAngle: c.slice(i, e + 1).reduce((sum, v) => sum + v, 0) / (e - i + 1),
@@ -378,17 +394,55 @@ export function mirrorLandmarks(landmarks) {
   return landmarks.map(lm => lm && lm.map((_, i) => { const p = lm[MIRROR[i]]; return p && { ...p, x: 1 - p.x }; }));
 }
 
+// How much clearer the mirror reading must see the measured points to be kept over a plain reading that has a verdict.
+// Status: experimental, UNSOURCED (video 4: near arm seen at 0.9 and more, far arm at 0.72 on average).
+export const NEARER_MARGIN = 0.1;
+
+/** Mean visibility, over the attempt, of the points the reference's measures are read from. */
+function seenScore(reference, landmarks, { joints = JOINTS, directions = {} } = {}) {
+  const points = [...new Set(reference.joints.flatMap(j => (directions[j.name] ? [directions[j.name].from, directions[j.name].to] : joints[j.name] ?? [])))];
+  let sum = 0, n = 0;
+  for (const lm of landmarks) {
+    if (!lm) continue;
+    for (const i of points) { sum += lm[i]?.visibility ?? 0; n++; }
+  }
+  return n ? sum / n : 0;
+}
+
+const otherSide = name => (name.startsWith('left') ? `right${name.slice(4)}` : name.startsWith('right') ? `left${name.slice(5)}` : name);
+
 /**
- * Attempt landmarks against a reference model (the same kind of landmarks and options as the reference's). The
- * attempt is also read as in a mirror, so that a patient filmed from the other side, or by a front camera that
- * mirrors, is compared on the same arm as the reference: the reading with a verdict, then the closer, is kept;
- * `mirrored` says which.
+ * Attempt landmarks against a reference model (the same kind of landmarks and options as the reference's). The attempt
+ * is read as in a mirror when the physiotherapist set the reference's other side (`mirror`), when the plain reading
+ * gives no verdict, or when the mirror reading sees the measured points clearly better: a patient filmed from the
+ * other side, or lying the other way round, shows the reference's arm on the other side of the body. Never because a
+ * reading fits better: on a side-on video the mirror reading is the far arm, which the reference itself leaves out as
+ * the pose model's guess, and keeping the closer of two readings would let a wrong movement of one arm pass on the
+ * other (R8). The mirrored result names the
+ * patient's side (`measure` keeps the reference's name) and says `mirrored`.
  */
 export function compareAttempt(reference, landmarks, timestamps, options = {}) {
-  const plain = compareCurves(reference, curves(landmarks, timestamps, options));
-  const mirrored = compareCurves(reference, curves(mirrorLandmarks(landmarks), timestamps, options));
-  const better = (plain.verdict === 'refused') !== (mirrored.verdict === 'refused')
-    ? (plain.verdict === 'refused' ? mirrored : plain)
-    : ((mirrored.cost ?? Infinity) < (plain.cost ?? Infinity) ? mirrored : plain);
-  return { ...better, mirrored: better === mirrored };
+  // `mirror`: the patient is known to work the reference's other side (set by the physiotherapist): only the mirrored
+  // reading is made.
+  const flipped = mirrorLandmarks(landmarks);
+  const plain = options.mirror ? null : compareCurves(reference, curves(landmarks, timestamps, options));
+  if (plain?.reasons.includes('reference-unseen')) return { ...plain, mirrored: false };
+  // The reference judges the arm nearest its camera (the one it sees); so does the attempt: the mirror reading is
+  // kept when it sees the measured points clearly better (a patient filmed from the other side), never because it
+  // fits the reference better.
+  const nearer = plain && plain.verdict !== 'refused'
+    && seenScore(reference, flipped, options) > seenScore(reference, landmarks, options) + NEARER_MARGIN;
+  if (plain && plain.verdict !== 'refused' && !nearer) return { ...plain, mirrored: false };
+  const m = compareCurves(reference, curves(flipped, timestamps, options));
+  if (plain && m.verdict === 'refused') return { ...plain, mirrored: false };
+  return {
+    ...m,
+    mirrored: true,
+    joints: m.joints.map(j => ({ ...j, name: otherSide(j.name), measure: j.name })),
+    reasons: m.reasons.map(r => { const [kind, name] = r.split(':'); return name ? `${kind}:${otherSide(name)}` : r; }),
+    holds: (m.holds ?? []).map(h => ({ ...h, joint: otherSide(h.joint) })),
+  };
 }
+
+/** An angle as the screens show it: a direction, measured against the body line, as its angle to that line (0 to 180). */
+export const shownAngle = (value, direction) => (direction ? Math.abs(wrap(value)) : value);

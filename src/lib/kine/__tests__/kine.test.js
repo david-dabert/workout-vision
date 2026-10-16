@@ -46,6 +46,11 @@ describe('programme and result links', () => {
     expect(unpack(null)).toBeNull();
   });
 
+  it('carries the treated side, only for an exercise done with one arm', () => {
+    const p = cleanProgramme({ ...programme, items: [{ id: 'abduction-horizontale', side: 'right' }, { id: 'mains-jointes', side: 'right' }, { id: 'rotation-externe', side: 'up' }] });
+    expect(p.items.map(i => i.side)).toEqual(['right', undefined, undefined]);
+  });
+
   it('turns control characters of a link into spaces', () => {
     expect(cleanProgramme({ ...programme, patient: 'Chris\u0000tophe\n' }).patient).toBe('Chris tophe');
   });

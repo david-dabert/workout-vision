@@ -14,7 +14,8 @@ const load = f => JSON.parse(gunzipSync(fs.readFileSync(dir + f)));
 const videos = Object.fromEntries(names.map(f => [f.replace('.json.gz', ''), load(f)]));
 // Picture-plane angles (compare.js): each video's image landmarks and its own width over height, and the measures the
 // library sets for that exercise (a landmark file "olivier-2-..." is the library's exercise "olivier-2-...").
-const measuresOf = name => LIBRARY.find(e => e.file.split('-').slice(0, 2).join('-') === name.split('-').slice(0, 2).join('-'))?.measures;
+const exerciseOf = name => LIBRARY.find(e => e.file.split('-').slice(0, 2).join('-') === name.split('-').slice(0, 2).join('-'));
+const measuresOf = name => exerciseOf(name)?.measures;
 const opts = (v, name) => ({ ...measuresOf(name), aspect: v.metadata.extractedWidth / v.metadata.extractedHeight });
 
 // The same movement 1.3 times slower, with 3 s of the first pose before and 3 s of the last after.
@@ -37,10 +38,13 @@ for (const [name, v] of Object.entries(videos)) {
     `Joints not used (seen under 80 %): ${ref.unused.map(u => `${u.name} ${f2(u.seenShare)}`).join(', ') || 'none'}.`, '',
     '| Attempt | Verdict | Reasons | Tempo | Joints: within tolerance / p90 gap / range reached |', '|---|---|---|---|---|');
   const attempts = [[`${name} (itself)`, v], [`${name} slower x1.3, padded`, slower(v)],
-    [`${name} seen in a mirror`, { ...v, imageLandmarks: mirrorLandmarks(v.imageLandmarks) }],
+    [`${name} seen in a mirror`, { ...v, imageLandmarks: mirrorLandmarks(v.imageLandmarks), mirrorOf: name }],
     ...Object.entries(videos).filter(([o]) => o !== name)];
   for (const [label, a] of attempts) {
-    const r = compareAttempt(ref, a.imageLandmarks, a.timestamps, opts(a, name));
+    // Seen in a mirror: a one-arm exercise is read on the side the physiotherapist sets (the other one); the others
+    // are read as in a mirror only when the plain reading gives no verdict.
+    const mirror = a.mirrorOf === name && !!exerciseOf(name)?.side;
+    const r = compareAttempt(ref, a.imageLandmarks, a.timestamps, { ...opts(a, name), mirror });
     const js = r.joints.map(j => `${j.name} ${f2(j.within)} / ${f1(j.gapP90)} / ${f2(j.rangeShare)}`).join('; ');
     lines.push(`| ${label} | ${r.verdict} | ${r.reasons.join(', ') || '-'} | ${f2(r.tempo)} | ${js || '-'} |`);
   }

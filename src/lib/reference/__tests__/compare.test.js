@@ -86,7 +86,7 @@ describe('reference comparison', () => {
 
 // A person lying with the shoulders stacked (left above right), the left arm swinging from straight up to pointing
 // right, as in Olivier's video 3 filmed from the head end. Image landmarks, picture 1 wide by 1 high.
-function swing(seconds = 10, hz = 15, { tilt = 0, mirror = false } = {}) {
+function swing(seconds = 10, hz = 15, { tilt = 0, mirror = false, otherArmSeen = 0.99 } = {}) {
   const ts = [], lms = [];
   const rot = (x, y) => {
     const c = Math.cos(tilt), s = Math.sin(tilt), dx = x - 0.5, dy = y - 0.5;
@@ -100,6 +100,7 @@ function swing(seconds = 10, hz = 15, { tilt = 0, mirror = false } = {}) {
     set(13, 0.4 + 0.12 * Math.sin(a), 0.45 - 0.12 * Math.cos(a));
     set(15, 0.4 + 0.24 * Math.sin(a), 0.45 - 0.24 * Math.cos(a));
     set(14, 0.55, 0.62); set(16, 0.7, 0.64);
+    pts[14].visibility = pts[16].visibility = otherArmSeen;
     if (mirror) { // the model names the mirrored person's arms the other way round
       for (const [l, r] of [[11, 12], [13, 14], [15, 16]]) [pts[l], pts[r]] = [pts[r], pts[l]];
     }
@@ -126,10 +127,19 @@ describe('segment directions', () => {
     expect(r.joints[0].gapP90).toBeLessThan(2);
   });
 
-  it('compares a mirrored picture on the same arm, and says it was mirrored', () => {
-    const m = swing(13, 15, { mirror: true });
+  it('reads a patient lying the other way round as in a mirror, and names the patient\'s side', () => {
+    // The arm under the body is not seen: the plain reading gives no verdict, the mirrored one does.
+    const m = swing(13, 15, { mirror: true, otherArmSeen: 0.1 });
     const r = compareAttempt(ref, m.lms, m.ts, options);
     expect(r).toMatchObject({ verdict: 'match', mirrored: true });
+    expect(r.joints[0]).toMatchObject({ name: 'rightArm', measure: 'leftArm' });
+  });
+
+  it('reads only as in a mirror when the physiotherapist set the other side', () => {
+    // Both arms seen: without the side, the plain reading would judge the arm that does not move.
+    const m = swing(13, 15, { mirror: true });
+    expect(compareAttempt(ref, m.lms, m.ts, options).mirrored).toBe(false);
+    expect(compareAttempt(ref, m.lms, m.ts, { ...options, mirror: true })).toMatchObject({ verdict: 'match', mirrored: true });
   });
 
   it('asks to revise a swing that stops at two thirds', () => {
@@ -153,11 +163,43 @@ describe('segment directions', () => {
     expect(dropJumps([10, 11, 12, 80, 13, 14, 15])).toEqual([10, 11, 12, null, 13, 14, 15]);
   });
 
+  it('keeps a steady move that runs into a gap or an end', () => {
+    expect(dropJumps([0, 9, 18, 27, 36, 45, 54, null, null])).toEqual([0, 9, 18, 27, 36, 45, 54, null, null]);
+  });
+
   it('mirrors landmarks: x turned over, left and right exchanged', () => {
     const lm = Array.from({ length: 33 }, (_, i) => ({ x: i / 100, y: 0, visibility: 1 }));
     const m = mirrorLandmarks([lm])[0];
     expect(m[11].x).toBeCloseTo(1 - 0.12);
     expect(m[0].x).toBeCloseTo(1);
+  });
+});
+
+describe('the mirror reading', () => {
+  // Side-on, as video 4: the near (right) arm is the reference's; the far arm is the pose model's guess.
+  function sideOn(top, farTop, farSeen) {
+    const ts = [], lms = [];
+    for (let i = 0; i <= 150; i++) {
+      const t = i / 15, a = (Math.PI / 180) * (10 + (top - 10) * Math.sin((Math.PI * t) / 10));
+      const b = (Math.PI / 180) * (10 + (farTop - 10) * Math.sin((Math.PI * t) / 10));
+      const pts = Array.from({ length: 33 }, () => ({ x: 0.5, y: 0.5, visibility: 0.1 }));
+      const arm = (s, e, w, h, ang, vis) => {
+        pts[h] = { x: 0.3, y: 0.5, z: 0, visibility: vis }; pts[s] = { x: 0.6, y: 0.5, z: 0, visibility: vis };
+        pts[e] = { x: 0.6 - 0.12 * Math.cos(ang), y: 0.5 - 0.12 * Math.sin(ang), z: 0, visibility: vis };
+        pts[w] = { x: 0.6 - 0.24 * Math.cos(ang), y: 0.5 - 0.24 * Math.sin(ang), z: 0, visibility: vis };
+      };
+      arm(12, 14, 16, 24, a, 0.99); arm(11, 13, 15, 23, b, farSeen);
+      ts.push(t); lms.push(pts);
+    }
+    return { ts, lms };
+  }
+
+  it('does not judge the far arm when the near one is seen (R8)', () => {
+    const r0 = sideOn(170, 170, 0.3);
+    const ref = buildReference(r0.lms, r0.ts, { aspect: 1 });
+    expect(ref.joints.map(j => j.name)).toEqual(['rightShoulder', 'rightElbow']);
+    const att = sideOn(90, 170, 0.9);
+    expect(compareAttempt(ref, att.lms, att.ts, { aspect: 1 })).toMatchObject({ verdict: 'revise', mirrored: false });
   });
 });
 
@@ -173,6 +215,7 @@ describe('moments the reference does not show', () => {
     expect(out.verdict).toBe('match');
     expect(out.joints[0].shown).toBeLessThan(0.85);
     expect(out.holds.some(h => h.refAngle > 160)).toBe(false);
+    expect(out.seen[0].slice(82, 106).every(x => !x)).toBe(true);
   });
 });
 
