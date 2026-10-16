@@ -67,3 +67,7 @@
 .wv-experience .kn-key.is-threshold { border-top: 1px dashed var(--ash); }
 .wv-experience .kn-forget { margin-top: var(--s-3); color: var(--ash); }
 .wv-experience .kn-patient .sc-tag { flex-shrink: 0; }
+
+/* Calibration (Calibration.jsx) */
+.wv-experience .kn-cal-judge { margin-top: var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); padding: 14px 16px; border: 1px solid var(--lamp-line); border-radius: var(--r-m); }
+.wv-experience .kn-cal-ask { margin: 0; font-weight: 600; color: var(--bone); }
