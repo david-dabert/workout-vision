@@ -152,7 +152,7 @@ export function followUpPdf(patient, { lang = 'fr', practitioner = {} }) {
     const dated = sessions.filter(s => s.date);
     const first = dated.length > 1 ? sessionWithin(dated[0]) : null, last = dated.length > 1 ? sessionWithin(dated.at(-1)) : null;
     if (first != null && last != null) {
-      y = textBlock(k, fr ? `Mesure la plus éloignée de la référence, part dans la tolérance\u00A0: ${pctText(first, fr)} au premier essai, ${pctText(last, fr)} au dernier (${sessions.length} essais).` : `Measure furthest from the reference, share within tolerance: ${pctText(first, fr)} at the first attempt, ${pctText(last, fr)} at the last (${sessions.length} attempts).`, MARGIN, y, COLUMN, 9, COLOR.count) + 4;
+      y = textBlock(k, fr ? `Point le plus faible\u00A0: ${pctText(first, fr)} du geste dans la tolérance au premier essai, ${pctText(last, fr)} au dernier (${sessions.length} essais).` : `Weakest point: ${pctText(first, fr)} of the movement within tolerance at the first attempt, ${pctText(last, fr)} at the last (${sessions.length} attempts).`, MARGIN, y, COLUMN, 9, COLOR.count) + 4;
     }
     for (const s of sessions) {
       newPageIfNeeded(20 + 13 * (s.joints.length + (s.holds.length ? 1 : 0)));
