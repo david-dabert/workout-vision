@@ -67,3 +67,4 @@
 .wv-experience .kn-key.is-threshold { border-top: 1px dashed var(--ash); }
 .wv-experience .kn-forget { margin-top: var(--s-3); color: var(--ash); }
 .wv-experience .kn-patient .sc-tag { flex-shrink: 0; }
+.wv-experience .kn-restore { margin-top: var(--s-4); }

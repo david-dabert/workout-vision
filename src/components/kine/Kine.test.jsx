@@ -87,6 +87,21 @@ describe('the follow-up', () => {
   });
 });
 
+describe('the backup', () => {
+  it('asks for a backup when results exist and none was made, and says where to keep it', async () => {
+    vi.stubEnv('VITE_KINE_MEDIA_URL', '');
+    const store = { wv_lang: 'fr' };
+    vi.stubGlobal('localStorage', { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } });
+    const { default: Backup } = await import('./Backup.jsx');
+    const { KINE } = await import('./kine-copy.js');
+    const html = renderToStaticMarkup(<Backup fr k={KINE.fr} hasData />);
+    expect(html).toContain('Aucune sauvegarde pour l’instant.');
+    expect(html).toContain('si ce téléphone est perdu, le suivi l’est aussi');
+    expect(html).toContain('clé USB');
+    expect(html).toContain('data-testid="kn-backup-make"');
+  });
+});
+
 describe('a patient result', () => {
   it('shows the verdict and figures of its link', async () => {
     const { resultLink } = await import('../../lib/kine/links');
