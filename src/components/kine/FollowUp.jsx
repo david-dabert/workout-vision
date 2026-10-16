@@ -6,6 +6,7 @@ import { resultPayload, unpack } from '../../lib/kine/links';
 import { followUp, forgetPatient, keepResult, sessionWithin } from '../../lib/kine/store';
 import { TOLERANCE_DEG, TOLERANCE_SHARE } from '../../lib/reference/compare';
 import { COPY, JOINT_NAMES, pct } from '../reference/reference-copy';
+import Backup from './Backup';
 
 // The physiotherapist's follow-up (#kine, tab "Suivi"): the results patients sent back, kept on this phone when opened
 // (KineResult.jsx) or pasted here, by patient and exercise, attempt after attempt. Only the figures the result link
@@ -135,5 +136,6 @@ export default function FollowUp({ fr, k, profile, initial = null }) {
         {note && <p className="sc-caption" role="status" data-testid="kn-follow-note">{note}</p>}
       </div>
     </section>
+    <Backup fr={fr} k={k} hasData={patients.length > 0} onRestored={refresh} />
   </>;
 }

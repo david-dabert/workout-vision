@@ -35,7 +35,9 @@ export const attemptsOf = programmeId => read(ATTEMPTS, {})[programmeId] || [];
 
 // The follow-up: every result the physiotherapist opens (#kine-r=, KineResult.jsx) or pastes, kept once, the last 1000.
 // The same result twice: the same patient, exercise, minute, verdict and figures.
-const resultKey = r => JSON.stringify([patientKey(r), r.id, r.date, r.verdict, r.joints, r.holds]);
+export const resultKey = r => JSON.stringify([patientKey(r), r.id, r.date, r.verdict, r.joints, r.holds]);
+// The most results the follow-up keeps (the oldest go first).
+export const MAX_RESULTS = 1000;
 /**
  * The key a patient's results are grouped under: the name as the programme gave it, without case or outer spaces; a
  * result with no name, by its programme (two unnamed patients stay apart). Two patients given the same name in their
@@ -52,7 +54,7 @@ export function keepResult(result) {
   if (!r) return 'invalid';
   const all = read(RESULTS, []);
   if (all.some(x => resultKey(x) === resultKey(r))) return 'already';
-  return write(RESULTS, [...all, r].slice(-1000)) ? 'kept' : 'failed';
+  return write(RESULTS, [...all, r].slice(-MAX_RESULTS)) ? 'kept' : 'failed';
 }
 
 /** Whether a result is already kept. */
