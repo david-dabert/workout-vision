@@ -151,6 +151,9 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
       <div className="dots" ref={dotsRef} aria-hidden="true" data-reveal style={{ '--i': 3 }}>{CARD_ORDER.map((lift, i) => <i key={lift} className={i === 0 ? 'on' : ''} />)}</div>
       </div>
       <div className="wrap" data-reveal style={{ '--i': 4 }}>
+        {/* The home in three groups (David, 16 October 2026: "for me it just didn't make sense"): training, the
+            professionals' tools, then what is there to explore, the Manifesto last. */}
+        {<h2 className="section-head choose-head" data-testid="choose-head-training">{fr ? 'Votre entraînement' : 'Your training'}</h2>}
         {/* The app on the Home Screen never receives a coach's link, which opens in the browser: a way to paste one in
             (Programme.jsx, PasteLink; excellence hunt, 9 October 2026). */}
         {!received && onProgramme && onHomeScreen() && <button className="row-link press" onClick={onProgramme} data-testid="choice-programme-link">
@@ -177,6 +180,12 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><span className="row-head"><b>{FITNESS_TESTS[key][fr ? 'fr' : 'en']}</b>{tierOf(key) && <span className={`tag tier-tag tier-${tierOf(key)}`} data-testid={`tier-${key}`}>{tierTag(tierOf(key), fr)}</span>}</span><small>{fr ? 'Test de condition physique' : 'Fitness test'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>)}
+        {/* Industrial Ergonomics & NIOSH */}
+        {onErgonomics && <button className="row-link press" onClick={onErgonomics} data-testid="choice-ergonomics">
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg></span>
+          <span className="row-txt"><b>{fr ? 'Calculateur NIOSH' : 'NIOSH calculator'}</b><small>{fr ? 'La charge limite d’une manutention, à partir de vos valeurs' : 'The weight limit of a lift, from your values'}</small></span>{/* HOME-1; French awaiting David's approval (R10) */}
+          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+        </button>}
         {/* Shown with no set too: after Safari erases the sets, or on a new phone, the history holds the restore
             (audit of 2 October). */}
         {Array.isArray(sets) && <button className="row-link press" onClick={onHistory}>
@@ -184,18 +193,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{fr ? 'Vos séries' : 'Your sets'}</b><small>{n === 0 ? (fr ? 'Restaurer une sauvegarde' : 'Restore a backup') : fr ? `${n} ${n > 1 ? 'séries' : 'série'} sur ce téléphone` : `${n} ${n === 1 ? 'set' : 'sets'} on this phone`}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {/* Espace pro (Pro.jsx): the coach's and the physiotherapist's programme builder, a quiet row after the sets. */}
-        {onPro && <button className="row-link press" onClick={onPro} data-testid="choice-pro">
-          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 4.5V3h6v1.5" /><path d="M8.5 10h7M8.5 14h7M8.5 18h4" /></svg></span>
-          <span className="row-txt"><b>{pro.choiceRow}</b><small>{pro.choiceRowSub}</small></span>
-          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
-        </button>}
-        {/* The WorkoutVision Manifesto: The Science, History, and Mechanics of Optimal Lifting */}
-        {onManifesto && <button className="row-link press" onClick={onManifesto} data-testid="choice-manifesto">
-          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /><path d="M9 7h6M9 11h4" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'Le Manifeste WorkoutVision' : 'The WorkoutVision Manifesto'}</b><small>{fr ? 'La science, l’histoire et la mécanique du mouvement' : 'The science, history, and mechanics of optimal lifting'}</small></span>
-          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
-        </button>}
+        {(onReference || onPro) && <h2 className="section-head choose-head" data-testid="choose-head-pro">{fr ? 'Pour les professionnels' : 'For professionals'}</h2>}
         {/* The physiotherapist's workspace (15 October 2026, components/kine/): programmes sent as links, the patient's
             video compared with the physiotherapist's, measured on the person's own videos, above the demos. */}
         {onReference && <button className="row-link press" onClick={onReference} data-testid="choice-reference">
@@ -203,6 +201,13 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{fr ? 'Espace kiné' : 'Physio workspace'}</b><small>{fr ? 'Vos exercices en vidéo, le programme en un lien, le geste du patient comparé au vôtre' : 'Your exercises on video, the programme in one link, the patient’s movement compared with yours'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
+        {/* Espace pro (Pro.jsx): the coach's and the physiotherapist's programme builder, after the physio workspace. */}
+        {onPro && <button className="row-link press" onClick={onPro} data-testid="choice-pro">
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 4.5V3h6v1.5" /><path d="M8.5 10h7M8.5 14h7M8.5 18h4" /></svg></span>
+          <span className="row-txt"><b>{pro.choiceRow}</b><small>{pro.choiceRowSub}</small></span>
+          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+        </button>}
+        {(onEquine || onSports || onCoaches || onBuddies || onManifesto) && <h2 className="section-head choose-head" data-testid="choose-head-explore">{fr ? 'À découvrir' : 'To explore'}</h2>}
         {/* EquiVision: a demo on a simulated horse; the app analyses no horse on a video (honesty pass, 14 October 2026,
             EQ-16). Its icon is a curve, not a tick, which would read as "validated" or "sound". French of this row, of
             the sports row and of the footer links below awaiting David's approval (R10). */}
@@ -229,10 +234,10 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{fr ? 'Partenaires de salle (démo)' : 'Gym partners (demo)'}</b><small>{fr ? 'Des profils fictifs, pour comparer vos charges' : 'Fictional profiles, to compare your working weights'}</small></span>{/* HOME-1; French awaiting David's approval (R10) */}
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {/* Industrial Ergonomics & NIOSH */}
-        {onErgonomics && <button className="row-link press" onClick={onErgonomics} data-testid="choice-ergonomics">
-          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'Calculateur NIOSH' : 'NIOSH calculator'}</b><small>{fr ? 'La charge limite d’une manutention, à partir de vos valeurs' : 'The weight limit of a lift, from your values'}</small></span>{/* HOME-1; French awaiting David's approval (R10) */}
+        {/* The WorkoutVision Manifesto: The Science, History, and Mechanics of Optimal Lifting */}
+        {onManifesto && <button className="row-link press" onClick={onManifesto} data-testid="choice-manifesto">
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /><path d="M9 7h6M9 11h4" /></svg></span>
+          <span className="row-txt"><b>{fr ? 'Le Manifeste WorkoutVision' : 'The WorkoutVision Manifesto'}</b><small>{fr ? 'La science, l’histoire et la mécanique du mouvement' : 'The science, history, and mechanics of optimal lifting'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Before the long list of every exercise, where it is read on the first scroll, not after 181 rows. */}
@@ -247,12 +252,6 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           {onAbout && <button type="button" className="about-link press" onClick={onAbout} data-testid="about-link">{ABOUT[fr ? 'fr' : 'en'].link}</button>}
           {/* The notice of the anonymous counts (UsageNotice.jsx), whenever the build sends them. */}
           {onUsage && eventsConfigured() && <button type="button" className="about-link press" onClick={onUsage} data-testid="usage-link">{fr ? 'Comptage anonyme' : 'Anonymous counts'}</button>}
-          {onManifesto && <button type="button" className="about-link press" onClick={onManifesto} data-testid="manifesto-link">{fr ? 'Le Manifeste' : 'Manifesto'}</button>}
-          {onCoaches && <button type="button" className="about-link press" onClick={onCoaches} data-testid="coaches-link">{fr ? 'Coachs et kinés (démo)' : 'Coaches (demo)'}</button>}{/* As their rows above say (second review, 14 October 2026); French awaiting David's approval (R10) */}
-          {onEquine && <button type="button" className="about-link press" onClick={onEquine} data-testid="equine-link">{fr ? 'Allures équines' : 'Equine gaits'}</button>}
-          {onSports && <button type="button" className="about-link press" onClick={onSports} data-testid="sports-link">{fr ? 'Sports' : 'Sports'}</button>}
-          {onBuddies && <button type="button" className="about-link press" onClick={onBuddies} data-testid="buddies-link">{fr ? 'Partenaires de salle (démo)' : 'Gym partners (demo)'}</button>}
-          {onErgonomics && <button type="button" className="about-link press" onClick={onErgonomics} data-testid="ergo-link">{fr ? 'Calculateur NIOSH' : 'NIOSH calculator'}</button>}
           {onChat && <button type="button" className="about-link press" onClick={onChat} data-testid="chat-link">{fr ? 'Messagerie (démo)' : 'Messaging (demo)'}</button>}{/* HOME-1: no "P2P"; French awaiting David's approval (R10) */}
         </div>
       </div>
