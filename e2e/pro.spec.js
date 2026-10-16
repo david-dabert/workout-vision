@@ -97,7 +97,7 @@ for (const viewport of [{ width: 390, height: 664 }, { width: 320, height: 568 }
     await page.locator('#pNote').fill('Échauffement de dix minutes avant la séance.');
     // Reordered, then back.
     await page.getByRole('button', { name: c.moveDown('Squat') }).click();
-    await expect(page.getByTestId('pro-item').first()).toContainText('Pompe');
+    await expect(page.getByTestId('pro-item').first()).toContainText('Pompes');
     await page.getByRole('button', { name: c.moveUp('Squat') }).click();
     await expect(page.getByTestId('pro-item').first()).toContainText('Squat');
     await expect(page.locator('.pro-status')).toHaveText('');
@@ -257,7 +257,7 @@ for (const viewport of [{ width: 390, height: 664 }, { width: 320, height: 568 }
     }
 
     // A tap on an exercise starts the usual filming of it; Back returns to the programme.
-    await phone.getByRole('button', { name: c.film('Pompe') }).click();
+    await phone.getByRole('button', { name: c.film('Pompes') }).click();
     await expect(phone.locator('.film-screen')).toBeVisible({ timeout: 20000 });
     await expect(phone).toHaveURL(/#film$/);
     await phone.locator('.film-screen .icon-btn').first().click();
@@ -309,7 +309,7 @@ test('a programme the phone cannot keep stays for the visit', async ({ page }) =
   await expect(page.getByTestId('programme-not-kept')).toHaveText(c.notKept);
   await expect(page).toHaveURL(/#programme=j/);
   // A tap films the exercise; Back returns to the same programme, never "Aucun programme".
-  await page.getByRole('button', { name: c.film('Pompe') }).click();
+  await page.getByRole('button', { name: c.film('Pompes') }).click();
   await expect(page.locator('.film-screen')).toBeVisible({ timeout: 20000 });
   await page.locator('.film-screen .icon-btn').first().click();
   await expect(page.getByTestId('programme-item')).toHaveCount(2, { timeout: 20000 });

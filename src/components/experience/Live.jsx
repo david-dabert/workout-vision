@@ -26,12 +26,12 @@ function problemWords(cause, fr) {
       fr ? 'Filmez votre série ou choisissez une vidéo.' : 'Record your set or choose a video.'];
     case 'unsupported': return [fr ? 'Ce navigateur ne donne pas accès à la caméra en direct.' : 'This browser does not give live access to the camera.',
       fr ? 'Filmez votre série : l’analyse se fera juste après.' : 'Record your set: it is analysed right after.'];
-    case 'slow': return [fr ? 'Ce téléphone ne suit pas le direct.' : 'This phone cannot keep up live.',
-      fr ? 'Nous n’affichons pas un compte avec des trous. Filmez votre série : l’analyse se fera juste après.' : 'We do not show a count with gaps in it. Record your set: it is analysed right after.'];
+    case 'slow': return [fr ? 'Ce téléphone n’arrive pas à suivre en direct.' : 'This phone cannot keep up live.',
+      fr ? 'Nous n’affichons pas un compte incomplet. Filmez votre série : l’analyse se fera juste après.' : 'We do not show a count with gaps in it. Record your set: it is analysed right after.'];
     case 'failed': return [fr ? 'Le comptage en direct n’a pas pu démarrer.' : 'Live counting could not start.',
       fr ? 'Rechargez la page, ou filmez votre série.' : 'Reload the page, or record your set.'];
     default: return [fr ? 'La caméra n’a pas pu s’ouvrir.' : 'The camera could not open.',
-      fr ? 'Elle sert peut-être à une autre app. Fermez-la, puis réessayez.' : 'Another app may be using it. Close it, then try again.'];
+      fr ? 'Une autre appli l’utilise peut-être. Fermez-la, puis réessayez.' : 'Another app may be using it. Close it, then try again.'];
   }
 }
 

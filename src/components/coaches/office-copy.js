@@ -63,7 +63,7 @@ export const OFFICE = {
     // Strengthening by area
     physioTab: 'Renforcement par zone',
     physioTitle: 'Renforcement par zone',
-    physioSub: 'Des exercices de renforcement rangés par zone, avec la vue de caméra conseillée et une variante plus facile ou plus difficile.',
+    physioSub: 'Des exercices de renforcement rangés par zone, avec l’angle de prise de vue conseillé et une variante plus facile ou plus difficile.',
     physioNote: `Ces exercices ne remplacent pas l’avis d’un kinésithérapeute${N}: en rééducation, suivez ses consignes.`,
     physioMuscles: 'Muscles travaillés',
     physioAdd: 'Ajouter au programme',

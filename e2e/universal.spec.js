@@ -51,7 +51,7 @@ test('a non-offered exercise read clearly gives a proposal to confirm, never a c
 test('a hold the app does not time offers no number and no slot, only a way back to the exercises', async ({ page }) => {
   test.setTimeout(120_000);
   await start(page, { worker: fakeWorker });
-  await filmFromGuide(page, 'Planche');
+  await filmFromGuide(page, 'Gainage');
   await chooseDrawnVideo(page);
   await expect(page.locator('.result-screen')).toBeVisible({ timeout: 60000 });
   await expect(page.getByTestId('res-status')).toContainText('Non compté');

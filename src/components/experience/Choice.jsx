@@ -136,7 +136,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           {recents.map(r => <button key={r.key} type="button" className="recent press" onClick={() => { navigator.vibrate?.(10); onChoose(r.key); }}>{r.name}</button>)}
         </div>}
         <h1 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Que travaillez-vous aujourd’hui\u00A0?' : 'What are you training today?'}</h1>
-        <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Choisissez le mouvement que vous reconnaissez. Balayez pour les voir tous.' : 'Choose the movement you recognise. Swipe to see them all.'}</p>
+        <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Choisissez votre mouvement. Faites glisser pour les voir tous.' : 'Choose the movement you recognise. Swipe to see them all.'}</p>
       </div>
       <div className="rail" ref={railRef} data-reveal style={{ '--i': 2 }}>
         {CARD_ORDER.map((lift, i) => <LiftCard key={lift} label={META[lift][lang]} describedBy={TIERS[lift] ? `tier-${lift}` : undefined} cardRef={el => { cards.current[i] = el; }} onClick={() => choose(lift, i)}>

@@ -226,36 +226,36 @@ export const MANIFESTO = {
   },
 
   fr: {
-    badge: 'Traité Pédagogique & Blueprint Scientifique',
+    badge: 'Traité pédagogique et bases scientifiques',
     title: 'Le Manifeste WorkoutVision',
-    subtitle: 'La Science, l’Histoire et la Mécanique de la Musculation Optimale',
+    subtitle: 'La science, l’histoire et la mécanique de la musculation optimale',
     readTime: '8 min de lecture',
-    lead: 'Bienvenue sur WorkoutVision. Vous tenez entre les mains un plan directeur conçu pour combler le fossé entre la physiologie universitaire et le plateau de musculation.',
-    introP1: 'Pendant des décennies, le monde du fitness a été dicté par des traditions dogmatiques, des récits anecdotiques et des croyances empiriques sans vérification. Aujourd’hui, nous vivons dans l’ère de la musculation scientifique, une discipline fondée sur la biomécanique, la synthèse des protéines musculaires, la physique et les données probantes.',
-    introP2: 'Ce guide retrace l’histoire des sciences du sport, les pionniers qui ont bâti cette discipline, pourquoi l’entraînement factuel surpasse les méthodes traditionnelles, et comment exécuter chaque mouvement avec une rigueur chirurgicale.',
+    lead: 'Bienvenue sur WorkoutVision. Vous avez sous les yeux un guide qui relie la physiologie universitaire au plateau de musculation.',
+    introP1: 'Pendant des décennies, le monde du fitness a été régi par des traditions dogmatiques, des récits anecdotiques et des croyances empiriques sans vérification. Aujourd’hui, nous sommes entrés dans l’ère de la musculation scientifique, une discipline fondée sur la biomécanique, la synthèse des protéines musculaires, la physique et les données probantes.',
+    introP2: 'Ce guide retrace l’histoire des sciences du sport, les pionniers qui ont bâti cette discipline, pourquoi l’entraînement fondé sur les preuves surpasse les méthodes traditionnelles, et comment exécuter chaque mouvement avec une rigueur chirurgicale.',
 
     tocTitle: 'Sommaire',
     chapters: [
-      { id: 'ch1', title: 'Chapitre 1\u00A0: L’Évolution des Sciences du Sport', subtitle: 'Un Aperçu Historique' },
-      { id: 'ch2', title: 'Chapitre 2\u00A0: Les Géants de la Performance Humaine', subtitle: 'Pionniers Académiques & Pédagogues Modernes' },
-      { id: 'ch3', title: 'Chapitre 3\u00A0: Pourquoi la Musculation Scientifique Surpasse le Dogme', subtitle: 'Des Anecdotes aux Premiers Principes' },
-      { id: 'ch4', title: 'Chapitre 4\u00A0: La Mécanique des Gains Optimaux', subtitle: 'Perfectionner l’Exécution Physique' },
-      { id: 'conclusion', title: 'Conclusion\u00A0: Ce que Fait l’Appli, et ce qu’Elle ne Fait Pas', subtitle: 'L’Éthique WorkoutVision' },
+      { id: 'ch1', title: 'Chapitre 1\u00A0: L’évolution des sciences du sport', subtitle: 'Un aperçu historique' },
+      { id: 'ch2', title: 'Chapitre 2\u00A0: Les géants de la performance humaine', subtitle: 'Pionniers universitaires et pédagogues d’aujourd’hui' },
+      { id: 'ch3', title: 'Chapitre 3\u00A0: Pourquoi la musculation scientifique l’emporte sur le dogme', subtitle: 'Des anecdotes aux premiers principes' },
+      { id: 'ch4', title: 'Chapitre 4\u00A0: La mécanique des gains optimaux', subtitle: 'Perfectionner l’exécution' },
+      { id: 'conclusion', title: 'Conclusion\u00A0: ce que fait l’appli, et ce qu’elle ne fait pas', subtitle: 'L’éthique WorkoutVision' },
     ],
 
     chapter1: {
       number: 'Chapitre 1',
-      title: 'L’Évolution des Sciences du Sport\u00A0: Un Aperçu Historique',
+      title: 'L’évolution des sciences du sport\u00A0: un aperçu historique',
       intro: 'Le mouvement humain a toujours fasciné, mais la quantification systématique de l’exercice physique est une conquête scientifique remarquablement récente.',
       sections: [
         {
-          title: 'L’Ère de l’Énergétique (Fin XIXe - Milieu XXe Siècle)',
+          title: 'L’ère de l’énergétique (de la fin du XIXe siècle au milieu du XXe)',
           text: 'Les racines de la science moderne de l’exercice trouvent leur origine dans la physiologie respiratoire et la thermodynamique musculaire. Avant que la musculation n’entre à l’université, les chercheurs ont d’abord mesuré les limites énergétiques du corps humain.',
           figures: [
             {
               name: 'Archibald Vivian Hill (A.V. Hill)',
               dates: '1886–1977',
-              role: 'Prix Nobel de Physiologie ou Médecine (1922)',
+              role: 'Prix Nobel de physiologie ou médecine (1922)',
               desc: 'Physiologiste britannique récompensé pour sa découverte relative à la production de chaleur dans le muscle. Hill a introduit les concepts de dette d’oxygène et de consommation maximale d’oxygène (VO₂ max), établissant que l’effort physique obéit aux lois de la thermodynamique.',
               formula: 'W = \\int F \\cdot ds \\quad \\text{et} \\quad \\eta = \\frac{W}{E_{\\text{chim}}} \\approx 20\\text{--}25\\%',
               formulaNote: 'Hill a démontré le rendement thermodynamique strict du muscle squelettique, transformant l’énergie chimique en travail mécanique.',
@@ -263,25 +263,25 @@ export const MANIFESTO = {
             {
               name: 'Per-Olof Åstrand',
               dates: '1922–2015',
-              role: 'Pionnier de la Physiologie du Travail (Institut Karolinska)',
+              role: 'Pionnier de la physiologie du travail (Institut Karolinska)',
               desc: 'Physiologiste suédois ayant cartographié la capacité de travail physique et l’endurance aérobie. Åstrand a créé des nomogrammes standardisés qui restent aujourd’hui des références cliniques incontournables pour étalonner la condition physique selon le sexe et l’âge.',
             },
             {
               name: 'Karlman Wasserman',
               dates: '1927–2020',
-              role: 'Père de l’Épreuve d’Effort Cardio-Respiratoire (CPET)',
+              role: 'Père de l’épreuve d’effort cardiorespiratoire (CPET)',
               desc: 'A révolutionné la physiologie clinique dans les années 1960 en introduisant l’évaluation cardio-pulmonaire souffle par souffle. Wasserman a permis de mesurer les échanges gazeux en temps réel, ouvrant la voie à la détection précise du seuil anaérobie.',
             },
           ],
         },
         {
-          title: 'Le Tournant Épidémiologique (Fin XXe Siècle)',
+          title: 'Le tournant épidémiologique (fin du XXe siècle)',
           text: 'Face au recul des maladies infectieuses, la recherche s’est tournée vers les pathologies chroniques, le métabolisme et le mode de vie.',
           figures: [
             {
               name: 'Steven N. Blair',
               dates: '1939–2023',
-              role: 'Chercheur Principal, Aerobics Center Longitudinal Study (ACLS)',
+              role: 'Chercheur principal, Aerobics Center Longitudinal Study (ACLS)',
               desc: 'Avec l’étude ACLS, Blair a montré que la capacité cardiorespiratoire est fortement associée à une mortalité plus faible, indépendamment des autres facteurs de risque (Blair et al., JAMA 1989), puis la force musculaire aussi (Ruiz et al., BMJ 2008). L’exercice physique est ainsi devenu un pilier de la médecine préventive.',
             },
           ],
@@ -291,51 +291,51 @@ export const MANIFESTO = {
 
     chapter2: {
       number: 'Chapitre 2',
-      title: 'Les Géants de la Performance Humaine & de l’Hypertrophie',
+      title: 'Les géants de la performance humaine et de l’hypertrophie',
       intro: 'Au XXIe siècle, la science de l’exercice s’est déployée au-delà de l’endurance pour conquérir la résistance musculaire, l’hypertrophie et l’adaptation neuromusculaire. Deux forces complémentaires animent cette renaissance\u00A0: les chercheurs universitaires menant des essais randomisés, et les pédagogues qui traduisent ces données en protocoles concrets sur le plateau de musculation.',
       subsections: [
         {
-          heading: 'Les Pionniers Universitaires',
+          heading: 'Les pionniers universitaires',
           leaders: [
             {
               name: 'Dr. Brad Schoenfeld',
               affiliation: 'Lehman College, CUNY',
-              specialty: 'Mécanismes de l’Hypertrophie Musculaire',
+              specialty: 'Mécanismes de l’hypertrophie musculaire',
               summary: 'Considéré mondialement comme la figure de proue de la recherche sur l’hypertrophie. Ses méta-analyses et études cliniques ont rigoureusement analysé l’impact du volume, de la fréquence, de la proximité de l’échec (RIR) et du choix des exercices sur la croissance musculaire.',
             },
             {
               name: 'Dr. Stuart Phillips',
               affiliation: 'Université McMaster',
-              specialty: 'Synthèse Protéique Musculaire (MPS)',
+              specialty: 'Synthèse des protéines musculaires (MPS)',
               summary: 'Ses travaux explorent le métabolisme des acides aminés et la manière dont la tension mécanique interagit avec les apports protéiques à tout âge pour stimuler la régénération musculaire et prévenir la sarcopénie.',
             },
             {
               name: 'Dr. Layne Norton',
-              affiliation: 'Docteur en Sciences de la Nutrition',
-              specialty: 'Signalisation mTOR & Équilibre Énergétique',
+              affiliation: 'Docteur en sciences de la nutrition',
+              specialty: 'Signalisation mTOR et équilibre énergétique',
               summary: 'A fait le lien entre la biologie moléculaire de la leucine (activation de la voie mTOR) et la diététique flexible, démontant les mythes infondés au profit de la thermodynamique et de la cohérence métabolique.',
             },
           ],
         },
         {
-          heading: 'Les Défenseurs de la Musculation Fondée sur les Données',
+          heading: 'Les défenseurs d’une musculation fondée sur les données',
           leaders: [
             {
               name: 'Dr. Mike Israetel',
               affiliation: 'Renaissance Periodization (RP)',
-              specialty: 'Repères de Volume & Gestion de la Fatigue',
-              summary: 'A combiné son doctorat en physiologie sportive avec une méthodologie algorithmique claire\u00A0: Volume Minimal Efficace (MEV), Volume Adaptatif Maximal (MAV) et le rapport stimulus/fatigue (SFR).', // SFR: stimulus-to-fatigue ratio (second review, 14 October 2026); French awaiting David's approval (R10)
+              specialty: 'Repères de volume et gestion de la fatigue',
+              summary: 'A combiné son doctorat en physiologie sportive avec une méthodologie algorithmique claire\u00A0: volume minimal efficace (MEV), volume adaptatif maximal (MAV) et le rapport stimulus/fatigue (SFR).', // SFR: stimulus-to-fatigue ratio (second review, 14 October 2026); French awaiting David's approval (R10)
             },
             {
               name: 'Greg Nuckols',
               affiliation: 'Stronger by Science (SBS)',
-              specialty: 'Rigueur Statistique & Force Athlétique',
+              specialty: 'Rigueur statistique et force athlétique',
               summary: 'Célèbre pour son analyse critique des méta-analyses complexes, transformant des articles scientifiques denses en guides applicables pour athlètes de force et entraîneurs.',
             },
             {
               name: 'Menno Henselmans & Chris Beardsley',
-              affiliation: 'Chercheurs Indépendants en Biomécanique',
-              specialty: 'Bras de Levier & Hypertrophie en Étirement',
+              affiliation: 'Chercheurs indépendants en biomécanique',
+              specialty: 'Bras de levier et hypertrophie en étirement',
               summary: 'Ont popularisé l’optimisation biomécanique en insistant sur les moments articulaires internes, les courbes tension-longueur des sarcomères et l’hypertrophie médiée par l’étirement sous charge.',
             },
           ],
@@ -345,28 +345,28 @@ export const MANIFESTO = {
 
     chapter3: {
       number: 'Chapitre 3',
-      title: 'Pourquoi la Musculation Scientifique Surpasse le Dogme',
-      intro: 'L’entraînement à l’ancienne reposait sur le ressenti de la congestion, les recettes transmises par tradition et l’admiration aveugle des champions. Si ces athlètes avaient une éthique de travail exceptionnelle, leur génétique leur permettait souvent de progresser malgré leur programmation, et non grâce à elle.',
+      title: 'Pourquoi la musculation scientifique l’emporte sur le dogme',
+      intro: 'L’entraînement à l’ancienne reposait sur le ressenti de la congestion, les recettes transmises par tradition et l’admiration aveugle des champions. Si ces athlètes étaient des travailleurs acharnés, leur génétique leur permettait souvent de progresser malgré leur programmation, et non grâce à elle.',
       principles: [
         {
-          title: '1. Efficience du Ratio Stimulus-Fatigue (SFR)',
+          title: '1. L’efficience du rapport stimulus/fatigue (SFR)',
           desc: 'Chaque exercice engendre un coût systémique, articulaire et neural. L’approche scientifique sélectionne les mouvements et amplitudes qui maximisent la tension mécanique sur les fibres cibles tout en minimisant la charge axiale sur le rachis et l’usure tendineuse.',
           formula: '\\text{SFR} = \\frac{\\text{Recrutement des Unités Motrices} \\times \\text{Tension Mécanique Active}}{\\text{Charge Axiale} + \\text{Frottement Articulaire} + \\text{Fatigue SNC}}',
           // Awaiting David's approval (R10), as the whole page.
           highlight: 'Une façon de choisir ses exercices, pas un chiffre mesuré. L’appli ne le calcule pas.',
         },
         {
-          title: '2. La Tension Mécanique comme Moteur Principal',
-          desc: 'La biologie cellulaire et les études chez l’humain indiquent que la tension mécanique (l’étirement et la contraction sous charge captés par les mécanorécepteurs des costamères) est le stimulus primaire de l’hypertrophie. Le stress métabolique ("la brûlure") et les courbatures ne sont que des sous-produits secondaires.',
+          title: '2. La tension mécanique, moteur principal',
+          desc: 'La biologie cellulaire et les études chez l’humain indiquent que la tension mécanique (l’étirement et la contraction sous charge captés par les mécanorécepteurs des costamères) est le stimulus primaire de l’hypertrophie. Le stress métabolique («\u00A0la brûlure\u00A0») et les courbatures ne sont que des sous-produits secondaires.',
           highlight: 'Rechercher la fatigue pure ou la douleur aiguë n’est pas un indicateur de croissance musculaire.',
         },
         {
-          title: '3. La Biomécanique Individualisée contre les Recettes Uniques',
+          title: '3. Une biomécanique individuelle plutôt qu’une recette unique',
           desc: 'L’anatomie dicte la mécanique. Un écartement de pieds imposé au squat ou une prise fixe au développé couché ignorent les variations squelettiques majeures\u00A0: profondeur du cotyle, angle du col fémoral, largeur claviculaire. La science enseigne d’adapter l’exercice à la structure osseuse et aux bras de levier de chaque individu.',
           highlight: 'Si un mouvement génère une douleur articulaire au lieu d’une tension musculaire, la trajectoire est en conflit avec votre squelette.',
         },
         {
-          title: '4. La Symétrie Bilatérale et l’Équilibre Musculosquelettique',
+          title: '4. La symétrie bilatérale et l’équilibre musculosquelettique',
           desc: 'Le corps fonctionne rarement de façon parfaitement symétrique\u00A0: un côté bouge souvent sur une amplitude un peu plus grande que l’autre. À partir de quel écart il faut s’en occuper, et comment, c’est à un coach ou à un kiné qui vous voit d’en juger.',
           formula: '\\text{Écart gauche-droite} = \\frac{|\\text{ROM}_{\\text{gauche}} - \\text{ROM}_{\\text{droite}}|}{(\\text{ROM}_{\\text{gauche}} + \\text{ROM}_{\\text{droite}}) / 2} \\times 100\\%',
           highlight: 'L’appli ne compare la gauche et la droite que sur une élévation latérale filmée de face, et donne les deux amplitudes sans juger l’écart.',
@@ -376,20 +376,20 @@ export const MANIFESTO = {
 
     chapter4: {
       number: 'Chapitre 4',
-      title: 'La Mécanique des Gains Optimaux\u00A0: L’Exécution Parfaite',
+      title: 'La mécanique des gains optimaux\u00A0: l’exécution parfaite',
       intro: 'Pour maximiser les gains musculaires, chaque exercice doit être exécuté dans le respect absolu des lois de Newton et de la cinématique articulaire. Voici les règles d’or dictées par la science du sport\u00A0:',
       rules: [
         {
           num: '01',
-          name: 'La Relation Tension-Longueur & l’Hypertrophie en Étirement',
+          name: 'La relation tension-longueur et l’hypertrophie en étirement',
           body: 'Les sarcomères produisent une tension active maximale et recrutent la titine (tension passive) lorsqu’ils sont sollicités en position allongée (étirement sous charge). Réduire l’amplitude revient à supprimer la portion la plus anabolique de la répétition.',
-          application: 'Ne tronquez jamais le bas du mouvement. Au Biceps Curl, l’extension complète du coude active l’hypertrophie en étirement. Aux Élévations Latérales, alignez la courbe de résistance avec le profil de force de l’épaule.',
+          application: 'Ne tronquez jamais le bas du mouvement. Au curl biceps, l’extension complète du coude active l’hypertrophie en étirement. Aux élévations latérales, alignez la courbe de résistance avec le profil de force de l’épaule.',
           liftKey: 'bicep_curl',
           liftLabel: 'Filmer un curl biceps',
         },
         {
           num: '02',
-          name: 'Élimination de l’Élan (Fuite Inertielle)',
+          name: 'Supprimer l’élan (fuite inertielle)',
           body: 'Lorsqu’un pratiquant rebondit en bas ou utilise un balancement du buste, il injecte de l’énergie cinétique balistique. Cela décharge le muscle cible précisément au moment où la tension est la plus stimulante, tout en surchargeant les cartilages.',
           // literature: Schoenfeld, Ogborn and Krieger 2015, Sports Med 45(4):577-585 (repetition duration and hypertrophy). The bare
           // "2 to 3 seconds" rule is withdrawn (set-notes.js, source 3); it stays only as one option. French awaiting David's approval (R10).
@@ -399,9 +399,9 @@ export const MANIFESTO = {
         },
         {
           num: '03',
-          name: 'Alignement Articulaire et Ligne de Tirage',
+          name: 'Alignement articulaire et ligne de tirage',
           body: 'La résistance doit s’opposer directement au plan anatomique des faisceaux musculaires cibles. Tout désalignement disperse les forces sous forme de cisaillement articulaire.',
-          application: 'Au tirage vertical, l’humérus doit voyager exactement dans le plan des fibres du grand dorsal\u00A0: coudes tirés vers le bas et légèrement vers les poches, et non écartés vers l’arrière.',
+          application: 'Au tirage vertical, l’humérus doit se déplacer exactement dans le plan des fibres du grand dorsal\u00A0: coudes tirés vers le bas et légèrement vers les poches, et non écartés vers l’arrière.',
           liftKey: 'lat_pulldown',
           liftLabel: 'Filmer un tirage vertical',
         },
@@ -412,14 +412,14 @@ export const MANIFESTO = {
       // The promise the app keeps (honesty pass, second round, 14 October 2026): when it doubts it may propose a number to
       // check, never a grade (Result.jsx), so "elle ne donne pas de chiffre" was untrue; a public reader does not know
       // David, so the videos are the app's maker's. Awaiting David's approval (R10), with the rest of the page.
-      title: 'Conclusion\u00A0: Ce que Fait l’Appli, et ce qu’Elle ne Fait Pas',
+      title: 'Conclusion\u00A0: ce que fait l’appli, et ce qu’elle ne fait pas',
       text1: 'L’appli compte vos répétitions, vous montre ce qu’elle a vu et vous demande de confirmer. Quand elle doute, elle le dit\u00A0: tout au plus, elle vous propose un nombre à vérifier, jamais une note. Sur les 14 vraies vidéos filmées par le créateur de l’appli, elle trouve le bon nombre sur 6 (tableau du 12 octobre 2026). C’est pour ça qu’elle vous demande toujours de confirmer.',
       text2: 'En alliant la rigueur de la physiologie de l’exercice à une analyse faite sur votre téléphone, l’appli vous aide à suivre vos séries, sans prétendre mesurer ce qu’elle ne sait pas mesurer.',
-      creed: 'Bougez avec intention. Entraînez-vous avec les données. Fiez-vous à la science.',
+      creed: 'Bougez avec intention. Entraînez-vous avec des données. Faites confiance à la science.',
     },
 
     cta: {
-      startFilming: 'Passer de la théorie à la pratique\u00A0: Choisir un mouvement',
+      startFilming: 'De la théorie à la pratique\u00A0: choisir un mouvement',
       back: 'Retour à l’accueil',
     },
   },
