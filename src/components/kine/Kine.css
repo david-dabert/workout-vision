@@ -68,3 +68,4 @@
 .wv-experience .kn-forget { margin-top: var(--s-3); color: var(--ash); }
 .wv-experience .kn-patient .sc-tag { flex-shrink: 0; }
 .wv-experience .kn-restore { margin-top: var(--s-4); }
+.wv-experience .kn-save { display: grid; place-items: center; text-decoration: none; }
