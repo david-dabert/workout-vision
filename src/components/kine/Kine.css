@@ -42,3 +42,28 @@
 .wv-experience .kn-contact { margin-top: var(--s-3); }
 .wv-experience .kn-contact .rc-btn { display: inline-grid; place-items: center; text-decoration: none; }
 .wv-experience .kn-attempt { margin-top: var(--s-3); display: flex; flex-direction: column; gap: var(--s-3); }
+
+/* Follow-up (FollowUp.jsx) */
+.wv-experience .kn-patients { margin: var(--s-3) 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--s-2); }
+.wv-experience .kn-patient { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: var(--s-3); padding: 14px 16px; border: 1px solid var(--lamp-line); border-radius: var(--r-m); background: none; color: inherit; text-align: left; font: inherit; cursor: pointer; }
+.wv-experience .kn-patient > span:first-child { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.wv-experience .kn-patient b { font-weight: 600; color: var(--bone); }
+.wv-experience .kn-patient small { color: var(--ash); font-size: var(--fs-caption); }
+.wv-experience .kn-follow-name { margin: var(--s-3) 0 4px; font: 400 var(--fs-heading)/1.1 var(--serif); color: var(--bone); }
+.wv-experience .kn-sessions { margin: var(--s-3) 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--s-2); }
+.wv-experience .kn-session { display: flex; flex-direction: column; gap: 4px; padding: 10px 0; border-top: 1px solid var(--hair); font-size: var(--fs-caption); color: var(--bone-2); }
+.wv-experience .kn-session-head { display: flex; justify-content: space-between; align-items: center; gap: var(--s-3); }
+.wv-experience .kn-session-head b { color: var(--bone); font-weight: 600; }
+.wv-experience .kn-session-row { display: flex; justify-content: space-between; gap: var(--s-3); flex-wrap: wrap; }
+.wv-experience .kn-session-row small { color: var(--ash); font-variant-numeric: tabular-nums; }
+.wv-experience .kn-trend svg { width: 100%; height: 110px; display: block; }
+.wv-experience .kn-threshold { stroke: var(--ash); stroke-width: 1; stroke-dasharray: 3 4; vector-effect: non-scaling-stroke; }
+.wv-experience .kn-series path { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.wv-experience .kn-series.is-0 path { stroke: var(--lamp); } .wv-experience .kn-series.is-0 circle { fill: var(--lamp); }
+.wv-experience .kn-series.is-1 path { stroke: var(--bone); } .wv-experience .kn-series.is-1 circle { fill: var(--bone); }
+.wv-experience .kn-series.is-2 path { stroke: var(--ash); } .wv-experience .kn-series.is-2 circle { fill: var(--ash); }
+.wv-experience .kn-legend { display: inline-flex; align-items: center; gap: 6px; margin-right: var(--s-3); }
+.wv-experience .kn-key.is-0 { border-top-color: var(--lamp); } .wv-experience .kn-key.is-1 { border-top-color: var(--bone); } .wv-experience .kn-key.is-2 { border-top-color: var(--ash); }
+.wv-experience .kn-key.is-threshold { border-top: 1px dashed var(--ash); }
+.wv-experience .kn-forget { margin-top: var(--s-3); color: var(--ash); }
+.wv-experience .kn-patient .sc-tag { flex-shrink: 0; }

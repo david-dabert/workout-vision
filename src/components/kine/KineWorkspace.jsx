@@ -7,15 +7,16 @@ import { Topbar, GroupHead } from '../experience/Showcase';
 import { LIBRARY, exerciseById, hasMedia } from '../../lib/kine/library';
 import ExerciseCard from './ExerciseCard';
 import { cleanProgramme, programmeLink } from '../../lib/kine/links';
-import { readProfile, saveProfile, nextInvoiceNumber, EMPTY_PROFILE } from '../../lib/kine/store';
+import { readProfile, saveProfile, nextInvoiceNumber, takeFollowUpRequest, EMPTY_PROFILE } from '../../lib/kine/store';
 import ReferenceCompare from '../reference/ReferenceCompare';
+import FollowUp from './FollowUp';
 import { KINE } from './kine-copy';
 import '../reference/ReferenceCompare.css';
 import './Kine.css';
 
 // The physiotherapist's workspace (#kine), built with Olivier (15 October 2026): his exercises with his videos and his
 // own words, a programme composed for one patient and sent as a link (and a PDF sheet with its QR code), the note
-// d'honoraires, and a free comparison of two videos. Everything stays on the phone; the programme travels in its link
+// d'honoraires, the follow-up of the results patients send back (FollowUp.jsx), and a free comparison of two videos. Everything stays on the phone; the programme travels in its link
 // (lib/kine/links.js). Exercises with no comparison say so (R8).
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -178,7 +179,9 @@ export default function KineWorkspace({ onClose }) {
   const k = KINE[fr ? 'fr' : 'en'];
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [lang]);
-  const [tab, setTab] = useState('programme');
+  // A result opened on this phone (KineResult.jsx) can ask for its patient's follow-up.
+  const [followUpOf] = useState(takeFollowUpRequest);
+  const [tab, setTab] = useState(followUpOf != null ? 'followup' : 'programme');
   const [profile, setProfile] = useState(readProfile);
   const save = p => { saveProfile(p); setProfile(p); };
 
@@ -197,6 +200,7 @@ export default function KineWorkspace({ onClose }) {
             </div>
           </div>
           {tab === 'programme' && <ProgrammeTab fr={fr} k={k} profile={profile} />}
+          {tab === 'followup' && <FollowUp fr={fr} k={k} profile={profile} initial={followUpOf} />}
           {tab === 'library' && <section className="sc-section"><div className="kn-cards">{LIBRARY.map(ex => <ExerciseCard key={ex.id} ex={ex} fr={fr} k={k} open />)}</div></section>}
           {tab === 'invoice' && <InvoiceTab fr={fr} k={k} profile={profile} onProfile={() => setTab('profile')} />}
           {tab === 'compare' && <section className="sc-section"><p className="sc-caption">{k.compareHint}</p><ReferenceCompare embedded /></section>}

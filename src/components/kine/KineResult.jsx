@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { useCondensingTopbar } from '../experience/topbar';
 import { Topbar, GroupHead, Verdict } from '../experience/Showcase';
@@ -6,13 +6,15 @@ import { exerciseById } from '../../lib/kine/library';
 import { RESULT_KEY, cleanResult, payloadAfter, unpack } from '../../lib/kine/links';
 import { COPY, JOINT_NAMES, pct } from '../reference/reference-copy';
 import { TOLERANCE_DEG } from '../../lib/reference/compare';
+import { hasResult, keepResult, patientKey, requestFollowUp } from '../../lib/kine/store';
 import { KINE } from './kine-copy';
 import '../reference/ReferenceCompare.css';
 import './Kine.css';
 
 // A patient's result, opened on the physiotherapist's phone from the link the patient sent (#kine-r=<payload>,
 // lib/kine/links.js): the exercise, the verdict, the tempo, each joint's share of time within tolerance and range
-// reached, and the positions held. Only figures travel: no video, no skeleton.
+// reached, and the positions held. Only figures travel: no video, no skeleton. Opening it keeps it in this phone's
+// follow-up (FollowUp.jsx), once.
 
 export default function KineResult({ onClose }) {
   const { lang } = useT();
@@ -22,6 +24,10 @@ export default function KineResult({ onClose }) {
   useCondensingTopbar(screenRef, [lang]);
   const r = useMemo(() => cleanResult(unpack(payloadAfter(window.location.hash, RESULT_KEY))), []);
   const ex = r ? exerciseById(r.id) : null;
+  // Whether this phone's follow-up already had the result, read before it is kept.
+  const [already] = useState(() => (r && ex ? hasResult(r) : null));
+  useEffect(() => { if (r && ex) keepResult(r); }, [r, ex]);
+  const openFollowUp = () => { requestFollowUp(patientKey(r.patient)); window.location.hash = 'kine'; };
   const when = r?.date ? new Date(r.date).toLocaleString(fr ? 'fr-FR' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }) : '';
 
   return (
@@ -51,6 +57,10 @@ export default function KineResult({ onClose }) {
               </div></li>)}</ul>
             </section>}
             <p className="sc-caption">{c.note(TOLERANCE_DEG)}</p>
+            {already != null && <section className="sc-section">
+              <p className="sc-caption" data-testid="kn-result-kept">{already ? k.rAlready : k.rSaved}</p>
+              <button type="button" className="rc-btn is-primary is-wide press" onClick={openFollowUp} data-testid="kn-result-follow">{k.rOpenFollow}</button>
+            </section>}
           </>}
         </div>
       </section>

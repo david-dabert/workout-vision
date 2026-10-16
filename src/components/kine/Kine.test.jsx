@@ -7,9 +7,10 @@ vi.mock('../../lib/reference/readPose', () => ({ readPose: vi.fn() }));
 // Without a media address, as CI builds; the deploy job sets the repository variable.
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.resetModules(); });
 
-async function render(name, hash = '', lang = 'fr') {
+async function render(name, hash = '', lang = 'fr', extra = {}) {
   vi.stubEnv('VITE_KINE_MEDIA_URL', '');
-  const store = { wv_lang: lang };
+  const store = { wv_lang: lang, ...extra };
+  vi.stubGlobal('sessionStorage', { getItem: k => store[`s:${k}`] ?? null, setItem: (k, v) => { store[`s:${k}`] = String(v); }, removeItem: k => { delete store[`s:${k}`]; } });
   vi.stubGlobal('localStorage', { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } });
   vi.stubGlobal('window', Object.assign(globalThis.window ?? {}, { location: { hash, origin: 'https://example.org', pathname: '/app/' } }));
   const { LanguageProvider } = await import('../../lib/LanguageContext');
@@ -21,7 +22,7 @@ describe('the physiotherapist workspace', () => {
   it('opens on the programme, with the five tabs and Olivier\'s four exercises to add', async () => {
     const html = await render('KineWorkspace');
     expect(html).toContain('data-testid="kine-screen"');
-    for (const tab of ['programme', 'library', 'invoice', 'compare', 'profile']) expect(html).toContain(`data-testid="kn-tab-${tab}"`);
+    for (const tab of ['programme', 'followup', 'library', 'invoice', 'compare', 'profile']) expect(html).toContain(`data-testid="kn-tab-${tab}"`);
     for (const id of ['mains-jointes', 'rotation-externe', 'abduction-horizontale', 'elevation-paliers']) expect(html).toContain(`data-testid="kn-add-${id}"`);
     // No link to send before an exercise is chosen.
     expect(html).not.toContain('data-testid="kn-send"');
@@ -62,6 +63,21 @@ describe('the patient programme', () => {
   });
 });
 
+describe('the follow-up', () => {
+  const results = JSON.stringify([
+    { id: 'mains-jointes', patient: 'Christophe', date: '2026-10-16T09:00', verdict: 'revise', tempo: 1, joints: [{ name: 'rightShoulder', within: 0.55, range: 0.8 }], holds: [] },
+    { id: 'mains-jointes', patient: 'Christophe', date: '2026-10-20T09:00', verdict: 'match', tempo: 1, joints: [{ name: 'rightShoulder', within: 0.93, range: 1 }], holds: [] },
+  ]);
+
+  it('opens on the patient a result screen asked for, with the progress from first to last attempt', async () => {
+    const html = await render('KineWorkspace', '', 'fr', { wv_kine_results: results, 's:wv_kine_open_follow_up': 'christophe' });
+    expect(html).toContain('data-testid="kn-follow-patient"');
+    expect(html).toContain('Christophe');
+    expect(html).toContain('55\u00A0% au premier essai, 93\u00A0% au dernier');
+    expect(html).toContain('data-testid="kn-follow-pdf"');
+  });
+});
+
 describe('a patient result', () => {
   it('shows the verdict and figures of its link', async () => {
     const { resultLink } = await import('../../lib/kine/links');
@@ -70,5 +86,8 @@ describe('a patient result', () => {
     expect(html).toContain('data-testid="kn-result-verdict"');
     expect(html).toContain('Conforme à la référence');
     expect(html).toContain('Épaule droite');
+    // Kept in this phone's follow-up, with the way to it.
+    expect(html).toContain('data-testid="kn-result-kept"');
+    expect(html).toContain('data-testid="kn-result-follow"');
   });
 });
