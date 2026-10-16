@@ -43,8 +43,9 @@ describe('the patient programme', () => {
     expect(html).toContain('2 fois par jour, pendant 6 semaines');
     expect(html).toContain('Bien relâcher.');
     expect(html).toContain('href="tel:0600000000"');
-    // The rotation is shown, not compared (R8).
-    expect(html).toContain('ne compare pas encore votre geste');
+    // Without a media address, no attempt can be filmed yet.
+    expect(html).not.toContain('ne compare pas encore votre geste');
+    expect(html).not.toContain('data-testid="kn-film-');
   });
 
   it('says so when the link does not open', async () => {

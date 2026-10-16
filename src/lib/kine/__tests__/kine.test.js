@@ -12,10 +12,11 @@ describe('the reference library', () => {
     }
   });
 
-  it('offers no comparison for the two exercises the app does not read reliably (R8)', () => {
-    expect(exerciseById('rotation-externe').compare).toBe(false);
-    expect(exerciseById('abduction-horizontale').compare).toBe(false);
-    expect(LIBRARY.filter(e => e.compare).map(e => e.id)).toEqual(['mains-jointes', 'elevation-paliers']);
+  it('compares all four, exercises 2 and 3 on where a segment points rather than on joint angles (R8)', () => {
+    expect(LIBRARY.every(e => e.compare)).toBe(true);
+    expect(Object.keys(exerciseById('rotation-externe').measures.directions)).toEqual(['leftForearm']);
+    expect(Object.keys(exerciseById('abduction-horizontale').measures.directions)).toEqual(['leftArm']);
+    expect(exerciseById('mains-jointes').measures).toBeUndefined();
   });
 });
 

@@ -6,8 +6,8 @@ const clock = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(
 const deg = x => `${Math.round(x)}°`;
 
 export const JOINT_NAMES = {
-  fr: { rightShoulder: 'Épaule droite', leftShoulder: 'Épaule gauche', rightElbow: 'Coude droit', leftElbow: 'Coude gauche' },
-  en: { rightShoulder: 'Right shoulder', leftShoulder: 'Left shoulder', rightElbow: 'Right elbow', leftElbow: 'Left elbow' },
+  fr: { rightShoulder: 'Épaule droite', leftShoulder: 'Épaule gauche', rightElbow: 'Coude droit', leftElbow: 'Coude gauche', leftArm: 'Bras gauche', leftForearm: 'Avant-bras gauche' },
+  en: { rightShoulder: 'Right shoulder', leftShoulder: 'Left shoulder', rightElbow: 'Right elbow', leftElbow: 'Left elbow', leftArm: 'Left arm', leftForearm: 'Left forearm' },
 };
 
 export const COPY = {

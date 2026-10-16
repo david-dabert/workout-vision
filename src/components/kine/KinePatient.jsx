@@ -84,7 +84,7 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged }) {
     </div>}
     {phase === 'error' && <p className="rc-error" role="alert">{c.failed} <small>{error}</small></p>}
     {phase === 'done' && <>
-      <ComparisonView refPose={refPose} attPose={attPose} refUrl={mediaUrl(ex, 'mp4')} attUrl={attUrl} onResult={onResult} />
+      <ComparisonView refPose={refPose} attPose={attPose} refUrl={mediaUrl(ex, 'mp4')} attUrl={attUrl} onResult={onResult} measures={ex.measures} />
       {result && <button type="button" className="rc-btn is-wide press" onClick={send} data-testid={`kn-send-${ex.id}`}>{k.pSend}</button>}
     </>}
   </div>;

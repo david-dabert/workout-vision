@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { hapticLight } from '../../lib/haptics';
 import { Verdict, GroupHead, Metric } from '../experience/Showcase';
-import { buildReference, compareAttempt, curves, SAMPLE_HZ, TOLERANCE_DEG } from '../../lib/reference/compare';
+import { buildReference, compareAttempt, curves, MIRROR, SAMPLE_HZ, TOLERANCE_DEG } from '../../lib/reference/compare';
 import { EDGES, ghostPoints, nearestIndex, pathMaps, refTimeFor } from '../../lib/reference/overlay';
 import { COPY, JOINT_NAMES, clock, deg, pct } from './reference-copy';
 import './ReferenceCompare.css';
@@ -15,6 +15,12 @@ import './ReferenceCompare.css';
 // R8: no verdict when a joint is not seen well enough; the tolerance is said to be provisional.
 
 const JOINT_POINTS = { leftShoulder: 11, rightShoulder: 12, leftElbow: 13, rightElbow: 14 };
+// The point a measure is drawn at: a joint's own point, a direction's end (the wrist); the other side's twin when the
+// attempt was read as in a mirror (compareAttempt).
+const pointOf = (name, measures, mirrored) => {
+  const i = measures?.directions?.[name]?.to ?? JOINT_POINTS[name];
+  return mirrored ? MIRROR[i] : i;
+};
 
 function cssVar(el, name, fallback) {
   const v = el ? getComputedStyle(el).getPropertyValue(name).trim() : '';
@@ -77,19 +83,20 @@ function Timeline({ result, names, c, refNow, onSeekRef }) {
   </div>;
 }
 
-export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onResult }) {
+// `measures`: what the reference is compared on (library.js), when not the default joints.
+export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onResult, measures }) {
   const { lang } = useT();
   const fr = lang === 'fr';
   const c = COPY[fr ? 'fr' : 'en'];
   const names = JOINT_NAMES[fr ? 'fr' : 'en'];
   const rootRef = useRef(null);
-  const reference = useMemo(() => (refPose ? buildReference(refPose.imageLandmarks, refPose.timestamps, { aspect: refPose.aspect }) : null), [refPose]);
-  const result = useMemo(() => (reference && attPose ? compareAttempt(reference, attPose.imageLandmarks, attPose.timestamps, { aspect: attPose.aspect }) : null), [reference, attPose]);
+  const reference = useMemo(() => (refPose ? buildReference(refPose.imageLandmarks, refPose.timestamps, { ...measures, aspect: refPose.aspect }) : null), [refPose, measures]);
+  const result = useMemo(() => (reference && attPose ? compareAttempt(reference, attPose.imageLandmarks, attPose.timestamps, { ...measures, aspect: attPose.aspect }) : null), [reference, attPose, measures]);
   const maps = useMemo(() => {
     if (!result?.path || !attPose) return null;
-    const attLength = curves(attPose.imageLandmarks, attPose.timestamps, { aspect: attPose.aspect })[result.joints[0].name].length;
+    const attLength = curves(attPose.imageLandmarks, attPose.timestamps, { ...measures, aspect: attPose.aspect })[result.joints[0].name].length;
     return { ...pathMaps(result.path, attLength), attT0: attPose.timestamps[0], refT0: refPose.timestamps[0] };
-  }, [result, attPose, refPose]);
+  }, [result, attPose, refPose, measures]);
 
   // Player: the patient's video drives; the reference's video is kept at the matching moment.
   const attVideo = useRef(null), refVideo = useRef(null), attCanvas = useRef(null), refCanvas = useRef(null);
@@ -125,7 +132,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
         const rlm = refPose.imageLandmarks[nearestIndex(refPose.timestamps, tr)];
         // Gap of each compared joint at this moment of the reference.
         const off = {};
-        result.joints.forEach((j, k) => { off[JOINT_POINTS[j.name]] = Math.abs(result.matched[k][ri] - result.reference[k][ri]) > TOLERANCE_DEG; });
+        result.joints.forEach((j, k) => { off[pointOf(j.name, measures, result.mirrored)] = Math.abs(result.matched[k][ri] - result.reference[k][ri]) > TOLERANCE_DEG; });
         if (ghost && lm && rlm) {
           const g = ghostPoints(rlm, { w: 1, h: refPose.height / refPose.width }, lm, { w, h: w * (attPose.height / attPose.width) });
           if (g) drawSkeleton(ctx, g, { color: ash, width: 6, dash: [2, 8], alpha: 0.75 });
@@ -137,9 +144,9 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
           // Each joint's label, named, beside its point; a label that would cover one already set moves down.
           const placed = [];
           result.joints.forEach((j, k) => {
-            const p = pts[JOINT_POINTS[j.name]];
+            const p = pts[pointOf(j.name, measures, result.mirrored)];
             if (!p) return;
-            const bad = off[JOINT_POINTS[j.name]];
+            const bad = off[pointOf(j.name, measures, result.mirrored)];
             ctx.fillStyle = bad ? lamp : bone;
             ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill();
             const label = `${names[j.name].split(' ')[0]} ${deg(result.matched[k][ri])} · ${c.refShort} ${deg(result.reference[k][ri])}`;
@@ -169,7 +176,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [result, maps, ghost, attPose, refPose, c.refShort, names]);
+  }, [result, maps, ghost, attPose, refPose, c.refShort, names, measures]);
 
   const toggle = () => {
     const v = attVideo.current;
