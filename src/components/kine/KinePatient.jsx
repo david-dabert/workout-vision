@@ -6,8 +6,10 @@ import { Topbar, GroupHead, Verdict } from '../experience/Showcase';
 import { exerciseById, hasMedia, mediaUrl } from '../../lib/kine/library';
 import { PROGRAMME_KEY, cleanProgramme, payloadAfter, resultLink, unpack } from '../../lib/kine/links';
 import { loadReferencePose } from '../../lib/kine/media';
-import { attemptsOf, logAttempt } from '../../lib/kine/store';
-import { isReport, reportOf } from '../../lib/kine/report';
+import { attemptsOf, logAttempt, updateAttemptReport } from '../../lib/kine/store';
+import { isReport, reportOf, withCommentary } from '../../lib/kine/report';
+import { glimpseOn } from '../../lib/kine/glimpse';
+import AiCommentary from './AiCommentary';
 import { KeptFile } from '../reference/AttemptKeep';
 import { useKeptFile } from '../reference/useKeptFile';
 import { readPose } from '../../lib/reference/readPose';
@@ -31,7 +33,7 @@ const weekAgo = () => Date.now() - 7 * 864e5;
 const localMinute = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
 // `mirror`: the patient works the side opposite the reference's (the programme's side, library.js `side`).
-function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror }) {
+function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror, dosage }) {
   const c = COPY[fr ? 'fr' : 'en'];
   const input = useRef(null);
   const library = useRef(null);
@@ -44,12 +46,17 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror }) {
   const [report, setReport] = useState(null);
   const [error, setError] = useState('');
   const abortRef = useRef(null);
+  // When the attempt was logged (its key in the log), so a commentary asked for afterwards joins its report.
+  const loggedAt = useRef(null);
+  // The commentary of this video, kept across a deeper reading of the same video (its report is made again).
+  const aiOf = useRef(null);
   const attUrl = useObjectUrl(file);
   useEffect(() => () => abortRef.current?.abort(), []);
 
   const run = async f => {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
+    aiOf.current = null;
     setFile(f); setAttPose(null); setResult(null); setReport(null); setError('');
     try {
       setPhase('ref'); setProgress(0);
@@ -85,10 +92,21 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror }) {
     setResult(r);
     // The attempt's report, kept on the phone with the attempt: the patient can print it again later (PastAttempts).
     const rep = reportOf(r, { id: ex.id, patient: programme.patient, kine: programme.kine.name, date: localMinute(), prog: programmeId, side: mirror ? 'other' : '', model: attPose?.model });
-    setReport(rep);
-    logAttempt(programmeId, { id: ex.id, date: new Date().toISOString(), verdict: r.verdict, report: rep });
+    const kept = aiOf.current ? withCommentary(rep, aiOf.current) : rep;
+    setReport(kept);
+    loggedAt.current = new Date().toISOString();
+    logAttempt(programmeId, { id: ex.id, date: loggedAt.current, verdict: r.verdict, report: kept });
     onLogged();
   }, [programmeId, ex.id, onLogged, programme.patient, programme.kine.name, mirror, attPose?.model]);
+
+  // The AI commentary joins the report on screen (its PDF) and in the log (printed again later).
+  const onCommentary = useCallback(cm => {
+    aiOf.current = cm;
+    if (!report) return;
+    const next = withCommentary(report, cm);
+    setReport(next);
+    if (loggedAt.current && updateAttemptReport(programmeId, loggedAt.current, next)) onLogged();
+  }, [report, programmeId, onLogged]);
 
   const send = async () => {
     hapticLight();
@@ -128,6 +146,7 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror }) {
       </div>}
       {attPose?.model === 'heavy' && <p className="sc-caption" data-testid={`kn-deep-done-${ex.id}`}>{result?.verdict === 'refused' ? k.pDeepStill : k.pDeepDone}</p>}
       <ComparisonView refPose={refPose} attPose={attPose} refUrl={mediaUrl(ex, 'mp4')} attUrl={attUrl} onResult={onResult} measures={ex.measures} mirror={mirror} keep={report ? { report, title: ex[fr ? 'fr' : 'en'].title } : null} />
+      {result && glimpseOn() && <AiCommentary key={attUrl} file={file} ex={ex} fr={fr} k={k} dosage={dosage} initial={report?.ai ?? null} onCommentary={onCommentary} />}
       {result && <button type="button" className="rc-btn is-wide press" onClick={send} data-testid={`kn-send-${ex.id}`}>{k.pSend}</button>}
     </>}
   </div>;
@@ -198,12 +217,12 @@ export default function KinePatient({ onClose }) {
                 <ExerciseCard ex={{ ...ex, dosage: { reps: it.reps, sets: it.sets } }} fr={fr} k={k} open stepsLabel={k.howTo} />
                 {it.note && <p className="kn-note">{it.note}</p>}
                 {ex.side && it.side && it.side !== ex.side && <p className="kn-note" data-testid={`kn-side-note-${it.id}`}>{k.pSide(it.side, ex.side)}</p>}
-                {ex.compare && hasMedia() ? <Attempt ex={ex} programme={programme} programmeId={programmeId} fr={fr} k={k} onLogged={refresh} mirror={!!(ex.side && it.side && it.side !== ex.side)} />
+                {ex.compare && hasMedia() ? <Attempt ex={ex} programme={programme} programmeId={programmeId} fr={fr} k={k} onLogged={refresh} mirror={!!(ex.side && it.side && it.side !== ex.side)} dosage={{ reps: it.reps, sets: it.sets }} />
                   : <p className="sc-caption">{ex.compare ? k.noMedia : k.pNoCompare}</p>}
               </section>;
             })}
             <PastAttempts log={log} fr={fr} k={k} />
-            <p className="sc-caption">{k.pPrivacy}</p>
+            <p className="sc-caption">{glimpseOn() ? k.pPrivacyAi : k.pPrivacy}</p>
           </>}
         </div>
       </section>

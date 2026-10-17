@@ -9,6 +9,8 @@ import { exerciseById } from './library';
 import { sessionWithin } from './store';
 import { TOLERANCE_DEG, TOLERANCE_SHARE } from '../reference/compare';
 import { COPY, JOINT_NAMES } from '../../components/reference/reference-copy';
+import { KINE } from '../../components/kine/kine-copy';
+import { isCommentary } from './glimpse';
 
 const euro = (n, fr) => new Intl.NumberFormat(fr ? 'fr-FR' : 'en-GB', { style: 'currency', currency: 'EUR' }).format(n || 0);
 const day = (iso, fr) => {
@@ -282,9 +284,36 @@ export function attemptPdf(report, { lang = 'fr', stills = [] } = {}) {
     y = textBlock(k, `${c.tempoValue(report.attSec, report.refSec)} · ${c.tempoSub(report.tempo)}`, MARGIN, y, COLUMN, 9, COLOR.ink) + 8;
   }
 
+  // The AI commentary, when the patient asked for it (lib/kine/glimpse.js): apart from the measures, labelled as an
+  // AI's opinion, never as the app's (R8).
+  const ai = isCommentary(report.ai) ? report.ai : null;
+  if (ai) {
+    const kc = KINE[fr ? 'fr' : 'en'];
+    head(kc.pAiTitle, 90);
+    if (!ai.visible) y = textBlock(k, kc.pAiUnseen, MARGIN, y, COLUMN, 8.5, COLOR.ash) + 3;
+    else if (ai.sameExercise === 'no') y = textBlock(k, kc.pAiOther, MARGIN, y, COLUMN, 8.5, COLOR.ash) + 3;
+    y = textBlock(k, ai.summary, MARGIN, y, COLUMN, 9, COLOR.ink) + 4;
+    newPageIfNeeded(20);
+    y = textBlock(k, ai.reps != null ? kc.pAiReps(ai.reps) : kc.pAiRepsUnknown, MARGIN, y, COLUMN, 9, COLOR.ink) + 4;
+    const lists = [[kc.pAiHolds, ai.holds.map(h => kc.pAiHold(h.rep, h.seconds))], [kc.pAiCompensations, ai.compensations], [kc.pAiSetup, ai.setup], [kc.pAiCamera, ai.camera], [kc.pAiAdvice, ai.advice]];
+    for (const [title, items] of lists) {
+      if (!items.length) continue;
+      newPageIfNeeded(36);
+      k.write(title, MARGIN, y, 'sansMedium', 9, 1.4, COLOR.ink);
+      y += 13;
+      for (const line of items) { newPageIfNeeded(20); y = textBlock(k, `· ${line}`, MARGIN + 8, y, COLUMN - 8, 8.5, COLOR.ink) + 2; }
+      y += 4;
+    }
+    newPageIfNeeded(20);
+    y = textBlock(k, kc.pAiFoot, MARGIN, y, COLUMN, 7.5, COLOR.ash) + 8;
+  }
+
   newPageIfNeeded(60);
   rule();
   y = textBlock(k, c.note(TOLERANCE_DEG), MARGIN, y, COLUMN, 7.5, COLOR.ash) + 3;
-  textBlock(k, fr ? 'Mesures estimées par l’application WorkoutVision à partir de la vidéo, dans le plan de l’image. Ce rapport aide à suivre l’exercice\u00A0; il n’est pas un diagnostic. L’appli n’a envoyé votre vidéo nulle part.' : 'Measures estimated by the WorkoutVision app from the video, in the picture’s plane. This report helps follow the exercise; it is not a diagnosis. The app sent your video nowhere.', MARGIN, y, COLUMN, 7.5, COLOR.ash);
+  const sent = ai
+    ? (fr ? 'À votre demande, votre vidéo a été envoyée à Elorian pour l’avis détaillé (IA)\u00A0; les mesures, elles, ont été faites sur le téléphone.' : 'At your request, your video was sent to Elorian for the detailed opinion (AI); the measures were made on the phone.')
+    : (fr ? 'L’appli n’a envoyé votre vidéo nulle part.' : 'The app sent your video nowhere.');
+  textBlock(k, `${fr ? 'Mesures estimées par l’application WorkoutVision à partir de la vidéo, dans le plan de l’image. Ce rapport aide à suivre l’exercice\u00A0; il n’est pas un diagnostic.' : 'Measures estimated by the WorkoutVision app from the video, in the picture’s plane. This report helps follow the exercise; it is not a diagnosis.'} ${sent}`, MARGIN, y, COLUMN, 7.5, COLOR.ash);
   return doc;
 }

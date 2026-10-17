@@ -81,11 +81,41 @@ export function kineMediaOrigin(url) {
   return u.origin;
 }
 
+/**
+ * Vite plugin: the pages' Content-Security-Policy lets them reach the proxy of the AI commentary and Vercel Blob's
+ * upload address, when the build names the proxy (VITE_GLIMPSE_URL, src/lib/kine/glimpse.js), and no other. Without it
+ * the policy is left as written and the commentary is not offered. https only (http for localhost).
+ */
+export function glimpseCspPlugin(fixed) {
+  let origin = '';
+  return {
+    name: 'glimpse-csp',
+    configResolved(config) { origin = glimpseOrigin(fixed ?? config.env.VITE_GLIMPSE_URL ?? ''); },
+    transformIndexHtml(html) {
+      if (!origin) return html;
+      return html.replace(/(connect-src [^;"]*)/, `$1 ${origin} ${BLOB_UPLOAD_ORIGIN}`);
+    },
+  };
+}
+
+// Where @vercel/blob/client puts a file (its API, vercel.com/api/blob).
+export const BLOB_UPLOAD_ORIGIN = 'https://vercel.com';
+
+/** The origin of the proxy's address, or '' when none is set. Throws on a URL that is not https (http only locally). */
+export function glimpseOrigin(url) {
+  if (!url) return '';
+  let u;
+  try { u = new URL(url); } catch { throw new Error(`VITE_GLIMPSE_URL is not a URL: ${url}`); }
+  const local = u.hostname === 'localhost' || u.hostname === '127.0.0.1';
+  if (!(u.protocol === 'https:' || (u.protocol === 'http:' && local))) throw new Error(`VITE_GLIMPSE_URL must be https: ${url}`);
+  return u.origin;
+}
+
 export default defineConfig({
   // The analysed demo videos ship again since 14 October 2026 (David): shown as previews of where the app is going,
   // labelled « Aperçu », never as measured (SportsBiomechanics.jsx, Equine.jsx). scripts/omit-painted-demos.js still
   // names them (isPaintedDemo) for tests.
-  plugins: [react(), copyModelsPlugin(), eventsCspPlugin(), kineMediaCspPlugin()],
+  plugins: [react(), copyModelsPlugin(), eventsCspPlugin(), kineMediaCspPlugin(), glimpseCspPlugin()],
   // jsPDF's optional modules, used only by doc.html() and addSvgAsImage(), which the app never calls: stubbed
   // (src/lib/jspdf-optional-stub.js, C9 of the design review of 7 October 2026).
   resolve: {

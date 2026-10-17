@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SAMPLE_HZ, compareCurves, referenceFromCurves } from '../../reference/compare.js';
-import { isReport, reportOf } from '../report.js';
+import { isReport, reportOf, withCommentary } from '../report.js';
 import { attemptTimeAt, reportMoments } from '../../../components/reference/attempt-export.js';
 
 // The report the patient keeps of an attempt (report.js), its PDF (pdf.js attemptPdf) and the moments its still
@@ -112,6 +112,16 @@ describe('the report as a PDF', () => {
     const later = attemptPdf(report, { lang: 'en' });
     expect(later.getNumberOfPages()).toBeGreaterThan(0);
     expect(later.output()).not.toContain('/Subtype /Image');
+  });
+
+  it('prints the AI commentary when the patient asked for it, and the report stays a report', async () => {
+    const { attemptPdf } = await import('../pdf.js');
+    const ai = { visible: true, sameExercise: 'yes', reps: 4, holds: [{ rep: 1, seconds: 4.5 }], compensations: ['Les épaules montent.'], setup: [], camera: [], advice: ['Gardez les épaules basses.'], summary: 'Quatre répétitions.' };
+    const report = withCommentary(reportOf(compareCurves(ref, staged(130)), context), ai);
+    expect(isReport(report)).toBe(true);
+    const plain = attemptPdf(reportOf(compareCurves(ref, staged(130)), context), { lang: 'fr' });
+    const with_ = attemptPdf(report, { lang: 'fr' });
+    expect(with_.output().length).toBeGreaterThan(plain.output().length);
   });
 
   it('prints a refused attempt\'s report', async () => {
