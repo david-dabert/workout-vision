@@ -52,9 +52,11 @@ function Timeline({ result, names, c, refNow, onSeekRef }) {
   return <div className="rc-timeline">
     {result.joints.map((j, k) => {
       const ref = result.reference[k], att = result.matched[k];
-      const lo = Math.min(...ref, ...att) - 5, hi = Math.max(...ref, ...att) + 5;
+      // The attempt's line breaks where its pose was lost: no value is drawn there (R8).
+      const attSeen = att.filter(v => v != null);
+      const lo = Math.min(...ref, ...attSeen) - 5, hi = Math.max(...ref, ...attSeen) + 5;
       const y = v => pad + (1 - (v - lo) / Math.max(1, hi - lo)) * (H - 2 * pad);
-      const line = arr => arr.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
+      const line = arr => arr.map((v, i) => (v == null ? '' : `${i && arr[i - 1] != null ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`)).join('');
       const band = `${ref.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v + TOLERANCE_DEG).toFixed(1)}`).join('')}${ref.map((v, i) => [i, v]).reverse().map(([i, v]) => `L${x(i).toFixed(1)},${y(v - TOLERANCE_DEG).toFixed(1)}`).join('')}Z`;
       // Stretches out of tolerance, at moments the reference shows (R8).
       const runs = [];
@@ -274,6 +276,9 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
               </section>
             </>}
 
+            {/* The share of the movement judged, when the attempt's pose was lost on part of it (filmed on the floor):
+                the verdict rests on the moments both videos show (R8). */}
+            {result.verdict !== 'refused' && result.joints.some(j => j.shown < 0.95) && <p className="sc-caption" data-testid="rc-partial">{c.partial(Math.min(...result.joints.map(j => j.shown)))}</p>}
             <p className="sc-caption">{c.note(TOLERANCE_DEG)}</p>
   </div>;
 }
