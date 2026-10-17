@@ -106,4 +106,31 @@ if (!existsSync(modelDest)) {
   }
 }
 
+// The heavy pose model (float16/1), for the physiotherapy module's deeper analysis only (KinePatient.jsx): fetched by
+// the phone when the patient asks for it, never precached by the service worker. Checked like the full model.
+const HEAVY_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task';
+const HEAVY_SHA256 = JSON.parse(readFileSync(new URL('../src/lib/model-hash.json', import.meta.url), 'utf8')).heavySha256;
+const heavyDest = join(ROOT, 'public', 'mediapipe', 'pose_landmarker_heavy.task');
+const verifyHeavy = buffer => {
+  const actual = createHash('sha256').update(buffer).digest('hex');
+  if (actual !== HEAVY_SHA256) throw new Error(`Heavy model SHA-256 mismatch: expected ${HEAVY_SHA256}, received ${actual}`);
+};
+try {
+  if (!existsSync(heavyDest)) {
+    console.log('[copy-models] Downloading pose_landmarker_heavy.task ...');
+    const resp = await fetch(HEAVY_URL);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
+    const buffer = Buffer.from(await resp.arrayBuffer());
+    verifyHeavy(buffer);
+    writeFileSync(heavyDest, buffer);
+    console.log(`[copy-models] OK: pose_landmarker_heavy.task (${buffer.length} bytes)`);
+  } else {
+    verifyHeavy(readFileSync(heavyDest));
+    console.log('[copy-models] OK: pose_landmarker_heavy.task already present');
+  }
+} catch (err) {
+  console.error(`[copy-models] ERROR heavy model: ${err.message}`);
+  exitCode = 1;
+}
+
 process.exit(exitCode);

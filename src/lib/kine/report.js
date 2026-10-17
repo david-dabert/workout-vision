@@ -7,11 +7,13 @@ const share = x => (Number.isFinite(x) ? Math.round(x * 1000) / 1000 : null);
 const angle = x => (Number.isFinite(x) ? Math.round(x * 10) / 10 : null);
 const secs = x => (Number.isFinite(x) ? Math.round(x * 10) / 10 : null);
 
-/** The report of a comparison result; context: { id, patient, kine, date, prog, side }. */
-export function reportOf(result, { id, patient = '', kine = '', date, prog = '', side = '' }) {
+/** The report of a comparison result; context: { id, patient, kine, date, prog, side, model }. */
+export function reportOf(result, { id, patient = '', kine = '', date, prog = '', side = '', model = 'full' }) {
   const refused = result.verdict === 'refused';
   return {
     v: 1, id, patient, kine, date, prog, side,
+    // 'heavy' when the attempt was read with the deeper analysis's pose model (KinePatient.jsx).
+    model: model === 'heavy' ? 'heavy' : 'full',
     verdict: result.verdict,
     reasons: [...result.reasons],
     // The share of the movement the verdict rests on: of the reference's moments, those both videos show, for the

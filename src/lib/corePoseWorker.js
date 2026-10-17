@@ -1,5 +1,5 @@
 // Use the harness's exact CPU/IMAGE inference and image filtering in a worker.
-import { getImageLandmarker, getImageLandmarkerOn, getVideoModeLandmarker, detectPoseImage, resetKalmanFilters, landmarkerDelegate } from './poseAnalysis';
+import { getImageLandmarker, getImageLandmarkerOn, getVideoModeLandmarker, detectPoseImage, resetKalmanFilters, landmarkerDelegate, setPoseModel } from './poseAnalysis';
 
 // The GPU this worker would draw with, as WebGL names it (WEBGL_debug_renderer_info), or null: printed by the check page
 // beside a measurement, so a software renderer is never read as a phone's GPU (pillar 4, 9 October 2026).
@@ -33,6 +33,8 @@ self.onmessage = async ({ data }) => {
       // benchModel: another pose model's bytes, from the check page only (?posemodel=), to measure it (poseAnalysis.js
       // reads __WV_BENCH_POSE_MODEL__); the app never sends it.
       if (data.benchModel instanceof ArrayBuffer) globalThis.__WV_BENCH_POSE_MODEL__ = data.benchModel;
+      // model: 'heavy' for a physiotherapy attempt the patient asked to analyse again (readPose.js); else the app's.
+      setPoseModel(data.model);
       // delegate: 'GPU' from the check page only (?delegate=gpu, pillar 4: measured, never the app's); IMAGE mode.
       model = data.videoMode ? await getVideoModeLandmarker() : data.delegate === 'GPU' ? await getImageLandmarkerOn('GPU') : await getImageLandmarker();
       if (!model) throw new Error('Pose model could not load');

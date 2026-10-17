@@ -63,14 +63,32 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror }) {
       setError(err?.message || String(err)); setPhase('error');
     }
   };
+  // The deeper analysis (David, 17 October 2026): the same attempt read again with MediaPipe's heavy pose model, when
+  // the app's model did not see the measured arm well enough for a verdict (filmed on the floor, both arms together:
+  // the arm seen on 48 % of the samples with the app's model, 57 % with the heavy one). On the patient's tap only: a
+  // 30 MB download the first time, and about three times as long to read.
+  const deep = async () => {
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+    hapticLight();
+    setResult(null); setReport(null); setError('');
+    try {
+      setPhase('deep'); setProgress(0);
+      setAttPose(await readPose(file, { signal: ctrl.signal, onProgress: setProgress, model: 'heavy' }));
+      setPhase('done');
+    } catch (err) {
+      if (err?.name === 'AbortError') { setPhase('done'); return; }
+      setError(err?.message || String(err)); setPhase('error');
+    }
+  };
   const onResult = useCallback(r => {
     setResult(r);
     // The attempt's report, kept on the phone with the attempt: the patient can print it again later (PastAttempts).
-    const rep = reportOf(r, { id: ex.id, patient: programme.patient, kine: programme.kine.name, date: localMinute(), prog: programmeId, side: mirror ? 'other' : '' });
+    const rep = reportOf(r, { id: ex.id, patient: programme.patient, kine: programme.kine.name, date: localMinute(), prog: programmeId, side: mirror ? 'other' : '', model: attPose?.model });
     setReport(rep);
     logAttempt(programmeId, { id: ex.id, date: new Date().toISOString(), verdict: r.verdict, report: rep });
     onLogged();
-  }, [programmeId, ex.id, onLogged, programme.patient, programme.kine.name, mirror]);
+  }, [programmeId, ex.id, onLogged, programme.patient, programme.kine.name, mirror, attPose?.model]);
 
   const send = async () => {
     hapticLight();
@@ -86,7 +104,9 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror }) {
     if (to) window.location.href = to; else { try { await navigator.clipboard.writeText(link); } catch { /* blocked */ } }
   };
 
-  const busy = phase === 'ref' || phase === 'att';
+  const busy = phase === 'ref' || phase === 'att' || phase === 'deep';
+  // Offered once, for an attempt refused because a measure was not seen enough (not for a reference the app cannot read).
+  const deepOffered = result?.verdict === 'refused' && result.reasons.length > 0 && result.reasons.every(x => x.startsWith('unseen:')) && attPose?.model !== 'heavy';
   const pick = e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) { hapticLight(); run(f); } };
   return <div className="kn-attempt">
     {/* Two ways in, as the app's own exercises (Film.jsx): the camera, or a video the phone already holds (filmed
@@ -95,13 +115,18 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror }) {
     <input ref={input} type="file" accept="video/*,.mov" capture="environment" hidden onChange={pick} data-testid={`kn-film-${ex.id}-input`} />
     <button type="button" className="rc-btn is-wide press" onClick={() => library.current?.click()} disabled={busy} data-testid={`kn-choose-${ex.id}`}>{k.pChoose}</button>
     <input ref={library} type="file" accept="video/*,.mov" hidden onChange={pick} data-testid={`kn-choose-${ex.id}-input`} />
-    {(phase === 'ref' || phase === 'att') && <div className="rc-progress" role="status">
-      <span>{phase === 'ref' ? k.pReadingRef : k.pReading}</span>
+    {busy && <div className="rc-progress" role="status">
+      <span>{phase === 'ref' ? k.pReadingRef : phase === 'deep' ? k.pDeepReading : k.pReading}</span>
       <div className="rc-bar"><i style={{ width: `${Math.round(progress)}%` }} /></div>
       <button type="button" className="rc-link press" onClick={() => abortRef.current?.abort()}>{c.cancel}</button>
     </div>}
     {phase === 'error' && <p className="rc-error" role="alert">{c.failed} <small>{error}</small></p>}
     {phase === 'done' && <>
+      {deepOffered && <div className="kn-deep" data-testid={`kn-deep-${ex.id}`}>
+        <p className="sc-caption">{k.pDeepHint}</p>
+        <button type="button" className="rc-btn is-primary is-wide press" onClick={deep} data-testid={`kn-deep-${ex.id}-go`}>{k.pDeep}</button>
+      </div>}
+      {attPose?.model === 'heavy' && <p className="sc-caption" data-testid={`kn-deep-done-${ex.id}`}>{result?.verdict === 'refused' ? k.pDeepStill : k.pDeepDone}</p>}
       <ComparisonView refPose={refPose} attPose={attPose} refUrl={mediaUrl(ex, 'mp4')} attUrl={attUrl} onResult={onResult} measures={ex.measures} mirror={mirror} keep={report ? { report, title: ex[fr ? 'fr' : 'en'].title } : null} />
       {result && <button type="button" className="rc-btn is-wide press" onClick={send} data-testid={`kn-send-${ex.id}`}>{k.pSend}</button>}
     </>}

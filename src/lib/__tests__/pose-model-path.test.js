@@ -24,7 +24,7 @@ vi.mock('localforage', () => ({
   },
 }));
 vi.mock('../gpuBenchmark', () => ({ detectCapabilities: h.detectCapabilities, isSimdSupported: () => true }));
-vi.mock('../model-hash', () => ({ MODEL_SHA256: 'abc', isTheModel: async () => true }));
+vi.mock('../model-hash', () => ({ MODEL_SHA256: 'abc', isTheModel: async () => true, isTheHeavyModel: async buf => buf.byteLength === 16 }));
 vi.mock('@mediapipe/tasks-vision', () => ({
   FilesetResolver: { forVisionTasks: async () => ({}) },
   PoseLandmarker: { createFromOptions: h.createFromOptions },
@@ -105,6 +105,7 @@ describe('the app pose worker (C48)', () => {
       landmarkerDelegate: () => 'CPU',
       detectPoseImage: () => ({ landmarks: [[]], worldLandmarks: [[]] }),
       resetKalmanFilters: reset,
+      setPoseModel: () => {},
     }));
     const posted = [];
     vi.stubGlobal('self', { postMessage: m => posted.push(m) });
@@ -158,6 +159,7 @@ describe('the GPU delegate, for measurement only', () => {
       landmarkerDelegate: () => got.at(-1),
       detectPoseImage: () => ({ landmarks: [[]], worldLandmarks: [[]] }),
       resetKalmanFilters: () => {},
+      setPoseModel: m => { got.push(`model:${m}`); },
     }));
     const posted = [];
     vi.stubGlobal('self', { postMessage: m => posted.push(m) });
@@ -166,10 +168,27 @@ describe('the GPU delegate, for measurement only', () => {
     await import('../corePoseWorker');
     await self.onmessage({ data: { type: 'init', id: 0 } });
     await self.onmessage({ data: { type: 'init', id: 1, delegate: 'GPU' } });
-    expect(got).toEqual(['CPU', 'GPU']);
+    await self.onmessage({ data: { type: 'init', id: 3, model: 'heavy' } });
+    // The app's model unless the init names the heavy one (a physiotherapy attempt analysed again).
+    expect(got).toEqual(['model:undefined', 'CPU', 'model:undefined', 'GPU', 'model:heavy', 'CPU']);
     expect(posted.slice(0, 2).map(m => m.delegate)).toEqual(['CPU', 'GPU']);
-    await self.onmessage({ data: { id: 2, width: 2, height: 2, pixels: new Uint8ClampedArray(16).buffer, timestamp: 0 } });
+    await self.onmessage({ data: { id: 4, width: 2, height: 2, pixels: new Uint8ClampedArray(16).buffer, timestamp: 0 } });
     expect(Number.isFinite(posted.at(-1).ms)).toBe(true);
     vi.doUnmock('../poseAnalysis');
+  });
+
+  it('loads the heavy model, checked, only when this context asked for it (deeper analysis)', async () => {
+    const pa = await import('../poseAnalysis');
+    pa.setPoseModel('heavy');
+    await pa.getImageLandmarker();
+    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/pose_landmarker_heavy\.task$/));
+    expect(fetch).not.toHaveBeenCalledWith(expect.stringMatching(/pose_landmarker_full\.task$/));
+  });
+
+  it('refuses a heavy model that is not the one the app was built with', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(new Uint8Array(32), { status: 200 })));
+    const pa = await import('../poseAnalysis');
+    pa.setPoseModel('heavy');
+    await expect(pa.getImageLandmarker()).rejects.toThrow(/integrity/);
   });
 });
