@@ -9,8 +9,8 @@ vi.mock('../../lib/reference/readPose', () => ({ readPose: vi.fn() }));
 beforeEach(() => { vi.stubEnv('VITE_KINE_MEDIA_URL', ''); });
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.resetModules(); });
 
-async function render(name, hash = '', lang = 'fr', extra = {}) {
-  vi.stubEnv('VITE_KINE_MEDIA_URL', '');
+async function render(name, hash = '', lang = 'fr', extra = {}, media = '') {
+  vi.stubEnv('VITE_KINE_MEDIA_URL', media);
   const store = { wv_lang: lang, ...extra };
   vi.stubGlobal('sessionStorage', { getItem: k => store[`s:${k}`] ?? null, setItem: (k, v) => { store[`s:${k}`] = String(v); }, removeItem: k => { delete store[`s:${k}`]; } });
   vi.stubGlobal('localStorage', { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } });
@@ -49,6 +49,19 @@ describe('the patient programme', () => {
     // Without a media address, no attempt can be filmed yet.
     expect(html).not.toContain('ne compare pas encore votre geste');
     expect(html).not.toContain('data-testid="kn-film-');
+  });
+
+  it('lets the patient film an attempt or choose a video the phone holds', async () => {
+    // The media address set before the library is first imported (links.js imports it).
+    vi.stubEnv('VITE_KINE_MEDIA_URL', 'https://media.example.org/');
+    const { programmeLink } = await import('../../lib/kine/links');
+    const link = programmeLink('https://example.org/app/', { kine: { name: 'Olivier' }, patient: 'C', items: [{ id: 'abduction-horizontale' }] });
+    const html = await render('KinePatient', link.slice(link.indexOf('#')), 'fr', {}, 'https://media.example.org/');
+    expect(html).toContain('Filmer mon exercice');
+    expect(html).toContain('Choisir une vidéo');
+    // The camera for the first, the phone's videos for the second.
+    expect(html).toMatch(/capture="environment"[^>]*data-testid="kn-film-abduction-horizontale-input"/);
+    expect(html).toMatch(/<input(?:(?!capture)[^>])*data-testid="kn-choose-abduction-horizontale-input"/);
   });
 
   it('tells the patient which side to work when it is not the video\'s', async () => {

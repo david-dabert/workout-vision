@@ -31,6 +31,7 @@ const localMinute = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth(
 function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror }) {
   const c = COPY[fr ? 'fr' : 'en'];
   const input = useRef(null);
+  const library = useRef(null);
   const [file, setFile] = useState(null);
   const [phase, setPhase] = useState('idle');
   const [progress, setProgress] = useState(0);
@@ -78,9 +79,15 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror }) {
     if (to) window.location.href = to; else { try { await navigator.clipboard.writeText(link); } catch { /* blocked */ } }
   };
 
+  const busy = phase === 'ref' || phase === 'att';
+  const pick = e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) { hapticLight(); run(f); } };
   return <div className="kn-attempt">
-    <button type="button" className="rc-btn is-primary is-wide press" onClick={() => input.current?.click()} disabled={phase === 'ref' || phase === 'att'} data-testid={`kn-film-${ex.id}`}>{phase === 'done' ? k.pFilmAgain : k.pFilm}</button>
-    <input ref={input} type="file" accept="video/*" hidden onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) { hapticLight(); run(f); } }} data-testid={`kn-film-${ex.id}-input`} />
+    {/* Two ways in, as the app's own exercises (Film.jsx): the camera, or a video the phone already holds (filmed
+        earlier, or received). David, 17 October 2026. */}
+    <button type="button" className="rc-btn is-primary is-wide press" onClick={() => input.current?.click()} disabled={busy} data-testid={`kn-film-${ex.id}`}>{phase === 'done' ? k.pFilmAgain : k.pFilm}</button>
+    <input ref={input} type="file" accept="video/*,.mov" capture="environment" hidden onChange={pick} data-testid={`kn-film-${ex.id}-input`} />
+    <button type="button" className="rc-btn is-wide press" onClick={() => library.current?.click()} disabled={busy} data-testid={`kn-choose-${ex.id}`}>{k.pChoose}</button>
+    <input ref={library} type="file" accept="video/*,.mov" hidden onChange={pick} data-testid={`kn-choose-${ex.id}-input`} />
     {(phase === 'ref' || phase === 'att') && <div className="rc-progress" role="status">
       <span>{phase === 'ref' ? k.pReadingRef : k.pReading}</span>
       <div className="rc-bar"><i style={{ width: `${Math.round(progress)}%` }} /></div>
