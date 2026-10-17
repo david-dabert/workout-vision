@@ -194,6 +194,14 @@ describe('segment directions', () => {
     expect(compareAttempt(ref, short.lms, short.ts, options).verdict).toBe('revise');
   });
 
+  it('drops the samples where the wrist is put beside its own shoulder (the pose model losing it, filmed on the floor)', () => {
+    const lms = plain.lms.slice(0, 20).map(lm => lm.map(p => ({ ...p })));
+    // Every fifth sample: the wrist a fifth of the arm's length from the shoulder, still seen.
+    lms.forEach((lm, i) => { if (i % 5 === 0) lm[15] = { ...lm[15], x: lm[11].x + (lm[15].x - lm[11].x) * 0.2, y: lm[11].y + (lm[15].y - lm[11].y) * 0.2 }; });
+    const read = jointAngles(lms, options).leftArm;
+    read.forEach((v, i) => expect(v == null).toBe(i % 5 === 0));
+  });
+
   it('drops the samples where the wrist lies on the other one', () => {
     const lm = plain.lms[0].map(p => ({ ...p }));
     lm[15] = { ...lm[16] };

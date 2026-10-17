@@ -74,6 +74,10 @@ function angleAt(a, b, c, aspect) {
 // sample is dropped (video 3: the lowered arm lies on the other arm, and the model swaps the two wrists).
 // Status: experimental, UNSOURCED.
 export const APART_SHARE = 0.08;
+// A segment read at under this share of its usual length in the video is not read: its two ends are too close for its
+// direction to mean anything (a patient filmed on the floor: the wrist the pose model loses between both arms is put
+// beside the shoulder, at the visibility floor, 17 October 2026). Status: experimental, UNSOURCED.
+export const SHORT_SEGMENT_SHARE = 0.5;
 // A direction sample further than this from the median of the second around it is a jump of the pose model, dropped.
 // Status: experimental, UNSOURCED (the reference's fastest move, about 90 degrees a second, stays well under it).
 export const JUMP_DEG = 20;
@@ -96,9 +100,15 @@ export function jointAngles(landmarks, { joints = JOINTS, directions = {}, aspec
   if (Object.keys(directions).length) {
     const k = aspect ?? 1, line = bodyLine(landmarks, k);
     for (const [name, { from, to, apartFrom }] of Object.entries(directions)) {
+      const seen = lm => lm && [from, to].every(i => (lm[i]?.visibility ?? 0) >= SEEN_VISIBILITY)
+        && !(apartFrom != null && lm[apartFrom] && Math.hypot((lm[to].x - lm[apartFrom].x) * k, lm[to].y - lm[apartFrom].y) < APART_SHARE);
+      const length = lm => Math.hypot((lm[to].x - lm[from].x) * k, lm[to].y - lm[from].y);
+      // The segment's usual length in this video; a sample where it is under SHORT_SEGMENT_SHARE of it is not read.
+      const lengths = landmarks.filter(seen).map(length).sort((a, b) => a - b);
+      const usual = lengths.length ? lengths[Math.floor(lengths.length / 2)] : 0;
       out[name] = landmarks.map(lm => {
-        if (!lm || [from, to].some(i => (lm[i]?.visibility ?? 0) < SEEN_VISIBILITY)) return null;
-        if (apartFrom != null && lm[apartFrom] && Math.hypot((lm[to].x - lm[apartFrom].x) * k, lm[to].y - lm[apartFrom].y) < APART_SHARE) return null;
+        if (!seen(lm)) return null;
+        if (length(lm) < SHORT_SEGMENT_SHARE * usual) return null;
         return wrap(directionOf(lm[from], lm[to], k) - line);
       });
     }
