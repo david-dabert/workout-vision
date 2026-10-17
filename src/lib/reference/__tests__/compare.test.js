@@ -55,8 +55,50 @@ describe('reference comparison', () => {
 
   it('gives no verdict when the attempt does not show a joint (R8)', () => {
     const hidden = staged();
-    hidden.rightElbow = hidden.rightElbow.map((v, i) => (i % 2 ? null : v));
+    hidden.rightElbow = hidden.rightElbow.map((v, i) => (i % 5 < 3 ? null : v));
     expect(compareCurves(ref, hidden)).toMatchObject({ verdict: 'refused', reasons: ['unseen:rightElbow'] });
+  });
+
+  it('judges only the moments the attempt shows, and none of its filled line (R8, filmed on the floor)', () => {
+    // Lost 0.8 s in every 2 s, as an arm lying on the other one is: what the attempt shows is the reference's movement.
+    const lost = staged();
+    for (const name of Object.keys(lost)) lost[name] = lost[name].map((v, i) => (i % 20 >= 12 ? null : v));
+    const r = compareCurves(ref, lost);
+    expect(r.verdict).toBe('match');
+    const sh = r.joints.find(j => j.name === 'rightShoulder');
+    expect(sh.within).toBeGreaterThan(0.95);
+    expect(sh.shown).toBeLessThan(0.75);
+    expect(sh.rangeShare).toBeGreaterThan(0.95);
+  });
+
+  it('still asks to revise a short raise filmed with the same losses', () => {
+    const lost = staged();
+    lost.rightShoulder = lost.rightShoulder.map(v => Math.min(v, 130));
+    for (const name of Object.keys(lost)) lost[name] = lost[name].map((v, i) => (i % 20 >= 12 ? null : v));
+    expect(compareCurves(ref, lost).reasons).toContain('range:rightShoulder');
+  });
+
+  it('never accepts an attempt lost after the first fifth of its movement', () => {
+    // Seen on over half the samples, most of them still footage before the movement: refused or asked to revise,
+    // never matched on the line filled across what it does not show.
+    const lost = pad(staged(), 100, 0);
+    const cut = 100 + Math.round(staged().rightShoulder.length * 0.2);
+    for (const name of Object.keys(lost)) lost[name] = lost[name].map((v, i) => (i >= cut ? null : v));
+    expect(compareCurves(ref, lost).verdict).not.toBe('match');
+  });
+
+  it('gives no verdict when the attempt shows the measure on under half of its samples', () => {
+    const lost = staged();
+    for (const name of Object.keys(lost)) lost[name] = lost[name].map((v, i) => (i % 20 >= 9 ? null : v));
+    expect(compareCurves(ref, lost)).toMatchObject({ verdict: 'refused', reasons: ['unseen:rightShoulder', 'unseen:rightElbow'] });
+  });
+
+  it('does not judge a hold the attempt does not show', () => {
+    const lost = staged();
+    // Lost from the middle of the top hold (170 degrees, 8 to 11 s) to the end.
+    for (const name of Object.keys(lost)) lost[name] = lost[name].map((v, i) => (i >= 95 ? null : v));
+    const r = compareCurves(ref, lost);
+    expect(r.holds.some(h => h.refAngle > 160)).toBe(false);
   });
 
   it('leaves out a reference joint seen on under 80 % of the video', () => {
@@ -150,6 +192,14 @@ describe('segment directions', () => {
       lm[15] = { ...w, x: s.x + len * Math.sin(a), y: s.y - len * Math.cos(a) };
     });
     expect(compareAttempt(ref, short.lms, short.ts, options).verdict).toBe('revise');
+  });
+
+  it('drops the samples where the wrist is put beside its own shoulder (the pose model losing it, filmed on the floor)', () => {
+    const lms = plain.lms.slice(0, 20).map(lm => lm.map(p => ({ ...p })));
+    // Every fifth sample: the wrist a fifth of the arm's length from the shoulder, still seen.
+    lms.forEach((lm, i) => { if (i % 5 === 0) lm[15] = { ...lm[15], x: lm[11].x + (lm[15].x - lm[11].x) * 0.2, y: lm[11].y + (lm[15].y - lm[11].y) * 0.2 }; });
+    const read = jointAngles(lms, options).leftArm;
+    read.forEach((v, i) => expect(v == null).toBe(i % 5 === 0));
   });
 
   it('drops the samples where the wrist lies on the other one', () => {
