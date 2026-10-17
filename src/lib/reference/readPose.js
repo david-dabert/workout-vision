@@ -9,10 +9,13 @@ import { OFFERED } from '../offer';
 // Any offered lift: its count is not read. Status: convention.
 const POSE_ONLY = OFFERED.includes('squat') ? 'squat' : OFFERED[0];
 
-/** Resolves { imageLandmarks, timestamps, aspect, width, height } for a video file. */
-export async function readPose(file, { signal, onProgress } = {}) {
-  const r = await analyzeCoreVideo(file, POSE_ONLY, { signal, onProgress });
+/**
+ * Resolves { imageLandmarks, timestamps, aspect, width, height, model } for a video file. model 'heavy': read with
+ * MediaPipe's larger pose model (KinePatient.jsx, the deeper analysis); else the app's.
+ */
+export async function readPose(file, { signal, onProgress, model } = {}) {
+  const r = await analyzeCoreVideo(file, POSE_ONLY, { signal, onProgress, ...(model === 'heavy' ? { model: 'heavy' } : {}) });
   const width = r.metadata?.extractedWidth ?? r.metadata?.width;
   const height = r.metadata?.extractedHeight ?? r.metadata?.height;
-  return { imageLandmarks: r.imageLandmarks, timestamps: r.timestamps, width, height, aspect: width && height ? width / height : 1 };
+  return { imageLandmarks: r.imageLandmarks, timestamps: r.timestamps, width, height, aspect: width && height ? width / height : 1, model: model === 'heavy' ? 'heavy' : 'full' };
 }

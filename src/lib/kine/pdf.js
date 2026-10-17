@@ -223,6 +223,7 @@ export function attemptPdf(report, { lang = 'fr', stills = [] } = {}) {
     if (line) { newPageIfNeeded(24); y = textBlock(k, `· ${line}`, MARGIN, y, COLUMN, 9, COLOR.ink) + 2; }
   }
   if (report.judged != null && report.judged < 0.95) y = textBlock(k, c.partial(report.judged), MARGIN, y + 2, COLUMN, 8.5, COLOR.ash) + 2;
+  if (report.model === 'heavy') y = textBlock(k, fr ? 'Vidéo relue avec le modèle d’analyse approfondie.' : 'Video read with the deeper analysis model.', MARGIN, y + 2, COLUMN, 8.5, COLOR.ash) + 2;
   y += 8;
 
   // Still frames of the attempt, side by side, each with its caption.

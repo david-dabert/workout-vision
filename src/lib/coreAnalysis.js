@@ -212,7 +212,7 @@ const WORKER_CLOSE_MS = 1000;
 const IN_FLIGHT = 2;
 let previousWorkerGone = Promise.resolve();
 
-export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {}, onDecoder, onSource, path, inject, poseMode, benchModel, delegate } = {}) {
+export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => {}, onPhase = () => {}, onLandmarks = () => {}, onDecoder, onSource, path, inject, poseMode, benchModel, delegate, model } = {}) {
   if (!isOffered(lift)) throw new Error('Choose an approved lift');
   // Analyses queue one behind the other: each waits for the worker of the one started before it.
   const before = previousWorkerGone;
@@ -281,7 +281,9 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     // benchModel: another pose model's bytes, from the check page only (?posemodel=), to measure it.
     // delegate 'GPU' (the check page's ?delegate=gpu; pillar 4, 9 October 2026): MediaPipe's GPU delegate, to measure
     // its speed and landmarks on a phone; the app reads on the CPU.
-    const init = await send({ type: 'init', videoMode: poseMode === 'video', ...(benchModel ? { benchModel } : {}), ...(delegate === 'GPU' ? { delegate: 'GPU' } : {}) });
+    // model 'heavy': MediaPipe's larger pose model, for a physiotherapy attempt the patient asked to analyse again
+    // (lib/reference/readPose.js); every count reads with the app's model.
+    const init = await send({ type: 'init', videoMode: poseMode === 'video', ...(benchModel ? { benchModel } : {}), ...(delegate === 'GPU' ? { delegate: 'GPU' } : {}), ...(model === 'heavy' ? { model: 'heavy' } : {}) });
     // The model's time per sample, as the worker measured it: kept in metadata.pose for the check page, read by no count.
     const poseMs = [];
     onPhase('extracting');

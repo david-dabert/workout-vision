@@ -31,7 +31,7 @@ import {
 // Import from the installed package (0.10.35) — same version as the WASM in public/mediapipe.
 // Previous CDN import loaded 0.10.8 which returned landmarks without visibility scores.
 import * as mpVision from '@mediapipe/tasks-vision';
-import { isTheModel, MODEL_SHA256 } from './model-hash';
+import { isTheHeavyModel, isTheModel, MODEL_SHA256 } from './model-hash';
 import { cropAround, mapFromCrop, keepLost, fillBackward, CROP_PX, CROP_SEED_MS, BACK_PASS, BACK_KEEP_MS, BACK_MAX_FRAMES } from './poseCrop';
 import { LIFTER_LOCK, LIFTER_POSES, pickLifter, nextReference } from './lifterLock';
 import { JUMP_GATE, newGate, holdsBack, accept as gateAccept, heldBack } from './jumpGate';
@@ -72,6 +72,26 @@ let _landmarkerDelegate = null;
 export const LANDMARKS = _LANDMARKS;
 
 const MODEL_URL = `${import.meta.env.BASE_URL}mediapipe/pose_landmarker_full.task`;
+const HEAVY_MODEL_URL = `${import.meta.env.BASE_URL}mediapipe/pose_landmarker_heavy.task`;
+
+// Which pose model this context loads: 'full', the app's, or 'heavy', MediaPipe's larger model, set only by the pose
+// worker of a physiotherapy attempt the patient asked to analyse again (readPose.js, KinePatient.jsx). A worker lives
+// for one analysis (coreAnalysis.js), so the choice never reaches the counting app. Set before the model loads.
+let poseModel = 'full';
+/** Chooses the pose model this context loads: 'full' (the app's) or 'heavy'. */
+export function setPoseModel(name) { poseModel = name === 'heavy' ? 'heavy' : 'full'; }
+
+/**
+ * The heavy model's bytes: a verified download (30 MB; the service worker keeps the file it fetched). Rejects a file
+ * that is not exactly the heavy model the app was built with.
+ */
+async function fetchHeavyModelBuffer() {
+  const response = await fetch(HEAVY_MODEL_URL);
+  if (!response.ok) throw new Error(`Model fetch failed: ${response.status}`);
+  const buffer = await response.arrayBuffer();
+  if (!await isTheHeavyModel(buffer)) throw new Error('Pose model integrity mismatch');
+  return buffer;
+}
 // Local WASM files copied by vite build plugin (scripts/copy-models.js) from the installed
 // @mediapipe/tasks-vision@0.10.35. No CDN fallback — one version, served by the app.
 const VISION_WASM_LOCAL = `${import.meta.env.BASE_URL}mediapipe`;
@@ -189,7 +209,7 @@ async function createLandmarker({ forceCPU = false, useImageMode = false, delega
   // Test benches only (test/real-phone/synth): a page may hand over another pose model's bytes, to measure it against
   // the one the app ships (David's order of 4 October: make the pose model excellent). The app never sets it.
   const benchModel = globalThis.__WV_BENCH_POSE_MODEL__;
-  const modelBuffer = benchModel instanceof ArrayBuffer ? benchModel : await fetchModelBuffer();
+  const modelBuffer = benchModel instanceof ArrayBuffer ? benchModel : poseModel === 'heavy' ? await fetchHeavyModelBuffer() : await fetchModelBuffer();
 
   // Detect device capabilities to select optimal delegate order. A CPU-only landmarker (the app's
   // pose worker, the harness, synth) never reads the answer, so it skips the WebGPU/WebNN probe that
@@ -260,7 +280,8 @@ function getPoseLandmarker(opts) {
   if (poseLandmarker) return Promise.resolve(poseLandmarker);
   if (modelLoadPromise) return modelLoadPromise;
   modelLoadPromise = (async () => {
-    poseLandmarker = await withTimeout(createLandmarker(opts), 30000, 'Model load');
+    // The heavy model is a 30 MB download on a phone's connection: three minutes. Status: convention, UNSOURCED.
+    poseLandmarker = await withTimeout(createLandmarker(opts), poseModel === 'heavy' ? 180000 : 30000, 'Model load');
     return poseLandmarker;
   })();
   return modelLoadPromise;
