@@ -64,7 +64,6 @@ describe('the patient programme', () => {
     expect(html).toMatch(/<input(?:(?!capture)[^>])*data-testid="kn-choose-abduction-horizontale-input"/);
   });
 
-<<<<<<< HEAD
   it('lists the attempts made on this phone, each with its report to print again', async () => {
     const { programmeLink } = await import('../../lib/kine/links');
     const link = programmeLink('https://example.org/app/', { kine: { name: 'Olivier' }, patient: 'Christophe', items: [{ id: 'mains-jointes' }] });
@@ -84,8 +83,6 @@ describe('the patient programme', () => {
     expect(html.match(/class="kn-past"/g)).toHaveLength(1);
   });
 
-=======
->>>>>>> origin/main
   it('tells the patient which side to work when it is not the video\'s', async () => {
     const { programmeLink } = await import('../../lib/kine/links');
     const link = programmeLink('https://example.org/app/', { kine: { name: 'Olivier' }, patient: 'C', items: [{ id: 'rotation-externe', side: 'right' }, { id: 'abduction-horizontale', side: 'left' }] });
