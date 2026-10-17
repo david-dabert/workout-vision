@@ -49,20 +49,25 @@ const seen = (lm, i) => lm?.[i] && (lm[i].visibility ?? 0) >= 0.3;
 
 /**
  * The reference's skeleton laid on the patient's body, in the patient's pixels: the trunk (mid-shoulders to mid-hips)
- * of each matched by a rotation, a scale and, where it fits the shoulders and hips better, a mirror. Null when either
- * trunk is not seen.
+ * of each matched by a rotation, a scale and, where it fits the shoulders and hips better, a mirror. When either trunk
+ * is seen end-on (shorter than the shoulders are wide: filmed from behind the head, as video 3 and a patient on the
+ * floor), its line is too short to turn the skeleton by, and the shoulders are matched instead: the measured arms
+ * start there. Null when either trunk is not seen. Status: convention (presentation only).
  */
 export function ghostPoints(refLm, refSize, attLm, attSize) {
   if (![11, 12, 23, 24].every(i => seen(refLm, i) && seen(attLm, i))) return null;
   const R = refLm.map(p => ({ x: p.x * refSize.w, y: p.y * refSize.h }));
   const P = attLm.map(p => ({ x: p.x * attSize.w, y: p.y * attSize.h }));
-  const ra = mid(R[11], R[12]), rb = mid(R[23], R[24]);
-  const pa = mid(P[11], P[12]), pb = mid(P[23], P[24]);
-  const rl = Math.hypot(rb.x - ra.x, rb.y - ra.y), pl = Math.hypot(pb.x - pa.x, pb.y - pa.y);
+  const len = (p, q) => Math.hypot(q.x - p.x, q.y - p.y);
+  const endOn = pts => len(mid(pts[11], pts[12]), mid(pts[23], pts[24])) < len(pts[11], pts[12]);
+  const [ra, rb, pa, pb] = endOn(R) || endOn(P)
+    ? [R[11], R[12], P[11], P[12]]
+    : [mid(R[11], R[12]), mid(R[23], R[24]), mid(P[11], P[12]), mid(P[23], P[24])];
+  const rl = len(ra, rb), pl = len(pa, pb);
   if (!rl || !pl) return null;
   const s = pl / rl;
   const theta = Math.atan2(pb.y - pa.y, pb.x - pa.x) - Math.atan2(rb.y - ra.y, rb.x - ra.x);
-  // Mirror across the reference's trunk line, for a patient filmed from the other side.
+  // Mirror across the anchoring line, for a patient filmed from the other side.
   const ux = (rb.x - ra.x) / rl, uy = (rb.y - ra.y) / rl;
   const mirror = p => {
     const dx = p.x - ra.x, dy = p.y - ra.y, d = dx * ux + dy * uy;

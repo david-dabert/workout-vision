@@ -64,6 +64,25 @@ describe('the patient programme', () => {
     expect(html).toMatch(/<input(?:(?!capture)[^>])*data-testid="kn-choose-abduction-horizontale-input"/);
   });
 
+  it('lists the attempts made on this phone, each with its report to print again', async () => {
+    const { programmeLink } = await import('../../lib/kine/links');
+    const link = programmeLink('https://example.org/app/', { kine: { name: 'Olivier' }, patient: 'Christophe', items: [{ id: 'mains-jointes' }] });
+    const hash = link.slice(link.indexOf('#'));
+    // The programme's id on the phone: the hash of its payload (KinePatient.jsx).
+    const payload = hash.slice(hash.indexOf('=') + 1);
+    let h = 0x811c9dc5;
+    for (let i = 0; i < payload.length; i++) { h ^= payload.charCodeAt(i); h = Math.imul(h, 16777619); }
+    const id = (h >>> 0).toString(36);
+    const report = { v: 1, id: 'mains-jointes', patient: 'Christophe', kine: 'Olivier', date: '2026-10-17T09:05', verdict: 'match', reasons: [], judged: 1, tempo: 1, joints: [], holds: [] };
+    const attempts = { [id]: [{ id: 'mains-jointes', date: '2026-10-16T08:00:00.000Z', verdict: 'revise' }, { id: 'mains-jointes', date: '2026-10-17T07:05:00.000Z', verdict: 'match', report }] };
+    const html = await render('KinePatient', hash, 'fr', { wv_kine_attempts: JSON.stringify(attempts) });
+    expect(html).toContain('data-testid="kn-past"');
+    expect(html).toContain('Vos essais');
+    expect(html).toContain('Rapport (PDF)');
+    // The attempt logged before reports were kept is not listed: there is no report to print.
+    expect(html.match(/class="kn-past"/g)).toHaveLength(1);
+  });
+
   it('tells the patient which side to work when it is not the video\'s', async () => {
     const { programmeLink } = await import('../../lib/kine/links');
     const link = programmeLink('https://example.org/app/', { kine: { name: 'Olivier' }, patient: 'C', items: [{ id: 'rotation-externe', side: 'right' }, { id: 'abduction-horizontale', side: 'left' }] });

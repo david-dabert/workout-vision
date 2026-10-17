@@ -8,7 +8,7 @@ import { pdfDoc, PAGE_W, PAGE_H, MARGIN, COLUMN, COLOR } from '../../components/
 import { exerciseById } from './library';
 import { sessionWithin } from './store';
 import { TOLERANCE_DEG, TOLERANCE_SHARE } from '../reference/compare';
-import { JOINT_NAMES } from '../../components/reference/reference-copy';
+import { COPY, JOINT_NAMES } from '../../components/reference/reference-copy';
 
 const euro = (n, fr) => new Intl.NumberFormat(fr ? 'fr-FR' : 'en-GB', { style: 'currency', currency: 'EUR' }).format(n || 0);
 const day = (iso, fr) => {
@@ -172,5 +172,117 @@ export function followUpPdf(patient, { lang = 'fr', practitioner = {} }) {
   }
   newPageIfNeeded(30);
   textBlock(k, fr ? `Mesures de l’application, comparées au geste de référence du kinésithérapeute. La tolérance (${TOLERANCE_DEG} degrés, ${pctText(TOLERANCE_SHARE, true)} du geste) est provisoire\u00A0: elle n’est pas encore fixée sur des essais de patients.` : `The app’s measures, compared with the physiotherapist’s reference movement. The tolerance (${TOLERANCE_DEG} degrees, ${pctText(TOLERANCE_SHARE, false)} of the movement) is provisional: it is not yet set on patients’ attempts.`, MARGIN, y, COLUMN, 7.5, COLOR.ash);
+  return doc;
+}
+
+/**
+ * The report of one attempt, for the patient to keep or share (KinePatient.jsx): the exercise, who and when, the
+ * verdict and why, what share of the movement it rests on, still frames of the attempt with the comparison drawn on
+ * them, each measure's figures, the positions held and the pace. report: lib/kine/report.js reportOf. stills:
+ * [{ data, w, h, caption }] (JPEG data URLs), none for a report printed again later. What is not measured is not
+ * claimed: the tolerance is said to be provisional, and the report not a diagnosis (R8).
+ */
+export function attemptPdf(report, { lang = 'fr', stills = [] } = {}) {
+  const fr = lang === 'fr';
+  const c = COPY[fr ? 'fr' : 'en'];
+  const names = JOINT_NAMES[fr ? 'fr' : 'en'];
+  const nameOf = m => (Object.hasOwn(names, m) ? names[m] : m);
+  const e = exerciseById(report.id);
+  const title = e ? e[fr ? 'fr' : 'en'].title : report.id;
+  const k = pdfDoc({ title: fr ? `Rapport · ${title}` : `Report · ${title}`, fr });
+  const { doc } = k;
+  k.paint();
+  let y = MARGIN;
+  const newPageIfNeeded = need => { if (y + need > PAGE_H - MARGIN) { doc.addPage(); k.paint(); y = MARGIN; } };
+  const rule = () => { doc.setDrawColor(COLOR.rule); doc.setLineWidth(0.5); doc.line(MARGIN, y, MARGIN + COLUMN, y); y += 10; };
+  // A heading never ends a page: it goes over with what follows it (need: its height and the first item's).
+  const head = (text, need = 70) => { newPageIfNeeded(need); rule(); k.write(k.upper(text), MARGIN, y, 'mono', 7, 1.4, COLOR.ash, 1.2); y += 14; };
+  const when = report.date ? new Date(report.date).toLocaleString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+
+  k.write(k.upper(fr ? 'Rapport d’essai' : 'Attempt report'), MARGIN, y, 'mono', 7, 1.4, COLOR.ash, 1.2);
+  y += 16;
+  y = textBlock(k, title, MARGIN, y, COLUMN, 20, COLOR.ink, 1.15) + 4;
+  const who = [report.patient, when].filter(Boolean).join(' · ');
+  if (who) y = textBlock(k, who, MARGIN, y, COLUMN, 9, COLOR.ink) + 2;
+  if (report.kine) y = textBlock(k, fr ? `Comparé au geste de référence de ${report.kine}, kinésithérapeute.` : `Compared with the reference movement of ${report.kine}, physiotherapist.`, MARGIN, y, COLUMN, 8.5, COLOR.ash) + 2;
+  y += 8;
+
+  // The verdict and its reasons.
+  const verdict = report.verdict === 'match' ? c.match : report.verdict === 'revise' ? c.revise : c.refused;
+  k.write(verdict, MARGIN, y, 'serif', 24, 1.15, COLOR.count);
+  y += 32;
+  const joint = name => report.joints.find(j => j.name === name);
+  for (const r of report.reasons) {
+    const [kind, name] = r.split(':');
+    const j = joint(name);
+    let line = null;
+    if (kind === 'off' && j?.worst) line = c.off(nameOf(name), j.within, { atSec: j.worst.atSec, reference: j.worst.ref, attempt: j.worst.att });
+    else if (kind === 'range' && j) line = c.range(nameOf(name), j.range);
+    else if (kind === 'unseen') line = c.refusedWhy(nameOf(name));
+    else if (kind === 'reference-unseen') line = c.refUnseen;
+    if (line) { newPageIfNeeded(24); y = textBlock(k, `· ${line}`, MARGIN, y, COLUMN, 9, COLOR.ink) + 2; }
+  }
+  if (report.judged != null && report.judged < 0.95) y = textBlock(k, c.partial(report.judged), MARGIN, y + 2, COLUMN, 8.5, COLOR.ash) + 2;
+  y += 8;
+
+  // Still frames of the attempt, side by side, each with its caption.
+  if (stills.length) {
+    head(fr ? 'L’essai, image par image' : 'The attempt, frame by frame', 260);
+    const gap = 10, n = stills.length, colW = (COLUMN - gap * (n - 1)) / n;
+    const hMax = Math.min(220, Math.max(...stills.map(s => (colW * s.h) / s.w)));
+    newPageIfNeeded(hMax + 40);
+    let bottom = y;
+    stills.forEach((s, i) => {
+      const x = MARGIN + i * (colW + gap);
+      const w = Math.min(colW, (hMax * s.w) / s.h), h = (w * s.h) / s.w;
+      try { doc.addImage(s.data, 'JPEG', x, y, w, h, undefined, 'FAST'); } catch { /* an image the PDF cannot take is left out */ }
+      const end = textBlock(k, s.caption, x, y + h + 4, colW, 7.5, COLOR.ink, 1.35);
+      bottom = Math.max(bottom, end);
+    });
+    y = bottom + 4;
+    y = textBlock(k, fr ? 'Trait plein\u00A0: votre squelette, tel que l’appli l’estime\u00A0; en doré, une articulation hors de la tolérance à ce moment. Pointillés\u00A0: le squelette du geste de référence, posé sur votre tronc.' : 'Solid line: your skeleton as the app estimates it; in gold, a joint out of tolerance at that moment. Dashes: the reference movement’s skeleton, laid on your trunk.', MARGIN, y, COLUMN, 7.5, COLOR.ash) + 8;
+  }
+
+  // Each measure's figures.
+  if (report.verdict !== 'refused' && report.joints.length) {
+    head(c.joints, 90);
+    for (const j of report.joints) {
+      newPageIfNeeded(40);
+      k.write(nameOf(j.name), MARGIN, y, 'sansMedium', 9.5, 1.4, COLOR.ink);
+      y += 14;
+      const cells = [[c.within, pctText(j.within, fr)], [c.gap, j.gap == null ? '–' : `${Math.round(j.gap)}°`]];
+      if (j.range != null) cells.push([c.reached, pctText(Math.min(j.range, 9.99), fr)]);
+      const cw = COLUMN / cells.length;
+      cells.forEach(([label, value], i) => {
+        k.write(value, MARGIN + i * cw, y, 'serif', 15, 1.2, COLOR.count);
+        textBlock(k, label, MARGIN + i * cw, y + 20, cw - 8, 7, COLOR.ash, 1.3);
+      });
+      y += 44;
+    }
+  }
+
+  // The positions the reference holds.
+  if (report.holds.length) {
+    head(c.holds);
+    report.holds.forEach((h, i) => {
+      newPageIfNeeded(30);
+      const status = h.status === 'held' ? c.holdOk : h.status === 'short' ? c.holdShort : c.holdOff;
+      k.write(`${c.holdRow(i)} · ${status}`, MARGIN, y, 'sansMedium', 9, 1.4, h.status === 'held' ? COLOR.ink : COLOR.count);
+      y += 13;
+      y = textBlock(k, `${c.holdRef(h.ref, h.refSec)} · ${c.holdAtt(h.att, h.attSec)}`, MARGIN, y, COLUMN, 8.5, COLOR.ash) + 4;
+    });
+    y += 4;
+  }
+
+  // The pace.
+  if (report.tempo != null) {
+    head(c.tempo);
+    y = textBlock(k, `${c.tempoValue(report.attSec, report.refSec)} · ${c.tempoSub(report.tempo)}`, MARGIN, y, COLUMN, 9, COLOR.ink) + 8;
+  }
+
+  newPageIfNeeded(60);
+  rule();
+  y = textBlock(k, c.note(TOLERANCE_DEG), MARGIN, y, COLUMN, 7.5, COLOR.ash) + 3;
+  textBlock(k, fr ? 'Mesures estimées par l’application WorkoutVision à partir de la vidéo, dans le plan de l’image. Ce rapport aide à suivre l’exercice\u00A0; il n’est pas un diagnostic. Votre vidéo est restée sur votre téléphone.' : 'Measures estimated by the WorkoutVision app from the video, in the picture’s plane. This report helps follow the exercise; it is not a diagnosis. Your video stayed on your phone.', MARGIN, y, COLUMN, 7.5, COLOR.ash);
   return doc;
 }

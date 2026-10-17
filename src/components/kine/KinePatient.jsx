@@ -2,11 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { hapticLight } from '../../lib/haptics';
 import { useCondensingTopbar } from '../experience/topbar';
-import { Topbar, GroupHead } from '../experience/Showcase';
+import { Topbar, GroupHead, Verdict } from '../experience/Showcase';
 import { exerciseById, hasMedia, mediaUrl } from '../../lib/kine/library';
 import { PROGRAMME_KEY, cleanProgramme, payloadAfter, resultLink, unpack } from '../../lib/kine/links';
 import { loadReferencePose } from '../../lib/kine/media';
 import { attemptsOf, logAttempt } from '../../lib/kine/store';
+import { isReport, reportOf } from '../../lib/kine/report';
+import { KeptFile } from '../reference/AttemptKeep';
+import { useKeptFile } from '../reference/useKeptFile';
 import { readPose } from '../../lib/reference/readPose';
 import { useObjectUrl } from '../../lib/reference/useObjectUrl';
 import ComparisonView from '../reference/ComparisonView';
@@ -59,11 +62,15 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror }) {
       setError(err?.message || String(err)); setPhase('error');
     }
   };
+  const [report, setReport] = useState(null);
   const onResult = useCallback(r => {
     setResult(r);
-    logAttempt(programmeId, { id: ex.id, date: new Date().toISOString(), verdict: r.verdict });
+    // The attempt's report, kept on the phone with the attempt: the patient can print it again later (PastAttempts).
+    const rep = reportOf(r, { id: ex.id, patient: programme.patient, kine: programme.kine.name, date: localMinute(), prog: programmeId, side: mirror ? 'other' : '' });
+    setReport(rep);
+    logAttempt(programmeId, { id: ex.id, date: new Date().toISOString(), verdict: r.verdict, report: rep });
     onLogged();
-  }, [programmeId, ex.id, onLogged]);
+  }, [programmeId, ex.id, onLogged, programme.patient, programme.kine.name, mirror]);
 
   const send = async () => {
     hapticLight();
@@ -95,10 +102,40 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror }) {
     </div>}
     {phase === 'error' && <p className="rc-error" role="alert">{c.failed} <small>{error}</small></p>}
     {phase === 'done' && <>
-      <ComparisonView refPose={refPose} attPose={attPose} refUrl={mediaUrl(ex, 'mp4')} attUrl={attUrl} onResult={onResult} measures={ex.measures} mirror={mirror} />
+      <ComparisonView refPose={refPose} attPose={attPose} refUrl={mediaUrl(ex, 'mp4')} attUrl={attUrl} onResult={onResult} measures={ex.measures} mirror={mirror} keep={report ? { report, title: ex[fr ? 'fr' : 'en'].title } : null} />
       {result && <button type="button" className="rc-btn is-wide press" onClick={send} data-testid={`kn-send-${ex.id}`}>{k.pSend}</button>}
     </>}
   </div>;
+}
+
+// One past attempt: the exercise, when, the verdict, and its report to print again (without the video's frames, which
+// stay with the video on the phone).
+function PastAttempt({ entry, fr, k, c }) {
+  const keep = useKeptFile();
+  const ex = exerciseById(entry.report.id);
+  const when = new Date(entry.date).toLocaleString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const verdict = entry.verdict === 'match' ? c.match : entry.verdict === 'revise' ? c.revise : c.refused;
+  const make = async () => {
+    const { attemptPdf } = await import('../../lib/kine/pdf');
+    return new File([attemptPdf(entry.report, { lang: fr ? 'fr' : 'en' }).output('blob')], `${c.keepPdfStem(entry.report)}.pdf`, { type: 'application/pdf' });
+  };
+  return <li className="kn-past">
+    <span className="kn-session-head"><b>{ex ? ex[fr ? 'fr' : 'en'].title : entry.report.id}</b><Verdict ok={entry.verdict === 'match'}>{verdict}</Verdict></span>
+    <small className="sc-caption">{when}</small>
+    <KeptFile keep={keep} make={make} open testId={`kn-past-${entry.date}`} labels={{ make: k.pReportMake, making: c.keepPdfMaking, share: c.keepPdfShare, open: c.keepPdfOpen, failed: () => c.keepPdfFailed, cancel: c.cancel, shareBroke: c.keepShareBroke }} />
+  </li>;
+}
+
+/** The attempts made on this phone with their report, newest first. */
+function PastAttempts({ log, fr, k }) {
+  const c = COPY[fr ? 'fr' : 'en'];
+  const kept = log.filter(a => isReport(a.report)).slice(-30).reverse();
+  if (!kept.length) return null;
+  return <section className="sc-section" data-testid="kn-past">
+    <GroupHead title={k.pHistory} />
+    <p className="sc-caption">{k.pHistoryHint}</p>
+    <ul className="kn-sessions">{kept.map(a => <PastAttempt key={a.date} entry={a} fr={fr} k={k} c={c} />)}</ul>
+  </section>;
 }
 
 export default function KinePatient({ onClose }) {
@@ -140,6 +177,7 @@ export default function KinePatient({ onClose }) {
                   : <p className="sc-caption">{ex.compare ? k.noMedia : k.pNoCompare}</p>}
               </section>;
             })}
+            <PastAttempts log={log} fr={fr} k={k} />
             <p className="sc-caption">{k.pPrivacy}</p>
           </>}
         </div>
