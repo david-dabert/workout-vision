@@ -14,8 +14,9 @@ export function reportOf(result, { id, patient = '', kine = '', date, prog = '',
     v: 1, id, patient, kine, date, prog, side,
     verdict: result.verdict,
     reasons: [...result.reasons],
-    // The share of the movement the verdict rests on: the measure the least shown (R8).
-    judged: refused ? null : share(Math.min(...result.joints.map(j => j.attShown ?? j.shown ?? 1))),
+    // The share of the movement the verdict rests on: of the reference's moments, those both videos show, for the
+    // measure the least shown (R8).
+    judged: refused ? null : share(Math.min(...result.joints.map(j => j.shown ?? 1))),
     tempo: refused ? null : share(result.tempo),
     attSec: refused ? null : secs(result.end - result.start),
     refSec: refused ? null : secs(result.reference[0].length / SAMPLE_HZ),
@@ -29,6 +30,3 @@ export function reportOf(result, { id, patient = '', kine = '', date, prog = '',
 
 /** Whether a stored value is a report this module wrote (an attempt logged before reports were kept has none). */
 export const isReport = r => !!r && typeof r === 'object' && r.v === 1 && typeof r.id === 'string' && ['match', 'revise', 'refused'].includes(r.verdict) && Array.isArray(r.joints) && Array.isArray(r.holds);
-
-/** A file name's stem: the kind, the exercise and the day ("rapport-mains-jointes-2026-10-17"). */
-export const fileStem = (kind, id, date) => `${kind}-${id}-${String(date || '').slice(0, 10) || 'essai'}`;

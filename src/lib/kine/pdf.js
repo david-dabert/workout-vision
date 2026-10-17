@@ -227,7 +227,7 @@ export function attemptPdf(report, { lang = 'fr', stills = [] } = {}) {
 
   // Still frames of the attempt, side by side, each with its caption.
   if (stills.length) {
-    head(fr ? 'L’essai, image par image' : 'The attempt, frame by frame', 260);
+    head(fr ? 'L’essai, image par image' : 'The attempt, frame by frame', 300);
     const gap = 10, n = stills.length, colW = (COLUMN - gap * (n - 1)) / n;
     const hMax = Math.min(220, Math.max(...stills.map(s => (colW * s.h) / s.w)));
     newPageIfNeeded(hMax + 40);
@@ -240,6 +240,7 @@ export function attemptPdf(report, { lang = 'fr', stills = [] } = {}) {
       bottom = Math.max(bottom, end);
     });
     y = bottom + 4;
+    newPageIfNeeded(40);
     y = textBlock(k, fr ? 'Trait plein\u00A0: votre squelette, tel que l’appli l’estime\u00A0; en doré, une articulation hors de la tolérance à ce moment. Pointillés\u00A0: le squelette du geste de référence, posé sur votre tronc.' : 'Solid line: your skeleton as the app estimates it; in gold, a joint out of tolerance at that moment. Dashes: the reference movement’s skeleton, laid on your trunk.', MARGIN, y, COLUMN, 7.5, COLOR.ash) + 8;
   }
 
@@ -247,7 +248,7 @@ export function attemptPdf(report, { lang = 'fr', stills = [] } = {}) {
   if (report.verdict !== 'refused' && report.joints.length) {
     head(c.joints, 90);
     for (const j of report.joints) {
-      newPageIfNeeded(40);
+      newPageIfNeeded(60);
       k.write(nameOf(j.name), MARGIN, y, 'sansMedium', 9.5, 1.4, COLOR.ink);
       y += 14;
       const cells = [[c.within, pctText(j.within, fr)], [c.gap, j.gap == null ? '–' : `${Math.round(j.gap)}°`]];
@@ -283,6 +284,6 @@ export function attemptPdf(report, { lang = 'fr', stills = [] } = {}) {
   newPageIfNeeded(60);
   rule();
   y = textBlock(k, c.note(TOLERANCE_DEG), MARGIN, y, COLUMN, 7.5, COLOR.ash) + 3;
-  textBlock(k, fr ? 'Mesures estimées par l’application WorkoutVision à partir de la vidéo, dans le plan de l’image. Ce rapport aide à suivre l’exercice\u00A0; il n’est pas un diagnostic. Votre vidéo est restée sur votre téléphone.' : 'Measures estimated by the WorkoutVision app from the video, in the picture’s plane. This report helps follow the exercise; it is not a diagnosis. Your video stayed on your phone.', MARGIN, y, COLUMN, 7.5, COLOR.ash);
+  textBlock(k, fr ? 'Mesures estimées par l’application WorkoutVision à partir de la vidéo, dans le plan de l’image. Ce rapport aide à suivre l’exercice\u00A0; il n’est pas un diagnostic. L’appli n’a envoyé votre vidéo nulle part.' : 'Measures estimated by the WorkoutVision app from the video, in the picture’s plane. This report helps follow the exercise; it is not a diagnosis. The app sent your video nowhere.', MARGIN, y, COLUMN, 7.5, COLOR.ash);
   return doc;
 }

@@ -53,6 +53,16 @@ describe('reference comparison', () => {
     expect(r.reasons).toEqual(['off:rightElbow']);
   });
 
+  it('names as the largest gap one held for about a second, not a single misread sample', () => {
+    const odd = staged();
+    // The elbow, held straight by the reference: one sample 70 degrees off (a wrist misread) at 1.5 s, and two seconds
+    // 25 degrees bent from 8.5 s.
+    odd.rightElbow = odd.rightElbow.map((v, i) => (i === 15 ? v - 70 : i >= 85 && i < 105 ? v - 25 : v));
+    const el = compareCurves(ref, odd).joints.find(j => j.name === 'rightElbow');
+    expect(el.worst.atSec).toBeGreaterThan(8);
+    expect(el.worst.reference - el.worst.attempt).toBeGreaterThan(15);
+  });
+
   it('gives no verdict when the attempt does not show a joint (R8)', () => {
     const hidden = staged();
     hidden.rightElbow = hidden.rightElbow.map((v, i) => (i % 5 < 3 ? null : v));

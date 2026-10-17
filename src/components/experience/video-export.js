@@ -48,6 +48,11 @@ export const canExport = () => typeof MediaRecorder !== 'undefined'
  * The recording is refused ('incomplete') when its frames stop short of the video's end, never handed over cut.
  */
 export function exportSetVideo({ file, result, lift, fr = false, saved = null, onProgress, signal, screen = null }) {
+  // A setup that throws rejects, as it did inside the recording's promise: the caller's catch takes it (Replay.jsx).
+  try { return setVideo({ file, result, lift, fr, saved, onProgress, signal, screen }); } catch (e) { return Promise.reject(e); }
+}
+
+function setVideo({ file, result, lift, fr, saved, onProgress, signal, screen }) {
   // As on the replay (Replay.jsx): nothing lit for an exercise the core does not offer, read by the universal engine,
   // even one the core defines (walking lunge), whose lit joint would claim a count the app did not make.
   const def = result.universal ? null : liftDefinition(lift), sides = litSides(def, result.arm);

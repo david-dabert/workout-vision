@@ -14,14 +14,11 @@ import { drawComparison } from './overlay-draw';
 // The comparison's colours on screen (ReferenceCompare.css --lamp, --bone, --ash).
 export const COLORS = Object.freeze({ lamp: '#E8BD7E', bone: '#EFE8DC', ash: '#A49B8D' });
 
-/** A file name's part from free text: letters and digits, dashes between, lower case. */
-export const slug = text => String(text || '').normalize('NFD').replace(/\p{M}/gu, '').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '').toLowerCase().slice(0, 40);
-
 /**
  * The moments the report shows: the reference's end of the movement for the main measure (the one that moves most)
  * and the largest gap of each measure; each at a moment both videos show (R8), at least a second apart, at most three.
  * Each moment carries the attempt sample shown in its still: among the samples the alignment matched to it (or within
- * half a second), one the attempt shows, nearest the matched value; and that sample's own value (`att`), so the
+ * half a second; convention, UNSOURCED), one the attempt shows, nearest the matched value; and that sample's own value (`att`), so the
  * picture and its caption say the same thing. { ri, ai, k, kind, att, ref }.
  */
 export function reportMoments(result) {
@@ -47,27 +44,8 @@ export function reportMoments(result) {
     const [, far] = shown.reduce((a, b) => (Math.abs(b[0] - start) > Math.abs(a[0] - start) ? b : a));
     add(far, 'end', main);
   }
-  result.joints.forEach((_, k) => add(sustainedWorst(result, k), 'worst', k));
+  result.joints.forEach((j, k) => add(Math.round(j.worst.atSec * SAMPLE_HZ), 'worst', k));
   return out.slice(0, 3);
-}
-
-/**
- * The moment of a measure's largest gap held for about a second: the median gap over a second around each moment both
- * videos show, at its largest. A single sample the pose model misread (a wrist taken for the other one) is not shown
- * as the attempt's largest gap. Status: convention (presentation only; the verdict's figures are compare.js's).
- */
-export function sustainedWorst(result, k) {
-  const ref = result.reference[k], att = result.matched[k], seen = result.seen[k], half = SAMPLE_HZ / 2;
-  let best = null, bestGap = -1;
-  for (let i = 0; i < ref.length; i++) {
-    if (!seen[i]) continue;
-    const w = [];
-    for (let x = Math.max(0, i - half); x <= Math.min(ref.length - 1, i + half); x++) if (seen[x]) w.push(Math.abs(att[x] - ref[x]));
-    w.sort((a, b) => a - b);
-    const g = w[Math.floor(w.length / 2)];
-    if (g > bestGap) { bestGap = g; best = i; }
-  }
-  return best;
 }
 
 /** The attempt's time (on its video's clock) of one of its samples at SAMPLE_HZ. */
@@ -78,9 +56,9 @@ export const attemptTimeAt = (ai, maps) => maps.attT0 + ai / SAMPLE_HZ;
  * the legend at the foot, so the file explains itself away from the app. Call it inside the tap (recordVideo).
  * screen: the comparison's video on screen. text: { title, verdict, legend }.
  */
-export function exportAttemptVideo({ screen, result, attPose, refPose, maps, measures, names, refShort, text, fileStem, onProgress, signal }) {
+export function exportAttemptVideo({ screen, result, attPose, refPose, maps, measures, names, refShort, anchor, text, fileStem, onProgress, signal }) {
   const draw = (ctx, t, W, H, u) => {
-    drawComparison(ctx, { t, w: W, h: H, u, result, attPose, refPose, maps, measures, names, refShort, colors: COLORS, ghost: true });
+    drawComparison(ctx, { t, w: W, h: H, u, result, attPose, refPose, maps, measures, names, refShort, colors: COLORS, ghost: true, anchor });
     band(ctx, W, H, u, text);
   };
   return recordVideo({ screen, draw, onProgress, signal, name: mime => `${fileStem}.${mime.startsWith('video/mp4') ? 'mp4' : 'webm'}` });
@@ -127,19 +105,22 @@ function wrap(ctx, text, max) {
 
 /**
  * A still of the attempt at time t, the comparison drawn on it, as a JPEG data URL ({ data, w, h }), at most maxW
- * wide. Taken from the video on screen (Safari draws a video it shows): seeked to t, drawn once it has the frame,
- * left where it was. Rejects after 4 s without the frame.
+ * wide. Taken from the video on screen (Safari draws a video it shows): seeked to t, drawn once it has the frame, put
+ * back where it was, playing again only if resume. Rejects after 4 s without the frame, or when signal aborts.
  */
-export function attemptStill(video, t, draw, { maxW = 720 } = {}) {
+export function attemptStill(video, t, draw, { maxW = 720, resume = false, signal } = {}) {
   return new Promise((resolve, reject) => {
-    const back = video.currentTime, wasPaused = video.paused;
+    if (signal?.aborted) { reject(new DOMException('aborted', 'AbortError')); return; }
+    const back = video.currentTime;
     video.pause();
     let timer = 0;
+    const onAbort = () => done(new DOMException('aborted', 'AbortError'));
     const done = (err, out) => {
       clearTimeout(timer);
       video.removeEventListener('seeked', onSeeked);
+      signal?.removeEventListener('abort', onAbort);
       try { video.currentTime = back; } catch { /* left where it is */ }
-      if (!wasPaused) video.play()?.catch(() => {});
+      if (resume) video.play()?.catch(() => {});
       if (err) reject(err); else resolve(out);
     };
     const onSeeked = () => {
@@ -157,6 +138,7 @@ export function attemptStill(video, t, draw, { maxW = 720 } = {}) {
       } catch (e) { done(e); }
     };
     video.addEventListener('seeked', onSeeked);
+    signal?.addEventListener('abort', onAbort);
     timer = setTimeout(() => done(new Error('still-timeout')), 4000);
     video.currentTime = Math.max(0, Math.min(t, (video.duration || t) - 0.05));
   });

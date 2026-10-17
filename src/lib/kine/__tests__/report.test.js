@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SAMPLE_HZ, compareCurves, referenceFromCurves } from '../../reference/compare.js';
 import { isReport, reportOf } from '../report.js';
-import { attemptTimeAt, reportMoments, slug, sustainedWorst } from '../../../components/reference/attempt-export.js';
+import { attemptTimeAt, reportMoments } from '../../../components/reference/attempt-export.js';
 
 // The report the patient keeps of an attempt (report.js), its PDF (pdf.js attemptPdf) and the moments its still
 // frames show (attempt-export.js), on a staged raise like Olivier's video 4.
@@ -42,6 +42,14 @@ describe('the report of an attempt', () => {
     expect(r.judged).toBeLessThan(0.8);
   });
 
+  it('counts as not judged the moments the reference itself does not show (R8, review of 17 October)', () => {
+    // Olivier's pose lost on a seventh of his video; the attempt seen throughout: the verdict rests on six sevenths.
+    const c = staged();
+    const partRef = referenceFromCurves({ ...c, rightShoulder: c.rightShoulder.map((v, i) => (i % 7 === 0 ? null : v)) });
+    const r = reportOf(compareCurves(partRef, staged()), context);
+    expect(r.judged).toBeLessThan(0.9);
+  });
+
   it('keeps a refused attempt with its reasons and no figures it did not measure', () => {
     const hidden = staged();
     hidden.rightShoulder = hidden.rightShoulder.map(() => null);
@@ -71,15 +79,6 @@ describe('the still frames of the report', () => {
     expect(result.reference[end.k][end.ri]).toBeGreaterThan(160);
   });
 
-  it('shows as the largest gap one held for about a second, not a single misread sample', () => {
-    const reference = Array.from({ length: 200 }, (_, i) => 90 + 60 * Math.sin(i / 20));
-    // One sample 60 degrees off (a wrist misread), and a stretch of a second 25 degrees off.
-    const matched = reference.map((v, i) => (i === 20 ? v + 60 : i >= 120 && i < 130 ? v - 25 : v));
-    const at = sustainedWorst({ reference: [reference], matched: [matched], seen: [reference.map(() => true)] }, 0);
-    expect(at).toBeGreaterThanOrEqual(120);
-    expect(at).toBeLessThan(130);
-  });
-
   it('shows none for a refused attempt', () => {
     expect(reportMoments({ verdict: 'refused', joints: [], seen: [], reference: [] })).toEqual([]);
   });
@@ -98,10 +97,6 @@ describe('the still frames of the report', () => {
       expect(result.attSeen[m.k][m.ai]).toBe(true);
       expect(m.att).toBe(result.attempt[m.k][m.ai]);
     }
-  });
-
-  it('names files without accents or spaces', () => {
-    expect(slug('Élévation mains jointes, coudes ouverts')).toBe('elevation-mains-jointes-coudes-ouverts');
   });
 });
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ghostPoints, nearestIndex, pathMaps, refTimeFor } from '../overlay.js';
+import { ghostAnchor, ghostPoints, nearestIndex, pathMaps, refTimeFor } from '../overlay.js';
 
 const body = (dx = 0, dy = 0, s = 1) => {
   const lm = Array.from({ length: 33 }, () => ({ x: 0.5, y: 0.5, visibility: 1 }));
@@ -43,5 +43,33 @@ describe('comparison overlay', () => {
     const hidden = body();
     hidden[23] = { ...hidden[23], visibility: 0.1 };
     expect(ghostPoints(hidden, { w: 1, h: 1 }, body(), { w: 1, h: 1 })).toBeNull();
+  });
+
+  // A body seen from behind the head: the trunk foreshortened to a third of the shoulders' width.
+  const endOn = () => {
+    const lm = Array.from({ length: 33 }, () => ({ x: 0.5, y: 0.5, visibility: 1 }));
+    lm[11] = { x: 0.35, y: 0.5, visibility: 1 }; lm[12] = { x: 0.65, y: 0.5, visibility: 1 };
+    lm[23] = { x: 0.4, y: 0.6, visibility: 1 }; lm[24] = { x: 0.6, y: 0.6, visibility: 1 };
+    lm[13] = { x: 0.2, y: 0.3, visibility: 1 };
+    return lm;
+  };
+  const pose = lms => ({ imageLandmarks: lms, width: 100, height: 100 });
+
+  it('anchors on the shoulders, once for the comparison, when either trunk is seen end-on', () => {
+    expect(ghostAnchor(pose([body(), body()]), pose([body(), body()]))).toBe('trunk');
+    expect(ghostAnchor(pose([body()]), pose([endOn(), endOn(), body()]))).toBe('shoulders');
+  });
+
+  it('lays an end-on reference on an end-on patient by the shoulders', () => {
+    const g = ghostPoints(endOn(), { w: 100, h: 100 }, endOn(), { w: 100, h: 100 }, 'shoulders');
+    expect(g[11].x).toBeCloseTo(35);
+    expect(g[12].x).toBeCloseTo(65);
+    expect(g[13].x).toBeCloseTo(20);
+  });
+
+  it('lays no ghost when an anchoring line is too short to scale by (shoulders seen edge-on)', () => {
+    const edge = body();
+    edge[12] = { ...edge[11], x: edge[11].x + 0.005 };
+    expect(ghostPoints(edge, { w: 100, h: 100 }, endOn(), { w: 100, h: 100 }, 'shoulders')).toBeNull();
   });
 });

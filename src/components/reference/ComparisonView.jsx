@@ -3,7 +3,7 @@ import { useT } from '../../lib/LanguageContext';
 import { hapticLight } from '../../lib/haptics';
 import { Verdict, GroupHead, Metric } from '../experience/Showcase';
 import { buildReference, compareAttempt, curves, SAMPLE_HZ, shownAngle, TOLERANCE_DEG } from '../../lib/reference/compare';
-import { nearestIndex, pathMaps } from '../../lib/reference/overlay';
+import { ghostAnchor, nearestIndex, pathMaps } from '../../lib/reference/overlay';
 import { drawComparison, drawSkeleton } from './overlay-draw';
 import AttemptKeep from './AttemptKeep';
 import { COPY, JOINT_NAMES, clock, deg, pct } from './reference-copy';
@@ -79,6 +79,10 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
     return { ...pathMaps(result.path, attLength), attT0: attPose.timestamps[0], refT0: refPose.timestamps[0] };
   }, [result, attPose, refPose, measures]);
 
+  // How the ghost is laid on the patient, decided once for the comparison (overlay.js ghostAnchor).
+  const anchor = useMemo(() => (refPose && attPose ? ghostAnchor(refPose, attPose) : 'trunk'), [refPose, attPose]);
+  // While the patient's report or video is being made from the video on screen, the player waits (AttemptKeep.jsx).
+  const [keepBusy, setKeepBusy] = useState(false);
   // Player: the patient's video drives; the reference's video is kept at the matching moment.
   const attVideo = useRef(null), refVideo = useRef(null), attCanvas = useRef(null), refCanvas = useRef(null);
   const [playing, setPlaying] = useState(false);
@@ -103,7 +107,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
         const ctx = cv.getContext('2d');
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, w, h);
-        const { tr, ri } = drawComparison(ctx, { t, w, h, result, attPose, refPose, maps, measures, names, refShort: c.refShort, colors: { lamp, bone, ash }, ghost });
+        const { tr, ri } = drawComparison(ctx, { t, w, h, result, attPose, refPose, maps, measures, names, refShort: c.refShort, colors: { lamp, bone, ash }, ghost, anchor });
         setNow(Math.round(t * 10) / 10); setRefNow(ri);
         const rv = refVideo.current;
         if (rv && !rv.seeking && Math.abs(rv.currentTime - tr) > 0.12) rv.currentTime = tr;
@@ -123,7 +127,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [result, maps, ghost, attPose, refPose, c.refShort, names, measures]);
+  }, [result, maps, ghost, anchor, attPose, refPose, c.refShort, names, measures]);
 
   const toggle = () => {
     const v = attVideo.current;
@@ -156,7 +160,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
               {result.verdict === 'refused' && <p className="sc-frame-note" data-testid="rc-refused">{result.reasons.includes('reference-unseen') ? c.refUnseen : c.refusedWhy(unseen)}</p>}
               {reasons.length > 0 && <ul className="rc-reasons">{reasons.map((r, i) => <li key={i}>{r}</li>)}</ul>}
             </section>
-            {keep && result.verdict === 'refused' && <AttemptKeep video={attVideo} result={result} attPose={attPose} refPose={refPose} maps={maps} measures={measures} names={names} c={c} report={keep.report} title={keep.title} lang={lang} />}
+            {keep && result.verdict === 'refused' && <AttemptKeep video={attVideo} result={result} attPose={attPose} refPose={refPose} maps={maps} measures={measures} names={names} c={c} report={keep.report} title={keep.title} lang={lang} anchor={anchor} onBusy={setKeepBusy} />}
 
             {result.verdict !== 'refused' && <>
               <section className="sc-section">
@@ -171,17 +175,17 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
                   </div>
                 </div>
                 <div className="rc-controls">
-                  <button type="button" className="rc-play press" onClick={toggle} aria-label={playing ? c.pause : c.play} data-testid="rc-play">
+                  <button type="button" className="rc-play press" onClick={toggle} disabled={keepBusy} aria-label={playing ? c.pause : c.play} data-testid="rc-play">
                     {playing ? <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
                       : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5l12 7-12 7z" /></svg>}
                   </button>
-                  <input type="range" className="rc-scrub" min="0" max={Number.isFinite(duration) ? duration : 0} step="0.05" value={now} onChange={e => seekAtt(Number(e.target.value))} aria-label={c.player} />
+                  <input type="range" className="rc-scrub" min="0" max={Number.isFinite(duration) ? duration : 0} step="0.05" value={now} onChange={e => seekAtt(Number(e.target.value))} disabled={keepBusy} aria-label={c.player} />
                   <span className="rc-time">{clock(now)}</span>
                 </div>
                 <label className="rc-toggle"><input type="checkbox" checked={ghost} onChange={e => setGhost(e.target.checked)} /> {c.ghost}</label>
               </section>
 
-              {keep && <AttemptKeep video={attVideo} result={result} attPose={attPose} refPose={refPose} maps={maps} measures={measures} names={names} c={c} report={keep.report} title={keep.title} lang={lang} />}
+              {keep && <AttemptKeep video={attVideo} result={result} attPose={attPose} refPose={refPose} maps={maps} measures={measures} names={names} c={c} report={keep.report} title={keep.title} lang={lang} anchor={anchor} onBusy={setKeepBusy} />}
 
               <section className="sc-section">
                 <GroupHead title={c.tempo} />
@@ -224,7 +228,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
 
             {/* The share of the movement judged, when the attempt's pose was lost on part of it (filmed on the floor):
                 the verdict rests on the moments both videos show (R8). */}
-            {result.verdict !== 'refused' && result.joints.some(j => j.attShown < 0.95) && <p className="sc-caption" data-testid="rc-partial">{c.partial(Math.min(...result.joints.map(j => j.attShown)))}</p>}
+            {result.verdict !== 'refused' && result.joints.some(j => j.shown < 0.95) && <p className="sc-caption" data-testid="rc-partial">{c.partial(Math.min(...result.joints.map(j => j.shown)))}</p>}
             <p className="sc-caption">{c.note(TOLERANCE_DEG)}</p>
   </div>;
 }

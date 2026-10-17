@@ -42,10 +42,10 @@ export function refMomentAt(t, result, maps) {
 /**
  * Draws the comparison at the attempt's time t on a w x h picture of the patient's video. u scales the strokes and
  * the type (1 on screen; the picture's width over 390 in a recorded video). colors: { lamp, bone, ash }. labels: false
- * for a still whose caption gives the values (a report's frames).
+ * for a still whose caption gives the values (a report's frames). anchor: the ghost's (overlay.js ghostAnchor).
  * Returns the reference's moment ({ tr, ri }).
  */
-export function drawComparison(ctx, { t, w, h, u = 1, result, attPose, refPose, maps, measures, names, refShort, colors, ghost = true, labels = true }) {
+export function drawComparison(ctx, { t, w, h, u = 1, result, attPose, refPose, maps, measures, names, refShort, colors, ghost = true, labels = true, anchor = 'trunk' }) {
   const { lamp, bone, ash } = colors;
   const { tr, ri } = refMomentAt(t, result, maps);
   const lm = attPose.imageLandmarks[nearestIndex(attPose.timestamps, t)];
@@ -54,7 +54,7 @@ export function drawComparison(ctx, { t, w, h, u = 1, result, attPose, refPose, 
   const off = {};
   result.joints.forEach((j, k) => { off[pointOf(j.measure ?? j.name, measures, result.mirrored)] = result.seen[k][ri] && Math.abs(result.matched[k][ri] - result.reference[k][ri]) > TOLERANCE_DEG; });
   if (ghost && lm && rlm) {
-    const g = ghostPoints(rlm, { w: 1, h: refPose.height / refPose.width }, lm, { w, h: w * (attPose.height / attPose.width) });
+    const g = ghostPoints(rlm, { w: 1, h: refPose.height / refPose.width }, lm, { w, h: w * (attPose.height / attPose.width) }, anchor);
     if (g) drawSkeleton(ctx, g, { color: ash, width: 6 * u, dash: [2 * u, 8 * u], alpha: 0.75 });
   }
   if (!lm) return { tr, ri };

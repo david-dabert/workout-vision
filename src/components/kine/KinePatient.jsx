@@ -41,6 +41,7 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror }) {
   const [refPose, setRefPose] = useState(null);
   const [attPose, setAttPose] = useState(null);
   const [result, setResult] = useState(null);
+  const [report, setReport] = useState(null);
   const [error, setError] = useState('');
   const abortRef = useRef(null);
   const attUrl = useObjectUrl(file);
@@ -49,7 +50,7 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror }) {
   const run = async f => {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
-    setFile(f); setAttPose(null); setResult(null); setError('');
+    setFile(f); setAttPose(null); setResult(null); setReport(null); setError('');
     try {
       setPhase('ref'); setProgress(0);
       const r = refPose || await loadReferencePose(ex, { signal: ctrl.signal, onProgress: setProgress });
@@ -62,7 +63,6 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror }) {
       setError(err?.message || String(err)); setPhase('error');
     }
   };
-  const [report, setReport] = useState(null);
   const onResult = useCallback(r => {
     setResult(r);
     // The attempt's report, kept on the phone with the attempt: the patient can print it again later (PastAttempts).
@@ -122,7 +122,7 @@ function PastAttempt({ entry, fr, k, c }) {
   return <li className="kn-past">
     <span className="kn-session-head"><b>{ex ? ex[fr ? 'fr' : 'en'].title : entry.report.id}</b><Verdict ok={entry.verdict === 'match'}>{verdict}</Verdict></span>
     <small className="sc-caption">{when}</small>
-    <KeptFile keep={keep} make={make} open testId={`kn-past-${entry.date}`} labels={{ make: k.pReportMake, making: c.keepPdfMaking, share: c.keepPdfShare, open: c.keepPdfOpen, failed: () => c.keepPdfFailed, cancel: c.cancel, shareBroke: c.keepShareBroke }} />
+    <KeptFile keep={keep} make={make} testId={`kn-past-${entry.date}`} labels={{ make: k.pReportMake, making: c.keepPdfMaking, share: c.keepPdfShare, save: c.keepPdfSave, failed: () => c.keepPdfFailed, cancel: c.cancel, shareBroke: c.keepShareBroke }} />
   </li>;
 }
 
