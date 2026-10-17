@@ -73,3 +73,7 @@
 /* Calibration (Calibration.jsx) */
 .wv-experience .kn-cal-judge { margin-top: var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); padding: 14px 16px; border: 1px solid var(--lamp-line); border-radius: var(--r-m); }
 .wv-experience .kn-cal-ask { margin: 0; font-weight: 600; color: var(--bone); }
+.wv-experience .kn-past { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border: 1px solid var(--lamp-line); border-radius: var(--r-m); }
+.wv-experience .kn-past .rc-keep { margin-top: var(--s-2); }
+/* The verdict under the exercise's name: beside a long name, "Conforme à la référence" was cut (390 px). */
+.wv-experience .kn-past .kn-session-head { flex-direction: column; align-items: flex-start; gap: 6px; }

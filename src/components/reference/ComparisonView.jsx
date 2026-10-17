@@ -2,8 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { hapticLight } from '../../lib/haptics';
 import { Verdict, GroupHead, Metric } from '../experience/Showcase';
-import { buildReference, compareAttempt, curves, MIRROR, SAMPLE_HZ, shownAngle, TOLERANCE_DEG } from '../../lib/reference/compare';
-import { EDGES, ghostPoints, nearestIndex, pathMaps, refTimeFor } from '../../lib/reference/overlay';
+import { buildReference, compareAttempt, curves, SAMPLE_HZ, shownAngle, TOLERANCE_DEG } from '../../lib/reference/compare';
+import { ghostAnchor, nearestIndex, pathMaps } from '../../lib/reference/overlay';
+import { drawComparison, drawSkeleton } from './overlay-draw';
+import AttemptKeep from './AttemptKeep';
 import { COPY, JOINT_NAMES, clock, deg, pct } from './reference-copy';
 import './ReferenceCompare.css';
 
@@ -14,34 +16,9 @@ import './ReferenceCompare.css';
 // matching moment; tempo, joints, the positions held, and a timeline. onResult(result) hands the result to the screen.
 // R8: no verdict when a joint is not seen well enough; the tolerance is said to be provisional.
 
-const JOINT_POINTS = { leftShoulder: 11, rightShoulder: 12, leftElbow: 13, rightElbow: 14 };
-// The point a measure is drawn at: a joint's own point, a direction's end (the wrist); the other side's twin when the
-// attempt was read as in a mirror (compareAttempt).
-const pointOf = (name, measures, mirrored) => {
-  const i = measures?.directions?.[name]?.to ?? JOINT_POINTS[name];
-  return mirrored ? MIRROR[i] : i;
-};
-
 function cssVar(el, name, fallback) {
   const v = el ? getComputedStyle(el).getPropertyValue(name).trim() : '';
   return v || fallback;
-}
-
-function drawSkeleton(ctx, pts, { color, width, dash = null, alpha = 1, colorOf }) {
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.lineWidth = width;
-  ctx.lineCap = 'round';
-  if (dash) ctx.setLineDash(dash);
-  for (const [a, b] of EDGES) {
-    if (!pts[a] || !pts[b]) continue;
-    ctx.strokeStyle = colorOf?.(a, b) ?? color;
-    ctx.beginPath();
-    ctx.moveTo(pts[a].x, pts[a].y);
-    ctx.lineTo(pts[b].x, pts[b].y);
-    ctx.stroke();
-  }
-  ctx.restore();
 }
 
 function Timeline({ result, names, c, refNow, onSeekRef }) {
@@ -87,7 +64,8 @@ function Timeline({ result, names, c, refNow, onSeekRef }) {
 
 // `measures`: what the reference is compared on (library.js), when not the default joints.
 // `mirror`: the patient works the reference's other side, so the attempt is read as in a mirror (compareAttempt).
-export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onResult, measures, mirror = false }) {
+// `keep`: { report, title } where the person may keep the attempt's report and video (KinePatient.jsx, AttemptKeep.jsx).
+export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onResult, measures, mirror = false, keep = null }) {
   const { lang } = useT();
   const fr = lang === 'fr';
   const c = COPY[fr ? 'fr' : 'en'];
@@ -101,6 +79,10 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
     return { ...pathMaps(result.path, attLength), attT0: attPose.timestamps[0], refT0: refPose.timestamps[0] };
   }, [result, attPose, refPose, measures]);
 
+  // How the ghost is laid on the patient, decided once for the comparison (overlay.js ghostAnchor).
+  const anchor = useMemo(() => (refPose && attPose ? ghostAnchor(refPose, attPose) : 'trunk'), [refPose, attPose]);
+  // While the patient's report or video is being made from the video on screen, the player waits (AttemptKeep.jsx).
+  const [keepBusy, setKeepBusy] = useState(false);
   // Player: the patient's video drives; the reference's video is kept at the matching moment.
   const attVideo = useRef(null), refVideo = useRef(null), attCanvas = useRef(null), refCanvas = useRef(null);
   const [playing, setPlaying] = useState(false);
@@ -119,51 +101,16 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
       const v = attVideo.current, cv = attCanvas.current;
       if (v && cv) {
         const t = v.currentTime;
-        const tr = refTimeFor(t, maps);
-        const ri = Math.max(0, Math.min(result.reference[0].length - 1, Math.round((tr - maps.refT0) * SAMPLE_HZ)));
-        setNow(Math.round(t * 10) / 10); setRefNow(ri);
-        const rv = refVideo.current;
-        if (rv && !rv.seeking && Math.abs(rv.currentTime - tr) > 0.12) rv.currentTime = tr;
         const dpr = window.devicePixelRatio || 1;
         const w = cv.clientWidth, h = cv.clientHeight;
         if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
         const ctx = cv.getContext('2d');
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, w, h);
-        const ai = nearestIndex(attPose.timestamps, t);
-        const lm = attPose.imageLandmarks[ai];
-        const rlm = refPose.imageLandmarks[nearestIndex(refPose.timestamps, tr)];
-        // Gap of each compared joint at this moment of the reference.
-        const off = {};
-        result.joints.forEach((j, k) => { off[pointOf(j.measure ?? j.name, measures, result.mirrored)] = result.seen[k][ri] && Math.abs(result.matched[k][ri] - result.reference[k][ri]) > TOLERANCE_DEG; });
-        if (ghost && lm && rlm) {
-          const g = ghostPoints(rlm, { w: 1, h: refPose.height / refPose.width }, lm, { w, h: w * (attPose.height / attPose.width) });
-          if (g) drawSkeleton(ctx, g, { color: ash, width: 6, dash: [2, 8], alpha: 0.75 });
-        }
-        if (lm) {
-          const pts = lm.map(p => ((p.visibility ?? 0) >= 0.5 ? { x: p.x * w, y: p.y * h } : null));
-          drawSkeleton(ctx, pts, { color: bone, width: 4, alpha: 0.95, colorOf: (a, b) => (off[a] || off[b] ? lamp : bone) });
-          ctx.font = '600 13px system-ui, sans-serif';
-          // Each joint's label, named, beside its point; a label that would cover one already set moves down.
-          const placed = [];
-          result.joints.forEach((j, k) => {
-            // No label where the reference's pose was lost: its value there is a filled line, not a measure (R8).
-            const p = result.seen[k][ri] ? pts[pointOf(j.measure ?? j.name, measures, result.mirrored)] : null;
-            if (!p) return;
-            const bad = off[pointOf(j.measure ?? j.name, measures, result.mirrored)];
-            ctx.fillStyle = bad ? lamp : bone;
-            ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill();
-            const label = `${names[j.name].split(' ')[0]} ${deg(shownAngle(result.matched[k][ri], j.direction))} · ${c.refShort} ${deg(shownAngle(result.reference[k][ri], j.direction))}`;
-            const bw = ctx.measureText(label).width + 10, bh = 20;
-            let bx = Math.min(p.x + 9, w - bw - 4), by = Math.max(4, p.y - 21);
-            while (placed.some(r => bx < r.x + r.w && r.x < bx + bw && by < r.y + r.h && r.y < by + bh)) by += bh + 3;
-            placed.push({ x: bx, y: by, w: bw, h: bh });
-            ctx.fillStyle = 'rgba(10,10,10,0.72)';
-            ctx.fillRect(bx, by, bw, bh);
-            ctx.fillStyle = bad ? lamp : bone;
-            ctx.fillText(label, bx + 5, by + 15);
-          });
-        }
+        const { tr, ri } = drawComparison(ctx, { t, w, h, result, attPose, refPose, maps, measures, names, refShort: c.refShort, colors: { lamp, bone, ash }, ghost, anchor });
+        setNow(Math.round(t * 10) / 10); setRefNow(ri);
+        const rv = refVideo.current;
+        if (rv && !rv.seeking && Math.abs(rv.currentTime - tr) > 0.12) rv.currentTime = tr;
       }
       const rcv = refCanvas.current, rvid = refVideo.current;
       if (rcv && rvid) {
@@ -180,7 +127,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [result, maps, ghost, attPose, refPose, c.refShort, names, measures]);
+  }, [result, maps, ghost, anchor, attPose, refPose, c.refShort, names, measures]);
 
   const toggle = () => {
     const v = attVideo.current;
@@ -213,6 +160,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
               {result.verdict === 'refused' && <p className="sc-frame-note" data-testid="rc-refused">{result.reasons.includes('reference-unseen') ? c.refUnseen : c.refusedWhy(unseen)}</p>}
               {reasons.length > 0 && <ul className="rc-reasons">{reasons.map((r, i) => <li key={i}>{r}</li>)}</ul>}
             </section>
+            {keep && result.verdict === 'refused' && <AttemptKeep video={attVideo} result={result} attPose={attPose} refPose={refPose} maps={maps} measures={measures} names={names} c={c} report={keep.report} title={keep.title} lang={lang} anchor={anchor} onBusy={setKeepBusy} />}
 
             {result.verdict !== 'refused' && <>
               <section className="sc-section">
@@ -227,15 +175,17 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
                   </div>
                 </div>
                 <div className="rc-controls">
-                  <button type="button" className="rc-play press" onClick={toggle} aria-label={playing ? c.pause : c.play} data-testid="rc-play">
+                  <button type="button" className="rc-play press" onClick={toggle} disabled={keepBusy} aria-label={playing ? c.pause : c.play} data-testid="rc-play">
                     {playing ? <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
                       : <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5l12 7-12 7z" /></svg>}
                   </button>
-                  <input type="range" className="rc-scrub" min="0" max={Number.isFinite(duration) ? duration : 0} step="0.05" value={now} onChange={e => seekAtt(Number(e.target.value))} aria-label={c.player} />
+                  <input type="range" className="rc-scrub" min="0" max={Number.isFinite(duration) ? duration : 0} step="0.05" value={now} onChange={e => seekAtt(Number(e.target.value))} disabled={keepBusy} aria-label={c.player} />
                   <span className="rc-time">{clock(now)}</span>
                 </div>
                 <label className="rc-toggle"><input type="checkbox" checked={ghost} onChange={e => setGhost(e.target.checked)} /> {c.ghost}</label>
               </section>
+
+              {keep && <AttemptKeep video={attVideo} result={result} attPose={attPose} refPose={refPose} maps={maps} measures={measures} names={names} c={c} report={keep.report} title={keep.title} lang={lang} anchor={anchor} onBusy={setKeepBusy} />}
 
               <section className="sc-section">
                 <GroupHead title={c.tempo} />

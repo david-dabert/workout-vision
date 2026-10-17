@@ -48,14 +48,69 @@ export const canExport = () => typeof MediaRecorder !== 'undefined'
  * The recording is refused ('incomplete') when its frames stop short of the video's end, never handed over cut.
  */
 export function exportSetVideo({ file, result, lift, fr = false, saved = null, onProgress, signal, screen = null }) {
+  // A setup that throws rejects, as it did inside the recording's promise: the caller's catch takes it (Replay.jsx).
+  try { return setVideo({ file, result, lift, fr, saved, onProgress, signal, screen }); } catch (e) { return Promise.reject(e); }
+}
+
+function setVideo({ file, result, lift, fr, saved, onProgress, signal, screen }) {
+  // As on the replay (Replay.jsx): nothing lit for an exercise the core does not offer, read by the universal engine,
+  // even one the core defines (walking lunge), whose lit joint would claim a count the app did not make.
+  const def = result.universal ? null : liftDefinition(lift), sides = litSides(def, result.arm);
+  const times = result.timestamps || [], frames = steadyFrames(result.imageLandmarks || [], times);
+  const reps = (!result.refused && result.reps) || [];
+  // What the drawing is, at the foot of every frame (skeletonCaption), so the video says it away from the app.
+  const drawCaption = (ctx, W, H, u) => {
+    const caption = skeletonCaption(fr), pad = 16 * u;
+    ctx.font = `${Math.round(13 * u)}px system-ui, sans-serif`;
+    ctx.textBaseline = 'bottom';
+    const cw = Math.min(ctx.measureText(caption).width, W - 2 * pad);
+    ctx.fillStyle = rgba(RGB.void, 0.55);
+    ctx.fillRect(pad - 10 * u, H - pad - 22 * u, cw + 20 * u, 28 * u);
+    ctx.fillStyle = rgba(RGB.bone, 0.92);
+    ctx.fillText(caption, pad, H - pad, W - 2 * pad);
+  };
+  const draw = (ctx, t, W, H, u) => {
+    const lm = poseAt(frames, times, t);
+    if (lm) {
+      const trails = trailPoints(def, sides).map(k => trailAt(frames, times, t, k, lm[k]));
+      drawSkeleton(ctx, lm, { ox: 0, oy: 0, w: W, h: H }, sides, def, u, trails);
+    }
+    drawCaption(ctx, W, H, u);
+    if (reps.length) {
+      // The reps begun so far, as the replay's chip shows them: "3 / 8"; after a correction, a second
+      // line says both counts, so the video explains itself away from the app (replay-labels.js).
+      const begun = reps.filter(r => r.startTime <= t).length, pad = 16 * u;
+      const [label, note] = overlayLines({ begun, total: reps.length, detected: result.count, saved, fr });
+      ctx.font = `${Math.round(30 * u)}px Georgia, serif`;
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = rgba(RGB.void, 0.55);
+      const w = ctx.measureText(label).width;
+      ctx.fillRect(pad - 10 * u, pad - 8 * u, w + 20 * u, 46 * u);
+      ctx.fillStyle = LAMP;
+      ctx.fillText(label, pad, pad);
+      if (note) {
+        ctx.font = `${Math.round(13 * u)}px system-ui, sans-serif`;
+        const nw = Math.min(ctx.measureText(note).width, W - 2 * pad);
+        ctx.fillStyle = rgba(RGB.void, 0.55);
+        ctx.fillRect(pad - 10 * u, pad + 46 * u, nw + 20 * u, 26 * u);
+        ctx.fillStyle = LAMP;
+        ctx.fillText(note, pad, pad + 52 * u, W - 2 * pad);
+      }
+    }
+  };
+  return recordVideo({ file, screen, draw, onProgress, signal, name: mime => exportFileName(lift, mime, Number.isInteger(saved) ? saved : result?.count) });
+}
+
+/**
+ * Records a video with what draw(ctx, t, W, H, u) lays over each of its frames (u: the frame's width over 390, the
+ * phone's), as exportSetVideo above describes: played once from the start, inside the tap, into a canvas recorded as
+ * it plays; refused when interrupted, stalled or cut short. name(mime) names the file. Shared by the set's video and
+ * the patient's attempt (components/reference/attempt-export.js).
+ */
+export function recordVideo({ file, screen = null, draw: overlay, name, onProgress, signal }) {
   return new Promise((resolve, reject) => {
     const mime = pickMime(m => MediaRecorder.isTypeSupported(m));
     if (!mime) { reject(new Error('no-format')); return; }
-    // As on the replay (Replay.jsx): nothing lit for an exercise the core does not offer, read by the universal engine,
-    // even one the core defines (walking lunge), whose lit joint would claim a count the app did not make.
-    const def = result.universal ? null : liftDefinition(lift), sides = litSides(def, result.arm);
-    const times = result.timestamps || [], frames = steadyFrames(result.imageLandmarks || [], times);
-    const reps = (!result.refused && result.reps) || [];
     // Without a video on screen (a test page), one is made and laid over the page at full size, under everything.
     const own = !screen;
     const url = own ? URL.createObjectURL(file) : null;
@@ -91,48 +146,11 @@ export function exportSetVideo({ file, result, lift, fr = false, saved = null, o
     };
     signal?.addEventListener('abort', () => finish(new DOMException('aborted', 'AbortError')));
 
-    // What the drawing is, at the foot of every frame (skeletonCaption), so the video says it away from the app.
-    const drawCaption = (W, H, u) => {
-      const caption = skeletonCaption(fr), pad = 16 * u;
-      ctx.font = `${Math.round(13 * u)}px system-ui, sans-serif`;
-      ctx.textBaseline = 'bottom';
-      const cw = Math.min(ctx.measureText(caption).width, W - 2 * pad);
-      ctx.fillStyle = rgba(RGB.void, 0.55);
-      ctx.fillRect(pad - 10 * u, H - pad - 22 * u, cw + 20 * u, 28 * u);
-      ctx.fillStyle = rgba(RGB.bone, 0.92);
-      ctx.fillText(caption, pad, H - pad, W - 2 * pad);
-    };
     const draw = t => {
       const W = canvas.width, H = canvas.height, u = W / 390;
       ctx.drawImage(video, 0, 0, W, H);
       drawn += 1; drawnT = Math.max(drawnT, t);
-      const lm = poseAt(frames, times, t);
-      if (lm) {
-        const trails = trailPoints(def, sides).map(k => trailAt(frames, times, t, k, lm[k]));
-        drawSkeleton(ctx, lm, { ox: 0, oy: 0, w: W, h: H }, sides, def, u, trails);
-      }
-      drawCaption(W, H, u);
-      if (reps.length) {
-        // The reps begun so far, as the replay's chip shows them: "3 / 8"; after a correction, a second
-        // line says both counts, so the video explains itself away from the app (replay-labels.js).
-        const begun = reps.filter(r => r.startTime <= t).length, pad = 16 * u;
-        const [label, note] = overlayLines({ begun, total: reps.length, detected: result.count, saved, fr });
-        ctx.font = `${Math.round(30 * u)}px Georgia, serif`;
-        ctx.textBaseline = 'top';
-        ctx.fillStyle = rgba(RGB.void, 0.55);
-        const w = ctx.measureText(label).width;
-        ctx.fillRect(pad - 10 * u, pad - 8 * u, w + 20 * u, 46 * u);
-        ctx.fillStyle = LAMP;
-        ctx.fillText(label, pad, pad);
-        if (note) {
-          ctx.font = `${Math.round(13 * u)}px system-ui, sans-serif`;
-          const nw = Math.min(ctx.measureText(note).width, W - 2 * pad);
-          ctx.fillStyle = rgba(RGB.void, 0.55);
-          ctx.fillRect(pad - 10 * u, pad + 46 * u, nw + 20 * u, 26 * u);
-          ctx.fillStyle = LAMP;
-          ctx.fillText(note, pad, pad + 52 * u, W - 2 * pad);
-        }
-      }
+      overlay(ctx, t, W, H, u);
       onProgress?.(video.duration ? Math.min(1, t / video.duration) : 0);
     };
     const onFrame = (_, m) => { if (done) return; draw(m?.mediaTime ?? video.currentTime); vfc = video.requestVideoFrameCallback(onFrame); };
@@ -160,7 +178,7 @@ export function exportSetVideo({ file, result, lift, fr = false, saved = null, o
         recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: EXPORT_BITS_PER_SECOND });
         recorder.ondataavailable = e => { if (e.data?.size) chunks.push(e.data); };
         recorder.onerror = e => finish(e.error || new Error('recorder'));
-        recorder.onstop = () => finish(null, new File(chunks, exportFileName(lift, mime, Number.isInteger(saved) ? saved : result?.count), { type: mime.split(';')[0] }));
+        recorder.onstop = () => finish(null, new File(chunks, name(mime), { type: mime.split(';')[0] }));
         recorder.start(1000);
       } catch (e) { finish(e); return; }
       if ('requestVideoFrameCallback' in video) vfc = video.requestVideoFrameCallback(onFrame); else raf = requestAnimationFrame(loop);

@@ -71,3 +71,9 @@
 .wv-experience .rc-verdict { margin: var(--s-3) 0 0; font: 400 var(--fs-heading)/1.1 var(--serif); color: var(--bone); }
 .wv-experience .rc-verdict.is-revise { color: var(--lamp-hi); }
 .wv-experience .rc-verdict.is-refused { color: var(--ash); }
+
+/* Keep or share (AttemptKeep.jsx): each file prepared, then shared or opened. */
+.wv-experience .rc-keep { display: flex; flex-direction: column; gap: var(--s-2); margin-top: var(--s-3); }
+.wv-experience .rc-keep-ready { display: flex; flex-direction: column; gap: var(--s-2); }
+.wv-experience a.rc-btn { display: grid; place-items: center; text-decoration: none; }
+.wv-experience .rc-keep-name { display: block; margin-bottom: var(--s-2); color: var(--ash); font-size: var(--fs-caption); overflow-wrap: anywhere; }

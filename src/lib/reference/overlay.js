@@ -47,22 +47,45 @@ export function refTimeFor(tAtt, { attT0, refT0, refOfAtt }) {
 const mid = (p, q) => ({ x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 });
 const seen = (lm, i) => lm?.[i] && (lm[i].visibility ?? 0) >= 0.3;
 
+const len = (p, q) => Math.hypot(q.x - p.x, q.y - p.y);
+
 /**
- * The reference's skeleton laid on the patient's body, in the patient's pixels: the trunk (mid-shoulders to mid-hips)
- * of each matched by a rotation, a scale and, where it fits the shoulders and hips better, a mirror. Null when either
- * trunk is not seen.
+ * How the ghost is anchored for a whole comparison, decided once (a choice made frame by frame made it jump, review of
+ * 17 October): 'shoulders' when either video's trunk is seen end-on (its median length under its median shoulder
+ * width: filmed from behind the head, as video 3 and a patient on the floor), its line then too short to turn the
+ * skeleton by; else 'trunk'. pose: { imageLandmarks, width, height }. Status: convention, UNSOURCED (presentation only).
  */
-export function ghostPoints(refLm, refSize, attLm, attSize) {
+export function ghostAnchor(refPose, attPose) {
+  const ratio = pose => {
+    const k = (pose.width || 1) / (pose.height || 1);
+    const r = (pose.imageLandmarks || []).filter(lm => lm && [11, 12, 23, 24].every(i => seen(lm, i))).map(lm => {
+      const P = lm.map(p => ({ x: p.x * k, y: p.y }));
+      return len(mid(P[11], P[12]), mid(P[23], P[24])) / Math.max(1e-6, len(P[11], P[12]));
+    }).sort((a, b) => a - b);
+    return r.length ? r[Math.floor(r.length / 2)] : Infinity;
+  };
+  return ratio(refPose) < 1 || ratio(attPose) < 1 ? 'shoulders' : 'trunk';
+}
+
+/**
+ * The reference's skeleton laid on the patient's body, in the patient's pixels: the reference's anchoring line (the
+ * trunk, mid-shoulders to mid-hips, or the shoulders: ghostAnchor) matched to the patient's by a rotation, a scale
+ * and, where it fits the shoulders and hips better, a mirror. Null when either trunk is not seen, or when either
+ * anchoring line is under a fifth of that video's body (shoulders seen edge-on: the scale would be meaningless).
+ */
+export function ghostPoints(refLm, refSize, attLm, attSize, anchor = 'trunk') {
   if (![11, 12, 23, 24].every(i => seen(refLm, i) && seen(attLm, i))) return null;
   const R = refLm.map(p => ({ x: p.x * refSize.w, y: p.y * refSize.h }));
   const P = attLm.map(p => ({ x: p.x * attSize.w, y: p.y * attSize.h }));
-  const ra = mid(R[11], R[12]), rb = mid(R[23], R[24]);
-  const pa = mid(P[11], P[12]), pb = mid(P[23], P[24]);
-  const rl = Math.hypot(rb.x - ra.x, rb.y - ra.y), pl = Math.hypot(pb.x - pa.x, pb.y - pa.y);
-  if (!rl || !pl) return null;
+  const body = pts => Math.max(len(mid(pts[11], pts[12]), mid(pts[23], pts[24])), len(pts[11], pts[12]));
+  const [ra, rb, pa, pb] = anchor === 'shoulders'
+    ? [R[11], R[12], P[11], P[12]]
+    : [mid(R[11], R[12]), mid(R[23], R[24]), mid(P[11], P[12]), mid(P[23], P[24])];
+  const rl = len(ra, rb), pl = len(pa, pb);
+  if (!rl || !pl || rl < 0.2 * body(R) || pl < 0.2 * body(P)) return null;
   const s = pl / rl;
   const theta = Math.atan2(pb.y - pa.y, pb.x - pa.x) - Math.atan2(rb.y - ra.y, rb.x - ra.x);
-  // Mirror across the reference's trunk line, for a patient filmed from the other side.
+  // Mirror across the anchoring line, for a patient filmed from the other side.
   const ux = (rb.x - ra.x) / rl, uy = (rb.y - ra.y) / rl;
   const mirror = p => {
     const dx = p.x - ra.x, dy = p.y - ra.y, d = dx * ux + dy * uy;

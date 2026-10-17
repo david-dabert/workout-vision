@@ -78,6 +78,9 @@ export const APART_SHARE = 0.08;
 // direction to mean anything (a patient filmed on the floor: the wrist the pose model loses between both arms is put
 // beside the shoulder, at the visibility floor, 17 October 2026). Status: experimental, UNSOURCED.
 export const SHORT_SEGMENT_SHARE = 0.5;
+// The window the largest gap is held over before it is named (compareCurves, worst). Status: convention, UNSOURCED
+// (presentation only: the verdict does not read it).
+export const WORST_WINDOW_SEC = 1;
 // A direction sample further than this from the median of the second around it is a jump of the pose model, dropped.
 // Status: experimental, UNSOURCED (the reference's fastest move, about 90 degrees a second, stays well under it).
 export const JUMP_DEG = 20;
@@ -312,17 +315,27 @@ export function compareCurves(reference, attemptCurves) {
     const gaps = matched.map((v, i) => (shown(i) ? Math.abs(v - ref[k][i]) : null));
     const judged = gaps.filter(g => g != null);
     const within = judged.filter(g => g <= TOLERANCE_DEG).length / judged.length;
-    let worst = gaps.findIndex(g => g != null);
-    for (let i = worst + 1; i < gaps.length; i++) if (gaps[i] != null && gaps[i] > gaps[worst]) worst = i;
+    // The largest gap held for about a second: the median gap over WORST_WINDOW_SEC around each judged moment, at its
+    // largest. A single sample the pose model misread is not named the attempt's largest gap (17 October 2026: a
+    // wrist taken for the other one gave "12 degrees instead of 55" on a frame where the arm is plainly level).
+    const half = Math.round((WORST_WINDOW_SEC * SAMPLE_HZ) / 2);
+    let worst = gaps.findIndex(g => g != null), worstGap = -1;
+    for (let i = 0; i < gaps.length; i++) {
+      if (gaps[i] == null) continue;
+      const w = gaps.slice(Math.max(0, i - half), i + half + 1).filter(g => g != null).sort((a, b) => a - b);
+      const g = w[Math.floor(w.length / 2)];
+      if (g > worstGap) { worstGap = g; worst = i; }
+    }
     const rangeShare = j.kind === 'moving' ? range(matched.map((v, i) => (shown(i) ? v : null))) / j.range : null;
     return {
       name: j.name, kind: j.kind, direction: !!j.direction, within, gapP90: percentile(gaps, 0.9), rangeShare, shown: judged.length / gaps.length,
+      // The share of the moments the reference shows that the attempt shows too: what the patient's video lost.
+      attShown: judged.length / Math.max(1, j.seen ? j.seen.filter(Boolean).length : gaps.length),
       worst: { atSec: worst / SAMPLE_HZ, reference: ref[k][worst], attempt: matched[worst] },
     };
   });
   // Too few moments judged: no verdict, as for an attempt that does not show the measure at all.
-  const refShown = reference.joints.map(j => (j.seen ? j.seen.filter(Boolean).length / j.seen.length : 1));
-  for (const [k, j] of joints.entries()) if (j.shown < ATTEMPT_JUDGED_SHARE * refShown[k]) reasons.push(`unseen:${j.name}`);
+  for (const j of joints) if (j.attShown < ATTEMPT_JUDGED_SHARE) reasons.push(`unseen:${j.name}`);
   if (reasons.length) return { verdict: 'refused', reasons, joints: [] };
   for (const j of joints) {
     if (j.within < TOLERANCE_SHARE) reasons.push(`off:${j.name}`);
@@ -338,6 +351,10 @@ export function compareCurves(reference, attemptCurves) {
     // Per measure, whether both videos show each moment of the reference; the screens judge and label only those (R8).
     seen: reference.joints.map((j, k) => (j.seen ?? j.curve.map(() => true)).map((s, i) => s && matchedByJoint[k][i] != null)),
     matched: matchedByJoint,
+    // The attempt's own samples per measure (filled across what it does not show) and where it shows them: a still
+    // frame of the report shows a sample the attempt shows, with its own value (attempt-export.js reportMoments).
+    attempt: att,
+    attSeen,
     holds: holds(reference, att, path, attSeen),
   };
 }
