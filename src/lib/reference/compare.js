@@ -27,9 +27,14 @@ export const SAMPLE_HZ = 10;
 // A reference joint is used only if seen on this share of the reference: below, its curve is the pose model's
 // guess (the far arm of video 1 jumps from 17 to 133 degrees in one second). Status: experimental, UNSOURCED.
 export const REFERENCE_SEEN_SHARE = 0.8;
-// The attempt must show each used joint on this share of its matched stretch, or no verdict. Status: experimental,
-// UNSOURCED (the core's own refusal floor is one half; a verdict on form asks more).
-export const ATTEMPT_SEEN_SHARE = 0.7;
+// The attempt must show each used joint on this share of its samples, or no verdict. Status: experimental, UNSOURCED
+// (the core's own refusal floor is one half). Lowered from 0.7 on 17 October 2026: a patient filmed on the floor, phone
+// behind the head, shows the arm on 55 % of the video, lost where both arms lie together; the moments the attempt does
+// not show are no longer judged on a filled line (ATTEMPT_JUDGED_SHARE), so the floor no longer needs to carry that.
+export const ATTEMPT_SEEN_SHARE = 0.5;
+// And the moments judged (shown by both videos) must cover this share of the reference, or no verdict. Status:
+// experimental, UNSOURCED.
+export const ATTEMPT_JUDGED_SHARE = 0.5;
 // A joint that moves through at least this range in the reference is "moving"; under it, "held" (an elbow kept
 // straight). Status: experimental, UNSOURCED.
 export const MOVING_RANGE_DEG = 20;
@@ -275,21 +280,25 @@ export function compareCurves(reference, attemptCurves) {
   }
   if (reasons.length) return { verdict: 'refused', reasons, joints: [] };
   const ref = reference.joints.map(j => j.curve);
+  // Where the attempt shows each measure: its gaps are filled below for the alignment only, never judged (R8).
+  const attSeen = reference.joints.map(j => attemptCurves[j.name].map(v => v != null));
   // A direction's samples set on the reference's side of the circle.
   const att = reference.joints.map((j, k) => fillGaps(j.direction ? unwrapAround(attemptCurves[j.name], circularMedian(ref[k])) : attemptCurves[j.name]));
   const path = align(ref, att);
   const start = path[0][1], end = path.at(-1)[1];
-  // The attempt's value at each moment of the reference: the mean of the attempt samples matched to it.
+  // The attempt's value at each moment of the reference: the mean of the seen attempt samples matched to it, null
+  // where none is seen.
   const matchedByJoint = ref.map((curve, k) => {
     const sums = new Float64Array(curve.length), counts = new Uint16Array(curve.length);
-    for (const [ri, ai] of path) { sums[ri] += att[k][ai]; counts[ri]++; }
-    return Array.from(sums, (s, i) => s / counts[i]);
+    for (const [ri, ai] of path) if (attSeen[k][ai]) { sums[ri] += att[k][ai]; counts[ri]++; }
+    return Array.from(sums, (s, i) => (counts[i] ? s / counts[i] : null));
   });
-  // Judged only at the moments the reference shows: where its pose was lost, its curve is a filled line, not
-  // Olivier's movement (video 2: the forearm crossing the face below the horizontal). R8.
+  // Judged only at the moments both videos show: where the reference's pose was lost, its curve is a filled line, not
+  // Olivier's movement (video 2: the forearm crossing the face below the horizontal); where the attempt's was lost
+  // (a patient filmed on the floor, both arms lying together), the same. R8.
   const joints = reference.joints.map((j, k) => {
     const matched = matchedByJoint[k];
-    const shown = i => j.seen?.[i] ?? true;
+    const shown = i => (j.seen?.[i] ?? true) && matched[i] != null;
     const gaps = matched.map((v, i) => (shown(i) ? Math.abs(v - ref[k][i]) : null));
     const judged = gaps.filter(g => g != null);
     const within = judged.filter(g => g <= TOLERANCE_DEG).length / judged.length;
@@ -301,6 +310,10 @@ export function compareCurves(reference, attemptCurves) {
       worst: { atSec: worst / SAMPLE_HZ, reference: ref[k][worst], attempt: matched[worst] },
     };
   });
+  // Too few moments judged: no verdict, as for an attempt that does not show the measure at all.
+  const refShown = reference.joints.map(j => (j.seen ? j.seen.filter(Boolean).length / j.seen.length : 1));
+  for (const [k, j] of joints.entries()) if (j.shown < ATTEMPT_JUDGED_SHARE * refShown[k]) reasons.push(`unseen:${j.name}`);
+  if (reasons.length) return { verdict: 'refused', reasons, joints: [] };
   for (const j of joints) {
     if (j.within < TOLERANCE_SHARE) reasons.push(`off:${j.name}`);
     if (j.kind === 'moving' && j.rangeShare < MIN_RANGE_SHARE) reasons.push(`range:${j.name}`);
@@ -312,10 +325,10 @@ export function compareCurves(reference, attemptCurves) {
     tempo: (end - start + 1) / ref[0].length,
     path,
     reference: reference.joints.map(j => j.curve),
-    // Per measure, whether the reference shows each of its moments; the screens judge and label only those (R8).
-    seen: reference.joints.map(j => j.seen ?? j.curve.map(() => true)),
+    // Per measure, whether both videos show each moment of the reference; the screens judge and label only those (R8).
+    seen: reference.joints.map((j, k) => (j.seen ?? j.curve.map(() => true)).map((s, i) => s && matchedByJoint[k][i] != null)),
     matched: matchedByJoint,
-    holds: holds(reference, att, path),
+    holds: holds(reference, att, path, attSeen),
   };
 }
 
@@ -333,7 +346,7 @@ export const HOLD_SHOWN_SHARE = 0.8;
  * The positions the reference holds, each with what the attempt did at the same moment: the reference's angle and
  * time held, the attempt's mean angle and the time its matched samples span.
  */
-export function holds(reference, attCurves, path) {
+export function holds(reference, attCurves, path, attSeen = null) {
   const moving = reference.joints.map((j, k) => [j, k]).filter(([j]) => j.kind === 'moving');
   if (!moving.length) return [];
   const [main, k] = moving.reduce((a, b) => (b[0].range > a[0].range ? b : a));
@@ -344,7 +357,8 @@ export function holds(reference, attCurves, path) {
     const x = curve[Math.max(0, i - h)], y = curve[Math.min(curve.length - 1, i + h)];
     return (Math.abs(y - x) * SAMPLE_HZ) / (2 * h) < HOLD_SPEED_DEG_S;
   });
-  const still = stillOf(c), attStill = stillOf(a);
+  // The attempt is still only where it is seen: a filled line is flat, not held (R8).
+  const still = stillOf(c), attStill = stillOf(a).map((v, x) => v && (!attSeen || attSeen[k][x]));
   const out = [];
   for (let i = 0; i < c.length;) {
     if (!still[i]) { i++; continue; }
@@ -354,6 +368,8 @@ export function holds(reference, attCurves, path) {
     const shownShare = main.seen ? main.seen.slice(i, e + 1).filter(Boolean).length / (e - i + 1) : 1;
     if ((e - i + 1) / SAMPLE_HZ >= HOLD_MIN_SEC && shownShare >= HOLD_SHOWN_SHARE) {
       const ai = path.filter(([ri]) => ri >= i && ri <= e).map(([, x]) => x).sort((x, y) => x - y);
+      // A hold the attempt does not show is not judged either: its filled line would read as held (R8).
+      if (attSeen && ai.filter(x => attSeen[k][x]).length < HOLD_SHOWN_SHARE * ai.length) { i = e + 1; continue; }
       const attAngle = ai.reduce((sum, x) => sum + a[x], 0) / ai.length;
       // The attempt's own hold: from the middle of its matched samples, as far as it stays still. The alignment
       // gives a long hold's extra samples to the reference's moments around it, so its span alone would hide them.
@@ -368,6 +384,8 @@ export function holds(reference, attCurves, path) {
         while (lo > 0 && attStill[lo - 1]) lo--;
         while (hi + 1 < a.length && attStill[hi + 1]) hi++;
       }
+      // A hold whose end the attempt does not show cannot be timed: not judged (R8).
+      if (attSeen && attStill[lo] && ((lo > 0 && !attSeen[k][lo - 1]) || (hi + 1 < a.length && !attSeen[k][hi + 1]))) { i = e + 1; continue; }
       out.push({
         joint: main.name,
         direction: !!main.direction,
