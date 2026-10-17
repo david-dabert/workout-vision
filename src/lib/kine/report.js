@@ -32,3 +32,6 @@ export function reportOf(result, { id, patient = '', kine = '', date, prog = '',
 
 /** Whether a stored value is a report this module wrote (an attempt logged before reports were kept has none). */
 export const isReport = r => !!r && typeof r === 'object' && r.v === 1 && typeof r.id === 'string' && ['match', 'revise', 'refused'].includes(r.verdict) && Array.isArray(r.joints) && Array.isArray(r.holds);
+
+/** The report with the AI commentary the patient asked for (lib/kine/glimpse.js), kept apart from the measures. */
+export const withCommentary = (report, commentary) => ({ ...report, ai: commentary });

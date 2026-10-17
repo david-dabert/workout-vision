@@ -28,6 +28,7 @@
     "@fontsource/geist-mono": "^5.3.0",
     "@fontsource/instrument-serif": "^5.3.0",
     "@mediapipe/tasks-vision": "^0.10.8",
+    "@vercel/blob": "2.8.0",
     "fflate": "^0.8.3",
     "jspdf": "^4.2.1",
     "localforage": "^1.10.0",

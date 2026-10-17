@@ -97,6 +97,44 @@ describe('the patient programme', () => {
   });
 });
 
+describe('the AI commentary', () => {
+  const commentary = { visible: true, sameExercise: 'yes', reps: 4, holds: [{ rep: 1, seconds: 4.5 }], compensations: ['Les épaules montent.'], setup: [], camera: ['Filmez de profil.'], advice: ['Gardez les épaules basses.'], summary: 'Quatre répétitions, bien conduites.' };
+
+  it('says the video stays on the phone unless the patient asks for it, only when the build names the proxy', async () => {
+    const { programmeLink } = await import('../../lib/kine/links');
+    const link = programmeLink('https://example.org/app/', { kine: { name: 'Olivier' }, patient: 'C', items: [{ id: 'mains-jointes' }] });
+    expect(await render('KinePatient', link.slice(link.indexOf('#')))).toContain('Votre vidéo reste sur votre téléphone. Seul');
+    vi.resetModules();
+    vi.stubEnv('VITE_GLIMPSE_URL', 'https://glimpse.example.app');
+    expect(await render('KinePatient', link.slice(link.indexOf('#')))).toContain('sauf si vous demandez un avis détaillé (IA)');
+  });
+
+  it('offers it with the notice that the video leaves the phone, and sends nothing before the tap', async () => {
+    const { default: AiCommentary } = await import('./AiCommentary.jsx');
+    const { KINE } = await import('./kine-copy');
+    const { exerciseById } = await import('../../lib/kine/library');
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    const html = renderToStaticMarkup(<AiCommentary file={{ name: 'a.mov' }} ex={exerciseById('mains-jointes')} fr k={KINE.fr} />);
+    expect(html).toContain('Avis détaillé (IA)');
+    expect(html).toContain('votre vidéo quitte le téléphone');
+    expect(html).toContain('Envoyer ma vidéo pour un avis détaillé');
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('shows the commentary labelled as an AI\'s, apart from the measures', async () => {
+    const { CommentaryView } = await import('./AiCommentary.jsx');
+    const { KINE } = await import('./kine-copy');
+    const html = renderToStaticMarkup(<CommentaryView c={commentary} k={KINE.fr} />);
+    expect(html).toContain('Quatre répétitions, bien conduites.');
+    expect(html).toContain('4 répétitions vues');
+    expect(html).toContain('Répétition 1\u00A0: 4,5\u00A0s');
+    expect(html).toContain('Les épaules montent.');
+    expect(html).toContain('non vérifié par votre kiné');
+    expect(renderToStaticMarkup(<CommentaryView c={{ ...commentary, sameExercise: 'no' }} k={KINE.fr} />)).toContain('ne reconnaît pas l’exercice');
+  });
+});
+
 describe('the follow-up', () => {
   const results = JSON.stringify([
     { id: 'mains-jointes', patient: 'Christophe', date: '2026-10-16T09:00', verdict: 'revise', tempo: 1, joints: [{ name: 'rightShoulder', within: 0.55, range: 0.8 }], holds: [] },

@@ -1,0 +1,4 @@
+{
+  "functions": { "api/*.js": { "maxDuration": 300 } },
+  "crons": [{ "path": "/api/sweep", "schedule": "17 4 * * *" }]
+}

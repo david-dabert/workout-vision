@@ -32,6 +32,16 @@ export function logAttempt(programmeId, entry) {
   write(ATTEMPTS, all);
 }
 export const attemptsOf = programmeId => read(ATTEMPTS, {})[programmeId] || [];
+/** Replaces the report of the attempt logged at `date` (an AI commentary added after it was logged, KinePatient.jsx). */
+export function updateAttemptReport(programmeId, date, report) {
+  const all = read(ATTEMPTS, {});
+  const list = all[programmeId] || [];
+  const i = list.findIndex(e => e.date === date);
+  if (i < 0) return false;
+  list[i] = { ...list[i], report };
+  all[programmeId] = list;
+  return write(ATTEMPTS, all);
+}
 
 // The follow-up: every result the physiotherapist opens (#kine-r=, KineResult.jsx) or pastes, kept once, the last 1000.
 // The same result twice: the same patient, exercise, minute, verdict and figures.
