@@ -1,38 +1,109 @@
-Public scoreboard 2026-10-12: 1064 build sets, 490 exact (46%). Of the 949 in the baseline that decide, 431 exact now, 431 before; 0 became off by 3 or more. The 115 bench and overhead press sets are measured and decide nothing (PLAN.md).
-Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 949 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; Countix's two readings of a clip counted as two sets, as in the headline; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
-Pose doubt (counting/doubt.js, experimental, decides nothing): of 946 counted sets, 195 flagged: 65 exact (33%), 23 off by 3+ (12%); 751 not flagged: 425 exact (57%), 26 off by 3+ (3%). Sets off by 3+ flagged: 23 of 49.
+Public scoreboard 2026-10-18: 1064 build sets, 502 exact (47%). Of the 949 in the baseline that decide, 454 exact now, 431 before; 0 became off by 3 or more. The 115 bench and overhead press sets are measured and decide nothing (PLAN.md).
+Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 949 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; Countix's two readings of a clip counted as two sets, as in the headline; measured, decides nothing): 31 gained, 8 lost, McNemar p < 0.001; exact-rate change +2.4 points, 95 % interval [+1.2, +3.7].
+Pose doubt (counting/doubt.js, experimental, decides nothing): of 946 counted sets, 195 flagged: 65 exact (33%), 19 off by 3+ (10%); 751 not flagged: 437 exact (58%), 26 off by 3+ (3%). Sets off by 3+ flagged: 19 of 45.
 
 Per dataset, each counted by sets, press sets included as in the headline; 95% Wilson interval for the exact share; rep error = total |count - label| over the labelled reps of the counted sets:
 - cfrep: 12 sets, 8 exact (67%, 95% Wilson 39-86%), 0 refused, rep error 8 of 141 reps (5.7%).
-- countix: 447 sets, 181 exact (40%, 95% Wilson 36-45%), 53 refused, rep error 331 of 1412 reps (23.4%).
-- countix-whole: 447 sets, 174 exact (39%, 95% Wilson 35-44%), 65 refused, rep error 339 of 1386 reps (24.5%).
-- mmfit: 158 sets, 127 exact (80%, 95% Wilson 73-86%), 0 refused, rep error 48 of 1583 reps (3.0%).
-Countix by distinct clip: 447 labelled clips from 435 YouTube videos, each read twice (cut and whole): both readings 157 exact (35%, 95% Wilson 31-40%); either reading 198 exact (44%, 95% Wilson 40-49%).
+- countix: 447 sets, 194 exact (43%, 95% Wilson 39-48%), 53 refused, rep error 313 of 1412 reps (22.2%).
+- countix-whole: 447 sets, 183 exact (41%, 95% Wilson 36-46%), 65 refused, rep error 324 of 1386 reps (23.4%).
+- mmfit: 158 sets, 117 exact (74%, 95% Wilson 67-80%), 0 refused, rep error 58 of 1583 reps (3.7%).
+Countix by distinct clip: 447 labelled clips from 435 YouTube videos, each read twice (cut and whole): both readings 166 exact (37%, 95% Wilson 33-42%); either reading 211 exact (47%, 95% Wilson 43-52%).
 
 | Dataset, lift | Sets | Exact | Off by 1 | Off by 3+ | Refused |
 |---|---:|---:|---:|---:|---:|
 | cfrep deadlift | 6 | 3 | 2 | 1 | 0 |
 | cfrep squat | 6 | 5 | 0 | 1 | 0 |
-| countix bench_press (press: measured, decides nothing, PLAN.md) | 38 | 12 | 6 | 5 | 11 |
-| countix front_raise | 75 | 36 | 30 | 1 | 5 |
-| countix lunge | 78 | 33 | 28 | 1 | 7 |
-| countix pull_up | 60 | 20 | 27 | 3 | 7 |
-| countix push_up | 77 | 35 | 15 | 6 | 8 |
-| countix squat | 46 | 21 | 11 | 1 | 9 |
-| countix triceps_pushdown | 73 | 24 | 33 | 2 | 6 |
+| countix bench_press (press: measured, decides nothing, PLAN.md) | 38 | 12 | 6 | 6 | 11 |
+| countix front_raise | 75 | 42 | 24 | 1 | 5 |
+| countix lunge | 78 | 36 | 26 | 0 | 7 |
+| countix pull_up | 60 | 18 | 29 | 3 | 7 |
+| countix push_up | 77 | 37 | 14 | 6 | 8 |
+| countix squat | 46 | 20 | 12 | 1 | 9 |
+| countix triceps_pushdown | 73 | 29 | 29 | 1 | 6 |
 | countix-whole bench_press (press: measured, decides nothing, PLAN.md) | 38 | 11 | 8 | 5 | 11 |
-| countix-whole front_raise | 75 | 31 | 30 | 1 | 8 |
-| countix-whole lunge | 78 | 35 | 24 | 1 | 7 |
-| countix-whole pull_up | 60 | 21 | 20 | 4 | 11 |
-| countix-whole push_up | 77 | 32 | 17 | 9 | 9 |
-| countix-whole squat | 46 | 20 | 9 | 2 | 11 |
-| countix-whole triceps_pushdown | 73 | 24 | 29 | 2 | 8 |
+| countix-whole front_raise | 75 | 38 | 23 | 1 | 8 |
+| countix-whole lunge | 78 | 36 | 24 | 0 | 7 |
+| countix-whole pull_up | 60 | 20 | 22 | 4 | 11 |
+| countix-whole push_up | 77 | 33 | 17 | 8 | 9 |
+| countix-whole squat | 46 | 19 | 10 | 2 | 11 |
+| countix-whole triceps_pushdown | 73 | 26 | 27 | 1 | 8 |
 | mmfit bicep_curl_alternating | 31 | 24 | 6 | 0 | 0 |
-| mmfit dumbbell_row | 19 | 7 | 7 | 4 | 0 |
+| mmfit dumbbell_row | 19 | 8 | 6 | 4 | 0 |
 | mmfit lateral_raise | 29 | 20 | 3 | 0 | 0 |
-| mmfit overhead_press (press: measured, decides nothing, PLAN.md) | 39 | 36 | 3 | 0 | 0 |
+| mmfit overhead_press (press: measured, decides nothing, PLAN.md) | 39 | 25 | 14 | 0 | 0 |
 | mmfit squat | 40 | 40 | 0 | 0 | 0 |
 
+-> public/countix/build/04s5S8V2Rx0_000004_0.json.gz  label 5  before 3  now 4
+-> public/countix/build/0OpUaIKCDmc_000007_0.json.gz  label 5  before 4  now 5
+-> public/countix/build/2QFhwsnYNHY_000000_1583.json.gz  label 4  before 3  now 4
+-> public/countix/build/59jzy3eVo30_000003_533.json.gz  label 6  before 5  now 6
+-> public/countix/build/77STyrHkwFM_000005_233.json.gz  label 3  before 2  now 3
+-> public/countix/build/AFMmqsjcfis_000041_0.json.gz  label 5  before 6  now 7
+-> public/countix/build/B77Yjkw_vyo_000030_0.json.gz  label 7  before 4  now 5
+-> public/countix/build/I6U3B7JAigI_000011_0.json.gz  label 8  before 5  now 6
+-> public/countix/build/J5UH-E8zclg_000000_0.json.gz  label 9  before 3  now 4
+-> public/countix/build/Kg0764xR_Jo_000000_0.json.gz  label 5  before 4  now 5
+-> public/countix/build/Klxkpj7hBhM_000001_1802.json.gz  label 3  before 2  now 3
+-> public/countix/build/LPQSm5megAo_000000_1201.json.gz  label 3  before 3  now 4
+-> public/countix/build/MG8V2O5qFxA_000017_0.json.gz  label 6  before 4  now 5
+-> public/countix/build/NaDFvLfRUzA_000000_33.json.gz  label 4  before 3  now 4
+-> public/countix/build/U_BLNvSJM14_000038_467.json.gz  label 3  before 5  now 6  (press: measured, decides nothing, PLAN.md)
+-> public/countix/build/_uRAdM3_VtU_000000_2583.json.gz  label 3  before 2  now 3
+-> public/countix/build/abY-JTk62pE_000027_0.json.gz  label 4  before 2  now 3
+-> public/countix/build/bRYkhg1jz3M_000001_0.json.gz  label 5  before 4  now 5
+-> public/countix/build/bfQGBGK81JE_000001_0.json.gz  label 5  before 5  now 6
+-> public/countix/build/d0xd8qpo51k_000008_0.json.gz  label 3  before 2  now 3
+-> public/countix/build/dptApZvEt5Y_000003_0.json.gz  label 6  before 6  now 7
+-> public/countix/build/f2AfRV7qCnE_000006_0.json.gz  label 5  before 3  now 4
+-> public/countix/build/fcbdbV8aXHc_000002_0.json.gz  label 6  before 5  now 6
+-> public/countix/build/gg-31qQfOag_000001_0.json.gz  label 5  before 4  now 5
+-> public/countix/build/hMTB7htuKaM_000016_0.json.gz  label 5  before 4  now 5
+-> public/countix/build/jwpSpB3jd6Y_000005_801.json.gz  label 3  before 2  now 3
+-> public/countix/build/kGDIhlrBW0M_000000_0.json.gz  label 2  before 3  now 4
+-> public/countix/build/lirLURjxr0E_000003_200.json.gz  label 3  before 2  now 3
+-> public/countix/build/nqJ3mAhfj_M_000026_0.json.gz  label 6  before 6  now 7
+-> public/countix/build/uKElp3XdaZ8_000022_0.json.gz  label 3  before 2  now 3
+-> public/countix/build/vcBqlpTzvRU_000004_0.json.gz  label 4  before 3  now 4
+-> public/countix/build/y2OiEe3K-8c_000003_0.json.gz  label 7  before 5  now 6
+-> public/countix-whole/build/04s5S8V2Rx0_000004_0.json.gz  label 5  before 3  now 4
+-> public/countix-whole/build/0_EeIVIi5vU_000012_6423.json.gz  label 2  before 1  now 2
+-> public/countix-whole/build/4asMwQOZGSU_000027_1667.json.gz  label 3  before 2  now 3
+-> public/countix-whole/build/77STyrHkwFM_000005_233.json.gz  label 3  before 2  now 3
+-> public/countix-whole/build/AFMmqsjcfis_000041_0.json.gz  label 5  before 6  now 7
+-> public/countix-whole/build/B77Yjkw_vyo_000030_0.json.gz  label 7  before 4  now 5
+-> public/countix-whole/build/G1E_vGTK4PI_000011_733.json.gz  label 5  before 2  now 3
+-> public/countix-whole/build/HuPElYmJkSM_000000_4638.json.gz  label 2  before 1  now 2
+-> public/countix-whole/build/I6U3B7JAigI_000011_0.json.gz  label 8  before 5  now 6
+-> public/countix-whole/build/J5UH-E8zclg_000000_0.json.gz  label 9  before 3  now 4
+-> public/countix-whole/build/Jbc4UdG6NIQ_000005_467.json.gz  label 3  before 2  now 3
+-> public/countix-whole/build/Kg0764xR_Jo_000000_0.json.gz  label 5  before 4  now 5
+-> public/countix-whole/build/Klxkpj7hBhM_000001_1802.json.gz  label 3  before 3  now 4
+-> public/countix-whole/build/Wyojc0Clzsk_000074_0.json.gz  label 7  before 3  now 2
+-> public/countix-whole/build/abY-JTk62pE_000027_0.json.gz  label 4  before 2  now 3
+-> public/countix-whole/build/bRYkhg1jz3M_000001_0.json.gz  label 5  before 4  now 5
+-> public/countix-whole/build/bfQGBGK81JE_000001_0.json.gz  label 5  before 5  now 6
+-> public/countix-whole/build/d0xd8qpo51k_000008_0.json.gz  label 3  before 2  now 3
+-> public/countix-whole/build/dptApZvEt5Y_000003_0.json.gz  label 6  before 6  now 7
+-> public/countix-whole/build/f2AfRV7qCnE_000006_0.json.gz  label 5  before 3  now 4
+-> public/countix-whole/build/fcbdbV8aXHc_000002_0.json.gz  label 6  before 5  now 6
+-> public/countix-whole/build/gg-31qQfOag_000001_0.json.gz  label 5  before 4  now 5
+-> public/countix-whole/build/jwpSpB3jd6Y_000005_801.json.gz  label 3  before 2  now 3
+-> public/countix-whole/build/lirLURjxr0E_000003_200.json.gz  label 3  before 2  now 3
+-> public/countix-whole/build/nqJ3mAhfj_M_000026_0.json.gz  label 6  before 6  now 7
+-> public/countix-whole/build/uKElp3XdaZ8_000022_0.json.gz  label 3  before 2  now 3
+-> public/countix-whole/build/y2OiEe3K-8c_000003_0.json.gz  label 7  before 5  now 6
+-> public/mmfit/build/w02-dumbbell_shoulder_press-16302-17074.json.gz  label 10  before 10  now 11  (press: measured, decides nothing, PLAN.md)
+-> public/mmfit/build/w02-dumbbell_shoulder_press-19903-20615.json.gz  label 10  before 10  now 11  (press: measured, decides nothing, PLAN.md)
+-> public/mmfit/build/w02-dumbbell_shoulder_press-22550-23283.json.gz  label 10  before 10  now 11  (press: measured, decides nothing, PLAN.md)
+-> public/mmfit/build/w04-dumbbell_shoulder_press-13350-14225.json.gz  label 10  before 10  now 11  (press: measured, decides nothing, PLAN.md)
+-> public/mmfit/build/w04-dumbbell_shoulder_press-18970-19857.json.gz  label 10  before 10  now 11  (press: measured, decides nothing, PLAN.md)
+-> public/mmfit/build/w04-dumbbell_shoulder_press-20887-21722.json.gz  label 10  before 10  now 11  (press: measured, decides nothing, PLAN.md)
+-> public/mmfit/build/w07-dumbbell_shoulder_press-12975-13685.json.gz  label 10  before 10  now 11  (press: measured, decides nothing, PLAN.md)
+-> public/mmfit/build/w07-dumbbell_shoulder_press-15036-15931.json.gz  label 10  before 10  now 11  (press: measured, decides nothing, PLAN.md)
+-> public/mmfit/build/w07-dumbbell_shoulder_press-22796-23569.json.gz  label 10  before 10  now 11  (press: measured, decides nothing, PLAN.md)
+-> public/mmfit/build/w12-dumbbell_rows-38503-38855.json.gz  label 10  before 9  now 10
+-> public/mmfit/build/w15-dumbbell_shoulder_press-14562-15347.json.gz  label 10  before 10  now 11  (press: measured, decides nothing, PLAN.md)
+-> public/mmfit/build/w15-dumbbell_shoulder_press-16179-16962.json.gz  label 10  before 10  now 11  (press: measured, decides nothing, PLAN.md)
 
 Not scored (5274), each with its reason:
 public/countix/APkos_Kqa3M_000017_0: left out: battle rope training is not a lift the app counts
@@ -5310,18 +5381,18 @@ public/mmfit/build/w20-tricep_extensions-56904-57640.json.gz: not admitted: wris
 public/mmfit/build/w20-tricep_extensions-60225-60934.json.gz: not admitted: wrists and ankles seen together in 62% of samples
 public/mmfit/build/w20-tricep_extensions-62285-62960.json.gz: not admitted: wrists and ankles seen together in 59% of samples
 
-RepCount-A (Hugging Face lmms-lab-eval/repcounta-lance, test and validation splits; build half; benchmark only, decides nothing): 124 build sets of 9 classes; 17 held out, unread; 5 failed or left out. Core on the 79 sets of classes with a counter: 29 exact (37%). Off by 3+ counts refusals.
+RepCount-A (Hugging Face lmms-lab-eval/repcounta-lance, test and validation splits; build half; benchmark only, decides nothing): 124 build sets of 9 classes; 17 held out, unread; 5 failed or left out. Core on the 79 sets of classes with a counter: 26 exact (33%). Off by 3+ counts refusals.
 | Class | Catalogue key | Sets | Exact | Off by 1 | Off by 3+ | Refused |
 |---|---|---:|---:|---:|---:|---:|
 | battle_rope | no counter | 3 | - | - | - | - |
 | bench_pressing | bench_press | 18 | 4 | 1 | 8 | 4 |
-| front_raise | front_raise | 14 | 6 | 5 | 1 | 0 |
+| front_raise | front_raise | 14 | 4 | 7 | 2 | 0 |
 | jump_jack | no counter | 14 | - | - | - | - |
 | pommelhorse | no counter | 12 | - | - | - | - |
 | pull_up | pull_up | 14 | 4 | 5 | 4 | 0 |
 | push_up | push_up | 15 | 5 | 4 | 4 | 0 |
 | situp | no counter | 16 | - | - | - | - |
-| squat | squat | 18 | 10 | 4 | 3 | 2 |
+| squat | squat | 18 | 9 | 5 | 3 | 2 |
 Not scored (5):
 public/repcount/train151: failed: not read whole: read 86 samples of the 150 the video holds
 public/repcount/stu3_54: failed: not read whole: read 330 samples of the 495 the video holds

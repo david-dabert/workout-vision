@@ -45,13 +45,17 @@ export function savedSet({ result, lift, n, corrected, sides = null, manual = fa
   return withPlan({
     exercise: lift, reps: n, repDetails: flagged ? [] : result.reps, arm: result.arm, confidence: result.confidence,
     date: now.toISOString(), source: 'counter-core', duration: result.metadata?.duration, corrected,
-    // Measured over the app's marks: kept only when the saved count is the app's.
-    sides: n === count && !flagged ? sides : null,
+    // Measured over the app's marks: kept only when the saved count is the app's, or when the set was read again for
+    // the person's count and its reps found (coreAnalysis.js recountTo; then repDetails are those reps).
+    sides: (n === count || result.recount?.n === n) && !flagged ? sides : null,
     // What the app counted stays apart from what the visitor kept.
     machineResult: { reps: count, confidence: result.confidence ?? null },
     // Where the body went unseen (counting/doubt.js), numbers only: stored, read by no screen yet.
     doubt: result.doubt ?? null,
     correctedResult: n !== count ? { reps: n } : null,
+    // A corrected count whose reps were found again (recountTo, 18 October 2026): the counter's setting that found them;
+    // repDetails and the wave are of that reading. Absent otherwise.
+    ...(result.recount?.n === n ? { recount: { tuning: result.recount.tuning } } : {}),
     // A set the body check flagged (coreAnalysis.js withBodyCheck, 8 October 2026), confirmed or changed by the person
     // on the low-confidence screen: the agreement and the spec-guided count offered beside the app's (null when none),
     // so the history can tell these sets apart. Absent on a set the check did not flag.

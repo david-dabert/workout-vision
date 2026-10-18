@@ -9,7 +9,7 @@ Every number on this page comes from the scoreboard files in the repository, wit
 
 ## What it does
 
-- Counts the reps of 183 exercises, and scores two fitness tests over 30 seconds (the chair stand and the arm curl, src/lib/fitness-tests.js). You choose the exercise; the app does not guess it. Five are Beta: biceps curl, lat pulldown, squat, Romanian deadlift and leg press (src/lib/liftTiers.js). All the others are Experimental and say so on the result. No exercise has passed the exam PLAN.md requires; the exam sets are still to be filmed (test/real-phone/exam/README.md).
+- Counts the reps of 183 exercises, and scores two fitness tests over 30 seconds (the chair stand and the arm curl, src/lib/fitness-tests.js). You choose the exercise; the app does not guess it. Six are Beta: biceps curl, lat pulldown, squat, hip thrust, Romanian deadlift and leg press (src/lib/liftTiers.js). All the others are Experimental and say so on the result. No exercise has passed the exam PLAN.md requires; the exam sets are still to be filmed (test/real-phone/exam/README.md).
 - Shows the count and asks you to confirm it or give the true number. When most of the set cannot be seen, it says so and shows no count; where it can, it offers a number marked "Proposition de l'appli", to confirm, with no grade and no measure.
 - The guide lists 309 exercises. The 126 the counter does not offer are marked "Non compté": for those the app at most proposes a number to check, offered as one key under an empty slot, and gives none when the joints it would need were seen on fewer than half the samples, or for a hold such as the plank, whose time it does not measure (src/lib/universalProposal.js).
 - Shows, under an experimental label (none of them is validated on real phone video, src/components/experience/measures.js): each rep's range of motion in degrees, its duration, concentric and eccentric time and tempo, the angle over the whole set with each rep marked, and, for a lateral raise filmed from the front only, the range of each side (src/lib/counting/symmetry.ts).
@@ -33,11 +33,11 @@ These hold for the rep counter, its result screen, its report, its PDF, its JSON
 
 Labelled sets are counted by the same code the app runs, in CI on every push and pull request (npm run scoreboard, .github/workflows/ci.yml). Labels come from David or from human-annotated public datasets (R1).
 
-**David's sets** (test/real-phone/accuracy/scoreboard.txt, 12 October 2026):
-- stored landmark sets: 11 of the 15 that decide are exact; the 5 bench and overhead press sets are measured and decide nothing (PLAN.md);
-- real videos read whole by the built app: 6 of 14 exact, 3 refused, and 1 known error of 3 or more (a pendulum squat counted 14 for 7).
+**David's sets** (test/real-phone/accuracy/scoreboard.txt, 18 October 2026):
+- stored landmark sets: 12 of the 15 that decide are exact; the 5 bench and overhead press sets are measured and decide nothing (PLAN.md);
+- real videos read whole by the built app: 8 of 16 exact, 3 refused, and 1 known error of 3 or more (a pendulum squat counted 14 for 7).
 
-**Public build half** (test/real-phone/accuracy/public-scoreboard.txt, 12 October 2026): 1064 sets, 490 exact (46 %). Per dataset: Countix cut to its labelled window 181 of 447 exact (40 %), Countix whole 174 of 447 (39 %), CFRep 8 of 12, MM-Fit 127 of 158 (80 %). 49 of the 946 counted sets are off by 3 or more. Countix's two readings of a clip are not independent; by distinct clip, both readings are exact on 157 of 447 (35 %), either reading on 198 (44 %).
+**Public build half** (test/real-phone/accuracy/public-scoreboard.txt, 18 October 2026): 1064 sets, 502 exact (47 %). Per dataset: Countix cut to its labelled window 194 of 447 exact (43 %), Countix whole 183 of 447 (41 %), CFRep 8 of 12, MM-Fit 117 of 158 (74 %). 45 of the 946 counted sets are off by 3 or more. Countix's two readings of a clip are not independent; by distinct clip, both readings are exact on 166 of 447 (37 %), either reading on 211 (47 %). Since 18 October a last rep the video stops at its working end counts (David's convention): Countix, whose labels count it, gained; MM-Fit, whose labels count whole reps only, lost 10.
 
 **Synthetic sets** (test/real-phone/synth/synth.txt, last written 6 October 2026): two rendered bodies read by the app's pose detection, 96 sets: 74 exact (77 %), 13 off by 3 or more. Ranges of motion read on average 29 degrees (30 %) below the skeleton's truth, and phase times about 0.6 s short. Synthetic bodies are not people: these figures bound what the pipeline can do in clean conditions.
 
