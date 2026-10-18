@@ -49,7 +49,7 @@ export default function exercisesTests(test, expect) {
     await expect(page.locator('.all-exercises .empty')).toHaveText('Aucun exercice trouvé.');
   });
 
-  test('a tap on an exercise without a card opens its filming screen, named, labelled and drawn from the guide', async ({ page }) => {
+  test('a tap on an exercise without a card opens its filming screen, named, labelled and with the app’s animated figure', async ({ page }) => {
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
     await openChoice(page, expect, 'en');
@@ -57,8 +57,11 @@ export default function exercisesTests(test, expect) {
     await page.locator('.all-exercises [data-exercise="forward_lunge"] .item-btn').click();
     await expect(page.locator('.film-screen h2.title')).toHaveText('Forward Lunge', { timeout: 10000 });
     await expect(page.locator('.film-screen .tier')).toHaveText('Experimental: we are still learning this exercise');
-    await expect(page.locator('.film-screen .guide-frames img')).toHaveCount(3);
-    await expect(page.locator('.film-screen .caption')).toContainText('CC BY-SA 4.0');
+    // The app's own figure, drawn from the exercise's motion spec (GuideFigure.jsx), in place of the guide's drawings,
+    // and said to be a drawing, not a measurement.
+    await expect(page.locator('.film-screen .frame canvas.guide-figure')).toHaveCount(1);
+    await expect(page.locator('.film-screen .guide-frames img')).toHaveCount(0);
+    await expect(page.locator('.film-screen .caption')).toHaveText('The movement, drawn by the app: an illustration, not a measurement.');
     await expect(page.locator('.film-screen .steps')).toContainText('whole body');
     expect(errors).toEqual([]);
   });

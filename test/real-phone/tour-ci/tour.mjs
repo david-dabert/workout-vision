@@ -131,7 +131,8 @@ try {
   await page.locator('.all-exercises [data-exercise="forward_lunge"] .item-btn').click();
   await between('t07-to-film-guide');
   await settle();
-  await expect(page.locator('.film-screen .guide-frames img')).toHaveCount(3, { timeout: 10000 });
+  // The app's animated figure (GuideFigure.jsx) in place of the guide's three drawings since 18 October 2026.
+  await expect(page.locator('.film-screen .frame canvas.guide-figure')).toHaveCount(1, { timeout: 10000 });
   await shot('07-film-guide');
   await inView('07-film-guide', page.locator('.film-screen .actions .btn-primary'));
   await page.locator('.film-screen .icon-btn').click();
@@ -149,7 +150,8 @@ try {
   await page.locator(`.all-exercises [data-exercise="${longest}"] .item-btn`).click();
   await between('t08b-to-film-longest');
   await settle();
-  await expect(page.locator('.film-screen .guide-frames img')).toHaveCount(3, { timeout: 10000 });
+  // The app's animated figure (GuideFigure.jsx) in place of the guide's three drawings since 18 October 2026.
+  await expect(page.locator('.film-screen .frame canvas.guide-figure')).toHaveCount(1, { timeout: 10000 });
   await shot('08b-film-longest');
   await inView('08b-film-longest', page.locator('.film-screen .actions .btn-primary'));
   await page.locator('.film-screen .icon-btn').click();

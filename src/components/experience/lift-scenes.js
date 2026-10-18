@@ -26,8 +26,17 @@ export { LIFTS, META } from './lift-meta';
 import { LIFTS } from './lift-meta';
 import { stillClock } from './still-clock';
 export function createLiftScene(canvas, lift, mode = 'loop', { paused = false } = {}) {
-  const k = LIFTS.indexOf(lift), data = poses[lift];
-  const ctx = canvas.getContext('2d'), body = new Body(mode === 'loop' ? (LITE ? 700 : 1000) : 1100, mode === 'loop' ? 100 + k : 21);
+  const k = LIFTS.indexOf(lift);
+  return createPoseScene(canvas, poses[lift], mode, { paused, seed: 100 + k, phase: k * 9 });
+}
+/**
+ * A figure's scene from its data (a card lift's of lift-poses.json, or a guide exercise's of guide-poses.json, the same
+ * format): 'loop' plays data.loop at data.fps frames a second (15 by default), from frame `phase`; 'rest' draws the rest
+ * pose still. Under prefers-reduced-motion the loop stands still at data.still (a guide figure: its first working end), else past its middle, near the working end.
+ */
+export function createPoseScene(canvas, data, mode = 'loop', { paused = false, seed = 100, phase = 0 } = {}) {
+  const fps = data.fps || 15;
+  const ctx = canvas.getContext('2d'), body = new Body(mode === 'loop' ? (LITE ? 700 : 1000) : 1100, mode === 'loop' ? seed : 21);
   const frames = data.loop.f.map(decodeFrame), buf = new Float32Array(66), out = new Float32Array(66);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   // A looping scene made paused (a card of the rail away from the centre) draws once and waits.
@@ -39,7 +48,7 @@ export function createLiftScene(canvas, lift, mode = 'loop', { paused = false } 
     const W = canvas.width, H = canvas.height, t = reduced ? 1.5 : clock.at(now) / 1000;
     ctx.clearRect(0, 0, W, H);
     if (mode === 'loop') {
-      const n = frames.length, fi = reduced ? n * 0.55 : (t * 15 + k * 9) % n;
+      const n = frames.length, fi = reduced ? (data.still ?? n * 0.55) : (t * fps + phase) % n;
       lerpPose(frames, fi, buf);
       mapPose(buf, data.loop.vb, { x: W * 0.1, y: H * 0.04, w: W * 0.8, h: H * 0.9 }, out);
       body.draw(ctx, out, { alpha: 0.95, time: t, dpr: DPR, size: 0.85, stars: 0.8 });
@@ -57,9 +66,14 @@ export function createLiftScene(canvas, lift, mode = 'loop', { paused = false } 
     draw(performance.now());
   }
   function loop(now) { if (disposed || !running) return; draw(now); frame = requestAnimationFrame(loop); }
-  const observer = new ResizeObserver(size); observer.observe(canvas); size();
+  // The size is taken on the next frame, not inside the observer's callback: setting a canvas's size there can move the
+  // layout again in the same frame, and WebKit then reports "ResizeObserver loop completed with undelivered
+  // notifications" as a page error.
+  let sizing = 0;
+  const observer = new ResizeObserver(() => { cancelAnimationFrame(sizing); sizing = requestAnimationFrame(() => { if (!disposed) size(); }); });
+  observer.observe(canvas); size();
   if (running) frame = requestAnimationFrame(loop);
-  const dispose = () => { disposed = true; cancelAnimationFrame(frame); observer.disconnect(); };
+  const dispose = () => { disposed = true; cancelAnimationFrame(frame); cancelAnimationFrame(sizing); observer.disconnect(); };
   // A card off the centre stops drawing and keeps its last frame; it resumes from that frame.
   dispose.setRunning = on => {
     if (reduced || mode !== 'loop' || disposed || on === running) return;

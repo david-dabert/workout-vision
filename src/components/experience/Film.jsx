@@ -6,6 +6,8 @@ import { tierLabel } from '../../lib/liftTiers';
 import { tierOf } from '../../lib/offer';
 import { exerciseName, filmView, guideExercise } from './exercise-info';
 import { GuideFrames } from './Guide';
+import { GUIDE_BOX, hasGuideFigure } from './guide-figure';
+import { GuideFigure } from './GuideFigure';
 import { FITNESS_TESTS } from '../../lib/fitness-tests';
 import { canOpenCamera, readFilmMode, writeFilmMode } from '../../lib/liveCamera';
 import { liveBuild } from '../../lib/buildFlags';
@@ -28,9 +30,10 @@ export default function Film({ lift, onBack, onFile, onLive, hero: arrivedByTran
   const view = filmView(lift);
   const test = FITNESS_TESTS[lift] ?? null;
   // The nine card lifts show the framing of their reference set; every other exercise, the guide's drawings.
-  const figure = hasFigure(lift), guide = figure ? null : guideExercise(lift);
+  // An exercise of the guide with an animated figure of the app (GuideFigure.jsx) shows it in place of the drawings.
+  const figure = hasFigure(lift), guide = figure ? null : guideExercise(lift), animated = !figure && hasGuideFigure(guide?.key);
   const tier = tierOf(lift);
-  const [bw, bh] = figure ? restBox(lift) : [1, 1];
+  const [bw, bh] = figure ? restBox(lift) : animated ? GUIDE_BOX : [1, 1];
 
   // The frame takes the height left once everything else on the screen down to "Filmer ma série" is
   // laid out: a long name wraps to three lines, the guide's credit to three more (review 05 of step 2,
@@ -40,7 +43,16 @@ export default function Film({ lift, onBack, onFile, onLive, hero: arrivedByTran
     const root = screen.current, f = frame.current, a = action.current;
     if (!root || !f || !a) return undefined;
     const top = el => { let y = 0; for (let n = el; n; n = n.offsetParent) y += n.offsetTop; return y; };
-    const set = () => root.style.setProperty('--rest-h', `${top(a) + a.offsetHeight - f.offsetHeight}px`);
+    // A change of a pixel or less is left alone: the guide figure's frame (770 / 1000) has a fractional height, and the
+    // whole-pixel offsets then make the rest swing by 1 px, which resizes the frame and fires this observer again, a loop
+    // WebKit reports as "ResizeObserver loop completed with undelivered notifications" (the tour of 18 October 2026, 390x745).
+    let rest = NaN;
+    const set = () => {
+      const r = top(a) + a.offsetHeight - f.offsetHeight;
+      if (Math.abs(r - rest) <= 1) return;
+      rest = r;
+      root.style.setProperty('--rest-h', `${r}px`);
+    };
     set();
     if (typeof ResizeObserver === 'undefined') return undefined;
     const ro = new ResizeObserver(set);
@@ -83,8 +95,8 @@ export default function Film({ lift, onBack, onFile, onLive, hero: arrivedByTran
       <p className="eyebrow" data-reveal style={{ '--i': 0 }}>{test ? (fr ? 'Test de condition physique' : 'Fitness test') : fr ? (view === 'side' ? 'Filmé de profil' : 'Filmé de face') : (view === 'side' ? 'Filmed from the side' : 'Filmed from the front')}</p>
       <h2 className="title" data-reveal style={{ '--i': 1 }}>{exerciseName(lift, lang)}</h2>
       {tier && <p className={`tier tier-${tier}`} data-reveal style={{ '--i': 1 }}>{tierLabel(tier, fr)}</p>}
-      <div ref={frame} className="frame" data-reveal style={{ '--i': 2, aspectRatio: `${bw} / ${bh}`, '--ar': bw / bh, viewTransitionName: hero ? 'lift-hero' : undefined }}>
-        {figure ? <canvas ref={canvas} aria-hidden="true" /> : guide?.frames.length > 0 && <GuideFrames exercise={guide} fr={fr} />}
+      <div ref={frame} className={animated ? 'frame is-guide-figure' : 'frame'} data-reveal style={{ '--i': 2, aspectRatio: `${bw} / ${bh}`, '--ar': bw / bh, viewTransitionName: hero ? 'lift-hero' : undefined }}>
+        {figure ? <canvas ref={canvas} aria-hidden="true" /> : animated ? <GuideFigure exercise={guide.key} /> : guide?.frames.length > 0 && <GuideFrames exercise={guide} fr={fr} />}
         <svg className="corners" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           <path d="M0 9V0h9M91 0h9v9M100 91v9h-9M9 100H0v-9" fill="none" stroke="currentColor" strokeWidth="1.4" vectorEffect="non-scaling-stroke" />
         </svg>
@@ -92,6 +104,10 @@ export default function Film({ lift, onBack, onFile, onLive, hero: arrivedByTran
       </div>
       {figure
         ? <p className="caption" data-reveal style={{ '--i': 3 }}>{fr ? 'Le cadrage de la série de référence' : 'The framing of the reference set'}</p>
+        : animated
+        // The app's figure: a drawing of the movement from its spec, never a measure; an exercise with no fitting drawing
+        // of the guide (noDrawing) keeps its movement in words before it.
+        ? <p className="caption" data-reveal style={{ '--i': 3 }}>{guide.noDrawing ? `${fr ? guide.how.fr : guide.how.en} ` : ''}{fr ? 'Le mouvement, dessiné par l’appli\u00A0: une illustration, pas une mesure.' : 'The movement, drawn by the app: an illustration, not a measurement.'}</p>
         : <p className="caption" data-reveal style={{ '--i': 3 }}>{guide?.noDrawing
           // No drawing of the guide shows this posture (exerciseGuide.js, noDrawing): the frame stays an empty viewfinder,
           // the movement is said in words here, and no credit is given for drawings it does not show.

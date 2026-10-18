@@ -9,6 +9,8 @@ import { isOffered, tierOf } from '../../lib/offer';
 import './Guide.css';
 import './Level.css';
 import { useCondensingTopbar } from './topbar';
+import { hasGuideFigure } from './guide-figure';
+import { GuideFigure } from './GuideFigure';
 
 const CATALOGUE = getAllGuideExercises();
 const ZONES = { front: ['shoulders', 'chest', 'biceps', 'abs', 'quads'], back: ['back', 'triceps', 'lowerback', 'glutes', 'hamstrings', 'calves'] };
@@ -57,11 +59,16 @@ export function Thumb({ exercise }) {
 }
 export function GuideFrames({ exercise, fr }) {
   const [active, setActive] = useState(0);
+  // An exercise with an animated figure (GuideFigure.jsx) shows it in place of the guide's drawings; one with no
+  // fitting drawing (noDrawing) keeps its movement in words under the figure.
+  const animated = hasGuideFigure(exercise.key);
   useEffect(() => {
-    if (exercise.frames.length < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (animated || exercise.frames.length < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const timer = setInterval(() => setActive(n => (n + 1) % exercise.frames.length), 800);
     return () => clearInterval(timer);
-  }, [exercise]);
+  }, [exercise, animated]);
+  if (animated) return <><div className="guide-frames guide-animated"><GuideFigure exercise={exercise.key} /></div>
+    {exercise.noDrawing && exercise.how ? <p className="guide-how-text" data-testid="guide-how">{fr ? exercise.how.fr : exercise.how.en}</p> : null}</>;
   // No drawing: the movement in words, in the frame the drawing would fill.
   if (!exercise.frames.length) return <div className="guide-frames guide-how" data-testid="guide-how"><p>{exercise.how ? (fr ? exercise.how.fr : exercise.how.en) : ''}</p></div>;
   return <div className="guide-frames">{exercise.frames.map((src, i) => <img key={src} className={i === active ? 'active' : ''} src={src} width="320" height="320" loading="lazy" alt={`${exercise.fr} / ${exercise.name} - ${i + 1}`} />)}</div>;
@@ -120,7 +127,7 @@ export default function Guide({ onClose, onChoose, lift }) {
               approval of the words (R10). */}
           <span className={`tag${isOffered(e.key) ? ' on' : ''}`}>{isOffered(e.key) ? tierTag(tierOf(e.key) || 'experimental', fr) : (fr ? 'Non compté' : 'Not counted')}</span>
         </button>
-        {open === e.key && <div className="guide-detail"><GuideFrames exercise={e} fr={fr} /><p>{isOffered(e.key) ? `${fr ? 'Compté' : 'Counted'} · ${tierLabel(tierOf(e.key) || 'experimental', fr)}.` : (fr ? 'Pas encore compté par l’appli\u00A0: elle propose au mieux un nombre, à vérifier.' : 'Not counted by the app yet: at best it suggests a number for you to check.')}{e.similar ? (fr ? ' Dessin d’un mouvement proche.' : ' Drawing of a similar movement.') : ''}</p>
+        {open === e.key && <div className="guide-detail"><GuideFrames exercise={e} fr={fr} /><p>{isOffered(e.key) ? `${fr ? 'Compté' : 'Counted'} · ${tierLabel(tierOf(e.key) || 'experimental', fr)}.` : (fr ? 'Pas encore compté par l’appli\u00A0: elle propose au mieux un nombre, à vérifier.' : 'Not counted by the app yet: at best it suggests a number for you to check.')}{hasGuideFigure(e.key) ? (fr ? ' Figure dessinée par l’appli\u00A0: une illustration, pas une mesure.' : ' Figure drawn by the app: an illustration, not a measurement.') : e.similar ? (fr ? ' Dessin d’un mouvement proche.' : ' Drawing of a similar movement.') : ''}</p>
           <button className="btn-line press" onClick={() => onChoose(e.key)}>{fr ? 'Filmer cet exercice' : 'Film this exercise'}</button>
           <button className="btn-ghost is-s press" onClick={() => setOpen(null)}>{fr ? 'Fermer' : 'Close'}</button>
         </div>}
