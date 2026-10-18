@@ -451,3 +451,10 @@ Next, in order:
 - the screens: the physiotherapist records and checks a reference; the patient follows it, films the attempt and gets the verdict per joint, with both skeletons replayed side by side;
 - a programme file the physiotherapist sends to the patient, so nothing goes through a server.
 Regulatory caution: wording stays "follows the programme, angle reached", never an assessment of the rehabilitation.
+
+## 18 October 2026: Dense4D, dense 4D correspondence of body, clothing and hair (David, from a post)
+
+- What it is, from its project page as David relayed it: Rıza Alp Güler and colleagues, Imperial College London. A feed-forward model that gives each person pixel of a monocular RGB video a 3D surface position at one reference time (Human Point Maps) and a depth, so the same surface point is found in every frame without a body template; 86 s, 1,287 frames at 15 fps, in one forward pass. Code: "coming soon". A web search of 18 October found no paper or code for it.
+- What it could do for the app: dense surface tracks would follow a limb where MediaPipe's 33 landmarks jump, and see a side the camera hides.
+- Why not now: the code is not released; a model that processes a whole clip in one pass is a GPU model, not one that runs in a phone's browser, and nothing about the user leaves the phone (PLAN.md). It is another estimate, not a reference: joint angles are held against optical motion capture (R16).
+- When it is released: run it offline on David's own stored videos only, and measure whether the landmark tracks it gives reduce the jitter and the misread knees of TRIED.md's stability study (10 October). A measure of the pose input, not a change to the app.
