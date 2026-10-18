@@ -20,6 +20,10 @@
 .wv-experience .guide-frames { position: relative; width: min(100%, 320px); aspect-ratio: 1; margin: 0 auto; background: var(--well); border: 1px solid var(--c-rule); border-radius: var(--r-l); overflow: hidden; }
 .wv-experience .guide-frames img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; filter: sepia(0.35) brightness(0.85); }
 .wv-experience .guide-frames img.active { opacity: 0.72; }
+/* The app's own figure (guide-figure.jsx) fills the well the drawings filled; an exercise with no fitting drawing keeps
+   its movement in words under it. */
+.wv-experience .guide-how-text { margin: 8px auto 0; max-width: 320px; text-align: center; text-wrap: pretty; color: var(--bone-2); }
+.wv-experience .guide-frames canvas.guide-figure { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .wv-experience .guide-detail p { color: var(--c-fg-muted); font-size: var(--fs-caption); }
 /* The licence credit closes the guide, after the last exercise: small and quiet, words and links unchanged. */
 .wv-experience .guide-credit { margin: var(--s-6) 0 var(--s-2); color: var(--ash-2); font-size: var(--fs-caption); line-height: 1.5; }

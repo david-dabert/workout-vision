@@ -38,6 +38,10 @@
    area keep the button off the screen's edge. At 548 px some exercises still need a short scroll
    (test/real-phone/tour-ci/film-button.mjs writes film-button-after.txt). */
 .wv-experience .frame { width: max(88px, min(46%, 178px, calc((100svh - var(--rest-h, 472px) - 8px - env(safe-area-inset-bottom, 0px)) * var(--ar, 0.5625)))); }
+/* The guide's animated figure (GuideFigure.jsx) stands in a frame taller than the square drawings it replaced: at its
+   smallest the frame keeps their 88 px height (68 px wide at 770 / 1000), so the action stays in view on a short screen
+   (fitness-tests.spec.js at 390 x 664). */
+.wv-experience .frame.is-guide-figure { width: max(68px, min(46%, 178px, calc((100svh - var(--rest-h, 472px) - 8px - env(safe-area-inset-bottom, 0px)) * var(--ar, 0.5625)))); }
 @media (max-height: 700px) {
   .wv-experience .film-screen .eyebrow { margin-top: 8px; }
   .wv-experience .film-screen .title { margin-top: 8px; }
