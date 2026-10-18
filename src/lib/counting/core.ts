@@ -416,6 +416,26 @@ const TOGETHER_MIN_CORRELATION = 0.3;
 // edges.test.ts (TRIED.md); the exclusion of 0.5 and 0.6 rests on that synthetic test alone. Sweep in TRIED.md. Status: experimental; UNSOURCED (no published rule for a rep cut
 // by the recording).
 const CUT_RETURN_SHARE = 0.7;
+// A last rep the video stops at its working end (David, 18 October 2026: a rep the video shows reaching its working
+// end counts, even when the recording cuts it; his lat pulldown of 11 counts the pull the video ends on). It counts,
+// marked cut, when every one of these holds (detectReps):
+//  - the pose is seen, not filled in, from where it reached the working end to the video's last sample (a pose lost
+//    before the end is not the recording stopping: two synthetic sets read a glitch there);
+//  - it was still at the working end within TAIL_AT_WORK_SEC of that last sample;
+//  - it reached the working end no more than TAIL_HOLD_MAX_SEC before the end: a posture held longer (arms crossed,
+//    standing straight after the set) is not a rep;
+//  - it went TAIL_DEPTH_SHARE as deep as the set's own reps (the median, from the rest threshold): a reach for the
+//    phone stops short (the edges tests' reaches go 76 % and 83 % as deep);
+//  - the video did not open holding the working end for OPEN_HOLD_SEC (a press racked at the shoulders: ending there
+//    again is the end of the set).
+// Measured (scoreboard, 18 October 2026): stored sets 11 -> 12 exact of 15 (set02 hip thrust 7), real video 7 -> 8 of
+// 16 (chest-supported row 6; lat pulldown 11 read 9 -> 10), none newly off by 3, synthetic 74 -> 74. Depth 0.9 instead
+// of 0.85 loses the row; hold 1.0 instead of 1.5 would also read set01 hip thrust 6, by 0.1 s, a fit to one clip.
+// Source: UNSOURCED (no published rule for a rep cut by the recording). Status: experimental.
+const TAIL_AT_WORK_SEC = 0.6;
+const TAIL_HOLD_MAX_SEC = 1.5;
+const TAIL_DEPTH_SHARE = 0.85;
+const OPEN_HOLD_SEC = 0.5;
 // Splitting an overlong rep at an in-set return that came most of the way back (splitOverlongReps, 3 October
 // 2026): two reps whose return between them stopped short of the rest threshold read as one long rep. Chosen on
 // the public build half A only (variant-eval, 458 sets, exact against 169 before; off by 3 or more 76 throughout):
@@ -548,7 +568,7 @@ function countSide(
   const highThreshold = pHigh - (def.rest === 'high' ? margin : workMargin);
 
   // 7. Detect reps via threshold crossings, then place their boundaries at the rest
-  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES, def.minRepSec ?? MIN_REP_SEC, !!def.noSplit, def.joint !== 'elbow', !!def.lift);
+  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES, def.minRepSec ?? MIN_REP_SEC, !!def.noSplit, def.joint !== 'elbow', !!def.lift, rawAngles.map(a => a !== null));
   const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
   // Speeds are read only where every sample the smoothing used was seen, not filled in by the bridge: the jump
   // where a pose comes back after a short loss is no limb's speed (second audit, 3 October).
@@ -983,6 +1003,7 @@ function detectReps(
   noSplit: boolean = false,
   isLift: boolean = false,
   isLimbLift: boolean = false,
+  seen: boolean[] | null = null,
 ): Cycle[] {
   const restsLow = rest === 'low';
   const cycles: Cycle[] = [];
@@ -1177,9 +1198,30 @@ function detectReps(
       const a = smoothed[i];
       if (a !== null && (restsLow ? a > mid : a < mid)) lastWorking = i;
     }
+    let lastAtWork = -1, firstAtWork = -1;
+    for (let i = repStartIdx; i <= last; i++) if (atWork(smoothed[i])) { lastAtWork = i; if (firstAtWork < 0) firstAtWork = i; }
     const duration = timestamps[last] - timestamps[repStartIdx];
     const whole = duration >= minSec && bounded(repStartIdx, last) && peakAngle - troughAngle >= minRom;
-    if (returned >= CUT_RETURN_SHARE && timestamps[last] - timestamps[lastWorking] <= RETURN_WINDOW_SEC && whole) {
+    // Seen by the pose model, not filled in, from where it reached the working end to the video's last sample.
+    const seenToEnd = !!seen && firstAtWork > -1 && last === timestamps.length - 1
+      && seen.slice(firstAtWork, last + 1).every(Boolean);
+    // As deep as the set's own reps: the median working extreme of the accepted reps, measured from the rest threshold.
+    const restLine = restsLow ? lowThreshold : highThreshold;
+    const depths = cycles.map(c => {
+      let e = restLine;
+      for (let i = c.enter; i <= c.complete; i++) { const a = smoothed[i]; if (a !== null) e = restsLow ? Math.max(e, a) : Math.min(e, a); }
+      return Math.abs(e - restLine);
+    }).sort((x, y) => x - y);
+    const setDepth = depths.length >= 2 ? depths[Math.floor(depths.length / 2)] : Infinity;
+    const deepEnough = Math.abs((restsLow ? peakAngle : troughAngle) - restLine) >= TAIL_DEPTH_SHARE * setDepth;
+    // A video that opens holding the working end (a press racked at the shoulders, a curl held bent) shows where the
+    // person rests: ending there again is the end of the set, not a rep cut by the recording.
+    let openHold = 0;
+    for (let i = firstSeen + 1; i < smoothed.length && atWork(smoothed[i]) && atWork(smoothed[i - 1]); i++) openHold = timestamps[i] - timestamps[firstSeen];
+    const opensHeldAtWork = firstSeen > -1 && atWork(smoothed[firstSeen]) && openHold >= OPEN_HOLD_SEC;
+    const stoppedAtWork = lastAtWork > -1 && seenToEnd && deepEnough && !opensHeldAtWork && timestamps[last] - timestamps[lastAtWork] <= TAIL_AT_WORK_SEC
+      && timestamps[last] - timestamps[firstAtWork] <= TAIL_HOLD_MAX_SEC;
+    if ((returned >= CUT_RETURN_SHARE || stoppedAtWork) && timestamps[last] - timestamps[lastWorking] <= RETURN_WINDOW_SEC && whole) {
       cycles.push({ enter: repStartIdx, complete: last, cut: true });
     } else if (shape && shapePart('c') && whole && returned > 0 && shape.matches(repStartIdx, last, 'start')) {
       // T4: a last rep cut short of the cut rule counts when what the video shows matches the start of the set's shape.
