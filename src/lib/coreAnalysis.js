@@ -179,6 +179,33 @@ export function withSensitivity(result, lift) {
   return { ...result, sensitivity: sensitivity ? { ...sensitivity, ms: Math.round(performance.now() - t0) } : null };
 }
 
+// The settings searched for a corrected count (recountTo): the threshold margin from half to one and a half times the
+// app's, each with the outlier windows of the sensitivity check. Tried nearest the app's own settings first.
+// Status: experimental (UNSOURCED; the span covers the sensitivity grid and twice its reach).
+export const RECOUNT_GRID = Object.freeze(
+  [1, 0.9, 1.1, 0.8, 1.2, 0.7, 1.3, 0.6, 1.4, 0.5, 1.5]
+    .flatMap(marginScale => [undefined, 7, 9].map(outlierWindow => Object.freeze({ marginScale, ...(outlierWindow ? { outlierWindow } : {}) }))),
+);
+
+/**
+ * The set read again for the count the person gave (David, 18 October 2026: "even when people manually correct
+ * things, they still have an analysis that adapts"): the first setting of RECOUNT_GRID, nearest the app's own, under
+ * which the counter finds exactly n reps, with those reps and their measures; null when none does, when the set was
+ * refused or counted none, or when n is more than 3 away from the app's count (no setting is searched that far). The
+ * app's count is never changed: the saved set keeps it as the machine's (saved-set.js). { tuning, reps, smoothedAngles,
+ * arm, confidence }.
+ */
+export function recountTo(result, lift, n) {
+  if (!result || result.refused || !(result.count > 0) || !Number.isInteger(n) || n < 1 || n === result.count
+    || Math.abs(n - result.count) > 3 || isTest(lift) || !Array.isArray(result.worldLandmarks) || !Array.isArray(result.timestamps)) return null;
+  for (const tuning of RECOUNT_GRID) {
+    let r;
+    try { r = summarizeCount(result.worldLandmarks, result.timestamps, lift, tuning); } catch { continue; }
+    if (!r.refused && r.count === n) return { tuning, reps: r.reps, smoothedAngles: r.smoothedAngles, arm: r.arm, confidence: r.confidence };
+  }
+  return null;
+}
+
 /**
  * A read that is not whole: { read, expected } unless exactly floor(duration x fps) samples came
  * back, else null. On 29 September David's iPhone read 181 of the 439 samples of his lateral raise
