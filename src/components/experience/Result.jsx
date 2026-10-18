@@ -34,6 +34,7 @@ import { TARGET_FPS } from '../../lib/extractionConfig';
 import './Result.css';
 import { isCorrected, markLabel, marksLabel } from './replay-labels';
 import { compareSides } from '../../lib/counting/symmetry';
+import { recountTo } from '../../lib/coreAnalysis';
 import { sidesLines, sidesRecord } from './sides-line';
 import RepStrips, { hasStrips } from './RepStrips';
 import { track } from '../../lib/events';
@@ -348,15 +349,20 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // shows the nearest rep's details. A rep the recording cut shows its range only.
   // Without validated measures (measures.js) every mark has one height, and a rep's details are its
   // number alone, with "partly filmed" where the recording cut it.
-  const reps = result.reps || [];
+  // After a correction, the set read again for the person's count (coreAnalysis.js recountTo; David, 18 October 2026):
+  // when a setting of the counter finds exactly their number, the screen, the saved set and its report measure those
+  // reps; when none does, the marks stay the app's and are named so.
+  const [remeasured, setRemeasured] = useState(null);
+  const reps = remeasured?.reps || result.reps || [];
   const NB = '\u00A0', sec = x => `${decimal(x, fr)}${NB}s`;
   const whole = reps.filter(r => !r.clipped);
   // Left against right, for a set filmed from the front only (counting/symmetry.ts); measured once.
   const [compared] = useState(() => (Array.isArray(result.worldLandmarks) && Array.isArray(result.timestamps)
     ? compareSides(result.worldLandmarks, result.timestamps, lift, reps) : null));
-  const sides = sidesRecord(compared);
-  const sidesPerRep = compared?.status === 'measured' ? compared.comparison.perRep : null;
-  const corrected = step === 'saved' && isCorrected(trueN, count);
+  const sides = remeasured ? remeasured.sides : sidesRecord(compared);
+  const sidesPerRep = remeasured ? remeasured.perRep : compared?.status === 'measured' ? compared.comparison.perRep : null;
+  // A corrected count whose reps were not found again: the marks on screen are the app's, named "Repère".
+  const corrected = step === 'saved' && isCorrected(trueN, count) && !remeasured;
   const sidesText = MEASURES_SHOWN && !corrected ? sidesLines(sides, fr, lift) : null;
   // The chosen rep's number is its lit mark; it is spoken, not printed, so the line stays on one row.
   // Where a line must break, it breaks after a separator, never inside a measure.
@@ -479,7 +485,17 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       // Recorded only when the keys were on the screen (review of 9 October 2026: a screen opened on the person's blind
       // count, or saved by "Garder" before the keys showed, offered nothing).
       const choice = offerAlts && altsShown.current && !manual ? { rule: choices.rule, offered: [choices.main, ...choices.alts], picked: pickedAlt.current ? 'alt' : n === choices.main ? 'main' : 'typed' } : null;
-      savedId.current = await saveWorkout(savedSet({ result, lift, n, corrected, sides, manual, planned, proposal, blind, choice }));
+      // A corrected count read again for the person's number (recountTo): found, the set is saved with those reps and
+      // their left-right comparison; the app's own count stays the machine's.
+      const rc = !manual && isCorrected(n, count) && !flagged ? recountTo(result, lift, n) : null;
+      let again = null;
+      if (rc) {
+        const cmp = compareSides(result.worldLandmarks, result.timestamps, lift, rc.reps);
+        again = { ...rc, sides: sidesRecord(cmp), perRep: cmp?.status === 'measured' ? cmp.comparison.perRep : null };
+      }
+      const savedResult = again ? { ...result, reps: again.reps, smoothedAngles: again.smoothedAngles, recount: { n, tuning: again.tuning } } : result;
+      savedId.current = await saveWorkout(savedSet({ result: savedResult, lift, n, corrected, sides: again ? again.sides : sides, manual, planned, proposal, blind, choice }));
+      setRemeasured(again);
       refreshSets();
       // A set is now worth keeping: the browser is asked to keep the app's storage (keep-sets.js; a no-op once kept).
       askToKeep();
@@ -507,7 +523,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       if (!manual) track(isCorrected(n, count) ? 'result_corrected' : 'result_kept', { lift });
       setStep('saved');
       // A flagged set's left-right comparison is of the joint the body check doubts: none goes on (saved-set.js).
-      if (!manual) onSaved(n, n === count && !flagged ? sides : null); // the replay states the saved count beside the detected marks; the report reads the comparison
+      if (!manual) onSaved(n, (n === count || again) && !flagged ? (again ? again.sides : sides) : null); // the replay states the saved count beside the detected marks; the report reads the comparison
       warmReportPdf().catch(() => {}); // the report screen says so if it could not load
       return true;
     } catch {
@@ -765,7 +781,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // number once they change it (step fix) or once a changed count is saved, drawn in --c-fg at weight 400 with the words
   // "Saisi par vous" (C1, R8). After a low-confidence screen it is the number the person gave.
   const big = step === 'ask' ? shown : trueN;
-  const typedView = step === 'fix' || corrected;
+  const typedView = step === 'fix' || (step === 'saved' && isCorrected(trueN, count));
   const one = big <= 1;
   // Before the person gives their count on the low-confidence screen, no measure of the set is shown (R8, no grade).
   // A set the body check flagged shows none once saved either: every measure of the set (cells, ranges, tempo, short
@@ -823,6 +839,9 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       {asked && <ol className="sr" data-testid="res-reps-sr">{reps.map((_, i) => { const t = repText(i); return <li key={i}>{t.head}{t.body}</li>; })}</ol>}
       {view.level === 'beginner' && sidesLine}
       <p className="res-detail" aria-live="polite">{detailHead && <span className="sr">{detailHead}</span>}{detail}</p>
+      {step === 'saved' && isCorrected(trueN, count) && MEASURES_SHOWN && <p className="res-exp" data-testid="res-remeasured">{remeasured
+        ? (fr ? `Mesures recalculées sur vos ${trueN} répétitions.` : `Measures recalculated on your ${trueN} reps.`)
+        : (fr ? `L’appli ne retrouve pas vos ${trueN} répétitions dans la vidéo\u00A0: les repères et leurs mesures restent les siens.` : `The app cannot find your ${trueN} reps in the video: the marks and their measures stay its own.`)}</p>}
       {/* Under the cells: every measure on this screen (cells, account, table) is experimental (measures.js). */}
       {MEASURES_SHOWN && <p className="res-exp" data-testid="res-exp">{experimentalLabel(fr)}</p>}
     </div>,
