@@ -43,10 +43,13 @@ const ECCENTRIC_FIRST: { lift: Lift; joint: Joint; rest: number; work: number }[
 describe('reps cut by the edges of the video', () => {
   for (const sps of [15, 30]) {
     for (const { lift, joint, rest, work } of CONCENTRIC_FIRST) {
-      it(`${lift} at ${sps} sps: a last rep cut half way back is not guessed at`, () => {
+      // David, 18 October 2026: a rep the video shows reaching its working end counts, even when the recording cuts
+      // its return (his lat pulldown of 11 counts the pulls cut by both ends of the video). Until then this case was
+      // pinned as not counted (review of 30 September).
+      it(`${lift} at ${sps} sps: a last rep cut half way back, after reaching its working end, counts`, () => {
         const mid = (rest + work) / 2;
         const r = run(lift, joint, [...reps(rest, work, 5), { to: work, sec: 1 }, { hold: work, sec: 0.2 }, { to: mid, sec: 0.5 }], rest, sps);
-        expect(r.count).toBe(5);
+        expect(r.count).toBe(6);
       });
       it(`${lift} at ${sps} sps: a last rep cut before it reaches its working end does not count`, () => {
         const mid = (rest + work) / 2;
@@ -55,8 +58,13 @@ describe('reps cut by the edges of the video', () => {
       });
     }
     for (const { lift, joint, rest, work } of ECCENTRIC_FIRST) {
-      it(`${lift} at ${sps} sps: a last rep cut at the bottom has not done its lift, and does not count`, () => {
+      // David, 18 October 2026 (above): a last rep the video stops at the bottom of counts.
+      it(`${lift} at ${sps} sps: a last rep cut at the bottom counts`, () => {
         const r = run(lift, joint, [...reps(rest, work, 5), { to: work, sec: 1 }, { hold: work, sec: 0.3 }], rest, sps);
+        expect(r.count).toBe(6);
+      });
+      it(`${lift} at ${sps} sps: a last move to the bottom held there until the video stops is not a cut rep`, () => {
+        const r = run(lift, joint, [...reps(rest, work, 5), { to: work, sec: 1 }, { hold: work, sec: 2.5 }], rest, sps);
         expect(r.count).toBe(5);
       });
       it(`${lift} at ${sps} sps: a first press under the shortest rep, at the start, is not counted`, () => {
