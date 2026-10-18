@@ -1,7 +1,7 @@
 PLAN.md on counter-core prevails over this file.
 # WorkoutVision Standing Rules
 
-Source: DIRECTIVES.md Part 2, Version 1, 24 September 2026; amended 15 October 2026 by David (R1, R8, R11, R14, R15).
+Source: DIRECTIVES.md Part 2, Version 1, 24 September 2026; amended 15 October 2026 by David (R1, R8, R11, R14, R15); R16 added 18 October 2026 by David.
 Every session starts by reading CLAUDE.md, DIRECTIVES.md and STATE.md, and the latest comments of issue #190 (R15).
 
 **R1. Ground truth is sacred.**
@@ -60,3 +60,14 @@ At the end of every task, it posts a REPORT in the format of DIRECTIVES.md Part 
 It links commits, CI runs and pull requests rather than restating them, and it posts no transcripts.
 David's decisions recorded there are quoted with their date; they do not replace PLAN.md, STATE.md or these rules.
 Added 15 October 2026 (David).
+
+**R16. The standard.**
+David, 18 October 2026: the aim is the most general, adaptable, accurate and beautiful exercise tool ever made, first a reliable proof of concept, then a business.
+Its motto: improvement, advancement, beauty, functionality, symmetry, geometry, mathematics, sports science, physics, physics-based models, advanced logic, advanced reasoning, ethics and honesty.
+Accuracy is defined so it can be proven: the app is right whenever it says it is sure, says plainly when it is not, and is sure more often each month.
+Every measure is held against a named reference of the best in the world (rep counts: published results and commercial counters; joint angles: optical motion capture; physiotherapy: the physiotherapist's own judgment); a measure without a reference stays labelled experimental (R8, R9).
+Each target user, the physiotherapist, the coach, the beginner, the intermediate and the expert, is served by a path that works for them, or the path is not offered.
+Design follows one written system of proportion, spacing, type and motion; every screen is checked against it and approved by David on his iPhone (R3).
+The core is proven before the product widens: a new area waits until the counting and the comparison it depends on pass their gates (R2, R7).
+No minor error is left standing: a defect found is fixed or recorded with its evidence, never ignored.
+Added 18 October 2026 (David).
