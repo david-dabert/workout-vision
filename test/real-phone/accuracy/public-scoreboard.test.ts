@@ -7,7 +7,8 @@
 import { expect, test } from 'vitest';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { summarizeCount } from '../../../src/lib/coreAnalysis';
+import { summarizeCount, withBodyCheck } from '../../../src/lib/coreAnalysis';
+import { sureLine, sureRow, type SureRow } from './sure';
 import { benchSets, countInWindow, decides, doubtLine, PRESS_DECIDES_NOTHING, publicSets, writeScoreboard } from './sets';
 import { liftDefinition } from '../../../src/lib/counting/core';
 import { pairedLine, type Pair } from './paired';
@@ -92,7 +93,7 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
   const base = existsSync(from) ? JSON.parse(readFileSync(from, 'utf8')).counts : {};
   const { sets, unreadable, missing: absent, notScored } = publicSets('build');
   const live: Record<string, number | string> = {}, groups = new Map<string, { n: number; exact: number; one: number; bad: number; refused: number }>();
-  const rows: string[] = [], doubts: { flagged: boolean; err: number }[] = [], pairs: Pair[] = [];
+  const rows: string[] = [], doubts: { flagged: boolean; err: number }[] = [], pairs: Pair[] = [], sure: SureRow[] = [];
   let exactNow = 0, exactBefore = 0, became = 0, added = 0, kept = 0;
   for (const s of sets) {
     const r = summarizeCount(s.wl, s.ts, s.lift);
@@ -102,6 +103,9 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
     const key = `${s.dataset} ${s.lift}`, g = groups.get(key) ?? { n: 0, exact: 0, one: 0, bad: 0, refused: 0 };
     g.n++; if (now === 'refused') g.refused++; else if (off(now, s.label) === 0) g.exact++; else if (off(now, s.label) === 1) g.one++; else if (off(now, s.label) >= 3) g.bad++;
     groups.set(key, g);
+    // Right when sure (sure.ts): the body check as the app runs it (the public sets keep no image landmarks; the check
+    // then reads the world landmarks alone, coreAnalysis.js flatImage), each count scored inside its labelled window.
+    if (decides(s.lift)) sure.push(sureRow(withBodyCheck({ ...r, worldLandmarks: s.wl, timestamps: s.ts, imageLandmarks: null }, s.lift), s.lift, s.label, x => countInWindow(x.reps, s.window)));
     if (before === undefined) { added++; continue; }
     // A press set is shown like any other and moves no tally of the gate (PLAN.md: "measured but decide nothing").
     if (!decides(s.lift)) { if (now !== before) rows.push(`-> ${s.name}  label ${s.label}  before ${before}  now ${now}  ${PRESS_DECIDES_NOTHING}`); continue; }
@@ -122,7 +126,7 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
   // bootstrap interval. Countix's two readings of a clip (cut and whole) are two sets here, as in the headline; being
   // correlated, they likely make the interval narrower than one reading per clip would. Printed only, decides nothing.
   const paired = pairedLine(pairs, "Countix's two readings of a clip counted as two sets, as in the headline");
-  const text = [head, paired, doubtLine(doubts), '', ...honestLines(sets, live), '', ...table, '', ...rows, ...missing.map(m => `MISSING ${m}`), ...absent.map(m => `MISSING ${m} (recorded as written, no file)`), ...unreadable.map(u => `UNREADABLE ${u}`),
+  const text = [head, paired, doubtLine(doubts), sureLine(sure), '', ...honestLines(sets, live), '', ...table, '', ...rows, ...missing.map(m => `MISSING ${m}`), ...absent.map(m => `MISSING ${m} (recorded as written, no file)`), ...unreadable.map(u => `UNREADABLE ${u}`),
     ...(notScored.length ? ['', `Not scored (${notScored.length}), each with its reason:`, ...notScored] : []), '', ...repCountSection()].join('\n') + '\n';
   writeScoreboard(resolve(__dirname, 'public-scoreboard.txt'), text);
   process.stdout.write(text);

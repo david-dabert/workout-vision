@@ -1,11 +1,12 @@
-Scoreboard 2026-10-18: of the 15 sets in the baseline that decide, 12 exact now, 11 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused. The 5 bench and overhead press sets are measured and decide nothing (PLAN.md). Build sets only; no exam set yet. "->" marks a set whose count moved.
-Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 15 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 1 gained, 0 lost, McNemar p = 1.00; exact-rate change +6.7 points, 95 % interval [0.0, +20.0].
+Scoreboard 2026-10-18: of the 15 sets in the baseline that decide, 12 exact now, 12 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused. The 5 bench and overhead press sets are measured and decide nothing (PLAN.md). Build sets only; no exam set yet. "->" marks a set whose count moved.
+Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 15 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
 Pose doubt (counting/doubt.js, experimental, decides nothing): of 19 counted sets, 1 flagged: 1 exact (100%), 0 off by 3+ (0%); 18 not flagged: 12 exact (67%), 0 off by 3+ (0%). Sets off by 3+ flagged: 0 of 0.
 In the list (result-choices.js, measured, decides nothing): of the 15 sets that would decide, the number shown is exact on 12, the label is in [M, M + 1, M - 1] on 15.
+Right when sure (R16, sure.ts; measured, decides nothing): of 15 sets that decide, 15 counted. As the app ships, shown as sure 13: 11 exact (85%), 2 off by 1 or 2, 0 off by 3+; asked to confirm 2: 1 exact (50%), 1 off by 1 or 2, 0 off by 3+. With the sensitivity check asking too (on the #collecte phone only today): shown as sure 12: 10 exact (83%), 2 off by 1 or 2, 0 off by 3+; asked to confirm 3: 2 exact (67%), 1 off by 1 or 2, 0 off by 3+.
    sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz  label 8  before 8 (exact)  now 8 (exact)
    sets-06oct/set01_hip_thrust_6_side_4091c266.json.gz  label 6  before 6 (exact)  now 6 (exact)
    sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz  label 13  before 12 (off -1)  now 12 (off -1)
--> sets-06oct/set02_hip_thrust_7_side_b717b687.json.gz  label 7  before 6 (off -1)  now 7 (exact)
+   sets-06oct/set02_hip_thrust_7_side_b717b687.json.gz  label 7  before 7 (exact)  now 7 (exact)
    sets-06oct/set03_reverse_curl_10_side_4d748472.json.gz  label 10  before 9 (off -1)  now 9 (off -1)
    sets-06oct/set04_lat_pulldown_6_side_98308774.json.gz  label 6  before 6 (exact)  now 6 (exact)
    sets-29sep/bench_press_7_side_24cc4f0b.json.gz  label 7  before 5 (off -2)  now 5 (off -2)  (press: measured, decides nothing, PLAN.md)
@@ -23,15 +24,16 @@ In the list (result-choices.js, measured, decides nothing): of the 15 sets that 
    landmarks/lateral_raise_10_front_mufhhbun.json.gz  label 10  before 10 (exact)  now 10 (exact)
    landmarks/overhead_press_10_front_mufhjkku.json.gz  label 10  before 9 (off -1)  now 9 (off -1)  (press: measured, decides nothing, PLAN.md)
 
-Real video, 7 October (label: David's count, R1; the built app's own read of each whole video): of the 16 sets in the baseline, 8 exact now, 7 before; 0 newly catastrophic, 1 known catastrophic (shown, gated on growth), 0 newly refused; 3 refused of 16.
-Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 16 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 1 gained, 0 lost, McNemar p = 1.00; exact-rate change +6.3 points, 95 % interval [0.0, +18.8].
+Real video, 7 October (label: David's count, R1; the built app's own read of each whole video): of the 16 sets in the baseline, 8 exact now, 8 before; 0 newly catastrophic, 1 known catastrophic (shown, gated on growth), 0 newly refused; 3 refused of 16.
+Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 16 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
 In the list (result-choices.js, measured, decides nothing): of the 16 sets that would decide, the number shown is exact on 10, the label is in [M, M + 1, M - 1] on 13.
+Right when sure (R16, sure.ts; measured, decides nothing): of 16 sets that decide, 13 counted. As the app ships, shown as sure 8: 5 exact (63%), 3 off by 1 or 2, 0 off by 3+; asked to confirm 5: 3 exact (60%), 1 off by 1 or 2, 1 off by 3+. With the sensitivity check asking too (on the #collecte phone only today): shown as sure 5: 4 exact (80%), 1 off by 1 or 2, 0 off by 3+; asked to confirm 8: 4 exact (50%), 3 off by 1 or 2, 1 off by 3+.
    sets-07oct-video/barbell_squat_9_a.json.gz  label 9  before 9 (exact)  now 9 (exact)
    sets-07oct-video/barbell_squat_9_b.json.gz  label 9  before 9 (exact)  now 9 (exact)
    sets-07oct-video/behind_neck_chin_up_5.json.gz  label 5  before 6 (off +1)  now 6 (off +1)
    sets-07oct-video/hanging_leg_raise_6.json.gz  label 6  before 6 (exact)  now 6 (exact)
    sets-07oct-video/lying_biceps_curl_11.json.gz  label 11  before 11 (exact)  now 11 (exact)
--> sets-07oct-video/machine_chest_supported_row_6.json.gz  label 6  before 5 (off -1)  now 6 (exact)
+   sets-07oct-video/machine_chest_supported_row_6.json.gz  label 6  before 6 (exact)  now 6 (exact)
    sets-07oct-video/machine_seated_back_extension_18.json.gz  label 18  before 17 (off -1)  now 17 (off -1)
 KNOWN CATASTROPHIC  sets-07oct-video/pendulum_squat_7.json.gz  label 7  now 14
    sets-07oct-video/pendulum_squat_7.json.gz  label 7  before 14 (catastrophic)  now 14 (catastrophic)
@@ -41,17 +43,18 @@ KNOWN CATASTROPHIC  sets-07oct-video/pendulum_squat_7.json.gz  label 7  now 14
    sets-07oct-video/sissy_squat_7_5008.json.gz  label 7  before refused (refused)  now refused (refused)
    sets-07oct-video/sissy_squat_9_5007.json.gz  label 9  before 9 (exact)  now 9 (exact)
    sets-07oct-video/standing_barbell_curl_8.json.gz  label 8  before refused (refused)  now refused (refused)  (proposal 8)
--> sets-18oct-video/lat_pulldown_11_back.json.gz  label 11  before 9 (off -2)  now 10 (off -1)
+   sets-18oct-video/lat_pulldown_11_back.json.gz  label 11  before 10 (off -1)  now 10 (off -1)
    sets-18oct-video/squat_6_front.json.gz  label 6  before 6 (exact)  now 6 (exact)
 
-Real video, VIDEO mode (the same videos read in VIDEO mode, which the app does not use: measured, decides nothing): of the 14 sets in the baseline, 4 exact now, 3 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused; 3 refused of 14.
-Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 14 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 1 gained, 0 lost, McNemar p = 1.00; exact-rate change +7.1 points, 95 % interval [0.0, +21.4].
+Real video, VIDEO mode (the same videos read in VIDEO mode, which the app does not use: measured, decides nothing): of the 14 sets in the baseline, 4 exact now, 4 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused; 3 refused of 14.
+Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 14 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
+Right when sure (R16, sure.ts; measured, decides nothing): of 14 sets that decide, 11 counted. As the app ships, shown as sure 6: 4 exact (67%), 2 off by 1 or 2, 0 off by 3+; asked to confirm 5: 0 exact (0%), 5 off by 1 or 2, 0 off by 3+. With the sensitivity check asking too (on the #collecte phone only today): shown as sure 5: 3 exact (60%), 2 off by 1 or 2, 0 off by 3+; asked to confirm 6: 1 exact (17%), 5 off by 1 or 2, 0 off by 3+.
    sets-09oct-video-mode/barbell_squat_9_a.json.gz  label 9  before 7 (off -2)  now 7 (off -2)
    sets-09oct-video-mode/barbell_squat_9_b.json.gz  label 9  before 10 (off +1)  now 10 (off +1)
    sets-09oct-video-mode/behind_neck_chin_up_5.json.gz  label 5  before 4 (off -1)  now 4 (off -1)
    sets-09oct-video-mode/hanging_leg_raise_6.json.gz  label 6  before 4 (off -2)  now 4 (off -2)
    sets-09oct-video-mode/lying_biceps_curl_11.json.gz  label 11  before 10 (off -1)  now 10 (off -1)
--> sets-09oct-video-mode/machine_chest_supported_row_6.json.gz  label 6  before 5 (off -1)  now 6 (exact)
+   sets-09oct-video-mode/machine_chest_supported_row_6.json.gz  label 6  before 6 (exact)  now 6 (exact)
    sets-09oct-video-mode/machine_seated_back_extension_18.json.gz  label 18  before 17 (off -1)  now 17 (off -1)
    sets-09oct-video-mode/pendulum_squat_7.json.gz  label 7  before 8 (off +1)  now 8 (off +1)
    sets-09oct-video-mode/seated_dumbbell_curl_10.json.gz  label 10  before 10 (exact)  now 10 (exact)
@@ -63,3 +66,4 @@ Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the
 
 David's blind counts (his count in the app before it showed its own, blind.js; measured, decides nothing until he says these counts are labels, R1): 0 sets, 0 exact of the 0 that would decide; 0 kept at another count after seeing the app's; 0 answered "Je ne sais pas".
 In the list (result-choices.js, measured, decides nothing): of the 0 sets that would decide, the number shown is exact on 0, the label is in [M, M + 1, M - 1] on 0.
+Right when sure (R16, sure.ts; measured, decides nothing): of 0 sets that decide, 0 counted. As the app ships, shown as sure 0: 0 exact (0%), 0 off by 1 or 2, 0 off by 3+; asked to confirm 0: 0 exact (0%), 0 off by 1 or 2, 0 off by 3+. With the sensitivity check asking too (on the #collecte phone only today): shown as sure 0: 0 exact (0%), 0 off by 1 or 2, 0 off by 3+; asked to confirm 0: 0 exact (0%), 0 off by 1 or 2, 0 off by 3+.

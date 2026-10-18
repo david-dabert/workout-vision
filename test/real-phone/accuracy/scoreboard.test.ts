@@ -27,6 +27,7 @@ import { countChoices, inList } from '../../../src/components/experience/result-
 import { gunzipSync } from 'node:zlib';
 import { blindSets, decides, doubtLine, labelledSets, PRESS_DECIDES_NOTHING, videoSets, writeScoreboard } from './sets';
 import { pairedLine, type Pair } from './paired';
+import { sureLine, sureRow } from './sure';
 
 const BASELINE = resolve(__dirname, 'scoreboard-baseline.json');
 
@@ -129,11 +130,16 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   const bexact = blind.sets.filter((s, i) => decides(s.lift) && bnow[i].now === s.label).length, bdec = blind.sets.filter(s => decides(s.lift)).length;
   const bhead = `David's blind counts (his count in the app before it showed its own, blind.js; measured, decides nothing until he says these counts are labels, R1): ${blind.sets.length} sets, ${bexact} exact of the ${bdec} that would decide; ${blind.sets.filter(s => s.kept !== s.label).length} kept at another count after seeing the app's; ${blind.unsure.length} answered "Je ne sais pas".`;
   const gzs = (name: string) => JSON.parse(gunzipSync(readFileSync(resolve(__dirname, '..', name))).toString());
-  const bList = listLine(sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, gzs(s.name).imageLandmarks ?? null) })));
-  const vList = listLine(video.sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il, s.appRefused) })));
-  const blList = listLine(blind.sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il) })));
+  const bRes = sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, gzs(s.name).imageLandmarks ?? null) }));
+  const vRes = video.sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il, s.appRefused) }));
+  const bList = listLine(bRes), vList = listLine(vRes);
+  const mRes = vmode.sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il, s.appRefused) }));
+  const blRes = blind.sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il) }));
+  const blList = listLine(blRes);
+    // Right when sure (sure.ts, R16): the app's whole path on the sets that decide, as the result screen would show them.
+  const sureOf = (rows: { lift: string; label: number; result: any }[]) => sureLine(rows.filter(s => decides(s.lift)).map(s => sureRow(s.result, s.lift, s.label)));
   // The paired line (paired.ts) on the same sets as "exact now, before": printed only, the gate below is unchanged.
-  const text = [head, pairedLine(b.pairs), doubtLine(b.doubts), bList, ...b.rows, '', vhead, pairedLine(v.pairs), vList, ...v.rows, '', mhead, pairedLine(m.pairs), ...m.rows, '', bhead, blList, ...brows].join('\n') + '\n';
+  const text = [head, pairedLine(b.pairs), doubtLine(b.doubts), bList, sureOf(bRes), ...b.rows, '', vhead, pairedLine(v.pairs), vList, sureOf(vRes), ...v.rows, '', mhead, pairedLine(m.pairs), sureOf(mRes), ...m.rows, '', bhead, blList, sureOf(blRes), ...brows].join('\n') + '\n';
   writeScoreboard(resolve(__dirname, 'scoreboard.txt'), text);
   process.stdout.write(text);
   // R2: a change ships only if the exact count does not decrease and no set becomes catastrophic; a set newly
