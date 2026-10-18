@@ -1,0 +1,7 @@
+{
+  "note": "Two real gym videos of 18 October 2026, read whole by the built app as sets-07oct-video/ was (its README and capture.mjs). Labels by David (R1), given in the conversation of 18 October 2026, never from the app. No video is in the repository.",
+  "sets": [
+    { "name": "lat_pulldown_11_back", "original": "IMG_2135_2.mov", "lift": "lat_pulldown", "label": 11, "labelSource": "David, 18 October 2026", "view": "back", "what": "lat pulldown machine in a gym, filmed from behind; the video starts and ends inside a rep" },
+    { "name": "squat_6_front", "original": "IMG_2261.MOV", "lift": "squat", "label": 6, "labelSource": "David, 18 October 2026", "view": "front", "what": "bodyweight squat, front view, a corridor (a workshop participant, filmed with his agreement)" }
+  ]
+}
