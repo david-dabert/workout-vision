@@ -43,7 +43,16 @@ export default function Film({ lift, onBack, onFile, onLive, hero: arrivedByTran
     const root = screen.current, f = frame.current, a = action.current;
     if (!root || !f || !a) return undefined;
     const top = el => { let y = 0; for (let n = el; n; n = n.offsetParent) y += n.offsetTop; return y; };
-    const set = () => root.style.setProperty('--rest-h', `${top(a) + a.offsetHeight - f.offsetHeight}px`);
+    // A change of a pixel or less is left alone: the guide figure's frame (770 / 1000) has a fractional height, and the
+    // whole-pixel offsets then make the rest swing by 1 px, which resizes the frame and fires this observer again, a loop
+    // WebKit reports as "ResizeObserver loop completed with undelivered notifications" (the tour of 18 October 2026, 390x745).
+    let rest = NaN;
+    const set = () => {
+      const r = top(a) + a.offsetHeight - f.offsetHeight;
+      if (Math.abs(r - rest) <= 1) return;
+      rest = r;
+      root.style.setProperty('--rest-h', `${r}px`);
+    };
     set();
     if (typeof ResizeObserver === 'undefined') return undefined;
     const ro = new ResizeObserver(set);

@@ -68,7 +68,7 @@ export function createPoseScene(canvas, data, mode = 'loop', { paused = false, s
   function loop(now) { if (disposed || !running) return; draw(now); frame = requestAnimationFrame(loop); }
   // The size is taken on the next frame, not inside the observer's callback: setting a canvas's size there can move the
   // layout again in the same frame, and WebKit then reports "ResizeObserver loop completed with undelivered
-  // notifications" as a page error (the tour of 18 October 2026, 390x745, a guide figure loading on the filming screen).
+  // notifications" as a page error.
   let sizing = 0;
   const observer = new ResizeObserver(() => { cancelAnimationFrame(sizing); sizing = requestAnimationFrame(() => { if (!disposed) size(); }); });
   observer.observe(canvas); size();
