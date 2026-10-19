@@ -5,6 +5,7 @@ import { Verdict, GroupHead, Metric } from '../experience/Showcase';
 import { buildReference, compareAttempt, curves, SAMPLE_HZ, shownAngle, TOLERANCE_DEG } from '../../lib/reference/compare';
 import { ghostAnchor, nearestIndex, pathMaps } from '../../lib/reference/overlay';
 import { drawComparison, drawSkeleton } from './overlay-draw';
+import { steadyFrames } from '../experience/replay-smooth';
 import AttemptKeep from './AttemptKeep';
 import { COPY, JOINT_NAMES, clock, deg, pct } from './reference-copy';
 import './ReferenceCompare.css';
@@ -79,6 +80,11 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
     return { ...pathMaps(result.path, attLength), attT0: attPose.timestamps[0], refT0: refPose.timestamps[0] };
   }, [result, attPose, refPose, measures]);
 
+  // The skeletons drawn, steadied for the eye as the replay's are (replay-smooth.js; David, 19 October 2026): the
+  // comparison, its angles and the verdict read the poses as the model gave them, never these.
+  const steady = pose => (pose ? { ...pose, imageLandmarks: steadyFrames(pose.imageLandmarks, pose.timestamps) } : pose);
+  const attShown = useMemo(() => steady(attPose), [attPose]);
+  const refShown = useMemo(() => steady(refPose), [refPose]);
   // How the ghost is laid on the patient, decided once for the comparison (overlay.js ghostAnchor).
   const anchor = useMemo(() => (refPose && attPose ? ghostAnchor(refPose, attPose) : 'trunk'), [refPose, attPose]);
   // While the patient's report or video is being made from the video on screen, the player waits (AttemptKeep.jsx).
@@ -107,7 +113,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
         const ctx = cv.getContext('2d');
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, w, h);
-        const { tr, ri } = drawComparison(ctx, { t, w, h, result, attPose, refPose, maps, measures, names, refShort: c.refShort, colors: { lamp, bone, ash }, ghost, anchor });
+        const { tr, ri } = drawComparison(ctx, { t, w, h, result, attPose: attShown, refPose: refShown, maps, measures, names, refShort: c.refShort, colors: { lamp, bone, ash }, ghost, anchor });
         setNow(Math.round(t * 10) / 10); setRefNow(ri);
         const rv = refVideo.current;
         if (rv && !rv.seeking && Math.abs(rv.currentTime - tr) > 0.12) rv.currentTime = tr;
@@ -120,14 +126,14 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
         const ctx = rcv.getContext('2d');
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, w, h);
-        const rlm = refPose.imageLandmarks[nearestIndex(refPose.timestamps, rvid.currentTime)];
+        const rlm = refShown.imageLandmarks[nearestIndex(refShown.timestamps, rvid.currentTime)];
         if (rlm) drawSkeleton(ctx, rlm.map(p => ((p.visibility ?? 0) >= 0.5 ? { x: p.x * w, y: p.y * h } : null)), { color: ash, width: 2, alpha: 0.9 });
       }
       raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [result, maps, ghost, anchor, attPose, refPose, c.refShort, names, measures]);
+  }, [result, maps, ghost, anchor, attShown, refShown, c.refShort, names, measures]);
 
   const toggle = () => {
     const v = attVideo.current;
@@ -160,7 +166,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
               {result.verdict === 'refused' && <p className="sc-frame-note" data-testid="rc-refused">{result.reasons.includes('reference-unseen') ? c.refUnseen : c.refusedWhy(unseen)}</p>}
               {reasons.length > 0 && <ul className="rc-reasons">{reasons.map((r, i) => <li key={i}>{r}</li>)}</ul>}
             </section>
-            {keep && result.verdict === 'refused' && <AttemptKeep video={attVideo} result={result} attPose={attPose} refPose={refPose} maps={maps} measures={measures} names={names} c={c} report={keep.report} title={keep.title} lang={lang} anchor={anchor} onBusy={setKeepBusy} />}
+            {keep && result.verdict === 'refused' && <AttemptKeep video={attVideo} result={result} attPose={attShown} refPose={refShown} maps={maps} measures={measures} names={names} c={c} report={keep.report} title={keep.title} lang={lang} anchor={anchor} onBusy={setKeepBusy} />}
 
             {result.verdict !== 'refused' && <>
               <section className="sc-section">
@@ -185,7 +191,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
                 <label className="rc-toggle"><input type="checkbox" checked={ghost} onChange={e => setGhost(e.target.checked)} /> {c.ghost}</label>
               </section>
 
-              {keep && <AttemptKeep video={attVideo} result={result} attPose={attPose} refPose={refPose} maps={maps} measures={measures} names={names} c={c} report={keep.report} title={keep.title} lang={lang} anchor={anchor} onBusy={setKeepBusy} />}
+              {keep && <AttemptKeep video={attVideo} result={result} attPose={attShown} refPose={refShown} maps={maps} measures={measures} names={names} c={c} report={keep.report} title={keep.title} lang={lang} anchor={anchor} onBusy={setKeepBusy} />}
 
               <section className="sc-section">
                 <GroupHead title={c.tempo} />
