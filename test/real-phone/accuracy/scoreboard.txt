@@ -64,6 +64,6 @@ Right when sure (R16, sure.ts; measured, decides nothing): of 14 sets that decid
    sets-09oct-video-mode/sissy_squat_9_5007.json.gz  label 9  before 9 (exact)  now 9 (exact)
    sets-09oct-video-mode/standing_barbell_curl_8.json.gz  label 8  before refused (refused)  now refused (refused)  (proposal 6)
 
-David's blind counts (his count in the app before it showed its own, blind.js; measured, decides nothing until he says these counts are labels, R1): 0 sets, 0 exact of the 0 that would decide; 0 kept at another count after seeing the app's; 0 answered "Je ne sais pas".
+David's blind counts (his count in the app before it showed its own, blind.js; labels since his ruling of 15 October 2026, R1; they decide under R2): 0 sets, 0 exact of the 0 that decide; of the 0 in the baseline, 0 exact now, 0 before; 0 newly catastrophic, 0 newly refused; 0 kept at another count after seeing the app's; 0 answered "Je ne sais pas".
 In the list (result-choices.js, measured, decides nothing): of the 0 sets that would decide, the number shown is exact on 0, the label is in [M, M + 1, M - 1] on 0.
 Right when sure (R16, sure.ts; measured, decides nothing): of 0 sets that decide, 0 counted. With the body check alone (before 19 October 2026), shown as sure 0: 0 exact (0%), 0 off by 1 or 2, 0 off by 3+; asked to confirm 0: 0 exact (0%), 0 off by 1 or 2, 0 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 0: 0 exact (0%), 0 off by 1 or 2, 0 off by 3+; asked to confirm 0: 0 exact (0%), 0 off by 1 or 2, 0 off by 3+.
