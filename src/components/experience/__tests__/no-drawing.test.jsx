@@ -32,13 +32,18 @@ describe('an exercise with no fitting drawing', async () => {
     expect(html).not.toContain('Seated, facing forward');
   });
 
-  it('has an empty arch beside its name', () => {
+  // Since 19 October 2026 every exercise of the list shows the app's own still figure (public/guide-svg/), the guide's
+  // drawing or the empty arch only where no figure exists.
+  it('shows the app\'s still figure beside its name', () => {
     const html = renderToStaticMarkup(<Thumb exercise={e} />);
-    expect(html).toContain('thumb-none');
+    expect(html).toContain('thumb-fig');
+    expect(html).toContain('guide-svg/machine_seated_back_extension.svg');
     expect(html).not.toContain('<img');
   });
 
-  it('leaves every other exercise its drawing', () => {
-    expect(renderToStaticMarkup(<Thumb exercise={getGuideExercise('back_extension')} />)).toContain('guide/back-extension/frame-1.webp');
+  it('gives every other exercise, the card lifts included, its figure, and keeps the drawing where none exists', () => {
+    expect(renderToStaticMarkup(<Thumb exercise={getGuideExercise('back_extension')} />)).toContain('guide-svg/back_extension.svg');
+    expect(renderToStaticMarkup(<Thumb exercise={getGuideExercise('squat')} />)).toContain('guide-svg/squat.svg');
+    expect(renderToStaticMarkup(<Thumb exercise={{ key: 'no_such_exercise', frames: ['x.webp'] }} />)).toContain('x.webp');
   });
 });

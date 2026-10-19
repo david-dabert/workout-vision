@@ -10,6 +10,7 @@ import './Guide.css';
 import './Level.css';
 import { useCondensingTopbar } from './topbar';
 import { hasGuideFigure } from './guide-figure';
+import stillKeys from './guide-svg-keys.json';
 import { GuideFigure } from './GuideFigure';
 
 const CATALOGUE = getAllGuideExercises();
@@ -54,7 +55,12 @@ function BodyMap() {
   return <canvas ref={canvas} aria-hidden="true" />;
 }
 /** The small drawing beside a name; an empty frame for an exercise with no drawing (exerciseGuide.js, noDrawing). */
+// An exercise with a figure of the app shows its still SVG (scripts/make-guide-svgs.mjs, public/guide-svg/; David,
+// 19 October 2026), tinted through a mask so it takes the theme's colour; the others keep the guide's drawing.
+const FIG_BASE = `${import.meta.env.BASE_URL || '/'}guide-svg/`;
+const STILLS = new Set(stillKeys);
 export function Thumb({ exercise }) {
+  if (STILLS.has(exercise.key)) return <span className="thumb"><i className="thumb-fig" style={{ '--fig': `url("${FIG_BASE}${exercise.key}.svg")` }} aria-hidden="true" /></span>;
   return <span className="thumb">{exercise.frames[0] ? <img src={exercise.frames[0]} loading="lazy" width="56" height="56" alt="" /> : <i className="thumb-none" aria-hidden="true" />}</span>;
 }
 export function GuideFrames({ exercise, fr }) {

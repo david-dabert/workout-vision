@@ -15,6 +15,8 @@
 .wv-experience .seg button, .wv-experience .chip { min-height: 44px; }
 .wv-experience .guide-screen .title { color: var(--c-fg); }
 .wv-experience .thumb img { width: 56px; height: 56px; object-fit: contain; }
+/* The app's still figure (Guide.jsx Thumb): the SVG as a mask over the bone colour, inset like the drawings were. */
+.wv-experience .thumb-fig { width: 44px; height: 57px; background: var(--bone); -webkit-mask: var(--fig) center / contain no-repeat; mask: var(--fig) center / contain no-repeat; }
 .wv-experience .guide-detail { padding: 16px 0 24px; }
 /* The drawings sit in the well, a step below white, so they are not the brightest thing in the app (#16). */
 .wv-experience .guide-frames { position: relative; width: min(100%, 320px); aspect-ratio: 1; margin: 0 auto; background: var(--well); border: 1px solid var(--c-rule); border-radius: var(--r-l); overflow: hidden; }
