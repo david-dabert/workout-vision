@@ -81,6 +81,14 @@ jobs:
       - run: npm run build:e2e
       # One worker, as the timing checks of the touch tests were measured.
       - run: npx playwright test --retries=0 --workers=1
+      # A failed test leaves its page snapshot (error-context.md) and screenshots in test-results/: kept for five days, so
+      # a failure that does not come back on a re-run can still be read (e2e/pack.spec.js, 18 October 2026).
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-test-results-${{ github.sha }}
+          path: test-results/
+          retention-days: 5
 
   # The tour (PLAN.md, GROWTH, after step 1): every screen reached without a video, on the production
   # build, in WebKit with the iPhone profile, at 390x664, 390x745 and 375x548, and at 390x664 with

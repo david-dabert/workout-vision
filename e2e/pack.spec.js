@@ -93,7 +93,9 @@ test('after a reload the packed videos and their labels are still there, ready f
 });
 
 // Review of 10 October 2026: the defects its verifiers reproduced, each pinned here.
-const pick = (page, ...names) => Promise.all(names.map(async n => ({ name: n, mimeType: 'video/webm', buffer: Buffer.from(await drawnWebm(page, 1500), 'base64') })))
+// Each video drawn from its own first number: recorded together, two identical files would be one video to the packer
+// (a twin, never packed twice), and the test would wait for a row that is right not to finish.
+const pick = (page, ...names) => Promise.all(names.map(async (n, i) => ({ name: n, mimeType: 'video/webm', buffer: Buffer.from(await drawnWebm(page, 1500, 1000 * i), 'base64') })))
   .then(files => page.locator('#videos').setInputFiles(files));
 // The MP4's length as its movie header says (mvhd), in seconds: a reader takes floor(length x 15) samples.
 function mp4Seconds(bytes) {
@@ -165,7 +167,10 @@ test('each packed video ends after its last picture, and is named by its number 
   test.setTimeout(300000);
   await page.goto(PAGE);
   await pick(page, 'a.webm', 'b.webm', 'c.webm');
-  await expect(page.locator('.set.done')).toHaveCount(3, { timeout: 240000 });
+  // On a timeout, each row's own line says where it stopped (packing, failed, a twin, waiting).
+  await expect(page.locator('.set.done')).toHaveCount(3, { timeout: 240000 }).catch(async e => {
+    throw new Error(`${e.message}\nRows: ${JSON.stringify(await page.locator('.set .state').allTextContents())}`);
+  });
   for (const i of [0, 1, 2]) { await page.locator(`#lift${i}`).selectOption('squat'); await page.locator(`#count${i}`).fill(String(5 + i)); }
   await page.click('#make');
   const [dl] = await Promise.all([page.waitForEvent('download'), page.locator('#files button', { hasText: 'Download' }).click()]);
