@@ -22,7 +22,8 @@ export function sureRow(result: any, lift: string, label: number, countOf: (r: a
     const r: any = summarizeCount(result.worldLandmarks, result.timestamps, lift, tuning);
     return r.refused || countOf(r) !== shown;
   });
-  return { err: Math.abs(shown - label), flagged: result.bodyCheck?.flagged === true, moved };
+  // Since 19 October 2026 the result screen also asks on a refused head rep (Result.jsx): read with the shipped checks.
+  return { err: Math.abs(shown - label), flagged: result.bodyCheck?.flagged === true, moved: moved || result.headRefused === true };
 }
 
 const pct = (k: number, n: number) => (n ? Math.round((100 * k) / n) : 0);
@@ -37,5 +38,5 @@ export function sureLine(rows: SureRow[]) {
   const sure = counted.filter(r => !r.flagged), sureSens = sure.filter(r => !r.moved);
   return `Right when sure (R16, sure.ts; measured, decides nothing): of ${rows.length} sets that decide, ${counted.length} counted. `
     + `With the body check alone (before 19 October 2026), shown as sure ${part(sure)}; asked to confirm ${part(counted.filter(r => r.flagged))}. `
-    + `As the app ships, the sensitivity check asking too: shown as sure ${part(sureSens)}; asked to confirm ${part(counted.filter(r => r.flagged || r.moved))}.`;
+    + `As the app ships, the sensitivity check and a refused head rep asking too: shown as sure ${part(sureSens)}; asked to confirm ${part(counted.filter(r => r.flagged || r.moved))}.`;
 }

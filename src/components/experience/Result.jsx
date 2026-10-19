@@ -202,8 +202,11 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // ("All the lot"): on the public sets that decide, the wrong counts shown as sure fall from 18 to 7 off by 3 or more,
   // for 80 more sets asked, 24 of them exact (test/real-phone/accuracy/public-scoreboard.txt, sure.ts). Status: experimental.
   const sensitive = !result.refused && result.count > 0 && !flagged && result.sensitivity?.moved === true;
+  // The video opened inside a rep the counter did not count (core.ts headRefused, 19 October 2026): such a count is
+  // wrong 14 times in 17 on the suites (TRIED.md, 18 October), so it is asked, never shown as sure (R8, R16).
+  const openedMidRep = !result.refused && result.count > 0 && !flagged && result.headRefused === true;
   // The app's count, standing as one to confirm: a flagged set's or a moved one's.
-  const toCheck = flagged || sensitive;
+  const toCheck = flagged || sensitive || openedMidRep;
   const low = !!result.refused || unsure || liveDiffers || toCheck;
   // A refused set may carry PSC's count (coreAnalysis.js, withProposal; 8 October 2026): the slot opens on it, labelled
   // "Proposition de l'appli", and nothing is saved until the person confirms or changes it (R8: a number to confirm,
@@ -802,7 +805,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const blocks = {
     // Low confidence: the cause and the question, no number (05b). Otherwise the question, the count between − and +,
     // its state in a mark and a word, and where it comes from (05).
-    count: low && step !== 'saved' ? lowAsk(false, unsure ? [c.noneFound] : [...(liveDiffers ? [c.liveDiffers(liveShown)] : []), ...(flagged ? [c.bodyCause(jointName(liftDefinition(lift)?.joint, fr))] : []), ...(sensitive ? [c.sensitiveCause] : [])]) : <div key="count" className="res-count">
+    count: low && step !== 'saved' ? lowAsk(false, unsure ? [c.noneFound] : [...(liveDiffers ? [c.liveDiffers(liveShown)] : []), ...(flagged ? [c.bodyCause(jointName(liftDefinition(lift)?.joint, fr))] : []), ...(sensitive ? [c.sensitiveCause] : []), ...(openedMidRep ? [c.midRepCause] : [])]) : <div key="count" className="res-count">
       {step !== 'saved' && <p className={`res-q${asked ? '' : ' is-waiting'}${step === 'fix' ? ' is-fix' : ''}`} aria-hidden={asked ? undefined : true}>{step === 'fix' ? c.howMany : c.question(count)}</p>}
       {hero(<span key={big} className={`numeral tick${typedView ? ' is-typed' : ''}${String(big).length > 2 ? ' is-long' : ''}`} aria-hidden="true" data-testid="res-numeral">{big}</span>, asked, step !== 'saved')}
       {step === 'fix' && <p className="sr" aria-live="polite" aria-atomic="true">{trueN}</p>}
