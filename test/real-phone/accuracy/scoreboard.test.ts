@@ -12,7 +12,9 @@
 // against its own baseline (videoModeCounts) and decides nothing while the app reads in IMAGE mode.
 // In both, a refused set shows the proposal the app offers on it (coreAnalysis.js withProposal), which decides nothing.
 // A fourth, "David's blind counts", counts the sets he collected on his phone with the count he gave before the app
-// showed its own (blindSets, sets.ts; blind.js): shown, decides nothing until he says these counts are labels (R1).
+// showed its own (blindSets, sets.ts; blind.js). David ruled on 15 October 2026 that these counts are labels (R1, issue
+// #190: "Yes to all of them"): the section decides under the same R2 rules as the two above, on its own baseline
+// (blindCounts). Each set's line also shows the count he kept after seeing the app's.
 // A collected file counted after the app's (labelKind 'after-app') is never a label: it is named as held, and skipped.
 // Under each section, one measured line (pillar 2, 9 October 2026): of the sets that would decide, how many show the
 // exact number, and how many have the label in the list the result screen can offer, [M, M + 1, M - 1]
@@ -120,6 +122,8 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   // count he kept after seeing the app's, and whether he changed his mind. Measured only.
   const blind = blindSets();
   const bnow = blind.sets.map(s => videoCount({ ...s, appRefused: false, motion: null }) as { now: number | string; note?: string });
+  // The R2 tally of the blind section, on its own baseline (blindCounts), as the stored and video sections.
+  const bl = section(blind.sets, base.blindCounts ?? {}, i => ({ now: bnow[i].now }));
   const brows = blind.sets.map((s, i) => {
     const o = bnow[i];
     const changed = s.kept !== s.label ? `  kept ${s.kept} (changed after the app's count)` : `  kept ${s.kept}`;
@@ -128,7 +132,7 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   for (const name of blind.unsure) brows.push(`   ${name}  answered "Je ne sais pas": no blind count`);
   for (const name of blind.unreadable) brows.push(`UNREADABLE ${name}  (a blind count, but no lift, whole count or landmarks)`);
   const bexact = blind.sets.filter((s, i) => decides(s.lift) && bnow[i].now === s.label).length, bdec = blind.sets.filter(s => decides(s.lift)).length;
-  const bhead = `David's blind counts (his count in the app before it showed its own, blind.js; measured, decides nothing until he says these counts are labels, R1): ${blind.sets.length} sets, ${bexact} exact of the ${bdec} that would decide; ${blind.sets.filter(s => s.kept !== s.label).length} kept at another count after seeing the app's; ${blind.unsure.length} answered "Je ne sais pas".`;
+  const bhead = `David's blind counts (his count in the app before it showed its own, blind.js; labels since his ruling of 15 October 2026, R1; they decide under R2): ${blind.sets.length} sets, ${bexact} exact of the ${bdec} that decide; of the ${bl.n - bl.added - bl.press} in the baseline, ${bl.exactNow} exact now, ${bl.exactBefore} before; ${bl.catastrophic} newly catastrophic, ${bl.becameRefused} newly refused; ${blind.sets.filter(s => s.kept !== s.label).length} kept at another count after seeing the app's; ${blind.unsure.length} answered "Je ne sais pas".`;
   const gzs = (name: string) => JSON.parse(gunzipSync(readFileSync(resolve(__dirname, '..', name))).toString());
   const bRes = sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, gzs(s.name).imageLandmarks ?? null) }));
   const vRes = video.sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il, s.appRefused) }));
@@ -143,8 +147,8 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   writeScoreboard(resolve(__dirname, 'scoreboard.txt'), text);
   process.stdout.write(text);
   // R2: a change ships only if the exact count does not decrease and no set becomes catastrophic; a set newly
-  // refused counts as catastrophic (third audit, C31). The two sections the app reads as; the VIDEO-mode one is shown.
-  for (const t of [b, v]) {
+  // refused counts as catastrophic (third audit, C31). The two sections the app reads as, and David's blind counts (labels since 15 October 2026); the VIDEO-mode one is shown.
+  for (const t of [b, v, bl]) {
     expect(t.exactNow).toBeGreaterThanOrEqual(t.exactBefore);
     expect(t.catastrophic).toBe(0);
     expect(t.becameRefused).toBe(0);
@@ -162,7 +166,8 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
     expect(committed.counts).toEqual(b.live);
     expect(committed.videoCounts ?? {}).toEqual(v.live);
     expect(committed.videoModeCounts ?? {}).toEqual(m.live);
+    expect(committed.blindCounts ?? {}).toEqual(bl.live);
   }
   // Only a change that passes the gate is recorded as accepted (review, 30 September).
-  if (process.env.SCOREBOARD_UPDATE) writeFileSync(BASELINE, JSON.stringify({ note: `The counts last accepted (${new Date().toISOString().slice(0, 10)}), measured by npm run scoreboard on the live core, not typed. npm run scoreboard compares the live core with these; SCOREBOARD_UPDATE=1 npm run scoreboard records the live counts once a change passes the gate (CLAUDE.md R2). videoCounts: the real-video section read in IMAGE mode (test/real-phone/sets-07oct-video/); videoModeCounts: the same videos read in VIDEO mode, measured only (test/real-phone/sets-09oct-video-mode/).`, counts: b.live, videoCounts: v.live, videoModeCounts: m.live }, null, 2) + '\n');
+  if (process.env.SCOREBOARD_UPDATE) writeFileSync(BASELINE, JSON.stringify({ note: `The counts last accepted (${new Date().toISOString().slice(0, 10)}), measured by npm run scoreboard on the live core, not typed. npm run scoreboard compares the live core with these; SCOREBOARD_UPDATE=1 npm run scoreboard records the live counts once a change passes the gate (CLAUDE.md R2). videoCounts: the real-video section read in IMAGE mode (test/real-phone/sets-07oct-video/); videoModeCounts: the same videos read in VIDEO mode, measured only (test/real-phone/sets-09oct-video-mode/); blindCounts: David's blind counts, labels since 15 October 2026.`, counts: b.live, videoCounts: v.live, videoModeCounts: m.live, blindCounts: bl.live }, null, 2) + '\n');
 }, 300_000); // the proposals (PSC) of the refused sets take a few seconds
