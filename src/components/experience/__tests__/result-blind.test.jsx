@@ -84,7 +84,7 @@ describe('the one-tap neighbours', () => {
 });
 
 // The sensitivity check (coreAnalysis.js withSensitivity, 10 October 2026): a count that moves with nearby settings is
-// shown on the #collecte phone as one to confirm, the app's count labelled, no grade; elsewhere the screen is as before.
+// shown on every phone as one to confirm (David, 19 October 2026), the app's count labelled, no grade.
 describe('a count the sensitivity check moved', () => {
   async function renderOn(result, collect) {
     const store = { wv_lang: 'fr', wv_level: 'intermediate', ...(collect ? { wv_collecte: '1' } : {}) };
@@ -95,16 +95,16 @@ describe('a count the sensitivity check moved', () => {
     return renderToStaticMarkup(<LanguageProvider><Result lift="bicep_curl" result={result} onClose={() => {}} onReplay={() => {}} /></LanguageProvider>);
   }
   const moved = { ...nine, sensitivity: { moved: true, counts: [9, 8, 9, 9, 10, 9] } };
-  it('on the #collecte phone: the low-confidence screen, the count to confirm, the cause, no measure', async () => {
-    const html = await renderOn(moved, true);
+  it('on any phone: the low-confidence screen, the count to confirm, the cause, no measure', async () => {
+    const html = await renderOn(moved, false);
     expect(html).toContain('L’appli n’a pas pu compter cette série avec certitude.');
-    expect(html).toContain('Sur cette série, le compte de l’appli est fragile : relu avec des réglages voisins, il change.');
+    expect(html).toContain('Sur cette série, le compte de l’appli est fragile : vérifiez-le.');
     expect(html).toContain('Compté par l’appli : 9');
     expect(html).toMatch(/data-testid="res-save"[^>]*>Confirmer 9 répétitions<\/button>/);
     for (const id of ['res-yes', 'res-alts', 'res-exp']) expect(html).not.toContain(`data-testid="${id}"`);
   });
-  it('elsewhere, and when nothing moved: the screen as before', async () => {
-    expect(await renderOn(moved, false)).toBe(await renderOn(nine, false));
-    expect(await renderOn({ ...nine, sensitivity: { moved: false, counts: Array(6).fill(9) } }, true)).toContain('data-testid="res-yes"');
+  it('the same on the #collecte phone; when nothing moved, the screen as before', async () => {
+    expect(await renderOn(moved, true)).toContain('Sur cette série, le compte de l’appli est fragile : vérifiez-le.');
+    expect(await renderOn({ ...nine, sensitivity: { moved: false, counts: Array(6).fill(9) } }, false)).toContain('data-testid="res-yes"');
   });
 });

@@ -198,10 +198,10 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const second = OFFER_BODY_SECOND && flagged && Number.isInteger(result.bodyCheck.second?.count) && result.bodyCheck.second.count > 0 && result.bodyCheck.second.count !== result.count ? result.bodyCheck.second.count : null;
   // A counted set whose count the sensitivity check moved (coreAnalysis.js withSensitivity, stability study of 10 October
   // 2026): recounted with nearby settings, it gives another number, so the app cannot stand behind it (R8). Shown as the
-  // body check's count to confirm, with its own cause line. On David's phone only (#collecte) until he approves the line
-  // and the more frequent asking (R10, R8): on the public counted sets it asks on 103 of 853 more. Status: experimental.
-  const [sensitivityShown] = useState(() => collectOn());
-  const sensitive = sensitivityShown && !result.refused && result.count > 0 && !flagged && result.sensitivity?.moved === true;
+  // body check's count to confirm, with its own cause line. On every phone since David's approval of 19 October 2026
+  // ("All the lot"): on the public sets that decide, the wrong counts shown as sure fall from 18 to 7 off by 3 or more,
+  // for 80 more sets asked, 24 of them exact (test/real-phone/accuracy/public-scoreboard.txt, sure.ts). Status: experimental.
+  const sensitive = !result.refused && result.count > 0 && !flagged && result.sensitivity?.moved === true;
   // The app's count, standing as one to confirm: a flagged set's or a moved one's.
   const toCheck = flagged || sensitive;
   const low = !!result.refused || unsure || liveDiffers || toCheck;
