@@ -1,8 +1,9 @@
 // Right when it says it is sure (CLAUDE.md R16, David, 18 October 2026: "the app is right whenever it says it is sure,
 // says plainly when it is not, and is sure more often each month"). ROADMAP.md item 1.
 // A set is shown as sure when the result screen shows its count with no question (Result.jsx: not refused, a count
-// above 0, not flagged by the body check); as it ships, the sensitivity check asks only on the #collecte phone
-// (Result.jsx sensitivityShown), so a second reading counts it as asking too. Measured, decides nothing.
+// above 0, flagged by neither the body check nor the sensitivity check, on every phone since 19 October 2026); a first
+// reading counts the body check alone, as the app shipped before that day, so the line shows what the second check adds.
+// Measured, decides nothing.
 import { SENSITIVITY_GRID, summarizeCount } from '../../../src/lib/coreAnalysis';
 
 /** One set as the result screen would show it: err is |count - label| (null when no count is shown). */
@@ -35,6 +36,6 @@ export function sureLine(rows: SureRow[]) {
   const counted = rows.filter(r => r.err !== null);
   const sure = counted.filter(r => !r.flagged), sureSens = sure.filter(r => !r.moved);
   return `Right when sure (R16, sure.ts; measured, decides nothing): of ${rows.length} sets that decide, ${counted.length} counted. `
-    + `As the app ships, shown as sure ${part(sure)}; asked to confirm ${part(counted.filter(r => r.flagged))}. `
-    + `With the sensitivity check asking too (on the #collecte phone only today): shown as sure ${part(sureSens)}; asked to confirm ${part(counted.filter(r => r.flagged || r.moved))}.`;
+    + `With the body check alone (before 19 October 2026), shown as sure ${part(sure)}; asked to confirm ${part(counted.filter(r => r.flagged))}. `
+    + `As the app ships, the sensitivity check asking too: shown as sure ${part(sureSens)}; asked to confirm ${part(counted.filter(r => r.flagged || r.moved))}.`;
 }

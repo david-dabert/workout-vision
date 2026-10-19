@@ -14,7 +14,7 @@ describe('right when sure', () => {
     const rows = [{ err: 0, flagged: false, moved: false }, { err: 3, flagged: true, moved: false }, { err: 1, flagged: false, moved: true }, { err: null, flagged: false, moved: false }];
     const line = sureLine(rows);
     expect(line).toContain('of 4 sets that decide, 3 counted');
-    expect(line).toContain('As the app ships, shown as sure 2: 1 exact (50%), 1 off by 1 or 2, 0 off by 3+; asked to confirm 1: 0 exact (0%), 0 off by 1 or 2, 1 off by 3+');
+    expect(line).toContain('With the body check alone (before 19 October 2026), shown as sure 2: 1 exact (50%), 1 off by 1 or 2, 0 off by 3+; asked to confirm 1: 0 exact (0%), 0 off by 1 or 2, 1 off by 3+');
     expect(line).toContain('shown as sure 1: 1 exact (100%), 0 off by 1 or 2, 0 off by 3+; asked to confirm 2: 0 exact (0%), 1 off by 1 or 2, 1 off by 3+');
   });
 });
