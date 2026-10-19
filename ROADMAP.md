@@ -24,6 +24,7 @@ IMG_2135_2 (18 October, label 11) reads 10: the first rep, cut at the head of th
 - Measure: the scoreboard before and after, per clip (R2); the public sets' head reps on every lift.
 - Gate: R2; synthetic 74 of 96 not lower; TRIED.md's head rules of 3 October and the opening-hold rule of 6 October are read first (R14).
 - Waits on: nothing.
+- Measured 18 October 2026 (TRIED.md): the pull is one sample at the working end at the video's start; no head share counts it without losing public sets (0.3 and 0.2 lose on half B and put a RepCount set off by 3). Left open: asking instead of counting when a video opens at the working end, measured first on the public sets.
 
 ## 3. A steadier skeleton on the replay
 
