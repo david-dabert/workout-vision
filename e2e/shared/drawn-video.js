@@ -1,15 +1,16 @@
 // A video drawn in the page, a different picture at every frame (MediaRecorder, VP8 in WebM), returned as base64 for
 // setInputFiles. Chromium's MediaRecorder writes no duration: it is written into the file's Info element (EBML
 // Duration, in milliseconds at the default timecode scale), as a phone's camera file holds one. The same recipe as
-// e2e/build-flags.spec.js (chooseDrawnVideo), which hands its file to the Film screen directly.
-export async function drawnWebm(page, ms = 4000) {
-  return page.evaluate(async ms => {
+// e2e/build-flags.spec.js (chooseDrawnVideo), which hands its file to the Film screen directly. `first` is the number the
+// drawing starts from: videos recorded together start apart, so no two can come out byte for byte the same.
+export async function drawnWebm(page, ms = 4000, first = 0) {
+  return page.evaluate(async ([ms, first]) => {
     const c = Object.assign(document.createElement('canvas'), { width: 360, height: 640 });
     const g = c.getContext('2d');
     const rec = new MediaRecorder(c.captureStream(30), { mimeType: 'video/webm;codecs=vp8' });
     const parts = [];
     rec.ondataavailable = e => parts.push(e.data);
-    let n = 0;
+    let n = first;
     const draw = () => { g.fillStyle = `hsl(${(n * 7) % 360} 60% 50%)`; g.fillRect(0, 0, 360, 640); g.fillStyle = '#fff'; g.font = '80px sans-serif'; g.fillText(String(n++), 40, 320 + (n % 50)); };
     const timer = setInterval(draw, 33);
     draw();
@@ -42,5 +43,5 @@ export async function drawnWebm(page, ms = 4000) {
     let s = '';
     for (let i = 0; i < out.length; i += 0x8000) s += String.fromCharCode(...out.subarray(i, i + 0x8000));
     return btoa(s);
-  }, ms);
+  }, [ms, first]);
 }
