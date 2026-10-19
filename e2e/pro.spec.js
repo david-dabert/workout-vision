@@ -173,7 +173,13 @@ for (const viewport of [{ width: 390, height: 664 }, { width: 320, height: 568 }
       request.onsuccess = () => {
         const db = request.result, tx = db.transaction('workouts', 'readwrite'), store = tx.objectStore('workouts'), now = Date.now();
         const planned = { programme: pid, item: 0, key: 'squat', sets: 3, reps: 10, rest: 90 };
-        for (const { ago, ...w } of sets) store.put({ ...w, exercise: 'squat', createdAt: now - ago, planned }, w.id);
+        // A set marked today stays inside today whatever the clock: just after midnight, "4 minutes ago" was yesterday
+        // (CI run of 19 October 2026, 00:01), so it is placed after midnight, in its order, and never in the future.
+        const midnight = new Date(now).setHours(0, 0, 0, 0);
+        sets.forEach(({ ago, today, ...w }, k) => {
+          const at = today ? Math.min(now, Math.max(now - ago, midnight + k + 1)) : now - ago;
+          store.put({ ...w, exercise: 'squat', createdAt: at, planned }, w.id);
+        });
         tx.oncomplete = () => { db.close(); resolve(); };
         tx.onerror = () => reject(tx.error);
       };
@@ -190,8 +196,8 @@ for (const viewport of [{ width: 390, height: 664 }, { width: 320, height: 568 }
     // Two sets of the squat saved today: one the app counted, one it refused and the client typed. The programme
     // shows them beside the target, the typed one marked as such; yesterday's set is not today's.
     await putSets([
-      { id: 'p-1', reps: 10, source: 'counter-core', machineResult: { reps: 10 }, ago: 4 * 60000 },
-      { id: 'p-2', reps: 8, source: 'manual', afterRefusal: true, machineResult: null, correctedResult: { reps: 8 }, ago: 2 * 60000 },
+      { id: 'p-1', reps: 10, source: 'counter-core', machineResult: { reps: 10 }, ago: 4 * 60000, today: true },
+      { id: 'p-2', reps: 8, source: 'manual', afterRefusal: true, machineResult: null, correctedResult: { reps: 8 }, ago: 2 * 60000, today: true },
     ]);
     await phone.reload();
     await expect(screen).toBeVisible({ timeout: 20000 });
