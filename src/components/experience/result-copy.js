@@ -79,6 +79,9 @@ export const RESULT = {
     // A count the sensitivity check moved (coreAnalysis.js withSensitivity, 10 October 2026). Approved by David on
     // 19 October 2026, with the check on every phone ("All the lot"; R10, copy-sensitivity.md).
     sensitiveCause: 'Sur cette série, le compte de l’appli est fragile : vérifiez-le.',
+    // The video opened inside a rep the counter did not count (core.ts headRefused). Written 19 October 2026, awaiting
+    // David's approval (R10).
+    midRepCause: 'La vidéo commence en pleine répétition : la première ne compte peut-être pas. Vérifiez le nombre.',
   },
   en: {
     toConfirm: 'To confirm',
@@ -130,5 +133,6 @@ export const RESULT = {
     byBody: 'From the whole body',
     or: 'Or:',
     sensitiveCause: 'In this set, the app’s count is fragile: check it.',
+    midRepCause: 'The video starts mid-rep: the first one may not be counted. Check the number.',
   },
 };

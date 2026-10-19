@@ -86,6 +86,9 @@ export interface RepDetail {
 
 export interface CountResult {
   count: number;        // full repetitions counted
+  // The video opened inside a rep whose return the head rule refused (HEAD_RETURN_SHARE): the count may be one short.
+  // A flag for the result screen to ask (R8, R16); it moves no count. Single-side lifts only. 19 October 2026.
+  headRefused?: boolean;
   reps: RepDetail[];    // full repetitions list
   partialCount?: number; // number of partial reps detected
   totalCount?: number;  // count + partialCount
@@ -598,6 +601,7 @@ function countSide(
     smoothedAngles: smoothed,
     lowThreshold,
     highThreshold,
+    ...(cycles.headRefused ? { headRefused: true } : {}),
   };
 }
 
@@ -1004,7 +1008,7 @@ function detectReps(
   isLift: boolean = false,
   isLimbLift: boolean = false,
   seen: boolean[] | null = null,
-): Cycle[] {
+): Cycle[] & { headRefused?: boolean } {
   const restsLow = rest === 'low';
   const cycles: Cycle[] = [];
   let state: 'waiting' | 'inRep' = 'waiting';
@@ -1178,9 +1182,12 @@ function detectReps(
   // T4 (survey.ts, SHAPE_EDGES, off): the set's own rep shape, from the reps accepted so far.
   const shape = shapeOn() ? repShape(cycles, smoothed, timestamps, lowThreshold, highThreshold, restsLow) : null;
   if (!noSplit) splitOverlongReps(cycles, smoothed, timestamps, lowThreshold, highThreshold, restsLow, minRom, shape);
+  let headRefused = false;
   if (head && headCounts) cycles.unshift(head);
   // T4: a first rep the head rule refused counts when its return matches the end of the set's rep shape.
   else if (head && shape && shapePart('h') && shape.matches(head.enter, head.complete, 'end')) cycles.unshift(head);
+  // A head judged and refused (two accepted reps to compare with): reported, never counted.
+  else if (head && cycles.length >= 2) headRefused = true;
 
   // A last rep the video (or a pose lost until its end) stopped on its way back: it reached the working end and
   // has covered CUT_RETURN_SHARE of its return to the rest threshold, within RETURN_WINDOW_SEC of leaving its
@@ -1229,7 +1236,7 @@ function detectReps(
     }
   }
 
-  return cycles;
+  return Object.assign(cycles, { headRefused });
 }
 
 /**
