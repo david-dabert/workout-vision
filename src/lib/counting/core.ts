@@ -438,6 +438,13 @@ const CUT_RETURN_SHARE = 0.7;
 const TAIL_AT_WORK_SEC = 0.6;
 const TAIL_HOLD_MAX_SEC = 1.5;
 const TAIL_DEPTH_SHARE = 0.85;
+// How many accepted reps the depth is read from (their median). Two until 20 October 2026: a clip of two or three
+// reps cut at its last working end then had no depth to compare with, and its last rep never counted (triage of the
+// public undercounts, test/real-phone/consensus/triage.test.ts: 47 of 133 such tails refused for this alone). One rep
+// is enough: chosen on the public build half A (variant-eval, 251 -> 256 exact, none lost), half B read after
+// (251 -> 258, none lost); David's sets, his videos, the synthetic, RepCount-A and occlusion sets unchanged. Of the
+// four other guards of this rule relaxed the same day, each lost sets (TRIED.md). Source: UNSOURCED. Status: experimental.
+const TAIL_DEPTH_MIN_REPS = 1;
 const OPEN_HOLD_SEC = 0.5;
 // Splitting an overlong rep at an in-set return that came most of the way back (splitOverlongReps, 3 October
 // 2026): two reps whose return between them stopped short of the rest threshold read as one long rep. Chosen on
@@ -1219,7 +1226,7 @@ function detectReps(
       for (let i = c.enter; i <= c.complete; i++) { const a = smoothed[i]; if (a !== null) e = restsLow ? Math.max(e, a) : Math.min(e, a); }
       return Math.abs(e - restLine);
     }).sort((x, y) => x - y);
-    const setDepth = depths.length >= 2 ? depths[Math.floor(depths.length / 2)] : Infinity;
+    const setDepth = depths.length >= TAIL_DEPTH_MIN_REPS ? depths[Math.floor(depths.length / 2)] : Infinity;
     const deepEnough = Math.abs((restsLow ? peakAngle : troughAngle) - restLine) >= TAIL_DEPTH_SHARE * setDepth;
     // A video that opens holding the working end (a press racked at the shoulders, a curl held bent) shows where the
     // person rests: ending there again is the end of the set, not a rep cut by the recording.
@@ -1228,6 +1235,9 @@ function detectReps(
     const opensHeldAtWork = firstSeen > -1 && atWork(smoothed[firstSeen]) && openHold >= OPEN_HOLD_SEC;
     const stoppedAtWork = lastAtWork > -1 && seenToEnd && deepEnough && !opensHeldAtWork && timestamps[last] - timestamps[lastAtWork] <= TAIL_AT_WORK_SEC
       && timestamps[last] - timestamps[firstAtWork] <= TAIL_HOLD_MAX_SEC;
+    // Bench only (WV_CORE_BENCH tailWhy, 20 October 2026): each condition of this rule, for the triage of the public undercounts.
+    const why = (globalThis as any).__WV_CORE_BENCH__?.tailWhy;
+    if (Array.isArray(why)) why.push({ returned, stoppedAtWork, reachedWork: lastAtWork > -1, seenToEnd, deepEnough, cycles: cycles.length, opensHeldAtWork, afterWork: lastAtWork > -1 ? timestamps[last] - timestamps[lastAtWork] : null, hold: firstAtWork > -1 ? timestamps[last] - timestamps[firstAtWork] : null, window: timestamps[last] - timestamps[lastWorking], duration, minSec, bounded: bounded(repStartIdx, last), rom: peakAngle - troughAngle, minRom, whole });
     if ((returned >= CUT_RETURN_SHARE || stoppedAtWork) && timestamps[last] - timestamps[lastWorking] <= RETURN_WINDOW_SEC && whole) {
       cycles.push({ enter: repStartIdx, complete: last, cut: true });
     } else if (shape && shapePart('c') && whole && returned > 0 && shape.matches(repStartIdx, last, 'start')) {

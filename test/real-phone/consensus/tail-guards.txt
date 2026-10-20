@@ -1,0 +1,97 @@
+Tail guards relaxed one by one, 20 October 2026 (variant-eval + compare-variants; WV_CORE_BENCH tail flags, since removed; the live core at 9b8802d as the baseline):
+
+== minReps1
+suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+david        20      13 -> 13                1 -> 1                0          0     0.00       0        0
+video        16       8 -> 8                 4 -> 4                0          0     0.00       0        0
+publicA     546     251 -> 256              74 -> 74               5          0     3.20       0        9
+publicB     518     251 -> 258              89 -> 89               7          0     5.14       0        7
+synthetic    96      74 -> 74               13 -> 13               0          0     0.00       0        0
+repcount     79      26 -> 26               21 -> 21               0          0     0.00       0        0
+occlusion    68      27 -> 27               36 -> 36               0          0     0.00       0        0
+publicA    distinct clips: 4 gained, 0 lost
+publicB    distinct clips: 4 gained, 0 lost
+VERDICT: ships under the net rule
+
+== minReps0
+suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+david        20      13 -> 13                1 -> 1                0          0     0.00       0        0
+video        16       8 -> 8                 4 -> 4                0          0     0.00       0        0
+publicA     546     251 -> 256              74 -> 74               5          0     3.20       0       10
+publicB     518     251 -> 258              89 -> 89               7          0     5.14       0        8
+synthetic    96      74 -> 74               13 -> 13               0          0     0.00       0        0
+repcount     79      26 -> 26               21 -> 21               0          0     0.00       0        0
+occlusion    68      27 -> 27               36 -> 36               0          0     0.00       0        0
+publicA    distinct clips: 4 gained, 0 lost
+publicB    distinct clips: 4 gained, 0 lost
+VERDICT: ships under the net rule
+
+== halfSec
+suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+david        20      13 -> 12                1 -> 1                0          1     0.00       0        1
+video        16       8 -> 8                 4 -> 4                0          0     0.00       0        0
+publicA     546     251 -> 252              74 -> 74               6          5     0.00       0       17
+publicB     518     251 -> 256              89 -> 88              10          5     1.07       0       19
+synthetic    96      74 -> 74               13 -> 13               0          0     0.00       0        0
+repcount     79      26 -> 25               21 -> 21               0          1     0.00       0        2
+occlusion    68      27 -> 27               36 -> 36               0          0     0.00       0        0
+david      distinct clips: 0 gained, 1 lost
+publicA    distinct clips: 5 gained, 3 lost
+publicB    distinct clips: 5 gained, 2 lost
+repcount   distinct clips: 0 gained, 1 lost
+VERDICT: does not ship
+- David's sets: fewer exact or a set newly off by 3 (R2)
+- repcount: exact 26 -> 25
+
+== unseen
+suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+david        20      13 -> 13                1 -> 1                0          0     0.00       0        0
+video        16       8 -> 8                 4 -> 4                0          0     0.00       0        0
+publicA     546     251 -> 251              74 -> 74               0          0     0.00       0        0
+publicB     518     251 -> 251              89 -> 89               0          0     0.00       0        0
+synthetic    96      74 -> 74               13 -> 13               0          0     0.00       0        0
+repcount     79      26 -> 26               21 -> 21               0          0     0.00       0        0
+occlusion    68      27 -> 27               36 -> 36               0          0     0.00       0        0
+VERDICT: ships under the net rule
+
+== unseenShare
+suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+david        20      13 -> 13                1 -> 1                0          0     0.00       0        0
+video        16       8 -> 8                 4 -> 4                0          0     0.00       0        0
+publicA     546     251 -> 251              74 -> 74               0          0     0.00       0        0
+publicB     518     251 -> 251              89 -> 89               0          0     0.00       0        0
+synthetic    96      74 -> 74               13 -> 13               0          0     0.00       0        0
+repcount     79      26 -> 26               21 -> 21               0          0     0.00       0        0
+occlusion    68      27 -> 27               36 -> 36               0          0     0.00       0        0
+VERDICT: ships under the net rule
+
+== hold
+suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+david        20      13 -> 13                1 -> 1                0          0     0.00       0        0
+video        16       8 -> 8                 4 -> 4                0          0     0.00       0        0
+publicA     546     251 -> 254              74 -> 74               3          0     1.33       0        4
+publicB     518     251 -> 255              89 -> 89               4          0     2.25       0        4
+synthetic    96      74 -> 74               13 -> 13               0          0     0.00       0        0
+repcount     79      26 -> 24               21 -> 21               0          2     0.50       0        2
+occlusion    68      27 -> 27               36 -> 36               0          0     0.00       0        0
+publicA    distinct clips: 2 gained, 0 lost
+publicB    distinct clips: 2 gained, 0 lost
+repcount   distinct clips: 0 gained, 2 lost
+VERDICT: does not ship
+- repcount: exact 26 -> 24
+
+== depth
+suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+david        20      13 -> 14                1 -> 1                1          0     0.00       0        1
+video        16       8 -> 8                 4 -> 4                0          0     0.00       0        0
+publicA     546     251 -> 251              74 -> 73               3          3     0.17       0        7
+publicB     518     251 -> 252              89 -> 89               1          0     0.00       0        1
+synthetic    96      74 -> 74               13 -> 13               0          0     0.00       0        0
+repcount     79      26 -> 22               21 -> 21               0          4     2.25       0        4
+occlusion    68      27 -> 27               36 -> 36               0          0     0.00       0        0
+david      distinct clips: 1 gained, 0 lost
+publicA    distinct clips: 3 gained, 2 lost
+publicB    distinct clips: 1 gained, 0 lost
+repcount   distinct clips: 0 gained, 4 lost
+VERDICT: does not ship
+- repcount: exact 26 -> 22
