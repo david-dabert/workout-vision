@@ -1,0 +1,239 @@
+Mode blend. The lifted skeleton (lift.ts) against the world landmarks: count per set, label, |error|. Measured, decides nothing.
+
+David, stored, 15 sets
+  world:  exact 12, off 1-2 3, off 3+ 0, refused 0
+  lifted: exact 7, off 1-2 6, off 3+ 2, refused 0
+  exact gained 0, exact lost 5, newly off by 3+ 2; joint range lifted / world, median 1.02
+  aspect ratio estimated from the set against the file's frame size: median error 7.0 %, worst NaN %
+
+David, video, 16 sets
+  world:  exact 8, off 1-2 5, off 3+ 1, refused 2
+  lifted: exact 6, off 1-2 5, off 3+ 3, refused 2
+  exact gained 2, exact lost 4, newly off by 3+ 2; joint range lifted / world, median 1.06
+  aspect ratio estimated from the set against the file's frame size: median error 9.5 %, worst 49.9 %
+
+RepCount-A build, 61 sets
+  world:  exact 22, off 1-2 26, off 3+ 11, refused 2
+  lifted: exact 22, off 1-2 23, off 3+ 14, refused 2
+  exact gained 4, exact lost 4, newly off by 3+ 4; joint range lifted / world, median 1.15
+
+RepCount-A train, 362 sets
+  world:  exact 114, off 1-2 148, off 3+ 88, refused 12
+  lifted: exact 99, off 1-2 144, off 3+ 107, refused 12
+  exact gained 19, exact lost 34, newly off by 3+ 30; joint range lifted / world, median 1.09
+
+Per set: group, set, lift, label, world count, lifted count, joint range world -> lifted (degrees)
+David, stored  sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz  machine_seated_back_extension  8  8  4  68 -> 75
+David, stored  sets-06oct/set01_hip_thrust_6_side_4091c266.json.gz  hip_thrust  6  6  6  63 -> 64
+David, stored  sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz  machine_seated_back_extension  13  12  8  67 -> 109
+David, stored  sets-06oct/set02_hip_thrust_7_side_b717b687.json.gz  hip_thrust  7  7  6  54 -> 52
+David, stored  sets-06oct/set03_reverse_curl_10_side_4d748472.json.gz  reverse_curl  10  9  8  87 -> 91
+David, stored  sets-06oct/set04_lat_pulldown_6_side_98308774.json.gz  lat_pulldown  6  6  7  80 -> 74
+David, stored  sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz  bicep_curl  5  5  4  117 -> 107
+David, stored  sets-29sep/hip_thrust_6_side_cf8c21d7.json.gz  hip_thrust  6  6  7  51 -> 47
+David, stored  sets-29sep/lateral_raise_9_front_43e71b40.json.gz  lateral_raise  9  8  8  97 -> 99
+David, stored  sets-29sep/leg_press_13_side_1ee0ae47.json.gz  leg_press  13  13  13  87 -> 80
+David, stored  sets-29sep/romanian_deadlift_8_side_b3dc2c9e.json.gz  romanian_deadlift  8  8  8  106 -> 113
+David, stored  sets-29sep/squat_7_side_21fd7ccf.json.gz  squat  7  7  7  110 -> 112
+David, stored  landmarks/bicep_curl_7_side_mufhf3wy.json.gz  bicep_curl  7  7  7  105 -> 118
+David, stored  landmarks/lat_pulldown_10_front_mufhlh4o.json.gz  lat_pulldown  10  10  10  52 -> 53
+David, stored  landmarks/lateral_raise_10_front_mufhhbun.json.gz  lateral_raise  10  10  10  86 -> 95
+David, video  sets-07oct-video/barbell_squat_9_a.json.gz  squat  9  9  7  52 -> 77
+David, video  sets-07oct-video/barbell_squat_9_b.json.gz  squat  9  9  6  46 -> 69
+David, video  sets-07oct-video/behind_neck_chin_up_5.json.gz  chin_up  5  6  5  116 -> 94
+David, video  sets-07oct-video/hanging_leg_raise_6.json.gz  hanging_leg_raise  6  6  4  112 -> 154
+David, video  sets-07oct-video/lying_biceps_curl_11.json.gz  cable_curl  11  11  10  110 -> 113
+David, video  sets-07oct-video/machine_chest_supported_row_6.json.gz  chest_supported_row  6  6  6  83 -> 87
+David, video  sets-07oct-video/machine_seated_back_extension_18.json.gz  machine_seated_back_extension  18  17  16  58 -> 61
+David, video  sets-07oct-video/pendulum_squat_7.json.gz  hack_squat  7  14  10  79 -> 86
+David, video  sets-07oct-video/seated_dumbbell_curl_10.json.gz  incline_dumbbell_curl  10  10  10  116 -> 123
+David, video  sets-07oct-video/sissy_squat_5_5011.json.gz  sissy_squat  5  refused  refused  74 -> 148
+David, video  sets-07oct-video/sissy_squat_7_5006.json.gz  sissy_squat  7  5  4  31 -> 28
+David, video  sets-07oct-video/sissy_squat_7_5008.json.gz  sissy_squat  7  6  5  25 -> 28
+David, video  sets-07oct-video/sissy_squat_9_5007.json.gz  sissy_squat  9  9  9  38 -> 31
+David, video  sets-07oct-video/standing_barbell_curl_8.json.gz  barbell_curl  8  refused  refused  64 -> 50
+David, video  sets-18oct-video/lat_pulldown_11_back.json.gz  lat_pulldown  11  10  11  34 -> 44
+David, video  sets-18oct-video/squat_6_front.json.gz  squat  6  6  6  108 -> 113
+RepCount-A build  public/repcount/build/stu10_24.json.gz  front_raise  14  8  7  74 -> 75
+RepCount-A build  public/repcount/build/stu10_34.json.gz  pull_up  7  6  7  98 -> 82
+RepCount-A build  public/repcount/build/stu10_36.json.gz  pull_up  29  26  25  63 -> 87
+RepCount-A build  public/repcount/build/stu10_47.json.gz  push_up  21  21  20  77 -> 99
+RepCount-A build  public/repcount/build/stu10_63.json.gz  squat  16  14  5  94 -> 155
+RepCount-A build  public/repcount/build/stu2_23.json.gz  front_raise  6  7  8  59 -> 88
+RepCount-A build  public/repcount/build/stu2_36.json.gz  pull_up  5  6  3  86 -> 106
+RepCount-A build  public/repcount/build/stu3_15.json.gz  front_raise  4  5  3  126 -> 151
+RepCount-A build  public/repcount/build/stu3_18.json.gz  front_raise  16  14  12  36 -> 30
+RepCount-A build  public/repcount/build/stu3_39.json.gz  pull_up  14  10  5  81 -> 103
+RepCount-A build  public/repcount/build/stu4_47.json.gz  push_up  37  28  11  48 -> 101
+RepCount-A build  public/repcount/build/stu4_63.json.gz  squat  14  14  15  61 -> 74
+RepCount-A build  public/repcount/build/stu4_68.json.gz  squat  5  6  5  67 -> 95
+RepCount-A build  public/repcount/build/stu5_47.json.gz  push_up  30  22  24  85 -> 94
+RepCount-A build  public/repcount/build/stu5_68.json.gz  squat  20  10  11  71 -> 81
+RepCount-A build  public/repcount/build/stu7_43.json.gz  pull_up  23  8  9  84 -> 105
+RepCount-A build  public/repcount/build/stu7_65.json.gz  squat  9  9  6  109 -> 133
+RepCount-A build  public/repcount/build/stu8_37.json.gz  pull_up  10  17  15  71 -> 90
+RepCount-A build  public/repcount/build/stu9_13.json.gz  front_raise  2  2  3  86 -> 138
+RepCount-A build  public/repcount/build/stu9_17.json.gz  front_raise  15  16  15  90 -> 98
+RepCount-A build  public/repcount/build/stu9_55.json.gz  push_up  14  11  10  88 -> 143
+RepCount-A build  public/repcount/build/train2542.json.gz  pull_up  1  2  1  94 -> 85
+RepCount-A build  public/repcount/build/train2711.json.gz  push_up  5  6  3  40 -> 71
+RepCount-A build  public/repcount/build/train2720.json.gz  push_up  10  6  7  56 -> 68
+RepCount-A build  public/repcount/build/train2748.json.gz  push_up  5  6  8  62 -> 58
+RepCount-A build  public/repcount/build/train990.json.gz  front_raise  4  7  5  121 -> 92
+RepCount-A train  learned-phase/repcount-train/sets/stu10_18.json.gz  front_raise  4  6  7  101 -> 114
+RepCount-A train  learned-phase/repcount-train/sets/stu10_22.json.gz  front_raise  4  4  5  93 -> 78
+RepCount-A train  learned-phase/repcount-train/sets/stu10_23.json.gz  front_raise  9  9  10  148 -> 121
+RepCount-A train  learned-phase/repcount-train/sets/stu10_35.json.gz  pull_up  11  13  14  29 -> 55
+RepCount-A train  learned-phase/repcount-train/sets/stu10_38.json.gz  pull_up  10  10  13  72 -> 105
+RepCount-A train  learned-phase/repcount-train/sets/stu10_40.json.gz  pull_up  12  14  12  69 -> 80
+RepCount-A train  learned-phase/repcount-train/sets/stu10_41.json.gz  push_up  8  9  6  80 -> 103
+RepCount-A train  learned-phase/repcount-train/sets/stu10_45.json.gz  push_up  14  9  11  87 -> 96
+RepCount-A train  learned-phase/repcount-train/sets/stu10_50.json.gz  push_up  31  11  2  71 -> 67
+RepCount-A train  learned-phase/repcount-train/sets/stu10_52.json.gz  push_up  37  33  35  86 -> 99
+RepCount-A train  learned-phase/repcount-train/sets/stu10_53.json.gz  push_up  23  19  12  76 -> 83
+RepCount-A train  learned-phase/repcount-train/sets/stu10_54.json.gz  push_up  14  9  8  59 -> 79
+RepCount-A train  learned-phase/repcount-train/sets/stu1_16.json.gz  front_raise  3  7  10  93 -> 145
+RepCount-A train  learned-phase/repcount-train/sets/stu1_18.json.gz  front_raise  9  1  2  59 -> 46
+RepCount-A train  learned-phase/repcount-train/sets/stu1_20.json.gz  front_raise  3  4  2  100 -> 130
+RepCount-A train  learned-phase/repcount-train/sets/stu1_21.json.gz  front_raise  4  9  8  96 -> 124
+RepCount-A train  learned-phase/repcount-train/sets/stu1_31.json.gz  pull_up  32  5  6  72 -> 147
+RepCount-A train  learned-phase/repcount-train/sets/stu1_32.json.gz  pull_up  8  6  8  77 -> 96
+RepCount-A train  learned-phase/repcount-train/sets/stu1_35.json.gz  pull_up  35  20  13  91 -> 102
+RepCount-A train  learned-phase/repcount-train/sets/stu1_44.json.gz  push_up  6  8  5  77 -> 89
+RepCount-A train  learned-phase/repcount-train/sets/stu1_50.json.gz  push_up  13  10  5  88 -> 94
+RepCount-A train  learned-phase/repcount-train/sets/stu1_51.json.gz  push_up  40  28  13  84 -> 85
+RepCount-A train  learned-phase/repcount-train/sets/stu1_52.json.gz  push_up  30  31  29  75 -> 89
+RepCount-A train  learned-phase/repcount-train/sets/stu2_17.json.gz  front_raise  5  11  8  49 -> 60
+RepCount-A train  learned-phase/repcount-train/sets/stu2_18.json.gz  front_raise  39  11  6  108 -> 121
+RepCount-A train  learned-phase/repcount-train/sets/stu2_19.json.gz  front_raise  5  3  2  43 -> 102
+RepCount-A train  learned-phase/repcount-train/sets/stu2_35.json.gz  pull_up  6  6  7  88 -> 103
+RepCount-A train  learned-phase/repcount-train/sets/stu2_40.json.gz  pull_up  12  12  10  67 -> 97
+RepCount-A train  learned-phase/repcount-train/sets/stu2_42.json.gz  pull_up  14  14  13  85 -> 111
+RepCount-A train  learned-phase/repcount-train/sets/stu2_44.json.gz  pull_up  10  12  11  85 -> 107
+RepCount-A train  learned-phase/repcount-train/sets/stu2_46.json.gz  push_up  21  22  25  68 -> 93
+RepCount-A train  learned-phase/repcount-train/sets/stu2_49.json.gz  push_up  18  18  17  87 -> 91
+RepCount-A train  learned-phase/repcount-train/sets/stu2_50.json.gz  push_up  25  18  17  75 -> 86
+RepCount-A train  learned-phase/repcount-train/sets/stu2_51.json.gz  push_up  19  12  7  83 -> 102
+RepCount-A train  learned-phase/repcount-train/sets/stu2_53.json.gz  push_up  49  28  7  24 -> 39
+RepCount-A train  learned-phase/repcount-train/sets/stu2_54.json.gz  push_up  23  18  5  67 -> 81
+RepCount-A train  learned-phase/repcount-train/sets/stu2_68.json.gz  squat  25  22  23  98 -> 109
+RepCount-A train  learned-phase/repcount-train/sets/stu3_12.json.gz  front_raise  2  0  2  78 -> 54
+RepCount-A train  learned-phase/repcount-train/sets/stu3_33.json.gz  pull_up  10  7  9  63 -> 60
+RepCount-A train  learned-phase/repcount-train/sets/stu3_35.json.gz  pull_up  5  6  4  83 -> 104
+RepCount-A train  learned-phase/repcount-train/sets/stu3_36.json.gz  pull_up  8  8  3  87 -> 120
+RepCount-A train  learned-phase/repcount-train/sets/stu3_40.json.gz  pull_up  6  6  9  97 -> 90
+RepCount-A train  learned-phase/repcount-train/sets/stu3_42.json.gz  push_up  10  11  5  74 -> 123
+RepCount-A train  learned-phase/repcount-train/sets/stu3_43.json.gz  push_up  45  4  8  45 -> 52
+RepCount-A train  learned-phase/repcount-train/sets/stu3_45.json.gz  push_up  25  24  23  86 -> 88
+RepCount-A train  learned-phase/repcount-train/sets/stu3_47.json.gz  push_up  6  4  7  51 -> 118
+RepCount-A train  learned-phase/repcount-train/sets/stu3_48.json.gz  push_up  54  24  12  55 -> 80
+RepCount-A train  learned-phase/repcount-train/sets/stu3_59.json.gz  squat  1  1  2  75 -> 73
+RepCount-A train  learned-phase/repcount-train/sets/stu3_63.json.gz  squat  7  6  4  88 -> 101
+RepCount-A train  learned-phase/repcount-train/sets/stu3_70.json.gz  squat  12  11  13  98 -> 100
+RepCount-A train  learned-phase/repcount-train/sets/stu4_30.json.gz  pull_up  1  2  3  81 -> 96
+RepCount-A train  learned-phase/repcount-train/sets/stu4_32.json.gz  pull_up  4  5  4  101 -> 86
+RepCount-A train  learned-phase/repcount-train/sets/stu4_34.json.gz  pull_up  17  16  17  88 -> 85
+RepCount-A train  learned-phase/repcount-train/sets/stu4_35.json.gz  pull_up  12  18  16  72 -> 97
+RepCount-A train  learned-phase/repcount-train/sets/stu4_36.json.gz  pull_up  6  6  12  94 -> 76
+RepCount-A train  learned-phase/repcount-train/sets/stu4_37.json.gz  pull_up  6  9  7  96 -> 116
+RepCount-A train  learned-phase/repcount-train/sets/stu4_38.json.gz  pull_up  26  19  18  63 -> 79
+RepCount-A train  learned-phase/repcount-train/sets/stu4_41.json.gz  push_up  35  23  22  80 -> 94
+RepCount-A train  learned-phase/repcount-train/sets/stu4_42.json.gz  push_up  50  13  11  76 -> 84
+RepCount-A train  learned-phase/repcount-train/sets/stu4_43.json.gz  push_up  10  11  8  85 -> 98
+RepCount-A train  learned-phase/repcount-train/sets/stu4_48.json.gz  push_up  8  10  11  72 -> 139
+RepCount-A train  learned-phase/repcount-train/sets/stu4_49.json.gz  push_up  8  8  10  79 -> 85
+RepCount-A train  learned-phase/repcount-train/sets/stu4_66.json.gz  squat  27  20  13  94 -> 137
+RepCount-A train  learned-phase/repcount-train/sets/stu4_67.json.gz  squat  9  9  8  106 -> 108
+RepCount-A train  learned-phase/repcount-train/sets/stu4_72.json.gz  squat  3  0  1  50 -> 55
+RepCount-A train  learned-phase/repcount-train/sets/stu5_11.json.gz  front_raise  6  7  12  66 -> 121
+RepCount-A train  learned-phase/repcount-train/sets/stu5_15.json.gz  front_raise  18  5  11  141 -> 138
+RepCount-A train  learned-phase/repcount-train/sets/stu5_29.json.gz  pull_up  4  4  5  84 -> 67
+RepCount-A train  learned-phase/repcount-train/sets/stu5_30.json.gz  pull_up  4  6  7  93 -> 102
+RepCount-A train  learned-phase/repcount-train/sets/stu5_31.json.gz  pull_up  10  13  11  65 -> 86
+RepCount-A train  learned-phase/repcount-train/sets/stu5_34.json.gz  pull_up  52  15  20  86 -> 102
+RepCount-A train  learned-phase/repcount-train/sets/stu5_37.json.gz  pull_up  20  20  16  76 -> 86
+RepCount-A train  learned-phase/repcount-train/sets/stu5_39.json.gz  pull_up  7  12  5  77 -> 138
+RepCount-A train  learned-phase/repcount-train/sets/stu5_41.json.gz  pull_up  34  34  33  83 -> 100
+RepCount-A train  learned-phase/repcount-train/sets/stu5_42.json.gz  push_up  23  16  10  74 -> 96
+RepCount-A train  learned-phase/repcount-train/sets/stu5_43.json.gz  push_up  14  7  6  104 -> 103
+RepCount-A train  learned-phase/repcount-train/sets/stu5_46.json.gz  push_up  3  6  7  55 -> 70
+RepCount-A train  learned-phase/repcount-train/sets/stu5_48.json.gz  push_up  7  14  17  98 -> 108
+RepCount-A train  learned-phase/repcount-train/sets/stu5_63.json.gz  squat  21  21  22  121 -> 110
+RepCount-A train  learned-phase/repcount-train/sets/stu5_66.json.gz  squat  12  12  11  97 -> 95
+RepCount-A train  learned-phase/repcount-train/sets/stu5_67.json.gz  squat  16  18  19  94 -> 102
+RepCount-A train  learned-phase/repcount-train/sets/stu5_70.json.gz  squat  6  6  7  59 -> 75
+RepCount-A train  learned-phase/repcount-train/sets/stu6_10.json.gz  front_raise  3  3  4  92 -> 92
+RepCount-A train  learned-phase/repcount-train/sets/stu6_11.json.gz  front_raise  22  2  6  101 -> 98
+RepCount-A train  learned-phase/repcount-train/sets/stu6_14.json.gz  front_raise  4  3  4  75 -> 81
+RepCount-A train  learned-phase/repcount-train/sets/stu6_26.json.gz  pull_up  10  16  13  67 -> 74
+RepCount-A train  learned-phase/repcount-train/sets/stu6_28.json.gz  pull_up  13  7  11  106 -> 112
+RepCount-A train  learned-phase/repcount-train/sets/stu6_31.json.gz  pull_up  20  18  19  77 -> 87
+RepCount-A train  learned-phase/repcount-train/sets/stu6_33.json.gz  pull_up  6  8  4  86 -> 139
+RepCount-A train  learned-phase/repcount-train/sets/stu6_38.json.gz  push_up  16  18  9  72 -> 127
+RepCount-A train  learned-phase/repcount-train/sets/stu6_40.json.gz  push_up  8  9  10  87 -> 140
+RepCount-A train  learned-phase/repcount-train/sets/stu6_43.json.gz  push_up  19  20  19  65 -> 75
+RepCount-A train  learned-phase/repcount-train/sets/stu6_46.json.gz  push_up  33  27  23  66 -> 74
+RepCount-A train  learned-phase/repcount-train/sets/stu6_6.json.gz  front_raise  9  8  11  73 -> 78
+RepCount-A train  learned-phase/repcount-train/sets/stu6_64.json.gz  squat  3  3  5  43 -> 64
+RepCount-A train  learned-phase/repcount-train/sets/stu6_67.json.gz  squat  20  20  14  74 -> 96
+RepCount-A train  learned-phase/repcount-train/sets/stu6_69.json.gz  squat  15  11  12  63 -> 63
+RepCount-A train  learned-phase/repcount-train/sets/stu6_70.json.gz  squat  26  27  21  83 -> 84
+RepCount-A train  learned-phase/repcount-train/sets/stu7_22.json.gz  front_raise  2  6  3  90 -> 127
+RepCount-A train  learned-phase/repcount-train/sets/stu7_37.json.gz  pull_up  15  10  12  84 -> 92
+RepCount-A train  learned-phase/repcount-train/sets/stu7_39.json.gz  pull_up  7  9  7  92 -> 96
+RepCount-A train  learned-phase/repcount-train/sets/stu7_40.json.gz  pull_up  15  11  12  86 -> 113
+RepCount-A train  learned-phase/repcount-train/sets/stu7_42.json.gz  pull_up  29  29  24  72 -> 99
+RepCount-A train  learned-phase/repcount-train/sets/stu7_44.json.gz  pull_up  10  9  8  79 -> 112
+RepCount-A train  learned-phase/repcount-train/sets/stu7_46.json.gz  push_up  16  17  11  60 -> 113
+RepCount-A train  learned-phase/repcount-train/sets/stu7_49.json.gz  push_up  50  8  4  84 -> 86
+RepCount-A train  learned-phase/repcount-train/sets/stu7_50.json.gz  push_up  46  1  27  76 -> 97
+RepCount-A train  learned-phase/repcount-train/sets/stu7_51.json.gz  push_up  47  8  16  66 -> 67
+RepCount-A train  learned-phase/repcount-train/sets/stu7_64.json.gz  squat  11  10  8  119 -> 120
+RepCount-A train  learned-phase/repcount-train/sets/stu7_71.json.gz  squat  32  32  33  76 -> 76
+RepCount-A train  learned-phase/repcount-train/sets/stu8_17.json.gz  front_raise  23  1  2  152 -> 139
+RepCount-A train  learned-phase/repcount-train/sets/stu8_21.json.gz  front_raise  3  1  3  84 -> 81
+RepCount-A train  learned-phase/repcount-train/sets/stu8_22.json.gz  front_raise  10  6  5  64 -> 53
+RepCount-A train  learned-phase/repcount-train/sets/stu8_35.json.gz  pull_up  11  13  14  65 -> 79
+RepCount-A train  learned-phase/repcount-train/sets/stu8_44.json.gz  push_up  22  18  14  64 -> 82
+RepCount-A train  learned-phase/repcount-train/sets/stu8_61.json.gz  squat  5  6  5  66 -> 77
+RepCount-A train  learned-phase/repcount-train/sets/stu8_66.json.gz  squat  5  12  11  61 -> 70
+RepCount-A train  learned-phase/repcount-train/sets/stu9_21.json.gz  front_raise  16  20  24  88 -> 86
+RepCount-A train  learned-phase/repcount-train/sets/stu9_22.json.gz  front_raise  6  6  10  82 -> 72
+RepCount-A train  learned-phase/repcount-train/sets/stu9_26.json.gz  front_raise  3  5  3  86 -> 137
+RepCount-A train  learned-phase/repcount-train/sets/stu9_27.json.gz  front_raise  17  6  4  51 -> 60
+RepCount-A train  learned-phase/repcount-train/sets/stu9_35.json.gz  pull_up  5  6  7  94 -> 116
+RepCount-A train  learned-phase/repcount-train/sets/stu9_37.json.gz  pull_up  15  17  12  90 -> 120
+RepCount-A train  learned-phase/repcount-train/sets/stu9_38.json.gz  pull_up  5  8  7  87 -> 118
+RepCount-A train  learned-phase/repcount-train/sets/stu9_41.json.gz  pull_up  9  13  8  83 -> 101
+RepCount-A train  learned-phase/repcount-train/sets/stu9_42.json.gz  pull_up  30  30  14  76 -> 88
+RepCount-A train  learned-phase/repcount-train/sets/stu9_43.json.gz  pull_up  18  37  26  76 -> 85
+RepCount-A train  learned-phase/repcount-train/sets/stu9_44.json.gz  pull_up  21  21  10  62 -> 76
+RepCount-A train  learned-phase/repcount-train/sets/stu9_46.json.gz  push_up  6  12  11  57 -> 61
+RepCount-A train  learned-phase/repcount-train/sets/stu9_49.json.gz  push_up  5  4  5  61 -> 66
+RepCount-A train  learned-phase/repcount-train/sets/stu9_51.json.gz  push_up  62  34  33  62 -> 49
+RepCount-A train  learned-phase/repcount-train/sets/stu9_54.json.gz  push_up  26  26  25  93 -> 98
+RepCount-A train  learned-phase/repcount-train/sets/stu9_65.json.gz  squat  24  24  25  76 -> 81
+RepCount-A train  learned-phase/repcount-train/sets/test1463.json.gz  pull_up  7  2  4  62 -> 58
+RepCount-A train  learned-phase/repcount-train/sets/test2340.json.gz  squat  4  5  1  99 -> 96
+RepCount-A train  learned-phase/repcount-train/sets/test555.json.gz  front_raise  4  5  4  89 -> 100
+RepCount-A train  learned-phase/repcount-train/sets/test577.json.gz  front_raise  3  4  3  85 -> 97
+RepCount-A train  learned-phase/repcount-train/sets/test584.json.gz  front_raise  5  6  4  86 -> 151
+RepCount-A train  learned-phase/repcount-train/sets/test586.json.gz  front_raise  7  7  8  63 -> 58
+RepCount-A train  learned-phase/repcount-train/sets/train1000.json.gz  front_raise  3  4  2  62 -> 85
+RepCount-A train  learned-phase/repcount-train/sets/train1005.json.gz  front_raise  4  3  4  66 -> 69
+RepCount-A train  learned-phase/repcount-train/sets/train2477.json.gz  pull_up  9  5  4  68 -> 89
+RepCount-A train  learned-phase/repcount-train/sets/train2501.json.gz  pull_up  2  4  3  70 -> 78
+RepCount-A train  learned-phase/repcount-train/sets/train2568.json.gz  pull_up  3  4  6  61 -> 64
+RepCount-A train  learned-phase/repcount-train/sets/train2712.json.gz  push_up  6  6  5  113 -> 121
+RepCount-A train  learned-phase/repcount-train/sets/train2719.json.gz  push_up  3  4  6  82 -> 86
+RepCount-A train  learned-phase/repcount-train/sets/train2734.json.gz  push_up  2  2  3  46 -> 50
+RepCount-A train  learned-phase/repcount-train/sets/train929.json.gz  front_raise  4  2  3  82 -> 73
+RepCount-A train  learned-phase/repcount-train/sets/train940.json.gz  front_raise  5  6  5  63 -> 76
+RepCount-A train  learned-phase/repcount-train/sets/train952.json.gz  front_raise  10  5  6  86 -> 65
+RepCount-A train  learned-phase/repcount-train/sets/val359.json.gz  front_raise  1  2  3  111 -> 56
+RepCount-A train  learned-phase/repcount-train/sets/val819.json.gz  pull_up  6  6  2  89 -> 90
+RepCount-A train  learned-phase/repcount-train/sets/val824.json.gz  pull_up  5  4  5  78 -> 89
+RepCount-A train  learned-phase/repcount-train/sets/val826.json.gz  pull_up  7  7  6  71 -> 74
+RepCount-A train  learned-phase/repcount-train/sets/val828.json.gz  pull_up  4  5  3  70 -> 87
+RepCount-A train  learned-phase/repcount-train/sets/val890.json.gz  push_up  5  4  5  36 -> 41
+RepCount-A train  learned-phase/repcount-train/sets/val892.json.gz  push_up  2  4  2  34 -> 39
