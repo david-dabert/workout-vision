@@ -9,7 +9,7 @@ src/components/experience/result-copy.js.
 
 | FR | EN | Where | Status |
 |---|---|---|---|
-| Sur cette série, le compte de l'appli est fragile : vérifiez-le. | In this set, the app's count is fragile: check it. | The cause line of the low-confidence screen | approved by David, 19 October 2026, with the check on every phone ("All the lot"); replaces the line of 10 October, « relu avec des réglages voisins, il change » |
+| Comptage incertain sur cette série : vérifiez le nombre. | Uncertain count on this set: check the number. | The cause line of the low-confidence screen | on every phone since 19 October 2026 ("All the lot"); reworded 20 October 2026 under David's delegation of French copy; replaces the line of 10 October, « relu avec des réglages voisins, il change » |
 
 Everything else on that screen is approved: "L'appli n'a pas pu compter cette série avec certitude.", "Compté par
 l'appli : {N}", "Vérifiez ce nombre avant d'enregistrer.", "Confirmer {N} répétitions", − and +, "Refilmer la série".

@@ -16,19 +16,30 @@ test('back to the choice: the choice is whole at once, the filming screen fades 
   await page.locator('.altar').first().click();
   await expect(page.locator('.film-screen')).toBeVisible();
   await page.waitForTimeout(1500);
-  await page.locator('.film-screen .icon-btn').click();
-  await page.waitForTimeout(150);
-  const state = await page.evaluate(() => {
-    const current = document.querySelector('.wv-current .choose-screen');
-    const title = current?.querySelector('.title');
-    const leaving = document.querySelector('.wv-leaving');
-    const z = el => Number(getComputedStyle(el).zIndex) || 0;
-    return {
-      screen: current ? Number(getComputedStyle(current).opacity) : null,
-      title: title ? Number(getComputedStyle(title).opacity) : null,
-      leavingOnTop: leaving ? z(leaving) > z(document.querySelector('.wv-current')) : null,
-    };
+  // Read as the screens change (a MutationObserver), not after the tap returns: Playwright's click returned
+  // 0.64 s after the tap on 20 October 2026, when the 0.52 s fade was already over (27 failures in 30 runs).
+  await page.evaluate(() => {
+    window.__back = new Promise(resolve => {
+      const obs = new MutationObserver(() => {
+        const current = document.querySelector('.wv-current .choose-screen');
+        if (!current) return;
+        obs.disconnect();
+        const title = current.querySelector('.title');
+        const leaving = document.querySelector('.wv-leaving');
+        const z = el => Number(getComputedStyle(el).zIndex) || 0;
+        resolve({
+          screen: Number(getComputedStyle(current).opacity),
+          title: title ? Number(getComputedStyle(title).opacity) : null,
+          leavingOnTop: leaving ? z(leaving) > z(current.closest('.wv-current')) : null,
+        });
+      });
+      obs.observe(document.body, { childList: true, subtree: true });
+      setTimeout(() => { obs.disconnect(); resolve(null); }, 10000);
+    });
   });
+  await page.locator('.film-screen .icon-btn').click();
+  const state = await page.evaluate(() => window.__back);
+  expect(state).not.toBeNull();
   expect(state.screen).toBe(1);
   expect(state.title).toBe(1);
   expect(state.leavingOnTop).toBe(true);

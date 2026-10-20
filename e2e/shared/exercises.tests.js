@@ -61,7 +61,7 @@ export default function exercisesTests(test, expect) {
     // and said to be a drawing, not a measurement.
     await expect(page.locator('.film-screen .frame canvas.guide-figure')).toHaveCount(1);
     await expect(page.locator('.film-screen .guide-frames img')).toHaveCount(0);
-    await expect(page.locator('.film-screen .caption')).toHaveText('The movement, drawn by the app: an illustration, not a measurement.');
+    await expect(page.locator('.film-screen .caption')).toHaveText('Illustration of the movement, for guidance only.');
     await expect(page.locator('.film-screen .steps')).toContainText('whole body');
     expect(errors).toEqual([]);
   });

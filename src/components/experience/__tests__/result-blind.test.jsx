@@ -98,7 +98,7 @@ describe('a count the sensitivity check moved', () => {
   it('on any phone: the low-confidence screen, the count to confirm, the cause, no measure', async () => {
     const html = await renderOn(moved, false);
     expect(html).toContain('L’appli n’a pas pu compter cette série avec certitude.');
-    expect(html).toContain('Sur cette série, le compte de l’appli est fragile : vérifiez-le.');
+    expect(html).toContain('Comptage incertain sur cette série : vérifiez le nombre.');
     expect(html).toContain('Compté par l’appli : 9');
     expect(html).toMatch(/data-testid="res-save"[^>]*>Confirmer 9 répétitions<\/button>/);
     for (const id of ['res-yes', 'res-alts', 'res-exp']) expect(html).not.toContain(`data-testid="${id}"`);
@@ -106,11 +106,11 @@ describe('a count the sensitivity check moved', () => {
   it('a video opened mid-rep: the count to confirm, with its own cause', async () => {
     const html = await renderOn({ ...nine, headRefused: true }, false);
     expect(html).toContain('L’appli n’a pas pu compter cette série avec certitude.');
-    expect(html).toContain('La vidéo commence en pleine répétition\u00A0: la première ne compte peut-être pas. Vérifiez le nombre.');
+    expect(html).toContain('La vidéo démarre en pleine répétition\u00A0: la première n’a peut-être pas été comptée.');
     expect(html).toMatch(/data-testid="res-save"[^>]*>Confirmer 9 répétitions<\/button>/);
   });
   it('the same on the #collecte phone; when nothing moved, the screen as before', async () => {
-    expect(await renderOn(moved, true)).toContain('Sur cette série, le compte de l’appli est fragile : vérifiez-le.');
+    expect(await renderOn(moved, true)).toContain('Comptage incertain sur cette série : vérifiez le nombre.');
     expect(await renderOn({ ...nine, sensitivity: { moved: false, counts: Array(6).fill(9) } }, false)).toContain('data-testid="res-yes"');
   });
 });

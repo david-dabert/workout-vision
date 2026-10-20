@@ -107,7 +107,7 @@ export default function Film({ lift, onBack, onFile, onLive, hero: arrivedByTran
         : animated
         // The app's figure: a drawing of the movement from its spec, never a measure; an exercise with no fitting drawing
         // of the guide (noDrawing) keeps its movement in words before it.
-        ? <p className="caption" data-reveal style={{ '--i': 3 }}>{guide.noDrawing ? `${fr ? guide.how.fr : guide.how.en} ` : ''}{fr ? 'Le mouvement, dessiné par l’appli\u00A0: une illustration, pas une mesure.' : 'The movement, drawn by the app: an illustration, not a measurement.'}</p>
+        ? <p className="caption" data-reveal style={{ '--i': 3 }}>{guide.noDrawing ? `${fr ? guide.how.fr : guide.how.en} ` : ''}{fr ? 'Illustration du mouvement, à titre indicatif.' : 'Illustration of the movement, for guidance only.'}</p>
         : <p className="caption" data-reveal style={{ '--i': 3 }}>{guide?.noDrawing
           // No drawing of the guide shows this posture (exerciseGuide.js, noDrawing): the frame stays an empty viewfinder,
           // the movement is said in words here, and no credit is given for drawings it does not show.

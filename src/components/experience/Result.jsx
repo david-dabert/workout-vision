@@ -844,7 +844,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       <p className="res-detail" aria-live="polite">{detailHead && <span className="sr">{detailHead}</span>}{detail}</p>
       {step === 'saved' && isCorrected(trueN, count) && MEASURES_SHOWN && <p className="res-exp" data-testid="res-remeasured">{remeasured
         ? (fr ? `Mesures recalculées sur vos ${trueN} répétitions.` : `Measures recalculated on your ${trueN} reps.`)
-        : (fr ? `L’appli ne retrouve pas vos ${trueN} répétitions dans la vidéo\u00A0: les repères et leurs mesures restent les siens.` : `The app cannot find your ${trueN} reps in the video: the marks and their measures stay its own.`)}</p>}
+        : (fr ? `Impossible de retrouver vos ${trueN} répétitions dans la vidéo\u00A0: les mesures affichées sont celles de l’appli.` : `Your ${trueN} reps could not be found in the video: the measures shown are the app’s.`)}</p>}
       {/* Under the cells: every measure on this screen (cells, account, table) is experimental (measures.js). */}
       {MEASURES_SHOWN && <p className="res-exp" data-testid="res-exp">{experimentalLabel(fr)}</p>}
     </div>,
