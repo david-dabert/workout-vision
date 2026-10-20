@@ -1,0 +1,79 @@
+Consensus bench, 20 October 2026 (consensus.test.ts; measured, decides nothing). compare-variants.mjs, the single read against the mode of the reads:
+
+== mode grid
+suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+david        20      13 -> 13                1 -> 1                0          0     0.00       0        0
+video        16       8 -> 8                 4 -> 4                0          0     0.00       0        0
+publicA     546     251 -> 252              74 -> 74               1          0     0.00       0        4
+publicB     518     251 -> 251              89 -> 91               0          0     0.00       2        2
+synthetic    96      74 -> 72               13 -> 13               0          2     0.50       0        2
+repcount     79      26 -> 26               21 -> 21               0          0     0.00       0        0
+occlusion    68      27 -> 27               36 -> 36               0          0     0.00       0        2
+publicA    distinct clips: 1 gained, 0 lost
+synthetic  distinct clips: 0 gained, 2 lost
+VERDICT: does not ship
+- publicB: off by 3 or more 89 -> 91
+- synthetic: exact 74 -> 72
+
+== mode noise
+suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+david        20      13 -> 13                1 -> 1                0          0     0.00       0        2
+video        16       8 -> 8                 4 -> 5                0          0     0.00       1        1
+publicA     546     251 -> 246              74 -> 70               6         11     0.94       1       33
+publicB     518     251 -> 252              89 -> 89               5          4     0.00       3       19
+synthetic    96      74 -> 71               13 -> 13               0          3     1.33       2        7
+repcount     79      26 -> 26               21 -> 21               1          1     0.50       0        6
+occlusion    68      27 -> 26               36 -> 34               0          1     0.00       0        5
+publicA    distinct clips: 6 gained, 7 lost
+publicB    distinct clips: 4 gained, 3 lost
+synthetic  distinct clips: 0 gained, 2 lost
+repcount   distinct clips: 1 gained, 1 lost
+occlusion  distinct clips: 0 gained, 1 lost
+VERDICT: does not ship
+- David's videos: fewer exact or a set newly off by 3 (R2)
+- publicA: exact 251 -> 246
+- synthetic: exact 74 -> 71
+- occlusion: exact 27 -> 26
+
+== mode both
+suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+david        20      13 -> 13                1 -> 2                0          0     0.00       1        1
+video        16       8 -> 8                 4 -> 4                0          0     0.00       0        0
+publicA     546     251 -> 250              74 -> 73               1          2     0.00       0        6
+publicB     518     251 -> 251              89 -> 92               0          0     0.00       3        5
+synthetic    96      74 -> 73               13 -> 13               0          1     0.00       0        1
+repcount     79      26 -> 26               21 -> 21               0          0     0.00       0        1
+occlusion    68      27 -> 27               36 -> 34               0          0     0.00       0        3
+publicA    distinct clips: 1 gained, 1 lost
+synthetic  distinct clips: 0 gained, 1 lost
+VERDICT: does not ship
+- David's sets: fewer exact or a set newly off by 3 (R2)
+- publicA: exact 251 -> 250
+- publicB: off by 3 or more 89 -> 92
+- synthetic: exact 74 -> 73
+
+Right when all reads agree (per suite: counted sets; sets where every read agrees, exact among them; sets where reads disagree, exact among them):
+== mode grid
+david      counted   19  all agree   14: exact   11 ( 79 %), off3+   0   | disagree    5: exact    2 ( 40 %), off3+   0
+video      counted   13  all agree    6: exact    4 ( 67 %), off3+   0   | disagree    7: exact    4 ( 57 %), off3+   1
+publicA    counted  493  all agree  430: exact  233 ( 54 %), off3+  11   | disagree   63: exact   19 ( 30 %), off3+  10
+publicB    counted  453  all agree  400: exact  235 ( 59 %), off3+  15   | disagree   53: exact   16 ( 30 %), off3+  11
+repcount   counted   73  all agree   51: exact   23 ( 45 %), off3+   7   | disagree   22: exact    3 ( 14 %), off3+   8
+synthetic  counted   96  all agree   78: exact   69 ( 88 %), off3+   6   | disagree   18: exact    3 ( 17 %), off3+   7
+occlusion  counted   49  all agree   38: exact   25 ( 66 %), off3+  10   | disagree   11: exact    2 ( 18 %), off3+   7
+== mode noise
+david      counted   19  all agree   14: exact   11 ( 79 %), off3+   0   | disagree    5: exact    2 ( 40 %), off3+   0
+video      counted   13  all agree    2: exact    2 (100 %), off3+   0   | disagree   11: exact    6 ( 55 %), off3+   2
+publicA    counted  493  all agree  334: exact  197 ( 59 %), off3+   4   | disagree  159: exact   48 ( 30 %), off3+  16
+publicB    counted  453  all agree  330: exact  224 ( 68 %), off3+  10   | disagree  123: exact   27 ( 22 %), off3+  17
+repcount   counted   73  all agree   32: exact   18 ( 56 %), off3+   3   | disagree   41: exact    8 ( 20 %), off3+  12
+synthetic  counted   96  all agree   69: exact   66 ( 96 %), off3+   3   | disagree   27: exact    5 ( 19 %), off3+  10
+occlusion  counted   49  all agree   24: exact   21 ( 88 %), off3+   3   | disagree   25: exact    5 ( 20 %), off3+  12
+== mode both
+david      counted   19  all agree   13: exact   10 ( 77 %), off3+   0   | disagree    6: exact    3 ( 50 %), off3+   1
+video      counted   13  all agree    2: exact    2 (100 %), off3+   0   | disagree   11: exact    6 ( 55 %), off3+   1
+publicA    counted  493  all agree  323: exact  192 ( 59 %), off3+   4   | disagree  170: exact   58 ( 34 %), off3+  16
+publicB    counted  453  all agree  321: exact  216 ( 67 %), off3+  10   | disagree  132: exact   35 ( 27 %), off3+  17
+repcount   counted   73  all agree   32: exact   18 ( 56 %), off3+   3   | disagree   41: exact    8 ( 20 %), off3+  12
+synthetic  counted   96  all agree   69: exact   66 ( 96 %), off3+   3   | disagree   27: exact    7 ( 26 %), off3+  10
+occlusion  counted   49  all agree   24: exact   21 ( 88 %), off3+   3   | disagree   25: exact    6 ( 24 %), off3+  12
