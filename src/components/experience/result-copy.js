@@ -76,12 +76,12 @@ export const RESULT = {
     // The two neighbours of the count, each saved in one tap (result-choices.js; pillar 2, 9 October 2026). Shown on the
     // #collecte phone only. Status: written 9 October 2026, awaiting David's approval (R10; copy-choices.md).
     or: `Ou${NB}:`,
-    // A count the sensitivity check moved (coreAnalysis.js withSensitivity, 10 October 2026). Approved by David on
-    // 19 October 2026, with the check on every phone ("All the lot"; R10, copy-sensitivity.md).
-    sensitiveCause: 'Sur cette série, le compte de l’appli est fragile : vérifiez-le.',
+    // A count the sensitivity check moved (coreAnalysis.js withSensitivity, 10 October 2026). Shown on every phone
+    // since 19 October 2026; reworded under David's delegation of French copy, 20 October 2026 (R10, copy-sensitivity.md).
+    sensitiveCause: 'Comptage incertain sur cette série : vérifiez le nombre.',
     // The video opened inside a rep the counter did not count (core.ts headRefused). Written 19 October 2026, awaiting
-    // David's approval (R10).
-    midRepCause: 'La vidéo commence en pleine répétition : la première ne compte peut-être pas. Vérifiez le nombre.',
+    // David's delegation of French copy, 20 October 2026 (R10).
+    midRepCause: 'La vidéo démarre en pleine répétition : la première n’a peut-être pas été comptée.',
   },
   en: {
     toConfirm: 'To confirm',
@@ -132,7 +132,7 @@ export const RESULT = {
     byJoint: joint => `From the ${{ elbow: 'elbow', shoulder: 'shoulder', knee: 'knee', hip: 'hip' }[joint] ?? 'tracked joint'}`,
     byBody: 'From the whole body',
     or: 'Or:',
-    sensitiveCause: 'In this set, the app’s count is fragile: check it.',
-    midRepCause: 'The video starts mid-rep: the first one may not be counted. Check the number.',
+    sensitiveCause: 'Uncertain count on this set: check the number.',
+    midRepCause: 'The video starts mid-rep: the first one may not have been counted.',
   },
 };

@@ -37,6 +37,7 @@ Every threshold, form check and coaching statement carries, in a code comment: i
 
 **R10. Language.**
 French is written as a French coach speaks in a gym, never translated word for word. Use the glossary in DIRECTIVES.md Part 7 and one register throughout (tu or vous, decided by David). David approves French copy before release.
+Amended 20 October 2026 (David: "There are millions, if not billions, of French apps ... use it to generate the right text in French and stop wasting my time"): the agent writes the French itself, in the words French fitness apps use, with the glossary and "vous", and ships it without asking David's approval; David may still correct any line.
 
 **R11. Session hygiene.**
 Keep sessions short and focused on one step. After any context compaction, re-read STATE.md before acting. End every session with the report format in DIRECTIVES.md Part 5.
