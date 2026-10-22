@@ -86,8 +86,8 @@ function chooseState(lift: string, wl: any[], ts: number[], il: any[] | null, xy
     if (counts[0] === 'refused' || !(Number(counts[0]) > 0)) return null;
     const moves = counts.slice(1).filter(x => x !== counts[0]).length;
     const far = Math.max(0, ...counts.slice(1).map(x => (x === 'refused' ? 99 : Math.abs(Number(x) - Number(counts[0])))));
-    return { c, count: counts[0] as number, moves, far };
-  }).filter(Boolean) as { c: Cand; count: number; moves: number; far: number }[];
+    return { c, count: counts[0] as number, moves, far, counts };
+  }).filter(Boolean) as { c: Cand; count: number; moves: number; far: number; counts: Out[] }[];
   const refused = core.count === 'refused';
   // The core's own state competes with its own moves; a refused core has no count to keep.
   const coreEntry = refused ? null : { c: { name: 'core', sign: 1, strength: Infinity }, count: core.count as number, moves: coreMoves, far: Math.max(0, ...coreReads.slice(1).map(x => (x === 'refused' ? 99 : Math.abs(Number(x) - Number(coreReads[0]))))) };
@@ -102,8 +102,10 @@ function chooseState(lift: string, wl: any[], ts: number[], il: any[] | null, xy
   // Least moves, then the smallest largest move, then the core, then the strongest signal.
   all.sort((p, q) => p.moves - q.moves || p.far - q.far || (q.c.strength === Infinity ? 1 : 0) - (p.c.strength === Infinity ? 1 : 0) || q.c.strength - p.c.strength);
   const pick = all[0], alt = all.find(e => e.c.name !== 'core') ?? null;
+  // Every state's counts across the reads are kept, so other rules can be read from one run without counting again.
   return { count: pick.count, state: pick.c.name, coreMoves, moves: pick.moves, candidates: scored.length, median,
-    core: core.count, alt: alt ? { name: alt.c.name, count: alt.count, moves: alt.moves, far: alt.far } : null };
+    core: core.count, coreReads, alt: alt ? { name: alt.c.name, count: alt.count, moves: alt.moves, far: alt.far } : null,
+    cands: scored.map(e => ({ name: e.c.name, strength: e.c.strength === Infinity ? null : e.c.strength, counts: e.counts })) };
 }
 
 test.skipIf(!process.env.RS_OUT)('the state chosen for its invariance under the noise proxy', () => {
