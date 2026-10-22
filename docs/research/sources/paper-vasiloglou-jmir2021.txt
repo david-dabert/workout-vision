@@ -1,0 +1,18 @@
+SOURCE_URL: https://mhealth.jmir.org/2021/1/e24467/
+RETRIEVED_UTC: 2026-10-14T06:48:00Z
+DOI: 10.2196/24467
+================================================================================
+
+Title: The Human Factor in Automated Image-Based Nutrition Apps: Analysis of Common Mistakes Using the goFOOD Lite App
+Authors: Maria F. Vasiloglou, Klazine van der Horst, Thomai Stathopoulou, Michael P. Jaeggi, Giulia S. Tedde, Ya Lu, Stavroula Mougiakakou
+Journal: JMIR mHealth and uHealth, 2021 Jan; 9(1): e24467
+DOI: 10.2196/24467
+URL: https://doi.org/10.2196/24467
+PMID: 33470940
+
+Official Abstract:
+« Background: Image-based dietary assessment apps can facilitate nutritional intake tracking. However, data acquisition errors introduced by users in uncontrolled, free-living settings can severely compromise the accuracy of dietary estimation algorithms.
+Objective: To identify and quantify common human errors when capturing meal photos using an image-based dietary assessment system (goFOOD Lite) and evaluate their impact on algorithm validity.
+Methods: Adult participants recorded meals in free-living conditions by capturing photographs of their plates accompanied by a standard reference card. All submitted images were reviewed and categorized for user errors, including card placement, lighting, angle, and occlusion.
+Results: Analysis of 540 recorded meals revealed that 69 meals (12.8%) were completely invalid and could not be processed by the computer vision pipeline. The most prevalent user error was related to the reference card (42/69, 60.9% of invalid meals), such as absence of the card, card partially cropped, or improper placement relative to the plate. Additional sources of error included inadequate lighting, poor viewing angle, and hands or obstacles obscuring food items.
+Conclusions: Human factors represent a major bottleneck for the practical deployment of automated image-based dietary tracking apps. User feedback, interactive validation, and error detection mechanisms are essential before nutritional output can be reliably estimated. »
