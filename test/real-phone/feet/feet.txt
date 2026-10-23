@@ -1,0 +1,76 @@
+Foot solver, 2026-10-23 (solver.js; feet.test.ts; measured, decides nothing). Medians over sets of per-set medians.
+contact: share of posed samples each foot is planted. slide: mm per sample of the foot midpoint (heel and toe), raw = MediaPipe's hip-centred
+frame over all samples, root = after the root is recovered, pin = after pinning, both over planted samples. root range: p95-p5 of the
+recovered root (mm). knee err: degrees from the synthetic truth, raw / pin / pinFixed. leg CV: thigh and shin length spread (%), raw / pin /
+pinFixed. below floor: share of samples with a foot point over 1 cm below the floor, root only / pin. ms: solver time per mode per set.
+
+group                                 sets  contact L/R   slide raw/root/pin   root range  knee err raw/pin/fixed  leg CV raw/pin/fixed  below floor  unreached  ms
+synthetic static legs                  184  100 %/100 %     34/  34/0            172       13.7/18.4/19.2           3.4/3.4/0.0        48 %/0 %     5 %   8.1
+synthetic squat (flawed foot truth)     68  100 %/100 %     46/  48/0            385       11.5/22.4/22.5           8.1/8.1/0.2        49 %/2 %    10 %   7.2
+David floor                             31   47 %/68 %      61/  46/0            638          -/-/-             10.7/10.7/6.6        49 %/7 %     0 %   9.5
+David sled or platform                   2  100 %/73 %     134/  77/0           1471          -/-/-             21.4/21.4/15.9       56 %/10 %     8 %   13.7
+David hanging                            2    0 %/0 %      374/   -/-              0          -/-/-             28.2/28.2/28.2       -/-     0 %   2.8
+public                                1064   97 %/98 %      54/  46/0            420          -/-/-              7.7/7.7/2.0        51 %/3 %     2 %   3.0
+RepCount-A                              79   97 %/94 %      63/  55/0            911          -/-/-             10.4/10.4/3.7        52 %/3 %    11 %   10.2
+
+David's sets one by one (image landmarks used where stored): contact L/R, slide raw/root/pin mm.
+   David floor              machine_seated_back_extension_8_side_36b81b22.json.gz  40 %/17 %  94/52/0
+   David floor              set01_hip_thrust_6_side_4091c266.json.gz          97 %/70 %  49/40/0
+   David floor              set01_machine_seated_back_extension_13_side_c6f69462.json.gz  25 %/18 %  205/82/0
+   David floor              set02_hip_thrust_7_side_b717b687.json.gz           0 %/100 % 49/33/0
+   David floor              set03_reverse_curl_10_side_4d748472.json.gz       50 %/37 %  77/62/0
+   David floor              set04_lat_pulldown_6_side_98308774.json.gz        15 %/20 %  177/55/6
+   David floor              bench_press_7_side_24cc4f0b.json.gz                0 %/53 %  102/66/0
+   David floor              bicep_curl_5_side_f5e5bdf2.json.gz                95 %/19 %  60/46/0
+   David floor              hip_thrust_6_side_cf8c21d7.json.gz                21 %/98 %  52/43/0
+   David floor              lateral_raise_9_front_43e71b40.json.gz           100 %/100 % 26/25/0
+   David sled or platform   leg_press_13_side_1ee0ae47.json.gz               100 %/73 %  42/35/0
+   David floor              overhead_press_4_front_cefdaa82.json.gz           98 %/100 % 17/16/0
+   David floor              overhead_press_4_front_f75638cc.json.gz           68 %/93 %  31/26/0
+   David floor              romanian_deadlift_8_side_b3dc2c9e.json.gz         61 %/100 % 44/44/0
+   David floor              squat_7_side_21fd7ccf.json.gz                     14 %/63 %  101/75/0
+   David floor              bench_press_7_angle_mufhcy60.json.gz              39 %/98 %  124/119/74  (no image)
+   David floor              bicep_curl_7_side_mufhf3wy.json.gz               100 %/0 %   28/27/0  (no image)
+   David floor              lat_pulldown_10_front_mufhlh4o.json.gz           100 %/70 %  46/41/0  (no image)
+   David floor              lateral_raise_10_front_mufhhbun.json.gz          100 %/100 % 20/20/0  (no image)
+   David floor              overhead_press_10_front_mufhjkku.json.gz          99 %/68 %  103/98/0  (no image)
+   David floor              barbell_squat_9_a.json.gz                         31 %/30 %  114/64/1
+   David floor              barbell_squat_9_b.json.gz                         47 %/52 %  113/79/0
+   David hanging            behind_neck_chin_up_5.json.gz                      0 %/0 %   374/-/-
+   David hanging            hanging_leg_raise_6.json.gz                        0 %/0 %   368/-/-
+   David floor              lying_biceps_curl_11.json.gz                       1 %/34 %  106/46/0
+   David floor              machine_chest_supported_row_6.json.gz             64 %/44 %  82/69/0
+   David floor              machine_seated_back_extension_18.json.gz          77 %/39 %  75/62/0
+   David sled or platform   pendulum_squat_7.json.gz                          47 %/29 %  134/77/0
+   David floor              seated_dumbbell_curl_10.json.gz                    6 %/72 %  56/44/0
+   David floor              sissy_squat_5_5011.json.gz                        23 %/1 %   46/51/0
+   David floor              sissy_squat_7_5006.json.gz                        43 %/100 % 35/32/0
+   David floor              sissy_squat_9_5007.json.gz                        62 %/98 %  38/33/0
+   David floor              standing_barbell_curl_8.json.gz                   32 %/73 %  117/88/0
+   David floor              lat_pulldown_11_back.json.gz                      22 %/23 %  123/92/22
+   David floor              squat_6_front.json.gz                            100 %/100 % 61/44/0
+
+Honesty signal: the residual slide of the planted feet after the root (mm, label-free), on the sets shown as sure (sure.ts) that decide.
+   public, after the root Q1 (6-25 mm): 164 sets, 115 exact (70 %), 1 off by 3+
+   public, after the root Q2 (25-36 mm): 165 sets, 120 exact (73 %), 1 off by 3+
+   public, after the root Q3 (36-63 mm): 164 sets, 90 exact (55 %), 2 off by 3+
+   public, after the root Q4 (63-828 mm): 165 sets, 80 exact (48 %), 2 off by 3+
+   public, raw (no solver) Q1 (7-29 mm): 164 sets, 109 exact (66 %), 1 off by 3+
+   public, raw (no solver) Q2 (29-44 mm): 165 sets, 117 exact (71 %), 1 off by 3+
+   public, raw (no solver) Q3 (44-67 mm): 164 sets, 100 exact (61 %), 0 off by 3+
+   public, raw (no solver) Q4 (67-342 mm): 165 sets, 79 exact (48 %), 4 off by 3+
+   public, split within each lift of 10 sets or more: feet agree 333 sets, 228 exact (68 %), 2 off by 3+; disagree 320 sets, 174 exact (54 %), 4 off by 3+
+   public, proxy still: feet agree (<= 36 mm) 311 sets, 230 exact (74 %), 0 off by 3+; disagree 212 sets, 121 exact (57 %), 3 off by 3+
+   public, proxy moves: feet agree (<= 36 mm) 19 sets, 6 exact (32 %), 2 off by 3+; disagree 116 sets, 48 exact (41 %), 1 off by 3+
+   T = 82 mm, half A (chosen on): sure today 343 sets, 207 exact (60 %), 1 off by 3+; kept 289 sets, 183 exact (63 %), 0 off by 3+; asked 54 sets, 24 exact (44 %), 1 off by 3+
+      with the noise-proxy flag too: kept 242 sets, 160 exact (66 %), 0 off by 3+; asked 101 sets, 47 exact (47 %), 1 off by 3+
+      the noise-proxy flag alone: kept 259 sets, 167 exact (64 %), 0 off by 3+; asked 84 sets, 40 exact (48 %), 1 off by 3+
+   T = 82 mm, half B (judged): sure today 315 sets, 198 exact (63 %), 5 off by 3+; kept 276 sets, 181 exact (66 %), 4 off by 3+; asked 39 sets, 17 exact (44 %), 1 off by 3+
+      with the noise-proxy flag too: kept 244 sets, 173 exact (71 %), 2 off by 3+; asked 71 sets, 25 exact (35 %), 3 off by 3+
+      the noise-proxy flag alone: kept 264 sets, 184 exact (70 %), 3 off by 3+; asked 51 sets, 14 exact (27 %), 2 off by 3+
+   T = 82 mm, David stored+video: sure today 16 sets, 14 exact (88 %), 0 off by 3+; kept 16 sets, 14 exact (88 %), 0 off by 3+; asked 0 sets, 0 exact (0 %), 0 off by 3+
+      with the noise-proxy flag too: kept 13 sets, 11 exact (85 %), 0 off by 3+; asked 3 sets, 3 exact (100 %), 0 off by 3+
+      the noise-proxy flag alone: kept 13 sets, 11 exact (85 %), 0 off by 3+; asked 3 sets, 3 exact (100 %), 0 off by 3+
+   T = 82 mm, RepCount-A: sure today 40 sets, 21 exact (53 %), 4 off by 3+; kept 37 sets, 21 exact (57 %), 4 off by 3+; asked 3 sets, 0 exact (0 %), 0 off by 3+
+      with the noise-proxy flag too: kept 28 sets, 16 exact (57 %), 2 off by 3+; asked 12 sets, 5 exact (42 %), 2 off by 3+
+      the noise-proxy flag alone: kept 29 sets, 16 exact (55 %), 2 off by 3+; asked 11 sets, 5 exact (45 %), 2 off by 3+

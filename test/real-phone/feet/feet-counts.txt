@@ -1,0 +1,61 @@
+Counts on the solved landmarks against the core (feet.test.ts writes base.json, pin.json, pinFixed.json; node scripts/compare-variants.mjs base.json <mode>.json), 2026-10-23. Measured, decides nothing.
+
+== mode pin
+suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+david        20      13 -> 9                 1 -> 6                0          4     2.25       5        5
+video        15       8 -> 4                 3 -> 6                0          4     2.25       4        7
+publicA     546     256 -> 231              74 -> 87               4         29    17.45      13       52
+publicB     518     258 -> 240              89 -> 99               4         22    11.12      10       47
+synthetic    96      74 -> 70               13 -> 16               3          7     0.90       5       13
+repcount     79      26 -> 21               21 -> 27               0          5     3.20       6        7
+occlusion    68      27 -> 26               36 -> 35               1          2     0.00       2       10
+david      distinct clips: 0 gained, 4 lost
+video      distinct clips: 0 gained, 3 lost
+publicA    distinct clips: 3 gained, 21 lost
+publicB    distinct clips: 3 gained, 16 lost
+synthetic  distinct clips: 3 gained, 7 lost
+repcount   distinct clips: 0 gained, 5 lost
+occlusion  distinct clips: 1 gained, 2 lost
+VERDICT: does not ship
+- David's sets: fewer exact or a set newly off by 3 (R2)
+- David's videos: fewer exact or a set newly off by 3 (R2)
+- publicA: exact 256 -> 231
+- publicA: off by 3 or more 74 -> 87
+- publicA: the paired test favours the old run
+- publicB: exact 258 -> 240
+- publicB: off by 3 or more 89 -> 99
+- publicB: the paired test favours the old run
+- synthetic: exact 74 -> 70
+- synthetic: off by 3 or more 13 -> 16
+- repcount: exact 26 -> 21
+- repcount: off by 3 or more 21 -> 27
+- occlusion: exact 27 -> 26
+
+== mode pinFixed
+suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+david        20      13 -> 8                 1 -> 6                0          5     3.20       5        6
+video        15       8 -> 5                 3 -> 6                0          3     1.33       4        5
+publicA     546     256 -> 231              74 -> 85               5         30    16.46      11       55
+publicB     518     258 -> 240              89 -> 99               5         23    10.32      11       48
+synthetic    96      74 -> 71               13 -> 13               4          7     0.36       2       13
+repcount     79      26 -> 22               21 -> 27               0          4     2.25       6        7
+occlusion    68      27 -> 27               36 -> 33               2          2     0.25       2       10
+david      distinct clips: 0 gained, 5 lost
+video      distinct clips: 0 gained, 3 lost
+publicA    distinct clips: 4 gained, 21 lost
+publicB    distinct clips: 4 gained, 16 lost
+synthetic  distinct clips: 4 gained, 7 lost
+repcount   distinct clips: 0 gained, 4 lost
+occlusion  distinct clips: 2 gained, 2 lost
+VERDICT: does not ship
+- David's sets: fewer exact or a set newly off by 3 (R2)
+- David's videos: fewer exact or a set newly off by 3 (R2)
+- publicA: exact 256 -> 231
+- publicA: off by 3 or more 74 -> 85
+- publicA: the paired test favours the old run
+- publicB: exact 258 -> 240
+- publicB: off by 3 or more 89 -> 99
+- publicB: the paired test favours the old run
+- synthetic: exact 74 -> 71
+- repcount: exact 26 -> 22
+- repcount: off by 3 or more 21 -> 27

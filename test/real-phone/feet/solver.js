@@ -48,6 +48,11 @@ export const DEFAULTS = Object.freeze({
   // Gaussian smoothing of the root, in samples (GVHMR smooths its root with sigma 3 at 30 fps; 1.5 at our 15 Hz is the
   // same 0.1 s). Source: GVHMR public code. Status: literature (the value), experimental (here).
   rootSigma: 1.5,
+  // The root's depth (z, away from the camera) smoothed more: a single camera reads depth least surely, and on the
+  // synthetic sets whose root never moves the recovered root wandered 109 mm in z against 51 in x and 66 in y (feet
+  // bench, 23 October 2026). 0.5 s. Source: UNSOURCED (the axis order: convention for monocular capture). Status:
+  // experimental.
+  rootSigmaZ: 7.5,
 });
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
@@ -99,14 +104,21 @@ function hysteresis(values, enter, leave, minLen, gapLen) {
   return out;
 }
 
-function gaussianSmooth(series, sigma) {
-  if (!(sigma > 0)) return series.map(v => v && v.slice());
-  const r = Math.ceil(3 * sigma), w = []; for (let k = -r; k <= r; k++) w.push(Math.exp(-(k * k) / (2 * sigma * sigma)));
+/** Gaussian smoothing of a series of points, one sigma (in samples) per axis; 0 leaves that axis as it is. */
+function gaussianSmooth(series, sigmas) {
+  const kernels = sigmas.map(sigma => {
+    if (!(sigma > 0)) return null;
+    const r = Math.ceil(3 * sigma), w = []; for (let k = -r; k <= r; k++) w.push(Math.exp(-(k * k) / (2 * sigma * sigma)));
+    return { r, w };
+  });
   return series.map((v, t) => {
     if (!v) return v;
-    let s = [0, 0, 0], ws = 0;
-    for (let k = -r; k <= r; k++) { const u = series[t + k]; if (!u) continue; s = add(s, mul(u, w[k + r])); ws += w[k + r]; }
-    return mul(s, 1 / ws);
+    return [0, 1, 2].map(axis => {
+      const K = kernels[axis]; if (!K) return v[axis];
+      let s = 0, ws = 0;
+      for (let k = -K.r; k <= K.r; k++) { const u = series[t + k]; if (!u) continue; s += u[axis] * K.w[k + K.r]; ws += K.w[k + K.r]; }
+      return s / ws;
+    });
   });
 }
 
@@ -209,7 +221,7 @@ export function solveFeet(wl, ts, { image = null, frame = null, ...opts } = {}) 
     rootRaw[t] = sub(C, mean);
     prevRoot = rootRaw[t]; prevSet = key;
   }
-  const root = gaussianSmooth(rootRaw, o.rootSigma);
+  const root = gaussianSmooth(rootRaw, [o.rootSigma, o.rootSigma, o.rootSigmaZ ?? o.rootSigma]);
 
   // Global positions (world + root) and the floor: the median lowest point of planted feet.
   const glob = wl.map((f, t) => (f ? f.map(p => ({ ...p, x: p.x + root[t][0], y: p.y + root[t][1], z: p.z + root[t][2] })) : null));
@@ -224,24 +236,27 @@ export function solveFeet(wl, ts, { image = null, frame = null, ...opts } = {}) 
   //    weight that fades in and out over `blend` at each end of the run.
   const B = samples(o.blend);
   const targets = { left: new Array(n).fill(null), right: new Array(n).fill(null) };
+  const shapes = { left: new Array(n).fill(null), right: new Array(n).fill(null) }; // heel and toe offsets from the ankle
   const weight = { left: new Array(n).fill(0), right: new Array(n).fill(0) };
   for (const side of ['left', 'right']) {
     const s = SIDES[side];
     for (let t = 0; t < n;) {
       if (!contact[side][t]) { t++; continue; }
       let e = t; while (e < n && contact[side][e]) e++;
-      const ank = [], lowGap = [];
+      const ank = [], heel = [], toe = [];
       for (let k = t; k < e; k++) {
         const g = glob[k]; if (!g) continue;
-        ank.push(P(g[s.ankle]));
-        const y = footLow(g, side, o.visMin); if (y != null) lowGap.push(y - g[s.ankle].y);
+        const A = P(g[s.ankle]);
+        ank.push(A); heel.push(sub(P(g[s.heel]), A)); toe.push(sub(P(g[s.toe]), A));
       }
       if (ank.length) {
+        // One rigid foot per plant: the ankle at its median position, heel and toe at their median offsets from it,
+        // lowered or raised so the foot's lowest point sits on the floor.
         const plant = [0, 1, 2].map(k => median(ank.map(a => a[k])));
-        const gap = median(lowGap);
-        if (Number.isFinite(gap)) plant[1] = floor - gap; // the foot's lowest point on the floor
+        const shape = { heel: [0, 1, 2].map(k => median(heel.map(a => a[k]))), toe: [0, 1, 2].map(k => median(toe.map(a => a[k]))) };
+        plant[1] = floor - Math.max(shape.heel[1], shape.toe[1]);
         for (let k = t; k < e; k++) {
-          targets[side][k] = plant;
+          targets[side][k] = plant; shapes[side][k] = shape;
           weight[side][k] = Math.min(1, (k - t + 1) / B, (e - k) / B);
         }
       }
@@ -260,29 +275,53 @@ export function solveFeet(wl, ts, { image = null, frame = null, ...opts } = {}) 
     };
   }
   const solved = glob.map(f => (f ? f.map(p => ({ ...p })) : null));
+  const finalRoot = root.map(r => r && r.slice());
   for (let t = 0; t < n; t++) {
     const g = solved[t]; if (!g) continue;
+    // The ankle goal of each leg: its plant, faded in and out, or lifted out of the floor when unplanted.
+    const goal = {}, len = {};
     for (const side of ['left', 'right']) {
-      const s = SIDES[side], A0 = P(g[s.ankle]);
+      const s = SIDES[side], A0 = P(g[s.ankle]), w = weight[side][t];
       let A = A0;
-      const w = weight[side][t];
       if (w > 0 && targets[side][t]) A = add(mul(targets[side][t], w), mul(A0, 1 - w));
       else {
         const y = footLow(g, side, o.visMin);
         if (y != null && y > floor) A = [A0[0], A0[1] - (y - floor), A0[2]]; // no foot below the floor
       }
+      const K0 = P(g[s.knee]), H = P(g[s.hip]);
+      len[side] = o.mode === 'pinFixed' ? lens[side] : { a: norm(sub(K0, H)), b: norm(sub(A0, K0)) };
+      goal[side] = A;
+    }
+    // A goal beyond the leg's reach moves the pelvis toward it (the body, not the foot, gives way; Motion2MixamoRig's
+    // public README describes the same: "the hips move"). Source: that README (method). Status: experimental.
+    let shiftRoot = [0, 0, 0], short = 0;
+    for (const side of ['left', 'right']) {
+      const s = SIDES[side], H = P(g[s.hip]), d = sub(goal[side], H), dl = norm(d), reach = len[side].a + len[side].b - 1e-3;
+      if (dl > reach && dl > 0) { shiftRoot = add(shiftRoot, mul(d, (dl - reach) / dl)); short++; }
+    }
+    if (short) {
+      shiftRoot = mul(shiftRoot, 1 / short);
+      for (let i = 0; i < 33; i++) g[i] = { ...g[i], x: g[i].x + shiftRoot[0], y: g[i].y + shiftRoot[1], z: g[i].z + shiftRoot[2] };
+      finalRoot[t] = add(finalRoot[t], shiftRoot);
+    }
+    for (const side of ['left', 'right']) {
+      const s = SIDES[side], A0 = P(g[s.ankle]), A = goal[side];
       if (norm(sub(A, A0)) < 1e-4) continue;
       const H = P(g[s.hip]), K0 = P(g[s.knee]);
-      const a = o.mode === 'pinFixed' ? lens[side].a : norm(sub(K0, H));
-      const b = o.mode === 'pinFixed' ? lens[side].b : norm(sub(A0, K0));
-      const r = twoBoneIK(H, K0, A, a, b);
+      const r = twoBoneIK(H, K0, A, len[side].a, len[side].b);
       if (!r.reached) out.unreached++;
       out.pinned++;
-      const shift = sub(r.A, A0);
       g[s.knee] = { ...g[s.knee], x: r.K[0], y: r.K[1], z: r.K[2] };
-      for (const i of [s.ankle, s.heel, s.toe]) g[i] = { ...g[i], x: g[i].x + shift[0], y: g[i].y + shift[1], z: g[i].z + shift[2] };
+      // The foot: rigid at its plant shape while planted (faded), else carried with the ankle.
+      const shift = sub(r.A, A0), w = weight[side][t], sh = shapes[side][t];
+      for (const [i, key] of [[s.heel, 'heel'], [s.toe, 'toe']]) {
+        const carried = add(P(g[i]), shift);
+        const placed = w > 0 && sh ? add(mul(add(r.A, sh[key]), w), mul(carried, 1 - w)) : carried;
+        g[i] = { ...g[i], x: placed[0], y: placed[1], z: placed[2] };
+      }
+      g[s.ankle] = { ...g[s.ankle], x: r.A[0], y: r.A[1], z: r.A[2] };
     }
   }
-  const world = solved.map((f, t) => (f ? f.map(p => ({ ...p, x: p.x - root[t][0], y: p.y - root[t][1], z: p.z - root[t][2] })) : null));
-  return { ...out, world, global: solved };
+  const world = solved.map((f, t) => (f ? f.map(p => ({ ...p, x: p.x - finalRoot[t][0], y: p.y - finalRoot[t][1], z: p.z - finalRoot[t][2] })) : null));
+  return { ...out, root: finalRoot, world, global: solved };
 }

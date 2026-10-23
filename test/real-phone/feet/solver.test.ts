@@ -66,6 +66,25 @@ describe('the foot solver', () => {
     for (let t = 0; t < N; t++) for (const j of [23, 24, 11, 12]) for (const k of ['x', 'y', 'z']) expect(pin.world[t][j][k]).toBeCloseTo(wl[t][j][k], 9);
   });
 
+  test('pinned, the whole foot (heel and toe as well as the ankle) stays still to under 1 mm through a noisy squat', () => {
+    const r = solveFeet(figure(squat, () => 0, 0.01), ts, { mode: 'pin' });
+    for (const j of [29, 31, 27]) {
+      const steps = r.global.slice(10, 80).map((f: any, i: number, a: any[]) => (i ? Math.hypot(f[j].x - a[i - 1][j].x, f[j].y - a[i - 1][j].y, f[j].z - a[i - 1][j].z) : 0));
+      expect(Math.max(...steps)).toBeLessThan(0.001);
+    }
+  });
+
+  test('a plant beyond the leg\'s reach lowers the pelvis instead of leaving the foot short', () => {
+    // for the middle third the feet read 3 cm lower under the hips: with the set's median leg lengths (pinFixed) the
+    // planted feet are then out of reach of straight legs
+    const wl = figure(() => 0, () => 0).map((f: any, t: number) => (t >= 30 && t < 60 ? f.map((p: any, j: number) => ([27, 28, 29, 30, 31, 32].includes(j) ? { ...p, y: p.y + 0.03 } : p)) : f));
+    const pin = solveFeet(wl, ts, { mode: 'pinFixed' }), only = solveFeet(wl, ts, { mode: 'root' });
+    const plantY = pin.global[15][27].y;
+    for (let t = 35; t < 55; t++) expect(Math.abs(pin.global[t][27].y - plantY)).toBeLessThan(0.002);
+    expect(pin.root[45][1] - only.root[45][1]).toBeGreaterThan(0.003); // the pelvis went down (y down) to reach
+    expect(pin.unreached).toBe(0);
+  });
+
   test('two-bone IK keeps the bone lengths and reaches a reachable target', () => {
     const H = [0, 0, 0], K0 = [0, 0.4, -0.1], A = [0.05, 0.75, 0.1];
     const r = twoBoneIK(H, K0, A, 0.42, 0.4);

@@ -25,6 +25,8 @@ import { ROOT, benchSets, countInWindow, decides, labelledSets, publicSets, vide
 import { sureRow } from '../accuracy/sure';
 // @ts-expect-error: a JavaScript module without types
 import { solveFeet } from './solver.js';
+// @ts-expect-error: a JavaScript module without types
+import { perturbSet } from '../stability/noise.mjs';
 
 const OUT = process.env.FEET_OUT;
 const gz = (f: string) => JSON.parse(gunzipSync(readFileSync(f)).toString());
@@ -63,7 +65,9 @@ function measure(wl: any[], ts: number[], image: any[] | null, frame: any, truth
   const inContact = (t: number, side: 'left' | 'right') => root.contact[side][t];
   const all = (t: number) => !!wl[t];
   const rootPts = root.root.filter(Boolean) as number[][];
-  const rootRange = rootPts.length ? 1000 * Math.hypot(...[0, 1, 2].map(k => q(rootPts.map(r => r[k]), 0.95) - q(rootPts.map(r => r[k]), 0.05))) : NaN;
+  const axis = (k: number) => (rootPts.length ? 1000 * (q(rootPts.map(r => r[k]), 0.95) - q(rootPts.map(r => r[k]), 0.05)) : NaN);
+  const rootAxes = [axis(0), axis(1), axis(2)];
+  const rootRange = Math.hypot(...rootAxes);
   const knee = (frames: any[]) => {
     if (!truth) return NaN;
     const e: number[] = [];
@@ -82,7 +86,7 @@ function measure(wl: any[], ts: number[], image: any[] | null, frame: any, truth
     rawSlide: slide(wl, t => all(t)),
     rootSlide: slide(root.global, inContact),
     pinSlide: slide(pin.global, inContact),
-    rootRange,
+    rootRange, rootX: rootAxes[0], rootY: rootAxes[1], rootZ: rootAxes[2],
     kneeRaw: knee(wl), kneePin: knee(pin.world), kneePinFixed: knee(pinFixed.world),
     legCVRaw: legCV(wl), legCVPin: legCV(pin.world), legCVPinFixed: legCV(pinFixed.world),
     penRaw: pen(root.global, root.floor), penPin: pen(pin.global, pin.floor),
@@ -95,7 +99,18 @@ test.skipIf(!OUT)('the foot solver: contacts, slide, root, knee truth, counts an
   mkdirSync(OUT!, { recursive: true });
   const rows: { name: string; suite: string; group: string; lift: string; label: number | null; m: Measure }[] = [];
   const counts: Record<string, Record<string, any>> = { base: {}, pin: {}, pinFixed: {} };
-  const sure: { suite: string; err: number; score: number }[] = [];
+  const sure: { name: string; suite: string; lift: string; err: number; score: number; raw: number; proxyMoves: number }[] = [];
+  // The noise proxy's moves of the core's scored count (flag.test.ts), so the two signals can be compared on one set.
+  const proxyMoves = (wl: any[], ts: number[], lift: string, shown: number, window?: [number, number]) => {
+    let k = 0;
+    for (let seed = 1; seed <= 5; seed++) {
+      const p = perturbSet({ worldLandmarks: wl, timestamps: ts, imageLandmarks: null }, { seed });
+      const r: any = summarizeCount(p.worldLandmarks, p.timestamps, lift);
+      const c = r.refused ? null : window ? countInWindow(r.reps ?? [], window) : r.count;
+      if (c !== shown) k++;
+    }
+    return k;
+  };
   const count = (wl: any[], ts: number[], lift: string, window?: [number, number]) => {
     const r: any = summarizeCount(wl, ts, lift);
     return r.refused ? 'refused' : window ? countInWindow(r.reps ?? [], window) : r.count;
@@ -108,8 +123,8 @@ test.skipIf(!OUT)('the foot solver: contacts, slide, root, knee truth, counts an
       counts.pinFixed[name] = { suite, lift, label, count: count(m.pinFixedWorld, ts, lift, o.window) };
       if (o.sureResult && decides(lift)) {
         const countOf = o.window ? (x: any) => countInWindow(x.reps ?? [], o.window) : (x: any) => x.count;
-        const s = sureRow(o.sureResult(), lift, label, countOf);
-        if (s.err !== null && !s.flagged && !s.moved && Number.isFinite(m.rootSlide)) sure.push({ suite, err: s.err, score: m.rootSlide });
+        const res = o.sureResult(), s = sureRow(res, lift, label, countOf);
+        if (s.err !== null && !s.flagged && !s.moved && Number.isFinite(m.rootSlide)) sure.push({ name, suite, lift, err: s.err, score: m.rootSlide, raw: m.rawSlide, proxyMoves: proxyMoves(wl, ts, lift, countOf(res), o.window) });
       }
     }
     delete m.pinWorld; delete m.pinFixedWorld;
@@ -145,6 +160,7 @@ test.skipIf(!OUT)('the foot solver: contacts, slide, root, knee truth, counts an
   for (const s of benchSets('repcount', 'build').sets) if (s.lift && liftDefinition(s.lift)) take(s.name, 'repcount', 'RepCount-A', s.lift, s.label, s.wl, s.ts, { sureResult: () => { const r: any = summarizeCount(s.wl, s.ts, s.lift!); return withBodyCheck({ ...r, worldLandmarks: s.wl, timestamps: s.ts, imageLandmarks: null, imageXY: s.image ?? null }, s.lift!); } });
 
   for (const k of Object.keys(counts)) writeFileSync(resolve(OUT!, `${k}.json`), JSON.stringify({ sets: counts[k] }) + '\n');
+  writeFileSync(resolve(OUT!, 'rows.json'), JSON.stringify({ rows: rows.map(r => ({ name: r.name, suite: r.suite, group: r.group, lift: r.lift, label: r.label, ...r.m })), sure }) + '\n');
   const f1 = (x: number) => (Number.isFinite(x) ? x.toFixed(1) : '-'), f0 = (x: number) => (Number.isFinite(x) ? Math.round(x).toString() : '-'), pc = (x: number) => (Number.isFinite(x) ? `${Math.round(100 * x)} %` : '-');
   const groups = [...new Set(rows.map(r => r.group))];
   const lines = [
@@ -162,14 +178,32 @@ test.skipIf(!OUT)('the foot solver: contacts, slide, root, knee truth, counts an
   }
   lines.push('', 'David\'s sets one by one (image landmarks used where stored): contact L/R, slide raw/root/pin mm.');
   for (const r of rows.filter(r => r.suite === 'david' || r.suite === 'video')) lines.push(`   ${r.group.padEnd(24)} ${r.name.split('/').slice(-1)[0].padEnd(48)} ${pc(r.m.contactL).padStart(5)}/${pc(r.m.contactR).padEnd(5)} ${f0(r.m.rawSlide)}/${f0(r.m.rootSlide)}/${f0(r.m.pinSlide)}${r.m.usedImage ? '' : '  (no image)'}`);
-  // Honesty: sure sets split at each suite group's median residual slide.
-  lines.push('', 'Honesty signal (sure.ts sure sets that decide; split at the group\'s median residual slide after the root, label-free):');
-  for (const [name, suites] of [['public A+B', ['publicA', 'publicB']], ['David stored+video', ['david', 'video']], ['RepCount-A', ['repcount']]] as const) {
-    const xs = sure.filter(s => (suites as readonly string[]).includes(s.suite));
-    if (!xs.length) continue;
-    const cut = med(xs.map(s => s.score)), lo = xs.filter(s => s.score <= cut), hi = xs.filter(s => s.score > cut);
-    const part = (ys: typeof xs) => `${ys.length} sets, ${ys.filter(y => y.err === 0).length} exact (${pc(ys.filter(y => y.err === 0).length / Math.max(1, ys.length))}), ${ys.filter(y => y.err >= 3).length} off by 3+`;
-    lines.push(`   ${name}: feet agree (slide <= ${f0(cut)} mm) ${part(lo)}; feet disagree ${part(hi)}`);
+  // Honesty: the residual slide of the planted feet after the root (label-free) against the count's error, on the sets
+  // the app shows as sure (sure.ts). Quartiles, within each lift, against the noise-proxy flag, and one absolute
+  // threshold chosen on half A (the most exact kept while asking on at most a fifth of half A's sure sets), judged on
+  // half B and read on David's sets and RepCount-A.
+  type SureSet = (typeof sure)[number];
+  const part = (ys: SureSet[]) => { const ex = ys.filter(y => y.err === 0).length; return `${ys.length} sets, ${ex} exact (${pc(ex / Math.max(1, ys.length))}), ${ys.filter(y => y.err >= 3).length} off by 3+`; };
+  const pub = sure.filter(x => x.suite === 'publicA' || x.suite === 'publicB');
+  lines.push('', 'Honesty signal: the residual slide of the planted feet after the root (mm, label-free), on the sets shown as sure (sure.ts) that decide.');
+  for (const key of ['score', 'raw'] as const) {
+    const xs = [...pub].sort((a, b) => a[key] - b[key]), n = xs.length;
+    for (let i = 0; i < 4; i++) { const g = xs.slice(Math.floor((i * n) / 4), Math.floor(((i + 1) * n) / 4)); lines.push(`   public, ${key === 'score' ? 'after the root' : 'raw (no solver)'} Q${i + 1} (${f0(g[0][key])}-${f0(g[g.length - 1][key])} mm): ${part(g)}`); }
+  }
+  const lifts = [...new Set(pub.map(x => x.lift))], lo: SureSet[] = [], hi: SureSet[] = [];
+  for (const l of lifts) { const xs = pub.filter(x => x.lift === l); if (xs.length < 10) continue; const c = med(xs.map(x => x.score)); lo.push(...xs.filter(x => x.score <= c)); hi.push(...xs.filter(x => x.score > c)); }
+  lines.push(`   public, split within each lift of 10 sets or more: feet agree ${part(lo)}; disagree ${part(hi)}`);
+  const cAll = med(pub.map(x => x.score));
+  for (const [nm, f] of [['proxy still', (x: SureSet) => x.proxyMoves === 0], ['proxy moves', (x: SureSet) => x.proxyMoves > 0]] as const) {
+    const xs = pub.filter(f); lines.push(`   public, ${nm}: feet agree (<= ${f0(cAll)} mm) ${part(xs.filter(x => x.score <= cAll))}; disagree ${part(xs.filter(x => x.score > cAll))}`);
+  }
+  const A = pub.filter(x => x.suite === 'publicA'), Bh = pub.filter(x => x.suite === 'publicB');
+  let T = NaN, best = -1;
+  for (let t = 20; t < 120; t += 2) { const kept = A.filter(x => x.score <= t); if (A.length - kept.length > 0.2 * A.length) continue; const r = kept.filter(x => x.err === 0).length / kept.length; if (r > best) { best = r; T = t; } }
+  for (const [nm, H] of [['half A (chosen on)', A], ['half B (judged)', Bh], ['David stored+video', sure.filter(x => x.suite === 'david' || x.suite === 'video')], ['RepCount-A', sure.filter(x => x.suite === 'repcount')]] as const) {
+    lines.push(`   T = ${T} mm, ${nm}: sure today ${part(H)}; kept ${part(H.filter(x => x.score <= T))}; asked ${part(H.filter(x => x.score > T))}`);
+    lines.push(`      with the noise-proxy flag too: kept ${part(H.filter(x => x.score <= T && x.proxyMoves === 0))}; asked ${part(H.filter(x => !(x.score <= T && x.proxyMoves === 0)))}`);
+    lines.push(`      the noise-proxy flag alone: kept ${part(H.filter(x => x.proxyMoves === 0))}; asked ${part(H.filter(x => x.proxyMoves > 0))}`);
   }
   writeFileSync(resolve(OUT!, 'feet.txt'), lines.join('\n') + '\n');
   process.stdout.write(lines.join('\n') + '\n');
