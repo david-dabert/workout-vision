@@ -2,7 +2,8 @@ Robust state, 22 October 2026 (robust-state.test.ts, K = 5 reads of the noise pr
 The state chosen for its invariance under the noise proxy, among the exercise profile's signals and the core's own angle, each
 counted through the core's rep logic (sgc.js coreOnSignal). Labels never enter the choice.
 
-1. First run (the candidate must count within 25 % of the median count of every state): compare-variants against the core.
+1. First run (a state must count within 25 % of the median count of every state, or within 2 reps, whichever is larger): compare-variants
+   against the core.
 -- rule any (the most invariant state wins, the core first on a tie)
    suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
    david        20      13 -> 11                1 -> 2                0          2     0.50       1        5
@@ -25,7 +26,7 @@ counted through the core's rep logic (sgc.js coreOnSignal). Labels never enter t
    - publicA: off by 3 or more 74 -> 76
    - publicB: exact 258 -> 256
    - repcount: off by 3 or more 21 -> 26
--- rule core-moves (the core keeps the set unless its own count moves and another state's does not)
+-- rule core-moves (the core keeps the set unless its own count moves on some read, or it refuses, and another state's does not)
    suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
    david        20      13 -> 11                1 -> 1                0          2     0.50       0        4
    video        16       8 -> 10                4 -> 3                2          0     0.50       1        4
@@ -48,17 +49,21 @@ counted through the core's rep logic (sgc.js coreOnSignal). Labels never enter t
    - publicB: off by 3 or more 89 -> 91
    - repcount: off by 3 or more 21 -> 23
 
-2. Second run, 1343 sets with every state's counts recorded; 3,456 label-free rules read from it (a floor on the core's moves M,
-   the state's moves m, a band around the core or the median or none, agreement between states, a strength floor, world signals only).
-   Chosen on half A and the rendered sets (no loss of exact, no rise of off by 3); verdict read on every suite by the net rule.
-   Rules not losing on half A: 616 of 3456; passing the net rule on every suite: 4.
+2. Second run, 1343 sets; 886 with at least one candidate state counted on every read (366 with no signal profile,
+   90 with no candidate counting on the clean read, 1 refused by the app). 3,456 label-free rules read from it:
+   a floor M on the core's moves (1, 2, 3), a ceiling m on the state's moves (0, 1), a band around the core, the median of the states or none
+   (max(1 or 2 reps, 25 or 50 % of the centre)), agreement A between states (1, 2), a strength floor (0, 3, 6, 10), a share of the strongest
+   candidate that counted on the clean read (0, 0.35, 0.6), world signals only or all. Ties: fewest moves, smallest largest move, highest
+   strength, the lower count, then the name. Chosen on half A (no loss of exact, no rise of off by 3); verdict on every suite by the net rule.
+   Rules not losing on half A: 616 of 3456; passing the net rule on every suite: 4, differing only in the strength floor.
    Format per suite: exact before->after / off by 3 or more before->after.
    M>=1 m<=0 band core max(1,0.25) agree>=1 strength>=0 share>=0.6 world | david:13->13/1->1 video:8->8/4->4 publicA:256->261/74->73 publicB:258->258/89->89 synthetic:74->76/13->13 repcount:26->26/21->21 occlusion:27->29/36->36
    M>=1 m<=0 band core max(1,0.25) agree>=1 strength>=3 share>=0.6 world | david:13->13/1->1 video:8->8/4->4 publicA:256->261/74->73 publicB:258->258/89->89 synthetic:74->76/13->13 repcount:26->26/21->21 occlusion:27->29/36->36
    M>=1 m<=0 band core max(1,0.25) agree>=1 strength>=6 share>=0.6 world | david:13->13/1->1 video:8->8/4->4 publicA:256->261/74->73 publicB:258->258/89->89 synthetic:74->76/13->13 repcount:26->26/21->21 occlusion:27->29/36->36
    M>=1 m<=0 band core max(1,0.25) agree>=1 strength>=10 share>=0.6 world | david:13->13/1->1 video:8->8/4->4 publicA:256->261/74->73 publicB:258->259/89->89 synthetic:74->76/13->13 repcount:26->26/21->21 occlusion:27->29/36->36
-   The best of them, set by set (the david suite counts the 5 press sets, which decide nothing; the scoreboard's 15 deciding sets lose
-   the bicep curl 5 and gain only the overhead press 10, so the real-phone gate of R2 fails 12 -> 11):
+   The first of them (strength floor 0; all four gain 5 exact on half A), set by set. The david suite counts the 5 press sets, which decide
+   nothing: the scoreboard's 15 deciding sets lose the bicep curl 5 and gain nothing, the overhead press 10 it gains deciding nothing, so
+   the real-phone gate of R2 fails 12 -> 11.
      david     label   5 core   5 ->   4 via w.elbowL       coreMoves 1  sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz
      david     label  10 core   9 ->  10 via w.elbowYR      coreMoves 5  landmarks/overhead_press_10_front_mufhjkku.json.gz
      video     label   7 core   5 ->   6 via w.wristYR      coreMoves 4  sets-07oct-video/sissy_squat_7_5006.json.gz
@@ -120,22 +125,7 @@ counted through the core's rep logic (sgc.js coreOnSignal). Labels never enter t
      occlusion label   6 core   7 ->   6 via w.shoulderL    coreMoves 2  occlusion/michelle-overhead_press-v0-dim.json.gz
      occlusion label   6 core   5 ->   6 via w.hipL         coreMoves 1  occlusion/soldier-squat-v90-rack.json.gz
 
-3. The core's own moves under the proxy as an honesty flag (R16, right when sure): the core's exact rate by (the settings grid
-   agrees, as the sensitivity check reads it; the count is still under the 5 proxy reads). Counted sets, body check and head rule not applied.
-   -- public A+B
-      grid agrees  proxy moves  n= 130 exact   43 ( 33 %) off3+   7
-      grid agrees  proxy still  n= 674 exact  437 ( 65 %) off3+   6
-      grid moves   proxy moves  n=  63 exact   15 ( 24 %) off3+  15
-      grid moves   proxy still  n=  51 exact   19 ( 37 %) off3+   2
-      sure as today (grid agrees): 804 sets, 60 % exact, off3+ 13; sure only if the proxy is still too: 674 sets, 65 % exact, off3+ 6
-   -- David stored+video
-      grid agrees  proxy moves  n=   5 exact    3 ( 60 %) off3+   0
-      grid agrees  proxy still  n=  15 exact   12 ( 80 %) off3+   0
-      grid moves   proxy moves  n=  11 exact    5 ( 45 %) off3+   1
-      grid moves   proxy still  n=   1 exact    1 (100 %) off3+   0
-      sure as today (grid agrees): 20 sets, 75 % exact, off3+ 0; sure only if the proxy is still too: 15 sets, 80 % exact, off3+ 0
-   -- RepCount-A
-      grid agrees  proxy moves  n=  19 exact    5 ( 26 %) off3+   4
-      grid agrees  proxy still  n=  31 exact   18 ( 58 %) off3+   2
-      grid moves   proxy moves  n=  22 exact    3 ( 14 %) off3+   8
-      sure as today (grid agrees): 50 sets, 46 % exact, off3+ 6; sure only if the proxy is still too: 31 sets, 58 % exact, off3+ 2
+3. The honesty flag (the core's own count moving under the proxy) is measured in flag.txt (flag.test.ts), on the sets the app shows as
+   sure as it ships. A first reading here, on 22 October, is withdrawn: it read the settings grid from a file written before the last
+   counting change (779ebaa), left the body check and the head rule out, and counted 366 sets with no signal profile as still under the
+   proxy without reading them (the independent check of 23 October). The bench now reads the core under the proxy before the profile.

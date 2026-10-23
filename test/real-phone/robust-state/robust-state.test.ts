@@ -9,8 +9,8 @@
 // state; its clean count is the set's. Label-free: no label enters the choice; a candidate must count near the median
 // of every state's count (a flat signal is invariant and counts one). The output keeps, per set, the core's count and
 // moves and the best other state, so two rules are read from one run: `any` (the most invariant state wins, the core's
-// own angle first on a tie) and `core-moves` (the core keeps the set unless its own count moves on some read and the
-// other state's does not). Every set of variant-eval's suites, in its format (compare-variants).
+// own angle first on a tie) and `core-moves` (the core keeps the set unless its own count moves on some read, or it
+// refuses, and the other state's does not). Every set of variant-eval's suites, in its format (compare-variants).
 // Nearest tried work (R14): SGC combined the profile's signals by hand-set weights (TRIED.md, 8 October; a check, not
 // a counter); the consensus bench took the mode of one signal's reads (20 October; does not ship). Neither chose the
 // signal by its invariance.
@@ -65,16 +65,18 @@ function chooseState(lift: string, wl: any[], ts: number[], il: any[] | null, xy
   const core = coreCount(clean, lift, window);
   const def = liftDefinition(lift), profile = signalProfile(lift);
   const base = { count: core.count, state: 'core', coreMoves: 0, moves: 0, candidates: 0 };
-  if (!def || !profile || ts.length < 10) return { ...base, why: 'no profile' };
+  if (ts.length < 10) return { ...base, why: 'too short' };
   // The reads: the clean one and K under the noise proxy; the image landmarks follow the poses that remain.
   const reads: Read[] = [clean];
   for (let seed = 1; seed <= K; seed++) {
     const p = perturbSet({ worldLandmarks: wl, timestamps: ts, imageLandmarks: il }, { seed });
     reads.push({ wl: p.worldLandmarks, ts: p.timestamps, image: imageOf(p.worldLandmarks, p.imageLandmarks ?? il, xy) });
   }
-  // The core's own state: its count on every read.
+  // The core's own state: its count on every read. Read before the profile is looked up: until 23 October 2026 a set
+  // with no profile returned first, with coreMoves left at 0 though never read (the independent check of that day).
   const coreReads = reads.map((r, i) => (i === 0 ? core.count : coreCount(r, lift, window).count));
   const coreMoves = coreReads.slice(1).filter(c => c !== coreReads[0]).length;
+  if (!def || !profile) return { ...base, coreMoves, core: core.count, coreReads, why: 'no profile' };
   // The candidate states: the profile's signals, world and image, signed to rise from rest; a one-limb profile on the
   // side the core read (both sides when it refused).
   const sides = profile.mode === 'side' ? (core.arm ? [core.arm] : ['left', 'right']) : [null];
