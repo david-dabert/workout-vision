@@ -49,13 +49,14 @@ counted through the core's rep logic (sgc.js coreOnSignal). Labels never enter t
    - publicB: off by 3 or more 89 -> 91
    - repcount: off by 3 or more 21 -> 23
 
-2. Second run, 1343 sets; 886 with at least one candidate state counted on every read (366 with no signal profile,
-   90 with no candidate counting on the clean read, 1 refused by the app). 3,456 label-free rules read from it:
+2. Second run, 1343 sets; 886 with at least one candidate state that counted on the clean read, its counts kept on every read
+   (366 with no signal profile, 90 with no candidate counting on the clean read, 1 refused by the app).
+   3,456 label-free rule settings read from it (2,592 distinct rules: with no band the four band sizes are one rule):
    a floor M on the core's moves (1, 2, 3), a ceiling m on the state's moves (0, 1), a band around the core, the median of the states or none
    (max(1 or 2 reps, 25 or 50 % of the centre)), agreement A between states (1, 2), a strength floor (0, 3, 6, 10), a share of the strongest
    candidate that counted on the clean read (0, 0.35, 0.6), world signals only or all. Ties: fewest moves, smallest largest move, highest
    strength, the lower count, then the name. Chosen on half A (no loss of exact, no rise of off by 3); verdict on every suite by the net rule.
-   Rules not losing on half A: 616 of 3456; passing the net rule on every suite: 4, differing only in the strength floor.
+   Settings not losing on half A: 616 of 3456; passing the net rule on every suite: 4, differing only in the strength floor.
    Format per suite: exact before->after / off by 3 or more before->after.
    M>=1 m<=0 band core max(1,0.25) agree>=1 strength>=0 share>=0.6 world | david:13->13/1->1 video:8->8/4->4 publicA:256->261/74->73 publicB:258->258/89->89 synthetic:74->76/13->13 repcount:26->26/21->21 occlusion:27->29/36->36
    M>=1 m<=0 band core max(1,0.25) agree>=1 strength>=3 share>=0.6 world | david:13->13/1->1 video:8->8/4->4 publicA:256->261/74->73 publicB:258->258/89->89 synthetic:74->76/13->13 repcount:26->26/21->21 occlusion:27->29/36->36
@@ -126,6 +127,6 @@ counted through the core's rep logic (sgc.js coreOnSignal). Labels never enter t
      occlusion label   6 core   5 ->   6 via w.hipL         coreMoves 1  occlusion/soldier-squat-v90-rack.json.gz
 
 3. The honesty flag (the core's own count moving under the proxy) is measured in flag.txt (flag.test.ts), on the sets the app shows as
-   sure as it ships. A first reading here, on 22 October, is withdrawn: it read the settings grid from a file written before the last
-   counting change (779ebaa), left the body check and the head rule out, and counted 366 sets with no signal profile as still under the
-   proxy without reading them (the independent check of 23 October). The bench now reads the core under the proxy before the profile.
+   sure as it ships. The first reading here (6bc8ed6) is withdrawn: it read the settings grid from a file written before the last counting
+   change (779ebaa), left the body check and the head rule out, and of the 366 sets with no signal profile, which the bench never read under
+   the proxy, counted 315 as still (the independent check of 23 October). The bench now reads the core under the proxy before the profile.

@@ -16,10 +16,14 @@ then split by whether the core's scored count moves on any proxy read. The flag 
    sure, proxy moves (asked):  2 sets, 2 exact (100 %), 0 off by 3 or more
       asked: machine_chest_supported_row_6.json.gz  off by 0  moves 1 of 5
       asked: sissy_squat_9_5007.json.gz  off by 0  moves 1 of 5
+-- David blind: 0 counted
+   shown as sure today:        0 sets, 0 exact (0 %), 0 off by 3 or more
+   sure, proxy still (kept):   0 sets, 0 exact (0 %), 0 off by 3 or more
+   sure, proxy moves (asked):  0 sets, 0 exact (0 %), 0 off by 3 or more
 -- RepCount-A: 59 counted
-   shown as sure today:        39 sets, 21 exact (54 %), 4 off by 3 or more
+   shown as sure today:        40 sets, 21 exact (53 %), 4 off by 3 or more
    sure, proxy still (kept):   29 sets, 16 exact (55 %), 2 off by 3 or more
-   sure, proxy moves (asked):  10 sets, 5 exact (50 %), 2 off by 3 or more
+   sure, proxy moves (asked):  11 sets, 5 exact (45 %), 2 off by 3 or more
       asked: stu1_38.json.gz  off by 0  moves 1 of 5
       asked: stu10_24.json.gz  off by 6  moves 3 of 5
       asked: stu10_48.json.gz  off by 1  moves 1 of 5
@@ -27,6 +31,7 @@ then split by whether the core's scored count moves on any proxy read. The flag 
       asked: stu5_12.json.gz  off by 0  moves 3 of 5
       asked: stu6_63.json.gz  off by 0  moves 3 of 5
       asked: stu7_65.json.gz  off by 0  moves 1 of 5
+      asked: stu8_42.json.gz  off by 1  moves 3 of 5
       asked: stu9_13.json.gz  off by 0  moves 1 of 5
       asked: stu9_17.json.gz  off by 1  moves 1 of 5
       asked: train2542.json.gz  off by 1  moves 1 of 5
