@@ -1,0 +1,37 @@
+Honesty flag, 2026-10-23 (flag.test.ts, K = 5 reads of the noise proxy at intensity 0.5; measured, decides nothing).
+Sets that decide; shown as sure as the app ships (sure.ts: counted, not flagged by the body check, the sensitivity check or a refused head rep),
+then split by whether the core's scored count moves on any proxy read. The flag would ask on the sets where it moves.
+-- public: 829 counted
+   shown as sure today:        665 sets, 408 exact (61 %), 6 off by 3 or more
+   sure, proxy still (kept):   529 sets, 354 exact (67 %), 3 off by 3 or more
+   sure, proxy moves (asked):  136 sets, 54 exact (40 %), 3 off by 3 or more
+-- David stored: 15 counted
+   shown as sure today:        12 sets, 10 exact (83 %), 0 off by 3 or more
+   sure, proxy still (kept):   11 sets, 9 exact (82 %), 0 off by 3 or more
+   sure, proxy moves (asked):  1 sets, 1 exact (100 %), 0 off by 3 or more
+      asked: bicep_curl_5_side_f5e5bdf2.json.gz  off by 0  moves 1 of 5
+-- David video: 13 counted
+   shown as sure today:        4 sets, 4 exact (100 %), 0 off by 3 or more
+   sure, proxy still (kept):   2 sets, 2 exact (100 %), 0 off by 3 or more
+   sure, proxy moves (asked):  2 sets, 2 exact (100 %), 0 off by 3 or more
+      asked: machine_chest_supported_row_6.json.gz  off by 0  moves 1 of 5
+      asked: sissy_squat_9_5007.json.gz  off by 0  moves 1 of 5
+-- David blind: 0 counted
+   shown as sure today:        0 sets, 0 exact (0 %), 0 off by 3 or more
+   sure, proxy still (kept):   0 sets, 0 exact (0 %), 0 off by 3 or more
+   sure, proxy moves (asked):  0 sets, 0 exact (0 %), 0 off by 3 or more
+-- RepCount-A: 59 counted
+   shown as sure today:        40 sets, 21 exact (53 %), 4 off by 3 or more
+   sure, proxy still (kept):   29 sets, 16 exact (55 %), 2 off by 3 or more
+   sure, proxy moves (asked):  11 sets, 5 exact (45 %), 2 off by 3 or more
+      asked: stu1_38.json.gz  off by 0  moves 1 of 5
+      asked: stu10_24.json.gz  off by 6  moves 3 of 5
+      asked: stu10_48.json.gz  off by 1  moves 1 of 5
+      asked: stu3_39.json.gz  off by 4  moves 4 of 5
+      asked: stu5_12.json.gz  off by 0  moves 3 of 5
+      asked: stu6_63.json.gz  off by 0  moves 3 of 5
+      asked: stu7_65.json.gz  off by 0  moves 1 of 5
+      asked: stu8_42.json.gz  off by 1  moves 3 of 5
+      asked: stu9_13.json.gz  off by 0  moves 1 of 5
+      asked: stu9_17.json.gz  off by 1  moves 1 of 5
+      asked: train2542.json.gz  off by 1  moves 1 of 5
