@@ -1,0 +1,141 @@
+Robust state, 22 October 2026 (robust-state.test.ts, K = 5 reads of the noise proxy at intensity 0.5; measured, decides nothing).
+The state chosen for its invariance under the noise proxy, among the exercise profile's signals and the core's own angle, each
+counted through the core's rep logic (sgc.js coreOnSignal). Labels never enter the choice.
+
+1. First run (the candidate must count within 25 % of the median count of every state): compare-variants against the core.
+-- rule any (the most invariant state wins, the core first on a tie)
+   suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+   david        20      13 -> 11                1 -> 2                0          2     0.50       1        5
+   video        16       8 -> 9                 4 -> 4                2          1     0.00       2        5
+   publicA     546     256 -> 261              74 -> 76              21         16     0.43      14       74
+   publicB     518     258 -> 256              89 -> 82              14         16     0.03      14       88
+   synthetic    96      74 -> 85               13 -> 3               13          2     6.67       1       22
+   repcount     79      26 -> 30               21 -> 26              10          6     0.56       7       34
+   occlusion    68      27 -> 38               36 -> 22              11          0     9.09       0       20
+   david      distinct clips: 0 gained, 2 lost
+   video      distinct clips: 2 gained, 1 lost
+   publicA    distinct clips: 16 gained, 13 lost
+   publicB    distinct clips: 11 gained, 11 lost
+   synthetic  distinct clips: 7 gained, 2 lost
+   repcount   distinct clips: 8 gained, 5 lost
+   occlusion  distinct clips: 9 gained, 0 lost
+   VERDICT: does not ship
+   - David's sets: fewer exact or a set newly off by 3 (R2)
+   - David's videos: fewer exact or a set newly off by 3 (R2)
+   - publicA: off by 3 or more 74 -> 76
+   - publicB: exact 258 -> 256
+   - repcount: off by 3 or more 21 -> 26
+-- rule core-moves (the core keeps the set unless its own count moves and another state's does not)
+   suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+   david        20      13 -> 11                1 -> 1                0          2     0.50       0        4
+   video        16       8 -> 10                4 -> 3                2          0     0.50       1        4
+   publicA     546     256 -> 262              74 -> 80              16         10     0.96      13       47
+   publicB     518     258 -> 258              89 -> 91               9          9     0.06       7       41
+   synthetic    96      74 -> 82               13 -> 7                9          1     4.90       0       11
+   repcount     79      26 -> 27               21 -> 23               5          4     0.00       3       16
+   occlusion    68      27 -> 32               36 -> 32               5          0     3.20       0        6
+   david      distinct clips: 0 gained, 2 lost
+   video      distinct clips: 2 gained, 0 lost
+   publicA    distinct clips: 12 gained, 8 lost
+   publicB    distinct clips: 7 gained, 7 lost
+   synthetic  distinct clips: 6 gained, 1 lost
+   repcount   distinct clips: 5 gained, 4 lost
+   occlusion  distinct clips: 5 gained, 0 lost
+   VERDICT: does not ship
+   - David's sets: fewer exact or a set newly off by 3 (R2)
+   - David's videos: fewer exact or a set newly off by 3 (R2)
+   - publicA: off by 3 or more 74 -> 80
+   - publicB: off by 3 or more 89 -> 91
+   - repcount: off by 3 or more 21 -> 23
+
+2. Second run, 1343 sets with every state's counts recorded; 3,456 label-free rules read from it (a floor on the core's moves M,
+   the state's moves m, a band around the core or the median or none, agreement between states, a strength floor, world signals only).
+   Chosen on half A and the rendered sets (no loss of exact, no rise of off by 3); verdict read on every suite by the net rule.
+   Rules not losing on half A: 616 of 3456; passing the net rule on every suite: 4.
+   Format per suite: exact before->after / off by 3 or more before->after.
+   M>=1 m<=0 band core max(1,0.25) agree>=1 strength>=0 share>=0.6 world | david:13->13/1->1 video:8->8/4->4 publicA:256->261/74->73 publicB:258->258/89->89 synthetic:74->76/13->13 repcount:26->26/21->21 occlusion:27->29/36->36
+   M>=1 m<=0 band core max(1,0.25) agree>=1 strength>=3 share>=0.6 world | david:13->13/1->1 video:8->8/4->4 publicA:256->261/74->73 publicB:258->258/89->89 synthetic:74->76/13->13 repcount:26->26/21->21 occlusion:27->29/36->36
+   M>=1 m<=0 band core max(1,0.25) agree>=1 strength>=6 share>=0.6 world | david:13->13/1->1 video:8->8/4->4 publicA:256->261/74->73 publicB:258->258/89->89 synthetic:74->76/13->13 repcount:26->26/21->21 occlusion:27->29/36->36
+   M>=1 m<=0 band core max(1,0.25) agree>=1 strength>=10 share>=0.6 world | david:13->13/1->1 video:8->8/4->4 publicA:256->261/74->73 publicB:258->259/89->89 synthetic:74->76/13->13 repcount:26->26/21->21 occlusion:27->29/36->36
+   The best of them, set by set (the david suite counts the 5 press sets, which decide nothing; the scoreboard's 15 deciding sets lose
+   the bicep curl 5 and gain only the overhead press 10, so the real-phone gate of R2 fails 12 -> 11):
+     david     label   5 core   5 ->   4 via w.elbowL       coreMoves 1  sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz
+     david     label  10 core   9 ->  10 via w.elbowYR      coreMoves 5  landmarks/overhead_press_10_front_mufhjkku.json.gz
+     video     label   7 core   5 ->   6 via w.wristYR      coreMoves 4  sets-07oct-video/sissy_squat_7_5006.json.gz
+     publicA   label   2 core   3 ->   2 via w.shoulderR    coreMoves 1  countix/0_VBxJ4eNlg_000002_0.json.gz
+     publicA   label   5 core   3 ->   2 via w.elbowR       coreMoves 5  countix/G1E_vGTK4PI_000011_733.json.gz
+     publicA   label   2 core   0 ->   1 via w.wristWrist   coreMoves 1  countix/GDDNo4blYwg_000001_1605.json.gz
+     publicA   label   3 core   2 ->   3 via w.wristYR      coreMoves 1  countix/OfiZWZVPyD8_000011_5700.json.gz
+     publicA   label   3 core   0 ->   1 via w.elbowR       coreMoves 2  countix/Ss7rqrjXGJo_000011_8075.json.gz
+     publicA   label   9 core   9 ->   8 via w.shoulderL    coreMoves 1  countix/SxNHZthT2ZY_000007_0.json.gz
+     publicA   label   5 core   6 ->   5 via w.elbowYR      coreMoves 3  countix/bfQGBGK81JE_000001_0.json.gz
+     publicA   label   5 core   4 ->   5 via w.wristHipR    coreMoves 1  countix/hBq3ObGmxKE_000029_0.json.gz
+     publicA   label   3 core   3 ->   2 via w.elbowL       coreMoves 1  countix/nHal5q656nM_000013_0.json.gz
+     publicA   label   2 core   2 ->   1 via w.shoulderR    coreMoves 4  countix/rFRinf9b-Vw_000001_0.json.gz
+     publicA   label   2 core   3 ->   2 via w.elbowL       coreMoves 4  countix/tPLLge9jc3k_000003_5606.json.gz
+     publicA   label   7 core   6 ->   5 via w.shoulderL    coreMoves 3  countix/y2OiEe3K-8c_000003_0.json.gz
+     publicA   label   2 core   3 ->   2 via w.shoulderR    coreMoves 1  countix-whole/0_VBxJ4eNlg_000002_0.json.gz
+     publicA   label   3 core   3 ->   2 via w.wristHipL    coreMoves 1  countix-whole/4asMwQOZGSU_000027_1667.json.gz
+     publicA   label   3 core   2 ->   1 via w.shoulderL    coreMoves 2  countix-whole/CQDBpBmzYaQ_000000_7007.json.gz
+     publicA   label   3 core   0 ->   1 via w.hipR         coreMoves 3  countix-whole/WNW4qKlqL2g_000002_5700.json.gz
+     publicA   label   2 core   2 ->   1 via w.kneeL        coreMoves 4  countix-whole/Wu3MSbqdrbU_000095_0.json.gz
+     publicA   label   5 core   6 ->   5 via w.elbowYR      coreMoves 3  countix-whole/bfQGBGK81JE_000001_0.json.gz
+     publicA   label   5 core   4 ->   5 via w.wristYR      coreMoves 1  countix-whole/hBq3ObGmxKE_000029_0.json.gz
+     publicA   label   2 core   2 ->   1 via w.shoulderR    coreMoves 4  countix-whole/rFRinf9b-Vw_000001_0.json.gz
+     publicA   label   7 core   6 ->   5 via w.shoulderL    coreMoves 2  countix-whole/y2OiEe3K-8c_000003_0.json.gz
+     publicA   label  10 core  11 ->  10 via w.elbowL       coreMoves 4  mmfit/w02-dumbbell_shoulder_press-16302-17074.json.gz
+     publicA   label  10 core  11 ->  10 via w.elbowL       coreMoves 1  mmfit/w07-dumbbell_shoulder_press-12975-13685.json.gz
+     publicA   label  10 core  11 ->  10 via w.shoulderL    coreMoves 1  mmfit/w12-dumbbell_shoulder_press-14934-15569.json.gz
+     publicB   label   3 core   4 ->   3 via w.elbowL       coreMoves 1  countix/0Mfq1D151S0_000018_4805.json.gz
+     publicB   label   2 core   1 ->   2 via w.shoulderL    coreMoves 1  countix/BYHQ4KptOM4_000015_0.json.gz
+     publicB   label   5 core   4 ->   3 via w.wristHipL    coreMoves 3  countix/JWPJRoehLxg_000043_0.json.gz
+     publicB   label   3 core   2 ->   1 via w.elbowYL      coreMoves 2  countix/OhQcWwqQDR4_000042_100.json.gz
+     publicB   label   3 core   3 ->   2 via w.hipHeight    coreMoves 2  countix/QUy2Aum6oTM_000004_1133.json.gz
+     publicB   label   5 core   4 ->   3 via w.elbowYR      coreMoves 2  countix/Uj7VQlHIltM_000101_0.json.gz
+     publicB   label   2 core   2 ->   3 via w.noseY        coreMoves 2  countix/bpreIIDbeHA_000174_834.json.gz
+     publicB   label   2 core   2 ->   1 via w.elbowR       coreMoves 5  countix/n4M5qV8mJx8_000154_0.json.gz
+     publicB   label   4 core   5 ->   4 via w.elbowYL      coreMoves 3  countix/zHonAu4yl8I_000009_0.json.gz
+     publicB   label   4 core   4 ->   3 via w.elbowYL      coreMoves 1  countix-whole/0zJGjSfj7e8_000028_0.json.gz
+     publicB   label   4 core   3 ->   2 via w.wristYR      coreMoves 4  countix-whole/2BC4P5QWDSk_000008_200.json.gz
+     publicB   label   3 core   2 ->   1 via w.elbowL       coreMoves 2  countix-whole/5E3-5buOI6c_000050_0.json.gz
+     publicB   label   2 core   1 ->   2 via w.elbowL       coreMoves 1  countix-whole/AFF5uioXScE_000003_1833.json.gz
+     publicB   label   2 core   3 ->   2 via w.wristHipR    coreMoves 1  countix-whole/IdtnT3-IK7c_000005_1518.json.gz
+     publicB   label   5 core   4 ->   3 via w.wristHipL    coreMoves 3  countix-whole/JWPJRoehLxg_000043_0.json.gz
+     publicB   label   3 core   3 ->   2 via w.elbowR       coreMoves 3  countix-whole/OhQcWwqQDR4_000042_100.json.gz
+     publicB   label   5 core   4 ->   5 via w.shoulderL    coreMoves 2  countix-whole/efQJ44Mk6BM_000002_1568.json.gz
+     publicB   label   3 core   2 ->   1 via w.elbowL       coreMoves 1  countix-whole/ekhHO6lmWVM_000133_7700.json.gz
+     publicB   label   2 core   2 ->   1 via w.elbowL       coreMoves 1  countix-whole/n4M5qV8mJx8_000154_0.json.gz
+     repcount  label   7 core   6 ->   7 via w.shoulderL    coreMoves 3  repcount/stu10_34.json.gz
+     repcount  label   6 core   7 ->   6 via w.shoulderL    coreMoves 2  repcount/stu2_23.json.gz
+     repcount  label  14 core  10 ->   9 via w.elbowR       coreMoves 4  repcount/stu3_39.json.gz
+     repcount  label   5 core   7 ->   6 via w.elbowR       coreMoves 2  repcount/stu8_7.json.gz
+     repcount  label   2 core   2 ->   3 via w.wristHipL    coreMoves 1  repcount/stu9_13.json.gz
+     repcount  label   4 core   4 ->   3 via w.elbowL       coreMoves 2  repcount/test135.json.gz
+     repcount  label   6 core   6 ->   7 via w.elbowYL      coreMoves 4  repcount/test1454.json.gz
+     repcount  label   1 core   2 ->   1 via w.elbowYR      coreMoves 1  repcount/train2542.json.gz
+     synthetic label   7 core   8 ->   7 via w.kneeR        coreMoves 1  synth/michelle-squat-v0-a-10.json.gz
+     synthetic label   5 core   6 ->   5 via w.wristYR      coreMoves 4  synth/soldier-bicep_curl-v60-a-10.json.gz
+     synthetic label   5 core   5 ->   4 via w.elbowL       coreMoves 3  synth/soldier-bicep_curl-v90-a20.json.gz
+     synthetic label   8 core  10 ->   8 via w.elbowL       coreMoves 4  synth/soldier-overhead_press-v30-a-10.json.gz
+     occlusion label   6 core   7 ->   6 via w.shoulderL    coreMoves 2  occlusion/michelle-overhead_press-v0-dim.json.gz
+     occlusion label   6 core   5 ->   6 via w.hipL         coreMoves 1  occlusion/soldier-squat-v90-rack.json.gz
+
+3. The core's own moves under the proxy as an honesty flag (R16, right when sure): the core's exact rate by (the settings grid
+   agrees, as the sensitivity check reads it; the count is still under the 5 proxy reads). Counted sets, body check and head rule not applied.
+   -- public A+B
+      grid agrees  proxy moves  n= 130 exact   43 ( 33 %) off3+   7
+      grid agrees  proxy still  n= 674 exact  437 ( 65 %) off3+   6
+      grid moves   proxy moves  n=  63 exact   15 ( 24 %) off3+  15
+      grid moves   proxy still  n=  51 exact   19 ( 37 %) off3+   2
+      sure as today (grid agrees): 804 sets, 60 % exact, off3+ 13; sure only if the proxy is still too: 674 sets, 65 % exact, off3+ 6
+   -- David stored+video
+      grid agrees  proxy moves  n=   5 exact    3 ( 60 %) off3+   0
+      grid agrees  proxy still  n=  15 exact   12 ( 80 %) off3+   0
+      grid moves   proxy moves  n=  11 exact    5 ( 45 %) off3+   1
+      grid moves   proxy still  n=   1 exact    1 (100 %) off3+   0
+      sure as today (grid agrees): 20 sets, 75 % exact, off3+ 0; sure only if the proxy is still too: 15 sets, 80 % exact, off3+ 0
+   -- RepCount-A
+      grid agrees  proxy moves  n=  19 exact    5 ( 26 %) off3+   4
+      grid agrees  proxy still  n=  31 exact   18 ( 58 %) off3+   2
+      grid moves   proxy moves  n=  22 exact    3 ( 14 %) off3+   8
+      sure as today (grid agrees): 50 sets, 46 % exact, off3+ 6; sure only if the proxy is still too: 31 sets, 58 % exact, off3+ 2
