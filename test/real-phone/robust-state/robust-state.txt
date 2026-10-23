@@ -51,7 +51,8 @@ counted through the core's rep logic (sgc.js coreOnSignal). Labels never enter t
 
 2. Second run, 1343 sets; 886 with at least one candidate state that counted on the clean read, its counts kept on every read
    (366 with no signal profile, 90 with no candidate counting on the clean read, 1 refused by the app).
-   3,456 label-free rule settings read from it (2,592 distinct rules: with no band the four band sizes are one rule):
+   3,456 label-free rule settings read from it (at most 1,944 distinct rules: with no band the four band sizes coincide, and no profile
+   signal is weaker than 3, so the strength floors 0 and 3 coincide):
    a floor M on the core's moves (1, 2, 3), a ceiling m on the state's moves (0, 1), a band around the core, the median of the states or none
    (max(1 or 2 reps, 25 or 50 % of the centre)), agreement A between states (1, 2), a strength floor (0, 3, 6, 10), a share of the strongest
    candidate that counted on the clean read (0, 0.35, 0.6), world signals only or all. Ties: fewest moves, smallest largest move, highest
