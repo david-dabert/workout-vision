@@ -60,6 +60,8 @@ const nameOf = (lang, name) => name || (w => exerciseName(liftKey(w), lang));
 const measuredReps = w => (w.repDetailsVersion === 2 && Array.isArray(w.repDetails) && w.repDetails.length ? w.repDetails : null);
 // A set typed in by hand was never counted by the app.
 const byHand = w => w.source === 'manual';
+// The heading of the column that says a set's measures were read on a joint the body check doubted.
+const CAUTION = ['Mesures à prendre avec précaution', 'Measures to read with caution'];
 // A measure's heading, marked experimental while no measure is validated (measures.js).
 const exp = (h, fr) => `${h} (${fr ? 'mesure expérimentale' : 'experimental measure'})`;
 
@@ -80,6 +82,10 @@ export function setsCsv(sets, { lang, name, locale, measures = MEASURES_SHOWN } 
     if (!SPEED_CHANGE_SHOWN) header.splice(-1);
     for (let k = 8; k < header.length; k++) header[k] = exp(header[k], fr);
   }
+  // With the measures, whether they were read on a joint the body check doubted (saved-set.js keepsMeasures, 24 October
+  // 2026), as the report says beside them: "oui" on such a set, "non" on another, empty where no rep was measured.
+  const base = header.length;
+  if (measures) header.push(CAUTION[fr ? 0 : 1]);
   const rows = oldestFirst(sets).map(w => {
     const counted = byHand(w) ? null : countedBy(w);
     const reps = measuredReps(w);
@@ -96,7 +102,7 @@ export function setsCsv(sets, { lang, name, locale, measures = MEASURES_SHOWN } 
       w.duration > 0 ? num(w.duration, 1, f) : '',
       tempo || '',
       Number.isFinite(change) ? String(change) : '',
-    ].slice(0, header.length);
+    ].slice(0, base).concat(measures ? [reps ? (w.bodyCheck ? f.yes : f.no) : ''] : []);
   });
   return table(header, rows, f.sep);
 }
@@ -108,8 +114,8 @@ export function repsCsv(sets, { lang, name, locale, measures = MEASURES_SHOWN } 
   if (!measures) return null;
   const f = format(lang, locale), fr = lang === 'fr', label = nameOf(lang, name);
   const header = fr
-    ? ['Date de la série', 'Exercice', 'Rép.', 'Amplitude (°)', 'Concentrique (s)', 'Excentrique (s)', 'Vitesse max (°/s)', 'Vitesse moyenne (°/s)', 'Coupée par la vidéo']
-    : ['Set date', 'Exercise', 'Rep', 'Range (°)', 'Concentric (s)', 'Eccentric (s)', 'Peak speed (°/s)', 'Mean speed (°/s)', 'Cut by the video'];
+    ? ['Date de la série', 'Exercice', 'Rép.', 'Amplitude (°)', 'Concentrique (s)', 'Excentrique (s)', 'Vitesse max (°/s)', 'Vitesse moyenne (°/s)', 'Coupée par la vidéo', CAUTION[0]]
+    : ['Set date', 'Exercise', 'Rep', 'Range (°)', 'Concentric (s)', 'Eccentric (s)', 'Peak speed (°/s)', 'Mean speed (°/s)', 'Cut by the video', CAUTION[1]];
   for (let k = 3; k <= 7; k++) header[k] = exp(header[k], fr);
   const rows = [];
   for (const w of oldestFirst(sets)) {
@@ -118,9 +124,10 @@ export function repsCsv(sets, { lang, name, locale, measures = MEASURES_SHOWN } 
     const when = isoLocal(setTime(w)), lift = label(w);
     const partial = partialIn(reps);
     // After a correction the rows are the marks the app detected, not the reps the user saved: their number reads
-    // "Repère 3" / "Mark 3", as the report heads that column (report-sheet.js; third audit C12, 3 October).
+    // "Repère 3" / "Mark 3", as the report heads that column (report-sheet.js; third audit C12, 3 October); unless the
+    // set was read again and the person's reps found (recount), whose rows are theirs.
     const counted = byHand(w) ? null : countedBy(w);
-    const mark = counted !== null && counted !== w.reps ? (fr ? 'Repère' : 'Mark') : null;
+    const mark = counted !== null && counted !== w.reps && !w.recount ? (fr ? 'Repère' : 'Mark') : null;
     reps.forEach((r, i) => {
       const n = Number.isFinite(r.index) ? r.index : i + 1;
       // A rep the video cut, or a partial one (tempo.js), is counted, its range shown, its times and speeds not (as in the report).
@@ -128,7 +135,7 @@ export function repsCsv(sets, { lang, name, locale, measures = MEASURES_SHOWN } 
       rows.push([when, lift, mark ? `${mark} ${n}` : n, num(r.romDegrees, 0, f),
         // Tenths, as on the screens: at 15 samples a second the app measures nothing finer (set-notes.js; audit of 3 October).
         num(whole(r.concentricSec), 1, f), num(whole(r.eccentricSec), 1, f),
-        num(whole(r.peakSpeed), 0, f), num(whole(r.meanSpeed), 0, f), cut ? f.yes : f.no]);
+        num(whole(r.peakSpeed), 0, f), num(whole(r.meanSpeed), 0, f), cut ? f.yes : f.no, w.bodyCheck ? f.yes : f.no]);
     });
   }
   return rows.length ? table(header, rows, f.sep) : null;

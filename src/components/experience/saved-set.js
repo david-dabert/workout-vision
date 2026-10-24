@@ -20,8 +20,8 @@ import { compactWave, waveAngles } from './wave';
  * stands unanswered (coreAnalysis.js withBodyCheck, 8 October 2026), since they are all read on the counted joint's
  * angle, the one the check found disagreeing with the rest of the body (R8). Once the person has confirmed or corrected
  * the count (answered), they are shown with the doubt named beside them (David, 21 and 24 October 2026: the card had no
- * analysis after he confirmed; the check flags 5 of his 13 counted videos and the app's count was right on 3 of them,
- * test/real-phone/accuracy/body-check.txt). The replay reads this; the saved set keeps them, as it is saved only once
+ * analysis after he confirmed; on his videos the check flags 5 of the 11 counted (13 filmed, 2 refused) and the app's
+ * count was right on 3 of those 5, test/real-phone/accuracy/body-check.txt). The replay reads this; the saved set keeps them, as it is saved only once
  * answered. Status: convention, from R8 as David amended it.
  */
 export const keepsMeasures = (result, answered = false) => answered || result?.bodyCheck?.flagged !== true;

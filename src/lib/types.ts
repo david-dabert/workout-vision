@@ -304,6 +304,8 @@ export interface WorkoutRecord {
   choice?: { rule: string; offered: number[]; picked: 'main' | 'alt' | 'typed' } | null;
   /** The sensitivity check's recounts of a counted set (coreAnalysis.js withSensitivity). */
   sensitivity?: { moved: boolean; counts: (number | null)[] } | null;
+  /** A corrected count whose reps were found again (coreAnalysis.js recountTo): the counter's setting that found them. */
+  recount?: { tuning: Record<string, number> } | null;
   symmetry?: unknown;
   smoothness?: unknown;
   consistency?: unknown;

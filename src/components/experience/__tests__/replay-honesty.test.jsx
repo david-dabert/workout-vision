@@ -54,7 +54,13 @@ describe('the replay of a counted set', () => {
       expect(html).toContain('data-testid="rp-angle"');
       expect(html).toContain('data-testid="rp-exp"');
       expect(detail).toMatch(/92°/);
+      // With the card's caution line, word for word.
+      expect(html).toContain('data-testid="rp-doubted">À prendre avec précaution\u00A0: sur cette série, l’angle du coude ne bouge pas comme le reste de votre corps.</p>');
     }
+    expect((await replay('en', counted({ bodyCheck: { flagged: true, agreement: 0.2, second: null } }), 'bicep_curl', 2)).html).toContain('Read with caution: in this set, the elbow angle does not move like the rest of your body.');
+    // None before the answer, none on a set the check passed.
+    expect((await replay('fr', counted({ bodyCheck: { flagged: true, agreement: 0.2, second: null } }), 'bicep_curl', null)).html).not.toContain('rp-doubted');
+    expect((await replay('fr', counted(), 'bicep_curl', 2)).html).not.toContain('rp-doubted');
   });
 });
 

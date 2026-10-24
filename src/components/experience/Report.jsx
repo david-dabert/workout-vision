@@ -133,7 +133,7 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
 
   // The set as a file (measuresFile, report-sheet.js): every value says where it comes from.
   function exportJson() {
-    const payload = measuresFile({ fr, lift, date: when, count, counted, source, afterRefusal, proposed, proposedBy, reps, sides, planned,
+    const payload = measuresFile({ fr, lift, date: when, count, counted, source, afterRefusal, proposed, proposedBy, reps, sides, planned, doubted, joint: liftDefinition(lift)?.joint,
       person: { name, context, partner, level, pain, rpe, notes } });
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const day = when.toISOString().slice(0, 10);

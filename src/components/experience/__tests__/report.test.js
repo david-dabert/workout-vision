@@ -113,6 +113,23 @@ describe('reportSheet', () => {
     expect(reportSheet({ ...base, count: 2, counted: 3, reps, recounted: true }).columns[0]).not.toBe('Repère');
     expect(reportSheet({ ...base, count: 2, counted: 3, reps, recounted: true }).corrected).toBe(`Compté par l’appli${NBSP}: 3. Corrigé${NBSP}: 2.`);
   });
+  it('judges no rep short on a flagged set: the count alone in the opener, no ▾ in the table', () => {
+    const r = (i, rom) => ({ index: i, startTime: i * 3, endTime: i * 3 + 2, romDegrees: rom, concentricSec: 1, eccentricSec: 1 });
+    const reps = [r(1, 100), r(2, 100), r(3, 70), r(4, 100), r(5, 100)];
+    const plain = reportSheet({ ...base, count: 5, counted: 5, reps });
+    expect(plain.opener).toMatch(/dont une plus courte/);
+    expect(plain.rows.some(row => row[2].includes('▾'))).toBe(true);
+    const doubted = reportSheet({ ...base, count: 5, counted: 5, reps, doubted: true });
+    expect(doubted.opener).toBe('Série de 5 répétitions.');
+    expect(doubted.rows.some(row => row[2].includes('▾'))).toBe(false);
+    expect(doubted.shortRepNote).toBe('');
+  });
+  it('names the doubt in the set\'s measures file, beside its reps', () => {
+    const reps = [{ index: 1, startTime: 0, endTime: 2, romDegrees: 90, concentricSec: 1, eccentricSec: 1 }];
+    const set = { lift: 'squat', date: day, count: 1, counted: 1, source: 'counter-core', reps };
+    expect(measuresFile({ ...set, fr: true, doubted: true, joint: 'knee' }).reps.caution).toBe(`à prendre avec précaution${NBSP}: l’angle du genou ne bougeait pas comme le reste du corps`);
+    expect('caution' in measuresFile({ ...set, fr: true }).reps).toBe(false);
+  });
   it('names the body check\'s doubt beside a flagged set\'s measures, and only there', () => {
     const reps = [{ startTime: 0, endTime: 2, romDegrees: 90, concentricSec: 1, eccentricSec: 1 }];
     expect(reportSheet({ ...base, count: 1, counted: 1, reps, joint: 'knee', doubted: true }).details)
