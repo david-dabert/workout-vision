@@ -4,5 +4,10 @@
     "sets": "all",
     "date": "2026-10-04",
     "reason": "The pose-model bench (test/real-phone/pose-bench) counted all 43 CFRep videos, the 31 later put in the held-out half included, before scripts/public/cfrep.mjs split them; those counts informed keeping pose_landmarker_full. Found by Astra's review of 5 October."
+  },
+  "countix": {
+    "sets": "all",
+    "date": "2026-10-24",
+    "reason": "The loop gate's sealed run (test/real-phone/loop/exam-plan.md, exam-result.txt) scored every Countix held-out set, rebuilt in the cloud container, once on 24 October 2026; the half is seen and no exam may count it as unseen."
   }
 }

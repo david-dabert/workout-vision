@@ -1,0 +1,232 @@
+The loop counter, 24 October 2026 (loop.js, loop.test.ts; bench only, the app imports none of it; measured, decides nothing).
+A rep counted as one turn of the body's movement around its centre, in the position-velocity plane of the noise-whitened principal
+component with the clearest rhythm; "sure" when the least distance to the centre stays above k times the pose noise measured on the
+set (the dog-on-a-leash lemma: a perturbation smaller than that distance cannot change the count) and no end fragment is ambiguous.
+Two end rules, both fixed before the run: "rest" (complete turns from rest to rest, a fragment at either end counted at 0.7 of a
+turn, unsure between 0.35 and 0.85) and "round" (the whole turns rounded, unsure within 0.15 of a half). Every constant: UNSOURCED,
+experimental, none tuned on a clip. Choices made on publicA only.
+
+Sets: david 20, video 16, publicA 546, publicB 518, repcount 79, synthetic 96, occlusion 68; mean time per set 18 ms (Node, this machine).
+
+1. The loop counter alone against the core (compare-variants.mjs; exact / off by 3 or more, a refusal off by 3 or more).
+-- core -> loop, end rule rest
+   suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+   david        20      13 -> 9                 1 -> 4                1          5     1.50       3       10
+   video        16       8 -> 6                 4 -> 1                1          3     0.25       0        9
+   publicA     546     256 -> 105              74 -> 167             26        177    110.84     122      380
+   publicB     518     258 -> 95               89 -> 161             21        184    128.02     112      353
+   synthetic    96      74 -> 81               13 -> 6               13          6     1.89       4       27
+   repcount     79      26 -> 27               21 -> 25              12         11     0.00      16       54
+   occlusion    68      27 -> 44               36 -> 17              21          4    10.24       1       39
+   david      distinct clips: 1 gained, 4 lost
+   video      distinct clips: 1 gained, 3 lost
+   publicA    distinct clips: 20 gained, 104 lost
+   publicB    distinct clips: 17 gained, 102 lost
+   synthetic  distinct clips: 6 gained, 2 lost
+   repcount   distinct clips: 8 gained, 10 lost
+   occlusion  distinct clips: 14 gained, 3 lost
+   VERDICT: does not ship
+   - David's sets: fewer exact or a set newly off by 3 (R2)
+   - David's videos: fewer exact or a set newly off by 3 (R2)
+   - publicA: exact 256 -> 105
+   - publicA: off by 3 or more 74 -> 167
+   - publicA: the paired test favours the old run
+   - publicB: exact 258 -> 95
+   - publicB: off by 3 or more 89 -> 161
+   - publicB: the paired test favours the old run
+   - repcount: off by 3 or more 21 -> 25
+-- core -> loop, end rule round
+   suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+   david        20      13 -> 9                 1 -> 4                1          5     1.50       3       10
+   video        16       8 -> 7                 4 -> 1                1          2     0.00       0        7
+   publicA     546     256 -> 177              74 -> 163             46        125    35.58     118      321
+   publicB     518     258 -> 174              89 -> 158             38        122    43.06     108      281
+   synthetic    96      74 -> 86               13 -> 6               17          5     5.50       4       27
+   repcount     79      26 -> 18               21 -> 28               6         14     2.45      18       52
+   occlusion    68      27 -> 46               36 -> 18              21          2    14.09       1       38
+   david      distinct clips: 1 gained, 4 lost
+   video      distinct clips: 1 gained, 2 lost
+   publicA    distinct clips: 31 gained, 77 lost
+   publicB    distinct clips: 29 gained, 74 lost
+   synthetic  distinct clips: 7 gained, 2 lost
+   repcount   distinct clips: 5 gained, 12 lost
+   occlusion  distinct clips: 14 gained, 2 lost
+   VERDICT: does not ship
+   - David's sets: fewer exact or a set newly off by 3 (R2)
+   - David's videos: fewer exact or a set newly off by 3 (R2)
+   - publicA: exact 256 -> 177
+   - publicA: off by 3 or more 74 -> 163
+   - publicA: the paired test favours the old run
+   - publicB: exact 258 -> 174
+   - publicB: off by 3 or more 89 -> 158
+   - publicB: the paired test favours the old run
+   - repcount: exact 26 -> 18
+   - repcount: off by 3 or more 21 -> 28
+
+2. The certificate on the loop's own count: of the sets it calls sure, how many are exact (by k, the noise multiple).
+-- end rule rest
+   david     k2: 5/20 sure, 80 % exact, 0 off3 | k3: 5/20 sure, 80 % exact, 0 off3 | k4: 5/20 sure, 80 % exact, 0 off3 | k6: 5/20 sure, 80 % exact, 0 off3 | k8: 4/20 sure, 75 % exact, 0 off3 | k12: 3/20 sure, 100 % exact, 0 off3
+   video     k2: 6/16 sure, 83 % exact, 0 off3 | k3: 5/16 sure, 100 % exact, 0 off3 | k4: 5/16 sure, 100 % exact, 0 off3 | k6: 5/16 sure, 100 % exact, 0 off3 | k8: 3/16 sure, 100 % exact, 0 off3 | k12: 2/16 sure, 100 % exact, 0 off3
+   publicA   k2: 158/546 sure, 51 % exact, 14 off3 | k3: 150/546 sure, 49 % exact, 14 off3 | k4: 131/546 sure, 52 % exact, 12 off3 | k6: 108/546 sure, 53 % exact, 8 off3 | k8: 99/546 sure, 54 % exact, 7 off3 | k12: 67/546 sure, 63 % exact, 3 off3
+   publicB   k2: 124/518 sure, 61 % exact, 8 off3 | k3: 108/518 sure, 64 % exact, 5 off3 | k4: 100/518 sure, 68 % exact, 5 off3 | k6: 91/518 sure, 69 % exact, 5 off3 | k8: 77/518 sure, 69 % exact, 5 off3 | k12: 62/518 sure, 68 % exact, 4 off3
+   repcount  k2: 16/79 sure, 50 % exact, 2 off3 | k3: 12/79 sure, 58 % exact, 0 off3 | k4: 12/79 sure, 58 % exact, 0 off3 | k6: 12/79 sure, 58 % exact, 0 off3 | k8: 10/79 sure, 60 % exact, 0 off3 | k12: 7/79 sure, 71 % exact, 0 off3
+   synthetic k2: 87/96 sure, 90 % exact, 6 off3 | k3: 86/96 sure, 91 % exact, 5 off3 | k4: 85/96 sure, 92 % exact, 4 off3 | k6: 82/96 sure, 95 % exact, 4 off3 | k8: 80/96 sure, 98 % exact, 2 off3 | k12: 75/96 sure, 100 % exact, 0 off3
+   occlusion k2: 51/68 sure, 82 % exact, 9 off3 | k3: 50/68 sure, 82 % exact, 9 off3 | k4: 48/68 sure, 83 % exact, 8 off3 | k6: 44/68 sure, 89 % exact, 5 off3 | k8: 42/68 sure, 88 % exact, 5 off3 | k12: 37/68 sure, 89 % exact, 4 off3
+-- end rule round
+   david     k2: 5/20 sure, 80 % exact, 0 off3 | k3: 5/20 sure, 80 % exact, 0 off3 | k4: 5/20 sure, 80 % exact, 0 off3 | k6: 5/20 sure, 80 % exact, 0 off3 | k8: 4/20 sure, 75 % exact, 0 off3 | k12: 3/20 sure, 100 % exact, 0 off3
+   video     k2: 7/16 sure, 71 % exact, 0 off3 | k3: 6/16 sure, 83 % exact, 0 off3 | k4: 6/16 sure, 83 % exact, 0 off3 | k6: 6/16 sure, 83 % exact, 0 off3 | k8: 4/16 sure, 75 % exact, 0 off3 | k12: 3/16 sure, 67 % exact, 0 off3
+   publicA   k2: 212/546 sure, 53 % exact, 19 off3 | k3: 198/546 sure, 53 % exact, 19 off3 | k4: 169/546 sure, 54 % exact, 17 off3 | k6: 141/546 sure, 56 % exact, 11 off3 | k8: 125/546 sure, 54 % exact, 10 off3 | k12: 87/546 sure, 63 % exact, 6 off3
+   publicB   k2: 195/518 sure, 64 % exact, 17 off3 | k3: 165/518 sure, 67 % exact, 11 off3 | k4: 151/518 sure, 69 % exact, 11 off3 | k6: 135/518 sure, 70 % exact, 9 off3 | k8: 116/518 sure, 72 % exact, 9 off3 | k12: 87/518 sure, 69 % exact, 8 off3
+   repcount  k2: 22/79 sure, 41 % exact, 3 off3 | k3: 15/79 sure, 53 % exact, 0 off3 | k4: 14/79 sure, 57 % exact, 0 off3 | k6: 14/79 sure, 57 % exact, 0 off3 | k8: 11/79 sure, 55 % exact, 0 off3 | k12: 7/79 sure, 71 % exact, 0 off3
+   synthetic k2: 92/96 sure, 90 % exact, 6 off3 | k3: 91/96 sure, 91 % exact, 5 off3 | k4: 90/96 sure, 92 % exact, 4 off3 | k6: 87/96 sure, 95 % exact, 4 off3 | k8: 83/96 sure, 98 % exact, 2 off3 | k12: 77/96 sure, 100 % exact, 0 off3
+   occlusion k2: 53/68 sure, 83 % exact, 9 off3 | k3: 52/68 sure, 83 % exact, 9 off3 | k4: 50/68 sure, 84 % exact, 8 off3 | k6: 46/68 sure, 89 % exact, 5 off3 | k8: 44/68 sure, 89 % exact, 5 off3 | k12: 38/68 sure, 89 % exact, 4 off3
+
+3. The gate on the core's count, as the app would ship it: the core's count shown as sure when the loop is sure and counts the same.
+   Beside it, the app's sure set today (sure.ts: not flagged by the body check, the sensitivity check or a refused head rep).
+-- end rule rest
+   david     today:   14 sets,   11 exact (79 %),   0 off by 3+
+             k2   loop agrees and sure:    4 sets,    4 exact (100 %),   0 off by 3+   and the app sure too:    3 sets,    3 exact (100 %),   0 off by 3+
+             k3   loop agrees and sure:    4 sets,    4 exact (100 %),   0 off by 3+   and the app sure too:    3 sets,    3 exact (100 %),   0 off by 3+
+             k4   loop agrees and sure:    4 sets,    4 exact (100 %),   0 off by 3+   and the app sure too:    3 sets,    3 exact (100 %),   0 off by 3+
+             k6   loop agrees and sure:    4 sets,    4 exact (100 %),   0 off by 3+   and the app sure too:    3 sets,    3 exact (100 %),   0 off by 3+
+             k8   loop agrees and sure:    3 sets,    3 exact (100 %),   0 off by 3+   and the app sure too:    3 sets,    3 exact (100 %),   0 off by 3+
+             k12  loop agrees and sure:    3 sets,    3 exact (100 %),   0 off by 3+   and the app sure too:    3 sets,    3 exact (100 %),   0 off by 3+
+   video     today:    4 sets,    4 exact (100 %),   0 off by 3+
+             k2   loop agrees and sure:    4 sets,    4 exact (100 %),   0 off by 3+   and the app sure too:    2 sets,    2 exact (100 %),   0 off by 3+
+             k3   loop agrees and sure:    4 sets,    4 exact (100 %),   0 off by 3+   and the app sure too:    2 sets,    2 exact (100 %),   0 off by 3+
+             k4   loop agrees and sure:    4 sets,    4 exact (100 %),   0 off by 3+   and the app sure too:    2 sets,    2 exact (100 %),   0 off by 3+
+             k6   loop agrees and sure:    4 sets,    4 exact (100 %),   0 off by 3+   and the app sure too:    2 sets,    2 exact (100 %),   0 off by 3+
+             k8   loop agrees and sure:    2 sets,    2 exact (100 %),   0 off by 3+   and the app sure too:    1 sets,    1 exact (100 %),   0 off by 3+
+             k12  loop agrees and sure:    2 sets,    2 exact (100 %),   0 off by 3+   and the app sure too:    1 sets,    1 exact (100 %),   0 off by 3+
+   publicA   today:  377 sets,  224 exact (59 %),   1 off by 3+
+             k2   loop agrees and sure:  104 sets,   69 exact (66 %),   0 off by 3+   and the app sure too:   97 sets,   69 exact (71 %),   0 off by 3+
+             k3   loop agrees and sure:  100 sets,   66 exact (66 %),   0 off by 3+   and the app sure too:   93 sets,   66 exact (71 %),   0 off by 3+
+             k4   loop agrees and sure:   88 sets,   63 exact (72 %),   0 off by 3+   and the app sure too:   86 sets,   63 exact (73 %),   0 off by 3+
+             k6   loop agrees and sure:   74 sets,   53 exact (72 %),   0 off by 3+   and the app sure too:   74 sets,   53 exact (72 %),   0 off by 3+
+             k8   loop agrees and sure:   68 sets,   50 exact (74 %),   0 off by 3+   and the app sure too:   68 sets,   50 exact (74 %),   0 off by 3+
+             k12  loop agrees and sure:   51 sets,   39 exact (76 %),   0 off by 3+   and the app sure too:   51 sets,   39 exact (76 %),   0 off by 3+
+   publicB   today:  348 sets,  227 exact (65 %),   5 off by 3+
+             k2   loop agrees and sure:   86 sets,   66 exact (77 %),   0 off by 3+   and the app sure too:   83 sets,   64 exact (77 %),   0 off by 3+
+             k3   loop agrees and sure:   81 sets,   63 exact (78 %),   0 off by 3+   and the app sure too:   79 sets,   62 exact (78 %),   0 off by 3+
+             k4   loop agrees and sure:   77 sets,   63 exact (82 %),   0 off by 3+   and the app sure too:   75 sets,   62 exact (83 %),   0 off by 3+
+             k6   loop agrees and sure:   72 sets,   60 exact (83 %),   0 off by 3+   and the app sure too:   71 sets,   59 exact (83 %),   0 off by 3+
+             k8   loop agrees and sure:   62 sets,   51 exact (82 %),   0 off by 3+   and the app sure too:   61 sets,   50 exact (82 %),   0 off by 3+
+             k12  loop agrees and sure:   48 sets,   40 exact (83 %),   0 off by 3+   and the app sure too:   48 sets,   40 exact (83 %),   0 off by 3+
+   repcount  today:   43 sets,   22 exact (51 %),   5 off by 3+
+             k2   loop agrees and sure:    8 sets,    5 exact (62 %),   0 off by 3+   and the app sure too:    7 sets,    5 exact (71 %),   0 off by 3+
+             k3   loop agrees and sure:    7 sets,    5 exact (71 %),   0 off by 3+   and the app sure too:    6 sets,    5 exact (83 %),   0 off by 3+
+             k4   loop agrees and sure:    7 sets,    5 exact (71 %),   0 off by 3+   and the app sure too:    6 sets,    5 exact (83 %),   0 off by 3+
+             k6   loop agrees and sure:    7 sets,    5 exact (71 %),   0 off by 3+   and the app sure too:    6 sets,    5 exact (83 %),   0 off by 3+
+             k8   loop agrees and sure:    6 sets,    4 exact (67 %),   0 off by 3+   and the app sure too:    5 sets,    4 exact (80 %),   0 off by 3+
+             k12  loop agrees and sure:    6 sets,    4 exact (67 %),   0 off by 3+   and the app sure too:    5 sets,    4 exact (80 %),   0 off by 3+
+   synthetic today:   68 sets,   67 exact (99 %),   0 off by 3+
+             k2   loop agrees and sure:   67 sets,   67 exact (100 %),   0 off by 3+   and the app sure too:   65 sets,   65 exact (100 %),   0 off by 3+
+             k3   loop agrees and sure:   67 sets,   67 exact (100 %),   0 off by 3+   and the app sure too:   65 sets,   65 exact (100 %),   0 off by 3+
+             k4   loop agrees and sure:   67 sets,   67 exact (100 %),   0 off by 3+   and the app sure too:   65 sets,   65 exact (100 %),   0 off by 3+
+             k6   loop agrees and sure:   67 sets,   67 exact (100 %),   0 off by 3+   and the app sure too:   65 sets,   65 exact (100 %),   0 off by 3+
+             k8   loop agrees and sure:   67 sets,   67 exact (100 %),   0 off by 3+   and the app sure too:   65 sets,   65 exact (100 %),   0 off by 3+
+             k12  loop agrees and sure:   66 sets,   66 exact (100 %),   0 off by 3+   and the app sure too:   65 sets,   65 exact (100 %),   0 off by 3+
+   occlusion today:   27 sets,   23 exact (85 %),   1 off by 3+
+             k2   loop agrees and sure:   23 sets,   23 exact (100 %),   0 off by 3+   and the app sure too:   21 sets,   21 exact (100 %),   0 off by 3+
+             k3   loop agrees and sure:   23 sets,   23 exact (100 %),   0 off by 3+   and the app sure too:   21 sets,   21 exact (100 %),   0 off by 3+
+             k4   loop agrees and sure:   23 sets,   23 exact (100 %),   0 off by 3+   and the app sure too:   21 sets,   21 exact (100 %),   0 off by 3+
+             k6   loop agrees and sure:   23 sets,   23 exact (100 %),   0 off by 3+   and the app sure too:   21 sets,   21 exact (100 %),   0 off by 3+
+             k8   loop agrees and sure:   22 sets,   22 exact (100 %),   0 off by 3+   and the app sure too:   20 sets,   20 exact (100 %),   0 off by 3+
+             k12  loop agrees and sure:   20 sets,   20 exact (100 %),   0 off by 3+   and the app sure too:   18 sets,   18 exact (100 %),   0 off by 3+
+-- end rule round
+   david     today:   14 sets,   11 exact (79 %),   0 off by 3+
+             k2   loop agrees and sure:    4 sets,    4 exact (100 %),   0 off by 3+   and the app sure too:    3 sets,    3 exact (100 %),   0 off by 3+
+             k3   loop agrees and sure:    4 sets,    4 exact (100 %),   0 off by 3+   and the app sure too:    3 sets,    3 exact (100 %),   0 off by 3+
+             k4   loop agrees and sure:    4 sets,    4 exact (100 %),   0 off by 3+   and the app sure too:    3 sets,    3 exact (100 %),   0 off by 3+
+             k6   loop agrees and sure:    4 sets,    4 exact (100 %),   0 off by 3+   and the app sure too:    3 sets,    3 exact (100 %),   0 off by 3+
+             k8   loop agrees and sure:    3 sets,    3 exact (100 %),   0 off by 3+   and the app sure too:    3 sets,    3 exact (100 %),   0 off by 3+
+             k12  loop agrees and sure:    3 sets,    3 exact (100 %),   0 off by 3+   and the app sure too:    3 sets,    3 exact (100 %),   0 off by 3+
+   video     today:    4 sets,    4 exact (100 %),   0 off by 3+
+             k2   loop agrees and sure:    5 sets,    4 exact (80 %),   0 off by 3+   and the app sure too:    2 sets,    2 exact (100 %),   0 off by 3+
+             k3   loop agrees and sure:    5 sets,    4 exact (80 %),   0 off by 3+   and the app sure too:    2 sets,    2 exact (100 %),   0 off by 3+
+             k4   loop agrees and sure:    5 sets,    4 exact (80 %),   0 off by 3+   and the app sure too:    2 sets,    2 exact (100 %),   0 off by 3+
+             k6   loop agrees and sure:    5 sets,    4 exact (80 %),   0 off by 3+   and the app sure too:    2 sets,    2 exact (100 %),   0 off by 3+
+             k8   loop agrees and sure:    3 sets,    2 exact (67 %),   0 off by 3+   and the app sure too:    1 sets,    1 exact (100 %),   0 off by 3+
+             k12  loop agrees and sure:    3 sets,    2 exact (67 %),   0 off by 3+   and the app sure too:    1 sets,    1 exact (100 %),   0 off by 3+
+   publicA   today:  377 sets,  224 exact (59 %),   1 off by 3+
+             k2   loop agrees and sure:  126 sets,   86 exact (68 %),   0 off by 3+   and the app sure too:  115 sets,   83 exact (72 %),   0 off by 3+
+             k3   loop agrees and sure:  120 sets,   81 exact (68 %),   0 off by 3+   and the app sure too:  109 sets,   78 exact (72 %),   0 off by 3+
+             k4   loop agrees and sure:  102 sets,   74 exact (73 %),   0 off by 3+   and the app sure too:   98 sets,   72 exact (73 %),   0 off by 3+
+             k6   loop agrees and sure:   86 sets,   62 exact (72 %),   0 off by 3+   and the app sure too:   84 sets,   60 exact (71 %),   0 off by 3+
+             k8   loop agrees and sure:   74 sets,   53 exact (72 %),   0 off by 3+   and the app sure too:   72 sets,   51 exact (71 %),   0 off by 3+
+             k12  loop agrees and sure:   55 sets,   41 exact (75 %),   0 off by 3+   and the app sure too:   53 sets,   39 exact (74 %),   0 off by 3+
+   publicB   today:  348 sets,  227 exact (65 %),   5 off by 3+
+             k2   loop agrees and sure:  137 sets,  109 exact (80 %),   0 off by 3+   and the app sure too:  128 sets,  103 exact (80 %),   0 off by 3+
+             k3   loop agrees and sure:  125 sets,  101 exact (81 %),   0 off by 3+   and the app sure too:  120 sets,   99 exact (82 %),   0 off by 3+
+             k4   loop agrees and sure:  115 sets,   95 exact (83 %),   0 off by 3+   and the app sure too:  111 sets,   94 exact (85 %),   0 off by 3+
+             k6   loop agrees and sure:  106 sets,   89 exact (84 %),   0 off by 3+   and the app sure too:  103 sets,   88 exact (85 %),   0 off by 3+
+             k8   loop agrees and sure:   92 sets,   79 exact (86 %),   0 off by 3+   and the app sure too:   91 sets,   78 exact (86 %),   0 off by 3+
+             k12  loop agrees and sure:   66 sets,   56 exact (85 %),   0 off by 3+   and the app sure too:   66 sets,   56 exact (85 %),   0 off by 3+
+   repcount  today:   43 sets,   22 exact (51 %),   5 off by 3+
+             k2   loop agrees and sure:   10 sets,    6 exact (60 %),   0 off by 3+   and the app sure too:    9 sets,    6 exact (67 %),   0 off by 3+
+             k3   loop agrees and sure:    9 sets,    6 exact (67 %),   0 off by 3+   and the app sure too:    8 sets,    6 exact (75 %),   0 off by 3+
+             k4   loop agrees and sure:    9 sets,    6 exact (67 %),   0 off by 3+   and the app sure too:    8 sets,    6 exact (75 %),   0 off by 3+
+             k6   loop agrees and sure:    9 sets,    6 exact (67 %),   0 off by 3+   and the app sure too:    8 sets,    6 exact (75 %),   0 off by 3+
+             k8   loop agrees and sure:    7 sets,    4 exact (57 %),   0 off by 3+   and the app sure too:    6 sets,    4 exact (67 %),   0 off by 3+
+             k12  loop agrees and sure:    6 sets,    4 exact (67 %),   0 off by 3+   and the app sure too:    5 sets,    4 exact (80 %),   0 off by 3+
+   synthetic today:   68 sets,   67 exact (99 %),   0 off by 3+
+             k2   loop agrees and sure:   68 sets,   68 exact (100 %),   0 off by 3+   and the app sure too:   65 sets,   65 exact (100 %),   0 off by 3+
+             k3   loop agrees and sure:   68 sets,   68 exact (100 %),   0 off by 3+   and the app sure too:   65 sets,   65 exact (100 %),   0 off by 3+
+             k4   loop agrees and sure:   68 sets,   68 exact (100 %),   0 off by 3+   and the app sure too:   65 sets,   65 exact (100 %),   0 off by 3+
+             k6   loop agrees and sure:   68 sets,   68 exact (100 %),   0 off by 3+   and the app sure too:   65 sets,   65 exact (100 %),   0 off by 3+
+             k8   loop agrees and sure:   68 sets,   68 exact (100 %),   0 off by 3+   and the app sure too:   65 sets,   65 exact (100 %),   0 off by 3+
+             k12  loop agrees and sure:   66 sets,   66 exact (100 %),   0 off by 3+   and the app sure too:   65 sets,   65 exact (100 %),   0 off by 3+
+   occlusion today:   27 sets,   23 exact (85 %),   1 off by 3+
+             k2   loop agrees and sure:   25 sets,   25 exact (100 %),   0 off by 3+   and the app sure too:   21 sets,   21 exact (100 %),   0 off by 3+
+             k3   loop agrees and sure:   25 sets,   25 exact (100 %),   0 off by 3+   and the app sure too:   21 sets,   21 exact (100 %),   0 off by 3+
+             k4   loop agrees and sure:   25 sets,   25 exact (100 %),   0 off by 3+   and the app sure too:   21 sets,   21 exact (100 %),   0 off by 3+
+             k6   loop agrees and sure:   25 sets,   25 exact (100 %),   0 off by 3+   and the app sure too:   21 sets,   21 exact (100 %),   0 off by 3+
+             k8   loop agrees and sure:   24 sets,   24 exact (100 %),   0 off by 3+   and the app sure too:   20 sets,   20 exact (100 %),   0 off by 3+
+             k12  loop agrees and sure:   21 sets,   21 exact (100 %),   0 off by 3+   and the app sure too:   18 sets,   18 exact (100 %),   0 off by 3+
+
+4. Chosen on publicA (the gate with the most sets at 90 % exact or more, else the highest exact rate): end rule rest, k = 12.
+   david     sure:    3 sets,    3 exact (100 %),   0 off by 3+  (of 20);  today:   14 sets,   11 exact (79 %),   0 off by 3+
+   video     sure:    2 sets,    2 exact (100 %),   0 off by 3+  (of 16);  today:    4 sets,    4 exact (100 %),   0 off by 3+
+   publicA   sure:   51 sets,   39 exact (76 %),   0 off by 3+  (of 546);  today:  377 sets,  224 exact (59 %),   1 off by 3+
+   publicB   sure:   48 sets,   40 exact (83 %),   0 off by 3+  (of 518);  today:  348 sets,  227 exact (65 %),   5 off by 3+
+   repcount  sure:    6 sets,    4 exact (67 %),   0 off by 3+  (of 79);  today:   43 sets,   22 exact (51 %),   5 off by 3+
+   synthetic sure:   66 sets,   66 exact (100 %),   0 off by 3+  (of 96);  today:   68 sets,   67 exact (99 %),   0 off by 3+
+   occlusion sure:   20 sets,   20 exact (100 %),   0 off by 3+  (of 68);  today:   27 sets,   23 exact (85 %),   1 off by 3+
+
+5. David's sets, set by set (label, core, app sure today, loop by each rule, least ratio, end fragments).
+   david   8 core       8   rest       9? round      10? ratio    3.6 ends 0.53/0.99  machine_seated_back_extension_8_side_36b
+   david   6 core       6 S rest       6  round       6  ratio   15.6 ends 1.00/0.00  set01_hip_thrust_6_side_4091c266.json.gz
+   david  13 core      12   rest      23? round      23? ratio    0.1 ends 0.48/0.99  set01_machine_seated_back_extension_13_s
+   david   7 core       7 S rest       6  round       6  ratio   10.5 ends 0.00/0.00  set02_hip_thrust_7_side_b717b687.json.gz
+   david  10 core       9 S rest       6? round       6? ratio    1.1 ends 0.50/0.97  set03_reverse_curl_10_side_4d748472.json
+   david   6 core       6 S rest       6? round       6? ratio    8.4 ends 0.50/1.00  set04_lat_pulldown_6_side_98308774.json.
+   david   7 core       5   rest       1? round       1? ratio    2.5 ends 0.49/1.00  bench_press_7_side_24cc4f0b.json.gz
+   david   5 core       5 S rest       4? round       4? ratio    5.9 ends 0.96/0.54  bicep_curl_5_side_f5e5bdf2.json.gz
+   david   6 core       6 S rest       6? round       6? ratio    4.7 ends 0.00/0.49  hip_thrust_6_side_cf8c21d7.json.gz
+   david   9 core       8 S rest       8? round       8? ratio   17.7 ends 0.00/0.49  lateral_raise_9_front_43e71b40.json.gz
+   david  13 core      13   rest      13  round      13  ratio    6.4 ends 0.92/0.95  leg_press_13_side_1ee0ae47.json.gz
+   david   4 core       5 S rest       4? round       4? ratio   15.1 ends 0.48/1.00  overhead_press_4_front_cefdaa82.json.gz
+   david   4 core       4 S rest       4? round       5? ratio   35.2 ends 0.01/0.50  overhead_press_4_front_f75638cc.json.gz
+   david   8 core       8 S rest       7? round       8? ratio   17.8 ends 0.51/1.00  romanian_deadlift_8_side_b3dc2c9e.json.g
+   david   7 core       7 S rest       7  round       7  ratio   40.2 ends 1.00/0.00  squat_7_side_21fd7ccf.json.gz
+   david   7 core refused   rest       3  round       3  ratio    0.5 ends 0.15/1.00  bench_press_7_angle_mufhcy60.json.gz
+   david   7 core       7 S rest       6? round       6? ratio   25.0 ends 0.50/0.00  bicep_curl_7_side_mufhf3wy.json.gz
+   david  10 core      10 S rest      10? round      10? ratio   44.3 ends 1.00/0.50  lat_pulldown_10_front_mufhlh4o.json.gz
+   david  10 core      10 S rest      10  round      10  ratio   29.0 ends 0.00/1.00  lateral_raise_10_front_mufhhbun.json.gz
+   david  10 core       9   rest       9  round       9  ratio    1.9 ends 1.00/1.00  overhead_press_10_front_mufhjkku.json.gz
+   video   9 core       9   rest       9  round       9  ratio    7.1 ends 1.00/0.00  barbell_squat_9_a.json.gz
+   video   9 core       9   rest       9  round       9  ratio   15.1 ends 0.00/0.00  barbell_squat_9_b.json.gz
+   video   5 core       6   rest       6? round       7? ratio    2.5 ends 0.50/0.00  behind_neck_chin_up_5.json.gz
+   video   6 core       6   rest       6  round       6  ratio    0.4 ends 1.00/1.00  hanging_leg_raise_6.json.gz
+   video  11 core      11   rest      13  round      13  ratio    1.1 ends 1.00/1.00  lying_biceps_curl_11.json.gz
+   video   6 core       6 S rest       5? round       6? ratio   21.2 ends 0.00/0.50  machine_chest_supported_row_6.json.gz
+   video  18 core      17   rest      16? round      17  ratio    1.2 ends 0.51/0.36  machine_seated_back_extension_18.json.gz
+   video   7 core      14   rest       8  round       8  ratio    2.6 ends 0.00/0.00  pendulum_squat_7.json.gz
+   video  10 core      10 S rest      10  round      10  ratio   27.0 ends 0.00/0.00  seated_dumbbell_curl_10.json.gz
+   video   5 core refused   rest       5  round       5  ratio    8.1 ends 1.00/1.00  sissy_squat_5_5011.json.gz
+   video   7 core       5   rest       6? round       6? ratio  108.1 ends 0.00/0.50  sissy_squat_7_5006.json.gz
+   video   7 core refused   rest refused  round refused  ratio      - ends         -  sissy_squat_7_5008.json.gz
+   video   9 core       9 S rest       8? round       8? ratio   27.3 ends 0.49/1.00  sissy_squat_9_5007.json.gz
+   video   8 core refused   rest       7  round       7  ratio    1.0 ends 0.00/1.00  standing_barbell_curl_8.json.gz
+   video  11 core      10   rest       9? round      10  ratio   16.1 ends 0.50/0.49  lat_pulldown_11_back.json.gz
+   video   6 core       6 S rest       6  round       6  ratio    7.6 ends 1.00/0.00  squat_6_front.json.gz
