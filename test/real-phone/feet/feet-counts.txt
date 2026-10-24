@@ -1,0 +1,56 @@
+Counts on the solved landmarks against the core (feet.test.ts writes base.json, pin.json, pinFixed.json; node scripts/compare-variants.mjs base.json <mode>.json), 2026-10-24. Measured, decides nothing.
+
+== mode pin
+suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+david        20      13 -> 10                1 -> 4                0          3     1.33       3        4
+video        15       8 -> 5                 3 -> 6                0          3     1.33       4        6
+publicA     546     256 -> 242              74 -> 81              12         26     4.45       8       51
+publicB     518     258 -> 243              89 -> 94               5         20     7.84       5       44
+synthetic    96      74 -> 74               13 -> 9                3          3     0.17       0        9
+repcount     79      26 -> 22               21 -> 25               0          4     2.25       4        6
+occlusion    68      27 -> 29               36 -> 30               2          0     0.50       0        7
+david      distinct clips: 0 gained, 3 lost
+video      distinct clips: 0 gained, 2 lost
+publicA    distinct clips: 10 gained, 18 lost
+publicB    distinct clips: 4 gained, 13 lost
+synthetic  distinct clips: 3 gained, 3 lost
+repcount   distinct clips: 0 gained, 4 lost
+occlusion  distinct clips: 2 gained, 0 lost
+VERDICT: does not ship
+- David's sets: fewer exact or a set newly off by 3 (R2)
+- David's videos: fewer exact or a set newly off by 3 (R2)
+- publicA: exact 256 -> 242
+- publicA: off by 3 or more 74 -> 81
+- publicA: the paired test favours the old run
+- publicB: exact 258 -> 243
+- publicB: off by 3 or more 89 -> 94
+- publicB: the paired test favours the old run
+- repcount: exact 26 -> 22
+- repcount: off by 3 or more 21 -> 25
+
+== mode pinFixed
+suite       n     exact before -> after   off3+ before -> after   only after  only before  chi2   newly off3  moved
+david        20      13 -> 8                 1 -> 5                0          5     3.20       4        6
+video        15       8 -> 4                 3 -> 6                0          4     2.25       4        7
+publicA     546     256 -> 251              74 -> 78              13         18     0.52       6       48
+publicB     518     258 -> 246              89 -> 94               5         17     5.50       5       40
+synthetic    96      74 -> 76               13 -> 9                4          2     0.17       0        8
+repcount     79      26 -> 23               21 -> 26               1          4     0.80       5        7
+occlusion    68      27 -> 31               36 -> 30               5          1     1.50       1        9
+david      distinct clips: 0 gained, 5 lost
+video      distinct clips: 0 gained, 4 lost
+publicA    distinct clips: 9 gained, 13 lost
+publicB    distinct clips: 4 gained, 11 lost
+synthetic  distinct clips: 4 gained, 2 lost
+repcount   distinct clips: 1 gained, 4 lost
+occlusion  distinct clips: 5 gained, 1 lost
+VERDICT: does not ship
+- David's sets: fewer exact or a set newly off by 3 (R2)
+- David's videos: fewer exact or a set newly off by 3 (R2)
+- publicA: exact 256 -> 251
+- publicA: off by 3 or more 74 -> 78
+- publicB: exact 258 -> 246
+- publicB: off by 3 or more 89 -> 94
+- publicB: the paired test favours the old run
+- repcount: exact 26 -> 23
+- repcount: off by 3 or more 21 -> 26
