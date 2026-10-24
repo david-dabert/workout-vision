@@ -29,7 +29,9 @@ const FOOT = side => [SIDES[side].heel, SIDES[side].toe, SIDES[side].ankle];
 
 export const DEFAULTS = Object.freeze({
   mode: 'pin',            // 'root': root and contacts only, landmarks unchanged; 'pin': planted feet pinned by leg IK
-                          // keeping each frame's own thigh and shin lengths; 'pinFixed': the same with the set's median lengths
+                          // keeping each frame's own thigh and shin lengths (a goal at the read ankle is met exactly);
+                          // 'pinFixed': the rigid skeleton for a display, every leg solved with the set's median lengths
+                          // and the soft reach
   // A foot is a contact candidate while its lowest point is within this height of the lower foot, in leg lengths, with
   // hysteresis (enter below liftIn, leave above liftOut). Source: UNSOURCED (a raised foot clears the floor by more than
   // 10 cm in a step; 0.08 of a 0.9 m leg is 7 cm). Status: experimental, unvalidated starting values (PLAN.md line 16).
@@ -64,6 +66,9 @@ export const DEFAULTS = Object.freeze({
   // small leg-length changes for the same reason; the eased reach is the "soft IK" of animation rigs). Source: rigging
   // convention, the value UNSOURCED. Status: experimental.
   softReach: 0.03,
+  // A gap with no pose longer than this ends every plant and holds the root (a foot may have stepped unseen). Shorter
+  // gaps keep the plant. Source: UNSOURCED. Status: experimental.
+  maxGap: 0.5,
 });
 // The app samples at 15 per second (src/lib/extractionConfig.js TARGET_FPS), the step assumed when timestamps give none.
 // Source: extractionConfig.js. Status: convention.
@@ -71,10 +76,16 @@ const DEFAULT_DT = 1 / 15;
 // A leg length assumed when no frame gives one (an adult leg, hip to ankle, about 0.9 m). Source: UNSOURCED. Status:
 // experimental; it only scales liftIn and liftOut on a set with no readable leg.
 const DEFAULT_LEG = 0.9;
-// Numerical tolerances, in metres: reach slack, the smallest ankle move worth an IK solve. Status: convention.
+// Numerical tolerances, in metres: reach slack; and, in pin mode only, the smallest ankle move worth an IK solve (a leg
+// whose goal has not moved keeps its read pose). Source: numerical choice. Status: convention.
 const REACH_SLACK = 1e-3, MOVE_MIN = 1e-4;
-// Gaussian kernels are cut at 3 sigma. Status: convention.
+// Gaussian kernels are cut at 3 sigma (GVHMR's code cuts at 4; the tails beyond 3 weigh under 1.2 %). Source: numerical
+// choice. Status: convention.
 const KERNEL_SIGMAS = 3;
+// Iterations: the pelvis loop moving the body toward plants no lowering can reach (each pass meets the farthest; a faded
+// plant leaves (1 - w)^8 of its shortfall), and the fixed point of softReachMax (converges in under 10). Source:
+// numerical choice. Status: convention.
+const PELVIS_PASSES = 8, SOFT_REACH_ITERATIONS = 30;
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -198,8 +209,13 @@ export function twoBoneIK(H, K0, A, a, b, pole = null, poleMin = DEFAULTS.poleMi
   } else dl = Math.min(dl, R);
   const reached = want >= shortest && dl * k >= want - 1e-6;
   const cosH = Math.min(1, Math.max(-1, (a * a + dl * dl - b * b) / (2 * a * dl)));
-  const own = orth(sub(K0, H), u), hint = pole ? unit(orth(pole, u)) : null;
-  const n = unit(hint ? add(own, mul(hint, poleMin)) : own) ?? unit(Math.abs(u[2]) < 0.9 ? [-u[1], u[0], 0] : [0, -u[2], u[1]]);
+  // The knee's own offset from the line; read behind the leg's direction, its backward part is dropped; then a bias
+  // toward the leg's direction that fades as the knee's own offset grows (poleMin at none, a fifth of it at 3 poleMin),
+  // so a straight knee takes the leg's direction and a bent or valgus knee keeps its own.
+  let own = orth(sub(K0, H), u);
+  const hint = pole ? unit(orth(pole, u)) : null;
+  if (hint && dot(own, hint) < 0) own = orth(own, hint);
+  const n = unit(hint ? add(own, mul(hint, poleMin * Math.exp(-norm(own) / poleMin))) : own) ?? unit(Math.abs(u[2]) < 0.9 ? [-u[1], u[0], 0] : [0, -u[2], u[1]]);
   const K = add(H, mul(add(mul(u, a * cosH), mul(n, a * Math.sqrt(1 - cosH * cosH))), k));
   return { K, A: add(H, mul(u, dl * k)), reached };
 }
@@ -208,7 +224,7 @@ export function twoBoneIK(H, K0, A, a, b, pole = null, poleMin = DEFAULTS.poleMi
 function softReachMax(R, soft) {
   if (!(soft > 0)) return R;
   const s = soft * R; let x = R * (1 + soft);
-  for (let i = 0; i < 30; i++) x = (R - s * Math.exp(-(x - (R - s)) / s)) * (1 + soft);
+  for (let i = 0; i < SOFT_REACH_ITERATIONS; i++) x = (R - s * Math.exp(-(x - (R - s)) / s)) * (1 + soft);
   return x;
 }
 
@@ -243,6 +259,13 @@ export function solveFeet(wl, ts, { image = null, frame = null, ...opts } = {}) 
   const W = frame?.width, Hh = frame?.height;
   const useImage = !!(image && W && Hh);
   const torso = useImage ? torsoPx(image, W, Hh) : NaN;
+  // Samples inside a gap with no pose longer than maxGap end every plant.
+  const longGap = new Array(n).fill(false);
+  for (let t = 0, last = -1; t < n; t++) {
+    if (!posed[t]) continue;
+    if (last >= 0 && t - last > 1 && ts[t] - ts[last] > o.maxGap) for (let k = last + 1; k < t; k++) longGap[k] = true;
+    last = t;
+  }
   const runs = {};
   for (const side of ['left', 'right']) {
     const other = side === 'left' ? 'right' : 'left';
@@ -252,7 +275,7 @@ export function solveFeet(wl, ts, { image = null, frame = null, ...opts } = {}) 
       const slow = hysteresis(imageSpeed(image, ts, side, W, Hh, torso), o.imgIn, o.imgOut);
       c = c.map((v, t) => v && slow[t]);
     }
-    runs[side] = filterRuns(c, samples(o.minContact), samples(o.fillGap));
+    runs[side] = filterRuns(c.map((v, t) => v && !longGap[t]), samples(o.minContact), samples(o.fillGap));
   }
   const contact = { left: runs.left.map((v, t) => v && posed[t]), right: runs.right.map((v, t) => v && posed[t]) };
 
@@ -263,7 +286,8 @@ export function solveFeet(wl, ts, { image = null, frame = null, ...opts } = {}) 
   for (let t = 0; t < n; t++) {
     if (!posed[t]) continue;
     if (prev < 0) { rootRaw[t] = [0, 0, 0]; prev = t; continue; }
-    const both = ['left', 'right'].filter(s => contact[s][t] && contact[s][prev] && refs[s][t] && refs[s][prev]);
+    // across a gap longer than maxGap the root holds: the feet may have moved unseen
+    const both = ts[t] - ts[prev] > o.maxGap ? [] : ['left', 'right'].filter(s => contact[s][t] && contact[s][prev] && refs[s][t] && refs[s][prev]);
     let r = rootRaw[prev];
     if (both.length) r = sub(r, [0, 1, 2].map(k => both.reduce((a, s) => a + refs[s][t][k] - refs[s][prev][k], 0) / both.length));
     rootRaw[t] = r; prev = t;
@@ -271,7 +295,8 @@ export function solveFeet(wl, ts, { image = null, frame = null, ...opts } = {}) 
   const root = gaussianSmooth(rootRaw, [o.rootSmooth / dt, o.rootSmooth / dt, o.rootSmoothZ / dt]);
 
   // Global positions (world + root) and the floor: the median lowest point of planted feet.
-  const glob = wl.map((f, t) => (posed[t] ? f.map(p => ({ ...p, x: p.x + root[t][0], y: p.y + root[t][1], z: p.z + root[t][2] })) : f));
+  // A frame without a full reading of the legs has no global pose (null), and keeps its read landmarks in `world`.
+  const glob = wl.map((f, t) => (posed[t] ? f.map(p => ({ ...p, x: p.x + root[t][0], y: p.y + root[t][1], z: p.z + root[t][2] })) : null));
   const plantedLows = [];
   for (let t = 0; t < n; t++) for (const s of ['left', 'right']) if (contact[s][t]) { const y = footLow(glob[t], s); if (y != null) plantedLows.push(y); }
   const floor = median(plantedLows);
@@ -322,7 +347,7 @@ export function solveFeet(wl, ts, { image = null, frame = null, ...opts } = {}) 
   }
 
   // 4. IK: each leg's ankle moved to its goal (its plant, faded; or lifted out of the floor when unplanted), the knee
-  //    re-placed, the foot rigid at its plant shape (faded) or carried with the ankle. A goal out of reach lowers the
+  //    re-placed, the foot rigid at its plant shape (faded) or carried with the ankle. A plant out of reach lowers the
   //    pelvis first (the body gives way, not the foot; Motion2MixamoRig's public README describes the same, "the hips
   //    move"), and moves it toward the foot only where lowering cannot reach. Source: that README (method). Status:
   //    experimental.
@@ -334,19 +359,24 @@ export function solveFeet(wl, ts, { image = null, frame = null, ...opts } = {}) 
       b: median(wl.map((f, t) => (posed[t] ? norm(sub(P(f[s.ankle]), P(f[s.knee]))) : NaN))),
     };
   }
-  const solved = glob.map((f, t) => (posed[t] ? f.map(p => ({ ...p })) : f));
+  const solved = glob.map(f => (f ? f.map(p => ({ ...p })) : null));
   const finalRoot = root.map(r => r && r.slice());
+  // pinFixed is the rigid skeleton: every leg is solved with the set's lengths and the soft reach. pin keeps each frame's
+  // own lengths, so a goal at the read ankle is met exactly: no soft reach, and a leg whose goal has not moved keeps its
+  // read pose.
+  const rigid = o.mode === 'pinFixed', soft = rigid ? o.softReach : 0;
   const shiftAll = (g, t, v) => { for (let i = 0; i < g.length; i++) g[i] = { ...g[i], x: g[i].x + v[0], y: g[i].y + v[1], z: g[i].z + v[2] }; finalRoot[t] = add(finalRoot[t], v); };
   for (let t = 0; t < n; t++) {
     if (!posed[t]) continue;
     const g = solved[t], len = {};
     for (const side of ['left', 'right']) {
       const s = SIDES[side];
-      len[side] = o.mode === 'pinFixed' ? lens[side] : { a: norm(sub(P(g[s.knee]), P(g[s.hip]))), b: norm(sub(P(g[s.ankle]), P(g[s.knee]))) };
+      len[side] = rigid ? lens[side] : { a: norm(sub(P(g[s.knee]), P(g[s.hip]))), b: norm(sub(P(g[s.ankle]), P(g[s.knee]))) };
     }
+    const planted = side => weight[side][t] > 0 && !!targets[side][t];
     const goalOf = side => {
       const s = SIDES[side], A0 = P(g[s.ankle]), w = weight[side][t];
-      if (w > 0 && targets[side][t]) {
+      if (planted(side)) {
         // A faded plant: the ankle eased toward its plant, the heel and toe between the plant's shape and the carried
         // foot; the whole is raised if its lowest point would fall below the floor.
         const goal = add(mul(targets[side][t], w), mul(A0, 1 - w)), sh = shapes[side][t];
@@ -356,24 +386,29 @@ export function solveFeet(wl, ts, { image = null, frame = null, ...opts } = {}) 
       const y = footLow(g, side);
       return y != null && y > floor ? [A0[0], A0[1] - (y - floor), A0[2]] : A0; // no foot below the floor
     };
-    // Lower the pelvis until every goal is in reach, then move it toward a goal no lowering can reach.
-    const reachOf = side => softReachMax(len[side].a + len[side].b, o.softReach) - REACH_SLACK;
-    const drop = Math.max(...['left', 'right'].map(side => { const d = dropToReach(P(g[SIDES[side].hip]), goalOf(side), reachOf(side)); return Number.isFinite(d) ? d : 0; }));
-    if (drop > 0) shiftAll(g, t, [0, drop, 0]);
-    for (let iter = 0; iter < 4; iter++) {
-      let worst = null, excess = 0;
-      for (const side of ['left', 'right']) {
-        const d = sub(goalOf(side), P(g[SIDES[side].hip])), e = norm(d) - reachOf(side);
-        if (e > excess) { excess = e; worst = d; }
+    // Only planted feet move the pelvis: an unplanted foot moves with the body, so no pelvis move could bring it in
+    // reach. Lower the pelvis until every plant is in reach, then move it toward a plant no lowering can reach.
+    // (pin: the read ankle lies within the leg's own lengths by construction, so only twoBoneIK's 1e-6 is taken off.)
+    const reachOf = side => (rigid ? softReachMax(len[side].a + len[side].b, soft) - REACH_SLACK : len[side].a + len[side].b - 1e-6);
+    const bearing = ['left', 'right'].filter(planted);
+    if (bearing.length) {
+      const drop = Math.max(...bearing.map(side => { const d = dropToReach(P(g[SIDES[side].hip]), goalOf(side), reachOf(side)); return Number.isFinite(d) ? d : 0; }));
+      if (drop > 0) shiftAll(g, t, [0, drop, 0]);
+      for (let pass = 0; pass < PELVIS_PASSES; pass++) {
+        let worst = null, excess = 0;
+        for (const side of bearing) {
+          const d = sub(goalOf(side), P(g[SIDES[side].hip])), e = norm(d) - reachOf(side);
+          if (e > excess) { excess = e; worst = d; }
+        }
+        if (!worst) break;
+        shiftAll(g, t, mul(unit(worst), excess));
       }
-      if (!worst) break;
-      shiftAll(g, t, mul(unit(worst), excess));
     }
     for (const side of ['left', 'right']) {
       const s = SIDES[side], A0 = P(g[s.ankle]), A = goalOf(side);
-      if (norm(sub(A, A0)) < MOVE_MIN) continue;
+      if (!rigid && norm(sub(A, A0)) < MOVE_MIN) continue;
       const H = P(g[s.hip]), K0 = P(g[s.knee]);
-      const r = twoBoneIK(H, K0, A, len[side].a, len[side].b, poles[side], o.poleMin, o.softReach);
+      const r = twoBoneIK(H, K0, A, len[side].a, len[side].b, poles[side], o.poleMin, soft);
       if (!r.reached) out.unreached++;
       out.pinned++;
       g[s.knee] = { ...g[s.knee], x: r.K[0], y: r.K[1], z: r.K[2] };
@@ -386,6 +421,6 @@ export function solveFeet(wl, ts, { image = null, frame = null, ...opts } = {}) 
       g[s.ankle] = { ...g[s.ankle], x: r.A[0], y: r.A[1], z: r.A[2] };
     }
   }
-  const world = solved.map((f, t) => (posed[t] ? f.map(p => ({ ...p, x: p.x - finalRoot[t][0], y: p.y - finalRoot[t][1], z: p.z - finalRoot[t][2] })) : f));
+  const world = solved.map((f, t) => (f ? f.map(p => ({ ...p, x: p.x - finalRoot[t][0], y: p.y - finalRoot[t][1], z: p.z - finalRoot[t][2] })) : wl[t]));
   return { ...out, root: finalRoot, world, global: solved };
 }

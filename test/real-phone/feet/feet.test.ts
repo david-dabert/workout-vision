@@ -93,7 +93,8 @@ function measure(wl: any[], ts: number[], image: any[] | null, frame: any, truth
     msRoot: ms.root, msPin: ms.pin, msPinFixed: ms.pinFixed,
     rawAll: slide(wl, t => !!wl[t]), rawPlanted: slide(wl, planted),
     rootSlide: slide(root.global, planted), pinSlide: slide(pin.global, planted), pinFixedSlide: slide(pinFixed.global, planted),
-    rootSpan: rootPts.length ? span(rootPts) : NaN, feetSpan: feetMean.length ? span(feetMean) : NaN,
+    // no plant, no root to measure
+    rootSpan: rootPts.length && sides.some(sd => root.contact[sd].some(Boolean)) ? span(rootPts) : NaN, feetSpan: feetMean.length ? span(feetMean) : NaN,
     kneeRaw: kneeErr(wl), kneePin: kneeErr(pin.world), kneePinFixed: kneeErr(pinFixed.world),
     kneeStepRaw: kneeStep(wl), kneeStepPin: kneeStep(pin.global), kneeStepPinFixed: kneeStep(pinFixed.global), kneeStepRootGlobal: kneeStep(root.global),
     legCVRaw: legCV(wl), legCVPin: legCV(pin.world), legCVPinFixed: legCV(pinFixed.world),
@@ -137,7 +138,7 @@ test.skipIf(!OUT)('the foot solver: contacts, slide, root, knee truth, counts an
         if (s.err !== null && !s.flagged && !s.moved) sure.push({ name, suite, lift, err: s.err, score: Number.isFinite(m.rootSlide) ? m.rootSlide : Infinity, raw: m.rawAll, proxyMoves: proxyMoves(wl, ts, lift, countOf(res), o.window) });
       }
     }
-    if (group === 'David floor' && o.image && o.frame) {
+    if (group === 'David standing or seated' && o.image && o.frame) {
       const share = (r: any) => mean(sides.map(s => r.contact[s].filter(Boolean).length / Math.max(1, wl.filter(Boolean).length)));
       gate.push({ name, withImage: share(solveFeet(wl, ts, { image: o.image, frame: o.frame, mode: 'root' })), heightOnly: share(solveFeet(wl, ts, { mode: 'root' })) });
     }
@@ -160,7 +161,7 @@ test.skipIf(!OUT)('the foot solver: contacts, slide, root, knee truth, counts an
   // David's stored sets and videos, with their image landmarks and frame size.
   const hanging = (n: string) => /chin_up|hanging/.test(n);
   const sled = (n: string) => /leg_press|pendulum|hack_squat/.test(n);
-  const groupOf = (n: string) => (hanging(n) ? 'David hanging' : sled(n) ? 'David sled or platform' : 'David floor');
+  const groupOf = (n: string) => (hanging(n) ? 'David hanging' : sled(n) ? 'David sled or platform' : 'David standing or seated');
   for (const s of labelledSets().sets) {
     const d = gz(resolve(ROOT, s.name)), il = d.imageLandmarks ?? null;
     take(s.name, 'david', groupOf(s.name), s.lift, s.label, s.wl, s.ts, { image: il, frame: frameOf(d), sureResult: () => appPath(s.lift, s.wl, s.ts, il) });
@@ -178,6 +179,7 @@ test.skipIf(!OUT)('the foot solver: contacts, slide, root, knee truth, counts an
   for (const k of Object.keys(counts)) writeFileSync(resolve(OUT!, `${k}.json`), JSON.stringify({ sets: counts[k] }) + '\n');
   writeFileSync(resolve(OUT!, 'rows.json'), JSON.stringify({ rows: rows.map(r => ({ name: r.name, suite: r.suite, group: r.group, lift: r.lift, label: r.label, ...r.m })), sure, gate }) + '\n');
   const f1 = (x: number) => (Number.isFinite(x) ? x.toFixed(1) : '-'), f0 = (x: number) => (Number.isFinite(x) ? Math.round(x).toString() : '-'), pc = (x: number) => (Number.isFinite(x) ? `${Math.round(100 * x)} %` : '-');
+  const share = (k: number, n: number) => (n ? pc(k / n) : '-'); // an empty group has no rate
   const groups = [...new Set(rows.map(r => r.group))];
   const lines = [
     `Foot solver, ${new Date().toISOString().slice(0, 10)} (solver.js; feet.test.ts; measured, decides nothing). Each cell is the median over the group's sets of a per-set figure.`,
@@ -187,7 +189,9 @@ test.skipIf(!OUT)('the foot solver: contacts, slide, root, knee truth, counts an
     'the synthetic truth, raw / pin / pinFixed. knee step: mm per sample of the knee in the global frame, unpinned (the raw landmarks placed',
     'by the same root) / pin / pinFixed. leg CV:',
     'thigh and shin length spread (%), raw / pinFixed. below floor: share of samples with a foot point over 1 cm below the floor, root',
-    'only / pinFixed. unreached: share of IK solves whose goal was not met, pin / pinFixed.',
+    'only / pinFixed. unreached: share of IK solves whose goal was not met, pin / pinFixed (pinFixed solves every leg; pin skips a leg',
+    'whose goal has not moved). David\'s groups are by set name: hanging (chin-up, hanging leg raise), sled or platform (leg press,',
+    'pendulum squat), standing or seated (the rest; seated, lying and machine lifts among them, feet on a floor, footplate or bench).',
     '',
     'group                                 sets  contact L/R   slide raw/root/pin  root/feet span  knee err raw/pin/fixed  knee step raw/pin/fixed  leg CV raw/fixed  below floor  unreached',
   ];
@@ -200,10 +204,10 @@ test.skipIf(!OUT)('the foot solver: contacts, slide, root, knee truth, counts an
   lines.push('', 'Tails:');
   lines.push(`   synthetic static legs: both feet planted on every sample in ${st.filter(r => r.m.contactL === 1 && r.m.contactR === 1).length} of ${st.length} sets; mean contact ${pc(mean(st.map(r => (r.m.contactL + r.m.contactR) / 2)))}; lowest ${pc(Math.min(...st.map(r => Math.min(r.m.contactL, r.m.contactR))))} (${st.reduce((a, r) => (Math.min(r.m.contactL, r.m.contactR) < Math.min(a.m.contactL, a.m.contactR) ? r : a)).name}).`);
   const withPlant = rows.filter(r => Number.isFinite(r.m.pinFixedSlide));
-  lines.push(`   pinned (pinFixed) slide over 1 mm per sample: ${withPlant.filter(r => r.m.pinFixedSlide > 1).length} of ${withPlant.length} sets with a planted sample; largest ${f0(Math.max(...withPlant.map(r => r.m.pinFixedSlide)))} mm.`);
+  lines.push(`   pinned (pinFixed) slide over 1 mm per sample: ${withPlant.filter(r => r.m.pinFixedSlide > 1).length} of ${withPlant.length} sets with two consecutive planted samples; largest ${f0(Math.max(...withPlant.map(r => r.m.pinFixedSlide)))} mm.`);
   lines.push(`   a foot below the floor after pinning (pinFixed) on some sample: ${rows.filter(r => r.m.belowPinFixed > 0).length} of ${rows.filter(r => Number.isFinite(r.m.belowPinFixed)).length} sets; largest share ${pc(Math.max(...rows.filter(r => Number.isFinite(r.m.belowPinFixed)).map(r => r.m.belowPinFixed)))}.`);
   for (const mode of ['msRoot', 'msPin', 'msPinFixed']) { const xs = rows.map(r => r.m[mode]); lines.push(`   solver time, ${mode.slice(2)} mode, this container's CPU: median ${f1(med(xs))} ms per set, p95 ${f1(q(xs, 0.95))}, largest ${f1(Math.max(...xs))} (${rows.length} sets).`); }
-  lines.push(`   the image gate on David's floor sets with image landmarks and a frame size (${gate.length}): contact share (mean of both feet), median over sets, ${pc(med(gate.map(g => g.heightOnly)))} by the height test alone, ${pc(med(gate.map(g => g.withImage)))} with the image gate.`);
+  lines.push(`   the image gate on David's standing or seated sets with image landmarks and a frame size (${gate.length}): contact share (mean of both feet), median over sets, ${pc(med(gate.map(g => g.heightOnly)))} by the height test alone, ${pc(med(gate.map(g => g.withImage)))} with the image gate.`);
   lines.push('', 'David\'s sets one by one: contact L/R, slide raw/root/pin (pinFixed) mm, knee step unpinned/pinFixed mm (global).');
   for (const r of rows.filter(r => r.suite === 'david' || r.suite === 'video')) lines.push(`   ${r.group.padEnd(24)} ${r.name.split('/').slice(-1)[0].padEnd(48)} ${pc(r.m.contactL).padStart(5)}/${pc(r.m.contactR).padEnd(5)} ${f0(r.m.rawPlanted)}/${f0(r.m.rootSlide)}/${f0(r.m.pinFixedSlide)}  ${f0(r.m.kneeStepRootGlobal)}/${f0(r.m.kneeStepPinFixed)}${r.m.usedImage ? '' : '  (no image gate)'}`);
   // Honesty: the residual slide of the planted feet after the root (label-free) against the count's error, on the sets
@@ -211,9 +215,10 @@ test.skipIf(!OUT)('the foot solver: contacts, slide, root, knee truth, counts an
   // threshold chosen on half A (the most exact kept while asking on at most a fifth of half A's sure sets), judged on
   // half B and read on David's sets and RepCount-A.
   type SureSet = (typeof sure)[number];
-  const part = (ys: SureSet[]) => { const ex = ys.filter(y => y.err === 0).length; return `${ys.length} sets, ${ex} exact (${pc(ex / Math.max(1, ys.length))}), ${ys.filter(y => y.err >= 3).length} off by 3+`; };
+  const part = (ys: SureSet[]) => { const ex = ys.filter(y => y.err === 0).length; return `${ys.length} sets, ${ex} exact (${share(ex, ys.length)}), ${ys.filter(y => y.err >= 3).length} off by 3+`; };
   const pub = sure.filter(x => x.suite === 'publicA' || x.suite === 'publicB');
-  lines.push('', `Honesty signal: the residual slide of the planted feet after the root (mm, label-free), on the sets shown as sure (sure.ts) that decide: ${pub.length} public, of which ${pub.filter(x => x.score === Infinity).length} with no planted sample (counted as feet that disagree).`);
+  const clip = (n: string) => n.split('/').pop()!.slice(0, 11); // the id half() splits on: a clip's trimmed and whole readings share it
+  lines.push('', `Honesty signal: the residual slide of the planted feet after the root (mm, label-free), on the sets shown as sure (sure.ts) that decide: ${pub.length} public sets from ${new Set(pub.map(x => clip(x.name))).size} distinct clips (Countix's trimmed and whole readings of a clip count twice, as in the scoreboard; both fall in the same half), ${pub.filter(x => x.score === Infinity).length} with no planted sample (counted as feet that disagree).`);
   for (const key of ['score', 'raw'] as const) {
     const xs = [...pub].sort((a, b) => a[key] - b[key]), n = xs.length;
     for (let i = 0; i < 4; i++) { const g = xs.slice(Math.floor((i * n) / 4), Math.floor(((i + 1) * n) / 4)); lines.push(`   public, ${key === 'score' ? 'after the root' : 'raw, every sample (no solver)'} Q${i + 1} (${f0(g[0][key])}-${f0(g[g.length - 1][key])} mm): ${part(g)}`); }
