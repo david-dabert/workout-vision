@@ -60,3 +60,12 @@ $ gh api repos/david-dabert/workout-vision/actions/jobs/120827872629 --jq ".step
 27	Complete job	success
 $ gh api "repos/david-dabert/workout-vision/check-runs/120827872629/annotations?per_page=50" --jq "[.[] | select(.annotation_level==\"failure\")] | length"
 0
+
+## Run 40090157586, commit dd1fbf8 (the evidence folder), read 2026-10-24T14:36:02Z
+$ gh api repos/david-dabert/workout-vision/actions/runs/40090157586 --jq "[.id, .head_sha[0:7], .event, .status, .conclusion] | @tsv"
+40090157586	dd1fbf8	pull_request	completed	success
+$ gh api repos/david-dabert/workout-vision/actions/runs/40090157586/jobs --jq ".jobs[] | [.id, .name, .conclusion] | @tsv"
+120861020419	Browser tests (Chromium and WebKit)	success
+120861020587	Tour (WebKit, iPhone profile, three sizes)	success
+120861020598	Lint, typecheck, tests and production build	success
+120861020670	Journey (synthetic sets, production build)	success

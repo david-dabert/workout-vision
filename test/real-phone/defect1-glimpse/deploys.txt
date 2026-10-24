@@ -1,4 +1,4 @@
-# GitHub Pages deploys, read through the GitHub REST API on 2026-10-24T11:29:05Z.
+# GitHub Pages deploys, read through the GitHub REST API on 2026-10-24T14:36:17Z.
 
 ## The commit that brought the AI commentary, its test and VITE_GLIMPSE_URL into deploy.yml
 $ gh api repos/david-dabert/workout-vision/commits/8f31606 --jq "[.sha[0:7], .commit.author.date, (.commit.message|split(\"\\n\")[0])] | @tsv"
@@ -35,13 +35,15 @@ $ gh api --paginate "repos/david-dabert/workout-vision/actions/workflows/3370866
 39623343327	2026-10-21T15:10:45Z	success	a07db60
 39916063575	2026-10-23T07:10:21Z	success	869e9f2
 40057285581	2026-10-24T03:11:27Z	success	c8219b6
+40096758228	2026-10-24T13:07:05Z	success	22da6ef
 
 Created after 8f31606 (2026-10-17T04:40:36Z), by conclusion:
 skipped 10
-success 15
+success 16
 
-## The build job of the latest deploy (run 40057285581, c8219b6): what every deploy runs
-$ gh api repos/david-dabert/workout-vision/actions/runs/40057285581/jobs --jq ".jobs[] | select(.name==\"build\") | .steps[] | [.number, .name, .conclusion] | @tsv"
+## The build job of the latest deploy: what every deploy runs
+$ gh api repos/david-dabert/workout-vision/actions/runs/40096758228/jobs --jq '.jobs[] | select(.name=="build") | .steps[] | [.number, .name, .conclusion] | @tsv'
+40096758228	22da6ef	success
 1	Set up job	success
 2	Run actions/checkout@v4	success
 3	Run actions/setup-node@v4	success
