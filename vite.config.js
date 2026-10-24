@@ -4,6 +4,7 @@ import { execSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 import { resolve } from 'path'
+import { uploadAllowed } from './src/lib/kine/attemptStorage.js'
 
 // npm run dev:lan: the dev server on the local network, with the stricter file list below.
 const LAN = process.env.WV_LAN === '1'
@@ -85,12 +86,17 @@ export function kineMediaOrigin(url) {
  * Vite plugin: the pages' Content-Security-Policy lets them reach the proxy of the AI commentary and Vercel Blob's
  * upload address, when the build names the proxy (VITE_GLIMPSE_URL, src/lib/kine/glimpse.js), and no other. Without it
  * the policy is left as written and the commentary is not offered. https only (http for localhost).
+ * A production build offers no upload while the attempt store is public (src/lib/kine/attemptStorage.js; David,
+ * 24 October 2026), so its policy reaches neither the proxy nor Vercel Blob; the address is still checked.
  */
 export function glimpseCspPlugin(fixed) {
   let origin = '';
   return {
     name: 'glimpse-csp',
-    configResolved(config) { origin = glimpseOrigin(fixed ?? config.env.VITE_GLIMPSE_URL ?? ''); },
+    configResolved(config) {
+      const named = glimpseOrigin(fixed ?? config.env.VITE_GLIMPSE_URL ?? '');
+      origin = uploadAllowed(config.isProduction) ? named : '';
+    },
     transformIndexHtml(html) {
       if (!origin) return html;
       return html.replace(/(connect-src [^;"]*)/, `$1 ${origin} ${BLOB_UPLOAD_ORIGIN}`);

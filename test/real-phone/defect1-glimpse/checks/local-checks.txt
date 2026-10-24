@@ -1,0 +1,9 @@
+$ sh test/real-phone/defect1-glimpse/checks/local-checks.sh   (2026-10-24T11:29:44Z, node v22.23.4)
+proxy c8219b6 access (default): status 200, tokens given 1, body {"type":"blob.generate-client-token","op
+proxy c8219b6 access private: status 200, tokens given 1, body {"type":"blob.generate-client-token","op
+proxy 37114a0 access (default): status 503, tokens given 0, body {"error":"off"}
+proxy 37114a0 access private: status 200, tokens given 1, body {"type":"blob.generate-client-token","op
+app c8219b6 PROD=false: glimpseOn true, askGlimpse commentary returned, uploads 1, proxy calls 1
+app c8219b6 PROD=true: glimpseOn true, askGlimpse commentary returned, uploads 1, proxy calls 1
+app 37114a0 PROD=false: glimpseOn true, askGlimpse commentary returned, uploads 1, proxy calls 1
+app 37114a0 PROD=true: glimpseOn false, askGlimpse refused (glimpse-off, why failed), uploads 0, proxy calls 0

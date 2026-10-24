@@ -75,7 +75,9 @@ jobs:
     #   set (https), the pages may load media from that origin and no other (vite.config.js, kineMediaCspPlugin).
     # - VITE_GLIMPSE_URL, the proxy of the patient's AI commentary (glimpse-proxy/, src/lib/kine/glimpse.js; 17 October
     #   2026), is the repository variable. Unset, the commentary is not offered; set (https), the pages may reach that
-    #   origin and Vercel Blob's upload address (vite.config.js, glimpseCspPlugin).
+    #   origin and Vercel Blob's upload address (vite.config.js, glimpseCspPlugin). Since 24 October 2026 (David), while
+    #   the attempt store is public (src/lib/kine/attemptStorage.js), this production build neither offers the upload
+    #   nor names either origin in its policy, whatever https address the variable holds.
     env:
       VITE_EVENTS_URL: ${{ vars.VITE_EVENTS_URL }}
       VITE_KINE_MEDIA_URL: ${{ vars.VITE_KINE_MEDIA_URL }}
