@@ -105,6 +105,25 @@ describe('reportSheet', () => {
     expect(reportSheet({ ...base, lang: 'en', count: 9, counted: 10 }).corrected).toBe('Counted by the app: 10. Corrected: 9.');
   });
 
+  // 24 October 2026: the report measures the reps saved; after a correction read again (recountTo) they are the
+  // person's, so the rows are headed as reps, not as the app's marks; a flagged set's measures carry the doubt.
+  it('heads the rows as reps when the corrected count was found again, as marks otherwise', () => {
+    const reps = [{ startTime: 0, endTime: 2, romDegrees: 90, concentricSec: 1, eccentricSec: 1 }, { startTime: 3, endTime: 5, romDegrees: 92, concentricSec: 1, eccentricSec: 1 }];
+    expect(reportSheet({ ...base, count: 2, counted: 3, reps }).columns[0]).toBe('Repère');
+    expect(reportSheet({ ...base, count: 2, counted: 3, reps, recounted: true }).columns[0]).not.toBe('Repère');
+    expect(reportSheet({ ...base, count: 2, counted: 3, reps, recounted: true }).corrected).toBe(`Compté par l’appli${NBSP}: 3. Corrigé${NBSP}: 2.`);
+  });
+  it('names the body check\'s doubt beside a flagged set\'s measures, and only there', () => {
+    const reps = [{ startTime: 0, endTime: 2, romDegrees: 90, concentricSec: 1, eccentricSec: 1 }];
+    expect(reportSheet({ ...base, count: 1, counted: 1, reps, joint: 'knee', doubted: true }).details)
+      .toContainEqual(['À prendre avec précaution', 'l’angle du genou ne bougeait pas comme le reste du corps']);
+    expect(reportSheet({ ...base, lang: 'en', count: 1, counted: 1, reps, joint: 'elbow', doubted: true }).details)
+      .toContainEqual(['Read with caution', 'the elbow angle did not move like the rest of the body']);
+    expect(JSON.stringify(reportSheet({ ...base, count: 1, counted: 1, reps }).details)).not.toContain('précaution');
+    // A set saved before 24 October kept no measure: no doubt to name beside none.
+    expect(JSON.stringify(reportSheet({ ...base, count: 1, counted: 1, reps: [], doubted: true }).details)).not.toContain('précaution');
+  });
+
   it('puts one and none in the singular in French, and only one in English', () => {
     expect(reportSheet({ ...base, count: 1, counted: 1 }).word).toBe('répétition');
     expect(reportSheet({ ...base, count: 0, counted: 0 }).word).toBe('répétition');

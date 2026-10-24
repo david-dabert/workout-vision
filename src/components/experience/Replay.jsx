@@ -249,10 +249,11 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   const NB = ' ', sec = x => `${decimal(x, fr)}${NB}s`;
   const current = repAt(reps, now);
   const begun = reps.filter(r => r.startTime <= now).length;
-  // The rep's measures (its range, times, phase and angle) are shown with the measures (measures.js), and never for a set
-  // the body check flagged, whose result, report, history and export withhold them (saved-set.js keepsMeasures, R8):
-  // such a set shows each rep's number alone (honesty pass, second round, 14 October 2026).
-  const measured = MEASURES_SHOWN && keepsMeasures(result);
+  // The rep's measures (its range, times, phase and angle) are shown with the measures (measures.js), and for a set the
+  // body check flagged only once its count is saved (saved: the person answered), as its result, report, history and
+  // export show them (saved-set.js keepsMeasures, R8); before that, each rep's number alone (honesty pass, second round,
+  // 14 October 2026).
+  const measured = MEASURES_SHOWN && keepsMeasures(result, saved !== null);
   // The phase word follows the unvalidated phase boundaries: hidden with the measures.
   const phase = measured && current >= 0 ? phaseAt(reps[current], now, def?.first) : null;
   const isTransition = measured && current >= 0 && !phase && !reps[current]?.clipped;

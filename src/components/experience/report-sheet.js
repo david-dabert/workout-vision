@@ -136,9 +136,12 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {boolean} [o.proposed]  a refused set whose count is the app's proposal, confirmed as it stood
  * @param {'psc'|'universal'|null} [o.proposedBy]  whose proposal: the core's on a refused set, or the universal engine's
  *   for an exercise the core does not offer (universalProposal.js)
+ * @param {boolean} [o.recounted]  a corrected count whose reps were found again (coreAnalysis.js recountTo): the rows
+ *   are the person's reps, not the app's marks
+ * @param {boolean} [o.doubted]  the body check flagged the joint the measures are read on (saved-set.js keepsMeasures)
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, proposedBy = null, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, rpe = null, pain = null }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, proposedBy = null, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, rpe = null, pain = null, recounted = false, doubted = false }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -151,8 +154,9 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   // summary only the previous set's count.
   const hasShort = shown && allReps.some(isShortIn(reps));
   const hasPartial = shown && allReps.some(partialIn(reps));
-  // After a correction the rows are the marks the app detected, not the reps the user saved (repTable).
-  const { columns, rows } = shown ? repTable({ reps, first: liftFirst, fr, corrected: counted != null && counted !== count }) : { columns: [], rows: [] };
+  // After a correction the rows are the marks the app detected, not the reps the user saved (repTable), unless the set
+  // was read again and the person's reps found (recounted).
+  const { columns, rows } = shown ? repTable({ reps, first: liftFirst, fr, corrected: counted != null && counted !== count && !recounted }) : { columns: [], rows: [] };
 
   // Summary: one item per line, as a client who is not a coach reads it (Luc, 29 September).
   const summary = [];
@@ -230,6 +234,10 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   else if (source === 'manual' && afterRefusal && proposed) details.push([fr ? 'Saisie' : 'Entry', fr ? 'proposée par l’appli, confirmée par la personne' : 'proposed by the app, confirmed by the person']);
   else if (source === 'manual' && afterRefusal) details.push([fr ? 'Saisie' : 'Entry', fr ? 'à la main, l’appli n’a pas pu compter' : 'by hand, the app could not count']);
   else if (counted != null && counted !== count) details.push([fr ? 'Compté par l’appli' : 'Counted by the app', String(counted)], [fr ? 'Corrigé' : 'Corrected', String(count)]);
+  // A set the body check flagged, measured once the person answered (saved-set.js keepsMeasures; 24 October 2026): its
+  // measures are read on a joint the check doubted, said in the third person as the sheet's other details. Written under
+  // David's delegation of French copy, 20 October 2026 (R10).
+  if (doubted && shown && (reps || []).length) details.push([fr ? 'À prendre avec précaution' : 'Read with caution', fr ? `l’angle ${jointName(joint, true)} ne bougeait pas comme le reste du corps` : `the ${jointName(joint, false)} angle did not move like the rest of the body`]);
   if (arm === 'left' || arm === 'right') {
     const limb = joint === 'knee' ? (fr ? 'Jambe suivie' : 'Leg tracked') : joint === 'hip' ? (fr ? 'Côté suivi' : 'Side tracked') : (fr ? 'Bras suivi' : 'Arm tracked');
     details.push([limb, arm === 'left' ? (fr ? 'gauche' : 'left') : fr ? (joint === 'knee' ? 'droite' : 'droit') : 'right']);

@@ -1,7 +1,8 @@
 /**
  * The replay says only what the app measured and names only what it draws (second round of the honesty pass, 14 October
- * 2026): a set the body check flagged shows each rep's number alone, as its result, report, history and export do
- * (saved-set.js keepsMeasures, R8); an exercise the core does not offer lights no joint, and its legend names none.
+ * 2026): a set the body check flagged shows each rep's number alone until its count is saved, then its measures, as its
+ * result, report, history and export do (saved-set.js keepsMeasures, R8; 24 October 2026); an exercise the core does
+ * not offer lights no joint, and its legend names none.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -20,12 +21,12 @@ const counted = (extra = {}) => ({
   worldLandmarks: times.map(() => body), smoothedAngles: times.map((_, i) => 90 + 40 * Math.sin(i / 5)), metadata: { duration: 4, width: 9, height: 16 }, ...extra,
 });
 
-async function replay(lang, result, lift = 'bicep_curl') {
+async function replay(lang, result, lift = 'bicep_curl', saved = result.count) {
   vi.stubGlobal('localStorage', { getItem: k => ({ wv_lang: lang })[k] ?? null, setItem() {}, removeItem() {} });
   vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
   const { LanguageProvider } = await import('../../../lib/LanguageContext');
   const { default: Replay } = await import('../Replay');
-  const html = renderToStaticMarkup(<LanguageProvider><Replay file={null} result={result} lift={lift} saved={result.count} onBack={() => {}} /></LanguageProvider>);
+  const html = renderToStaticMarkup(<LanguageProvider><Replay file={null} result={result} lift={lift} saved={saved} onBack={() => {}} /></LanguageProvider>);
   return { html, legend: html.match(/data-testid="rp-legend"[^>]*>(.*?)<\/p>/)[1], detail: html.match(/class="rp-detail"[^>]*>(.*?)<\/p>/)[1] };
 }
 
@@ -39,13 +40,21 @@ describe('the replay of a counted set', () => {
     expect(legend).toContain('En haut à gauche, l’angle du coude, estimé en 3D : il peut différer de ce que montre l’image.');
     expect((await replay('en', counted())).legend).toContain('Top left, the elbow angle, estimated in 3D: it can differ from what the picture shows.');
   });
-  it('a set the body check flagged: each rep\'s number alone, no angle, phase or time, and no word of an angle', async () => {
-    const { html, legend, detail } = await replay('fr', counted({ bodyCheck: { flagged: true, agreement: 0.2, second: null } }));
+  it('a set the body check flagged, not yet saved: each rep\'s number alone, no angle, phase or time, and no word of an angle', async () => {
+    const { html, legend, detail } = await replay('fr', counted({ bodyCheck: { flagged: true, agreement: 0.2, second: null } }), 'bicep_curl', null);
     expect(html).not.toContain('data-testid="rp-angle"');
     expect(html).not.toContain('data-testid="rp-exp"');
     expect(html).not.toMatch(/Concentrique|Excentrique|Pause/);
     expect(detail).toBe('Rép. 1');
     expect(legend).not.toMatch(/angle du coude|3D/);
+  });
+  it('the same set once its count is saved, confirmed or corrected: its measures, as the result shows them', async () => {
+    for (const saved of [2, 3]) {
+      const { html, detail } = await replay('fr', counted({ bodyCheck: { flagged: true, agreement: 0.2, second: null } }), 'bicep_curl', saved);
+      expect(html).toContain('data-testid="rp-angle"');
+      expect(html).toContain('data-testid="rp-exp"');
+      expect(detail).toMatch(/92°/);
+    }
   });
 });
 
