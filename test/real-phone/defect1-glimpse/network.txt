@@ -1,0 +1,56 @@
+# What this workspace could and could not reach, 24 October 2026 (outputs as the tools printed them; times UTC)
+
+## The npm registry: refused, so npm ci, vitest and the scoreboard cannot run here
+
+First try, about 03:13 (proxy on port 44203):
+$ npm ci --no-audit --no-fund
+npm error Exit handler never called!
+$ grep from the npm debug log
+http fetch GET https://registry.npmjs.org/zod/-/zod-4.1.11.tgz attempt 1 failed with ENOTFOUND
+$ getent hosts registry.npmjs.org || echo "DNS: no answer"
+DNS: no answer
+$ curl -sS -o /dev/null -w "forced via proxy %{http_code}\n" --max-time 20 --noproxy '' --proxy "$HTTPS_PROXY" https://registry.npmjs.org/zod
+curl: (56) CONNECT tunnel failed, response 403
+forced via proxy 000
+$ npm run scoreboard
+sh: 1: vitest: not found
+
+After David's message of 05:47 local time that the registry was allowed, about 03:48 (proxy restarted on port 35665):
+$ npm ci --no-audit --no-fund
+npm error Exit handler never called!
+$ grep -c ENOTFOUND <debug log>
+45
+$ getent hosts registry.npmjs.org || echo "DNS: no answer for registry.npmjs.org"
+DNS: no answer for registry.npmjs.org
+$ curl ... --noproxy '' --proxy "$HTTPS_PROXY" https://registry.npmjs.org/zod
+curl: (56) CONNECT tunnel failed, response 403
+$ curl -sS "$HTTPS_PROXY/__agentproxy/status"   (recentRelayFailures)
+{ "ts": "2026-10-24T03:48:26.882Z", "kind": "connect_rejected", "detail": "gateway answered 403 to CONNECT (policy denial or upstream failure)", "host": "registry.npmjs.org:443" }
+$ node --version
+v22.23.4
+
+## CI's logs, repository variables and the live site: refused
+
+$ gh api repos/david-dabert/workout-vision/actions/jobs/120757498454/logs
+Get "https://productionresultssa18.blob.core.windows.net/actions-results/...": Forbidden
+$ gh api repos/david-dabert/workout-vision/actions/variables
+gh: Access to this GitHub Actions path is not permitted through this proxy. (HTTP 403)
+$ curl -sS --max-time 20 https://david-dabert.github.io/workout-vision/
+curl: (56) CONNECT tunnel failed, response 403
+
+## The connected Vercel account (MCP connector), read-only
+
+list_teams(limit 20):
+{ "teams": [], "pagination": { "count": 0 } }
+
+list_projects(repoUrl "https://github.com/david-dabert/workout-vision"):
+{ "projects": [], "pagination": { "count": 0 } }
+
+list_projects(search "glimpse"):
+{ "projects": [], "pagination": { "count": 0 } }
+
+list_projects(limit 50), names only, in the order returned (pagination count 7):
+aivision-live-wall-vercel, workout-vision-next, workoutvision-handoff, cultural-bridges-site, wv-feedback, workout-vision-feedback, azelie-portfolio
+
+list_deployments(projectId of workout-vision-next):
+403 forbidden: "Not authorized: Trying to access resource under scope "azelbanks-projects". You must re-authenticate to this scope or use a token with access to this scope."

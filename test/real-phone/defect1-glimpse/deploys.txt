@@ -1,0 +1,66 @@
+# GitHub Pages deploys, read through the GitHub REST API on 2026-10-24T11:29:05Z.
+
+## The commit that brought the AI commentary, its test and VITE_GLIMPSE_URL into deploy.yml
+$ gh api repos/david-dabert/workout-vision/commits/8f31606 --jq "[.sha[0:7], .commit.author.date, (.commit.message|split(\"\\n\")[0])] | @tsv"
+8f31606	2026-10-17T04:40:36Z	Kine: AI commentary on a patient attempt (Elorian Glimpse), on the patient's tap (#218)
+
+## Every run of deploy.yml (workflow 337086645) created since 17 October: id, created, conclusion, commit
+$ gh api --paginate "repos/david-dabert/workout-vision/actions/workflows/337086645/runs?created=>=2026-10-17&per_page=100" --jq ".workflow_runs[] | [.id, .created_at, .conclusion, .head_sha[0:7]] | @tsv"
+38994865112	2026-10-17T02:25:31Z	skipped	86bdd5d
+38996501511	2026-10-17T02:50:47Z	success	86bdd5d
+38998391274	2026-10-17T03:20:20Z	success	e716906
+39001437003	2026-10-17T04:08:27Z	success	25b3026
+39004967418	2026-10-17T05:05:13Z	success	8f31606
+39125575954	2026-10-18T12:01:24Z	skipped	1959f74
+39127260598	2026-10-18T12:26:08Z	success	1959f74
+39141101644	2026-10-18T15:34:35Z	success	71e968b
+39143487806	2026-10-18T16:06:20Z	success	2e7a6f0
+39147129834	2026-10-18T16:54:22Z	success	1f42e60
+39177541135	2026-10-18T23:40:59Z	skipped	e6ebbbf
+39179092074	2026-10-19T00:04:08Z	success	e6ebbbf
+39182587802	2026-10-19T00:50:36Z	skipped	dd9c6f1
+39184510821	2026-10-19T01:15:17Z	success	dd9c6f1
+39187094326	2026-10-19T01:49:26Z	success	ab6b38a
+39206091574	2026-10-19T05:44:18Z	skipped	ebacfe8
+39206201621	2026-10-19T05:45:33Z	skipped	ebacfe8
+39208316157	2026-10-19T06:09:43Z	success	ebacfe8
+39333079340	2026-10-19T22:10:47Z	skipped	ab89c07
+39333917106	2026-10-19T22:17:46Z	skipped	1250d59
+39336750025	2026-10-19T22:41:51Z	skipped	9b8802d
+39339689703	2026-10-19T23:08:37Z	skipped	9b8802d
+39373582885	2026-10-20T05:11:44Z	success	198ea06
+39502678260	2026-10-20T21:43:37Z	skipped	2acb285
+39506085982	2026-10-20T22:10:07Z	success	2acb285
+39520958474	2026-10-21T00:22:51Z	success	779ebaa
+39623343327	2026-10-21T15:10:45Z	success	a07db60
+39916063575	2026-10-23T07:10:21Z	success	869e9f2
+40057285581	2026-10-24T03:11:27Z	success	c8219b6
+
+Created after 8f31606 (2026-10-17T04:40:36Z), by conclusion:
+skipped 10
+success 15
+
+## The build job of the latest deploy (run 40057285581, c8219b6): what every deploy runs
+$ gh api repos/david-dabert/workout-vision/actions/runs/40057285581/jobs --jq ".jobs[] | select(.name==\"build\") | .steps[] | [.number, .name, .conclusion] | @tsv"
+1	Set up job	success
+2	Run actions/checkout@v4	success
+3	Run actions/setup-node@v4	success
+4	Run npm ci	success
+5	Run npm run lint	success
+6	Run npm test	success
+7	Run npm run build	success
+8	Only the configured events URL, and a notice naming its host (D6, PRIV-3)	success
+9	Run npx playwright install --with-deps chromium	success
+10	Run npx playwright test e2e/offline.spec.js --retries=0	success
+11	Run actions/upload-pages-artifact@v3	success
+21	Post Run actions/setup-node@v4	success
+22	Post Run actions/checkout@v4	success
+23	Complete job	success
+
+## The two deploys that failed at npm test on the media address (VITE_KINE_MEDIA_URL), 15 and 16 October
+$ gh api repos/david-dabert/workout-vision/actions/runs/38803251027/jobs --jq '.jobs[] | .name as $j | .steps[] | select(.conclusion=="failure") | [$j, .name, .conclusion] | @tsv'
+38803251027	2026-10-15T20:35:57Z	failure	e9173be
+build	Run npm test	failure
+$ gh api repos/david-dabert/workout-vision/actions/runs/38847769215/jobs --jq '.jobs[] | .name as $j | .steps[] | select(.conclusion=="failure") | [$j, .name, .conclusion] | @tsv'
+38847769215	2026-10-16T03:53:26Z	failure	6119f82
+build	Run npm test	failure
