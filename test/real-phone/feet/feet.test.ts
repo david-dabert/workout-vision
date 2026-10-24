@@ -99,7 +99,7 @@ function measure(wl: any[], ts: number[], image: any[] | null, frame: any, truth
     kneeStepRaw: kneeStep(wl), kneeStepPin: kneeStep(pin.global), kneeStepPinFixed: kneeStep(pinFixed.global), kneeStepRootGlobal: kneeStep(root.global),
     legCVRaw: legCV(wl), legCVPin: legCV(pin.world), legCVPinFixed: legCV(pinFixed.world),
     belowRoot: below(root.global, root.floor), belowPinFixed: below(pinFixed.global, pinFixed.floor),
-    unreachedPin: pin.pinned ? pin.unreached / pin.pinned : 0, unreachedPinFixed: pinFixed.pinned ? pinFixed.unreached / pinFixed.pinned : 0,
+    unreachedPin: pin.pinned ? pin.unreached / pin.pinned : NaN, unreachedPinFixed: pinFixed.pinned ? pinFixed.unreached / pinFixed.pinned : NaN, // no solve, no share
     pinWorld: pin.world, pinFixedWorld: pinFixed.world,
   };
 }

@@ -243,9 +243,44 @@ describe('the foot solver', () => {
       if (((t >= 24 && t < 28) || (t >= 62 && t < 66)) && [27, 29, 31].includes(j)) q.y -= 0.25;
       return q;
     }));
-    const r = solveFeet(wl, ts, { mode: 'pinFixed' });
-    let worst = 0; for (let t = 36; t < 58; t++) worst = Math.max(worst, d3(r.global[t][27], r.global[46][27]));
-    expect(worst).toBeLessThan(1e-3);
+    const r = solveFeet(wl, ts, { mode: 'pinFixed' }), only = solveFeet(wl, ts, { mode: 'root' });
+    // the plant: the median of the read (root-placed) ankle over the run, set on the floor
+    const run = runsOf(r.contact.left).find(([a, b]) => a <= 46 && b > 46)!;
+    const xs = only.global.slice(run[0], run[1]).map((f: any) => f[27].x).sort((a: number, b: number) => a - b);
+    for (let t = run[0] + 3; t < run[1] - 3; t++) expect(Math.abs(r.global[t][27].x - xs[xs.length >> 1])).toBeLessThan(1e-3);
+    expect(r.unreached).toBe(0); // the faded first and last samples too
+  });
+
+  test('the drop takes the largest need: two plants below reach by different amounts are both met', () => {
+    // the left foot is planted only on t 28-61 (lifted before and after), so its plant sits where it reads then; both
+    // feet read lower under the hips on t 30-59, by different amounts, so the two plants need different drops
+    const wl = figure(() => 0, t => (t < 28 || t >= 62 ? 0.25 : 0), 0, 0.12, true).map((f: any, t: number) => (t >= 30 && t < 60 ? f.map((p: any, j: number) => ([27, 29, 31].includes(j) ? { ...p, y: p.y + 0.08 } : [28, 30, 32].includes(j) ? { ...p, y: p.y + 0.05 } : p)) : f));
+    const r = solveFeet(wl, ts, { mode: 'pinFixed' }), only = solveFeet(wl, ts, { mode: 'root' });
+    expect(r.unreached).toBe(0);
+    // one vertical drop serves both: the pelvis moves straight down
+    const v = [0, 1, 2].map(k => r.root[45][k] - only.root[45][k]);
+    expect(v[1]).toBeGreaterThan(0.01);
+    expect(Math.hypot(v[0], v[2])).toBeLessThan(1e-6);
+  });
+
+  test('a jump in the timestamps longer than maxGap, with no lost frame, ends the plant', () => {
+    const tj = ts.map((t, i) => (i >= 45 ? t + 0.6 : t));
+    const wl = figure(() => 0, () => 0).map((f: any, t: number) => (t >= 45 ? f.map((p: any, j: number) => ([25, 27, 29, 31].includes(j) ? { ...p, x: p.x + 0.2 } : p)) : f));
+    const r = solveFeet(wl, tj, { mode: 'pin', rootSmooth: 0, rootSmoothZ: 0 });
+    expect(Math.abs(r.global[60][27].x - r.global[20][27].x - 0.2)).toBeLessThan(0.01);
+  });
+
+  test('with no plant at all, pinFixed still solves every leg with the set\'s lengths', () => {
+    // both feet fast in the image on every sample: nothing is planted, there is no floor
+    const wl = figure(() => 0, () => 0, 0.01);
+    const image = wl.map((f: any, t: number) => f.map((p: any, j: number) => ({ x: 0.5 + p.x * 0.5 + ([29, 30, 31, 32].includes(j) ? 0.05 * (t % 2) : 0), y: 0.5 + p.y * 0.5, z: 0 })));
+    const r = solveFeet(wl, ts, { mode: 'pinFixed', image, frame: { width: 1000, height: 1000 } });
+    expect(r.floor).toBeNull();
+    // the set's shin length, stretched by at most the soft reach (3 %) near full extension; the read shin varies more
+    const shin = r.world.map((f: any) => d3(f[27], f[25])), read = wl.map((f: any) => d3(f[27], f[25]));
+    expect(Math.max(...shin) / Math.min(...shin)).toBeLessThan(1.031);
+    expect(Math.max(...shin) / Math.min(...shin)).toBeLessThan(Math.max(...read) / Math.min(...read));
+    expect(r.pinned).toBeGreaterThan(0);
   });
 
   test('an unplanted leg out of reach does not drag the pelvis', () => {

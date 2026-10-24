@@ -37,7 +37,7 @@ export const DEFAULTS = Object.freeze({
   // 10 cm in a step; 0.08 of a 0.9 m leg is 7 cm). Status: experimental, unvalidated starting values (PLAN.md line 16).
   liftIn: 0.08,
   liftOut: 0.12,
-  // With image landmarks, a foot is planted only while its image speed (median over 5 samples) stays under imgIn torso
+  // With image landmarks, a foot is planted only while its image speed (median over 4/15 s) stays under imgIn torso
   // lengths per second, and stops being planted above imgOut. Source: UNSOURCED (a swinging foot moves well over 1 m/s,
   // a torso is about 0.5 m: 1 torso/s is about 0.5 m/s). Status: experimental, unvalidated starting values.
   imgIn: 1.0,
@@ -86,6 +86,11 @@ const KERNEL_SIGMAS = 3;
 // plant leaves (1 - w)^8 of its shortfall), and the fixed point of softReachMax (converges in under 10). Source:
 // numerical choice. Status: convention.
 const PELVIS_PASSES = 8, SOFT_REACH_ITERATIONS = 30;
+// The image speed is a median over 2/15 s on each side of a sample (5 samples at 15 Hz, 9 at 30 Hz), against
+// single-sample jitter. Source: UNSOURCED. Status: experimental.
+const SPEED_HALF = 2 / 15;
+// twoBoneIK: 1e-6 m keeps a goal strictly inside the reach and the law of cosines defined; a leg nearly along z takes its
+// fallback bending axis from x and y. Source: numerical choice. Status: convention.
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -175,8 +180,8 @@ function torsoPx(image, W, H) {
   }));
 }
 
-/** Per-foot image speed (heel and toe midpoint) in torso lengths per second, median over 5 samples (null where unread). */
-function imageSpeed(image, ts, side, W, H, torso) {
+/** Per-foot image speed (heel and toe midpoint) in torso lengths per second, median over `half` samples on each side. */
+function imageSpeed(image, ts, side, W, H, torso, half) {
   const s = SIDES[side], pos = image.map(f => {
     if (!f || !f[s.heel] || !f[s.toe]) return null;
     return [((f[s.heel].x + f[s.toe].x) / 2) * W, ((f[s.heel].y + f[s.toe].y) / 2) * H];
@@ -186,7 +191,7 @@ function imageSpeed(image, ts, side, W, H, torso) {
     if (!p || !q || !(ts[t] > ts[t - 1])) return null;
     return Math.hypot(p[0] - q[0], p[1] - q[1]) / (ts[t] - ts[t - 1]) / torso;
   });
-  return raw.map((_, t) => { const w = raw.slice(Math.max(0, t - 2), t + 3).filter(v => v != null); return w.length ? median(w) : null; });
+  return raw.map((_, t) => { const w = raw.slice(Math.max(0, t - half), t + half + 1).filter(v => v != null); return w.length ? median(w) : null; });
 }
 
 /**
@@ -259,11 +264,12 @@ export function solveFeet(wl, ts, { image = null, frame = null, ...opts } = {}) 
   const W = frame?.width, Hh = frame?.height;
   const useImage = !!(image && W && Hh);
   const torso = useImage ? torsoPx(image, W, Hh) : NaN;
-  // Samples inside a gap with no pose longer than maxGap end every plant.
-  const longGap = new Array(n).fill(false);
+  // A gap longer than maxGap between two posed samples (lost frames or a jump in the timestamps) ends every plant: the
+  // samples inside it are never planted, and a plant cannot run across it (breakAt marks the first sample after it).
+  const longGap = new Array(n).fill(false), breakAt = new Array(n).fill(false);
   for (let t = 0, last = -1; t < n; t++) {
     if (!posed[t]) continue;
-    if (last >= 0 && t - last > 1 && ts[t] - ts[last] > o.maxGap) for (let k = last + 1; k < t; k++) longGap[k] = true;
+    if (last >= 0 && ts[t] - ts[last] > o.maxGap) { breakAt[t] = true; for (let k = last + 1; k < t; k++) longGap[k] = true; }
     last = t;
   }
   const runs = {};
@@ -272,10 +278,10 @@ export function solveFeet(wl, ts, { image = null, frame = null, ...opts } = {}) 
     const height = lows[side].map((y, t) => (y == null || lows[other][t] == null ? null : Math.max(0, Math.max(y, lows[other][t]) - y) / leg));
     let c = hysteresis(height, o.liftIn, o.liftOut);
     if (useImage && torso > 0) {
-      const slow = hysteresis(imageSpeed(image, ts, side, W, Hh, torso), o.imgIn, o.imgOut);
+      const slow = hysteresis(imageSpeed(image, ts, side, W, Hh, torso, Math.max(1, Math.round(SPEED_HALF / dt))), o.imgIn, o.imgOut);
       c = c.map((v, t) => v && slow[t]);
     }
-    runs[side] = filterRuns(c.map((v, t) => v && !longGap[t]), samples(o.minContact), samples(o.fillGap));
+    runs[side] = filterRuns(c.map((v, t) => v && !longGap[t]), samples(o.minContact), samples(o.fillGap)).map((v, t) => v && !longGap[t]);
   }
   const contact = { left: runs.left.map((v, t) => v && posed[t]), right: runs.right.map((v, t) => v && posed[t]) };
 
@@ -302,7 +308,10 @@ export function solveFeet(wl, ts, { image = null, frame = null, ...opts } = {}) 
   const floor = median(plantedLows);
 
   const out = { contact, root, floor: Number.isFinite(floor) ? floor : null, leg, usedImage: useImage, unreached: 0, pinned: 0 };
-  if (o.mode === 'root' || !Number.isFinite(floor)) return { ...out, world: wl, global: glob };
+  // With no plant there is no floor: root mode and pin return the read landmarks; pinFixed still solves every leg with
+  // the set's lengths (the rigid skeleton), with no plant and no floor.
+  if (o.mode === 'root' || (!Number.isFinite(floor) && o.mode !== 'pinFixed')) return { ...out, world: wl, global: glob };
+  const hasFloor = Number.isFinite(floor);
 
   // 3. Plants: one rigid foot per contact run (the ankle at its median global position, heel and toe at their median
   //    offsets from it), set so its lowest point is on the floor, with a weight that fades in and out over `blend`.
@@ -314,7 +323,7 @@ export function solveFeet(wl, ts, { image = null, frame = null, ...opts } = {}) 
     const s = SIDES[side];
     for (let t = 0; t < n;) {
       if (!runs[side][t]) { t++; continue; }
-      let e = t; while (e < n && runs[side][e]) e++;
+      let e = t; while (e < n && runs[side][e] && !(e > t && breakAt[e])) e++;
       const ank = [], heel = [], toe = [];
       for (let k = t; k < e; k++) {
         if (!posed[k]) continue;
@@ -381,9 +390,9 @@ export function solveFeet(wl, ts, { image = null, frame = null, ...opts } = {}) 
         // foot; the whole is raised if its lowest point would fall below the floor.
         const goal = add(mul(targets[side][t], w), mul(A0, 1 - w)), sh = shapes[side][t];
         const low = Math.max(...[[s.heel, 'heel'], [s.toe, 'toe']].map(([i, key]) => goal[1] + w * sh[key][1] + (1 - w) * (g[i].y - A0[1])));
-        return low > floor ? [goal[0], goal[1] - (low - floor), goal[2]] : goal;
+        return hasFloor && low > floor ? [goal[0], goal[1] - (low - floor), goal[2]] : goal;
       }
-      const y = footLow(g, side);
+      const y = hasFloor ? footLow(g, side) : null;
       return y != null && y > floor ? [A0[0], A0[1] - (y - floor), A0[2]] : A0; // no foot below the floor
     };
     // Only planted feet move the pelvis: an unplanted foot moves with the body, so no pelvis move could bring it in
@@ -391,17 +400,20 @@ export function solveFeet(wl, ts, { image = null, frame = null, ...opts } = {}) 
     // (pin: the read ankle lies within the leg's own lengths by construction, so only twoBoneIK's 1e-6 is taken off.)
     const reachOf = side => (rigid ? softReachMax(len[side].a + len[side].b, soft) - REACH_SLACK : len[side].a + len[side].b - 1e-6);
     const bearing = ['left', 'right'].filter(planted);
+    // A faded plant's goal moves with the pelvis by (1 - w) of any shift, so a shift of excess / w meets it exactly (w is
+    // floored at 0.05 so a plant barely faded in asks no unbounded shift; numerical choice, convention).
+    const wOf = side => Math.max(weight[side][t], 0.05);
     if (bearing.length) {
-      const drop = Math.max(...bearing.map(side => { const d = dropToReach(P(g[SIDES[side].hip]), goalOf(side), reachOf(side)); return Number.isFinite(d) ? d : 0; }));
+      const drop = Math.max(...bearing.map(side => { const d = dropToReach(P(g[SIDES[side].hip]), goalOf(side), reachOf(side)); return Number.isFinite(d) ? d / wOf(side) : 0; }));
       if (drop > 0) shiftAll(g, t, [0, drop, 0]);
       for (let pass = 0; pass < PELVIS_PASSES; pass++) {
-        let worst = null, excess = 0;
+        let worst = null, excess = 0, ws = 1;
         for (const side of bearing) {
           const d = sub(goalOf(side), P(g[SIDES[side].hip])), e = norm(d) - reachOf(side);
-          if (e > excess) { excess = e; worst = d; }
+          if (e > excess) { excess = e; worst = d; ws = wOf(side); }
         }
         if (!worst) break;
-        shiftAll(g, t, mul(unit(worst), excess));
+        shiftAll(g, t, mul(unit(worst), excess / ws));
       }
     }
     for (const side of ['left', 'right']) {
