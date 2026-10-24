@@ -69,3 +69,14 @@ $ gh api repos/david-dabert/workout-vision/actions/runs/40090157586/jobs --jq ".
 120861020587	Tour (WebKit, iPhone profile, three sizes)	success
 120861020598	Lint, typecheck, tests and production build	success
 120861020670	Journey (synthetic sets, production build)	success
+
+## Why run 40078334050's other three jobs were cancelled (read 2026-10-24T17:24:08Z)
+$ gh api repos/david-dabert/workout-vision/check-runs/120826418476/annotations --jq .\[\]\ \|\ select\(.annotation_level==\"failure\"\)\ \|\ \[.message\]\ \|\ @tsv
+Canceling since a higher priority waiting request for ci-refs/pull/247/merge exists
+$ gh api repos/david-dabert/workout-vision/check-runs/120826418512/annotations --jq .\[\]\ \|\ select\(.annotation_level==\"failure\"\)\ \|\ \[.message\]\ \|\ @tsv
+Canceling since a higher priority waiting request for ci-refs/pull/247/merge exists
+Process completed with exit code 1.
+The operation was canceled.
+$ gh api repos/david-dabert/workout-vision/check-runs/120826418538/annotations --jq .\[\]\ \|\ select\(.annotation_level==\"failure\"\)\ \|\ \[.message\]\ \|\ @tsv
+Canceling since a higher priority waiting request for ci-refs/pull/247/merge exists
+The operation was canceled.
