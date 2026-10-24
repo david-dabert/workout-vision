@@ -37,3 +37,12 @@ the null) and its share of sets off by 3 or more is no higher than today's. Its 
 
 Countix clips are YouTube videos (Kinetics), not phone sets filmed as the app asks; the frames come from ffmpeg, not
 the phone's decoder. A pass makes the check a candidate for David's phone and his decision (R8, R16), nothing more.
+
+## Attempt 2, added after attempt 1 failed (gate.txt), before its run
+
+Attempt 1 read the whole frame: the motion count alone was exact on 15 to 16 % of the sets, and no gate covered a
+quarter of A. Its region was the cause the plan named: the public files keep no image points, so no pose box. Attempt 2
+changes the region only, label-free and with no skeleton: the frames shrunk to 32 x 32, each cell's standard deviation
+over the set, the box around the cells at or above the 80th percentile of it, widened by motionRhythm.js's ROI_PAD.
+Everything else, the gates, the choice on A and the verdict on B, as above. R12: this is the last attempt; a second
+failure closes the bench.
