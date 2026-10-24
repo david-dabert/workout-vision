@@ -1,0 +1,18 @@
+The loop gate on the sealed public half, run once on 24 October 2026 at 0241be61 (exam-plan.md; loop.test.ts with HOLDOUT=1).
+Countix held-out sets rebuilt in the cloud container through the app's extraction: 432 scored; 42 recorded as written by the
+first build of this half but failed on this read (missing); RepCount-A's held-out sets were not rebuilt; CFRep's are exposed.
+
+The core on every set: 432 sets, 189 exact (44 %), 74 off by 3 or more.
+The app's sure set today: 270 sets, 160 exact (59 %), 6 off by 3 or more.
+
+Primary gate (fixed beforehand on public A), end rule rest, k = 12: 53 sets, 36 exact (68 %), 1 off by 3 or more; coverage 12 % of the sets.
+   Against the sure set's exact rate: z = 1.28 (binomial, the sure set's rate as the null). Pass rule of exam-plan.md: PASS.
+Secondary gate (picked after the build halves were seen; exploratory), end rule round, k = 3: 99 sets, 67 exact (68 %), 2 off by 3 or more; coverage 23 % of the sets.
+   Against the sure set's exact rate: z = 1.70 (binomial, the sure set's rate as the null). Pass rule of exam-plan.md: PASS.
+
+The loop counter alone (rest): 432 sets, 85 exact (20 %), 105 off by 3 or more.
+The loop counter alone (round): 432 sets, 138 exact (32 %), 103 off by 3 or more.
+
+Every k, for the record (exploratory):
+   rest: k2: 81 sure, 63 %, 3 off3 | k3: 77 sure, 64 %, 2 off3 | k4: 74 sure, 65 %, 2 off3 | k6: 70 sure, 66 %, 2 off3 | k8: 63 sure, 65 %, 1 off3 | k12: 53 sure, 68 %, 1 off3
+   round: k2: 104 sure, 66 %, 3 off3 | k3: 99 sure, 68 %, 2 off3 | k4: 88 sure, 67 %, 2 off3 | k6: 83 sure, 67 %, 2 off3 | k8: 76 sure, 67 %, 1 off3 | k12: 62 sure, 69 %, 1 off3
