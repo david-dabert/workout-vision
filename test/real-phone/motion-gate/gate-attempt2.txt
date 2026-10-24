@@ -1,0 +1,29 @@
+The image-motion check on the core's count, 24 October 2026 (plan.md; frames.mjs, gate.test.ts; bench only; measured, decides nothing).
+Countix clips decoded with ffmpeg at 15 samples per second, 128 x 128 grey, whole frame; motionRhythm.js with its defaults.
+
+-- A: 458 sets; the core on every set 197 exact (43 %), 72 off by 3 or more
+   the motion count alone: 458 counted, 74 exact (16 %)
+   today's sure set:   301 sure (66 % of 458),  167 exact (55 %),   1 off by 3 or more
+   G1                   67 sure (15 % of 458),   39 exact (58 %),   0 off by 3 or more
+   G2(0.3)              36 sure (8 % of 458),   26 exact (72 %),   0 off by 3 or more
+   G2(0.5)              28 sure (6 % of 458),   19 exact (68 %),   0 off by 3 or more
+   G2(0.7)              17 sure (4 % of 458),   10 exact (59 %),   0 off by 3 or more
+-- B: 436 sets; the core on every set 192 exact (44 %), 85 off by 3 or more
+   the motion count alone: 436 counted, 66 exact (15 %)
+   today's sure set:   271 sure (62 % of 436),  163 exact (60 %),   3 off by 3 or more
+   G1                   56 sure (13 % of 436),   33 exact (59 %),   0 off by 3 or more
+   G2(0.3)              30 sure (7 % of 436),   19 exact (63 %),   0 off by 3 or more
+   G2(0.5)              23 sure (5 % of 436),   16 exact (70 %),   0 off by 3 or more
+   G2(0.7)              11 sure (3 % of 436),    9 exact (82 %),   0 off by 3 or more
+-- exposed: 432 sets; the core on every set 189 exact (44 %), 74 off by 3 or more
+   the motion count alone: 432 counted, 65 exact (15 %)
+   today's sure set:   270 sure (62 % of 432),  160 exact (59 %),   6 off by 3 or more
+   G1                   74 sure (17 % of 432),   38 exact (51 %),   0 off by 3 or more
+   G2(0.3)              44 sure (10 % of 432),   27 exact (61 %),   0 off by 3 or more
+   G2(0.5)              34 sure (8 % of 432),   20 exact (59 %),   0 off by 3 or more
+   G2(0.7)              27 sure (6 % of 432),   19 exact (70 %),   0 off by 3 or more
+
+Choice on A: no gate covers a quarter of the sets; no verdict.
+
+Why (for the record, read after the verdict): the motion count is 0 on 465 of the 894 build sets; their labelled windows hold a
+median of 3 reps, too short for motionRhythm.js to find a period (0.8 to 8 s, at most half the window). Not the region.
