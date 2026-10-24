@@ -7,7 +7,7 @@ import { exerciseById } from '../library.js';
 const BASE = 'https://glimpse.example.app';
 const commentary = { visible: true, sameExercise: 'yes', reps: 3, holds: [], compensations: [], setup: [], camera: [], advice: ['Gardez les épaules basses.'], summary: 'Trois répétitions.' };
 const file = (name = 'IMG_0001.MOV', type = '', size = 1000) => ({ name, type, size });
-afterEach(() => { vi.unstubAllGlobals(); });
+afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 describe('the AI commentary, app side', () => {
   it('uploads an iPhone video under its own type, even when the phone gives none', () => {
@@ -58,6 +58,44 @@ describe('the AI commentary, app side', () => {
   it('takes for a commentary only what the proxy returns', () => {
     expect(isCommentary(null)).toBe(false);
     expect(isCommentary({ summary: 's' })).toBe(false);
+  });
+});
+
+// Defect 1 of the state map of 21 October 2026: the attempt was uploaded with public access. David, 24 October 2026:
+// "switch the patient video upload off in production until private storage is proven on CI".
+describe('the upload in a production build, while the store is public', () => {
+  it('uploads nothing and calls no one, even when told where the proxy is', async () => {
+    vi.stubEnv('PROD', true);
+    const uploader = vi.fn(async () => ({ url: 'https://s.public.blob.vercel-storage.com/attempts/x.mov' }));
+    const fetch = vi.fn(async () => new Response(JSON.stringify({ commentary })));
+    vi.stubGlobal('fetch', fetch);
+    await expect(askGlimpse(file(), { id: 'mains-jointes', text: { title: 't', steps: ['s'] } }, { base: BASE, uploader })).rejects.toMatchObject({ why: 'failed' });
+    expect(uploader).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('is not offered, even when the build names the proxy', async () => {
+    vi.resetModules();
+    vi.stubEnv('VITE_GLIMPSE_URL', BASE);
+    vi.stubEnv('PROD', true);
+    expect((await import('../glimpse.js')).glimpseOn()).toBe(false);
+  });
+
+  it('is still shown in a development build that names the proxy (the proxy then refuses the upload)', async () => {
+    vi.resetModules();
+    vi.stubEnv('VITE_GLIMPSE_URL', BASE);
+    expect((await import('../glimpse.js')).glimpseOn()).toBe(true);
+  });
+
+  it('leaves the page policy of a production build as written, even when the build names the proxy', async () => {
+    const { glimpseCspPlugin } = await import('../../../../vite.config.js');
+    const html = '<meta http-equiv="Content-Security-Policy" content="default-src \'self\'; connect-src \'self\' blob:">';
+    const prod = glimpseCspPlugin(BASE);
+    prod.configResolved({ isProduction: true, env: {} });
+    expect(prod.transformIndexHtml(html)).toBe(html);
+    const dev = glimpseCspPlugin(BASE);
+    dev.configResolved({ isProduction: false, env: {} });
+    expect(dev.transformIndexHtml(html)).toContain(`connect-src 'self' blob: ${BASE} https://vercel.com`);
   });
 });
 
