@@ -5,9 +5,13 @@
 //
 // Off unless the build names the proxy (VITE_GLIMPSE_URL, .github/workflows/deploy.yml); the page's policy then
 // allows that origin and Vercel Blob's upload address, and no other (vite.config.js, glimpseCspPlugin).
+// Off in every production build while the attempt store is public, whatever the build names (attemptStorage.js;
+// David, 24 October 2026). A development build that names the proxy still shows it, but no proxy gives an upload
+// token while the store is public (glimpse-proxy/lib/guard.js).
+import { ATTEMPT_ACCESS, uploadAllowed } from './attemptStorage.js';
 
 export const GLIMPSE_URL = (import.meta.env.VITE_GLIMPSE_URL || '').replace(/\/+$/, '');
-export const glimpseOn = () => !!GLIMPSE_URL;
+export const glimpseOn = () => !!GLIMPSE_URL && uploadAllowed(import.meta.env.PROD);
 
 const EXT = { 'video/quicktime': 'mov', 'video/mp4': 'mp4', 'video/webm': 'webm', 'video/x-m4v': 'm4v' };
 const TYPE = { mov: 'video/quicktime', mp4: 'video/mp4', webm: 'video/webm', m4v: 'video/x-m4v' };
@@ -34,13 +38,13 @@ const reason = e => (e?.status === 429 ? 'busy' : typeof navigator !== 'undefine
  * signal, or an Error whose `why` is 'busy', 'offline' or 'failed'.
  */
 export async function askGlimpse(file, exercise, { signal, onProgress = () => {}, base = GLIMPSE_URL, uploader } = {}) {
-  if (!base) throw Object.assign(new Error('glimpse-off'), { why: 'failed' });
+  if (!base || !uploadAllowed(import.meta.env.PROD)) throw Object.assign(new Error('glimpse-off'), { why: 'failed' });
   const { ext, type } = videoKind(file);
   try {
     const upload = uploader || (await import('@vercel/blob/client')).upload;
     onProgress('upload', 0);
     const blob = await upload(`attempts/${exercise.id}.${ext}`, file, {
-      access: 'public', handleUploadUrl: `${base}/api/upload`, contentType: type, multipart: file.size > 50 * 1024 * 1024,
+      access: ATTEMPT_ACCESS, handleUploadUrl: `${base}/api/upload`, contentType: type, multipart: file.size > 50 * 1024 * 1024,
       abortSignal: signal, onUploadProgress: p => onProgress('upload', Math.min(1, (p.percentage || 0) / 100)),
     });
     onProgress('reading', 0);

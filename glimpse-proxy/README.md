@@ -3,6 +3,14 @@
 A Vercel project that holds Elorian's API key for the patient's AI commentary (`src/lib/kine/glimpse.js`, `src/components/kine/AiCommentary.jsx`).
 David, 17 October 2026: "Can we implement their API?", then "Vercel" as the host of the key.
 
+## Off until the store is private
+
+The attempt videos were stored with public access (state map of 21 October 2026, defect 1).
+David, 24 October 2026: "switch the patient video upload off in production until private storage is proven on CI".
+A proxy deployed from that change gives no upload token while `lib/guard.js` `ATTEMPT_ACCESS` is `'public'` (503, `{ "error": "off" }`); one deployed before it keeps giving tokens until it is redeployed.
+No production build of the app offers or performs the upload while `src/lib/kine/attemptStorage.js` `ATTEMPT_ACCESS` is `'public'`, whatever https address `VITE_GLIMPSE_URL` names, and its page policy names neither the proxy nor Vercel Blob.
+Both turn `'private'` only in the change that stores the attempts privately and proves it with a test on CI.
+
 ## What it does
 
 1. `POST /api/upload`: gives the phone a token for one upload into the Blob store's `attempts/` folder (a video, at most 200 MB, valid ten minutes, random name).
@@ -28,9 +36,9 @@ Elorian may keep what it receives under its own privacy policy; the app's notice
    - `ELORIAN_API_KEY`: the key, marked Sensitive;
    - `CRON_SECRET`: a long random string (`openssl rand -hex 24`).
 4. Deployments, Redeploy, so the variables reach the functions.
-5. In the GitHub repository, Settings, Secrets and variables, Actions, Variables: `VITE_GLIMPSE_URL` = the project's production address (`https://<project>.vercel.app`). The next deploy of the site offers the commentary.
+5. In the GitHub repository, Settings, Secrets and variables, Actions, Variables: `VITE_GLIMPSE_URL` = the project's production address (`https://<project>.vercel.app`). While the attempt store is public it changes nothing the published site does (above). Once the store is private, the deploy also needs its page-policy check (`scripts/check-dist-events.mjs`) to admit the proxy's origin, which today it refuses; until both, the site does not offer the commentary.
 
-To switch the commentary off: delete `VITE_GLIMPSE_URL` (the site stops offering it at its next deploy), or remove `ELORIAN_API_KEY` (the proxy answers 503 at once).
+To switch the commentary off: delete `VITE_GLIMPSE_URL` (the site stops offering it at its next deploy), or remove `ELORIAN_API_KEY` (the proxy answers 503 to the commentary at once).
 
 ## Tests
 

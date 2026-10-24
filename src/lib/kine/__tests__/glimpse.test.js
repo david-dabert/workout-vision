@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { askGlimpse, exerciseText, isCommentary, videoKind } from '../glimpse.js';
+import { ATTEMPT_ACCESS, uploadAllowed } from '../attemptStorage.js';
 import { exerciseById } from '../library.js';
 
 // The app's side of the AI commentary (glimpse.js): what it uploads and sends to the proxy, and how it fails.
@@ -96,6 +97,14 @@ describe('the upload in a production build, while the store is public', () => {
     const dev = glimpseCspPlugin(BASE);
     dev.configResolved({ isProduction: false, env: {} });
     expect(dev.transformIndexHtml(html)).toContain(`connect-src 'self' blob: ${BASE} https://vercel.com`);
+  });
+
+  it('reopens in production only with a private store, which today it is not', () => {
+    expect(uploadAllowed(true, 'public')).toBe(false);
+    expect(uploadAllowed(true, 'private')).toBe(true);
+    expect(uploadAllowed(false, 'public')).toBe(true);
+    // Turning this to 'private' belongs to the change that proves the private store on CI.
+    expect(ATTEMPT_ACCESS).toBe('public');
   });
 });
 
