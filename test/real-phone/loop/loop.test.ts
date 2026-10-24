@@ -1,4 +1,5 @@
 // LOOP_OUT=<dir> [LOOP_SUITES=david,video,publicA,publicB,synthetic,repcount,occlusion] npx vitest run --no-cache test/real-phone/loop/loop.test.ts
+// The sealed run, once (exam-plan.md): HOLDOUT=1 LOOP_SPLIT=holdout LOOP_SUITES=holdout,repcountHoldout LOOP_OUT=<dir> npx vitest run ...
 // The loop counter (loop.js) on every labelled build set on disk, beside the core as the app counts (bench only; the
 // app imports none of it; measured, decides nothing). Writes <dir>/rows-<suites>.json: per set its suite, lift, label,
 // the core's count, whether the app shows that count as sure today (sure.ts sureRow, as flag.test.ts reads it), and the
@@ -17,6 +18,8 @@ import { sureRow } from '../accuracy/sure';
 import { loopCount } from './loop.js';
 
 const SUITES = (process.env.LOOP_SUITES ?? 'david,video,publicA,publicB,synthetic,repcount,occlusion').split(',');
+// The held-out half is read only on the sealed run (sets.ts refuses it without HOLDOUT=1).
+const SPLIT = process.env.LOOP_SPLIT === 'holdout' ? 'holdout' : 'build';
 const gz = (f: string) => JSON.parse(gunzipSync(readFileSync(f)).toString());
 // The public build halves as compare-variants reads them (robust-state.test.ts half).
 const half = (name: string) => (parseInt(createHash('sha256').update('variant:' + name.split('/').pop()!.slice(0, 11)).digest('hex')[0], 16) < 8 ? 'publicA' : 'publicB');
@@ -39,10 +42,17 @@ test.skipIf(!process.env.LOOP_OUT)('the loop counter on every labelled build set
     rows[name] = { suite, lift, label, core, appSure, loop, why: l.why ?? null, minRatio: l.minRatio ?? null, head: l.head ?? null, tail: l.tail ?? null, ambiguous: l.ambiguous ?? null, rest: rule('rest'), round: rule('round'),
       turns: l.turns ?? null, period: l.period ?? null, rhythm: l.rhythm ?? null, comp: l.comp ?? null, halved: l.halved ?? null, fromCrossings: l.fromCrossings ?? null, ms: Math.round(performance.now() - t0) };
   };
-  for (const s of labelledSets().sets) put(s.name, 'david', s.lift, s.label, s.wl, s.ts, gz(resolve(ROOT, s.name)).imageLandmarks ?? null, null);
-  for (const s of videoSets().sets as any[]) put(s.name, 'video', s.lift, s.label, s.wl, s.ts, s.il ?? null, null, undefined, s.appRefused);
-  for (const s of publicSets('build').sets) put(s.name, half(s.name), s.lift, s.label, s.wl, s.ts, null, null, s.window);
-  for (const s of benchSets('repcount', 'build').sets) if (s.lift && liftDefinition(s.lift)) put(s.name, 'repcount', s.lift, s.label, s.wl, s.ts, null, s.image);
+  if (SPLIT === 'build') for (const s of labelledSets().sets) put(s.name, 'david', s.lift, s.label, s.wl, s.ts, gz(resolve(ROOT, s.name)).imageLandmarks ?? null, null);
+  if (SPLIT === 'build') for (const s of videoSets().sets as any[]) put(s.name, 'video', s.lift, s.label, s.wl, s.ts, s.il ?? null, null, undefined, s.appRefused);
+  if (SPLIT === 'holdout') {
+    const pub = publicSets('holdout');
+    for (const s of pub.sets) put(s.name, 'holdout', s.lift, s.label, s.wl, s.ts, null, null, s.window);
+    for (const s of benchSets('repcount', 'holdout').sets) if (s.lift && liftDefinition(s.lift)) put(s.name, 'repcountHoldout', s.lift, s.label, s.wl, s.ts, null, s.image);
+    rows['_missing'] = { missing: pub.missing, unreadable: pub.unreadable, notScored: pub.notScored.length };
+  } else {
+    for (const s of publicSets('build').sets) put(s.name, half(s.name), s.lift, s.label, s.wl, s.ts, null, null, s.window);
+    for (const s of benchSets('repcount', 'build').sets) if (s.lift && liftDefinition(s.lift)) put(s.name, 'repcount', s.lift, s.label, s.wl, s.ts, null, s.image);
+  }
   for (const [suite, dir] of [['synthetic', '../synth/sets'], ['occlusion', '../occlusion/sets']] as const) {
     if (!SUITES.includes(suite)) continue;
     const D = resolve(__dirname, dir);
