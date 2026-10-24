@@ -23,9 +23,10 @@ export function warmReportPdf() {
  * The session report for one saved set. It assumes no coach (step 1): the user says, if they
  * wish, their name, whom they trained with and at which level, and the sheet shows only that.
  * count: the number the visitor confirmed or corrected; counted: what the app counted.
- * reps: the app's reps, when their details were measured with step 3c's boundaries.
+ * reps: the saved set's reps, when their details were measured with step 3c's boundaries: the app's, or those read again
+ * for the person's count (recounted). doubted: the body check flagged the set's joint (saved-set.js keepsMeasures).
  */
-export default function Report({ lift, count, counted, arm, date, source, afterRefusal = false, proposed = false, proposedBy = null, leaving, onBack, reps, setId, sides = null, wave = null, planned = null }) {
+export default function Report({ lift, count, counted, arm, date, source, afterRefusal = false, proposed = false, proposedBy = null, leaving, onBack, reps, setId, sides = null, wave = null, planned = null, recounted = false, doubted = false }) {
   const { lang } = useT(), fr = lang === 'fr';
   const [name, setName] = useState('');
   const [context, setContext] = useState(''); // '' | alone | friend | coach | physio
@@ -65,7 +66,7 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
     loadSets().then(all => { if (live) setPrevious(previousOf(all)); }, () => { if (live) setPrevious(null); });
     return () => { live = false; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, afterRefusal, proposed, proposedBy, first, previousSet: previous ?? null, sides, lift, wave, planned, rpe, pain });
+  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, afterRefusal, proposed, proposedBy, first, previousSet: previous ?? null, sides, lift, wave, planned, rpe, pain, recounted, doubted });
   const sheetRef = useRef(sheet);
   sheetRef.current = sheet;
 
@@ -132,7 +133,7 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
 
   // The set as a file (measuresFile, report-sheet.js): every value says where it comes from.
   function exportJson() {
-    const payload = measuresFile({ fr, lift, date: when, count, counted, source, afterRefusal, proposed, proposedBy, reps, sides, planned,
+    const payload = measuresFile({ fr, lift, date: when, count, counted, source, afterRefusal, proposed, proposedBy, reps, sides, planned, doubted, joint: liftDefinition(lift)?.joint,
       person: { name, context, partner, level, pain, rpe, notes } });
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const day = when.toISOString().slice(0, 10);

@@ -105,6 +105,50 @@ describe('reportSheet', () => {
     expect(reportSheet({ ...base, lang: 'en', count: 9, counted: 10 }).corrected).toBe('Counted by the app: 10. Corrected: 9.');
   });
 
+  // 24 October 2026: the report measures the reps saved; after a correction read again (recountTo) they are the
+  // person's, so the rows are headed as reps, not as the app's marks; a flagged set's measures carry the doubt.
+  it('heads the rows as reps when the corrected count was found again, as marks otherwise', () => {
+    const reps = [{ startTime: 0, endTime: 2, romDegrees: 90, concentricSec: 1, eccentricSec: 1 }, { startTime: 3, endTime: 5, romDegrees: 92, concentricSec: 1, eccentricSec: 1 }];
+    expect(reportSheet({ ...base, count: 2, counted: 3, reps }).columns[0]).toBe('Repère');
+    expect(reportSheet({ ...base, count: 2, counted: 3, reps, recounted: true }).columns[0]).not.toBe('Repère');
+    expect(reportSheet({ ...base, count: 2, counted: 3, reps, recounted: true }).corrected).toBe(`Compté par l’appli${NBSP}: 3. Corrigé${NBSP}: 2.`);
+  });
+  it('judges no rep short on a flagged set: the count alone in the opener, no ▾ in the table', () => {
+    const r = (i, rom) => ({ index: i, startTime: i * 3, endTime: i * 3 + 2, romDegrees: rom, concentricSec: 1, eccentricSec: 1 });
+    const reps = [r(1, 100), r(2, 100), r(3, 70), r(4, 100), r(5, 100)];
+    const plain = reportSheet({ ...base, count: 5, counted: 5, reps });
+    expect(plain.opener).toMatch(/dont une plus courte/);
+    expect(plain.rows.some(row => row[2].includes('▾'))).toBe(true);
+    const doubted = reportSheet({ ...base, count: 5, counted: 5, reps, doubted: true });
+    expect(doubted.opener).toBe('Série de 5 répétitions.');
+    expect(doubted.rows.some(row => row[2].includes('▾'))).toBe(false);
+    expect(doubted.shortRepNote).toBe('');
+  });
+  it('names the doubt in the set\'s measures file, beside its reps', () => {
+    const reps = [{ index: 1, startTime: 0, endTime: 2, romDegrees: 90, concentricSec: 1, eccentricSec: 1 }];
+    const set = { lift: 'squat', date: day, count: 1, counted: 1, source: 'counter-core', reps };
+    expect(measuresFile({ ...set, fr: true, doubted: true, joint: 'knee' }).reps.caution).toBe(`à prendre avec précaution${NBSP}: l’angle du genou ne bougeait pas comme le reste du corps`);
+    expect('caution' in measuresFile({ ...set, fr: true }).reps).toBe(false);
+    // Left against right, read on the same doubted joint, carries it too (lateral raise, filmed from the front).
+    const sides = { left: 80, right: 70, si: -13, v: SIDES_VERSION };
+    const raise = { ...set, lift: 'lateral_raise', sides };
+    expect(measuresFile({ ...raise, fr: true, doubted: true, joint: 'shoulder' }).sides.caution).toBe(`à prendre avec précaution${NBSP}: l’angle de l’épaule ne bougeait pas comme le reste du corps`);
+    expect(measuresFile({ ...raise, fr: false, doubted: true, joint: 'shoulder' }).sides.caution).toBe('read with caution: the shoulder angle did not move like the rest of the body');
+    const plain = measuresFile({ ...raise, fr: true });
+    expect(plain.sides).not.toBeNull();
+    expect('caution' in plain.sides).toBe(false);
+  });
+  it('names the body check\'s doubt beside a flagged set\'s measures, and only there', () => {
+    const reps = [{ startTime: 0, endTime: 2, romDegrees: 90, concentricSec: 1, eccentricSec: 1 }];
+    expect(reportSheet({ ...base, count: 1, counted: 1, reps, joint: 'knee', doubted: true }).details)
+      .toContainEqual(['À prendre avec précaution', 'l’angle du genou ne bougeait pas comme le reste du corps']);
+    expect(reportSheet({ ...base, lang: 'en', count: 1, counted: 1, reps, joint: 'elbow', doubted: true }).details)
+      .toContainEqual(['Read with caution', 'the elbow angle did not move like the rest of the body']);
+    expect(JSON.stringify(reportSheet({ ...base, count: 1, counted: 1, reps }).details)).not.toContain('précaution');
+    // A set saved before 24 October kept no measure: no doubt to name beside none.
+    expect(JSON.stringify(reportSheet({ ...base, count: 1, counted: 1, reps: [], doubted: true }).details)).not.toContain('précaution');
+  });
+
   it('puts one and none in the singular in French, and only one in English', () => {
     expect(reportSheet({ ...base, count: 1, counted: 1 }).word).toBe('répétition');
     expect(reportSheet({ ...base, count: 0, counted: 0 }).word).toBe('répétition');

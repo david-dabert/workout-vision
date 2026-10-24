@@ -150,3 +150,18 @@ describe('no estimated effort (honesty audit of 14 October 2026, CORE-03)', () =
     }
   });
 });
+
+// 24 October 2026: on a set the body check flagged, the ranges and times are read on a joint the check doubted, so the
+// account judges no rep short, says no slowdown and gives the filming tip (saved-set.js keepsMeasures; R8).
+describe('a set the body check flagged', () => {
+  it('names no short rep and draws no tip from the doubted angle', () => {
+    const reps = even(7); reps[2].romDegrees = 80; reps[4].romDegrees = 84;
+    const plain = setAccount({ reps, first: 'concentric', fr: true, name: 'Curl biceps', count: 7, previous: null, nth: 2 });
+    expect(plain.short).toEqual([3, 5]);
+    const doubted = setAccount({ reps, first: 'concentric', fr: true, name: 'Curl biceps', count: 7, previous: null, nth: 2, doubted: true });
+    expect(doubted.short).toEqual([]);
+    expect(doubted.lines.join(' ')).not.toMatch(/plus courtes|dernières répétitions/);
+    expect(doubted.tip).toBe('Pour comparer vos séries, filmez-les toujours du même endroit.');
+    expect(doubted.lines.some(l => l.startsWith('Tempo moyen'))).toBe(true);
+  });
+});

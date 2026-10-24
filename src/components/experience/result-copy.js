@@ -70,6 +70,11 @@ export const RESULT = {
     bodyCause: jointOf => `Sur cette série, l’angle ${jointOf} ne bouge pas comme le reste de votre corps. L’appli a pu mal le lire.`,
     bodyCounted: n => `Compté par l’appli${NB}: ${n}`,
     bodyNote: 'Vérifiez ce nombre avant d’enregistrer.',
+    // Under the measures of a flagged set, once the person has confirmed or corrected its count (saved-set.js
+    // keepsMeasures; David, 24 October 2026). Written under David's delegation of French copy, 20 October 2026 (R10).
+    bodyDoubt: jointOf => `À prendre avec précaution${NB}: sur cette série, l’angle ${jointOf} ne bouge pas comme le reste de votre corps.`,
+    // A set saved with no measure (refused, or counted none in), before the cause the screen gave; same delegation.
+    noMeasure: 'Aucune mesure pour cette série.',
     bodyChoices: 'Deux comptes possibles',
     byJoint: joint => `D’après ${{ elbow: 'le coude', shoulder: 'l’épaule', knee: 'le genou', hip: 'la hanche' }[joint] ?? 'l’articulation suivie'}`,
     byBody: 'D’après tout le corps',
@@ -128,6 +133,8 @@ export const RESULT = {
     bodyCause: joint => `In this set, the ${joint} angle does not move like the rest of your body. The app may have misread it.`,
     bodyCounted: n => `Counted by the app: ${n}`,
     bodyNote: 'Check this number before saving.',
+    bodyDoubt: joint => `Read with caution: in this set, the ${joint} angle does not move like the rest of your body.`,
+    noMeasure: 'No measures for this set.',
     bodyChoices: 'Two possible counts',
     byJoint: joint => `From the ${{ elbow: 'elbow', shoulder: 'shoulder', knee: 'knee', hip: 'hip' }[joint] ?? 'tracked joint'}`,
     byBody: 'From the whole body',

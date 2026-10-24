@@ -64,6 +64,8 @@ test('a refused set shows the app’s proposal, saved only once confirmed', asyn
   expect(await savedSets(page)).toEqual([]);
   await confirm.click();
   await expect(page.getByTestId('saved-card')).toContainText('Merci. 6 répétitions enregistrées, confirmées par vous.');
+  // Why the card holds no analysis: the cause the screen gave before the save (24 October 2026).
+  await expect(page.getByTestId('res-no-measure')).toHaveText(/^Aucune mesure pour cette série\. \S/);
   const saved = await savedSets(page);
   expect(saved).toHaveLength(1);
   expect(saved[0]).toMatchObject({ reps: 6, source: 'manual', afterRefusal: true, machineResult: null, proposal: { reps: 6, by: 'psc' }, repDetails: [], wave: null });

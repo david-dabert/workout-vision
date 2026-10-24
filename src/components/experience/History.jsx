@@ -226,6 +226,7 @@ export default function History({ onClose }) {
     {report && <Report lift={report.exercise || report.exerciseKey} count={report.reps} counted={countedBy(report)} arm={report.arm}
       date={setTime(report)} source={report.source} afterRefusal={!!report.afterRefusal} proposed={proposedBy(report) !== null} proposedBy={proposedBy(report)} reps={report.repDetailsVersion === 2 ? report.repDetails : null}
       setId={report.id} sides={report.sides ?? null} planned={report.planned ?? null} wave={report.repDetailsVersion === 2 ? report.wave ?? null : null}
+      recounted={!!report.recount} doubted={!!report.bodyCheck}
       leaving={leaving} onBack={closeReport} />}
   </>;
 }

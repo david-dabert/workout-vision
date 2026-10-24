@@ -16,11 +16,15 @@ import { compactWave, waveAngles } from './wave';
 // planned: the coach's target when the set was filmed from a programme (programme.js, plannedOf); the programme's
 // screen reads it to show the set beside its target, and the report prints it ("Prévu : 3 × 10"). Absent otherwise.
 /**
- * Whether a counted set keeps its measures (rep details, left against right, wave): not when the body check flagged it
- * (coreAnalysis.js withBodyCheck, 8 October 2026), since they are all read on the counted joint's angle, the one the
- * check found disagreeing with the rest of the body (R8). The saved set, the result screen and the report read this.
+ * Whether a counted set shows its measures (rep details, left against right, wave): not while the body check's flag
+ * stands unanswered (coreAnalysis.js withBodyCheck, 8 October 2026), since they are all read on the counted joint's
+ * angle, the one the check found disagreeing with the rest of the body (R8). Once the person has confirmed or corrected
+ * the count (answered), they are shown with the doubt named beside them (David, 21 and 24 October 2026: the card had no
+ * analysis after he confirmed; on his videos the check flags 5 of the 11 counted (13 filmed, 2 refused) and the app's
+ * count was right on 3 of those 5, test/real-phone/accuracy/body-check.txt). The replay reads this; the saved set keeps them, as it is saved only once
+ * answered. Status: convention, from R8 as David amended it.
  */
-export const keepsMeasures = result => result?.bodyCheck?.flagged !== true;
+export const keepsMeasures = (result, answered = false) => answered || result?.bodyCheck?.flagged !== true;
 
 // blind: the count the person gave before the app showed its own (blind.js), as { count, p }, count null for "Je ne sais
 // pas"; kept with the set when it was asked, so the history and the exports can tell a blind count from one given after.
@@ -39,15 +43,15 @@ export function savedSet({ result, lift, n, corrected, sides = null, manual = fa
     });
   }
   const count = result.count;
-  // A set the body check flagged keeps no measure (keepsMeasures): the history, the report and the spreadsheet show
-  // none (R8), as for a refused set.
-  const flagged = !keepsMeasures(result);
+  // A set the body check flagged keeps its measures, saved only once the person answered (keepsMeasures); the check's
+  // numbers go with it, so the history and the report name the doubt.
+  const flagged = result.bodyCheck?.flagged === true;
   return withPlan({
-    exercise: lift, reps: n, repDetails: flagged ? [] : result.reps, arm: result.arm, confidence: result.confidence,
+    exercise: lift, reps: n, repDetails: result.reps, arm: result.arm, confidence: result.confidence,
     date: now.toISOString(), source: 'counter-core', duration: result.metadata?.duration, corrected,
     // Measured over the app's marks: kept only when the saved count is the app's, or when the set was read again for
     // the person's count and its reps found (coreAnalysis.js recountTo; then repDetails are those reps).
-    sides: (n === count || result.recount?.n === n) && !flagged ? sides : null,
+    sides: n === count || result.recount?.n === n ? sides : null,
     // What the app counted stays apart from what the visitor kept.
     machineResult: { reps: count, confidence: result.confidence ?? null },
     // Where the body went unseen (counting/doubt.js), numbers only: stored, read by no screen yet.
@@ -69,6 +73,6 @@ export function savedSet({ result, lift, n, corrected, sides = null, manual = fa
     // audit of 14 October 2026): none was measured against known truth (R8). Sets saved on 11-14 October may still hold
     // them; no screen, report or export reads them.
     // The measured angle over the set, compact, for the report's wave (wave.js).
-    wave: flagged ? null : compactWave(waveAngles(result), result.timestamps),
+    wave: compactWave(waveAngles(result), result.timestamps),
   });
 }

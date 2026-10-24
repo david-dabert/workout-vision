@@ -39,6 +39,10 @@ export const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'choice',
   // The sensitivity check's recounts of a counted set (coreAnalysis.js withSensitivity, 10 October 2026).
   'sensitivity',
+  // A corrected count whose reps were found again (coreAnalysis.js recountTo, saved since 18 October 2026): kept through a
+  // read since 24 October 2026, so the report and the spreadsheet opened from the history head those reps as the
+  // person's, as the report opened from the result does; before, a read dropped it.
+  'recount',
   // Joint kinetics and mechanical work (jointTorqueEngine.js, 12 October 2026).
   'kinetics',
   // Cryptographic compliance certificate (complianceEngine.js, 12 October 2026).
@@ -147,6 +151,9 @@ export function validateWorkout(record: unknown): ValidationResult {
   const bc = sanitized.bodyCheck as Record<string, unknown> | null | undefined;
   if (bc != null && !(typeof bc === 'object' && (bc.agreement === null || num(bc.agreement))
     && (bc.second === null || whole(bc.second)))) delete sanitized.bodyCheck;
+  // A recount that is not the counter's setting is dropped: the set stays, its reps read as the app's marks.
+  const rc = sanitized.recount as Record<string, unknown> | null | undefined;
+  if (rc != null && !(typeof rc === 'object' && rc.tuning !== null && typeof rc.tuning === 'object')) delete sanitized.recount;
   // A blind answer that is not a count from 1 to 99 (or null) with the share of sets asked is dropped: the set stays.
   const bl = sanitized.blind as Record<string, unknown> | null | undefined;
   if (bl != null && !(typeof bl === 'object' && (bl.count === null || (Number.isInteger(bl.count) && (bl.count as number) >= 1 && (bl.count as number) <= 99))
