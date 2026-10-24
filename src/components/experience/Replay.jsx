@@ -16,6 +16,7 @@ import { isCorrected, markLabel, provenance } from './replay-labels';
 import { replayClock } from './replay-clock';
 import { keepsMeasures } from './saved-set';
 import { jointName } from './lift-meta';
+import { RESULT } from './result-copy';
 
 // The set replayed with the skeleton the pose model tracked on it: what the app saw,
 // frame by frame, with the joint whose angle counts the reps in the lamp's colour.
@@ -249,10 +250,13 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   const NB = ' ', sec = x => `${decimal(x, fr)}${NB}s`;
   const current = repAt(reps, now);
   const begun = reps.filter(r => r.startTime <= now).length;
-  // The rep's measures (its range, times, phase and angle) are shown with the measures (measures.js), and never for a set
-  // the body check flagged, whose result, report, history and export withhold them (saved-set.js keepsMeasures, R8):
-  // such a set shows each rep's number alone (honesty pass, second round, 14 October 2026).
-  const measured = MEASURES_SHOWN && keepsMeasures(result);
+  // The rep's measures (its range, times, phase and angle) are shown with the measures (measures.js), and for a set the
+  // body check flagged only once its count is saved (saved: the person answered), as its result, report, history and
+  // export show them (saved-set.js keepsMeasures, R8); before that, each rep's number alone (honesty pass, second round,
+  // 14 October 2026).
+  const measured = MEASURES_SHOWN && keepsMeasures(result, saved !== null);
+  // Once shown on a set the body check flagged, its measures carry the card's caution line (c.bodyDoubt), word for word.
+  const doubted = measured && !result.refused && result.count > 0 && result.bodyCheck?.flagged === true;
   // The phase word follows the unvalidated phase boundaries: hidden with the measures.
   const phase = measured && current >= 0 ? phaseAt(reps[current], now, def?.first) : null;
   const isTransition = measured && current >= 0 && !phase && !reps[current]?.clipped;
@@ -329,6 +333,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       </div>
       {note && <p className="rp-prov" data-testid="rp-prov">{note}</p>}
       <p className="rp-detail" aria-live={playing ? 'off' : 'polite'}>{head && <span className="sr">{head}</span>}{detail}</p>
+      {doubted && reps.length > 0 && <p className="rp-prov" data-testid="rp-doubted">{RESULT[fr ? 'fr' : 'en'].bodyDoubt(jointName(def?.joint, fr))}</p>}
       {measured && reps.length > 0 && <p className="rp-prov" data-testid="rp-exp">{experimentalLabel(fr)}</p>}
       <div className="rp-controls" data-reveal style={{ '--i': 2 }}>
         <button className="btn-primary press rp-play" onClick={toggle} disabled={broken || made.state === 'making'}>

@@ -1,12 +1,13 @@
 // A counted set the body check flags (8 October 2026, R8): the counted joint disagrees with the rest of the body
 // (src/lib/counting/bodyCheck.js, coreAnalysis.js withBodyCheck), so the low-confidence screen shows the app's count
-// as one to confirm, with no grade and no measure (neither before the save nor after it), and the spec-guided count
-// beside it. Nothing is saved before the person confirms one of them or gives their own.
+// as one to confirm, with no grade and no measure before the save. Nothing is saved before the person confirms it or
+// gives their own; once saved, the set's measures are shown and kept, with the doubt named beside them (24 October
+// 2026, saved-set.js keepsMeasures).
 // The set: a synthetic render of a biceps curl (test/real-phone/synth/sets/soldier-bicep_curl-v60-a20, 8 reps by
 // construction) whose elbow the pose model reads at twice the arm's rhythm: the core counts 15, the body check flags it
 // (agreement -0.18) and the spec-guided count reads 8. Its render keeps world landmarks only; the image landmarks the
 // app reads are the world ones moved into the picture, as e2e/proposal.spec.js does.
-// WV_SHOTS=<folder> writes the flagged screen there (390 x 844 at 3x).
+// WV_SHOTS=<folder> writes the flagged screen and the saved one there (390 x 844 at 3x).
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
@@ -76,10 +77,16 @@ test('a flagged set shows its count to confirm, no grade, saved only once confir
   await expect(page.getByTestId('saved-card')).toContainText('Compté par l’appli : 15. Corrigé : 14.'); // the counted set's saved card, as it stands (it says "l’appli")
   const saved = await savedSets(page);
   expect(saved).toHaveLength(1);
-  expect(saved[0]).toMatchObject({ reps: 14, source: 'counter-core', corrected: true, machineResult: { reps: 15 }, correctedResult: { reps: 14 }, bodyCheck: { second: 8 }, repDetails: [], sides: null, wave: null });
+  expect(saved[0]).toMatchObject({ reps: 14, source: 'counter-core', corrected: true, machineResult: { reps: 15 }, correctedResult: { reps: 14 }, bodyCheck: { second: 8 } });
   expect(saved[0].bodyCheck.agreement).toBeLessThan(0.5);
-  // Saved, still no measure: they are all read on the joint the check doubts (R8).
-  await expect(page.locator('[data-testid="res-sides"], [data-testid="res-exp"], [data-testid="set-account"], [data-testid="level-table"], .res-wave, .bars')).toHaveCount(0);
+  // Saved: the measures, read again for the person's 14 when a setting of the counter finds them, the app's 15 marks
+  // otherwise, with the doubt named beside them.
+  expect(saved[0].repDetails.length).toBe(saved[0].recount ? 14 : 15);
+  expect(saved[0].wave?.t?.length).toBeGreaterThan(1);
+  await expect(page.locator('.bars')).toBeVisible();
+  await expect(page.getByTestId('res-exp')).toBeVisible();
+  await expect(page.getByTestId('res-doubted')).toHaveText('À prendre avec précaution : sur cette série, l’angle du coude ne bouge pas comme le reste de votre corps.');
+  await expect(page.getByTestId('res-remeasured')).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -90,8 +97,20 @@ test('the app’s count confirmed as it stands is saved as confirmed', async ({ 
   await expect(page.getByTestId('saved-card')).toContainText('Merci. Série enregistrée sur votre téléphone.');
   const saved = await savedSets(page);
   expect(saved).toHaveLength(1);
-  expect(saved[0]).toMatchObject({ reps: 15, source: 'counter-core', corrected: false, machineResult: { reps: 15 }, correctedResult: null, bodyCheck: { second: 8 }, repDetails: [], sides: null, wave: null });
-  await expect(page.locator('[data-testid="res-sides"], [data-testid="res-exp"], [data-testid="set-account"], [data-testid="level-table"], .res-wave, .bars')).toHaveCount(0);
+  expect(saved[0]).toMatchObject({ reps: 15, source: 'counter-core', corrected: false, machineResult: { reps: 15 }, correctedResult: null, bodyCheck: { second: 8 } });
+  // Confirmed: the app's 15 reps measured, on the card and in the saved set, with the doubt named (David, 21 October:
+  // the card had no analysis after he confirmed).
+  expect(saved[0].repDetails).toHaveLength(15);
+  expect(saved[0].wave?.t?.length).toBeGreaterThan(1);
+  await expect(page.locator('.bars .bar')).toHaveCount(15);
+  await expect(page.locator('.res-wave')).toBeVisible();
+  await expect(page.getByTestId('set-account')).toBeVisible();
+  await expect(page.getByTestId('res-doubted')).toBeVisible();
+  if (process.env.WV_SHOTS) await page.screenshot({ path: resolve(process.env.WV_SHOTS, 'bodycheck-saved-fr-390x844@3x.png'), fullPage: true });
+  // The report reads the saved reps and names the doubt.
+  await page.getByRole('button', { name: 'Rapport de séance' }).click();
+  await expect(page.locator('.sh-details')).toContainText('À prendre avec précaution');
+  await expect(page.locator('.sh-wave')).toBeVisible();
 });
 
 test('a number given with + is the person’s count', async ({ page }) => {

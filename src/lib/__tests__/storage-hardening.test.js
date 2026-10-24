@@ -87,6 +87,8 @@ describe('the fields the result screen saves', () => {
       ...Object.keys(savedSet({ result, lift: 'squat', n: 6, corrected: false, planned: { programme: 'p1', item: 0, sets: 3, reps: 10, rest: 90 } })),
       // a set whose count was asked before the app's (blind.js)
       ...Object.keys(savedSet({ result, lift: 'squat', n: 6, corrected: false, blind: { count: 6, p: 1 } })),
+      // a corrected count read again and found (coreAnalysis.js recountTo), and a set the body check flagged
+      ...Object.keys(savedSet({ result: { ...result, recount: { n: 5, tuning: { marginScale: 1.1 } }, bodyCheck: { flagged: true, agreement: 0.1, second: null } }, lift: 'squat', n: 5, corrected: true })),
       // added by saveWorkout
       'id', 'createdAt', 'schemaVersion',
     ]);
@@ -97,5 +99,16 @@ describe('the fields the result screen saves', () => {
     const result = { count: 6, reps: [], arm: 'left', confidence: 0.9, doubt: { lost: [[1, 2]] }, metadata: { duration: 20 }, timestamps: [] };
     const id = await storage.saveWorkout(savedSet({ result, lift: 'squat', n: 6, corrected: false }));
     expect((await storage.getWorkout(id)).doubt).toEqual({ lost: [[1, 2]] });
+  });
+});
+
+// 24 October 2026: a read kept no recount, so the report opened from the history headed the person's reps as the app's
+// marks while the report opened from the result headed them as reps.
+describe('a recounted set read back', () => {
+  it('keeps the counter\'s setting that found the person\'s reps, and drops one that is not', async () => {
+    const { validateWorkout } = await import('../validateSchema');
+    const set = { id: 'r1', exercise: 'squat', reps: 5, date: '2026-10-24T05:00:00.000Z', createdAt: 1, schemaVersion: 2, source: 'counter-core', corrected: true };
+    expect(validateWorkout({ ...set, recount: { tuning: { marginScale: 1.1 } } }).sanitized.recount).toEqual({ tuning: { marginScale: 1.1 } });
+    for (const recount of [7, 'x', { tuning: null }, { tuning: 2 }]) expect('recount' in validateWorkout({ ...set, recount }).sanitized).toBe(false);
   });
 });

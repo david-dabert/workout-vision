@@ -64,7 +64,7 @@ describe('setsCsv', () => {
     const text = setsCsv([counted], { lang: 'en' });
     expect(text.startsWith('\uFEFF')).toBe(true);
     expect(text.endsWith('\r\n')).toBe(true);
-    expect(lines(text)[0].split(',')).toEqual(['Date', 'Exercise', 'Reps', 'Counted by the app', 'Corrected', 'Confirmed', 'Load (kg)', 'Duration (s)', 'Average tempo (experimental measure)']);
+    expect(lines(text)[0].split(',')).toEqual(['Date', 'Exercise', 'Reps', 'Counted by the app', 'Corrected', 'Confirmed', 'Load (kg)', 'Duration (s)', 'Average tempo (experimental measure)', 'Measures to read with caution']);
   });
 
   it('writes French with semicolons and decimal commas, English with commas and dots', () => {
@@ -114,7 +114,7 @@ describe('setsCsv', () => {
     expect(f[3]).toBe('10');
     expect(f[4]).toBe('no');
     expect(f[5]).toBe('no');
-    expect(f.slice(6)).toEqual(['', '', '']); // weight 0 is no load; no duration, no reps details (no speed column)
+    expect(f.slice(6)).toEqual(['', '', '', '']); // weight 0 is no load; no duration, no reps details (no speed column), so no caution either
   });
 
   it('writes the coach report\'s tempo (setTempo), and no speed change while SPEED_CHANGE_SHOWN is off', () => {
@@ -122,7 +122,7 @@ describe('setsCsv', () => {
     const f = row.split(',');
     expect(f[8]).toBe(setTempo(REPS, liftDefinition('bicep_curl').first));
     expect(setMeasures(REPS).speedChange).not.toBeNull();
-    expect(f).toHaveLength(9);
+    expect(f).toHaveLength(10);
     expect(head).not.toMatch(/speed change/i);
   });
 
@@ -135,7 +135,17 @@ describe('setsCsv', () => {
   it('ignores reps details measured before step 3c', () => {
     const before = { ...counted, repDetailsVersion: undefined };
     const f = lines(setsCsv([before], { lang: 'en' }))[1].split(',');
-    expect(f.slice(8)).toEqual(['']);
+    expect(f.slice(8)).toEqual(['', '']);
+  });
+
+  // 24 October 2026: a set the body check flagged keeps its measures once the person answered (saved-set.js
+  // keepsMeasures); the file says they were read on a doubted joint, as the report does beside them.
+  it('says whether a set\'s measures were read on a joint the body check doubted', () => {
+    const f = lines(setsCsv([counted, { ...counted, bodyCheck: { agreement: 0.1, second: null } }], { lang: 'fr' })).slice(1).map(r => r.split(';').at(-1));
+    expect(f).toEqual(['non', 'oui']);
+    expect(lines(setsCsv([counted], { lang: 'fr' }))[0].split(';').at(-1)).toBe('Mesures à prendre avec précaution');
+    // Without the measures, no measure to doubt: no column.
+    expect(lines(setsCsv([counted], { lang: 'fr', measures: false }))[0]).not.toContain('précaution');
   });
 
   it('writes a header only when there is no set', () => {
@@ -146,22 +156,24 @@ describe('setsCsv', () => {
 describe('repsCsv', () => {
   it('writes one row per rep of the sets that hold measured reps', () => {
     const rows = lines(repsCsv([manual, exact, old], { lang: 'en' }));
-    expect(rows[0].split(',')).toEqual(['Set date', 'Exercise', 'Rep', 'Range (°) (experimental measure)', 'Concentric (s) (experimental measure)', 'Eccentric (s) (experimental measure)', 'Peak speed (°/s) (experimental measure)', 'Mean speed (°/s) (experimental measure)', 'Cut by the video']);
+    expect(rows[0].split(',')).toEqual(['Set date', 'Exercise', 'Rep', 'Range (°) (experimental measure)', 'Concentric (s) (experimental measure)', 'Eccentric (s) (experimental measure)', 'Peak speed (°/s) (experimental measure)', 'Mean speed (°/s) (experimental measure)', 'Cut by the video', 'Measures to read with caution']);
     expect(rows).toHaveLength(1 + REPS.length);
     const first = rows[1].split(',');
     expect(Date.parse(first[0])).toBe(AT);
-    expect(first.slice(1)).toEqual(['Biceps curl', '1', '120', '1.0', '1.5', '181', '92', 'no']);
+    expect(first.slice(1)).toEqual(['Biceps curl', '1', '120', '1.0', '1.5', '181', '92', 'no', 'no']);
   });
 
   it('writes French with semicolons and decimal commas', () => {
     const rows = lines(repsCsv([exact], { lang: 'fr' }));
-    expect(rows[0].split(';')).toEqual(['Date de la série', 'Exercice', 'Rép.', 'Amplitude (°) (mesure expérimentale)', 'Concentrique (s) (mesure expérimentale)', 'Excentrique (s) (mesure expérimentale)', 'Vitesse max (°/s) (mesure expérimentale)', 'Vitesse moyenne (°/s) (mesure expérimentale)', 'Coupée par la vidéo']);
-    expect(rows[2].split(';').slice(1)).toEqual(['Curl biceps', '2', '118', '1,1', '1,5', '182', '93', 'non']);
+    expect(rows[0].split(';')).toEqual(['Date de la série', 'Exercice', 'Rép.', 'Amplitude (°) (mesure expérimentale)', 'Concentrique (s) (mesure expérimentale)', 'Excentrique (s) (mesure expérimentale)', 'Vitesse max (°/s) (mesure expérimentale)', 'Vitesse moyenne (°/s) (mesure expérimentale)', 'Coupée par la vidéo', 'Mesures à prendre avec précaution']);
+    expect(rows[2].split(';').slice(1)).toEqual(['Curl biceps', '2', '118', '1,1', '1,5', '182', '93', 'non', 'non']);
+    // A set the body check flagged: every rep row says so.
+    expect(lines(repsCsv([{ ...exact, bodyCheck: { agreement: 0.1, second: null } }], { lang: 'fr' })).slice(1).map(r => r.split(';').at(-1))).toEqual(REPS.map(() => 'oui'));
   });
 
   it('leaves the times and speeds of a rep the video cut empty, as the report does', () => {
     const rows = lines(repsCsv([exact], { lang: 'en' }));
-    expect(rows[5].split(',').slice(2)).toEqual(['5', '60', '', '', '', '', 'yes']);
+    expect(rows[5].split(',').slice(2)).toEqual(['5', '60', '', '', '', '', 'yes', 'no']);
   });
 
   // Third audit C12 (3 October): after a correction the rows are the marks the app detected, named as the report
@@ -171,6 +183,8 @@ describe('repsCsv', () => {
     expect(fr).toEqual(['Repère 1', 'Repère 2', 'Repère 3', 'Repère 4', 'Repère 5']);
     const en = lines(repsCsv([counted, exact], { lang: 'en' })).slice(1).map(r => r.split(',')[2]);
     expect(en).toEqual(['Mark 1', 'Mark 2', 'Mark 3', 'Mark 4', 'Mark 5', '1', '2', '3', '4', '5']);
+    // Read again and the person's reps found (recountTo): the rows are theirs (24 October 2026).
+    expect(lines(repsCsv([{ ...counted, recount: { tuning: { marginScale: 1.1 } } }], { lang: 'fr' })).slice(1).map(r => r.split(';')[2])).toEqual(['1', '2', '3', '4', '5']);
   });
 
   it('is null when no set holds measured reps', () => {

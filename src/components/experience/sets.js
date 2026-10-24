@@ -56,11 +56,13 @@ export const setTime = w => new Date(w.createdAt ?? w.date).getTime();
  * saved, it is the newest) nor a later one (a set opened from the history). A left-arm set is not compared
  * with a right-arm set, nor a set of one side with a set of both (audit of 6 October). self: { id, at, arm }
  * of the set reported; an arm the set does not know (null) matches only a set that does not know it either.
+ * A set the body check flagged is not a comparison: its measures are read on a joint the check doubted (saved-set.js
+ * keepsMeasures; before 24 October 2026 it kept none, so it was never picked).
  */
 export function previousSet(all, lift, self) {
   const arm = self.arm ?? null;
   const prev = (all || []).filter(w => (w.exercise || w.exerciseKey) === lift && w.id !== self.id && setTime(w) < self.at
-    && (w.arm ?? null) === arm && w.repDetails?.length && w.repDetailsVersion >= 2)
+    && (w.arm ?? null) === arm && w.repDetails?.length && w.repDetailsVersion >= 2 && !w.bodyCheck)
     .sort((a, b) => setTime(b) - setTime(a))[0];
   return prev ?? null;
 }

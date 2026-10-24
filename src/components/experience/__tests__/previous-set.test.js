@@ -34,3 +34,12 @@ describe('the previous set follows the same arm or side', () => {
     expect(previousSet(front, 'bicep_curl', { id: 'both-now', at: d(12), arm: 'both' }).id).toBe('both-before');
   });
 });
+
+// 24 October 2026: a set the body check flagged keeps its measures once answered (saved-set.js keepsMeasures), read on a
+// joint the check doubted; the report compares with the last set that was not flagged, as before.
+describe('the previous set is never a flagged one', () => {
+  it('skips a newer flagged set for the one before it', () => {
+    const sets = [w('now', 12), w('flagged', 11, { bodyCheck: { agreement: 0.1, second: null } }), w('before', 10)];
+    expect(previousSet(sets, 'bicep_curl', { id: 'now', at: d(12) }).id).toBe('before');
+  });
+});
