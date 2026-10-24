@@ -153,6 +153,10 @@ test('C1: a corrected count, once saved, is not drawn in the measured count’s 
   test.setTimeout(150000);
   const errors = await start(page);
   await analysed(page);
+  // The numeral is keyed on the number shown (Result.jsx), so it remounts at every tick of the count rising: read it
+  // once the count has settled and its question shows, or the element read can be one the next tick has detached
+  // (PR #249's run of 24 October 2026: closest('.wv-experience') was null).
+  await expect(page.getByTestId('ask-card')).toBeVisible();
   const numeral = page.getByTestId('res-numeral');
   const colour = () => numeral.evaluate(e => getComputedStyle(e).color);
   const accent = await numeral.evaluate(e => { const s = getComputedStyle(e.closest('.wv-experience')); const p = document.createElement('i'); p.style.color = s.getPropertyValue('--c-accent'); document.body.append(p); const c = getComputedStyle(p).color; p.remove(); return c; });
