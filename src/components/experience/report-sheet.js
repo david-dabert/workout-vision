@@ -357,15 +357,17 @@ export function measuresFile({ fr, lift, date, count, counted = null, source, af
   });
   const lr = sidesLines(sides, fr, lift) ? sides : null;
   const p = person || {};
+  // A set the body check flagged says so beside each block measured on the doubted joint, its reps and its left
+  // against right, as the sheet does above all its measures (24 October 2026).
+  const caution = doubted ? { caution: tr(`à prendre avec précaution${NBSP}: l’angle ${jointName(joint, true)} ne bougeait pas comme le reste du corps`, `read with caution: the ${jointName(joint, false)} angle did not move like the rest of the body`) } : {};
   return {
     format: 'workoutvision-set-measures/1',
     lift,
     date: (date instanceof Date ? date : new Date(date)).toISOString(),
     count: { value: count, source: how },
     countedByApp: app !== null && !typed ? { value: app, source: tr('compté par l’appli', 'counted by the app') } : null,
-    // A set the body check flagged says so beside its reps, as the sheet does (24 October 2026).
-    reps: values.length ? { source: tr('mesuré par l’appli sur la vidéo, expérimental, non validé', 'measured by the app on the video, experimental, not validated'), ...(doubted ? { caution: tr(`à prendre avec précaution${NBSP}: l’angle ${jointName(joint, true)} ne bougeait pas comme le reste du corps`, `read with caution: the ${jointName(joint, false)} angle did not move like the rest of the body`) } : {}), values } : null,
-    sides: lr ? { source: tr('mesuré par l’appli, série filmée de face seulement, expérimental', 'measured by the app, front view only, experimental'), value: { left: lr.left, right: lr.right, gapPercent: Math.abs(Math.round(lr.si)) } } : null,
+    reps: values.length ? { source: tr('mesuré par l’appli sur la vidéo, expérimental, non validé', 'measured by the app on the video, experimental, not validated'), ...caution, values } : null,
+    sides: lr ? { source: tr('mesuré par l’appli, série filmée de face seulement, expérimental', 'measured by the app, front view only, experimental'), ...caution, value: { left: lr.left, right: lr.right, gapPercent: Math.abs(Math.round(lr.si)) } } : null,
     planned: planned ? { source: tr('le programme du coach', 'the coach’s programme'), value: planned } : null,
     person: { source: tr('saisi par la personne sur le formulaire du rapport', 'typed by the person on the report form'), name: p.name || null, context: p.context || null, partner: p.partner || null, level: p.level || null, pain: p.pain ?? null, rpe: p.rpe ?? null, notes: p.notes || null },
   };

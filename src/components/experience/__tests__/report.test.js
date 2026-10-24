@@ -129,6 +129,14 @@ describe('reportSheet', () => {
     const set = { lift: 'squat', date: day, count: 1, counted: 1, source: 'counter-core', reps };
     expect(measuresFile({ ...set, fr: true, doubted: true, joint: 'knee' }).reps.caution).toBe(`à prendre avec précaution${NBSP}: l’angle du genou ne bougeait pas comme le reste du corps`);
     expect('caution' in measuresFile({ ...set, fr: true }).reps).toBe(false);
+    // Left against right, read on the same doubted joint, carries it too (lateral raise, filmed from the front).
+    const sides = { left: 80, right: 70, si: -13, v: SIDES_VERSION };
+    const raise = { ...set, lift: 'lateral_raise', sides };
+    expect(measuresFile({ ...raise, fr: true, doubted: true, joint: 'shoulder' }).sides.caution).toBe(`à prendre avec précaution${NBSP}: l’angle de l’épaule ne bougeait pas comme le reste du corps`);
+    expect(measuresFile({ ...raise, fr: false, doubted: true, joint: 'shoulder' }).sides.caution).toBe('read with caution: the shoulder angle did not move like the rest of the body');
+    const plain = measuresFile({ ...raise, fr: true });
+    expect(plain.sides).not.toBeNull();
+    expect('caution' in plain.sides).toBe(false);
   });
   it('names the body check\'s doubt beside a flagged set\'s measures, and only there', () => {
     const reps = [{ startTime: 0, endTime: 2, romDegrees: 90, concentricSec: 1, eccentricSec: 1 }];
