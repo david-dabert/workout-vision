@@ -9,7 +9,14 @@ test('CFRep held-out half is recorded as seen, whole', () => {
   const exposed = JSON.parse(readFileSync(resolve(PUBLIC, 'exposed.json'), 'utf8'));
   expect(isExposed(exposed, 'cfrep', 'squat_side_m1_12_0')).toBe(true);
   expect(exposed.cfrep.reason).toMatch(/pose-model bench/);
-  expect(isExposed(exposed, 'countix', 'anything')).toBe(false);
+  // A dataset with no record is not exposed (RepCount-A's held-out sets were never read).
+  expect(isExposed(exposed, 'repcount', 'anything')).toBe(false);
+});
+
+test('the Countix held-out half is recorded as seen, whole, since the loop gate\'s sealed run (24 October 2026)', () => {
+  const exposed = JSON.parse(readFileSync(resolve(PUBLIC, 'exposed.json'), 'utf8'));
+  expect(isExposed(exposed, 'countix', 'anything')).toBe(true);
+  expect(exposed.countix.reason).toMatch(/sealed run/);
 });
 
 test('a list of ids exposes only those sets', () => {
