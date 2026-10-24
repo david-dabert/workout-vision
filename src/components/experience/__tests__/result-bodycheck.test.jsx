@@ -85,13 +85,21 @@ describe('the set saved from a flagged screen', () => {
     const other = savedSet({ result, lift: 'hack_squat', n: 7, corrected: true, now: new Date('2026-10-08T10:00:00Z') });
     expect(other).toMatchObject({ reps: 7, corrected: true, machineResult: { reps: 14 }, correctedResult: { reps: 7 }, bodyCheck: { second: 7 } });
   });
-  it('keeps no measure of the doubted joint: no rep details, no left against right, no wave (R8)', () => {
+  it('keeps its measures once the person answered, as the screen shows them (24 October 2026)', () => {
     const sides = { status: 'measured' };
-    for (const n of [14, 7]) {
-      const kept = savedSet({ result, lift: 'hack_squat', n, corrected: n !== 14, sides });
-      expect(kept).toMatchObject({ repDetails: [], sides: null, wave: null });
-    }
+    const kept = savedSet({ result, lift: 'hack_squat', n: 14, corrected: false, sides });
+    expect(kept.repDetails).toBe(reps);
+    expect(kept.sides).toEqual(sides);
+    expect(kept.wave?.t?.length).toBeGreaterThan(1);
+    // Corrected and not found again: the app's marks stay, with no left against right of reps that are not the person's.
+    const other = savedSet({ result, lift: 'hack_squat', n: 7, corrected: true, sides });
+    expect(other).toMatchObject({ repDetails: reps, sides: null });
+    // Corrected and found again (recountTo): the reps saved are those, with their comparison.
+    const found = savedSet({ result: { ...result, reps: reps.slice(0, 13), recount: { n: 13, tuning: { marginScale: 1.1 } } }, lift: 'hack_squat', n: 13, corrected: true, sides });
+    expect(found).toMatchObject({ repDetails: reps.slice(0, 13), sides, recount: { tuning: { marginScale: 1.1 } }, bodyCheck: { second: 7 } });
+    // The flag withholds them until the person answers, never after (the replay reads this).
     expect(keepsMeasures(result)).toBe(false);
+    expect(keepsMeasures(result, true)).toBe(true);
   });
   it('says nothing of a check that did not flag, and keeps that set’s measures', () => {
     expect('bodyCheck' in savedSet({ result: { ...counted, bodyCheck: { ...check(null), flagged: false } }, lift: 'hack_squat', n: 14, corrected: false })).toBe(false);

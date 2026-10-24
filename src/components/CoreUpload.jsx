@@ -9,8 +9,6 @@ import { watchInterruption, whenVisible, settleRun, holdScreenAwake, isInterrupt
 import Report from './experience/Report';
 import Replay from './experience/Replay';
 import ScreenFade from './experience/ScreenFade';
-import { compactWave, waveAngles } from './experience/wave';
-import { keepsMeasures } from './experience/saved-set';
 import { track } from '../lib/events';
 import { markCrash, noteError } from '../lib/crashLog';
 import { collectOn } from '../lib/phoneCollect';
@@ -44,6 +42,9 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
   const [savedCount, setSavedCount] = useState(null);
   // The left/right comparison the result screen saved with the set (sides-line.js), for the report.
   const [savedSides, setSavedSides] = useState(null);
+  // What the saved set measured (Result.jsx onSaved): its reps and wave, read again for the person's count when found,
+  // and whether the body check doubted the joint; the report opened from the result reads them.
+  const [savedMeasures, setSavedMeasures] = useState(null);
   const savedIdRef = useRef(null);
   const abort = useRef(null);
   const closeTimer = useRef(null);
@@ -70,7 +71,7 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
 
   async function run(controller) {
     const mine = () => abort.current === controller;
-    setResult(null); setSavedCount(null); setSavedSides(null); setError(null); setInterrupted(false); setIncomplete(null); setProgress(0); setLandmarks(null); setFrameSize(null);
+    setResult(null); setSavedCount(null); setSavedSides(null); setSavedMeasures(null); setError(null); setInterrupted(false); setIncomplete(null); setProgress(0); setLandmarks(null); setFrameSize(null);
     let release = () => {}, wake = async () => {};
     // Crash log (crashLog.js): the phase, then while the video is read, the sample reached and the frame size.
     let samples = 0, marked = 0;
@@ -160,9 +161,9 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
       {view === 'error' && <AnalysisError lift={lift} phase={phase} failure={error} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} onByHand={byHand('error')} />}
       {view === 'incomplete' && <AnalysisIncomplete lift={lift} read={incomplete.read} expected={incomplete.expected} disordered={incomplete.disordered} decoder={incomplete.decoder} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} onByHand={byHand('partial')} />}
       {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} onByHand={byHand('interrupted')} />}
-      {view === 'result' && <Result result={result} lift={lift} videoFile={file} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={result.notRead ? undefined : () => openOverlay('replay')} onNewSet={onNewSet} onChangeLift={onClose} onRefilm={refilm} planned={planned} blind={blind} onSaved={(n, sides) => { setSavedCount(n); setSavedSides(sides ?? null); }} />}
+      {view === 'result' && <Result result={result} lift={lift} videoFile={file} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={result.notRead ? undefined : () => openOverlay('replay')} onNewSet={onNewSet} onChangeLift={onClose} onRefilm={refilm} planned={planned} blind={blind} onSaved={(n, sides, measures) => { setSavedCount(n); setSavedSides(sides ?? null); setSavedMeasures(measures ?? null); }} />}
     </ScreenFade>
-    {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={keepsMeasures(result) ? result.reps : []} setId={savedIdRef.current} sides={savedSides} wave={keepsMeasures(result) ? compactWave(waveAngles(result), result.timestamps) : null} planned={planned} leaving={overlayLeaving} onBack={closeOverlay} />}
+    {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={savedMeasures?.reps ?? []} setId={savedIdRef.current} sides={savedSides} wave={savedMeasures?.wave ?? null} recounted={!!savedMeasures?.recounted} doubted={!!savedMeasures?.doubted} planned={planned} leaving={overlayLeaving} onBack={closeOverlay} />}
     {view === 'result' && overlay === 'replay' && <Replay file={file} result={result} lift={lift} saved={savedCount} leaving={overlayLeaving} onBack={closeOverlay} />}
   </>;
 }

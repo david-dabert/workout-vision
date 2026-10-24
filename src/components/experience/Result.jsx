@@ -188,9 +188,10 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // their count ("–", quick keys centred on the plan, none chosen). Status: convention, from R8.
   const liveDiffers = !result.refused && liveShown !== null && result.count > 0 && liveShown !== result.count;
   // A counted set whose joint disagrees with the rest of the body (counting/bodyCheck.js, coreAnalysis.js
-  // withBodyCheck; 8 October 2026): its count opens the slot as one to confirm, with no grade and no measure (R8, before
-  // the save and after it: showMeasures), and the spec-guided count beside it when it differs, both labelled; nothing
-  // is saved until the person confirms or changes the number. Status: experimental (test/real-phone/accuracy/body-check.txt).
+  // withBodyCheck; 8 October 2026): its count opens the slot as one to confirm, with no grade and no measure until the
+  // person answers (R8, showMeasures), and the spec-guided count beside it when it differs, both labelled; nothing is
+  // saved until the person confirms or changes the number. Once saved, its measures are shown with the doubt named
+  // (c.bodyDoubt; saved-set.js keepsMeasures). Status: experimental (test/real-phone/accuracy/body-check.txt).
   const flagged = !result.refused && result.count > 0 && result.bodyCheck?.flagged === true;
   // The spec-guided count is not offered beside it (8 October 2026): on the real-world sets it flags (public build halves,
   // RepCount-A, David's sets) it was right 7 times in 79 where offered, the app's own count 19 times on the same sets
@@ -401,12 +402,12 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   useEffect(() => { let live = true; loadSets().then(l => { if (live) setBefore(b => b ?? mine(l)); }, () => {}); return () => { live = false; }; }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // Once saved: the one earned line, a record, a record equalled or a first set (moment.js), above the thanks.
   const moment = step === 'saved' ? momentLine({ n: trueN, before, fr }) : null;
-  const account = setAccount({ reps, first: liftDefinition(lift)?.first, fr, name: liftName, count: trueN, corrected: step === 'saved' && isCorrected(trueN, count), previous: before?.length ? before[0].reps : null, nth: before ? before.length + 1 : null });
+  const account = setAccount({ reps, first: liftDefinition(lift)?.first, fr, name: liftName, count: trueN, corrected: step === 'saved' && isCorrected(trueN, count), previous: before?.length ? before[0].reps : null, nth: before ? before.length + 1 : null, doubted: flagged });
   const shortSet = new Set(account.short);
   // The level read as the screen opens (level.js); the expert's table and speed line are the report's own,
   // its first column headed Repère after a correction, as the report heads it (third audit C11).
   const [view] = useState(() => levelView(readLevel()));
-  const perRep = view.perRep && MEASURES_SHOWN ? { table: repTable({ reps, first: liftDefinition(lift)?.first, fr, corrected }), speed: SPEED_CHANGE_SHOWN ? speedChangeLine(reps, fr) : '' } : null;
+  const perRep = view.perRep && MEASURES_SHOWN ? { table: repTable({ reps, first: liftDefinition(lift)?.first, fr, corrected, doubted: flagged }), speed: SPEED_CHANGE_SHOWN ? speedChangeLine(reps, fr) : '' } : null;
   const table = perRep?.table, speedLine = perRep?.speed || '';
   // The question on the level: offered once, after a saved set, when none is stored.
   const [levelBefore] = useState(() => ({ level: readLevel(), asked: levelAsked() }));
@@ -489,15 +490,17 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       // count, or saved by "Garder" before the keys showed, offered nothing).
       const choice = offerAlts && altsShown.current && !manual ? { rule: choices.rule, offered: [choices.main, ...choices.alts], picked: pickedAlt.current ? 'alt' : n === choices.main ? 'main' : 'typed' } : null;
       // A corrected count read again for the person's number (recountTo): found, the set is saved with those reps and
-      // their left-right comparison; the app's own count stays the machine's.
-      const rc = !manual && isCorrected(n, count) && !flagged ? recountTo(result, lift, n) : null;
+      // their left-right comparison; the app's own count stays the machine's. A flagged set too: the person's number is
+      // the one the joint's angle is read for.
+      const rc = !manual && isCorrected(n, count) ? recountTo(result, lift, n) : null;
       let again = null;
       if (rc) {
         const cmp = compareSides(result.worldLandmarks, result.timestamps, lift, rc.reps);
         again = { ...rc, sides: sidesRecord(cmp), perRep: cmp?.status === 'measured' ? cmp.comparison.perRep : null };
       }
       const savedResult = again ? { ...result, reps: again.reps, smoothedAngles: again.smoothedAngles, recount: { n, tuning: again.tuning } } : result;
-      savedId.current = await saveWorkout(savedSet({ result: savedResult, lift, n, corrected, sides: again ? again.sides : sides, manual, planned, proposal, blind, choice }));
+      const kept = savedSet({ result: savedResult, lift, n, corrected, sides: again ? again.sides : sides, manual, planned, proposal, blind, choice });
+      savedId.current = await saveWorkout(kept);
       setRemeasured(again);
       refreshSets();
       // A set is now worth keeping: the browser is asked to keep the app's storage (keep-sets.js; a no-op once kept).
@@ -525,8 +528,9 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       setSaveError(''); // a retry that saves takes back "not saved"
       if (!manual) track(isCorrected(n, count) ? 'result_corrected' : 'result_kept', { lift });
       setStep('saved');
-      // A flagged set's left-right comparison is of the joint the body check doubts: none goes on (saved-set.js).
-      if (!manual) onSaved(n, (n === count || again) && !flagged ? (again ? again.sides : sides) : null); // the replay states the saved count beside the detected marks; the report reads the comparison
+      // The report opened from here measures what was saved: the reps read again for the person's number when found,
+      // the app's otherwise, and names the doubt of a flagged set (Report.jsx recounted, doubted).
+      if (!manual) onSaved(n, n === count || again ? (again ? again.sides : sides) : null, { reps: kept.repDetails, wave: kept.wave, recounted: !!kept.recount, doubted: !!kept.bodyCheck }); // the replay states the saved count beside the detected marks
       warmReportPdf().catch(() => {}); // the report screen says so if it could not load
       return true;
     } catch {
@@ -744,6 +748,8 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
         <div ref={cardRef}>
           {step === 'saved' && <div className="saved appear" data-testid="saved-card">
             <p className="saved-msg">{proposal && trueN === proposal ? c.savedConfirmed(trueN) : fr ? `Merci. ${trueN} ${trueN > 1 ? 'répétitions enregistrées, saisies' : 'répétition enregistrée, saisie'} à la main.` : `Thank you. ${trueN} ${trueN === 1 ? 'rep' : 'reps'} saved, typed by hand.`}</p>
+            {/* Why the card holds no analysis: the cause the screen gave before the save (R8). */}
+            <p className="res-meta" data-testid="res-no-measure">{[c.noMeasure, universal ? c.universalTitle : text].filter(Boolean).join(' ')}</p>
             <div className="rest-slot" ref={restRef}><RestClock fr={fr} clock={rest} targetSec={planned?.rest} /></div>
             <button className="btn-primary press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
             <button className="text-btn press" onClick={after(onChangeLift)} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
@@ -787,10 +793,11 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const typedView = step === 'fix' || (step === 'saved' && isCorrected(trueN, count));
   const one = big <= 1;
   // Before the person gives their count on the low-confidence screen, no measure of the set is shown (R8, no grade).
-  // A set the body check flagged shows none once saved either: every measure of the set (cells, ranges, tempo, short
-  // marks, wave, left against right) is read on the counted joint's angle, the one the check found disagreeing with
-  // the rest of the body (R8; as a refused set, the proposal's pattern, shows none). The day's table is no measure.
-  const showMeasures = !low || (step === 'saved' && !flagged);
+  // Once saved, a set the body check flagged shows its measures too, with the doubt named under them (c.bodyDoubt):
+  // every measure (cells, ranges, tempo, short marks, wave, left against right) is read on the counted joint's angle,
+  // the one the check found disagreeing with the rest of the body (saved-set.js keepsMeasures). A refused set, the
+  // proposal's pattern, shows none, and says why. The day's table is no measure.
+  const showMeasures = !low || step === 'saved';
   const measured = count > 0 && asked && showMeasures;
   // The level chosen before this set sets the screen; one chosen on it applies from the next set.
   // The set's two ranges and what a gap means: under the strips, or under the marks for the beginner, who has no strips.
@@ -815,6 +822,8 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       {/* Where the number comes from: the app, on a video whose length is measured (metadata.duration); once the person
           changed it, the app's own count beside theirs (the saved card says it once saved). */}
       {step === 'fix' ? <p className="res-src">{c.countedWas(count)}</p> : !typedView && <p className="res-src" data-testid="res-src">{c.source(seconds, live)}</p>}
+      {/* A set the app counted none in, saved with the person's number: no rep to measure, said so (R8). */}
+      {step === 'saved' && unsure && <p className="res-meta" data-testid="res-no-measure">{`${c.noMeasure} ${c.noneFound}`}</p>}
       {tierLine}
       {result.test && <p className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (big === 1 ? 'Rep' : 'Reps')}{fr ? ` en ${result.test.windowSec} secondes` : ` in ${result.test.windowSec} seconds`}</p>}
       {/* A fitness test whose video ends before its window: the score is of what was filmed (fitness-tests.js). */}
@@ -845,6 +854,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       {step === 'saved' && isCorrected(trueN, count) && MEASURES_SHOWN && <p className="res-exp" data-testid="res-remeasured">{remeasured
         ? (fr ? `Mesures recalculées sur vos ${trueN} répétitions.` : `Measures recalculated on your ${trueN} reps.`)
         : (fr ? `Impossible de retrouver vos ${trueN} répétitions dans la vidéo\u00A0: les mesures affichées sont celles de l’appli.` : `Your ${trueN} reps could not be found in the video: the measures shown are the app’s.`)}</p>}
+      {step === 'saved' && flagged && MEASURES_SHOWN && <p className="res-exp" data-testid="res-doubted">{c.bodyDoubt(jointName(liftDefinition(lift)?.joint, fr))}</p>}
       {/* Under the cells: every measure on this screen (cells, account, table) is experimental (measures.js). */}
       {MEASURES_SHOWN && <p className="res-exp" data-testid="res-exp">{experimentalLabel(fr)}</p>}
     </div>,

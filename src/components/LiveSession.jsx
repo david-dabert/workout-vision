@@ -4,8 +4,6 @@ import Result from './experience/Result';
 import Report from './experience/Report';
 import Replay from './experience/Replay';
 import ScreenFade from './experience/ScreenFade';
-import { compactWave, waveAngles } from './experience/wave';
-import { keepsMeasures } from './experience/saved-set';
 import { track } from '../lib/events';
 import { writeFilmMode } from '../lib/liveCamera';
 
@@ -20,6 +18,9 @@ export default function LiveSession({ lift, onClose, onRecord, planned = null })
   const [overlayLeaving, setOverlayLeaving] = useState(false);
   const [savedCount, setSavedCount] = useState(null);
   const [savedSides, setSavedSides] = useState(null);
+  // What the saved set measured (Result.jsx onSaved): its reps and wave, read again for the person's count when found,
+  // and whether the body check doubted the joint; the report opened from the result reads them.
+  const [savedMeasures, setSavedMeasures] = useState(null);
   const trueNRef = useRef(null), savedIdRef = useRef(null), closeTimer = useRef(null);
   useEffect(() => () => clearTimeout(closeTimer.current), []);
 
@@ -45,7 +46,7 @@ export default function LiveSession({ lift, onClose, onRecord, planned = null })
   }
   // Another live set: the Live screen again, from its start.
   const [round, setRound] = useState(0);
-  function again() { setResult(null); setLiveShown(null); setSavedCount(null); setSavedSides(null); setOverlay(null); setRound(r => r + 1); }
+  function again() { setResult(null); setLiveShown(null); setSavedCount(null); setSavedSides(null); setSavedMeasures(null); setOverlay(null); setRound(r => r + 1); }
 
   const view = result ? 'result' : `live:${round}`;
   return <>
@@ -54,9 +55,9 @@ export default function LiveSession({ lift, onClose, onRecord, planned = null })
       {!result && <Live lift={lift} onBack={running => { if (running) track('analysis_cancelled', { lift }); onRecord(); }} onRecord={() => { writeFilmMode('video'); onRecord(); }}
         onStart={() => track('analysis_start', { lift })} onDone={done} />}
       {result && <Result result={result} lift={lift} liveShown={liveShown} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport}
-        onReplay={() => openOverlay('replay')} onNewSet={onRecord} onChangeLift={onClose} onRefilm={again} planned={planned} onSaved={(n, sides) => { setSavedCount(n); setSavedSides(sides ?? null); }} />}
+        onReplay={() => openOverlay('replay')} onNewSet={onRecord} onChangeLift={onClose} onRefilm={again} planned={planned} onSaved={(n, sides, measures) => { setSavedCount(n); setSavedSides(sides ?? null); setSavedMeasures(measures ?? null); }} />}
     </ScreenFade>
-    {result && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={keepsMeasures(result) ? result.reps : []} setId={savedIdRef.current} sides={savedSides} wave={keepsMeasures(result) ? compactWave(waveAngles(result), result.timestamps) : null} planned={planned} leaving={overlayLeaving} onBack={closeOverlay} />}
+    {result && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={savedMeasures?.reps ?? []} setId={savedIdRef.current} sides={savedSides} wave={savedMeasures?.wave ?? null} recounted={!!savedMeasures?.recounted} doubted={!!savedMeasures?.doubted} planned={planned} leaving={overlayLeaving} onBack={closeOverlay} />}
     {result && overlay === 'replay' && <Replay file={null} result={result} lift={lift} saved={savedCount} leaving={overlayLeaving} onBack={closeOverlay} />}
   </>;
 }

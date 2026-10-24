@@ -1,0 +1,26 @@
+The image-motion check on the core's count, 24 October 2026 (plan.md; frames.mjs, gate.test.ts; bench only; measured, decides nothing).
+Countix clips decoded with ffmpeg at 15 samples per second, 128 x 128 grey, whole frame; motionRhythm.js with its defaults.
+
+-- A: 458 sets; the core on every set 197 exact (43 %), 72 off by 3 or more
+   the motion count alone: 458 counted, 74 exact (16 %)
+   today's sure set:   301 sure (66 % of 458),  167 exact (55 %),   1 off by 3 or more
+   G1                   68 sure (15 % of 458),   40 exact (59 %),   0 off by 3 or more
+   G2(0.3)              38 sure (8 % of 458),   28 exact (74 %),   0 off by 3 or more
+   G2(0.5)              31 sure (7 % of 458),   22 exact (71 %),   0 off by 3 or more
+   G2(0.7)              16 sure (3 % of 458),    9 exact (56 %),   0 off by 3 or more
+-- B: 436 sets; the core on every set 192 exact (44 %), 85 off by 3 or more
+   the motion count alone: 436 counted, 66 exact (15 %)
+   today's sure set:   271 sure (62 % of 436),  163 exact (60 %),   3 off by 3 or more
+   G1                   58 sure (13 % of 436),   33 exact (57 %),   0 off by 3 or more
+   G2(0.3)              32 sure (7 % of 436),   21 exact (66 %),   0 off by 3 or more
+   G2(0.5)              25 sure (6 % of 436),   18 exact (72 %),   0 off by 3 or more
+   G2(0.7)              12 sure (3 % of 436),   10 exact (83 %),   0 off by 3 or more
+-- exposed: 432 sets; the core on every set 189 exact (44 %), 74 off by 3 or more
+   the motion count alone: 432 counted, 67 exact (16 %)
+   today's sure set:   270 sure (62 % of 432),  160 exact (59 %),   6 off by 3 or more
+   G1                   74 sure (17 % of 432),   38 exact (51 %),   0 off by 3 or more
+   G2(0.3)              44 sure (10 % of 432),   27 exact (61 %),   0 off by 3 or more
+   G2(0.5)              34 sure (8 % of 432),   20 exact (59 %),   0 off by 3 or more
+   G2(0.7)              27 sure (6 % of 432),   19 exact (70 %),   0 off by 3 or more
+
+Choice on A: no gate covers a quarter of the sets; no verdict.
