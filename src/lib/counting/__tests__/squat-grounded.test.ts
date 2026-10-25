@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
 import { countReps, liftDefinition } from '../core';
+import { summarizeCount } from '../../coreAnalysis';
 
 const ROOT = resolve(__dirname, '../../../../test/real-phone');
 const gz = (f: string) => JSON.parse(gunzipSync(readFileSync(resolve(ROOT, f))).toString());
@@ -32,4 +33,24 @@ describe('fixedFeet on grounded platform squats (hack squat, pendulum squat)', (
       expect(dur).toBeLessThan(7.0);
     }
   });
+
+  it('sissy_squat recovers occluded stationary ankles and counts 5 exact on sissy_squat_5_5011', () => {
+    const def = liftDefinition('sissy_squat');
+    expect(def).not.toBeNull();
+    expect(def?.fixedFeet).toBe(true);
+    expect(def?.clampFootplateInversion).toBeFalsy();
+
+    const d = gz('sets-07oct-video/sissy_squat_5_5011.json.gz');
+    const ts = d.timestamps;
+    const wl = d.worldLandmarks;
+
+    const res = countReps(wl, ts, 'sissy_squat');
+    expect(res.count).toBe(5);
+    expect(res.confidence).toBeGreaterThan(0.9);
+
+    const summary = summarizeCount(wl, ts, 'sissy_squat');
+    expect(summary.count).toBe(5);
+    expect(summary.refused).toBe(false);
+  });
 });
+

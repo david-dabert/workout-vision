@@ -188,6 +188,8 @@ export interface LiftDefinition {
    * machine occlusion are held at the median platform position to prevent false extension spikes at the bottom of the squat.
    */
   fixedFeet?: boolean;
+  /** Clamp impossible anatomical inversions (ankle.y < knee.y) caused by angled sled footplate occlusion (hack_squat). */
+  clampFootplateInversion?: boolean;
 }
 
 export const LIFTS = {
@@ -262,11 +264,12 @@ const PATTERNS = guidePatterns as Record<string, string>;
 // hack_squat (25 October 2026, R16): fixed-footplate machine squat. Machine occlusion at the bottom of the movement
 // causes MediaPipe ankle landmarks to glitch upwards into the air (ankle.y < knee.y), inverting the knee vector and
 // doubling reps (pendulum_squat_7 counted 14 for 7). sanitizeFixedFeet holds inverted ankles at the platform position.
-const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRepRomDeg' | 'minRangeDeg' | 'together' | 'eitherSide' | 'togetherMinCorrelation' | 'minRepSec' | 'noSplit' | 'fixedFeet'>> = {
+const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRepRomDeg' | 'minRangeDeg' | 'together' | 'eitherSide' | 'togetherMinCorrelation' | 'minRepSec' | 'noSplit' | 'fixedFeet' | 'clampFootplateInversion'>> = {
   push_up: { thresholdMargin: 0.25, minRepRomDeg: 15 },
   front_raise: { together: true, eitherSide: false, togetherMinCorrelation: -Infinity },
   prone_y_raise: { minRangeDeg: 10, minRepRomDeg: 10, minRepSec: 1.2, noSplit: true, thresholdMargin: 0.25 },
-  hack_squat: { fixedFeet: true },
+  hack_squat: { fixedFeet: true, clampFootplateInversion: true },
+  sissy_squat: { fixedFeet: true },
 };
 
 // Close variants counted as their parent (audit of 6 October 2026, action 6): the same elbow cycle with the hands,
@@ -541,25 +544,50 @@ export function countReps(
   return other.count > mine.count ? other : mine;
 }
 
-function sanitizeFixedFeet(worldLandmarks: WorldLandmarkFrame[], joint: Joint): WorldLandmarkFrame[] {
+function sanitizeFixedFeet(worldLandmarks: WorldLandmarkFrame[], joint: Joint, clampInversion = false): WorldLandmarkFrame[] {
   if (joint !== 'knee') return worldLandmarks;
   const lKnee = JOINT_POINTS.knee.left[1], lAnkle = JOINT_POINTS.knee.left[2];
   const rKnee = JOINT_POINTS.knee.right[1], rAnkle = JOINT_POINTS.knee.right[2];
   const lValidY: number[] = [], rValidY: number[] = [];
+  const lAnks: WorldLandmark[] = [], rAnks: WorldLandmark[] = [];
   for (const f of worldLandmarks) {
     if (!f) continue;
     if (f[lKnee] && f[lAnkle] && f[lAnkle].y > f[lKnee].y) lValidY.push(f[lAnkle].y);
     if (f[rKnee] && f[rAnkle] && f[rAnkle].y > f[rKnee].y) rValidY.push(f[rAnkle].y);
+    if (f[lAnkle] && f[lAnkle].visibility >= VIS_THRESHOLD) lAnks.push(f[lAnkle]);
+    if (f[rAnkle] && f[rAnkle].visibility >= VIS_THRESHOLD) rAnks.push(f[rAnkle]);
   }
-  const lFootplate = lValidY.length ? lValidY.sort((a, b) => a - b)[Math.floor(lValidY.length * 0.75)] : null;
-  const rFootplate = rValidY.length ? rValidY.sort((a, b) => a - b)[Math.floor(rValidY.length * 0.75)] : null;
+  const lFootplate = clampInversion && lValidY.length ? lValidY.sort((a, b) => a - b)[Math.floor(lValidY.length * 0.75)] : null;
+  const rFootplate = clampInversion && rValidY.length ? rValidY.sort((a, b) => a - b)[Math.floor(rValidY.length * 0.75)] : null;
+
+  // When ankles are clamped in a fixed platform apparatus (e.g. sissy squat machine) and occluded
+  // by footplate/roller pads on a majority of frames (< 50%) but seen on >= 5% of frames, hold
+  // occluded ankle samples at their median stationary platform coordinate.
+  const n = worldLandmarks.length;
+  const lOccluded = lAnks.length < n * 0.5 && lAnks.length >= n * 0.05;
+  const rOccluded = rAnks.length < n * 0.5 && rAnks.length >= n * 0.05;
+  const medPt = (pts: WorldLandmark[]) => {
+    if (!pts.length) return null;
+    const xs = pts.map(p => p.x).sort((a, b) => a - b);
+    const ys = pts.map(p => p.y).sort((a, b) => a - b);
+    const zs = pts.map(p => p.z).sort((a, b) => a - b);
+    const m = Math.floor(pts.length / 2);
+    return { x: xs[m], y: ys[m], z: zs[m] };
+  };
+  const lMed = lOccluded ? medPt(lAnks) : null;
+  const rMed = rOccluded ? medPt(rAnks) : null;
+
   return worldLandmarks.map(f => {
     if (!f) return null;
     let copy: WorldLandmark[] | null = null;
-    if (lFootplate != null && f[lKnee] && f[lAnkle] && f[lAnkle].y < f[lKnee].y) {
+    if (lMed && (!f[lAnkle] || f[lAnkle].visibility < VIS_THRESHOLD)) {
+      copy = f.map((p, i) => (i === lAnkle ? { ...lMed, visibility: 0.99 } : p));
+    } else if (lFootplate != null && f[lKnee] && f[lAnkle] && f[lAnkle].y < f[lKnee].y) {
       copy = f.map((p, i) => (i === lAnkle ? { ...p, y: lFootplate } : p));
     }
-    if (rFootplate != null && f[rKnee] && f[rAnkle] && f[rAnkle].y < f[rKnee].y) {
+    if (rMed && (!f[rAnkle] || f[rAnkle].visibility < VIS_THRESHOLD)) {
+      copy = (copy || f).map((p, i) => (i === rAnkle ? { ...rMed, visibility: 0.99 } : p));
+    } else if (rFootplate != null && f[rKnee] && f[rAnkle] && f[rAnkle].y < f[rKnee].y) {
       copy = (copy || f).map((p, i) => (i === rAnkle ? { ...p, y: rFootplate } : p));
     }
     return copy || f;
@@ -573,7 +601,7 @@ function countSide(
   arm: 'left' | 'right',
   tuning: CountTuning = {},
 ): CountResult {
-  const landmarks = def.fixedFeet ? sanitizeFixedFeet(worldLandmarks, def.joint) : worldLandmarks;
+  const landmarks = def.fixedFeet ? sanitizeFixedFeet(worldLandmarks, def.joint, !!def.clampFootplateInversion) : worldLandmarks;
   // 1. Extract raw angle per sample
   const zw = setZWeight(landmarks);
   const liftEnd = def.lift ? chooseLiftEnd(landmarks, def.joint, arm) : undefined;
@@ -658,7 +686,7 @@ function countSide(
 
 /** Steps 1–5 of the count for one side: raw angle, outliers removed, dropouts bridged, smoothed. */
 export function sideAngles(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], def: LiftDefinition, arm: 'left' | 'right') {
-  const landmarks = def.fixedFeet ? sanitizeFixedFeet(worldLandmarks, def.joint) : worldLandmarks;
+  const landmarks = def.fixedFeet ? sanitizeFixedFeet(worldLandmarks, def.joint, !!def.clampFootplateInversion) : worldLandmarks;
   const zw = setZWeight(landmarks);
   const liftEnd = def.lift ? chooseLiftEnd(landmarks, def.joint, arm) : undefined;
   const rawAngles = landmarks.map(wl => (wl ? extractAngle(wl, def.joint, arm, zw, def.lift, liftEnd) : null));
