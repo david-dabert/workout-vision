@@ -1,0 +1,82 @@
+# CI of PR #247, read through the GitHub REST API on 2026-10-24T11:28:45Z (this workspace cannot read CI's logs).
+
+## Run 40078334050, commit 6f01f41 (the tests alone)
+$ gh api repos/david-dabert/workout-vision/actions/runs/40078334050 --jq "[.id, .head_sha[0:7], .event, .status, .conclusion] | @tsv"
+40078334050	6f01f41	pull_request	completed	cancelled
+$ gh api repos/david-dabert/workout-vision/actions/runs/40078334050/jobs --jq ".jobs[] | [.id, .name, .conclusion] | @tsv"
+120826418475	Lint, typecheck, tests and production build	failure
+120826418476	Tour (WebKit, iPhone profile, three sizes)	cancelled
+120826418512	Journey (synthetic sets, production build)	cancelled
+120826418538	Browser tests (Chromium and WebKit)	cancelled
+$ gh api repos/david-dabert/workout-vision/actions/jobs/120826418475 --jq ".steps[] | [.number, .name, .conclusion] | @tsv"
+1	Set up job	success
+2	Run actions/checkout@v4	success
+3	Run actions/setup-node@v4	success
+4	Run npm ci	success
+5	Run npm run lint	success
+6	Run npm run typecheck	success
+7	Run npm test	failure
+8	Baselines of the base branch	skipped
+9	Run SCOREBOARD_BASE="$RUNNER_TEMP/base/scoreboard-baseline.json" npm run scoreboard	skipped
+10	Run PUBLIC_BASE="$RUNNER_TEMP/base/public-baseline.json" npm run scoreboard:public	skipped
+11	Run SYNTH_BASE="$RUNNER_TEMP/base/synth.txt" SYNTH_DIR=test/real-phone/synth/sets npx vitest run --no-cache test/real-phone/synth/analyse.test.ts	skipped
+12	Run git diff --exit-code test/real-phone/synth/synth.txt	skipped
+13	Run npm run build	skipped
+25	Post Run actions/setup-node@v4	skipped
+26	Post Run actions/checkout@v4	success
+27	Complete job	success
+$ gh api "repos/david-dabert/workout-vision/check-runs/120826418475/annotations?per_page=50" --jq ".[] | select(.annotation_level==\"failure\") | [.path, .start_line, .title, (.message|gsub(\"\\n\";\" \")|.[0:200])] | @tsv"
+.github	962		Process completed with exit code 1.
+src/lib/kine/__tests__/glimpse.test.js	95	src/lib/kine/__tests__/glimpse.test.js > the upload in a production build, while the store is public > leaves the page policy of a production build as written, even when the build names the proxy	AssertionError: expected '<meta http-equiv="Content-Security-Po…' to be '<meta http-equiv="Content-Security-Po…' // Object.is equality  Expected: "<meta http-equiv="Content-Security-Policy" content="d
+src/lib/kine/__tests__/glimpse.test.js	81	src/lib/kine/__tests__/glimpse.test.js > the upload in a production build, while the store is public > is not offered, even when the build names the proxy	AssertionError: expected true to be false // Object.is equality  - Expected + Received  - false + true   ❯ src/lib/kine/__tests__/glimpse.test.js:81:68  
+src/lib/kine/__tests__/glimpse.test.js	72	src/lib/kine/__tests__/glimpse.test.js > the upload in a production build, while the store is public > uploads nothing and calls no one, even when told where the proxy is	AssertionError: promise resolved "{ visible: true, …(8) }" instead of rejecting  - Expected + Received  - Error { -   "message": "rejected promise", + { +   "advice": [ +     "Gardez les épaules basse
+src/components/kine/Kine.test.jsx	121	src/components/kine/Kine.test.jsx > the AI commentary > says the video stays on the phone, with no AI request, in a production build that names the proxy	AssertionError: expected '<div class="wv-experience"><section c…' to contain 'Votre vidéo reste sur votre téléphone…'  Expected: "Votre vidéo reste sur votre téléphone. Seul" Received: "<div class="wv
+glimpse-proxy/proxy.test.js	139	glimpse-proxy/proxy.test.js > the routes > gives no upload token while the store is public	AssertionError: expected 200 to be 503 // Object.is equality  - Expected + Received  - 503 + 200   ❯ glimpse-proxy/proxy.test.js:139:24  
+
+## Run 40078494082, commit 37114a0 (the fix)
+$ gh api repos/david-dabert/workout-vision/actions/runs/40078494082 --jq "[.id, .head_sha[0:7], .event, .status, .conclusion] | @tsv"
+40078494082	37114a0	pull_request	completed	success
+$ gh api repos/david-dabert/workout-vision/actions/runs/40078494082/jobs --jq ".jobs[] | [.id, .name, .conclusion] | @tsv"
+120827872387	Journey (synthetic sets, production build)	success
+120827872538	Browser tests (Chromium and WebKit)	success
+120827872629	Lint, typecheck, tests and production build	success
+120827872690	Tour (WebKit, iPhone profile, three sizes)	success
+$ gh api repos/david-dabert/workout-vision/actions/jobs/120827872629 --jq ".steps[] | [.number, .name, .conclusion] | @tsv"
+1	Set up job	success
+2	Run actions/checkout@v4	success
+3	Run actions/setup-node@v4	success
+4	Run npm ci	success
+5	Run npm run lint	success
+6	Run npm run typecheck	success
+7	Run npm test	success
+8	Baselines of the base branch	success
+9	Run SCOREBOARD_BASE="$RUNNER_TEMP/base/scoreboard-baseline.json" npm run scoreboard	success
+10	Run PUBLIC_BASE="$RUNNER_TEMP/base/public-baseline.json" npm run scoreboard:public	success
+11	Run SYNTH_BASE="$RUNNER_TEMP/base/synth.txt" SYNTH_DIR=test/real-phone/synth/sets npx vitest run --no-cache test/real-phone/synth/analyse.test.ts	success
+12	Run git diff --exit-code test/real-phone/synth/synth.txt	success
+13	Run npm run build	success
+25	Post Run actions/setup-node@v4	success
+26	Post Run actions/checkout@v4	success
+27	Complete job	success
+$ gh api "repos/david-dabert/workout-vision/check-runs/120827872629/annotations?per_page=50" --jq "[.[] | select(.annotation_level==\"failure\")] | length"
+0
+
+## Run 40090157586, commit dd1fbf8 (the evidence folder), read 2026-10-24T14:36:02Z
+$ gh api repos/david-dabert/workout-vision/actions/runs/40090157586 --jq "[.id, .head_sha[0:7], .event, .status, .conclusion] | @tsv"
+40090157586	dd1fbf8	pull_request	completed	success
+$ gh api repos/david-dabert/workout-vision/actions/runs/40090157586/jobs --jq ".jobs[] | [.id, .name, .conclusion] | @tsv"
+120861020419	Browser tests (Chromium and WebKit)	success
+120861020587	Tour (WebKit, iPhone profile, three sizes)	success
+120861020598	Lint, typecheck, tests and production build	success
+120861020670	Journey (synthetic sets, production build)	success
+
+## Why run 40078334050's other three jobs were cancelled (read 2026-10-24T17:24:08Z)
+$ gh api repos/david-dabert/workout-vision/check-runs/120826418476/annotations --jq .\[\]\ \|\ select\(.annotation_level==\"failure\"\)\ \|\ \[.message\]\ \|\ @tsv
+Canceling since a higher priority waiting request for ci-refs/pull/247/merge exists
+$ gh api repos/david-dabert/workout-vision/check-runs/120826418512/annotations --jq .\[\]\ \|\ select\(.annotation_level==\"failure\"\)\ \|\ \[.message\]\ \|\ @tsv
+Canceling since a higher priority waiting request for ci-refs/pull/247/merge exists
+Process completed with exit code 1.
+The operation was canceled.
+$ gh api repos/david-dabert/workout-vision/check-runs/120826418538/annotations --jq .\[\]\ \|\ select\(.annotation_level==\"failure\"\)\ \|\ \[.message\]\ \|\ @tsv
+Canceling since a higher priority waiting request for ci-refs/pull/247/merge exists
+The operation was canceled.

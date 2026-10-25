@@ -30,6 +30,13 @@ export function rateLimiter({ max, windowMs } = RATE, now = () => Date.now()) {
   };
 }
 
+// The Blob access the attempt videos are stored under: public since 17 October 2026, so anyone holding an address could
+// read the video until it was deleted (state map of 21 October 2026, defect 1). David, 24 October 2026: the upload stays
+// off "until private storage is proven on CI". No upload token is given while this is 'public' (handlers.js); it turns
+// 'private' only in the change that stores the attempts privately, with its test. The app holds the same rule
+// (src/lib/kine/attemptStorage.js).
+export const ATTEMPT_ACCESS = 'public';
+
 // The folder of the attempts in the store; nothing else is read or deleted.
 export const FOLDER = 'attempts/';
 // The largest video taken (convention, UNSOURCED): a minute of iPhone 4K is about 400 MB; 1080p about 130 MB.

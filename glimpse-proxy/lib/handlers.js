@@ -4,8 +4,9 @@
 // The patient's video goes from the phone straight to the Blob store (POST /api/upload gives the phone a token for one
 // upload into attempts/), then POST /api/glimpse hands its address to Elorian, and deletes it once Elorian has answered
 // or failed. GET /api/sweep, run by Vercel's cron, deletes any attempt left behind (a phone closed mid-call).
+// Since 24 October 2026 (David), POST /api/upload gives no token while the store is public (guard.js ATTEMPT_ACCESS).
 import { commentaryOf, cleanExercise, ELORIAN_URL, requestBody } from './commentary.js';
-import { clientIp, corsFor, FOLDER, isAttemptPath, isAttemptUrl, MAX_VIDEO_BYTES, rateLimiter, VIDEO_TYPES } from './guard.js';
+import { ATTEMPT_ACCESS, clientIp, corsFor, FOLDER, isAttemptPath, isAttemptUrl, MAX_VIDEO_BYTES, rateLimiter, VIDEO_TYPES } from './guard.js';
 
 // How long Elorian is given (the function's own limit is 300 s, vercel.json).
 export const ELORIAN_TIMEOUT_MS = 270_000;
@@ -18,7 +19,7 @@ const headersOf = request => Object.fromEntries(request.headers.entries());
 /** The store id of a Blob read-write token (vercel_blob_rw_<storeId>_<secret>), or null. */
 export const storeIdOf = token => (/^vercel_blob_rw_([a-z0-9]+)_/i.exec(token || '') || [])[1]?.toLowerCase() || null;
 
-export function makeHandlers({ env, fetch: fetchFn = fetch, blob, limiter = rateLimiter(), now = () => Date.now() }) {
+export function makeHandlers({ env, fetch: fetchFn = fetch, blob, limiter = rateLimiter(), now = () => Date.now(), access = ATTEMPT_ACCESS }) {
   const preflight = request => {
     const cors = corsFor(request.headers.get('origin'), env);
     return cors ? new Response(null, { status: 204, headers: cors }) : new Response(null, { status: 403 });
@@ -34,6 +35,9 @@ export function makeHandlers({ env, fetch: fetchFn = fetch, blob, limiter = rate
   async function upload(request) {
     const { cors, refused } = admit(request);
     if (refused) return refused;
+    // No token while the store is public: an app built before the switch, or a copied request, cannot put a video
+    // where anyone holding its address could read it (defect 1).
+    if (access !== 'private') return json(503, { error: 'off' }, cors);
     let body;
     try { body = await request.json(); } catch { return json(400, { error: 'body' }, cors); }
     try {

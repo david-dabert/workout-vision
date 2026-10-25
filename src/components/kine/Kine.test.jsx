@@ -6,7 +6,10 @@ vi.mock('../reference/ReferenceCompare.css', () => ({}));
 vi.mock('../../lib/reference/readPose', () => ({ readPose: vi.fn() }));
 // Without a media address, as CI builds; the deploy job sets the repository variable.
 // Set before any test imports the library (links.js imports it): the deploy job builds with the address set.
-beforeEach(() => { vi.stubEnv('VITE_KINE_MEDIA_URL', ''); });
+// Without the commentary's proxy either: the deploy job passes VITE_GLIMPSE_URL too, and a test expecting the plain
+// privacy line would fail there whenever it is set (review of 24 October 2026; runs 38803251027 and 38847769215 failed
+// the same way on the media address).
+beforeEach(() => { vi.stubEnv('VITE_KINE_MEDIA_URL', ''); vi.stubEnv('VITE_GLIMPSE_URL', ''); });
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.resetModules(); });
 
 async function render(name, hash = '', lang = 'fr', extra = {}, media = '') {
@@ -107,6 +110,19 @@ describe('the AI commentary', () => {
     vi.resetModules();
     vi.stubEnv('VITE_GLIMPSE_URL', 'https://glimpse.example.app');
     expect(await render('KinePatient', link.slice(link.indexOf('#')))).toContain('sauf si vous demandez un avis détaillé (IA)');
+  });
+
+  // Defect 1 of the state map of 21 October 2026; David, 24 October 2026: off in production until private storage is
+  // proven on CI (lib/kine/attemptStorage.js).
+  it('says the video stays on the phone, with no AI request, in a production build that names the proxy', async () => {
+    const { programmeLink } = await import('../../lib/kine/links');
+    const link = programmeLink('https://example.org/app/', { kine: { name: 'Olivier' }, patient: 'C', items: [{ id: 'mains-jointes' }] });
+    vi.resetModules();
+    vi.stubEnv('VITE_GLIMPSE_URL', 'https://glimpse.example.app');
+    vi.stubEnv('PROD', true);
+    const html = await render('KinePatient', link.slice(link.indexOf('#')));
+    expect(html).toContain('Votre vidéo reste sur votre téléphone. Seul');
+    expect(html).not.toContain('sauf si vous demandez un avis détaillé (IA)');
   });
 
   it('offers it with the notice that the video leaves the phone, and sends nothing before the tap', async () => {

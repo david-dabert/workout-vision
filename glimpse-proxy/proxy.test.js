@@ -130,9 +130,21 @@ describe('the routes', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it('gives an upload token only for the attempts folder, a video, of bounded size', async () => {
+  // Defect 1 of the state map of 21 October 2026; David, 24 October 2026: the upload stays off until private storage is
+  // proven on CI. An app built before the switch, or a copied request, gets no token while the store is public.
+  it('gives no upload token while the store is public', async () => {
     const blob = blobStub();
     const h = makeHandlers({ env, blob, now: () => 0 });
+    const res = await h.upload(post('/api/upload', { type: 'blob.generate-client-token', payload: { pathname: 'attempts/a.mp4' } }));
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ error: 'off' });
+    expect(res.headers.get('access-control-allow-origin')).toBe(ORIGIN);
+    expect(blob.handleUpload).not.toHaveBeenCalled();
+  });
+
+  it('once the store is private, gives an upload token only for the attempts folder, a video, of bounded size', async () => {
+    const blob = blobStub();
+    const h = makeHandlers({ env, blob, now: () => 0, access: 'private' });
     const res = await h.upload(post('/api/upload', { type: 'blob.generate-client-token', payload: { pathname: 'attempts/a.mp4' } }));
     expect(res.status).toBe(200);
     expect((await res.json()).options).toMatchObject({ allowedContentTypes: expect.arrayContaining(['video/mp4', 'video/quicktime']), addRandomSuffix: true, validUntil: 600000 });
