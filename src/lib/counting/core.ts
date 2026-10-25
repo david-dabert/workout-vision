@@ -269,7 +269,7 @@ const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRep
   front_raise: { together: true, eitherSide: false, togetherMinCorrelation: -Infinity },
   prone_y_raise: { minRangeDeg: 10, minRepRomDeg: 10, minRepSec: 1.2, noSplit: true, thresholdMargin: 0.25 },
   hack_squat: { fixedFeet: true, clampFootplateInversion: true },
-  sissy_squat: { fixedFeet: true },
+  sissy_squat: { fixedFeet: true, minRepRomDeg: 15 },
 };
 
 // Close variants counted as their parent (audit of 6 October 2026, action 6): the same elbow cycle with the hands,
