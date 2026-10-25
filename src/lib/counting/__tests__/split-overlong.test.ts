@@ -33,7 +33,9 @@ describe('an overlong rep split at an in-set return', () => {
   it('a return only half way back is not split', () => {
     expect(run(set(doubled(110), 2)).count).toBe(5);
   });
-  it('a set of two cycles is never split (no median to judge by)', () => {
-    expect(run([{ hold: REST, sec: 0.8 }, ...rep(), ...doubled(140)]).count).toBe(2);
+  it('a set of two cycles splits when the shorter cycle lasts at least SPLIT_TWO_MIN_SEC, and not when shorter', () => {
+    expect(run([{ hold: REST, sec: 0.8 }, ...rep(), ...doubled(140)]).count).toBe(3);
+    const brief: Segment[] = [{ to: WORK, sec: 0.45 }, { to: REST, sec: 0.45 }, { hold: REST, sec: 0.8 }];
+    expect(run([{ hold: REST, sec: 0.8 }, ...brief, ...doubled(140)]).count).toBe(2);
   });
 });

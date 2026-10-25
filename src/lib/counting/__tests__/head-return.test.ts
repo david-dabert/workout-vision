@@ -33,9 +33,11 @@ describe('a first rep whose return is all the video shows', () => {
       const r = run([{ hold: 80, sec: 0.1 }, { to: 175, sec: 0.15 }, ...fast(5)], sps);
       expect(r.count).toBe(5);
     });
-    it(`squat at ${sps} sps: with a single rep after it there is nothing to compare with, and it does not count`, () => {
+    it(`squat at ${sps} sps: with a single rep after it (HEAD_MIN_REPS = 1), a return as long as that rep's return counts, while a quick return does not`, () => {
       const r = run([{ hold: 80, sec: 0.1 }, { to: 175, sec: 0.45 }, ...fast(1)], sps);
-      expect(r.count).toBe(1);
+      expect(r.count).toBe(2);
+      expect(r.reps[0].clipped).toBe(true);
+      expect(run([{ hold: 80, sec: 0.1 }, { to: 175, sec: 0.15 }, ...fast(1)], sps).count).toBe(1);
     });
   }
 });
