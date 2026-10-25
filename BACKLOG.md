@@ -2,6 +2,23 @@
 
 New ideas wait here, dated, until David opens them as a step (CLAUDE.md R7).
 
+## 25 October 2026: R16 triage of long-standing backlog items (`HANDOFF.md` T8)
+
+Full table: [`docs/research/2026-10-25-backlog-triage-r16.md`](docs/research/2026-10-25-backlog-triage-r16.md).
+Under **R16** (*"The core is proven before the product widens: a new area waits until the counting and the comparison it depends on pass their gates"*):
+- **Wait for counting / reference-comparison to pass its exam (R16):**
+  1. *Physiotherapy section & Olivier's reference exercises (5 Oct, 15 Oct)*: `#kine` is built (`PR #203`, `PR #219`, `PR #247`), but widening it or adding rehab exercises to the catalogue waits for `src/lib/reference/compare.js` tolerances to be measured against Olivier's blind judgment (R16's physiotherapy reference), re-filming of references 2 & 3, and the EU MDR regulatory opinion (6 Oct, `docs/SPEC-production.md` D16).
+  2. *Coach mode & program builder (29 Sep, 6 Oct)*: first version of `#pro` / `#programme=` is in tree; multi-video client reports and multi-day programmes wait until counting passes its unseen exam and David checks `#pro` on his iPhone (R3) and reviews the single-set report with Luc.
+  3. *Counting partial reps (9 Oct)*: waits until full-rep counting passes its exam, pose jitter is separated from partial excursions (`pose-pipeline-9oct.md`), and David records blind labels of partial reps (R1).
+  4. *Golf, baseball and tennis on rendered bodies & EquiVision / sports lab real reads (14 Oct)*: stay as honest `"Aperçu de l'objectif"` demos (R8 amendment) until gym counting passes its exam, followed by Level 2 rendered-body truth labs (`test/real-phone/synth/`) and optical motion capture reference (R16).
+  5. *The coach's office — URSSAF accounting, Open Food Facts barcode, CIQUAL photo nutrition, client records (14 Oct)*: waits until the exercise proof of concept passes its exam (*"first a reliable proof of concept, then a business"*, R16).
+  6. *Reference movement animated figure (6 Oct), MuscleMimic (8 Oct), Martin's motor-capacity battery (15 Oct)*: wait until joint-angle range (`-30%` on `synth.txt`) and phase timing (`-45%` to `-54%`) are calibrated against optical motion capture (R16).
+- **Independent legal/regulatory gate (does not depend on counting exam, but blocks clinical claims):**
+  - *Physiotherapy and the EU MDR reasoning (6 Oct, D16)*: regulatory adviser confirmation of Regulation (EU) 2017/745 Art. 2(1) and Annex VIII Rule 11 (MDCG 2019-11).
+- **Serve the core exam directly (do not widen the product; can run now):**
+  - *The phone's own chips (`PoseBench` on iOS / WebGPU, 9 Oct, `docs/IPHONE-CHIPS.md`)*: measures whether native iOS pose raises real-video accuracy (`sets-07oct-video`, currently 8/16 exact) under the R2 gate.
+  - *In-app blind-count set collection (`#collecte`, 6 Oct; extended 25 Oct with `--tester` and `npm run exam:testers`)*: supplies the unseen exam sets.
+
 ## 5 October 2026: a section for physiotherapists and physical trainers (rehabilitation)
 
 Source: David's demo to a physiotherapist (prone T raise, "it's physics for most people"; he asked for a meeting), and
