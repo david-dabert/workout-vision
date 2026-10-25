@@ -1,14 +1,14 @@
-Public scoreboard 2026-10-25: 1064 build sets, 518 exact (49%). Of the 949 in the baseline that decide, 469 exact now, 468 before; 0 became off by 3 or more. The 115 bench and overhead press sets are measured and decide nothing (PLAN.md).
-Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 949 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; Countix's two readings of a clip counted as two sets, as in the headline; measured, decides nothing): 1 gained, 0 lost, McNemar p = 1.00; exact-rate change +0.1 points, 95 % interval [0.0, +0.3].
-Pose doubt (counting/doubt.js, experimental, decides nothing): of 946 counted sets, 195 flagged: 69 exact (35%), 19 off by 3+ (10%); 751 not flagged: 449 exact (60%), 25 off by 3+ (3%). Sets off by 3+ flagged: 19 of 44.
-Right when sure (R16, sure.ts; measured, decides nothing): of 949 sets that decide, 829 counted. With the body check alone (before 19 October 2026), shown as sure 753: 438 exact (58%), 297 off by 1 or 2, 18 off by 3+; asked to confirm 76: 31 exact (41%), 41 off by 1 or 2, 4 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 668: 410 exact (61%), 252 off by 1 or 2, 6 off by 3+; asked to confirm 161: 59 exact (37%), 86 off by 1 or 2, 16 off by 3+.
+Public scoreboard 2026-10-25: 1064 build sets, 517 exact (49%). Of the 949 in the baseline that decide, 468 exact now, 468 before; 0 became off by 3 or more. The 115 bench and overhead press sets are measured and decide nothing (PLAN.md).
+Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 949 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; Countix's two readings of a clip counted as two sets, as in the headline; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
+Pose doubt (counting/doubt.js, experimental, decides nothing): of 946 counted sets, 195 flagged: 68 exact (35%), 19 off by 3+ (10%); 751 not flagged: 449 exact (60%), 25 off by 3+ (3%). Sets off by 3+ flagged: 19 of 44.
+Right when sure (R16, sure.ts; measured, decides nothing): of 949 sets that decide, 829 counted. With the body check alone (before 19 October 2026), shown as sure 753: 437 exact (58%), 298 off by 1 or 2, 18 off by 3+; asked to confirm 76: 31 exact (41%), 41 off by 1 or 2, 4 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 668: 409 exact (61%), 253 off by 1 or 2, 6 off by 3+; asked to confirm 161: 59 exact (37%), 86 off by 1 or 2, 16 off by 3+.
 
 Per dataset, each counted by sets, press sets included as in the headline; 95% Wilson interval for the exact share; rep error = total |count - label| over the labelled reps of the counted sets:
 - cfrep: 12 sets, 8 exact (67%, 95% Wilson 39-86%), 0 refused, rep error 8 of 141 reps (5.7%).
 - countix: 447 sets, 203 exact (45%, 95% Wilson 41-50%), 53 refused, rep error 299 of 1412 reps (21.2%).
-- countix-whole: 447 sets, 190 exact (43%, 95% Wilson 38-47%), 65 refused, rep error 310 of 1386 reps (22.4%).
+- countix-whole: 447 sets, 189 exact (42%, 95% Wilson 38-47%), 65 refused, rep error 311 of 1386 reps (22.4%).
 - mmfit: 158 sets, 117 exact (74%, 95% Wilson 67-80%), 0 refused, rep error 58 of 1583 reps (3.7%).
-Countix by distinct clip: 447 labelled clips from 435 YouTube videos, each read twice (cut and whole): both readings 173 exact (39%, 95% Wilson 34-43%); either reading 220 exact (49%, 95% Wilson 45-54%).
+Countix by distinct clip: 447 labelled clips from 435 YouTube videos, each read twice (cut and whole): both readings 172 exact (38%, 95% Wilson 34-43%); either reading 220 exact (49%, 95% Wilson 45-54%).
 
 | Dataset, lift | Sets | Exact | Off by 1 | Off by 3+ | Refused |
 |---|---:|---:|---:|---:|---:|
@@ -27,14 +27,13 @@ Countix by distinct clip: 447 labelled clips from 435 YouTube videos, each read 
 | countix-whole pull_up | 60 | 20 | 22 | 4 | 11 |
 | countix-whole push_up | 77 | 33 | 17 | 7 | 9 |
 | countix-whole squat | 46 | 22 | 8 | 2 | 11 |
-| countix-whole triceps_pushdown | 73 | 27 | 27 | 1 | 8 |
+| countix-whole triceps_pushdown | 73 | 26 | 28 | 1 | 8 |
 | mmfit bicep_curl_alternating | 31 | 24 | 6 | 0 | 0 |
 | mmfit dumbbell_row | 19 | 8 | 6 | 4 | 0 |
 | mmfit lateral_raise | 29 | 20 | 3 | 0 | 0 |
 | mmfit overhead_press (press: measured, decides nothing, PLAN.md) | 39 | 25 | 14 | 0 | 0 |
 | mmfit squat | 40 | 40 | 0 | 0 | 0 |
 
--> public/countix-whole/build/0ai6xO4HkwU_000055_0.json.gz  label 2  before 1  now 2
 
 Not scored (5274), each with its reason:
 public/countix/APkos_Kqa3M_000017_0: left out: battle rope training is not a lift the app counts

@@ -214,7 +214,7 @@ export const MANIFESTO = {
       title: 'Conclusion: What the App Does, and What It Does Not',
       // The promise the app keeps (honesty audit of 14 October 2026, CORE-14), with the dated scoreboard (R13:
       // test/real-phone/accuracy/scoreboard.txt; honesty-guard.test.js checks the figures).
-      text1: 'WorkoutVision counts your reps, shows you what it saw and asks you to confirm. When it is unsure, it says so: at most it suggests a number for you to check, never a grade. On the 16 real videos filmed by the app’s maker, it finds the right number on 10 (scoreboard of 25 October 2026). That is why it always asks you to confirm.',
+      text1: 'WorkoutVision counts your reps, shows you what it saw and asks you to confirm. When it is unsure, it says so: at most it suggests a number for you to check, never a grade. On the 16 real videos filmed by the app’s maker, it finds the right number on 11 (scoreboard of 25 October 2026). That is why it always asks you to confirm.',
       text2: 'By combining the rigour of exercise physiology with an analysis made on your phone, the app helps you keep track of your sets, without claiming to measure what it cannot.',
       creed: 'Lift with intent. Train with data. Trust the science.',
     },
@@ -413,7 +413,7 @@ export const MANIFESTO = {
       // check, never a grade (Result.jsx), so "elle ne donne pas de chiffre" was untrue; a public reader does not know
       // David, so the videos are the app's maker's. Awaiting David's approval (R10), with the rest of the page.
       title: 'Conclusion\u00A0: ce que fait l’appli, et ce qu’elle ne fait pas',
-      text1: 'L’appli compte vos répétitions, vous montre ce qu’elle a vu et vous demande de confirmer. Quand elle doute, elle le dit\u00A0: tout au plus, elle vous propose un nombre à vérifier, jamais une note. Sur les 16 vraies vidéos filmées par le créateur de l’appli, elle trouve le bon nombre sur 10 (tableau du 25 octobre 2026). C’est pour ça qu’elle vous demande toujours de confirmer.',
+      text1: 'L’appli compte vos répétitions, vous montre ce qu’elle a vu et vous demande de confirmer. Quand elle doute, elle le dit\u00A0: tout au plus, elle vous propose un nombre à vérifier, jamais une note. Sur les 16 vraies vidéos filmées par le créateur de l’appli, elle trouve le bon nombre sur 11 (tableau du 25 octobre 2026). C’est pour ça qu’elle vous demande toujours de confirmer.',
       text2: 'En alliant la rigueur de la physiologie de l’exercice à une analyse faite sur votre téléphone, l’appli vous aide à suivre vos séries, sans prétendre mesurer ce qu’elle ne sait pas mesurer.',
       creed: 'Bougez avec intention. Entraînez-vous avec des données. Faites confiance à la science.',
     },
