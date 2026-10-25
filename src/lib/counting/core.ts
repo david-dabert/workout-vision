@@ -452,7 +452,7 @@ const CUT_RETURN_SHARE = 0.7;
 const TAIL_AT_WORK_SEC = 0.6;
 const TAIL_HOLD_MAX_SEC = 1.5;
 const TAIL_DEPTH_SHARE = 0.85;
-const TAIL_REST_MAX_SEC = 3.5;   // a candidate cut rep must begin within 3.5 s of the previous cycle completing (post-set rest + exit is not a rep). Status: experimental
+const TAIL_REST_MAX_SEC = 4.0;   // a candidate cut rep must begin within 4.0 s of the previous cycle completing (post-set rest + exit is not a rep). Status: experimental
 // How many accepted reps the depth is read from (their median). Two until 20 October 2026: a clip of two or three
 // reps cut at its last working end then had no depth to compare with, and its last rep never counted (triage of the
 // public undercounts, test/real-phone/consensus/triage.test.ts: 47 of 133 such tails refused for this alone). One rep
