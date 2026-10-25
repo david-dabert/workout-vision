@@ -52,5 +52,24 @@ describe('fixedFeet on grounded platform squats (hack squat, pendulum squat)', (
     expect(summary.count).toBe(5);
     expect(summary.refused).toBe(false);
   });
+
+  it('sissy_squat counts 7 exact on sissy_squat_7_5006 with minRepRomDeg floor of 15', () => {
+    const def = liftDefinition('sissy_squat');
+    expect(def).not.toBeNull();
+    expect(def?.minRepRomDeg).toBe(15);
+
+    const d = gz('sets-07oct-video/sissy_squat_7_5006.json.gz');
+    const ts = d.timestamps;
+    const wl = d.worldLandmarks;
+
+    const res = countReps(wl, ts, 'sissy_squat');
+    expect(res.count).toBe(7);
+    expect(res.reps.length).toBe(7);
+
+    const summary = summarizeCount(wl, ts, 'sissy_squat');
+    expect(summary.count).toBe(7);
+    expect(summary.refused).toBe(false);
+  });
 });
+
 
