@@ -182,6 +182,12 @@ export interface LiftDefinition {
   minRepSec?: number;
   /** Disables splitOverlongReps when true (e.g. for low-amplitude lifts with isometric pauses). */
   noSplit?: boolean;
+  /**
+   * For fixed-footplate machine exercises (hack squat, pendulum squat), feet remain stationary on the platform.
+   * MediaPipe ankle landmarks that invert above the knee (c.y < b.y in world coordinates, where y is down) due to
+   * machine occlusion are held at the median platform position to prevent false extension spikes at the bottom of the squat.
+   */
+  fixedFeet?: boolean;
 }
 
 export const LIFTS = {
@@ -253,10 +259,14 @@ const PATTERNS = guidePatterns as Record<string, string>;
 // nor the other when the better seen one stays still (countReps exempts a lift read).
 // No set held still from start to end was rendered. Source: measured on rendered sets only, no person filmed.
 // Status: experimental.
-const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRepRomDeg' | 'minRangeDeg' | 'together' | 'eitherSide' | 'togetherMinCorrelation' | 'minRepSec' | 'noSplit'>> = {
+// hack_squat (25 October 2026, R16): fixed-footplate machine squat. Machine occlusion at the bottom of the movement
+// causes MediaPipe ankle landmarks to glitch upwards into the air (ankle.y < knee.y), inverting the knee vector and
+// doubling reps (pendulum_squat_7 counted 14 for 7). sanitizeFixedFeet holds inverted ankles at the platform position.
+const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRepRomDeg' | 'minRangeDeg' | 'together' | 'eitherSide' | 'togetherMinCorrelation' | 'minRepSec' | 'noSplit' | 'fixedFeet'>> = {
   push_up: { thresholdMargin: 0.25, minRepRomDeg: 15 },
   front_raise: { together: true, eitherSide: false, togetherMinCorrelation: -Infinity },
   prone_y_raise: { minRangeDeg: 10, minRepRomDeg: 10, minRepSec: 1.2, noSplit: true, thresholdMargin: 0.25 },
+  hack_squat: { fixedFeet: true },
 };
 
 // Close variants counted as their parent (audit of 6 October 2026, action 6): the same elbow cycle with the hands,
@@ -530,6 +540,31 @@ export function countReps(
   return other.count > mine.count ? other : mine;
 }
 
+function sanitizeFixedFeet(worldLandmarks: WorldLandmarkFrame[], joint: Joint): WorldLandmarkFrame[] {
+  if (joint !== 'knee') return worldLandmarks;
+  const lKnee = JOINT_POINTS.knee.left[1], lAnkle = JOINT_POINTS.knee.left[2];
+  const rKnee = JOINT_POINTS.knee.right[1], rAnkle = JOINT_POINTS.knee.right[2];
+  const lValidY: number[] = [], rValidY: number[] = [];
+  for (const f of worldLandmarks) {
+    if (!f) continue;
+    if (f[lKnee] && f[lAnkle] && f[lAnkle].y > f[lKnee].y) lValidY.push(f[lAnkle].y);
+    if (f[rKnee] && f[rAnkle] && f[rAnkle].y > f[rKnee].y) rValidY.push(f[rAnkle].y);
+  }
+  const lFootplate = lValidY.length ? lValidY.sort((a, b) => a - b)[Math.floor(lValidY.length * 0.75)] : null;
+  const rFootplate = rValidY.length ? rValidY.sort((a, b) => a - b)[Math.floor(rValidY.length * 0.75)] : null;
+  return worldLandmarks.map(f => {
+    if (!f) return null;
+    let copy: WorldLandmark[] | null = null;
+    if (lFootplate != null && f[lKnee] && f[lAnkle] && f[lAnkle].y < f[lKnee].y) {
+      copy = f.map((p, i) => (i === lAnkle ? { ...p, y: lFootplate } : p));
+    }
+    if (rFootplate != null && f[rKnee] && f[rAnkle] && f[rAnkle].y < f[rKnee].y) {
+      copy = (copy || f).map((p, i) => (i === rAnkle ? { ...p, y: rFootplate } : p));
+    }
+    return copy || f;
+  });
+}
+
 function countSide(
   worldLandmarks: WorldLandmarkFrame[],
   timestamps: number[],
@@ -537,16 +572,17 @@ function countSide(
   arm: 'left' | 'right',
   tuning: CountTuning = {},
 ): CountResult {
+  const landmarks = def.fixedFeet ? sanitizeFixedFeet(worldLandmarks, def.joint) : worldLandmarks;
   // 1. Extract raw angle per sample
-  const zw = setZWeight(worldLandmarks);
-  const liftEnd = def.lift ? chooseLiftEnd(worldLandmarks, def.joint, arm) : undefined;
-  const rawAngles = worldLandmarks.map(wl => {
+  const zw = setZWeight(landmarks);
+  const liftEnd = def.lift ? chooseLiftEnd(landmarks, def.joint, arm) : undefined;
+  const rawAngles = landmarks.map(wl => {
     if (!wl) return null;
     return extractAngle(wl, def.joint, arm, zw, def.lift, liftEnd);
   });
   // T1 (survey.ts, FILL_FROM_PARTNER, off): samples the counted side misses, filled from the other side's angle.
   // rawAngles stays as seen (coverage); `filled` marks the samples that were not.
-  const { values: filledAngles, filled } = fillFromPartner(rawAngles, worldLandmarks, def, arm, zw);
+  const { values: filledAngles, filled } = fillFromPartner(rawAngles, landmarks, def, arm, zw);
 
   // 2. Estimate sample rate from timestamps
   const sampleRate = estimateSampleRate(timestamps);
@@ -621,10 +657,11 @@ function countSide(
 
 /** Steps 1–5 of the count for one side: raw angle, outliers removed, dropouts bridged, smoothed. */
 export function sideAngles(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], def: LiftDefinition, arm: 'left' | 'right') {
-  const zw = setZWeight(worldLandmarks);
-  const liftEnd = def.lift ? chooseLiftEnd(worldLandmarks, def.joint, arm) : undefined;
-  const rawAngles = worldLandmarks.map(wl => (wl ? extractAngle(wl, def.joint, arm, zw, def.lift, liftEnd) : null));
-  const { values: filledAngles } = fillFromPartner(rawAngles, worldLandmarks, def, arm, zw);
+  const landmarks = def.fixedFeet ? sanitizeFixedFeet(worldLandmarks, def.joint) : worldLandmarks;
+  const zw = setZWeight(landmarks);
+  const liftEnd = def.lift ? chooseLiftEnd(landmarks, def.joint, arm) : undefined;
+  const rawAngles = landmarks.map(wl => (wl ? extractAngle(wl, def.joint, arm, zw, def.lift, liftEnd) : null));
+  const { values: filledAngles } = fillFromPartner(rawAngles, landmarks, def, arm, zw);
   const sampleRate = estimateSampleRate(timestamps);
   const cleaned = removeOutliers(filledAngles, secToOddSamples(OUTLIER_WINDOW_SEC, sampleRate), OUTLIER_DEVIATION_DEG);
   const bridged = bridgeDropouts(cleaned, timestamps, BRIDGE_GAP_SEC);
