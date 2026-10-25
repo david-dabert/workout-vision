@@ -70,9 +70,8 @@ last unopened public exam.
 ## 5. Decisions only David can take (nothing below should be decided for him)
 
 1. **R1 amendment, the one that unlocks progress.** Proposed wording: "A blind count given in the app, before it shows its
-   own, by a person David names, is a label." (David ruled on 15 October that his own blind counts are labels.) A
-   ready-to-send message to testers, in his voice, is in issue #190's thread of 24 October and in the conversation; the
-   link it uses is https://david-dabert.github.io/workout-vision/#collecte.
+   own, by a person David names, is a label." (David ruled on 15 October that his own blind counts are labels.) The
+   message to testers, ready for David to send once he rules, is in section 9.
 2. **How main moves** (R6, PLAN.md line 4): through counter-core with his iPhone approval, or by direct merges of green
    PRs as on 24 October ("Merge them", David).
 3. **PR #247** (another session's work): the patient video upload switched off in production until private storage is
@@ -148,3 +147,23 @@ verified" line.
 - R14 slip: Claude proposed the heavy pose model as a next step without rereading TRIED.md; withdrawn on #190.
 - R5 slip: on 25 October Claude ran `git reset --hard origin/main` on a clean local main to write this file; the old
   local main (a07db600) is contained in main and nothing was lost.
+
+## 9. The message to testers (French, David's voice; to send only after the R1 decision)
+
+Bonjour,
+
+Je développe une application qui compte les répétitions à partir d'une vidéo filmée au téléphone.
+Pour mesurer sa précision honnêtement, j'ai besoin de séries comptées par d'autres personnes que moi.
+Cela prend dix minutes par séance.
+
+1. Ouvrez ce lien sur votre téléphone : https://david-dabert.github.io/workout-vision/#collecte
+2. Choisissez l'exercice et filmez votre série comme l'application l'indique.
+3. Pendant l'analyse, l'application vous demande combien de répétitions vous avez faites.
+Comptez vous-même, sans deviner ; en cas de doute, répondez « Je ne sais pas ».
+4. Après dix séries, ouvrez « Vos séries », touchez « Envoyer les séries collectées » et envoyez-les-moi.
+
+Aucune vidéo ne quitte votre téléphone.
+Seuls partent les points du corps repérés par l'application et les deux nombres, le vôtre et le sien.
+
+Merci,
+David
