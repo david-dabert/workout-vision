@@ -1,29 +1,29 @@
 Public scoreboard 2026-10-25: 1064 build sets, 517 exact (49%). Of the 949 in the baseline that decide, 468 exact now, 468 before; 0 became off by 3 or more. The 115 bench and overhead press sets are measured and decide nothing (PLAN.md).
 Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 949 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; Countix's two readings of a clip counted as two sets, as in the headline; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
-Pose doubt (counting/doubt.js, experimental, decides nothing): of 946 counted sets, 195 flagged: 68 exact (35%), 19 off by 3+ (10%); 751 not flagged: 449 exact (60%), 25 off by 3+ (3%). Sets off by 3+ flagged: 19 of 44.
-Right when sure (R16, sure.ts; measured, decides nothing): of 949 sets that decide, 829 counted. With the body check alone (before 19 October 2026), shown as sure 753: 437 exact (58%), 298 off by 1 or 2, 18 off by 3+; asked to confirm 76: 31 exact (41%), 41 off by 1 or 2, 4 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 668: 409 exact (61%), 253 off by 1 or 2, 6 off by 3+; asked to confirm 161: 59 exact (37%), 86 off by 1 or 2, 16 off by 3+.
+Pose doubt (counting/doubt.js, experimental, decides nothing): of 946 counted sets, 195 flagged: 68 exact (35%), 18 off by 3+ (9%); 751 not flagged: 449 exact (60%), 25 off by 3+ (3%). Sets off by 3+ flagged: 18 of 43.
+Right when sure (R16, sure.ts; measured, decides nothing): of 949 sets that decide, 829 counted. With the body check alone (before 19 October 2026), shown as sure 753: 437 exact (58%), 299 off by 1 or 2, 17 off by 3+; asked to confirm 76: 31 exact (41%), 41 off by 1 or 2, 4 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 669: 409 exact (61%), 254 off by 1 or 2, 6 off by 3+; asked to confirm 160: 59 exact (37%), 86 off by 1 or 2, 15 off by 3+.
 
 Per dataset, each counted by sets, press sets included as in the headline; 95% Wilson interval for the exact share; rep error = total |count - label| over the labelled reps of the counted sets:
-- cfrep: 12 sets, 8 exact (67%, 95% Wilson 39-86%), 0 refused, rep error 8 of 141 reps (5.7%).
-- countix: 447 sets, 203 exact (45%, 95% Wilson 41-50%), 53 refused, rep error 299 of 1412 reps (21.2%).
-- countix-whole: 447 sets, 189 exact (42%, 95% Wilson 38-47%), 65 refused, rep error 311 of 1386 reps (22.4%).
+- cfrep: 12 sets, 8 exact (67%, 95% Wilson 39-86%), 0 refused, rep error 7 of 141 reps (5.0%).
+- countix: 447 sets, 203 exact (45%, 95% Wilson 41-50%), 53 refused, rep error 300 of 1412 reps (21.2%).
+- countix-whole: 447 sets, 189 exact (42%, 95% Wilson 38-47%), 65 refused, rep error 312 of 1386 reps (22.5%).
 - mmfit: 158 sets, 117 exact (74%, 95% Wilson 67-80%), 0 refused, rep error 58 of 1583 reps (3.7%).
 Countix by distinct clip: 447 labelled clips from 435 YouTube videos, each read twice (cut and whole): both readings 172 exact (38%, 95% Wilson 34-43%); either reading 220 exact (49%, 95% Wilson 45-54%).
 
 | Dataset, lift | Sets | Exact | Off by 1 | Off by 3+ | Refused |
 |---|---:|---:|---:|---:|---:|
-| cfrep deadlift | 6 | 3 | 2 | 1 | 0 |
+| cfrep deadlift | 6 | 3 | 2 | 0 | 0 |
 | cfrep squat | 6 | 5 | 0 | 1 | 0 |
 | countix bench_press (press: measured, decides nothing, PLAN.md) | 38 | 13 | 5 | 6 | 11 |
 | countix front_raise | 75 | 45 | 22 | 1 | 5 |
-| countix lunge | 78 | 37 | 26 | 0 | 7 |
+| countix lunge | 78 | 37 | 25 | 0 | 7 |
 | countix pull_up | 60 | 18 | 29 | 3 | 7 |
 | countix push_up | 77 | 38 | 14 | 6 | 8 |
 | countix squat | 46 | 23 | 10 | 1 | 9 |
 | countix triceps_pushdown | 73 | 29 | 30 | 1 | 6 |
 | countix-whole bench_press (press: measured, decides nothing, PLAN.md) | 38 | 11 | 9 | 5 | 11 |
 | countix-whole front_raise | 75 | 39 | 23 | 1 | 8 |
-| countix-whole lunge | 78 | 38 | 23 | 0 | 7 |
+| countix-whole lunge | 78 | 38 | 22 | 0 | 7 |
 | countix-whole pull_up | 60 | 20 | 22 | 4 | 11 |
 | countix-whole push_up | 77 | 33 | 17 | 7 | 9 |
 | countix-whole squat | 46 | 22 | 8 | 2 | 11 |
@@ -5315,14 +5315,14 @@ RepCount-A (Hugging Face lmms-lab-eval/repcounta-lance, test and validation spli
 | Class | Catalogue key | Sets | Exact | Off by 1 | Off by 3+ | Refused |
 |---|---|---:|---:|---:|---:|---:|
 | battle_rope | no counter | 3 | - | - | - | - |
-| bench_pressing | bench_press | 18 | 4 | 1 | 8 | 4 |
-| front_raise | front_raise | 14 | 4 | 7 | 2 | 0 |
+| bench_pressing | bench_press | 18 | 4 | 2 | 8 | 4 |
+| front_raise | front_raise | 14 | 4 | 6 | 2 | 0 |
 | jump_jack | no counter | 14 | - | - | - | - |
 | pommelhorse | no counter | 12 | - | - | - | - |
 | pull_up | pull_up | 14 | 4 | 5 | 4 | 0 |
-| push_up | push_up | 15 | 5 | 4 | 4 | 0 |
+| push_up | push_up | 15 | 5 | 4 | 3 | 0 |
 | situp | no counter | 16 | - | - | - | - |
-| squat | squat | 18 | 9 | 5 | 3 | 2 |
+| squat | squat | 18 | 9 | 6 | 3 | 2 |
 Not scored (5):
 public/repcount/train151: failed: not read whole: read 86 samples of the 150 the video holds
 public/repcount/stu3_54: failed: not read whole: read 330 samples of the 495 the video holds

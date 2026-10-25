@@ -3,15 +3,15 @@
 ## 1. RepCount-A Build Half (Human Per-Rep Timestamps)
 - Evaluated build sets with a live counter: 77 sets (71 counted, 6 refused by `summarizeCount`), 867 human-marked reps.
 - On counted deciding (non-press) sets: 154 missed reps (**129 in the middle of the set**, 10 first, 15 last).
-- Across all 77 build sets (press and refused sets included): 572 found (66%), 295 missed (241 middle).
+- Across all 77 build sets (press and refused sets included): 571 found (66%), 296 missed (242 middle).
 
 ### RepCount-A Counted Deciding Sets — Middle Missed Reps (n = 129)
 - Normal duration (0.6x to 1.6x set median): 113 of 129 (88%)
-- Counted joint visibility >= 80% of rep frames: 90 of 129 (70%); >= 50% of rep frames: 121 of 129 (94%)
-- Counted joint span >= 70% of found-rep median: 89 of 129 (69%)
-- Opposite side shows rep (span >= 70% of found median & vis >= 50%): 51 of 129 (40%); when counted joint < 70%: 5 of 40
-- Another angle joint in signalBank (elbow/shoulder/hip/knee/ankle/trunk) shows rep (relSpan >= 70% & zSpan >= 1.5): 122 of 129 (95%); when counted joint < 70%: 33 of 40
-- Any other signal in signalBank (psc.js, including wrist/hip/nose coords) shows rep (relSpan >= 70% & zSpan >= 1.5): 126 of 129 (98%); when counted joint < 70%: 37 of 40
+- Counted joint visibility >= 80% of rep frames: 91 of 129 (71%); >= 50% of rep frames: 121 of 129 (94%)
+- Counted joint span >= 70% of found-rep median: 86 of 129 (67%)
+- Opposite side shows rep (span >= 70% of found median & vis >= 50%): 50 of 129 (39%); when counted joint < 70%: 5 of 43
+- Another angle joint in signalBank (elbow/shoulder/hip/knee/ankle/trunk) shows rep (relSpan >= 70% & zSpan >= 1.5): 122 of 129 (95%); when counted joint < 70%: 36 of 43
+- Any other signal in signalBank (psc.js, including wrist/hip/nose coords) shows rep (relSpan >= 70% & zSpan >= 1.5): 126 of 129 (98%); when counted joint < 70%: 40 of 43
 - Another signal in exercise signalProfile (bodyCheck.js) shows rep (relSpan >= 70%): 118 of 129 (91%)
 - Failure mechanism on the counted joint:
   - `merged_no_rest_return`: 64 of 129 (50%)
@@ -22,11 +22,11 @@
 
 ### RepCount-A Counted Deciding Sets — All Missed Reps (n = 154)
 - Normal duration (0.6x to 1.6x set median): 132 of 154 (86%)
-- Counted joint visibility >= 80% of rep frames: 108 of 154 (70%); >= 50% of rep frames: 144 of 154 (94%)
-- Counted joint span >= 70% of found-rep median: 109 of 154 (71%)
-- Opposite side shows rep (span >= 70% of found median & vis >= 50%): 63 of 154 (41%); when counted joint < 70%: 7 of 45
-- Another angle joint in signalBank (elbow/shoulder/hip/knee/ankle/trunk) shows rep (relSpan >= 70% & zSpan >= 1.5): 147 of 154 (95%); when counted joint < 70%: 38 of 45
-- Any other signal in signalBank (psc.js, including wrist/hip/nose coords) shows rep (relSpan >= 70% & zSpan >= 1.5): 151 of 154 (98%); when counted joint < 70%: 42 of 45
+- Counted joint visibility >= 80% of rep frames: 109 of 154 (71%); >= 50% of rep frames: 144 of 154 (94%)
+- Counted joint span >= 70% of found-rep median: 106 of 154 (69%)
+- Opposite side shows rep (span >= 70% of found median & vis >= 50%): 62 of 154 (40%); when counted joint < 70%: 7 of 48
+- Another angle joint in signalBank (elbow/shoulder/hip/knee/ankle/trunk) shows rep (relSpan >= 70% & zSpan >= 1.5): 147 of 154 (95%); when counted joint < 70%: 41 of 48
+- Any other signal in signalBank (psc.js, including wrist/hip/nose coords) shows rep (relSpan >= 70% & zSpan >= 1.5): 151 of 154 (98%); when counted joint < 70%: 45 of 48
 - Another signal in exercise signalProfile (bodyCheck.js) shows rep (relSpan >= 70%): 142 of 154 (92%)
 - Failure mechanism on the counted joint:
   - `merged_no_rest_return`: 75 of 154 (49%)
@@ -35,27 +35,27 @@
   - `unseen_dropout`: 10 of 154 (6%)
   - `flat_no_excursion`: 6 of 154 (4%)
 
-### RepCount-A All Build Sets (Including Press & Refused) — Middle Missed Reps (n = 241)
-- Normal duration (0.6x to 1.6x set median): 216 of 241 (90%)
-- Counted joint visibility >= 80% of rep frames: 106 of 241 (44%); >= 50% of rep frames: 163 of 241 (68%)
-- Counted joint span >= 70% of found-rep median: 161 of 241 (67%)
-- Opposite side shows rep (span >= 70% of found median & vis >= 50%): 62 of 241 (26%); when counted joint < 70%: 8 of 80
-- Another angle joint in signalBank (elbow/shoulder/hip/knee/ankle/trunk) shows rep (relSpan >= 70% & zSpan >= 1.5): 184 of 241 (76%); when counted joint < 70%: 49 of 80
-- Any other signal in signalBank (psc.js, including wrist/hip/nose coords) shows rep (relSpan >= 70% & zSpan >= 1.5): 200 of 241 (83%); when counted joint < 70%: 59 of 80
-- Another signal in exercise signalProfile (bodyCheck.js) shows rep (relSpan >= 70%): 162 of 241 (67%)
+### RepCount-A All Build Sets (Including Press & Refused) — Middle Missed Reps (n = 242)
+- Normal duration (0.6x to 1.6x set median): 217 of 242 (90%)
+- Counted joint visibility >= 80% of rep frames: 108 of 242 (45%); >= 50% of rep frames: 164 of 242 (68%)
+- Counted joint span >= 70% of found-rep median: 160 of 242 (66%)
+- Opposite side shows rep (span >= 70% of found median & vis >= 50%): 62 of 242 (26%); when counted joint < 70%: 7 of 82
+- Another angle joint in signalBank (elbow/shoulder/hip/knee/ankle/trunk) shows rep (relSpan >= 70% & zSpan >= 1.5): 185 of 242 (76%); when counted joint < 70%: 52 of 82
+- Any other signal in signalBank (psc.js, including wrist/hip/nose coords) shows rep (relSpan >= 70% & zSpan >= 1.5): 201 of 242 (83%); when counted joint < 70%: 61 of 82
+- Another signal in exercise signalProfile (bodyCheck.js) shows rep (relSpan >= 70%): 163 of 242 (67%)
 - Failure mechanism on the counted joint:
-  - `merged_no_rest_return`: 87 of 241 (36%)
-  - `unseen_dropout`: 78 of 241 (32%)
-  - `shallow_below_work_threshold`: 40 of 241 (17%)
-  - `duration_or_boundary_shift`: 28 of 241 (12%)
-  - `flat_no_excursion`: 8 of 241 (3%)
+  - `merged_no_rest_return`: 88 of 242 (36%)
+  - `unseen_dropout`: 78 of 242 (32%)
+  - `shallow_below_work_threshold`: 40 of 242 (17%)
+  - `duration_or_boundary_shift`: 28 of 242 (12%)
+  - `flat_no_excursion`: 8 of 242 (3%)
 
 ### RepCount-A Middle Misses by Exercise (All Build Sets)
 | Exercise | Missed (all) | Missed (middle) | Vis >= 80% (mid) | Merged / no rest return (mid) | Shallow < work (mid) | Unseen < 50% (mid) | Flat < 35% (mid) | Dur/shift (mid) | Other side shows (mid) | Other angle joint shows (mid) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| bench_press | 135 | 110 | 16 | 23 | 8 | 68 | 2 | 9 | 11 | 60 |
+| bench_press | 136 | 111 | 17 | 24 | 8 | 68 | 2 | 9 | 12 | 61 |
 | front_raise | 19 | 16 | 15 | 5 | 5 | 1 | 5 | 0 | 2 | 16 |
-| pull_up | 73 | 63 | 37 | 36 | 12 | 0 | 1 | 14 | 46 | 63 |
+| pull_up | 73 | 63 | 38 | 36 | 12 | 0 | 1 | 14 | 45 | 63 |
 | push_up | 50 | 39 | 29 | 13 | 15 | 7 | 0 | 4 | 3 | 34 |
 | squat | 18 | 13 | 9 | 10 | 0 | 2 | 0 | 1 | 0 | 11 |
 
@@ -176,28 +176,28 @@
 | stu7_35 | pull_up | 19/22 | 27.3-31.1 | 2.67x | 93% | 99°/53° (1.85x) | `duration_or_boundary_shift` | 1.75x (YES) | w.shoulderL (2.55x, 9.6z) | w.wristHipL (3.15x) |
 | stu7_35 | pull_up | 20/22 | 31.1-35.4 | 3.05x | 95% | 107°/53° (2.01x) | `duration_or_boundary_shift` | 1.76x (YES) | w.shoulderL (2.26x, 8.5z) | w.wristHipL (3.14x) |
 | stu7_35 | pull_up | 21/22 | 38.1-41.5 | 2.43x | 76% | 63°/53° (1.18x) | `merged_no_rest_return` | 1.46x (YES) | i.trunk (67.35x, 174.1z) | w.wristYR (4.84x) |
-| stu7_43 | pull_up | 3/23 | 5.3-6.3 | 0.83x | 79% | 62°/48° (1.29x) | `duration_or_boundary_shift` | 1.15x (YES) | i.shoulderL (3.04x, 1.6z) | i.shoulderL (3.04x) |
-| stu7_43 | pull_up | 5/23 | 7.3-8.2 | 0.77x | 79% | 77°/48° (1.59x) | `merged_no_rest_return` | 1.09x (YES) | w.trunk (1.65x, 2.5z) | w.wristShoulderL (1.26x) |
-| stu7_43 | pull_up | 7/23 | 9.4-10.4 | 0.89x | 56% | 91°/48° (1.88x) | `merged_no_rest_return` | 1.28x (YES) | i.trunk (2.26x, 2.6z) | i.wristShoulderR (2.27x) |
-| stu7_43 | pull_up | 8/23 | 10.4-11.5 | 0.91x | 63% | 38°/48° (0.79x) | `merged_no_rest_return` | 0.59x | i.trunk (2.01x, 2.3z) | w.shoulderL (1.86x) |
-| stu7_43 | pull_up | 10/23 | 12.6-13.7 | 0.94x | 59% | 34°/48° (0.71x) | `merged_no_rest_return` | 0.87x | i.shoulderL (3.59x, 1.9z) | i.elbowYL (3.74x) |
-| stu7_43 | pull_up | 12/23 | 14.8-15.8 | 0.83x | 73% | 40°/48° (0.84x) | `merged_no_rest_return` | 1.79x | i.trunk (4.68x, 5.4z) | i.elbowYR (1.33x) |
-| stu7_43 | pull_up | 13/23 | 15.8-17.0 | 1.06x | 74% | 91°/48° (1.89x) | `merged_no_rest_return` | 1.20x | w.kneeR (1.76x, 2.8z) | w.wristShoulderR (1.41x) |
-| stu7_43 | pull_up | 15/23 | 18.3-19.5 | 1.03x | 56% | 35°/48° (0.73x) | `merged_no_rest_return` | 1.56x | i.shoulderL (4.26x, 2.2z) | i.shoulderL (4.26x) |
-| stu7_43 | pull_up | 16/23 | 19.5-20.7 | 1.03x | 78% | 33°/48° (0.68x) | `merged_no_rest_return` | 0.92x (YES) | i.shoulderL (3.25x, 1.7z) | i.shoulderL (3.25x) |
-| stu7_43 | pull_up | 17/23 | 20.7-21.9 | 1.03x | 78% | 25°/48° (0.53x) | `shallow_below_work_threshold` | 0.93x (YES) | w.kneeR (2.55x, 4.0z) | i.wristShoulderR (2.17x) |
-| stu7_43 | pull_up | 18/23 | 21.9-23.1 | 1.00x | 94% | 40°/48° (0.83x) | `shallow_below_work_threshold` | 0.70x | i.shoulderR (3.05x, 2.6z) | i.wristShoulderR (4.05x) |
-| stu7_43 | pull_up | 19/23 | 23.1-24.6 | 1.26x | 73% | 52°/48° (1.08x) | `shallow_below_work_threshold` | 0.45x | i.shoulderR (2.81x, 2.4z) | i.wristShoulderR (6.97x) |
-| stu7_43 | pull_up | 20/23 | 24.6-26.0 | 1.23x | 86% | 49°/48° (1.02x) | `shallow_below_work_threshold` | 1.39x (YES) | i.shoulderL (3.90x, 2.0z) | i.elbowYL (3.99x) |
-| stu7_43 | pull_up | 21/23 | 26.0-27.7 | 1.46x | 85% | 47°/48° (0.97x) | `shallow_below_work_threshold` | 0.82x (YES) | i.trunk (2.95x, 3.4z) | i.shoulderL (2.92x) |
-| stu7_43 | pull_up | 22/23 | 27.7-30.0 | 1.94x | 82% | 48°/48° (0.99x) | `shallow_below_work_threshold` | 0.47x | i.shoulderL (3.65x, 1.9z) | i.shoulderL (3.65x) |
-| stu8_37 | pull_up | 2/10 | 7.9-10.8 | 0.82x | 63% | 46°/77° (0.59x) | `merged_no_rest_return` | 0.85x (YES) | i.trunk (1.30x, 2.7z) | w.wristShoulderL (1.27x) |
-| stu8_37 | pull_up | 3/10 | 10.8-13.7 | 0.85x | 73% | 64°/77° (0.82x) | `duration_or_boundary_shift` | 1.27x (YES) | w.shoulderL (1.13x, 3.4z) | w.wristShoulderL (1.33x) |
-| stu8_37 | pull_up | 4/10 | 13.7-16.8 | 0.89x | 64% | 56°/77° (0.73x) | `merged_no_rest_return` | 0.88x (YES) | w.shoulderR (1.09x, 3.1z) | w.wristHipR (1.10x) |
-| stu8_37 | pull_up | 6/10 | 19.8-23.2 | 0.98x | 73% | 78°/77° (1.00x) | `merged_no_rest_return` | 1.10x (YES) | w.trunk (4.50x, 12.5z) | i.wristShoulderR (3.60x) |
-| stu8_37 | pull_up | 7/10 | 23.2-26.8 | 1.02x | 68% | 77°/77° (1.00x) | `merged_no_rest_return` | 1.12x (YES) | w.trunk (4.09x, 11.4z) | w.elbowYL (1.75x) |
-| stu8_37 | pull_up | 8/10 | 26.8-31.0 | 1.22x | 73% | 61°/77° (0.79x) | `merged_no_rest_return` | 0.92x (YES) | w.trunk (2.26x, 6.3z) | i.wristYL (1.32x) |
-| stu8_37 | pull_up | 9/10 | 31.0-35.6 | 1.33x | 70% | 63°/77° (0.81x) | `duration_or_boundary_shift` | 1.07x (YES) | i.trunk (1.34x, 2.8z) | i.wristYL (1.42x) |
+| stu7_43 | pull_up | 3/23 | 5.3-6.3 | 0.83x | 79% | 62°/53° (1.17x) | `duration_or_boundary_shift` | 1.07x (YES) | i.shoulderL (3.00x, 1.6z) | i.shoulderL (3.00x) |
+| stu7_43 | pull_up | 5/23 | 7.3-8.2 | 0.77x | 79% | 77°/53° (1.44x) | `merged_no_rest_return` | 1.01x (YES) | w.trunk (1.61x, 2.5z) | w.shoulderR (1.48x) |
+| stu7_43 | pull_up | 7/23 | 9.4-10.4 | 0.89x | 56% | 91°/53° (1.70x) | `merged_no_rest_return` | 1.19x (YES) | i.trunk (2.05x, 2.6z) | i.wristShoulderR (2.25x) |
+| stu7_43 | pull_up | 8/23 | 10.4-11.5 | 0.91x | 63% | 38°/53° (0.71x) | `merged_no_rest_return` | 0.55x | w.shoulderL (1.93x, 3.3z) | w.shoulderL (1.93x) |
+| stu7_43 | pull_up | 10/23 | 12.6-13.7 | 0.94x | 59% | 34°/53° (0.64x) | `merged_no_rest_return` | 0.81x | i.shoulderL (3.54x, 1.9z) | i.shoulderL (3.54x) |
+| stu7_43 | pull_up | 11/23 | 13.7-14.8 | 0.91x | 81% | 34°/53° (0.63x) | `merged_no_rest_return` | 0.52x | i.kneeR (1.78x, 2.8z) | i.wristHipL (2.76x) |
+| stu7_43 | pull_up | 12/23 | 14.8-15.8 | 0.83x | 73% | 40°/53° (0.76x) | `merged_no_rest_return` | 1.67x | i.trunk (4.25x, 5.4z) | w.shoulderR (1.33x) |
+| stu7_43 | pull_up | 13/23 | 15.8-17.0 | 1.06x | 74% | 91°/53° (1.71x) | `merged_no_rest_return` | 1.12x | w.kneeR (1.79x, 2.8z) | w.wristShoulderR (1.38x) |
+| stu7_43 | pull_up | 15/23 | 18.3-19.5 | 1.03x | 56% | 35°/53° (0.66x) | `merged_no_rest_return` | 1.45x | i.shoulderL (4.20x, 2.2z) | i.shoulderL (4.20x) |
+| stu7_43 | pull_up | 16/23 | 19.5-20.7 | 1.03x | 78% | 33°/53° (0.61x) | `merged_no_rest_return` | 0.85x (YES) | i.shoulderL (3.21x, 1.7z) | i.shoulderL (3.21x) |
+| stu7_43 | pull_up | 17/23 | 20.7-21.9 | 1.03x | 78% | 25°/53° (0.48x) | `shallow_below_work_threshold` | 0.87x (YES) | w.kneeR (2.59x, 4.0z) | i.wristShoulderR (2.16x) |
+| stu7_43 | pull_up | 18/23 | 21.9-23.1 | 1.00x | 94% | 40°/53° (0.75x) | `shallow_below_work_threshold` | 0.65x | i.shoulderR (2.89x, 2.6z) | i.wristShoulderR (4.01x) |
+| stu7_43 | pull_up | 19/23 | 23.1-24.6 | 1.26x | 73% | 52°/53° (0.98x) | `shallow_below_work_threshold` | 0.42x | i.shoulderR (2.67x, 2.4z) | i.wristShoulderR (6.91x) |
+| stu7_43 | pull_up | 20/23 | 24.6-26.0 | 1.23x | 86% | 49°/53° (0.92x) | `shallow_below_work_threshold` | 1.29x (YES) | i.shoulderL (3.85x, 2.0z) | i.shoulderL (3.85x) |
+| stu7_43 | pull_up | 21/23 | 26.0-27.7 | 1.46x | 85% | 47°/53° (0.87x) | `shallow_below_work_threshold` | 0.76x (YES) | i.shoulderL (2.88x, 1.5z) | i.shoulderL (2.88x) |
+| stu7_43 | pull_up | 22/23 | 27.7-30.0 | 1.94x | 82% | 48°/53° (0.89x) | `shallow_below_work_threshold` | 0.44x | i.shoulderL (3.61x, 1.9z) | i.shoulderL (3.61x) |
+| stu8_37 | pull_up | 2/10 | 7.9-10.8 | 0.82x | 63% | 46°/77° (0.60x) | `merged_no_rest_return` | 0.85x (YES) | i.trunk (1.08x, 2.7z) | w.wristShoulderL (1.40x) |
+| stu8_37 | pull_up | 3/10 | 10.8-13.7 | 0.85x | 73% | 64°/77° (0.82x) | `duration_or_boundary_shift` | 1.28x (YES) | i.shoulderL (1.07x, 3.5z) | w.wristShoulderL (1.46x) |
+| stu8_37 | pull_up | 4/10 | 13.7-16.8 | 0.89x | 64% | 56°/77° (0.73x) | `merged_no_rest_return` | 0.89x (YES) | i.shoulderL (1.06x, 3.4z) | i.wristHipR (1.08x) |
+| stu8_37 | pull_up | 6/10 | 19.8-23.2 | 0.98x | 73% | 78°/77° (1.01x) | `merged_no_rest_return` | 1.10x (YES) | w.trunk (1.77x, 12.5z) | i.wristShoulderR (2.89x) |
+| stu8_37 | pull_up | 8/10 | 26.8-31.0 | 1.22x | 73% | 61°/77° (0.79x) | `merged_no_rest_return` | 0.92x (YES) | w.hipL (1.76x, 9.9z) | i.wristHipL (1.26x) |
+| stu8_37 | pull_up | 9/10 | 31.0-35.6 | 1.33x | 70% | 63°/77° (0.81x) | `duration_or_boundary_shift` | 1.08x (YES) | i.hipL (1.14x, 22.5z) | i.elbowYL (1.42x) |
 | stu8_38 | pull_up | 5/16 | 14.1-17.1 | 0.99x | 100% | 95°/82° (1.17x) | `merged_no_rest_return` | 1.00x (YES) | i.trunk (1.53x, 2.2z) | w.elbowYR (1.10x) |
 | stu8_38 | pull_up | 6/16 | 17.1-20.0 | 0.96x | 100% | 87°/82° (1.06x) | `merged_no_rest_return` | 0.97x (YES) | i.trunk (2.18x, 3.1z) | w.wristHipR (1.07x) |
 | stu8_38 | pull_up | 8/16 | 22.1-24.8 | 0.90x | 100% | 91°/82° (1.12x) | `merged_no_rest_return` | 1.02x (YES) | i.trunk (2.76x, 3.9z) | w.wristShoulderL (1.15x) |
@@ -286,17 +286,18 @@
 | stu4_5 (refused) | bench_press | 48/51 | 30.0-30.0 | 0.00x | 0% | 0°/0° (0.00x) | `unseen_dropout` | 0.00x | none (0.00x, 0.0z) | none (0.00x) |
 | stu4_5 (refused) | bench_press | 49/51 | 30.0-30.0 | 0.00x | 0% | 0°/0° (0.00x) | `unseen_dropout` | 0.00x | none (0.00x, 0.0z) | none (0.00x) |
 | stu4_5 (refused) | bench_press | 50/51 | 30.0-30.0 | 0.00x | 0% | 0°/0° (0.00x) | `unseen_dropout` | 0.00x | none (0.00x, 0.0z) | none (0.00x) |
-| stu5_5 | bench_press | 3/30 | 6.1-7.1 | 0.94x | 87% | 41°/59° (0.70x) | `merged_no_rest_return` | 0.89x (YES) | none (0.00x, 0.0z) | w.wristWrist (1.16x) |
-| stu5_5 | bench_press | 5/30 | 8.2-9.1 | 0.87x | 93% | 48°/59° (0.82x) | `merged_no_rest_return` | 0.97x (YES) | w.shoulderL (1.11x, 1.8z) | i.elbowYR (0.91x) |
-| stu5_5 | bench_press | 8/30 | 11.1-12.1 | 0.91x | 93% | 55°/59° (0.94x) | `merged_no_rest_return` | 1.02x (YES) | w.shoulderL (1.17x, 1.9z) | w.elbowYR (1.14x) |
-| stu5_5 | bench_press | 12/30 | 15.1-16.1 | 0.97x | 100% | 67°/59° (1.14x) | `duration_or_boundary_shift` | 0.47x | i.shoulderR (1.00x, 1.6z) | i.wristWrist (2.86x) |
-| stu5_5 | bench_press | 13/30 | 16.1-17.0 | 0.84x | 86% | 69°/59° (1.17x) | `merged_no_rest_return` | 0.00x | i.trunk (1.69x, 1.9z) | w.wristWrist (1.44x) |
-| stu5_5 | bench_press | 15/30 | 18.1-19.1 | 0.91x | 87% | 34°/59° (0.58x) | `shallow_below_work_threshold` | 0.55x | i.trunk (4.44x, 5.0z) | i.wristWrist (4.17x) |
-| stu5_5 | bench_press | 16/30 | 19.1-20.1 | 1.00x | 75% | 43°/59° (0.73x) | `merged_no_rest_return` | 1.18x | i.trunk (4.19x, 4.7z) | i.elbowYL (3.49x) |
-| stu5_5 | bench_press | 17/30 | 20.1-21.2 | 0.97x | 88% | 63°/59° (1.08x) | `shallow_below_work_threshold` | 1.00x (YES) | i.trunk (2.91x, 3.3z) | w.wristWrist (1.36x) |
-| stu5_5 | bench_press | 18/30 | 21.2-22.3 | 1.06x | 71% | 90°/59° (1.53x) | `merged_no_rest_return` | 0.74x | w.trunk (1.38x, 1.6z) | i.wristWrist (2.67x) |
-| stu5_5 | bench_press | 21/30 | 24.6-25.7 | 0.97x | 81% | 37°/59° (0.63x) | `merged_no_rest_return` | 0.89x (YES) | i.trunk (2.15x, 2.4z) | i.wristWrist (2.84x) |
-| stu5_5 | bench_press | 25/30 | 30.5-31.7 | 1.16x | 100% | 80°/59° (1.37x) | `merged_no_rest_return` | 1.29x (YES) | i.trunk (1.59x, 1.8z) | w.wristWrist (1.42x) |
+| stu5_5 | bench_press | 3/30 | 6.1-7.1 | 0.94x | 87% | 41°/58° (0.70x) | `merged_no_rest_return` | 0.89x (YES) | none (0.00x, 0.0z) | w.wristWrist (1.14x) |
+| stu5_5 | bench_press | 5/30 | 8.2-9.1 | 0.87x | 93% | 48°/58° (0.83x) | `merged_no_rest_return` | 0.97x (YES) | w.shoulderL (1.11x, 1.8z) | w.elbowYR (0.95x) |
+| stu5_5 | bench_press | 8/30 | 11.1-12.1 | 0.91x | 93% | 55°/58° (0.94x) | `merged_no_rest_return` | 1.02x (YES) | w.shoulderL (1.18x, 1.9z) | w.elbowYR (1.22x) |
+| stu5_5 | bench_press | 9/30 | 12.1-13.1 | 0.94x | 93% | 67°/58° (1.15x) | `merged_no_rest_return` | 1.00x (YES) | w.shoulderL (1.14x, 1.8z) | w.elbowYR (1.37x) |
+| stu5_5 | bench_press | 12/30 | 15.1-16.1 | 0.97x | 100% | 67°/58° (1.15x) | `duration_or_boundary_shift` | 0.47x | i.shoulderR (1.00x, 1.6z) | i.wristWrist (2.80x) |
+| stu5_5 | bench_press | 13/30 | 16.1-17.0 | 0.84x | 86% | 69°/58° (1.18x) | `merged_no_rest_return` | 0.00x | i.trunk (1.71x, 1.9z) | w.wristWrist (1.41x) |
+| stu5_5 | bench_press | 15/30 | 18.1-19.1 | 0.91x | 87% | 34°/58° (0.58x) | `shallow_below_work_threshold` | 0.55x | i.trunk (4.51x, 5.0z) | i.wristWrist (4.09x) |
+| stu5_5 | bench_press | 16/30 | 19.1-20.1 | 1.00x | 75% | 43°/58° (0.73x) | `merged_no_rest_return` | 1.18x | i.trunk (4.25x, 4.7z) | i.elbowYL (3.54x) |
+| stu5_5 | bench_press | 17/30 | 20.1-21.2 | 0.97x | 88% | 63°/58° (1.09x) | `shallow_below_work_threshold` | 1.00x (YES) | i.trunk (2.96x, 3.3z) | w.wristWrist (1.33x) |
+| stu5_5 | bench_press | 18/30 | 21.2-22.3 | 1.06x | 71% | 90°/58° (1.54x) | `merged_no_rest_return` | 0.74x | w.trunk (1.31x, 1.6z) | i.wristWrist (2.62x) |
+| stu5_5 | bench_press | 21/30 | 24.6-25.7 | 0.97x | 81% | 37°/58° (0.63x) | `merged_no_rest_return` | 0.89x (YES) | i.trunk (2.18x, 2.4z) | i.wristWrist (2.79x) |
+| stu5_5 | bench_press | 25/30 | 30.5-31.7 | 1.16x | 100% | 80°/58° (1.38x) | `merged_no_rest_return` | 1.29x (YES) | i.trunk (1.61x, 1.8z) | w.wristWrist (1.40x) |
 | stu6_3 | bench_press | 3/13 | 6.6-8.7 | 0.82x | 65% | 55°/83° (0.66x) | `duration_or_boundary_shift` | 0.60x | i.ankleL (5.69x, 13.5z) | i.wristYR (1.49x) |
 | stu6_3 | bench_press | 5/13 | 16.5-18.7 | 0.88x | 74% | 59°/83° (0.71x) | `duration_or_boundary_shift` | 0.42x | i.hipR (3.10x, 6.8z) | i.wristYR (1.90x) |
 | stu6_3 | bench_press | 6/13 | 18.7-20.9 | 0.86x | 76% | 84°/83° (1.02x) | `merged_no_rest_return` | 0.39x | i.hipR (3.27x, 7.1z) | i.wristYR (0.93x) |

@@ -479,6 +479,7 @@ const SPLIT_REGULAR = 0.6;       // split only when every rep of the set lasts a
 const SPLIT_LONG = 1.7;          // a rep lasting more than this many median reps is a candidate. Source: UNSOURCED. Status: experimental, chosen on half A
 const SPLIT_LONG_FIRST = 1.8;    // a cycle entered on the first valid sample needs this many median reps to split, so pre-set adjustments stay unsplit (edges.test.ts). Source: UNSOURCED. Status: experimental
 const SPLIT_RETURN_SHARE = 0.8;  // the in-set return must cover this share of the way from the working extreme to the rest threshold. Source: UNSOURCED. Status: experimental, chosen on half A
+const SPLIT_REGULAR_DEEP = 0.45; // when a return is unequivocal (>= 85%), sets with mild tempo variation (shortest cycle >= 45% median) may split. Status: experimental
 const SPLIT_DEEP_RETURN = 0.85;   // an unequivocal deep return (>= 85%) splits an overlong rep even when set tempo varies (durations[0] < SPLIT_REGULAR * md). Status: experimental
 const SPLIT_PIECE = 0.6;         // each piece lasts at least this share of the median rep (and MIN_REP_SEC). Source: UNSOURCED. Status: experimental, chosen on half A
 
@@ -1351,6 +1352,7 @@ function splitOverlongReps(
   if (n === 2 && md < SPLIT_TWO_MIN_SEC) return;
   if (!(md > 0)) return;
   const isRegular = durations[0] >= SPLIT_REGULAR * md;
+  const isDeepRegular = durations[0] >= SPLIT_REGULAR_DEEP * md;
   // Oriented so the working side is positive.
   const o = (a: number) => (restsLow ? a : -a);
   const work = restsLow ? highThreshold : -lowThreshold;
@@ -1396,7 +1398,7 @@ function splitOverlongReps(
     const pieces = k > -1 && timestamps[k] - timestamps[c.enter] >= minPiece && timestamps[c.complete] - timestamps[k] >= minPiece
       && range(c.enter, k) >= minRom && range(k, c.complete) >= minRom;
     // T4: a split whose return fell short of SPLIT_RETURN_SHARE is made when both pieces match the set's rep shape.
-    if (pieces && ((isRegular && bestShare >= SPLIT_RETURN_SHARE) || bestShare >= SPLIT_DEEP_RETURN || (shape && shapePart('s') && shape.matches(c.enter, k, 'whole') && shape.matches(k, c.complete, 'whole')))) {
+    if (pieces && ((isRegular && bestShare >= SPLIT_RETURN_SHARE) || (isDeepRegular && bestShare >= SPLIT_DEEP_RETURN) || (shape && shapePart('s') && shape.matches(c.enter, k, 'whole') && shape.matches(k, c.complete, 'whole')))) {
       out.push({ enter: c.enter, complete: k }, { enter: k, complete: c.complete });
     } else {
       out.push(c);

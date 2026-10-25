@@ -12,12 +12,12 @@ describe('deep return split and post-set exit guard', () => {
     const doubled = (returnTo: number): Segment[] => [
       { to: WORK, sec: 1 }, { to: returnTo, sec: 0.9 }, { to: WORK, sec: 0.9 }, { to: REST, sec: 1 }, { hold: REST, sec: 0.5 },
     ];
-    // Short rep: 0.45s each way -> 0.9s cycle duration
+    // Short rep: 0.55s each way -> 1.1s cycle duration
     // Regular rep: 1.2s each way -> 2.4s cycle duration
-    // durations[0] (0.9s) < 0.6 * md (1.44s), so isRegular is false.
-    // The doubled rep has return to 140 (bestShare >= 0.85): SPLIT_DEEP_RETURN splits it into two reps.
+    // durations[0] (1.1s) < 0.6 * md (1.44s), so isRegular is false.
+    // But 1.1s >= 0.45 * md, so isDeepRegular allows unequivocal return (bestShare >= 0.85) to split.
     const path: Segment[] = [
-      ...rep(0.45),
+      ...rep(0.55),
       ...rep(1.2),
       ...rep(1.2),
       ...doubled(140),
