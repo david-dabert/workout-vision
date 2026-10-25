@@ -4,6 +4,7 @@
 // of the batch collector (review of 30 September).
 import { describe, expect, it } from 'vitest';
 import { parseSetName, planImport } from '../import-plan.mjs';
+import { testerBlindSets } from '../../test/real-phone/accuracy/sets.ts';
 
 describe('the import of set files', () => {
   it('reads the lift, count, view and fingerprint from a collector or batch file name', () => {
@@ -38,16 +39,25 @@ describe('the import of set files', () => {
     expect(planImport(['notes.txt'], { mode: 'exam', existing: [] }).problems).toEqual(['not a set file: notes.txt']);
     expect(planImport(['squat_8_side_aaaaaaaa.json.gz'], { mode: 'build', folder: 'exam', existing: [] }).problems).toEqual(['a build folder is named sets-<date>: exam']);
   });
+  it('places tester blind-count sets in testers/<tester>/ and validates the tester name', () => {
+    const plan = planImport(['squat_8_side_aaaaaaaa.json.gz'], { mode: 'tester', tester: 'olivier', existing: [] });
+    expect(plan.problems).toEqual([]);
+    expect(plan.moves).toEqual([{ from: 'squat_8_side_aaaaaaaa.json.gz', to: 'testers/olivier/squat_8_side_aaaaaaaa.json.gz' }]);
+    expect(planImport(['squat_8_side_aaaaaaaa.json.gz'], { mode: 'tester', tester: 'Bad Name!', existing: [] }).problems)
+      .toEqual(['a tester is named with lowercase letters, digits, - or _: Bad Name!']);
+  });
 });
 
-describe('the import script', () => {
+describe('the import script and tester exam', () => {
   const { execFileSync } = require('node:child_process');
   const { mkdtempSync, mkdirSync, writeFileSync, readdirSync, existsSync } = require('node:fs');
+  const { gzipSync } = require('node:zlib');
   const { join } = require('node:path');
   const { tmpdir } = require('node:os');
   const SCRIPT = join(__dirname, '..', 'import-sets.mjs');
-  const run = (root, args) => {
-    try { return { code: 0, out: execFileSync('node', [SCRIPT, ...args], { env: { ...process.env, WV_SETS_ROOT: root }, encoding: 'utf8', stdio: 'pipe' }) }; }
+  const EXAM_SCRIPT = join(__dirname, '..', 'tester-exam.mjs');
+  const run = (root, args, script = SCRIPT) => {
+    try { return { code: 0, out: execFileSync('node', [script, ...args], { env: { ...process.env, WV_SETS_ROOT: root }, encoding: 'utf8', stdio: 'pipe' }) }; }
     catch (e) { return { code: e.status, out: `${e.stdout}${e.stderr}` }; }
   };
   const tree = () => {
@@ -81,5 +91,47 @@ describe('the import script', () => {
     expect(r.code).toBe(1);
     expect(r.out).toContain('could not be copied');
     expect(readdirSync(join(root, 'exam', 'squat'))).toEqual([]);
+  });
+  it('imports valid tester blind-count files, refuses files without blind payload or duplicate hashes, and runs the one-shot exam once', () => {
+    const { root, src } = tree();
+    const blindPayload = {
+      lift: 'squat',
+      count: 8,
+      appCount: 8,
+      blind: { count: 8, p: 1 },
+      worldLandmarks: [[{ x: 0, y: 0, z: 0, visibility: 0.9 }]],
+      timestamps: [0],
+    };
+    writeFileSync(join(src, 'squat_8_side_11223344.json.gz'), gzipSync(JSON.stringify(blindPayload)));
+    expect(run(root, [src, '--tester', 'olivier', '--write']).code).toBe(0);
+    expect(readdirSync(join(root, 'testers', 'olivier'))).toEqual(['squat_8_side_11223344.json.gz']);
+
+    const parsed = testerBlindSets(root);
+    expect(parsed.unreadable).toEqual([]);
+    expect(parsed.sets.map(s => ({ name: s.name, tester: s.tester, lift: s.lift, label: s.label, kept: s.kept })))
+      .toEqual([{ name: 'testers/olivier/squat_8_side_11223344.json.gz', tester: 'olivier', lift: 'squat', label: 8, kept: 8 }]);
+
+    // Duplicate across testers is refused
+    const again = run(root, [src, '--tester', 'lucas', '--write']);
+    expect(again.code).toBe(1);
+    expect(again.out).toContain('already in the repository');
+
+    // File without blind field is refused
+    const { root: root2, src: src2 } = tree();
+    writeFileSync(join(src2, 'squat_8_side_55667788.json.gz'), gzipSync(JSON.stringify({ lift: 'squat', count: 8, worldLandmarks: [], timestamps: [] })));
+    const noBlind = run(root2, [src2, '--tester', 'olivier', '--write']);
+    expect(noBlind.code).toBe(1);
+    expect(noBlind.out).toContain('not a blind-collected set file');
+
+    // One-shot exam reads the set once and marks it exposed on --record
+    const firstExam = run(root, ['--record'], EXAM_SCRIPT);
+    expect(firstExam.code).toBe(0);
+    expect(firstExam.out).toContain('1 unseen set');
+    expect(firstExam.out).toContain('testers/olivier/squat_8_side_11223344.json.gz  tester olivier  blind 8');
+
+    const secondExam = run(root, ['--record'], EXAM_SCRIPT);
+    expect(secondExam.code).toBe(0);
+    expect(secondExam.out).toContain('0 unseen sets');
+    expect(secondExam.out).toContain('EXPOSED testers/olivier/squat_8_side_11223344.json.gz');
   });
 });

@@ -48,6 +48,7 @@ New exercises beyond the launch lifts; velocity in m/s; injury-risk predictions;
 **R1. Ground truth is sacred.**
 Never modify a label. Never delete a test clip. Never set or adjust a label from the app's output, a video title, a thumbnail or a guess. Labels come only from David, or from human-annotated public datasets (Countix). If a label looks wrong, report it to David and wait.
 Amended 15 October 2026 (David): the count David gives in the app before it shows its own (blind.js, on the #collecte phone) is a label; the scoreboard's blind section decides like the others.
+Amended 25 October 2026 (David): a blind count given in the app, before it shows its own (blind.js, on a #collecte phone), by a person David names, is a label; the testers' blind section of the scoreboard decides like the others.
 
 **R2. Measure every counting change.**
 Any change that can affect a rep count is run through npm run scoreboard before and after, and the per-clip diff is shown in the report. A change ships only if the real-phone exact count does not decrease and no clip becomes a catastrophic error (off by 3 or more).
