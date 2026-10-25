@@ -35,8 +35,8 @@ Right when sure (R16, sure.ts; measured, decides nothing): of 127 sets that deci
 | squat | side | 45 | 42 | 93% | 2 | 0 | 1 | 0 | 45 | 42/45 (93%) | 1 | 0 |
 
 ## All Whole Sets >= 8 Reps Before 70% Whole-Body Visibility Filter (S1–S3)
-Deciding sets (non-press): 141 sets — 100 exact (71%), 20 off by 1, 11 off by 2, 10 off by 3+ (counted), 0 refused.
-Right when sure (R16, sure.ts; measured, decides nothing): of 141 sets that decide, 141 counted. With the body check alone (before 19 October 2026), shown as sure 134: 100 exact (75%), 27 off by 1 or 2, 7 off by 3+; asked to confirm 7: 0 exact (0%), 4 off by 1 or 2, 3 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 124: 97 exact (78%), 24 off by 1 or 2, 3 off by 3+; asked to confirm 17: 3 exact (18%), 7 off by 1 or 2, 7 off by 3+.
+Deciding sets (non-press): 141 sets — 100 exact (71%), 20 off by 1, 12 off by 2, 9 off by 3+ (counted), 0 refused.
+Right when sure (R16, sure.ts; measured, decides nothing): of 141 sets that decide, 141 counted. With the body check alone (before 19 October 2026), shown as sure 134: 100 exact (75%), 27 off by 1 or 2, 7 off by 3+; asked to confirm 7: 0 exact (0%), 5 off by 1 or 2, 2 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 124: 97 exact (78%), 24 off by 1 or 2, 3 off by 3+; asked to confirm 17: 3 exact (18%), 8 off by 1 or 2, 6 off by 3+.
 
 | Dataset | Exercise | Guide view | Sets | Exact | Exact % | Off 1 | Off 2 | Off 3+ | Refused | Sure (shipped) | Exact when sure | Sure off 3+ | Asked to confirm |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -45,23 +45,23 @@ Right when sure (R16, sure.ts; measured, decides nothing): of 141 sets that deci
 | mmfit | lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 25 | 19/25 (76%) | 0 | 4 |
 | mmfit | overhead_press (press: measured, decides nothing, PLAN.md) | front | 39 | 25 | 64% | 14 | 0 | 0 | 0 | 35 | 24/35 (69%) | 0 | 4 |
 | mmfit | squat | side | 40 | 40 | 100% | 0 | 0 | 0 | 0 | 40 | 40/40 (100%) | 0 | 0 |
-| repcount | bench_press (press: measured, decides nothing, PLAN.md) | side | 4 | 0 | 0% | 1 | 1 | 2 | 0 | 0 | 0/0 (0%) | 0 | 4 |
+| repcount | bench_press (press: measured, decides nothing, PLAN.md) | side | 4 | 0 | 0% | 2 | 0 | 2 | 0 | 0 | 0/0 (0%) | 0 | 4 |
 | repcount | front_raise | side | 3 | 0 | 0% | 2 | 1 | 0 | 0 | 2 | 0/2 (0%) | 0 | 1 |
 | repcount | pull_up | front | 8 | 3 | 38% | 1 | 1 | 3 | 0 | 4 | 3/4 (75%) | 0 | 4 |
-| repcount | push_up | side | 5 | 2 | 40% | 0 | 1 | 2 | 0 | 3 | 2/3 (67%) | 0 | 2 |
+| repcount | push_up | side | 5 | 2 | 40% | 0 | 2 | 1 | 0 | 3 | 2/3 (67%) | 0 | 2 |
 | repcount | squat | side | 6 | 3 | 50% | 2 | 0 | 1 | 0 | 6 | 3/6 (50%) | 1 | 0 |
 
 ### By exercise (RepCount-A + MM-Fit combined where applicable)
 | Exercise | Guide view | Sets | Exact | Exact % | Off 1 | Off 2 | Off 3+ | Refused | Sure (shipped) | Exact when sure | Sure off 3+ | Asked to confirm |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| bench_press (press: measured, decides nothing, PLAN.md) | side | 4 | 0 | 0% | 1 | 1 | 2 | 0 | 0 | 0/0 (0%) | 0 | 4 |
+| bench_press (press: measured, decides nothing, PLAN.md) | side | 4 | 0 | 0% | 2 | 0 | 2 | 0 | 0 | 0/0 (0%) | 0 | 4 |
 | bicep_curl_alternating | - | 31 | 24 | 77% | 6 | 1 | 0 | 0 | 31 | 24/31 (77%) | 0 | 0 |
 | dumbbell_row | - | 19 | 8 | 42% | 6 | 1 | 4 | 0 | 13 | 6/13 (46%) | 2 | 6 |
 | front_raise | side | 3 | 0 | 0% | 2 | 1 | 0 | 0 | 2 | 0/2 (0%) | 0 | 1 |
 | lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 25 | 19/25 (76%) | 0 | 4 |
 | overhead_press (press: measured, decides nothing, PLAN.md) | front | 39 | 25 | 64% | 14 | 0 | 0 | 0 | 35 | 24/35 (69%) | 0 | 4 |
 | pull_up | front | 8 | 3 | 38% | 1 | 1 | 3 | 0 | 4 | 3/4 (75%) | 0 | 4 |
-| push_up | side | 5 | 2 | 40% | 0 | 1 | 2 | 0 | 3 | 2/3 (67%) | 0 | 2 |
+| push_up | side | 5 | 2 | 40% | 0 | 2 | 1 | 0 | 3 | 2/3 (67%) | 0 | 2 |
 | squat | side | 46 | 43 | 93% | 2 | 0 | 1 | 0 | 46 | 43/46 (93%) | 1 | 0 |
 
 ## Strict Guide View Match Subset (S1–S4b: Whole Sets >= 8 Reps + Guide Front/Side Orientation)
@@ -89,8 +89,8 @@ Right when sure (R16, sure.ts; measured, decides nothing): of 100 sets that deci
 | squat | side | 19 | 18 | 95% | 0 | 0 | 1 | 0 | 19 | 18/19 (95%) | 1 | 0 |
 
 ## Reference: All Countable Build Sets of Any Length in RepCount-A + MM-Fit (S1)
-Deciding sets (non-press): 180 sets — 114 exact (63%), 36 off by 1, 13 off by 2, 15 off by 3+ (counted), 2 refused.
-Right when sure (R16, sure.ts; measured, decides nothing): of 180 sets that decide, 178 counted. With the body check alone (before 19 October 2026), shown as sure 163: 114 exact (70%), 38 off by 1 or 2, 11 off by 3+; asked to confirm 15: 0 exact (0%), 11 off by 1 or 2, 4 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 149: 110 exact (74%), 33 off by 1 or 2, 6 off by 3+; asked to confirm 29: 4 exact (14%), 16 off by 1 or 2, 9 off by 3+.
+Deciding sets (non-press): 180 sets — 114 exact (63%), 36 off by 1, 14 off by 2, 14 off by 3+ (counted), 2 refused.
+Right when sure (R16, sure.ts; measured, decides nothing): of 180 sets that decide, 178 counted. With the body check alone (before 19 October 2026), shown as sure 163: 114 exact (70%), 38 off by 1 or 2, 11 off by 3+; asked to confirm 15: 0 exact (0%), 12 off by 1 or 2, 3 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 149: 110 exact (74%), 33 off by 1 or 2, 6 off by 3+; asked to confirm 29: 4 exact (14%), 17 off by 1 or 2, 8 off by 3+.
 
 | Dataset | Exercise | Guide view | Sets | Exact | Exact % | Off 1 | Off 2 | Off 3+ | Refused | Sure (shipped) | Exact when sure | Sure off 3+ | Asked to confirm |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -99,24 +99,24 @@ Right when sure (R16, sure.ts; measured, decides nothing): of 180 sets that deci
 | mmfit | lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 25 | 19/25 (76%) | 0 | 4 |
 | mmfit | overhead_press (press: measured, decides nothing, PLAN.md) | front | 39 | 25 | 64% | 14 | 0 | 0 | 0 | 35 | 24/35 (69%) | 0 | 4 |
 | mmfit | squat | side | 40 | 40 | 100% | 0 | 0 | 0 | 0 | 40 | 40/40 (100%) | 0 | 0 |
-| repcount | bench_press (press: measured, decides nothing, PLAN.md) | side | 18 | 4 | 22% | 1 | 5 | 4 | 4 | 3 | 1/3 (33%) | 1 | 10 |
-| repcount | front_raise | side | 14 | 4 | 29% | 7 | 1 | 2 | 0 | 11 | 4/11 (36%) | 2 | 3 |
+| repcount | bench_press (press: measured, decides nothing, PLAN.md) | side | 18 | 4 | 22% | 2 | 4 | 4 | 4 | 3 | 1/3 (33%) | 1 | 10 |
+| repcount | front_raise | side | 14 | 4 | 29% | 6 | 2 | 2 | 0 | 11 | 4/11 (36%) | 2 | 3 |
 | repcount | pull_up | front | 14 | 4 | 29% | 5 | 1 | 4 | 0 | 7 | 3/7 (43%) | 1 | 7 |
-| repcount | push_up | side | 15 | 5 | 33% | 4 | 2 | 4 | 0 | 8 | 5/8 (63%) | 0 | 7 |
-| repcount | squat | side | 18 | 9 | 50% | 5 | 1 | 1 | 2 | 14 | 9/14 (64%) | 1 | 2 |
+| repcount | push_up | side | 15 | 5 | 33% | 4 | 3 | 3 | 0 | 8 | 5/8 (63%) | 0 | 7 |
+| repcount | squat | side | 18 | 9 | 50% | 6 | 0 | 1 | 2 | 14 | 9/14 (64%) | 1 | 2 |
 
 ### By exercise (RepCount-A + MM-Fit combined where applicable)
 | Exercise | Guide view | Sets | Exact | Exact % | Off 1 | Off 2 | Off 3+ | Refused | Sure (shipped) | Exact when sure | Sure off 3+ | Asked to confirm |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| bench_press (press: measured, decides nothing, PLAN.md) | side | 18 | 4 | 22% | 1 | 5 | 4 | 4 | 3 | 1/3 (33%) | 1 | 10 |
+| bench_press (press: measured, decides nothing, PLAN.md) | side | 18 | 4 | 22% | 2 | 4 | 4 | 4 | 3 | 1/3 (33%) | 1 | 10 |
 | bicep_curl_alternating | - | 31 | 24 | 77% | 6 | 1 | 0 | 0 | 31 | 24/31 (77%) | 0 | 0 |
 | dumbbell_row | - | 19 | 8 | 42% | 6 | 1 | 4 | 0 | 13 | 6/13 (46%) | 2 | 6 |
-| front_raise | side | 14 | 4 | 29% | 7 | 1 | 2 | 0 | 11 | 4/11 (36%) | 2 | 3 |
+| front_raise | side | 14 | 4 | 29% | 6 | 2 | 2 | 0 | 11 | 4/11 (36%) | 2 | 3 |
 | lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 25 | 19/25 (76%) | 0 | 4 |
 | overhead_press (press: measured, decides nothing, PLAN.md) | front | 39 | 25 | 64% | 14 | 0 | 0 | 0 | 35 | 24/35 (69%) | 0 | 4 |
 | pull_up | front | 14 | 4 | 29% | 5 | 1 | 4 | 0 | 7 | 3/7 (43%) | 1 | 7 |
-| push_up | side | 15 | 5 | 33% | 4 | 2 | 4 | 0 | 8 | 5/8 (63%) | 0 | 7 |
-| squat | side | 58 | 49 | 84% | 5 | 1 | 1 | 2 | 54 | 49/54 (91%) | 1 | 2 |
+| push_up | side | 15 | 5 | 33% | 4 | 3 | 3 | 0 | 8 | 5/8 (63%) | 0 | 7 |
+| squat | side | 58 | 49 | 84% | 6 | 0 | 1 | 2 | 54 | 49/54 (91%) | 1 | 2 |
 
 ## Supplement: CFRep Whole Sets >= 8 Reps with Whole Body Visible >= 70% (S1–S4a)
 Deciding sets (non-press): 6 sets — 4 exact (67%), 2 off by 1, 0 off by 2, 0 off by 3+ (counted), 0 refused.
