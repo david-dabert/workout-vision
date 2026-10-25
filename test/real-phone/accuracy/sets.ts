@@ -85,6 +85,30 @@ export function blindSets(root = ROOT) {
   return { sets, unreadable, unsure };
 }
 
+// Testers' blind counts (blind.js, phoneCollect.js; David's R1 amendment of 25 October 2026): collected files from
+// people David names, placed in test/real-phone/testers/<tester>/ by scripts/import-sets.mjs --tester <tester>.
+export type TesterBlindSet = BlindSet & { tester: string };
+export function testerBlindSets(root = ROOT) {
+  const sets: TesterBlindSet[] = [], unreadable: string[] = [], unsure: string[] = [];
+  const testersDir = resolve(root, 'testers');
+  if (!existsSync(testersDir)) return { sets, unreadable, unsure };
+  const testers = readdirSync(testersDir).filter(d => !d.startsWith('.') && statSync(resolve(testersDir, d)).isDirectory()).sort();
+  for (const tester of testers) {
+    const dir = `testers/${tester}`;
+    for (const f of readdirSync(resolve(root, dir)).filter(f => f.endsWith('.json.gz')).sort()) {
+      const name = `${dir}/${f}`;
+      let d: any;
+      try { d = readSet(root, dir, f); }
+      catch { unreadable.push(name); continue; }
+      if (!d.blind || typeof d.blind !== 'object') { unreadable.push(name); continue; }
+      if (d.blind.count === null) { unsure.push(name); continue; }
+      if (!d.lift || !Number.isInteger(d.blind.count) || d.blind.count < 1 || !Array.isArray(d.worldLandmarks) || !Array.isArray(d.timestamps) || d.worldLandmarks.length !== d.timestamps.length) { unreadable.push(name); continue; }
+      sets.push({ name, tester, lift: d.lift, label: d.blind.count, wl: d.worldLandmarks, ts: d.timestamps, kept: d.count, appCount: d.appCount ?? null, appRefused: d.appRefused === true, proposal: Number.isInteger(d.proposal) ? d.proposal : null, il: d.imageLandmarks ?? null });
+    }
+  }
+  return { sets, unreadable, unsure };
+}
+
 // David's real videos read whole through the built app (analyzeCoreVideo on check.html, test/real-phone/sets-*-video/,
 // capture.mjs there): the app's landmarks, timestamps and metadata, his label (R1), and the motion frames of the pose
 // region (24 x 24 gray, motionRhythm.js). `appRefused`: the app refused the read itself (a partial read): no count.

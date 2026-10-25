@@ -27,7 +27,7 @@ import { resolve } from 'node:path';
 import { summarizeCount, withProposal, withBodyCheck } from '../../../src/lib/coreAnalysis';
 import { countChoices, inList } from '../../../src/components/experience/result-choices';
 import { gunzipSync } from 'node:zlib';
-import { blindSets, decides, doubtLine, labelledSets, PRESS_DECIDES_NOTHING, videoSets, writeScoreboard } from './sets';
+import { blindSets, decides, doubtLine, labelledSets, PRESS_DECIDES_NOTHING, testerBlindSets, videoSets, writeScoreboard } from './sets';
 import { pairedLine, type Pair } from './paired';
 import { sureLine, sureRow } from './sure';
 
@@ -95,7 +95,8 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   for (const name of unreadable) b.rows.push(`UNREADABLE ${name}  (not gzip JSON, or no lift, whole count or landmarks)`);
   for (const h of held) b.rows.push(`HELD ${h.name}  (labelKind ${h.labelKind}: counted after the app's count, no label, R1)`);
   const kept = b.n - b.added - b.press;
-  const head = `Scoreboard ${new Date().toISOString().slice(0, 10)}: of the ${kept} sets in the baseline that decide, ${b.exactNow} exact now, ${b.exactBefore} before; ${b.catastrophic} newly catastrophic, ${b.known} known catastrophic (shown, gated on growth), ${b.becameRefused} newly refused${b.added ? `; ${b.added} set${b.added > 1 ? 's' : ''} new since` : ''}. The ${b.press} bench and overhead press sets are measured and decide nothing (PLAN.md). Build sets only; no exam set yet. "->" marks a set whose count moved.`;
+  const today = new Date().toISOString().slice(0, 10);
+  const head = `Scoreboard ${today}: of the ${kept} sets in the baseline that decide, ${b.exactNow} exact now, ${b.exactBefore} before; ${b.catastrophic} newly catastrophic, ${b.known} known catastrophic (shown, gated on growth), ${b.becameRefused} newly refused${b.added ? `; ${b.added} set${b.added > 1 ? 's' : ''} new since` : ''}. The ${b.press} bench and overhead press sets are measured and decide nothing (PLAN.md). Build sets only; no exam set yet. "->" marks a set whose count moved.`;
   // Real video, 7 October (test/real-phone/sets-07oct-video/, README.md there): David's 13 gym videos read whole by the
   // built app (analyzeCoreVideo), his labels (R1). The same R2 rules, on their own baseline (videoCounts): no exact
   // count lost, none newly off by 3 or more, none newly refused. A read the app itself refused (partial) is refused here.
@@ -119,7 +120,7 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   const mkept = m.n - m.added - m.press;
   const mhead = `Real video, VIDEO mode (the same videos read in VIDEO mode, which the app does not use: measured, decides nothing): of the ${mkept} sets in the baseline, ${m.exactNow} exact now, ${m.exactBefore} before; ${m.catastrophic} newly catastrophic, ${m.known} known catastrophic (shown, gated on growth), ${m.becameRefused} newly refused${m.added ? `; ${m.added} set${m.added > 1 ? 's' : ''} new since` : ''}; ${Object.values(m.live).filter(c => c === 'refused').length} refused of ${m.n}.`;
   // David's blind counts (blindSets): the app's outcome now against the count he gave before seeing it; beside it, the
-  // count he kept after seeing the app's, and whether he changed his mind. Measured only.
+  // count he kept after seeing the app's, and whether he changed his mind.
   const blind = blindSets();
   const bnow = blind.sets.map(s => videoCount({ ...s, appRefused: false, motion: null }) as { now: number | string; note?: string });
   // The R2 tally of the blind section, on its own baseline (blindCounts), as the stored and video sections.
@@ -133,6 +134,20 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   for (const name of blind.unreadable) brows.push(`UNREADABLE ${name}  (a blind count, but no lift, whole count or landmarks)`);
   const bexact = blind.sets.filter((s, i) => decides(s.lift) && bnow[i].now === s.label).length, bdec = blind.sets.filter(s => decides(s.lift)).length;
   const bhead = `David's blind counts (his count in the app before it showed its own, blind.js; labels since his ruling of 15 October 2026, R1; they decide under R2): ${blind.sets.length} sets, ${bexact} exact of the ${bdec} that decide; of the ${bl.n - bl.added - bl.press} in the baseline, ${bl.exactNow} exact now, ${bl.exactBefore} before; ${bl.catastrophic} newly catastrophic, ${bl.becameRefused} newly refused; ${blind.sets.filter(s => s.kept !== s.label).length} kept at another count after seeing the app's; ${blind.unsure.length} answered "Je ne sais pas".`;
+  // Testers' blind counts (testerBlindSets, test/real-phone/testers/<tester>/; David's R1 amendment of 25 October 2026):
+  // blind counts from people David names, deciding under R2 on their own baseline (testerBlindCounts).
+  const tblind = testerBlindSets();
+  const tbnow = tblind.sets.map(s => videoCount({ ...s, appRefused: false, motion: null }) as { now: number | string; note?: string });
+  const tbl = section(tblind.sets, base.testerBlindCounts ?? {}, i => ({ now: tbnow[i].now }));
+  const tbrows = tblind.sets.map((s, i) => {
+    const o = tbnow[i];
+    const changed = s.kept !== s.label ? `  kept ${s.kept} (changed after the app's count)` : `  kept ${s.kept}`;
+    return `   ${s.name}  tester ${s.tester}  blind ${s.label}  now ${o.now} (${verdict(o.now, s.label)})${o.note ? `  ${o.note}` : ''}${changed}${decides(s.lift) ? '' : `  ${PRESS_DECIDES_NOTHING}`}`;
+  });
+  for (const name of tblind.unsure) tbrows.push(`   ${name}  answered "Je ne sais pas": no blind count`);
+  for (const name of tblind.unreadable) tbrows.push(`UNREADABLE ${name}  (not a valid tester blind-count set)`);
+  const tbexact = tblind.sets.filter((s, i) => decides(s.lift) && tbnow[i].now === s.label).length, tbdec = tblind.sets.filter(s => decides(s.lift)).length;
+  const tbhead = `Testers' blind counts ${today} (their count in the app before it showed its own, blind.js; labels since David's ruling of 25 October 2026, R1; they decide under R2): ${tblind.sets.length} sets, ${tbexact} exact of the ${tbdec} that decide; of the ${tbl.n - tbl.added - tbl.press} in the baseline, ${tbl.exactNow} exact now, ${tbl.exactBefore} before; ${tbl.catastrophic} newly catastrophic, ${tbl.becameRefused} newly refused; ${tblind.sets.filter(s => s.kept !== s.label).length} kept at another count after seeing the app's; ${tblind.unsure.length} answered "Je ne sais pas".`;
   const gzs = (name: string) => JSON.parse(gunzipSync(readFileSync(resolve(__dirname, '..', name))).toString());
   const bRes = sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, gzs(s.name).imageLandmarks ?? null) }));
   const vRes = video.sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il, s.appRefused) }));
@@ -140,15 +155,17 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   const mRes = vmode.sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il, s.appRefused) }));
   const blRes = blind.sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il) }));
   const blList = listLine(blRes);
+  const tblRes = tblind.sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il) }));
+  const tblList = listLine(tblRes);
     // Right when sure (sure.ts, R16): the app's whole path on the sets that decide, as the result screen would show them.
   const sureOf = (rows: { lift: string; label: number; result: any }[]) => sureLine(rows.filter(s => decides(s.lift)).map(s => sureRow(s.result, s.lift, s.label)));
   // The paired line (paired.ts) on the same sets as "exact now, before": printed only, the gate below is unchanged.
-  const text = [head, pairedLine(b.pairs), doubtLine(b.doubts), bList, sureOf(bRes), ...b.rows, '', vhead, pairedLine(v.pairs), vList, sureOf(vRes), ...v.rows, '', mhead, pairedLine(m.pairs), sureOf(mRes), ...m.rows, '', bhead, blList, sureOf(blRes), ...brows].join('\n') + '\n';
+  const text = [head, pairedLine(b.pairs), doubtLine(b.doubts), bList, sureOf(bRes), ...b.rows, '', vhead, pairedLine(v.pairs), vList, sureOf(vRes), ...v.rows, '', mhead, pairedLine(m.pairs), sureOf(mRes), ...m.rows, '', bhead, blList, sureOf(blRes), ...brows, '', tbhead, tblList, sureOf(tblRes), ...tbrows].join('\n') + '\n';
   writeScoreboard(resolve(__dirname, 'scoreboard.txt'), text);
   process.stdout.write(text);
   // R2: a change ships only if the exact count does not decrease and no set becomes catastrophic; a set newly
-  // refused counts as catastrophic (third audit, C31). The two sections the app reads as, and David's blind counts (labels since 15 October 2026); the VIDEO-mode one is shown.
-  for (const t of [b, v, bl]) {
+  // refused counts as catastrophic (third audit, C31). The two sections the app reads as, David's blind counts (labels since 15 October 2026), and testers' blind counts (labels since 25 October 2026); the VIDEO-mode one is shown.
+  for (const t of [b, v, bl, tbl]) {
     expect(t.exactNow).toBeGreaterThanOrEqual(t.exactBefore);
     expect(t.catastrophic).toBe(0);
     expect(t.becameRefused).toBe(0);
@@ -157,6 +174,8 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   expect(unreadable).toEqual([]);
   expect(video.unreadable).toEqual([]);
   expect(vmode.unreadable).toEqual([]);
+  expect(blind.unreadable).toEqual([]);
+  expect(tblind.unreadable).toEqual([]);
   expect(m.missing).toEqual([]);
   // In CI the committed baseline must hold the live counts: a change that moves a count commits the
   // SCOREBOARD_UPDATE output, and a baseline edited by hand fails, so the next change is compared with the
@@ -167,7 +186,8 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
     expect(committed.videoCounts ?? {}).toEqual(v.live);
     expect(committed.videoModeCounts ?? {}).toEqual(m.live);
     expect(committed.blindCounts ?? {}).toEqual(bl.live);
+    expect(committed.testerBlindCounts ?? {}).toEqual(tbl.live);
   }
   // Only a change that passes the gate is recorded as accepted (review, 30 September).
-  if (process.env.SCOREBOARD_UPDATE) writeFileSync(BASELINE, JSON.stringify({ note: `The counts last accepted (${new Date().toISOString().slice(0, 10)}), measured by npm run scoreboard on the live core, not typed. npm run scoreboard compares the live core with these; SCOREBOARD_UPDATE=1 npm run scoreboard records the live counts once a change passes the gate (CLAUDE.md R2). videoCounts: the real-video section read in IMAGE mode (test/real-phone/sets-07oct-video/); videoModeCounts: the same videos read in VIDEO mode, measured only (test/real-phone/sets-09oct-video-mode/); blindCounts: David's blind counts, labels since 15 October 2026.`, counts: b.live, videoCounts: v.live, videoModeCounts: m.live, blindCounts: bl.live }, null, 2) + '\n');
+  if (process.env.SCOREBOARD_UPDATE) writeFileSync(BASELINE, JSON.stringify({ note: `The counts last accepted (${today}), measured by npm run scoreboard on the live core, not typed. npm run scoreboard compares the live core with these; SCOREBOARD_UPDATE=1 npm run scoreboard records the live counts once a change passes the gate (CLAUDE.md R2). videoCounts: the real-video section read in IMAGE mode (test/real-phone/sets-07oct-video/); videoModeCounts: the same videos read in VIDEO mode, measured only (test/real-phone/sets-09oct-video-mode/); blindCounts: David's blind counts, labels since 15 October 2026; testerBlindCounts: testers' blind counts, labels since 25 October 2026.`, counts: b.live, videoCounts: v.live, videoModeCounts: m.live, blindCounts: bl.live, testerBlindCounts: tbl.live }, null, 2) + '\n');
 }, 300_000); // the proposals (PSC) of the refused sets take a few seconds

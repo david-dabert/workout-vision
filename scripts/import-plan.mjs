@@ -13,12 +13,13 @@ export function parseSetName(name) {
 
 /**
  * @param names the files handed over
- * @param mode 'exam' (into exam/<lift>/) or 'build' (into `folder`, a sets-<date> folder)
+ * @param mode 'exam' (into exam/<lift>/), 'build' (into `folder`, a sets-<date> folder), or 'tester' (into testers/<tester>/)
  * @param existing the set files already in test/real-phone, as '<folder>/<name>'
  */
-export function planImport(names, { mode, folder, existing }) {
+export function planImport(names, { mode, folder, tester, existing }) {
   const problems = [];
   if (mode === 'build' && !/^sets-[0-9a-z]+$/.test(folder || '')) problems.push(`a build folder is named sets-<date>: ${folder}`);
+  if (mode === 'tester' && !/^[a-z0-9][a-z0-9_-]*$/.test(tester || '')) problems.push(`a tester is named with lowercase letters, digits, - or _: ${tester}`);
   const known = new Map(existing.map(path => [parseSetName(path.split('/').pop())?.hash, path]).filter(([h]) => h));
   const seen = new Map();
   for (const name of names) {
@@ -30,5 +31,6 @@ export function planImport(names, { mode, folder, existing }) {
     if (known.has(s.hash)) problems.push(`already in the repository: ${name} is the video of ${known.get(s.hash)}`);
   }
   if (problems.length) return { moves: [], problems };
-  return { moves: names.map(name => ({ from: name, to: mode === 'exam' ? `exam/${parseSetName(name).lift}/${name}` : `${folder}/${name}` })), problems };
+  const dest = (name) => mode === 'exam' ? `exam/${parseSetName(name).lift}/${name}` : mode === 'tester' ? `testers/${tester}/${name}` : `${folder}/${name}`;
+  return { moves: names.map(name => ({ from: name, to: dest(name) })), problems };
 }
