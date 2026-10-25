@@ -46,16 +46,16 @@ KNOWN CATASTROPHIC  sets-07oct-video/pendulum_squat_7.json.gz  label 7  now 14
    sets-18oct-video/lat_pulldown_11_back.json.gz  label 11  before 10 (off -1)  now 10 (off -1)
    sets-18oct-video/squat_6_front.json.gz  label 6  before 6 (exact)  now 6 (exact)
 
-Real video, VIDEO mode (the same videos read in VIDEO mode, which the app does not use: measured, decides nothing): of the 14 sets in the baseline, 4 exact now, 4 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused; 3 refused of 14.
-Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 14 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
-Right when sure (R16, sure.ts; measured, decides nothing): of 14 sets that decide, 11 counted. With the body check alone (before 19 October 2026), shown as sure 6: 4 exact (67%), 2 off by 1 or 2, 0 off by 3+; asked to confirm 5: 0 exact (0%), 5 off by 1 or 2, 0 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 5: 3 exact (60%), 2 off by 1 or 2, 0 off by 3+; asked to confirm 6: 1 exact (17%), 5 off by 1 or 2, 0 off by 3+.
+Real video, VIDEO mode (the same videos read in VIDEO mode, which the app does not use: measured, decides nothing): of the 14 sets in the baseline, 5 exact now, 4 before; 0 newly catastrophic, 0 known catastrophic (shown, gated on growth), 0 newly refused; 3 refused of 14.
+Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 14 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 1 gained, 0 lost, McNemar p = 1.00; exact-rate change +7.1 points, 95 % interval [0.0, +21.4].
+Right when sure (R16, sure.ts; measured, decides nothing): of 14 sets that decide, 11 counted. With the body check alone (before 19 October 2026), shown as sure 6: 5 exact (83%), 1 off by 1 or 2, 0 off by 3+; asked to confirm 5: 0 exact (0%), 5 off by 1 or 2, 0 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 5: 4 exact (80%), 1 off by 1 or 2, 0 off by 3+; asked to confirm 6: 1 exact (17%), 5 off by 1 or 2, 0 off by 3+.
    sets-09oct-video-mode/barbell_squat_9_a.json.gz  label 9  before 7 (off -2)  now 7 (off -2)
    sets-09oct-video-mode/barbell_squat_9_b.json.gz  label 9  before 10 (off +1)  now 10 (off +1)
    sets-09oct-video-mode/behind_neck_chin_up_5.json.gz  label 5  before 4 (off -1)  now 4 (off -1)
    sets-09oct-video-mode/hanging_leg_raise_6.json.gz  label 6  before 4 (off -2)  now 4 (off -2)
    sets-09oct-video-mode/lying_biceps_curl_11.json.gz  label 11  before 10 (off -1)  now 10 (off -1)
    sets-09oct-video-mode/machine_chest_supported_row_6.json.gz  label 6  before 6 (exact)  now 6 (exact)
-   sets-09oct-video-mode/machine_seated_back_extension_18.json.gz  label 18  before 17 (off -1)  now 17 (off -1)
+-> sets-09oct-video-mode/machine_seated_back_extension_18.json.gz  label 18  before 17 (off -1)  now 18 (exact)
    sets-09oct-video-mode/pendulum_squat_7.json.gz  label 7  before 8 (off +1)  now 8 (off +1)
    sets-09oct-video-mode/seated_dumbbell_curl_10.json.gz  label 10  before 10 (exact)  now 10 (exact)
    sets-09oct-video-mode/sissy_squat_5_5011.json.gz  label 5  before refused (refused)  now refused (refused)  (proposal 4)

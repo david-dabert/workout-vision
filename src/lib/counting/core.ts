@@ -388,10 +388,11 @@ const RETURN_WINDOW_SEC = 2;     // how long after its working half a rep's full
 // A first rep whose return is all the video shows (it starts at the working end and comes back to rest in under
 // MIN_REP_SEC) counts when that return takes at least this share of the set's own extreme-to-rest time, the
 // median over its accepted reps, measured from where each one last deepened its working extreme (detectReps;
-// it needs two accepted reps to compare with, and placeBoundaries marks it clipped so no measure uses it).
+// it needs HEAD_MIN_REPS accepted reps to compare with, and placeBoundaries marks it clipped so no measure uses it).
 // Source: UNSOURCED. Status: experimental, chosen on the public build half A (0.5 against 0.6), bounded below
 // by the pinned edges tests (edges.test.ts, window-edges.test.ts).
 const HEAD_RETURN_SHARE = 0.5;
+const HEAD_MIN_REPS = 1;          // accepted reps the head return time is read from (25 October 2026, matching TAIL_DEPTH_MIN_REPS = 1). Source: UNSOURCED. Status: experimental, chosen on half A
 const EXTREME_HOLD_SEC = 1 / 3;   // each end of a rep's range is the mean of its most extreme third of a second, not one sample. Source: UNSOURCED. Status: experimental
 const TOGETHER_OVERLAP = 0.75;    // two arms' reps overlapping by this share of the shorter one are one rep, both arms together
 // A `together` lift joins its two sides only when their smoothed angles correlate above this over the samples
@@ -447,13 +448,19 @@ const TAIL_DEPTH_SHARE = 0.85;
 const TAIL_DEPTH_MIN_REPS = 1;
 const OPEN_HOLD_SEC = 0.5;
 // Splitting an overlong rep at an in-set return that came most of the way back (splitOverlongReps, 3 October
-// 2026): two reps whose return between them stopped short of the rest threshold read as one long rep. Chosen on
-// the public build half A only (variant-eval, 458 sets, exact against 169 before; off by 3 or more 76 throughout):
+// 2026; extended 25 October 2026 to 2-cycle sets whose shorter cycle lasts at least SPLIT_TWO_MIN_SEC and to
+// cycles entered on the first valid sample): two reps whose return between them stopped short of the rest
+// threshold read as one long rep. Chosen on the public build half A only (variant-eval, 458 sets, exact against
+// 169 before; off by 3 or more 76 throughout):
 // return share 0.4 to 0.7: 175 (7 gained, 1 lost), 0.75 and 0.8: 176 (7 gained, 0 lost), 0.85 and 0.9: 175;
 // long 1.4 to 1.8: 175-176 (1.4 and 1.6 lose a synthetic set), 2.0 and 2.2: 172; regular below 0.5 makes one
-// half-A set newly off by 3, 0.5 to 0.7 the same counts; piece 0.4 to 0.7 the same counts. David's sets and the
-// synthetic sets read for every value: no exact count lost at the chosen ones. Source: UNSOURCED (no published
-// rule). Status: experimental, chosen on half A.
+// half-A set newly off by 3, 0.5 to 0.7 the same counts; piece 0.4 to 0.7 the same counts. On 25 October 2026
+// (half A, 546 sets, 256 -> 259 exact, 0 lost, off by 3 or more 74 -> 73; half B read after, 258 -> 258 exact,
+// off by 3 or more 89 -> 89; David's sets, his videos, synthetic, RepCount-A and occlusion unchanged; TRIED.md):
+// SPLIT_MIN_CYCLES = 2 with SPLIT_TWO_MIN_SEC = 0.8, HEAD_MIN_REPS = 1, and splitting first-sample overlong cycles.
+// Source: UNSOURCED (no published rule). Status: experimental, chosen on half A.
+const SPLIT_MIN_CYCLES = 2;      // fewest accepted cycles for splitOverlongReps to run. Source: UNSOURCED. Status: experimental, chosen on half A
+const SPLIT_TWO_MIN_SEC = 0.8;   // in a 2-cycle set, the shorter cycle must last at least this long to anchor the tempo. Source: UNSOURCED. Status: experimental, chosen on half A
 const SPLIT_REGULAR = 0.6;       // split only when every rep of the set lasts at least this share of the median rep. Source: UNSOURCED. Status: experimental, chosen on half A
 const SPLIT_LONG = 1.8;          // a rep lasting more than this many median reps is a candidate. Source: UNSOURCED. Status: experimental, chosen on half A
 const SPLIT_RETURN_SHARE = 0.8;  // the in-set return must cover this share of the way from the working extreme to the rest threshold. Source: UNSOURCED. Status: experimental, chosen on half A
@@ -1179,7 +1186,7 @@ function detectReps(
   // 6 October, action 4: read after the split, a piece was timed from a later rep's extreme, the times fell below
   // zero, and any quick first return counted).
   let headCounts = false;
-  if (head && cycles.length >= 2) {
+  if (head && cycles.length >= HEAD_MIN_REPS) {
     const backs = cycles.map((c, k) => timestamps[c.complete] - timestamps[hiIdxs[k]]).sort((x, y) => x - y);
     const m = Math.floor(backs.length / 2);
     const back = backs.length % 2 ? backs[m] : (backs[m - 1] + backs[m]) / 2;
@@ -1251,11 +1258,12 @@ function detectReps(
 
 /**
  * Two reps read as one: the return between them came most of the way back but stopped short of the rest
- * threshold, so the state machine never closed the first. In a regular set (three reps or more, none much
- * shorter than the median), a rep lasting well over the median is split at its fullest in-set return when that
- * return covered SPLIT_RETURN_SHARE of the way from the working extreme to the rest threshold and both pieces
- * are whole reps by length and range. A rep entered at the video's first sample is not split (its start is not
- * seen). Cut last reps are added after this pass and are never split. Mutates `cycles`.
+ * threshold, so the state machine never closed the first. In a regular set (SPLIT_MIN_CYCLES reps or more, none
+ * much shorter than the median; in a 2-cycle set, the shorter cycle serves as the tempo reference when it lasts
+ * at least SPLIT_TWO_MIN_SEC), a rep lasting well over the median is split at its fullest in-set return when
+ * that return covered SPLIT_RETURN_SHARE of the way from the working extreme to the rest threshold and both
+ * pieces are whole reps by length and range. Cut last reps are added after this pass and are never split.
+ * Mutates `cycles`.
  */
 function splitOverlongReps(
   cycles: Cycle[],
@@ -1267,12 +1275,12 @@ function splitOverlongReps(
   minRom: number,
   shape: RepShape | null = null,
 ): void {
-  if (cycles.length < 3) return;
+  if (cycles.length < SPLIT_MIN_CYCLES) return;
   const durations = cycles.map(c => timestamps[c.complete] - timestamps[c.enter]).sort((a, b) => a - b);
   const n = durations.length;
-  const md = n % 2 ? durations[(n - 1) / 2] : (durations[n / 2 - 1] + durations[n / 2]) / 2;
+  const md = n === 2 ? durations[0] : (n % 2 ? durations[(n - 1) / 2] : (durations[n / 2 - 1] + durations[n / 2]) / 2);
+  if (n === 2 && md < SPLIT_TWO_MIN_SEC) return;
   if (!(md > 0) || durations[0] < SPLIT_REGULAR * md) return;
-  const firstValid = smoothed.findIndex(a => a !== null);
   // Oriented so the working side is positive.
   const o = (a: number) => (restsLow ? a : -a);
   const work = restsLow ? highThreshold : -lowThreshold;
@@ -1291,7 +1299,7 @@ function splitOverlongReps(
   const out: Cycle[] = [];
   for (const c of cycles) {
     const dur = timestamps[c.complete] - timestamps[c.enter];
-    if (dur <= SPLIT_LONG * md || c.enter === firstValid || c.cut) { out.push(c); continue; }
+    if (dur <= SPLIT_LONG * md || c.cut) { out.push(c); continue; }
     let reached = false, extreme = -Infinity, ret = Infinity, retIdx = -1;
     let bestShare = -Infinity, bestK = -1;
     for (let i = c.enter; i <= c.complete; i++) {
