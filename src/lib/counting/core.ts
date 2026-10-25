@@ -472,7 +472,8 @@ const OPEN_HOLD_SEC = 0.5;
 const SPLIT_MIN_CYCLES = 2;      // fewest accepted cycles for splitOverlongReps to run. Source: UNSOURCED. Status: experimental, chosen on half A
 const SPLIT_TWO_MIN_SEC = 0.8;   // in a 2-cycle set, the shorter cycle must last at least this long to anchor the tempo. Source: UNSOURCED. Status: experimental, chosen on half A
 const SPLIT_REGULAR = 0.6;       // split only when every rep of the set lasts at least this share of the median rep. Source: UNSOURCED. Status: experimental, chosen on half A
-const SPLIT_LONG = 1.8;          // a rep lasting more than this many median reps is a candidate. Source: UNSOURCED. Status: experimental, chosen on half A
+const SPLIT_LONG = 1.7;          // a rep lasting more than this many median reps is a candidate. Source: UNSOURCED. Status: experimental, chosen on half A
+const SPLIT_LONG_FIRST = 1.8;    // a cycle entered on the first valid sample needs this many median reps to split, so pre-set adjustments stay unsplit (edges.test.ts). Source: UNSOURCED. Status: experimental
 const SPLIT_RETURN_SHARE = 0.8;  // the in-set return must cover this share of the way from the working extreme to the rest threshold. Source: UNSOURCED. Status: experimental, chosen on half A
 const SPLIT_PIECE = 0.6;         // each piece lasts at least this share of the median rep (and MIN_REP_SEC). Source: UNSOURCED. Status: experimental, chosen on half A
 
@@ -1333,10 +1334,12 @@ function splitOverlongReps(
     return hi - lo;
   };
   const minPiece = Math.max(MIN_REP_SEC, SPLIT_PIECE * md);
+  const firstValid = smoothed.findIndex(a => a !== null);
   const out: Cycle[] = [];
   for (const c of cycles) {
     const dur = timestamps[c.complete] - timestamps[c.enter];
-    if (dur <= SPLIT_LONG * md || c.cut) { out.push(c); continue; }
+    const longMult = c.enter === firstValid ? SPLIT_LONG_FIRST : SPLIT_LONG;
+    if (dur <= longMult * md || c.cut) { out.push(c); continue; }
     let reached = false, extreme = -Infinity, ret = Infinity, retIdx = -1;
     let bestShare = -Infinity, bestK = -1;
     for (let i = c.enter; i <= c.complete; i++) {
