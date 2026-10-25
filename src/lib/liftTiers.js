@@ -29,8 +29,9 @@ export const TIERS = {
 // The offered exercises with no card of their own (offer.js) that earn Beta by the same rule, from David's sets.
 // Kept apart from TIERS, which also lists the cards (lift-meta.js, Choice.jsx). Same status: convention.
 export const GUIDE_TIERS = {
-  // The machine seated back extension was Beta on 5 and 6 October on its one set (8 for 8); David named the 13-rep
-  // set of 5 October a back extension on 6 October; collected again with the crop retry it counts 12 for 13: Experimental (tiers.txt).
+  // 25 October 2026: beta again. Both of David's sets count exactly (8 for 8 on 36b81b22, 13 for 13 on c6f69462)
+  // once merged in-set reps with an unequivocal return to rest (>= 85%) split.
+  machine_seated_back_extension: 'beta',
 };
 
 export const tierLabel = (tier, fr) => tier === 'beta'

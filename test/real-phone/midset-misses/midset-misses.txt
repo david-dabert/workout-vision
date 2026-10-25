@@ -2,62 +2,62 @@
 
 ## 1. RepCount-A Build Half (Human Per-Rep Timestamps)
 - Evaluated build sets with a live counter: 77 sets (71 counted, 6 refused by `summarizeCount`), 867 human-marked reps.
-- On counted deciding (non-press) sets: 156 missed reps (**131 in the middle of the set**, 10 first, 15 last).
-- Across all 77 build sets (press and refused sets included): 570 found (66%), 297 missed (244 middle).
+- On counted deciding (non-press) sets: 154 missed reps (**129 in the middle of the set**, 10 first, 15 last).
+- Across all 77 build sets (press and refused sets included): 571 found (66%), 296 missed (242 middle).
 
-### RepCount-A Counted Deciding Sets — Middle Missed Reps (n = 131)
-- Normal duration (0.6x to 1.6x set median): 115 of 131 (88%)
-- Counted joint visibility >= 80% of rep frames: 92 of 131 (70%); >= 50% of rep frames: 122 of 131 (93%)
-- Counted joint span >= 70% of found-rep median: 88 of 131 (67%)
-- Opposite side shows rep (span >= 70% of found median & vis >= 50%): 50 of 131 (38%); when counted joint < 70%: 5 of 43
-- Another angle joint in signalBank (elbow/shoulder/hip/knee/ankle/trunk) shows rep (relSpan >= 70% & zSpan >= 1.5): 124 of 131 (95%); when counted joint < 70%: 36 of 43
-- Any other signal in signalBank (psc.js, including wrist/hip/nose coords) shows rep (relSpan >= 70% & zSpan >= 1.5): 128 of 131 (98%); when counted joint < 70%: 40 of 43
-- Another signal in exercise signalProfile (bodyCheck.js) shows rep (relSpan >= 70%): 120 of 131 (92%)
+### RepCount-A Counted Deciding Sets — Middle Missed Reps (n = 129)
+- Normal duration (0.6x to 1.6x set median): 113 of 129 (88%)
+- Counted joint visibility >= 80% of rep frames: 91 of 129 (71%); >= 50% of rep frames: 121 of 129 (94%)
+- Counted joint span >= 70% of found-rep median: 86 of 129 (67%)
+- Opposite side shows rep (span >= 70% of found median & vis >= 50%): 50 of 129 (39%); when counted joint < 70%: 5 of 43
+- Another angle joint in signalBank (elbow/shoulder/hip/knee/ankle/trunk) shows rep (relSpan >= 70% & zSpan >= 1.5): 122 of 129 (95%); when counted joint < 70%: 36 of 43
+- Any other signal in signalBank (psc.js, including wrist/hip/nose coords) shows rep (relSpan >= 70% & zSpan >= 1.5): 126 of 129 (98%); when counted joint < 70%: 40 of 43
+- Another signal in exercise signalProfile (bodyCheck.js) shows rep (relSpan >= 70%): 118 of 129 (91%)
 - Failure mechanism on the counted joint:
-  - `merged_no_rest_return`: 65 of 131 (50%)
-  - `shallow_below_work_threshold`: 32 of 131 (24%)
-  - `duration_or_boundary_shift`: 19 of 131 (15%)
-  - `unseen_dropout`: 9 of 131 (7%)
-  - `flat_no_excursion`: 6 of 131 (5%)
+  - `merged_no_rest_return`: 64 of 129 (50%)
+  - `shallow_below_work_threshold`: 32 of 129 (25%)
+  - `duration_or_boundary_shift`: 19 of 129 (15%)
+  - `unseen_dropout`: 8 of 129 (6%)
+  - `flat_no_excursion`: 6 of 129 (5%)
 
-### RepCount-A Counted Deciding Sets — All Missed Reps (n = 156)
-- Normal duration (0.6x to 1.6x set median): 134 of 156 (86%)
-- Counted joint visibility >= 80% of rep frames: 110 of 156 (71%); >= 50% of rep frames: 145 of 156 (93%)
-- Counted joint span >= 70% of found-rep median: 108 of 156 (69%)
-- Opposite side shows rep (span >= 70% of found median & vis >= 50%): 62 of 156 (40%); when counted joint < 70%: 7 of 48
-- Another angle joint in signalBank (elbow/shoulder/hip/knee/ankle/trunk) shows rep (relSpan >= 70% & zSpan >= 1.5): 149 of 156 (96%); when counted joint < 70%: 41 of 48
-- Any other signal in signalBank (psc.js, including wrist/hip/nose coords) shows rep (relSpan >= 70% & zSpan >= 1.5): 153 of 156 (98%); when counted joint < 70%: 45 of 48
-- Another signal in exercise signalProfile (bodyCheck.js) shows rep (relSpan >= 70%): 144 of 156 (92%)
+### RepCount-A Counted Deciding Sets — All Missed Reps (n = 154)
+- Normal duration (0.6x to 1.6x set median): 132 of 154 (86%)
+- Counted joint visibility >= 80% of rep frames: 109 of 154 (71%); >= 50% of rep frames: 144 of 154 (94%)
+- Counted joint span >= 70% of found-rep median: 106 of 154 (69%)
+- Opposite side shows rep (span >= 70% of found median & vis >= 50%): 62 of 154 (40%); when counted joint < 70%: 7 of 48
+- Another angle joint in signalBank (elbow/shoulder/hip/knee/ankle/trunk) shows rep (relSpan >= 70% & zSpan >= 1.5): 147 of 154 (95%); when counted joint < 70%: 41 of 48
+- Any other signal in signalBank (psc.js, including wrist/hip/nose coords) shows rep (relSpan >= 70% & zSpan >= 1.5): 151 of 154 (98%); when counted joint < 70%: 45 of 48
+- Another signal in exercise signalProfile (bodyCheck.js) shows rep (relSpan >= 70%): 142 of 154 (92%)
 - Failure mechanism on the counted joint:
-  - `merged_no_rest_return`: 76 of 156 (49%)
-  - `shallow_below_work_threshold`: 37 of 156 (24%)
-  - `duration_or_boundary_shift`: 26 of 156 (17%)
-  - `unseen_dropout`: 11 of 156 (7%)
-  - `flat_no_excursion`: 6 of 156 (4%)
+  - `merged_no_rest_return`: 75 of 154 (49%)
+  - `shallow_below_work_threshold`: 37 of 154 (24%)
+  - `duration_or_boundary_shift`: 26 of 154 (17%)
+  - `unseen_dropout`: 10 of 154 (6%)
+  - `flat_no_excursion`: 6 of 154 (4%)
 
-### RepCount-A All Build Sets (Including Press & Refused) — Middle Missed Reps (n = 244)
-- Normal duration (0.6x to 1.6x set median): 219 of 244 (90%)
-- Counted joint visibility >= 80% of rep frames: 109 of 244 (45%); >= 50% of rep frames: 165 of 244 (68%)
-- Counted joint span >= 70% of found-rep median: 162 of 244 (66%)
-- Opposite side shows rep (span >= 70% of found median & vis >= 50%): 62 of 244 (25%); when counted joint < 70%: 7 of 82
-- Another angle joint in signalBank (elbow/shoulder/hip/knee/ankle/trunk) shows rep (relSpan >= 70% & zSpan >= 1.5): 187 of 244 (77%); when counted joint < 70%: 52 of 82
-- Any other signal in signalBank (psc.js, including wrist/hip/nose coords) shows rep (relSpan >= 70% & zSpan >= 1.5): 203 of 244 (83%); when counted joint < 70%: 61 of 82
-- Another signal in exercise signalProfile (bodyCheck.js) shows rep (relSpan >= 70%): 165 of 244 (68%)
+### RepCount-A All Build Sets (Including Press & Refused) — Middle Missed Reps (n = 242)
+- Normal duration (0.6x to 1.6x set median): 217 of 242 (90%)
+- Counted joint visibility >= 80% of rep frames: 108 of 242 (45%); >= 50% of rep frames: 164 of 242 (68%)
+- Counted joint span >= 70% of found-rep median: 160 of 242 (66%)
+- Opposite side shows rep (span >= 70% of found median & vis >= 50%): 62 of 242 (26%); when counted joint < 70%: 7 of 82
+- Another angle joint in signalBank (elbow/shoulder/hip/knee/ankle/trunk) shows rep (relSpan >= 70% & zSpan >= 1.5): 185 of 242 (76%); when counted joint < 70%: 52 of 82
+- Any other signal in signalBank (psc.js, including wrist/hip/nose coords) shows rep (relSpan >= 70% & zSpan >= 1.5): 201 of 242 (83%); when counted joint < 70%: 61 of 82
+- Another signal in exercise signalProfile (bodyCheck.js) shows rep (relSpan >= 70%): 163 of 242 (67%)
 - Failure mechanism on the counted joint:
-  - `merged_no_rest_return`: 89 of 244 (36%)
-  - `unseen_dropout`: 79 of 244 (32%)
-  - `shallow_below_work_threshold`: 40 of 244 (16%)
-  - `duration_or_boundary_shift`: 28 of 244 (11%)
-  - `flat_no_excursion`: 8 of 244 (3%)
+  - `merged_no_rest_return`: 88 of 242 (36%)
+  - `unseen_dropout`: 78 of 242 (32%)
+  - `shallow_below_work_threshold`: 40 of 242 (17%)
+  - `duration_or_boundary_shift`: 28 of 242 (12%)
+  - `flat_no_excursion`: 8 of 242 (3%)
 
 ### RepCount-A Middle Misses by Exercise (All Build Sets)
 | Exercise | Missed (all) | Missed (middle) | Vis >= 80% (mid) | Merged / no rest return (mid) | Shallow < work (mid) | Unseen < 50% (mid) | Flat < 35% (mid) | Dur/shift (mid) | Other side shows (mid) | Other angle joint shows (mid) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| bench_press | 135 | 111 | 17 | 24 | 8 | 68 | 2 | 9 | 12 | 61 |
+| bench_press | 136 | 111 | 17 | 24 | 8 | 68 | 2 | 9 | 12 | 61 |
 | front_raise | 19 | 16 | 15 | 5 | 5 | 1 | 5 | 0 | 2 | 16 |
 | pull_up | 73 | 63 | 38 | 36 | 12 | 0 | 1 | 14 | 45 | 63 |
-| push_up | 51 | 40 | 30 | 14 | 15 | 7 | 0 | 4 | 3 | 35 |
-| squat | 19 | 14 | 9 | 10 | 0 | 3 | 0 | 1 | 0 | 12 |
+| push_up | 50 | 39 | 29 | 13 | 15 | 7 | 0 | 4 | 3 | 34 |
+| squat | 18 | 13 | 9 | 10 | 0 | 2 | 0 | 1 | 0 | 11 |
 
 ## 2. MM-Fit Build Half (Whole-Set Labels; Undercount Windows Analyzed)
 - Evaluated build sets: 158 sets; core undercounts on 28 sets (missing 45 reps total).
@@ -80,19 +80,19 @@
 | overhead_press | 1 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 1 |
 
 ## 3. Supplement: CFRep Build Half (Human Per-Rep Timestamps)
-- Evaluated build sets: 12 sets, 141 marked reps, 131 found, 10 missed (7 middle).
-### CFRep All Missed Reps (n = 10)
-- Normal duration (0.6x to 1.6x set median): 10 of 10 (100%)
-- Counted joint visibility >= 80% of rep frames: 7 of 10 (70%); >= 50% of rep frames: 10 of 10 (100%)
-- Counted joint span >= 70% of found-rep median: 7 of 10 (70%)
-- Opposite side shows rep (span >= 70% of found median & vis >= 50%): 5 of 10 (50%); when counted joint < 70%: 2 of 3
-- Another angle joint in signalBank (elbow/shoulder/hip/knee/ankle/trunk) shows rep (relSpan >= 70% & zSpan >= 1.5): 10 of 10 (100%); when counted joint < 70%: 3 of 3
-- Any other signal in signalBank (psc.js, including wrist/hip/nose coords) shows rep (relSpan >= 70% & zSpan >= 1.5): 10 of 10 (100%); when counted joint < 70%: 3 of 3
-- Another signal in exercise signalProfile (bodyCheck.js) shows rep (relSpan >= 70%): 10 of 10 (100%)
+- Evaluated build sets: 12 sets, 141 marked reps, 132 found, 9 missed (6 middle).
+### CFRep All Missed Reps (n = 9)
+- Normal duration (0.6x to 1.6x set median): 9 of 9 (100%)
+- Counted joint visibility >= 80% of rep frames: 6 of 9 (67%); >= 50% of rep frames: 9 of 9 (100%)
+- Counted joint span >= 70% of found-rep median: 6 of 9 (67%)
+- Opposite side shows rep (span >= 70% of found median & vis >= 50%): 5 of 9 (56%); when counted joint < 70%: 2 of 3
+- Another angle joint in signalBank (elbow/shoulder/hip/knee/ankle/trunk) shows rep (relSpan >= 70% & zSpan >= 1.5): 9 of 9 (100%); when counted joint < 70%: 3 of 3
+- Any other signal in signalBank (psc.js, including wrist/hip/nose coords) shows rep (relSpan >= 70% & zSpan >= 1.5): 9 of 9 (100%); when counted joint < 70%: 3 of 3
+- Another signal in exercise signalProfile (bodyCheck.js) shows rep (relSpan >= 70%): 9 of 9 (100%)
 - Failure mechanism on the counted joint:
-  - `merged_no_rest_return`: 7 of 10 (70%)
-  - `shallow_below_work_threshold`: 2 of 10 (20%)
-  - `duration_or_boundary_shift`: 1 of 10 (10%)
+  - `merged_no_rest_return`: 6 of 9 (67%)
+  - `shallow_below_work_threshold`: 2 of 9 (22%)
+  - `duration_or_boundary_shift`: 1 of 9 (11%)
 
 ## 4. Per-Rep Detail: Every Middle Missed Rep on RepCount-A (Counted Deciding Sets First)
 | Set | Lift | Rep | Window (s) | Rel dur | Vis | Counted span / med | Cause | Other side rel | Best angle joint (rel, zSpan) | Best profile signal (rel) |
@@ -117,9 +117,8 @@
 | stu10_36 | pull_up | 27/29 | 40.7-43.9 | 2.61x | 98% | 82°/59° (1.38x) | `merged_no_rest_return` | 0.67x | i.kneeL (1.89x, 6.1z) | i.wristShoulderL (1.61x) |
 | stu10_36 | pull_up | 28/29 | 43.9-49.1 | 4.36x | 96% | 67°/59° (1.13x) | `duration_or_boundary_shift` | 0.68x | w.trunk (2.38x, 4.6z) | i.wristShoulderR (1.34x) |
 | stu10_47 | push_up | 9/21 | 24.9-27.6 | 1.19x | 100% | 69°/72° (0.96x) | `merged_no_rest_return` | 0.08x | w.ankleL (1.41x, 2.7z) | w.wristShoulderL (1.11x) |
-| stu10_63 | squat | 2/16 | 3.4-5.8 | 0.97x | 44% | 123°/81° (1.52x) | `unseen_dropout` | 1.67x | i.trunk (5.02x, 6.8z) | w.ankleYL (2.54x) |
-| stu10_63 | squat | 4/16 | 8.0-10.4 | 0.98x | 53% | 111°/81° (1.37x) | `duration_or_boundary_shift` | 0.89x | i.ankleL (3.20x, 6.3z) | w.ankleYL (3.20x) |
-| stu10_63 | squat | 7/16 | 15.5-18.1 | 1.06x | 54% | 70°/81° (0.87x) | `merged_no_rest_return` | 0.61x | i.ankleL (2.46x, 4.9z) | w.ankleYR (4.21x) |
+| stu10_63 | squat | 4/16 | 8.0-10.4 | 0.98x | 53% | 111°/82° (1.35x) | `duration_or_boundary_shift` | 0.88x | i.ankleL (3.26x, 6.3z) | w.ankleYL (3.00x) |
+| stu10_63 | squat | 7/16 | 15.5-18.1 | 1.06x | 54% | 70°/82° (0.86x) | `merged_no_rest_return` | 0.60x | i.ankleL (2.51x, 4.9z) | w.ankleYR (3.91x) |
 | stu1_37 | pull_up | 7/18 | 14.2-17.2 | 1.15x | 100% | 92°/89° (1.04x) | `merged_no_rest_return` | 1.07x (YES) | i.ankleR (1.44x, 4.1z) | w.wristHipL (1.18x) |
 | stu1_37 | pull_up | 10/18 | 22.5-25.6 | 1.20x | 100% | 83°/89° (0.93x) | `merged_no_rest_return` | 0.90x (YES) | i.kneeR (2.03x, 4.6z) | w.wristShoulderL (1.02x) |
 | stu1_37 | pull_up | 11/18 | 25.6-28.6 | 1.17x | 100% | 84°/89° (0.95x) | `merged_no_rest_return` | 0.99x (YES) | w.kneeL (1.64x, 3.2z) | i.elbowYR (0.99x) |
@@ -213,11 +212,10 @@
 | stu8_42 | push_up | 3/6 | 2.9-4.7 | 1.00x | 78% | 86°/82° (1.06x) | `merged_no_rest_return` | 0.45x | i.shoulderR (1.17x, 2.6z) | i.noseY (0.95x) |
 | stu8_42 | push_up | 4/6 | 4.7-6.6 | 1.06x | 71% | 79°/82° (0.97x) | `merged_no_rest_return` | 0.57x | i.trunk (1.29x, 5.7z) | w.wristShoulderL (1.55x) |
 | stu8_42 | push_up | 5/6 | 6.6-8.4 | 1.00x | 81% | 88°/82° (1.07x) | `merged_no_rest_return` | 0.61x | i.shoulderL (1.58x, 2.9z) | i.wristShoulderL (2.78x) |
-| stu9_55 | push_up | 4/14 | 6.9-8.8 | 1.15x | 83% | 71°/76° (0.93x) | `merged_no_rest_return` | 0.30x | i.trunk (1.80x, 4.6z) | i.noseY (1.70x) |
-| stu9_55 | push_up | 8/14 | 20.8-22.3 | 0.95x | 17% | 33°/76° (0.43x) | `unseen_dropout` | 0.58x | i.shoulderL (1.63x, 3.9z) | w.noseY (1.26x) |
-| stu9_55 | push_up | 9/14 | 22.3-23.7 | 0.85x | 10% | 7°/76° (0.09x) | `unseen_dropout` | 0.27x | i.trunk (1.34x, 3.4z) | i.noseY (1.33x) |
-| stu9_55 | push_up | 12/14 | 29.6-31.6 | 1.22x | 27% | 47°/76° (0.62x) | `unseen_dropout` | 0.48x | i.trunk (2.02x, 5.2z) | i.wristShoulderL (1.87x) |
-| stu9_55 | push_up | 13/14 | 33.0-35.3 | 1.38x | 29% | 160°/76° (2.11x) | `unseen_dropout` | 0.00x | i.shoulderL (1.62x, 3.9z) | w.wristShoulderL (2.16x) |
+| stu9_55 | push_up | 8/14 | 20.8-22.3 | 0.95x | 17% | 33°/71° (0.46x) | `unseen_dropout` | 0.62x | i.shoulderL (1.70x, 3.9z) | w.noseY (1.18x) |
+| stu9_55 | push_up | 9/14 | 22.3-23.7 | 0.85x | 10% | 7°/71° (0.10x) | `unseen_dropout` | 0.29x | i.trunk (1.29x, 3.4z) | i.noseY (1.30x) |
+| stu9_55 | push_up | 12/14 | 29.6-31.6 | 1.22x | 27% | 47°/71° (0.66x) | `unseen_dropout` | 0.52x | i.trunk (1.95x, 5.2z) | i.wristShoulderL (1.97x) |
+| stu9_55 | push_up | 13/14 | 33.0-35.3 | 1.38x | 29% | 160°/71° (2.25x) | `unseen_dropout` | 0.00x | i.shoulderL (1.69x, 3.9z) | w.wristShoulderL (2.16x) |
 | test1454 | pull_up | 2/6 | 2.2-3.6 | 1.00x | 64% | 23°/43° (0.53x) | `shallow_below_work_threshold` | 0.56x | i.trunk (1.14x, 2.5z) | w.elbowYL (1.11x) |
 | test1595 | push_up | 2/3 | 4.1-7.7 | 1.00x | 96% | 45°/37° (1.22x) | `duration_or_boundary_shift` | 0.00x | w.kneeL (1.23x, 3.1z) | w.ankleYL (1.00x) |
 | train2711 | push_up | 2/5 | 2.3-4.4 | 1.19x | 84% | 33°/27° (1.25x) | `merged_no_rest_return` | 0.00x | w.trunk (2.63x, 1.6z) | i.noseY (2.85x) |
@@ -331,13 +329,13 @@
 | stu7_4 (refused) | bench_press | 6/8 | 20.0-22.3 | 1.05x | 12% | 71°/56° (1.26x) | `unseen_dropout` | 1.82x | i.trunk (1.52x, 21.2z) | i.elbowYR (1.19x) |
 | stu7_4 (refused) | bench_press | 7/8 | 22.3-25.1 | 1.29x | 12% | 26°/56° (0.46x) | `unseen_dropout` | 0.42x | i.hipL (1.82x, 9.2z) | none (0.00x) |
 | stu8_7 | bench_press | 4/5 | 8.2-11.9 | 1.07x | 89% | 75°/75° (1.00x) | `merged_no_rest_return` | 0.86x (YES) | w.shoulderL (4.62x, 5.5z) | w.elbowYL (2.74x) |
-| stu9_9 | bench_press | 2/12 | 6.9-8.7 | 1.00x | 68% | 31°/48° (0.63x) | `shallow_below_work_threshold` | 0.83x | i.kneeL (1.79x, 4.2z) | i.elbowYR (1.75x) |
-| stu9_9 | bench_press | 3/12 | 8.7-10.4 | 0.91x | 84% | 39°/48° (0.81x) | `shallow_below_work_threshold` | 1.07x | i.kneeL (2.51x, 5.8z) | i.wristYR (1.16x) |
-| stu9_9 | bench_press | 5/12 | 12.2-13.9 | 0.93x | 76% | 37°/48° (0.76x) | `shallow_below_work_threshold` | 0.94x (YES) | w.ankleL (2.47x, 5.2z) | i.wristYR (2.22x) |
-| stu9_9 | bench_press | 6/12 | 13.9-15.6 | 0.93x | 62% | 53°/48° (1.10x) | `duration_or_boundary_shift` | 1.08x | w.ankleL (1.71x, 3.6z) | i.elbowYR (3.03x) |
-| stu9_9 | bench_press | 7/12 | 15.6-17.4 | 1.00x | 75% | 48°/48° (0.99x) | `merged_no_rest_return` | 0.83x | i.trunk (1.48x, 5.5z) | i.wristYR (2.71x) |
-| stu9_9 | bench_press | 10/12 | 23.0-25.5 | 1.38x | 74% | 57°/48° (1.17x) | `duration_or_boundary_shift` | 0.94x | w.ankleL (1.51x, 3.2z) | i.wristWrist (5.25x) |
-| stu9_9 | bench_press | 11/12 | 25.5-28.0 | 1.38x | 74% | 47°/48° (0.98x) | `shallow_below_work_threshold` | 0.83x | i.kneeL (2.27x, 5.3z) | i.wristYL (1.85x) |
+| stu9_9 | bench_press | 2/12 | 6.9-8.7 | 1.00x | 68% | 31°/45° (0.68x) | `shallow_below_work_threshold` | 0.90x | i.hipL (2.05x, 4.6z) | i.elbowYR (2.17x) |
+| stu9_9 | bench_press | 3/12 | 8.7-10.4 | 0.91x | 84% | 39°/45° (0.88x) | `shallow_below_work_threshold` | 1.15x | i.kneeL (2.75x, 5.8z) | w.elbowYR (1.22x) |
+| stu9_9 | bench_press | 5/12 | 12.2-13.9 | 0.93x | 76% | 37°/45° (0.81x) | `shallow_below_work_threshold` | 1.02x (YES) | w.ankleL (3.79x, 5.2z) | i.wristYR (2.27x) |
+| stu9_9 | bench_press | 6/12 | 13.9-15.6 | 0.93x | 62% | 53°/45° (1.18x) | `duration_or_boundary_shift` | 1.17x | w.ankleL (2.63x, 3.6z) | i.elbowYR (3.75x) |
+| stu9_9 | bench_press | 7/12 | 15.6-17.4 | 1.00x | 75% | 48°/45° (1.07x) | `merged_no_rest_return` | 0.89x | w.ankleL (1.85x, 2.5z) | i.wristYR (2.77x) |
+| stu9_9 | bench_press | 10/12 | 23.0-25.5 | 1.38x | 74% | 57°/45° (1.27x) | `duration_or_boundary_shift` | 1.01x | w.ankleL (2.33x, 3.2z) | i.elbowYR (5.36x) |
+| stu9_9 | bench_press | 11/12 | 25.5-28.0 | 1.38x | 74% | 47°/45° (1.05x) | `shallow_below_work_threshold` | 0.90x | i.hipL (3.67x, 8.3z) | i.wristYL (2.18x) |
 | test159 | bench_press | 2/3 | 1.7-4.8 | 1.00x | 100% | 12°/12° (1.00x) | `flat_no_excursion` | 1.00x (YES) | w.hipR (1.48x, 8.6z) | i.elbowYR (1.22x) |
 | test2320 (refused) | squat | 2/4 | 2.3-4.3 | 1.06x | 38% | 35°/46° (0.77x) | `unseen_dropout` | 1.08x | i.shoulderL (2.19x, 6.4z) | none (0.00x) |
 | test2320 (refused) | squat | 3/4 | 4.3-6.1 | 0.97x | 15% | 57°/46° (1.24x) | `unseen_dropout` | 2.83x | w.elbowR (1.59x, 5.4z) | none (0.00x) |

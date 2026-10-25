@@ -26,14 +26,14 @@ Measure errors per view (printed, not gated): phase time relative error, time un
 view  0 deg: conc. -46 %  ecc. -45 %  time under tension -37 % (mean absolute 37 %)  range -36 %
 view 30 deg: conc. -45 %  ecc. -45 %  time under tension -30 % (mean absolute 30 %)  range -27 %
 view 60 deg: conc. -47 %  ecc. -48 %  time under tension -41 % (mean absolute 41 %)  range -29 %
-view 90 deg: conc. -53 %  ecc. -54 %  time under tension -59 % (mean absolute 59 %)  range -29 %
+view 90 deg: conc. -53 %  ecc. -55 %  time under tension -59 % (mean absolute 59 %)  range -29 %
 
 Measure errors split (printed, not gated): definition = app pipeline on the true angle vs truth; pose = app vs that.
-all                    range: definition   0 %  pose -30 %   conc.: definition -28 %  pose -27 %   ecc.: definition -29 %  pose -26 %
+all                    range: definition   0 %  pose -30 %   conc.: definition -29 %  pose -27 %   ecc.: definition -29 %  pose -27 %
 view 0 deg             range: definition   2 %  pose -36 %   conc.: definition -28 %  pose -24 %   ecc.: definition -29 %  pose -23 %
 view 30 deg            range: definition   1 %  pose -27 %   conc.: definition -28 %  pose -24 %   ecc.: definition -29 %  pose -22 %
 view 60 deg            range: definition  -1 %  pose -28 %   conc.: definition -29 %  pose -26 %   ecc.: definition -29 %  pose -26 %
-view 90 deg            range: definition   0 %  pose -29 %   conc.: definition -28 %  pose -34 %   ecc.: definition -29 %  pose -36 %
+view 90 deg            range: definition   0 %  pose -29 %   conc.: definition -28 %  pose -34 %   ecc.: definition -29 %  pose -37 %
 lateral_raise (front)  range: definition  -1 %  pose  -3 %   conc.: definition -27 %  pose  -8 %   ecc.: definition -32 %  pose  -7 %
 bicep_curl (side)      range: definition  -0 %  pose -24 %   conc.: definition -25 %  pose -28 %   ecc.: definition -30 %  pose -29 %
 overhead_press (front) range: definition   8 %  pose -37 %   conc.: definition -32 %  pose -15 %   ecc.: definition -26 %  pose -17 %
@@ -128,7 +128,7 @@ Each set: id, true reps, app count, range error (deg), conc./ecc. error (s), pos
   soldier-overhead_press-v60-a0             6  9   -57   -1.3  -0.8  100 %  not-compared-lift   -0    -
   soldier-overhead_press-v60-a20            8 13   -66   -0.9  -0.8  100 %  not-compared-lift    3    -
   soldier-overhead_press-v90-a-10           6  7   -49   -0.6  -0.7   90 %  not-compared-lift  -23    -
-  soldier-overhead_press-v90-a0             7 12   -48   -1.0  -0.6   90 %  not-compared-lift   -0    -
+  soldier-overhead_press-v90-a0             7 13   -48   -1.0  -0.8   90 %  not-compared-lift   -0    -
   soldier-overhead_press-v90-a20            5  5   -54   -0.8  -0.9   91 %  not-compared-lift    2    -
   soldier-squat-v0-a-10                     7  0     -      -     -  100 %  not-compared-lift  -11    -
   soldier-squat-v0-a0                       8  0     -      -     -  100 %  not-compared-lift   -0    -

@@ -452,6 +452,7 @@ const CUT_RETURN_SHARE = 0.7;
 const TAIL_AT_WORK_SEC = 0.6;
 const TAIL_HOLD_MAX_SEC = 1.5;
 const TAIL_DEPTH_SHARE = 0.85;
+const TAIL_REST_MAX_SEC = 4.0;   // a candidate cut rep must begin within 4.0 s of the previous cycle completing (post-set rest + exit is not a rep). Status: experimental
 // How many accepted reps the depth is read from (their median). Two until 20 October 2026: a clip of two or three
 // reps cut at its last working end then had no depth to compare with, and its last rep never counted (triage of the
 // public undercounts, test/real-phone/consensus/triage.test.ts: 47 of 133 such tails refused for this alone). One rep
@@ -478,6 +479,8 @@ const SPLIT_REGULAR = 0.6;       // split only when every rep of the set lasts a
 const SPLIT_LONG = 1.7;          // a rep lasting more than this many median reps is a candidate. Source: UNSOURCED. Status: experimental, chosen on half A
 const SPLIT_LONG_FIRST = 1.8;    // a cycle entered on the first valid sample needs this many median reps to split, so pre-set adjustments stay unsplit (edges.test.ts). Source: UNSOURCED. Status: experimental
 const SPLIT_RETURN_SHARE = 0.8;  // the in-set return must cover this share of the way from the working extreme to the rest threshold. Source: UNSOURCED. Status: experimental, chosen on half A
+const SPLIT_REGULAR_DEEP = 0.45; // when a return is unequivocal (>= 85%), sets with mild tempo variation (shortest cycle >= 45% median) may split. Status: experimental
+const SPLIT_DEEP_RETURN = 0.85;   // an unequivocal deep return (>= 85%) splits an overlong rep even when set tempo varies (durations[0] < SPLIT_REGULAR * md). Status: experimental
 const SPLIT_PIECE = 0.6;         // each piece lasts at least this share of the median rep (and MIN_REP_SEC). Source: UNSOURCED. Status: experimental, chosen on half A
 
 // ─── Public API ───
@@ -1306,7 +1309,8 @@ function detectReps(
     let openHold = 0;
     for (let i = firstSeen + 1; i < smoothed.length && atWork(smoothed[i]) && atWork(smoothed[i - 1]); i++) openHold = timestamps[i] - timestamps[firstSeen];
     const opensHeldAtWork = firstSeen > -1 && atWork(smoothed[firstSeen]) && openHold >= OPEN_HOLD_SEC;
-    const stoppedAtWork = lastAtWork > -1 && seenToEnd && deepEnough && !opensHeldAtWork && timestamps[last] - timestamps[lastAtWork] <= TAIL_AT_WORK_SEC
+    const notAfterRest = cycles.length === 0 || timestamps[repStartIdx] - timestamps[cycles[cycles.length - 1].complete] <= TAIL_REST_MAX_SEC;
+    const stoppedAtWork = lastAtWork > -1 && seenToEnd && deepEnough && !opensHeldAtWork && notAfterRest && timestamps[last] - timestamps[lastAtWork] <= TAIL_AT_WORK_SEC
       && timestamps[last] - timestamps[firstAtWork] <= TAIL_HOLD_MAX_SEC;
     // Bench only (WV_CORE_BENCH tailWhy, 20 October 2026): each condition of this rule, for the triage of the public undercounts.
     const why = (globalThis as any).__WV_CORE_BENCH__?.tailWhy;
@@ -1346,7 +1350,9 @@ function splitOverlongReps(
   const n = durations.length;
   const md = n === 2 ? durations[0] : (n % 2 ? durations[(n - 1) / 2] : (durations[n / 2 - 1] + durations[n / 2]) / 2);
   if (n === 2 && md < SPLIT_TWO_MIN_SEC) return;
-  if (!(md > 0) || durations[0] < SPLIT_REGULAR * md) return;
+  if (!(md > 0)) return;
+  const isRegular = durations[0] >= SPLIT_REGULAR * md;
+  const isDeepRegular = durations[0] >= SPLIT_REGULAR_DEEP * md;
   // Oriented so the working side is positive.
   const o = (a: number) => (restsLow ? a : -a);
   const work = restsLow ? highThreshold : -lowThreshold;
@@ -1392,7 +1398,7 @@ function splitOverlongReps(
     const pieces = k > -1 && timestamps[k] - timestamps[c.enter] >= minPiece && timestamps[c.complete] - timestamps[k] >= minPiece
       && range(c.enter, k) >= minRom && range(k, c.complete) >= minRom;
     // T4: a split whose return fell short of SPLIT_RETURN_SHARE is made when both pieces match the set's rep shape.
-    if (pieces && (bestShare >= SPLIT_RETURN_SHARE || (shape && shapePart('s') && shape.matches(c.enter, k, 'whole') && shape.matches(k, c.complete, 'whole')))) {
+    if (pieces && ((isRegular && bestShare >= SPLIT_RETURN_SHARE) || (isDeepRegular && bestShare >= SPLIT_DEEP_RETURN) || (shape && shapePart('s') && shape.matches(c.enter, k, 'whole') && shape.matches(k, c.complete, 'whole')))) {
       out.push({ enter: c.enter, complete: k }, { enter: k, complete: c.complete });
     } else {
       out.push(c);
