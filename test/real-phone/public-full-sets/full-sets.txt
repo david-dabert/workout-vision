@@ -12,13 +12,13 @@ Selection rule fixed before reading figures: `test/real-phone/public-full-sets/s
 
 ## Primary T2 Subset (S1–S4a: Whole Sets >= 8 Reps, Whole Body Visible >= 70%)
 Deciding sets (non-press): 127 sets — 96 exact (76%), 17 off by 1, 8 off by 2, 6 off by 3+ (counted), 0 refused.
-Right when sure (R16, sure.ts; measured, decides nothing): of 127 sets that decide, 127 counted. With the body check alone (before 19 October 2026), shown as sure 124: 96 exact (77%), 22 off by 1 or 2, 6 off by 3+; asked to confirm 3: 0 exact (0%), 3 off by 1 or 2, 0 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 115: 93 exact (81%), 19 off by 1 or 2, 3 off by 3+; asked to confirm 12: 3 exact (25%), 6 off by 1 or 2, 3 off by 3+.
+Right when sure (R16, sure.ts; measured, decides nothing): of 127 sets that decide, 127 counted. With the body check alone (before 19 October 2026), shown as sure 124: 96 exact (77%), 22 off by 1 or 2, 6 off by 3+; asked to confirm 3: 0 exact (0%), 3 off by 1 or 2, 0 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 116: 93 exact (80%), 20 off by 1 or 2, 3 off by 3+; asked to confirm 11: 3 exact (27%), 5 off by 1 or 2, 3 off by 3+.
 
 | Dataset | Exercise | Guide view | Sets | Exact | Exact % | Off 1 | Off 2 | Off 3+ | Refused | Sure (shipped) | Exact when sure | Sure off 3+ | Asked to confirm |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | mmfit | bicep_curl_alternating | - | 31 | 24 | 77% | 6 | 1 | 0 | 0 | 31 | 24/31 (77%) | 0 | 0 |
 | mmfit | dumbbell_row | - | 19 | 8 | 42% | 6 | 1 | 4 | 0 | 13 | 6/13 (46%) | 2 | 6 |
-| mmfit | lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 24 | 19/24 (79%) | 0 | 5 |
+| mmfit | lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 25 | 19/25 (76%) | 0 | 4 |
 | mmfit | overhead_press (press: measured, decides nothing, PLAN.md) | front | 39 | 25 | 64% | 14 | 0 | 0 | 0 | 35 | 24/35 (69%) | 0 | 4 |
 | mmfit | squat | side | 40 | 40 | 100% | 0 | 0 | 0 | 0 | 40 | 40/40 (100%) | 0 | 0 |
 | repcount | pull_up | front | 3 | 2 | 67% | 0 | 0 | 1 | 0 | 2 | 2/2 (100%) | 0 | 1 |
@@ -29,20 +29,20 @@ Right when sure (R16, sure.ts; measured, decides nothing): of 127 sets that deci
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | bicep_curl_alternating | - | 31 | 24 | 77% | 6 | 1 | 0 | 0 | 31 | 24/31 (77%) | 0 | 0 |
 | dumbbell_row | - | 19 | 8 | 42% | 6 | 1 | 4 | 0 | 13 | 6/13 (46%) | 2 | 6 |
-| lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 24 | 19/24 (79%) | 0 | 5 |
+| lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 25 | 19/25 (76%) | 0 | 4 |
 | overhead_press (press: measured, decides nothing, PLAN.md) | front | 39 | 25 | 64% | 14 | 0 | 0 | 0 | 35 | 24/35 (69%) | 0 | 4 |
 | pull_up | front | 3 | 2 | 67% | 0 | 0 | 1 | 0 | 2 | 2/2 (100%) | 0 | 1 |
 | squat | side | 45 | 42 | 93% | 2 | 0 | 1 | 0 | 45 | 42/45 (93%) | 1 | 0 |
 
 ## All Whole Sets >= 8 Reps Before 70% Whole-Body Visibility Filter (S1–S3)
 Deciding sets (non-press): 141 sets — 100 exact (71%), 20 off by 1, 11 off by 2, 10 off by 3+ (counted), 0 refused.
-Right when sure (R16, sure.ts; measured, decides nothing): of 141 sets that decide, 141 counted. With the body check alone (before 19 October 2026), shown as sure 134: 100 exact (75%), 27 off by 1 or 2, 7 off by 3+; asked to confirm 7: 0 exact (0%), 4 off by 1 or 2, 3 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 123: 97 exact (79%), 23 off by 1 or 2, 3 off by 3+; asked to confirm 18: 3 exact (17%), 8 off by 1 or 2, 7 off by 3+.
+Right when sure (R16, sure.ts; measured, decides nothing): of 141 sets that decide, 141 counted. With the body check alone (before 19 October 2026), shown as sure 134: 100 exact (75%), 27 off by 1 or 2, 7 off by 3+; asked to confirm 7: 0 exact (0%), 4 off by 1 or 2, 3 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 124: 97 exact (78%), 24 off by 1 or 2, 3 off by 3+; asked to confirm 17: 3 exact (18%), 7 off by 1 or 2, 7 off by 3+.
 
 | Dataset | Exercise | Guide view | Sets | Exact | Exact % | Off 1 | Off 2 | Off 3+ | Refused | Sure (shipped) | Exact when sure | Sure off 3+ | Asked to confirm |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | mmfit | bicep_curl_alternating | - | 31 | 24 | 77% | 6 | 1 | 0 | 0 | 31 | 24/31 (77%) | 0 | 0 |
 | mmfit | dumbbell_row | - | 19 | 8 | 42% | 6 | 1 | 4 | 0 | 13 | 6/13 (46%) | 2 | 6 |
-| mmfit | lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 24 | 19/24 (79%) | 0 | 5 |
+| mmfit | lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 25 | 19/25 (76%) | 0 | 4 |
 | mmfit | overhead_press (press: measured, decides nothing, PLAN.md) | front | 39 | 25 | 64% | 14 | 0 | 0 | 0 | 35 | 24/35 (69%) | 0 | 4 |
 | mmfit | squat | side | 40 | 40 | 100% | 0 | 0 | 0 | 0 | 40 | 40/40 (100%) | 0 | 0 |
 | repcount | bench_press (press: measured, decides nothing, PLAN.md) | side | 4 | 0 | 0% | 1 | 1 | 2 | 0 | 0 | 0/0 (0%) | 0 | 4 |
@@ -58,7 +58,7 @@ Right when sure (R16, sure.ts; measured, decides nothing): of 141 sets that deci
 | bicep_curl_alternating | - | 31 | 24 | 77% | 6 | 1 | 0 | 0 | 31 | 24/31 (77%) | 0 | 0 |
 | dumbbell_row | - | 19 | 8 | 42% | 6 | 1 | 4 | 0 | 13 | 6/13 (46%) | 2 | 6 |
 | front_raise | side | 3 | 0 | 0% | 2 | 1 | 0 | 0 | 2 | 0/2 (0%) | 0 | 1 |
-| lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 24 | 19/24 (79%) | 0 | 5 |
+| lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 25 | 19/25 (76%) | 0 | 4 |
 | overhead_press (press: measured, decides nothing, PLAN.md) | front | 39 | 25 | 64% | 14 | 0 | 0 | 0 | 35 | 24/35 (69%) | 0 | 4 |
 | pull_up | front | 8 | 3 | 38% | 1 | 1 | 3 | 0 | 4 | 3/4 (75%) | 0 | 4 |
 | push_up | side | 5 | 2 | 40% | 0 | 1 | 2 | 0 | 3 | 2/3 (67%) | 0 | 2 |
@@ -66,13 +66,13 @@ Right when sure (R16, sure.ts; measured, decides nothing): of 141 sets that deci
 
 ## Strict Guide View Match Subset (S1–S4b: Whole Sets >= 8 Reps + Guide Front/Side Orientation)
 Deciding sets (non-press): 100 sets — 72 exact (72%), 15 off by 1, 8 off by 2, 5 off by 3+ (counted), 0 refused.
-Right when sure (R16, sure.ts; measured, decides nothing): of 100 sets that decide, 100 counted. With the body check alone (before 19 October 2026), shown as sure 97: 72 exact (74%), 20 off by 1 or 2, 5 off by 3+; asked to confirm 3: 0 exact (0%), 3 off by 1 or 2, 0 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 89: 69 exact (78%), 17 off by 1 or 2, 3 off by 3+; asked to confirm 11: 3 exact (27%), 6 off by 1 or 2, 2 off by 3+.
+Right when sure (R16, sure.ts; measured, decides nothing): of 100 sets that decide, 100 counted. With the body check alone (before 19 October 2026), shown as sure 97: 72 exact (74%), 20 off by 1 or 2, 5 off by 3+; asked to confirm 3: 0 exact (0%), 3 off by 1 or 2, 0 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 90: 69 exact (77%), 18 off by 1 or 2, 3 off by 3+; asked to confirm 10: 3 exact (30%), 5 off by 1 or 2, 2 off by 3+.
 
 | Dataset | Exercise | Guide view | Sets | Exact | Exact % | Off 1 | Off 2 | Off 3+ | Refused | Sure (shipped) | Exact when sure | Sure off 3+ | Asked to confirm |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | mmfit | bicep_curl_alternating | - | 31 | 24 | 77% | 6 | 1 | 0 | 0 | 31 | 24/31 (77%) | 0 | 0 |
 | mmfit | dumbbell_row | - | 19 | 8 | 42% | 6 | 1 | 4 | 0 | 13 | 6/13 (46%) | 2 | 6 |
-| mmfit | lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 24 | 19/24 (79%) | 0 | 5 |
+| mmfit | lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 25 | 19/25 (76%) | 0 | 4 |
 | mmfit | overhead_press (press: measured, decides nothing, PLAN.md) | front | 39 | 25 | 64% | 14 | 0 | 0 | 0 | 35 | 24/35 (69%) | 0 | 4 |
 | mmfit | squat | side | 16 | 16 | 100% | 0 | 0 | 0 | 0 | 16 | 16/16 (100%) | 0 | 0 |
 | repcount | pull_up | front | 2 | 2 | 100% | 0 | 0 | 0 | 0 | 2 | 2/2 (100%) | 0 | 0 |
@@ -83,20 +83,20 @@ Right when sure (R16, sure.ts; measured, decides nothing): of 100 sets that deci
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | bicep_curl_alternating | - | 31 | 24 | 77% | 6 | 1 | 0 | 0 | 31 | 24/31 (77%) | 0 | 0 |
 | dumbbell_row | - | 19 | 8 | 42% | 6 | 1 | 4 | 0 | 13 | 6/13 (46%) | 2 | 6 |
-| lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 24 | 19/24 (79%) | 0 | 5 |
+| lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 25 | 19/25 (76%) | 0 | 4 |
 | overhead_press (press: measured, decides nothing, PLAN.md) | front | 39 | 25 | 64% | 14 | 0 | 0 | 0 | 35 | 24/35 (69%) | 0 | 4 |
 | pull_up | front | 2 | 2 | 100% | 0 | 0 | 0 | 0 | 2 | 2/2 (100%) | 0 | 0 |
 | squat | side | 19 | 18 | 95% | 0 | 0 | 1 | 0 | 19 | 18/19 (95%) | 1 | 0 |
 
 ## Reference: All Countable Build Sets of Any Length in RepCount-A + MM-Fit (S1)
 Deciding sets (non-press): 180 sets — 114 exact (63%), 36 off by 1, 13 off by 2, 15 off by 3+ (counted), 2 refused.
-Right when sure (R16, sure.ts; measured, decides nothing): of 180 sets that decide, 178 counted. With the body check alone (before 19 October 2026), shown as sure 163: 114 exact (70%), 38 off by 1 or 2, 11 off by 3+; asked to confirm 15: 0 exact (0%), 11 off by 1 or 2, 4 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 148: 110 exact (74%), 32 off by 1 or 2, 6 off by 3+; asked to confirm 30: 4 exact (13%), 17 off by 1 or 2, 9 off by 3+.
+Right when sure (R16, sure.ts; measured, decides nothing): of 180 sets that decide, 178 counted. With the body check alone (before 19 October 2026), shown as sure 163: 114 exact (70%), 38 off by 1 or 2, 11 off by 3+; asked to confirm 15: 0 exact (0%), 11 off by 1 or 2, 4 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 149: 110 exact (74%), 33 off by 1 or 2, 6 off by 3+; asked to confirm 29: 4 exact (14%), 16 off by 1 or 2, 9 off by 3+.
 
 | Dataset | Exercise | Guide view | Sets | Exact | Exact % | Off 1 | Off 2 | Off 3+ | Refused | Sure (shipped) | Exact when sure | Sure off 3+ | Asked to confirm |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | mmfit | bicep_curl_alternating | - | 31 | 24 | 77% | 6 | 1 | 0 | 0 | 31 | 24/31 (77%) | 0 | 0 |
 | mmfit | dumbbell_row | - | 19 | 8 | 42% | 6 | 1 | 4 | 0 | 13 | 6/13 (46%) | 2 | 6 |
-| mmfit | lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 24 | 19/24 (79%) | 0 | 5 |
+| mmfit | lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 25 | 19/25 (76%) | 0 | 4 |
 | mmfit | overhead_press (press: measured, decides nothing, PLAN.md) | front | 39 | 25 | 64% | 14 | 0 | 0 | 0 | 35 | 24/35 (69%) | 0 | 4 |
 | mmfit | squat | side | 40 | 40 | 100% | 0 | 0 | 0 | 0 | 40 | 40/40 (100%) | 0 | 0 |
 | repcount | bench_press (press: measured, decides nothing, PLAN.md) | side | 18 | 4 | 22% | 1 | 5 | 4 | 4 | 3 | 1/3 (33%) | 1 | 10 |
@@ -112,7 +112,7 @@ Right when sure (R16, sure.ts; measured, decides nothing): of 180 sets that deci
 | bicep_curl_alternating | - | 31 | 24 | 77% | 6 | 1 | 0 | 0 | 31 | 24/31 (77%) | 0 | 0 |
 | dumbbell_row | - | 19 | 8 | 42% | 6 | 1 | 4 | 0 | 13 | 6/13 (46%) | 2 | 6 |
 | front_raise | side | 14 | 4 | 29% | 7 | 1 | 2 | 0 | 11 | 4/11 (36%) | 2 | 3 |
-| lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 24 | 19/24 (79%) | 0 | 5 |
+| lateral_raise | front | 29 | 20 | 69% | 3 | 6 | 0 | 0 | 25 | 19/25 (76%) | 0 | 4 |
 | overhead_press (press: measured, decides nothing, PLAN.md) | front | 39 | 25 | 64% | 14 | 0 | 0 | 0 | 35 | 24/35 (69%) | 0 | 4 |
 | pull_up | front | 14 | 4 | 29% | 5 | 1 | 4 | 0 | 7 | 3/7 (43%) | 1 | 7 |
 | push_up | side | 15 | 5 | 33% | 4 | 2 | 4 | 0 | 8 | 5/8 (63%) | 0 | 7 |

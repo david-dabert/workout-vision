@@ -163,12 +163,11 @@ describe('withBodyCheck', () => {
 // David's sets (R1: his labels, read only), as the calibration of 8 October found them (body-check.txt).
 describe('on David’s real sets', () => {
   const video = (f: string) => { const d = gz(`sets-07oct-video/${f}`); return { d, r: withBodyCheck(withProposal({ ...summarizeCount(d.worldLandmarks, d.timestamps, d.lift), exercise: d.lift, worldLandmarks: d.worldLandmarks, timestamps: d.timestamps, imageLandmarks: d.imageLandmarks }, d.lift), d.lift) as any }; };
-  it('turns the pendulum squat’s silent 14 into a choice between 14 and 7 (labelled 7)', () => {
+  it('counts the pendulum squat exact at 7 with high whole-body agreement', () => {
     const { d, r } = video('pendulum_squat_7.json.gz');
-    expect([d.lift, d.count, r.count]).toEqual(['hack_squat', 7, 14]);
-    expect(r.bodyCheck.flagged).toBe(true);
-    expect(r.bodyCheck.agreement).toBeLessThan(0.2);
-    expect(r.bodyCheck.second.count).toBe(7);
+    expect([d.lift, d.count, r.count]).toEqual(['hack_squat', 7, 7]);
+    expect(r.bodyCheck.flagged).toBe(false);
+    expect(r.bodyCheck.agreement).toBeGreaterThan(0.7);
   });
   it('flags the barbell squats exact by luck, with nothing else to offer', () => {
     for (const f of ['barbell_squat_9_a.json.gz', 'barbell_squat_9_b.json.gz']) {
