@@ -16,6 +16,7 @@ import { decimal, measureGuide, repTable, speedChangeLine } from './report-sheet
 import { MeasureGuide } from './measure-guide';
 import { partialIn, setAverages } from './tempo';
 import RepWave from './RepWave';
+import MovementOptimizationCard from './MovementOptimizationCard';
 import { referenceBand } from '../../lib/reference-ranges';
 import { waveAngles } from './wave';
 import { savedSet } from './saved-set';
@@ -857,6 +858,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       {step === 'saved' && flagged && MEASURES_SHOWN && <p className="res-exp" data-testid="res-doubted">{c.bodyDoubt(jointName(liftDefinition(lift)?.joint, fr))}</p>}
       {/* Under the cells: every measure on this screen (cells, account, table) is experimental (measures.js). */}
       {MEASURES_SHOWN && <p className="res-exp" data-testid="res-exp">{experimentalLabel(fr)}</p>}
+      {step === 'saved' && MEASURES_SHOWN && <MovementOptimizationCard reps={reps} lift={lift} fr={fr} />}
     </div>,
     // The day's table, for a set filmed from a programme: each set with a mark, a weight and a word. Confirmed sets in
     // the measured colour at weight 700; the set on screen "à confirmer"; a typed or corrected set at weight 400 with
