@@ -54,4 +54,53 @@ describe('MovementOptimizationCard component', () => {
     expect(html).toContain('Recommandations hypertrophie');
     expect(html).toContain('Moyenne\u00A0:');
   });
+
+  it('renders sticking point callout and path fidelity when continuous result with angles is provided', () => {
+    const fps = 20;
+    const dt = 1 / fps;
+    const angles = [];
+    const timestamps = [];
+
+    let cur = 0;
+    // 2 reps with a sticking stall on rep 2
+    for (let r = 0; r < 2; r++) {
+      // descent
+      for (let t = 0; t <= 1.5; t += dt) {
+        timestamps.push(cur);
+        angles.push(170 - (t / 1.5) * 90);
+        cur += dt;
+      }
+      if (r === 1) {
+        // sticking stall
+        for (let i = 0; i < 10; i++) {
+          timestamps.push(cur);
+          angles.push(110 + Math.sin(i));
+          cur += dt;
+        }
+      }
+      // ascent
+      for (let t = 0; t <= 1.0; t += dt) {
+        timestamps.push(cur);
+        angles.push(80 + (t / 1.0) * 90);
+        cur += dt;
+      }
+    }
+
+    const mockResult = {
+      count: 2,
+      angles,
+      timestamps,
+      reps: [],
+    };
+
+    const html = renderToStaticMarkup(
+      <MovementOptimizationCard reps={[]} lift="squat" fr={false} result={mockResult} />
+    );
+
+    expect(html).toContain('data-testid="movement-optimization-card"');
+    expect(html).toContain('data-testid="form-fidelity-metric"');
+    expect(html).toContain('Path Fidelity');
+    expect(html).toContain('data-testid="sticking-point-box"');
+    expect(html).toContain('Sticking Point');
+  });
 });
