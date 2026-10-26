@@ -29,4 +29,12 @@ describe('drawSkeleton', () => {
   it('takes no trajectory argument any more', () => {
     expect(drawSkeleton.length).toBe(5);
   });
+
+  it('draws volumetric Gaussian envelopes when volumetric option is enabled', () => {
+    const { ctx, calls } = recorder();
+    drawSkeleton(ctx, lm, box, ['left'], { joint: 'elbow' }, 1, null, { volumetric: true });
+    // In recorder proxy, ctx.createRadialGradient is intercepted and fills are made
+    const fills = calls.filter(c => c[0] === 'fill');
+    expect(fills.length).toBeGreaterThan(12); // standard 12 dots + volumetric bones
+  });
 });

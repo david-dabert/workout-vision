@@ -16,11 +16,62 @@ const FADE = 0.3;
 const alphaOf = v => Math.max(0, Math.min(1, ((v ?? 0) - (SEEN - FADE / 2)) / FADE));
 
 /**
+ * Draws soft volumetric Gaussian Splat ellipsoids along the skeletal bones.
+ * Models each limb segment as a continuous spatial uncertainty envelope.
+ */
+export function drawGaussianVolumetricBones(ctx, lm, box, u = 1) {
+  const at = k => (lm[k] ? [box.ox + lm[k].x * box.w, box.oy + lm[k].y * box.h] : null);
+  const alpha = k => (lm[k] ? alphaOf(lm[k].visibility) : 0);
+
+  ctx.save();
+  for (const [a, b] of BONES) {
+    const ptA = at(a), ptB = at(b);
+    if (!ptA || !ptB) continue;
+    const o = Math.min(alpha(a), alpha(b));
+    if (o <= 0) continue;
+
+    const dx = ptB[0] - ptA[0], dy = ptB[1] - ptA[1];
+    const len = Math.hypot(dx, dy);
+    if (len < 4) continue;
+
+    const midX = (ptA[0] + ptB[0]) / 2, midY = (ptA[1] + ptB[1]) / 2;
+    const angle = Math.atan2(dy, dx);
+    const rx = len / 2 + 3 * u;
+    const ry = (5 + 3 * (1 - o)) * u;
+
+    ctx.save();
+    ctx.translate(midX, midY);
+    ctx.rotate(angle);
+
+    const grad = ctx.createRadialGradient ? ctx.createRadialGradient(0, 0, 1 * u, 0, 0, rx) : null;
+    if (grad) {
+      grad.addColorStop(0, rgba(RGB.bone, o * 0.18));
+      grad.addColorStop(0.7, rgba(RGB.bone, o * 0.06));
+      grad.addColorStop(1, rgba(RGB.void, 0));
+      ctx.fillStyle = grad;
+    } else {
+      ctx.fillStyle = rgba(RGB.bone, o * 0.1);
+    }
+
+    ctx.beginPath();
+    if (typeof ctx.ellipse === 'function') {
+      ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+    } else {
+      ctx.rect(-rx, -ry, rx * 2, ry * 2);
+    }
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
+/**
  * lm: one frame's image landmarks (x, y in 0..1 of the picture); box: where the picture lies,
  * { ox, oy, w, h } in the context's units; u: the width of a line of 1 at the screen's scale;
- * trails: for each lit side, the path its moving end has drawn (replay-smooth.js trailAt), or none.
+ * trails: for each lit side, the path its moving end has drawn (replay-smooth.js trailAt), or none;
+ * options: optional drawing enhancements (e.g. { volumetric: true }).
  */
-export function drawSkeleton(ctx, lm, box, sides, def, u = 1, trails = null) {
+export function drawSkeleton(ctx, lm, box, sides, def, u = 1, trails = null, options = {}) {
   const at = k => [box.ox + lm[k].x * box.w, box.oy + lm[k].y * box.h];
   const alpha = k => (lm[k] ? alphaOf(lm[k].visibility) : 0);
   const line = (pts, width, colour) => {
@@ -29,6 +80,10 @@ export function drawSkeleton(ctx, lm, box, sides, def, u = 1, trails = null) {
   };
   ctx.save();
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+  if (options && options.volumetric) {
+    drawGaussianVolumetricBones(ctx, lm, box, u);
+  }
 
   // The path of the lit limb's end over the last moment, under the bones: a thin gold line that thins and fades
   // with age, so the eye reads the rep's arc.
