@@ -83,8 +83,17 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 1rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.res-opt-disclaimer {
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--c-fg-muted);
+  font-style: italic;
   margin-bottom: 1.25rem;
-  padding-bottom: 1rem;
+  padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--c-rule);
 }
 

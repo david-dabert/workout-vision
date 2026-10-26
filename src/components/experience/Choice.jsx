@@ -18,6 +18,7 @@ import { onHomeScreen } from '../../lib/keep-sets';
 import { InstallRow } from './Install';
 import { pendingIncident, dismissIncident } from '../../lib/crashLog';
 import { CRASH, crashLine } from './crash-copy';
+import FilmExerciseDrawer from './FilmExerciseDrawer';
 import './Choice.css';
 
 // The list of every counted exercise loads after the choice has shown (ExerciseList.jsx).
@@ -93,6 +94,7 @@ function LiftCard({ children, onClick, label, describedBy, cardRef }) {
 export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, onProgramme, onManifesto, onEquine, onSports, onCoaches, onBuddies, onErgonomics, onReference, onChat, onUsage, held = null }) {
   const { lang, tExercise } = useT(), fr = lang === 'fr';
   const railRef = useRef(null), dotsRef = useRef(null), cards = useRef([]);
+  const [catalogOpen, setCatalogOpen] = useState(false);
   // The guide's names load after the choice; until then a set of an exercise without a card is not
   // named, so the welcome never shows an internal key (review of 29 September).
   const [nameOf, setNameOf] = useState(null);
@@ -169,6 +171,11 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
         <button className="row-link press" onClick={onGuide}>
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="4.5" r="2" /><path d="M4.5 9.5L12 8l7.5 1.5" /><path d="M12 8v6" /><path d="M12 14l-3.5 7" /><path d="M12 14l3.5 7" /></svg></span>
           <span className="row-txt"><b>{fr ? 'Un autre exercice' : 'Another exercise'}</b><small>{fr ? 'Trouvez-le par la zone du corps' : 'Find it by body area'}</small></span>
+          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+        </button>
+        <button className="row-link press" onClick={() => setCatalogOpen(true)} data-testid="choice-catalog-search">
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg></span>
+          <span className="row-txt"><b>{fr ? 'Catalogue universel' : 'Universal catalog'}</b><small>{fr ? '1\u00A0200+ variantes, machines et mouvements' : '1,200+ variations, machines and movements'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>
         {/* The fitness tests (fitness-tests.js): a count in 30 seconds, under a published protocol. Each row carries its
@@ -255,6 +262,16 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           {onChat && <button type="button" className="about-link press" onClick={onChat} data-testid="chat-link">{fr ? 'Messagerie (démo)' : 'Messaging (demo)'}</button>}{/* HOME-1: no "P2P"; French awaiting David's approval (R10) */}
         </div>
       </div>
+      {catalogOpen && (
+        <FilmExerciseDrawer
+          currentLift={null}
+          onSelect={key => {
+            setCatalogOpen(false);
+            onChoose(key);
+          }}
+          onClose={() => setCatalogOpen(false)}
+        />
+      )}
     </section>
   </div>;
 }

@@ -52,7 +52,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
         <div className="res-opt-metric">
           <div className="res-opt-metric-head">
             <span className="res-opt-label">
-              {fr ? 'Indice de contrôle & tempo' : 'Control & Tempo Index'}
+              {fr ? 'Contrôle & tempo' : 'Control & Tempo'}
             </span>
             <span className="res-opt-val">{analysis.controlIndex}%</span>
           </div>
@@ -66,6 +66,66 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
             {fr ? `Excentrique\u00A0: ${analysis.averageEccentricSec}s` : `Eccentric: ${analysis.averageEccentricSec}s`}
           </span>
         </div>
+
+        <div className="res-opt-metric">
+          <div className="res-opt-metric-head">
+            <span className="res-opt-label">
+              {fr ? 'Perte de vitesse (VBT)' : 'Velocity Loss (VBT)'}
+            </span>
+            <span className="res-opt-val">{analysis.velocityLossPercent}%</span>
+          </div>
+          <div className="res-opt-bar-track">
+            <div
+              className={`res-opt-bar-fill ${analysis.fatigueTier === 'optimal_hypertrophy' ? 'is-good' : analysis.fatigueTier === 'failure' ? 'is-warn' : 'is-mid'}`}
+              style={{ width: `${Math.min(100, Math.max(10, analysis.velocityLossPercent))}%` }}
+            />
+          </div>
+          <span className="res-opt-sub">
+            {fr
+              ? (analysis.fatigueTier === 'optimal_hypertrophy' ? 'Zone hypertrophie' : analysis.fatigueTier === 'failure' ? 'Échec musculaire' : 'Vitesse / Dynamique')
+              : (analysis.fatigueTier === 'optimal_hypertrophy' ? 'Hypertrophy target' : analysis.fatigueTier === 'failure' ? 'Muscular failure' : 'Speed / Explosive')}
+          </span>
+        </div>
+
+        <div className="res-opt-metric">
+          <div className="res-opt-metric-head">
+            <span className="res-opt-label">
+              {fr ? 'Travail mécanique' : 'Mechanical Work'}
+            </span>
+            <span className="res-opt-val">{analysis.mechanicalWorkKj} kJ</span>
+          </div>
+          <div className="res-opt-bar-track">
+            <div
+              className="res-opt-bar-fill is-good"
+              style={{ width: `${Math.min(100, Math.max(15, analysis.mechanicalWorkKj * 20))}%` }}
+            />
+          </div>
+          <span className="res-opt-sub">
+            {fr ? `Dépense est.\u00A0: ~${analysis.caloriesKcal} kcal*` : `Est. energy: ~${analysis.caloriesKcal} kcal*`}
+          </span>
+        </div>
+
+        <div className="res-opt-metric">
+          <div className="res-opt-metric-head">
+            <span className="res-opt-label">
+              {fr ? 'Temps sous tension (TUT)' : 'Time Under Tension (TUT)'}
+            </span>
+            <span className="res-opt-val">{analysis.timeUnderTensionSec}s</span>
+          </div>
+          <div className="res-opt-bar-track">
+            <div
+              className="res-opt-bar-fill is-mid"
+              style={{ width: `${Math.min(100, Math.max(15, analysis.timeUnderTensionSec * 3))}%` }}
+            />
+          </div>
+          <span className="res-opt-sub">
+            {fr ? `Cadence\u00A0: ${analysis.tempoCadence}` : `Tempo: ${analysis.tempoCadence}`}
+          </span>
+        </div>
+      </div>
+
+      <div className="res-opt-disclaimer">
+        * {fr ? 'Estimation indicative basée sur le travail mécanique de la série.' : 'Indicative estimate based on mechanical work.'}
       </div>
 
       <div className="res-opt-coaching">
