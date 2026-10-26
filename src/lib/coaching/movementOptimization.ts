@@ -414,11 +414,12 @@ export function analyzeContinuousBiomechanics(
   angles: (number | null)[],
   timestamps: number[],
   lift = 'squat',
-  fr = false
+  fr = false,
+  angleUncertainties?: (number | null)[]
 ): MovementOptimizationResult {
   const def = liftDefinition(lift);
   const restType = def?.rest === 'low' ? 'low' : 'high';
-  const decoded = decodeBiomechanicalPhases(angles, timestamps, { restType });
+  const decoded = decodeBiomechanicalPhases(angles, timestamps, { restType, angleUncertainties });
 
   // Map decoded reps to RepDetail for movement optimization
   const reps: RepDetail[] = decoded.reps.map(r => ({

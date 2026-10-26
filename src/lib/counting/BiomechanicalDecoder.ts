@@ -59,14 +59,16 @@ export interface DecoderOptions {
   maxAngularAccelerationDegPerSec2?: number;
   beamWidth?: number;
   restType?: 'low' | 'high';
+  angleUncertainties?: (number | null)[];
 }
 
-const DEFAULT_OPTIONS: Required<DecoderOptions> = {
+const DEFAULT_OPTIONS: Required<Omit<DecoderOptions, 'angleUncertainties'>> & { angleUncertainties?: (number | null)[] } = {
   minRepSec: 0.6,
   minRomDegrees: 25.0,
   maxAngularAccelerationDegPerSec2: 3000.0,
   beamWidth: 5,
   restType: 'high',
+  angleUncertainties: undefined,
 };
 
 // Gaussian log-probability density
@@ -189,33 +191,39 @@ export function decodeBiomechanicalPhases(
   // 3: CONCENTRIC   (x: 0.8 -> 0.1, v < 0 returning to rest)
   // 4: LOCKOUT      (x ~ 0.0, v ~ 0.0 completed rep)
 
+  const uncerts = opts.angleUncertainties;
+
   const emitLogProb = (i: number, state: number): number => {
     const x = normX[i];
     const v = normV[i];
     if (x === null) return -2.5; // neutral likelihood on missing frame
+
+    const uncertDeg = uncerts?.[i];
+    const normUncert = (uncertDeg != null && totalRange > 0) ? Math.min(1.0, uncertDeg / totalRange) : 0;
+    const effStd = (baseStd: number) => Math.sqrt(baseStd * baseStd + normUncert * normUncert);
 
     let pX = 0;
     let pV = 0;
 
     switch (state) {
       case PHASE_SETUP:
-        pX = logGaussian(x, 0.05, 0.18);
+        pX = logGaussian(x, 0.05, effStd(0.18));
         pV = v !== null ? logGaussian(v, 0.0, 0.8) : 0;
         break;
       case PHASE_ECCENTRIC:
-        pX = logGaussian(x, 0.5, 0.35);
+        pX = logGaussian(x, 0.5, effStd(0.35));
         pV = v !== null ? logSigmoid(v / 0.3) : 0;
         break;
       case PHASE_AMORTIZATION:
-        pX = logGaussian(x, 0.95, 0.22);
+        pX = logGaussian(x, 0.95, effStd(0.22));
         pV = v !== null ? logGaussian(v, 0.0, 0.9) : 0;
         break;
       case PHASE_CONCENTRIC:
-        pX = logGaussian(x, 0.5, 0.35);
+        pX = logGaussian(x, 0.5, effStd(0.35));
         pV = v !== null ? logSigmoid(-v / 0.3) : 0;
         break;
       case PHASE_LOCKOUT:
-        pX = logGaussian(x, 0.05, 0.18);
+        pX = logGaussian(x, 0.05, effStd(0.18));
         pV = v !== null ? logGaussian(v, 0.0, 0.8) : 0;
         break;
     }
