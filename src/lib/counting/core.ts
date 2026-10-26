@@ -290,10 +290,76 @@ export const COUNT_AS: Readonly<Record<string, string>> = Object.freeze({
   chin_up: 'pull_up', assisted_chin_up: 'pull_up', weighted_chin_up: 'pull_up',
 });
 
-/** The definition an exercise is counted by: its LIFTS entry, else its parent's (COUNT_AS), else its guide pattern; null if it has none. */
+/**
+ * Kinematic aliasing registry (Move 37 / Kinematic Aliasing architecture):
+ * Maps gym equipment variations across all movement patterns (quads, posterior chain,
+ * push, pull, deltoid/arm isolations, core/spine) to their master biomechanical archetype.
+ * Variations inherit parent joint geometry, rest state, first phase, side rules, and detection calibrations.
+ */
+export const KINEMATIC_ALIASES: Readonly<Record<string, string>> = Object.freeze({
+  // Lower Body — Quad Dominant (Squats & Presses)
+  barbell_squat: 'squat',
+  safety_bar_squat: 'squat',
+  zercher_squat: 'squat',
+  box_squat: 'squat',
+  belt_squat: 'squat',
+  pendulum_squat: 'hack_squat',
+  smith_machine_squat: 'squat',
+  smith_squat: 'squat',
+  side_lunge: 'lunge',
+  horizontal_leg_press: 'leg_press',
+  vertical_leg_press: 'leg_press',
+  single_leg_press: 'leg_press',
+  hack_squat_machine: 'hack_squat',
+
+  // Lower Body — Posterior Chain (Hinges & Isolations)
+  stiff_legged_deadlift: 'romanian_deadlift',
+  stiff_leg_deadlift: 'romanian_deadlift',
+  deficit_deadlift: 'deadlift',
+  barbell_hip_thrust: 'hip_thrust',
+  machine_hip_thrust: 'hip_thrust',
+  standing_leg_curl: 'leg_curl',
+  good_morning: 'romanian_deadlift',
+
+  // Upper Body — Horizontal & Vertical Push
+  wide_grip_bench_press: 'bench_press',
+  cambered_bar_bench_press: 'bench_press',
+  chest_press_machine: 'machine_chest_press',
+  dips: 'dip',
+  tricep_dip: 'dip',
+  seated_barbell_press: 'overhead_press',
+  dumbbell_shoulder_press: 'overhead_press',
+
+  // Upper Body — Horizontal & Vertical Pull
+  wide_grip_pull_up: 'pull_up',
+  neutral_grip_lat_pulldown: 'lat_pulldown',
+  reverse_grip_lat_pulldown: 'lat_pulldown',
+  single_arm_lat_pulldown: 'lat_pulldown',
+  bent_over_row: 'seated_row',
+  dumbbell_row: 'dumbbell_row',
+  seated_cable_row: 'seated_row',
+
+  // Upper Body — Shoulders & Arms Isolations
+  dumbbell_lateral_raise: 'lateral_raise',
+  dumbbell_curl: 'bicep_curl',
+  triceps_pushdown: 'triceps_pushdown',
+  tricep_rope_pushdown: 'triceps_pushdown',
+  straight_bar_pushdown: 'triceps_pushdown',
+  skull_crusher: 'triceps_pushdown',
+  lying_triceps_extension: 'triceps_pushdown',
+  overhead_cable_triceps_extension: 'triceps_pushdown',
+  overhead_dumbbell_extension: 'triceps_pushdown',
+
+  // Core & Spinal Ergonomics
+  captains_chair_leg_raise: 'captains_chair_knee_raise',
+  hyperextension: 'back_extension',
+});
+
+/** The definition an exercise is counted by: its LIFTS entry, else its parent's (COUNT_AS / KINEMATIC_ALIASES), else its guide pattern; null if it has none. */
 export function liftDefinition(key: string): LiftDefinition | null {
   if (Object.hasOwn(LIFTS, key)) return LIFTS[key as Lift];
   if (Object.hasOwn(COUNT_AS, key)) return liftDefinition(COUNT_AS[key]);
+  if (Object.hasOwn(KINEMATIC_ALIASES, key)) return liftDefinition(KINEMATIC_ALIASES[key]);
   if (!Object.hasOwn(PATTERNS, key)) return null;
   const [joint, rest, first, ...more] = PATTERNS[key].split('/') as [Joint, 'high' | 'low', 'concentric' | 'eccentric', ...string[]];
   return {

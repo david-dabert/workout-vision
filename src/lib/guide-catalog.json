@@ -20,7 +20,13 @@
       "DC",
       "developpe couche",
       "dc",
-      "developpe couche barre"
+      "developpe couche barre",
+      "barbell bench press",
+      "cambered bar bench press",
+      "wide grip bench press",
+      "close grip bench press",
+      "developpe couche prise large",
+      "developpe barre cambree"
     ]
   },
   {
@@ -235,7 +241,11 @@
       "shoulder press",
       "ohp",
       "developpe militaire",
-      "developpe barre epaules"
+      "developpe barre epaules",
+      "standing overhead press",
+      "seated barbell press",
+      "developpe assis barre",
+      "dumbbell shoulder press"
     ]
   },
   {
@@ -443,7 +453,11 @@
     "aliases": [
       "deadlift",
       "soulevé de terre",
-      "deadlift"
+      "deadlift",
+      "conventional deadlift",
+      "souleve de terre traditionnel",
+      "deficit deadlift",
+      "souleve de terre en deficit"
     ]
   },
   {
@@ -645,7 +659,13 @@
       "tirage nuque",
       "tirage dos",
       "poulie haute",
-      "tirage poulie haute"
+      "tirage poulie haute",
+      "neutral grip lat pulldown",
+      "tirage vertical prise neutre",
+      "reverse grip lat pulldown",
+      "tirage vertical prise inversee",
+      "single arm lat pulldown",
+      "tirage vertical unilateral"
     ]
   },
   {
@@ -807,7 +827,17 @@
       "squat",
       "squat barre",
       "squat",
-      "back squat"
+      "back squat",
+      "barbell squat",
+      "barbell back squat",
+      "safety bar squat",
+      "zercher squat",
+      "box squat",
+      "belt squat",
+      "low bar squat",
+      "high bar squat",
+      "squat barre basse",
+      "squat barre haute"
     ]
   },
   {
@@ -845,7 +875,11 @@
       "hack squat",
       "hacksquat",
       "squat hack",
-      "machine hack squat"
+      "machine hack squat",
+      "pendulum squat",
+      "squat pendulaire",
+      "pendulum",
+      "hack squat machine"
     ]
   },
   {
@@ -868,7 +902,11 @@
       "presse a cuisses",
       "presse cuisses",
       "legpress",
-      "presse 45"
+      "presse 45",
+      "horizontal leg press",
+      "vertical leg press",
+      "presse a cuisses horizontale",
+      "presse a cuisses verticale"
     ]
   },
   {
@@ -987,7 +1025,9 @@
       "curl de jambe machine",
       "leg curl",
       "ischios machine",
-      "curl jambes"
+      "curl jambes",
+      "standing leg curl",
+      "leg curl debout"
     ]
   },
   {
@@ -1030,7 +1070,8 @@
       "hip thrust barre",
       "hip thrust machine",
       "poussee de hanche",
-      "thrust fessier"
+      "thrust fessier",
+      "machine hip thrust"
     ]
   },
   {
@@ -1247,7 +1288,14 @@
       "tirage triceps",
       "extension poulie",
       "triceps corde",
-      "triceps barre"
+      "triceps barre",
+      "straight bar pushdown",
+      "triceps pushdown",
+      "poussee triceps barre droite",
+      "tricep rope pushdown",
+      "skull crusher",
+      "lying triceps extension",
+      "barre au front"
     ]
   },
   {
@@ -3497,7 +3545,10 @@
       "captains chair knee raise",
       "chaise romaine",
       "chaise romaine abdos",
-      "releve genoux chaise romaine"
+      "releve genoux chaise romaine",
+      "captains chair leg raise",
+      "chaise romaine releve de jambes",
+      "captains chair"
     ]
   },
   {
