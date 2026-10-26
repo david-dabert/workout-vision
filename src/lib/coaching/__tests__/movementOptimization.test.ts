@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { analyzeMovementOptimization, evaluateLiveRepQuality } from '../movementOptimization';
+import {
+  analyzeMovementOptimization,
+  analyzeContinuousBiomechanics,
+  evaluateLiveRepQuality,
+} from '../movementOptimization';
 import { RepDetail } from '../../counting/core';
 
 describe('Movement Optimization & Kinematic Hypertrophy Engine', () => {
@@ -133,5 +137,35 @@ describe('Movement Optimization & Kinematic Hypertrophy Engine', () => {
       expect(badgeFr.labelFr).toContain('Ralentissement');
     });
   });
+
+  describe('Continuous Biomechanics Decoding Integration', () => {
+    it('decodes continuous angles through the BiomechanicalDecoder and evaluates hypertrophy metrics', () => {
+      const fps = 20;
+      const dt = 1 / fps;
+      const timestamps: number[] = [];
+      const angles: number[] = [];
+
+      let cur = 0;
+      // 2 clean squat reps: 170 -> 80 -> 170
+      for (let r = 0; r < 2; r++) {
+        for (let t = 0; t <= 1.5; t += dt) {
+          timestamps.push(cur);
+          angles.push(170 - (t / 1.5) * 90);
+          cur += dt;
+        }
+        for (let t = 0; t <= 1.0; t += dt) {
+          timestamps.push(cur);
+          angles.push(80 + (t / 1.0) * 90);
+          cur += dt;
+        }
+      }
+
+      const result = analyzeContinuousBiomechanics(angles, timestamps, 'squat', false);
+      expect(result.romScore).toBeGreaterThanOrEqual(90);
+      expect(result.repVelocityProfiles.length).toBe(2);
+      expect(result.coachingPoints.length).toBe(3);
+    });
+  });
 });
+
 
