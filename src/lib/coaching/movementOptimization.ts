@@ -17,6 +17,12 @@ export interface MovementOptimizationResult {
   averageRomDeg: number;       // degrees
   averageEccentricSec: number; // seconds
   averageConcentricSec: number;// seconds
+  velocityLossPercent: number; // 0 - 100 %
+  fatigueTier: 'speed' | 'optimal_hypertrophy' | 'failure';
+  mechanicalWorkKj: number;    // kJ
+  caloriesKcal: number;        // kcal (indicative estimate per R8)
+  timeUnderTensionSec: number; // seconds
+  tempoCadence: string;        // e.g. "2-0-1"
   formBadge: FormBadge;
   coachingPoints: string[];
 }
@@ -35,6 +41,24 @@ const ARCHETYPE_ROM_TARGETS: Record<KinematicArchetype, number> = {
   push: 75,       // elbow excursion on presses/dips
   pull: 80,       // elbow excursion on pulldowns/pull-ups/rows
   isolation: 80,  // curl, pushdown, lateral raise excursion
+};
+
+// Effective displaced mass (kg) for physics-based mechanical work estimation
+const ARCHETYPE_DISPLACED_MASS_KG: Record<KinematicArchetype, number> = {
+  squat: 66,      // ~88% of 75kg standard reference adult mass
+  hinge: 50,      // ~67% of bodyweight + bar travel
+  push: 52,       // ~68% of bodyweight (push-up) or standard working press resistance
+  pull: 70,       // ~93% for pull-up / pulldown working resistance
+  isolation: 15,  // standard dumbbell / cable isolation effective resistance
+};
+
+// Reference vertical travel distance (meters) at 100% target ROM
+const ARCHETYPE_DISPLACEMENT_METERS: Record<KinematicArchetype, number> = {
+  squat: 0.45,
+  hinge: 0.40,
+  push: 0.35,
+  pull: 0.40,
+  isolation: 0.30,
 };
 
 // Target eccentric time (seconds) for controlled hypertrophic tempo
@@ -60,6 +84,12 @@ export function analyzeMovementOptimization(
       averageRomDeg: 0,
       averageEccentricSec: 0,
       averageConcentricSec: 0,
+      velocityLossPercent: 0,
+      fatigueTier: 'speed',
+      mechanicalWorkKj: 0,
+      caloriesKcal: 0,
+      timeUnderTensionSec: 0,
+      tempoCadence: '0-0-0',
       formBadge: {
         id: 'GOOD_FORM',
         label: 'Awaiting Reps',
@@ -100,7 +130,50 @@ export function analyzeMovementOptimization(
     controlScore = Math.round(50 + ((avgEccentric - MIN_CONTROLLED_ECCENTRIC_SEC) / (TARGET_ECCENTRIC_SEC - MIN_CONTROLLED_ECCENTRIC_SEC)) * 35);
   }
 
-  // 3. Determine Form Quality Badge
+  // 3. Velocity Loss (%) & VBT Hypertrophic Fatigue Index
+  const concTimes = wholeReps.map(r => r.concentricSec || 0).filter(t => t > 0);
+  let velocityLossPercent = 0;
+  let fatigueTier: 'speed' | 'optimal_hypertrophy' | 'failure' = 'speed';
+
+  if (concTimes.length >= 2) {
+    const minConc = Math.min(...concTimes);
+    const lastConc = concTimes[concTimes.length - 1];
+    velocityLossPercent = Math.max(0, Math.min(100, Math.round(((lastConc - minConc) / lastConc) * 100)));
+    if (velocityLossPercent >= 35) {
+      fatigueTier = 'failure';
+    } else if (velocityLossPercent >= 20) {
+      fatigueTier = 'optimal_hypertrophy';
+    } else {
+      fatigueTier = 'speed';
+    }
+  }
+
+  // 4. Physics-based Mechanical Work (kJ) & Caloric Expenditure (kcal)
+  const refMass = ARCHETYPE_DISPLACED_MASS_KG[archetype] || 50;
+  const refDisp = ARCHETYPE_DISPLACEMENT_METERS[archetype] || 0.40;
+  const g = 9.81; // m/s²
+
+  // Sum mechanical work across each rep based on its excursion
+  const totalWorkJoules = wholeReps.reduce((sum, r) => {
+    const repRom = r.romDegrees || avgRom;
+    const disp = refDisp * Math.max(0.3, Math.min(1.5, repRom / targetRom));
+    const repJoules = refMass * g * disp;
+    return sum + repJoules;
+  }, 0);
+
+  const mechanicalWorkKj = Math.round((totalWorkJoules / 1000) * 10) / 10;
+  // Metabolic energy: skeletal muscle efficiency ~0.22, eccentric phase factor ~1.25, 4184 Joules/kcal
+  const caloriesKcal = Math.round(((totalWorkJoules * 1.25) / (0.22 * 4184)) * 10) / 10;
+
+  // 5. Time Under Tension (TUT) and Tempo Cadence
+  const tutSum = wholeReps.reduce((sum, r) => sum + Math.max(0, (r.endTime || 0) - (r.startTime || 0)), 0);
+  const timeUnderTensionSec = tutSum > 0
+    ? Math.round(tutSum * 10) / 10
+    : Math.round(validTimed.reduce((sum, r) => sum + (r.eccentricSec || 0) + (r.concentricSec || 0), 0) * 10) / 10;
+
+  const tempoCadence = `${Math.max(1, Math.round(avgEccentric))}-0-${Math.max(1, Math.round(avgConcentric))}`;
+
+  // 6. Determine Form Quality Badge
   let formBadge: FormBadge;
   if (avgEccentric < MIN_CONTROLLED_ECCENTRIC_SEC) {
     formBadge = {
@@ -139,7 +212,7 @@ export function analyzeMovementOptimization(
     };
   }
 
-  // 4. Construct 2–3 Actionable Hypertrophy Coaching Points
+  // 7. Construct 2–3 Actionable Hypertrophy Coaching Points
   const coachingPoints: string[] = [];
   const exercise = getExercise(lift);
 
@@ -158,8 +231,26 @@ export function analyzeMovementOptimization(
     );
   }
 
-  // Point 2: Tempo and momentum control
-  if (avgEccentric >= 1.8) {
+  // Point 2: Velocity Loss & Fatigue Analysis
+  if (fatigueTier === 'optimal_hypertrophy') {
+    coachingPoints.push(
+      fr
+        ? `Perte de vitesse de ${velocityLossPercent}%\u00A0: zone idéale d’hypertrophie mécanique sans épuisement nerveux excessif.`
+        : `Velocity loss of ${velocityLossPercent}%: optimal hypertrophy stimulus with high motor unit recruitment.`
+    );
+  } else if (fatigueTier === 'failure') {
+    coachingPoints.push(
+      fr
+        ? `Perte de vitesse de ${velocityLossPercent}%\u00A0: échec musculaire atteint. Accordez 2 à 3 minutes de repos complet avant la prochaine série.`
+        : `Velocity loss of ${velocityLossPercent}%: muscular failure reached. Allow 2–3 minutes of complete rest before your next set.`
+    );
+  } else if (velocityLossPercent > 0) {
+    coachingPoints.push(
+      fr
+        ? `Perte de vitesse modérée (${velocityLossPercent}%)\u00A0: série dynamique. Pour stimuler l’hypertrophie, rapprochez-vous de l’échec.`
+        : `Moderate velocity loss (${velocityLossPercent}%): explosive or warmup set. Train closer to failure for maximal muscle growth.`
+    );
+  } else if (avgEccentric >= 1.8) {
     coachingPoints.push(
       fr
         ? `Phase excentrique de ${avgEccentric.toFixed(1)}s bien contrôlée\u00A0: suppression totale de l'élan et tension mécanique continue.`
@@ -199,6 +290,12 @@ export function analyzeMovementOptimization(
     averageRomDeg: Math.round(avgRom * 10) / 10,
     averageEccentricSec: Math.round(avgEccentric * 10) / 10,
     averageConcentricSec: Math.round(avgConcentric * 10) / 10,
+    velocityLossPercent,
+    fatigueTier,
+    mechanicalWorkKj,
+    caloriesKcal,
+    timeUnderTensionSec,
+    tempoCadence,
     formBadge,
     coachingPoints: coachingPoints.slice(0, 3),
   };

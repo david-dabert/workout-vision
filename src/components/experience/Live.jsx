@@ -8,7 +8,7 @@ import { openCamera, closeCamera, cameraProblem, canOpenCamera } from '../../lib
 import { voiceWanted, setVoiceWanted, canSpeak, unlockSpeech, say, buzz, hush } from '../../lib/liveVoice';
 import { holdScreenAwake } from '../../lib/interruption';
 import { drawSkeleton, litSides } from './replay-draw';
-import { playLockoutCue } from '../../lib/audioCueEngine';
+import { playLockoutCue, playVelocityLossAlert } from '../../lib/audioCueEngine';
 import { evaluateLiveRepQuality } from '../../lib/coaching/movementOptimization';
 import './MovementOptimization.css';
 import './Live.css';
@@ -60,7 +60,7 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
   const [voice, setVoice] = useState(voiceWanted);
   const [speaks, setSpeaks] = useState(() => canSpeak(lang));
   const stateRef = useRef(state); stateRef.current = state;
-  const shown = useRef(null), previews = useRef(0);
+  const shown = useRef(null), previews = useRef(0), lastRepTimestamp = useRef(0), fastestRepDuration = useRef(Infinity);
   const doneRef = useRef(onDone); doneRef.current = onDone;
   const startRef = useRef(onStart); startRef.current = onStart;
   const voiceRef = useRef(voice); voiceRef.current = voice;
@@ -113,7 +113,25 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
       onPreview: ({ body: b, ms }) => { setBody(b); previews.current += 1; if (previews.current >= SPEED_SAMPLES) setSlow(ms > SLOW_MS); },
       onCount: c => { setLive(c); shown.current = nextShown(shown.current, c.count); },
       onRep: n => {
-        playLockoutCue();
+        const repNow = performance.now();
+        let velocitySlowed = false;
+        if (lastRepTimestamp.current > 0) {
+          const repDuration = (repNow - lastRepTimestamp.current) / 1000;
+          if (repDuration >= 0.6 && repDuration <= 10.0) {
+            if (repDuration < fastestRepDuration.current) {
+              fastestRepDuration.current = repDuration;
+            } else if (fastestRepDuration.current < Infinity && repDuration > fastestRepDuration.current * 1.35) {
+              velocitySlowed = true;
+            }
+          }
+        }
+        lastRepTimestamp.current = repNow;
+
+        if (velocitySlowed) {
+          playVelocityLossAlert();
+        } else {
+          playLockoutCue();
+        }
         buzz();
         if (voiceRef.current) say(n, lang);
         if (!REDUCED()) setPulse(p => p + 1);
@@ -175,6 +193,8 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
   function start() {
     if (voiceRef.current) unlockSpeech(lang);
     shown.current = null;
+    lastRepTimestamp.current = 0;
+    fastestRepDuration.current = Infinity;
     setLive({ count: null, inView: true });
     setLiveBadge(null);
     wake.current = holdScreenAwake();
@@ -187,6 +207,8 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
         buzz();
         if (rest === 0) {
           if (voiceRef.current) say(fr ? 'C’est parti !' : 'Go!', lang);
+          lastRepTimestamp.current = performance.now();
+          fastestRepDuration.current = Infinity;
           engine.current?.startSet();
           startRef.current();
           setState('running');
