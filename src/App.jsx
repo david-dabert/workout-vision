@@ -207,7 +207,7 @@ function AppInner() {
   let key, screen;
   if (page === 'film' && selectedLift) {
     key = `film:${selectedLift}`;
-    screen = <ExperienceFilm lift={selectedLift} hero={transitionPage === 'film'} onBack={backToChoice} onFile={f => { track('film_start', { lift: selectedLift }); go('analyze', () => { fileSerial.current += 1; setVideoFile(f); }); }}
+    screen = <ExperienceFilm lift={selectedLift} onChangeLift={setSelectedLift} hero={transitionPage === 'film'} onBack={backToChoice} onFile={f => { track('film_start', { lift: selectedLift }); go('analyze', () => { fileSerial.current += 1; setVideoFile(f); }); }}
       onLive={liveBuild() ? () => { track('film_start', { lift: selectedLift }); go('live', () => { fileSerial.current += 1; }); } : undefined} />;
   } else if (page === 'live' && selectedLift && liveBuild()) {
     key = `live:${fileSerial.current}`;
