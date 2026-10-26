@@ -150,7 +150,7 @@ export default defineConfig({
   },
   test: {
     // Agents' worktrees (.claude/) hold other checkouts: a local run tests this one only, as CI does (audit of 3 October).
-    exclude: ['e2e/**', 'node_modules/**', '.claude/**', '.git/**'],
+    exclude: ['e2e/**', 'node_modules/**', '**/node_modules/**', 'workout-vision-edit/**', '.claude/**', '.git/**'],
   },
   build: {
     assetsInlineLimit: 0, // Fonts remain same-origin files under font-src 'self'.

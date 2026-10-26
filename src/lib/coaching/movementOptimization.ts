@@ -8,7 +8,8 @@
  * 4. Post-Set Coaching Summary: 2–3 actionable points for maximum hypertrophic stimulus.
  */
 
-import { RepDetail } from '../counting/core';
+import { RepDetail, liftDefinition } from '../counting/core';
+import { decodeBiomechanicalPhases } from '../counting/BiomechanicalDecoder';
 import { getExercise, getKinematicArchetype, KinematicArchetype } from '../exercises/index';
 
 export interface RepVelocityProfile {
@@ -405,3 +406,32 @@ export function evaluateLiveRepQuality(
     severity: 'neutral',
   };
 }
+
+/**
+ * Analyzes continuous biomechanical angles directly using the BiomechanicalDecoder.
+ */
+export function analyzeContinuousBiomechanics(
+  angles: (number | null)[],
+  timestamps: number[],
+  lift = 'squat',
+  fr = false
+): MovementOptimizationResult {
+  const def = liftDefinition(lift);
+  const restType = def?.rest === 'low' ? 'low' : 'high';
+  const decoded = decodeBiomechanicalPhases(angles, timestamps, { restType });
+
+  // Map decoded reps to RepDetail for movement optimization
+  const reps: RepDetail[] = decoded.reps.map(r => ({
+    index: r.repIndex,
+    startTime: r.startTime,
+    endTime: r.endTime,
+    concentricSec: r.concentricSec,
+    eccentricSec: r.eccentricSec,
+    romDegrees: r.romDegrees,
+    peakSpeed: r.peakVelocityDegPerSec,
+    meanSpeed: r.meanVelocityDegPerSec,
+  }));
+
+  return analyzeMovementOptimization(reps, lift, fr);
+}
+
