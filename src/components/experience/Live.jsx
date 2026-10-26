@@ -7,7 +7,7 @@ import { nextShown, shownForResult } from '../../lib/liveCounter';
 import { openCamera, closeCamera, cameraProblem, canOpenCamera } from '../../lib/liveCamera';
 import { voiceWanted, setVoiceWanted, canSpeak, unlockSpeech, say, buzz, hush } from '../../lib/liveVoice';
 import { holdScreenAwake } from '../../lib/interruption';
-import { drawSkeleton, litSides } from './replay-draw';
+import { drawSkeleton, litSides, trailPoints } from './replay-draw';
 import { playLockoutCue, playVelocityLossAlert } from '../../lib/audioCueEngine';
 import { evaluateLiveRepQuality } from '../../lib/coaching/movementOptimization';
 import './MovementOptimization.css';
@@ -92,6 +92,10 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
   useEffect(() => {
     // The side a one-arm set is counted on is known only once it is counted (core.ts): both are lit live.
     const sides = litSides(def, 'both');
+    const trailIdxs = trailPoints(def, sides);
+    const trailBuf = new Map();
+    trailIdxs.forEach(idx => trailBuf.set(idx, []));
+
     const draw = (lm, w, h) => {
       const canvas = canvasRef.current, video = videoRef.current;
       if (!canvas || !video) return;
@@ -105,7 +109,24 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
       if (!lm) return;
       // The picture fills its box as object-fit: cover places it.
       const s = Math.max(cw / w, ch / h);
-      drawSkeleton(ctx, lm, { ox: (cw - w * s) / 2, oy: (ch - h * s) / 2, w: w * s, h: h * s }, sides, def);
+      const box = { ox: (cw - w * s) / 2, oy: (ch - h * s) / 2, w: w * s, h: h * s };
+
+      // Update live landmark trails for ghosting trajectory (600ms rolling window)
+      const now = performance.now();
+      const trails = [];
+      for (const idx of trailIdxs) {
+        let pts = trailBuf.get(idx) || [];
+        if (lm[idx] && (lm[idx].visibility ?? 0) > 0.3) {
+          pts.push({ x: lm[idx].x, y: lm[idx].y, t: now });
+        }
+        const freshPts = pts.filter(p => now - p.t <= 600);
+        trailBuf.set(idx, freshPts);
+        if (freshPts.length >= 2) {
+          trails.push(freshPts.map(p => ({ x: p.x, y: p.y, age: (now - p.t) / 600 })));
+        }
+      }
+
+      drawSkeleton(ctx, lm, box, sides, def, 1, trails);
     };
     const e = createLiveEngine({
       lift, video: videoRef.current,
@@ -115,8 +136,9 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
       onRep: n => {
         const repNow = performance.now();
         let velocitySlowed = false;
+        let repDuration = 0;
         if (lastRepTimestamp.current > 0) {
-          const repDuration = (repNow - lastRepTimestamp.current) / 1000;
+          repDuration = (repNow - lastRepTimestamp.current) / 1000;
           if (repDuration >= 0.6 && repDuration <= 10.0) {
             if (repDuration < fastestRepDuration.current) {
               fastestRepDuration.current = repDuration;
@@ -135,7 +157,7 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
         buzz();
         if (voiceRef.current) say(n, lang);
         if (!REDUCED()) setPulse(p => p + 1);
-        setLiveBadge(evaluateLiveRepQuality(85, 2.0, lift, fr));
+        setLiveBadge(evaluateLiveRepQuality(85, repDuration > 0 ? repDuration * 0.6 : 2.0, lift, fr, velocitySlowed));
       },
       onSlow: () => giveUp('slow'),
       onFull: () => finish(),

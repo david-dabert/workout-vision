@@ -128,6 +128,40 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
         * {fr ? 'Estimation indicative basée sur le travail mécanique de la série.' : 'Indicative estimate based on mechanical work.'}
       </div>
 
+      {analysis.repVelocityProfiles && analysis.repVelocityProfiles.length > 0 && (
+        <div className="res-opt-vbt-section" data-testid="vbt-profile-strip">
+          <div className="res-opt-vbt-header">
+            <h4 className="res-opt-subtitle">
+              {fr ? 'Profil de Vitesse par Répétition (VBT)' : 'Rep-by-Rep Velocity Profile (VBT)'}
+            </h4>
+            <span className="res-opt-vbt-legend">
+              {fr ? 'Ralentissement vs rep la plus rapide' : 'Deceleration vs fastest rep'}
+            </span>
+          </div>
+
+          <div className="res-opt-vbt-strip">
+            {analysis.repVelocityProfiles.map(p => (
+              <div key={p.repIndex} className={`res-opt-vbt-rep is-${p.tier}`} data-testid={`vbt-rep-${p.repIndex}`}>
+                <div className="res-opt-vbt-rep-head">
+                  <span className="res-opt-vbt-num">R{p.repIndex}</span>
+                  <span className="res-opt-vbt-loss">{p.velocityLossPercent}%</span>
+                </div>
+                <div className="res-opt-vbt-bar-track">
+                  <div
+                    className={`res-opt-vbt-bar-fill is-${p.tier}`}
+                    style={{ width: `${Math.max(12, Math.min(100, p.velocityLossPercent))}%` }}
+                  />
+                </div>
+                <div className="res-opt-vbt-rep-times">
+                  <span>{p.concentricSec > 0 ? `${p.concentricSec}s` : '—'}</span>
+                  <span>{p.romDegrees > 0 ? `${Math.round(p.romDegrees)}°` : ''}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="res-opt-coaching">
         <h4 className="res-opt-subtitle">
           {fr ? 'Recommandations hypertrophie' : 'Hypertrophic Stimulus Cues'}

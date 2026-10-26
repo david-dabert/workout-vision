@@ -101,6 +101,10 @@ describe('Movement Optimization & Kinematic Hypertrophy Engine', () => {
     expect(result.caloriesKcal).toBeGreaterThan(0.5);
     expect(result.timeUnderTensionSec).toBeCloseTo(10.5, 1);
     expect(result.tempoCadence).toBe('2-0-1');
+    expect(result.repVelocityProfiles.length).toBe(3);
+    expect(result.repVelocityProfiles[0].repIndex).toBe(1);
+    expect(result.repVelocityProfiles[0].concentricSec).toBe(1.2);
+    expect(result.repVelocityProfiles[0].eccentricSec).toBe(2.3);
   });
 
   describe('Live rep quality evaluation', () => {
@@ -118,5 +122,16 @@ describe('Movement Optimization & Kinematic Hypertrophy Engine', () => {
       const badge = evaluateLiveRepQuality(45, 1.8, 'squat', false);
       expect(badge.id).toBe('PARTIAL_RANGE');
     });
+
+    it('flags velocity loss when rep decelerates significantly', () => {
+      const badgeEn = evaluateLiveRepQuality(85, 2.0, 'squat', false, true);
+      expect(badgeEn.id).toBe('VELOCITY_LOSS');
+      expect(badgeEn.label).toContain('Deceleration');
+
+      const badgeFr = evaluateLiveRepQuality(85, 2.0, 'squat', true, true);
+      expect(badgeFr.id).toBe('VELOCITY_LOSS');
+      expect(badgeFr.labelFr).toContain('Ralentissement');
+    });
   });
 });
+
