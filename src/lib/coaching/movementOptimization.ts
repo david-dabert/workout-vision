@@ -11,6 +11,8 @@
 import { RepDetail, liftDefinition } from '../counting/core';
 import { decodeBiomechanicalPhases } from '../counting/BiomechanicalDecoder';
 import { getExercise, getKinematicArchetype, KinematicArchetype } from '../exercises/index';
+import { alignKineticTrajectory, getCanonicalTemplate } from '../counting/KineticForcedAligner';
+import { synchronizeRepetitionsWithAudio } from '../counting/AudioKinematicSync';
 
 export interface RepVelocityProfile {
   repIndex: number;
@@ -37,6 +39,9 @@ export interface MovementOptimizationResult {
   repVelocityProfiles: RepVelocityProfile[];
   formBadge: FormBadge;
   coachingPoints: string[];
+  stickingPointSummary?: string | null;
+  formDistortionScore?: number | null;
+  audioSyncConfidence?: number | null;
 }
 
 export interface FormBadge {
@@ -415,7 +420,11 @@ export function analyzeContinuousBiomechanics(
   timestamps: number[],
   lift = 'squat',
   fr = false,
-  angleUncertainties?: (number | null)[]
+  angleUncertainties?: (number | null)[],
+  audioOptions?: {
+    audioSamples?: Float32Array;
+    sampleRate?: number;
+  }
 ): MovementOptimizationResult {
   const def = liftDefinition(lift);
   const restType = def?.rest === 'low' ? 'low' : 'high';
@@ -433,6 +442,110 @@ export function analyzeContinuousBiomechanics(
     meanSpeed: r.meanVelocityDegPerSec,
   }));
 
-  return analyzeMovementOptimization(reps, lift, fr);
+  const baseResult = analyzeMovementOptimization(reps, lift, fr);
+
+  // Helper to map time to frame index
+  function timeToFrame(time: number): number {
+    if (timestamps.length === 0) return 0;
+    let closestIdx = 0;
+    let minDiff = Infinity;
+    for (let i = 0; i < timestamps.length; i++) {
+      const diff = Math.abs(timestamps[i] - time);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestIdx = i;
+      }
+    }
+    return closestIdx;
+  }
+
+  // Kinetic Forced Alignment per repetition
+  let totalDistortion = 0;
+  let repCountWithTrajectory = 0;
+  let mostSevereSticking: { angle: number; severity: 'mild' | 'moderate' | 'severe' } | null = null;
+
+  const template = getCanonicalTemplate(lift);
+
+  for (const r of decoded.reps) {
+    const startFrame = timeToFrame(r.startTime);
+    const endFrame = timeToFrame(r.endTime);
+
+    if (startFrame < endFrame && endFrame < angles.length) {
+      const slice: number[] = [];
+      for (let f = startFrame; f <= endFrame; f++) {
+        const val = angles[f];
+        if (val !== null && !isNaN(val)) {
+          slice.push(val);
+        }
+      }
+
+      if (slice.length >= 4) {
+        const alignment = alignKineticTrajectory(slice, template, {
+          expectedDirection: def?.rest === 'low' ? 'ascent_first' : 'descent_first',
+        });
+        totalDistortion += alignment.normalizedDistance;
+        repCountWithTrajectory++;
+
+        if (alignment.stickingPoint) {
+          if (!mostSevereSticking || alignment.stickingPoint.severity === 'severe') {
+            mostSevereSticking = {
+              angle: alignment.stickingPoint.normalizedAngle,
+              severity: alignment.stickingPoint.severity,
+            };
+          }
+        }
+      }
+    }
+  }
+
+  const formDistortionScore = repCountWithTrajectory > 0
+    ? Math.round((totalDistortion / repCountWithTrajectory) * 1000) / 1000
+    : null;
+
+  let stickingPointSummary: string | null = null;
+  if (mostSevereSticking) {
+    const anglePct = Math.round(mostSevereSticking.angle * 100);
+    if (fr) {
+      stickingPointSummary = `Point de blocage détecté à ${anglePct}\u00A0% d'amplitude\u00A0: maintenez l'accélération dans la transition.`;
+    } else {
+      stickingPointSummary = `Sticking point detected at ${anglePct}% ROM: focus on explosive acceleration through the transition.`;
+    }
+
+    if (!baseResult.coachingPoints.includes(stickingPointSummary)) {
+      baseResult.coachingPoints.push(stickingPointSummary);
+    }
+  }
+
+  // Multimodal Audio Synchronization if audio track is provided
+  let audioSyncConfidence: number | null = null;
+  if (audioOptions?.audioSamples && audioOptions.sampleRate && decoded.reps.length > 0) {
+    const visualInflections = decoded.reps.map(r => timeToFrame(r.turnaroundTime));
+    // Estimate fps from timestamps
+    let fps = 30;
+    if (timestamps.length >= 2) {
+      const dt = (timestamps[timestamps.length - 1] - timestamps[0]) / (timestamps.length - 1);
+      if (dt > 0) fps = Math.round(1 / dt);
+    }
+
+    const syncResults = synchronizeRepetitionsWithAudio(
+      visualInflections,
+      fps,
+      audioOptions.audioSamples,
+      audioOptions.sampleRate
+    );
+
+    const validConfidences = syncResults.map(s => s.syncConfidence);
+    if (validConfidences.length > 0) {
+      const avgConf = validConfidences.reduce((a, b) => a + b, 0) / validConfidences.length;
+      audioSyncConfidence = Math.round(avgConf * 100) / 100;
+    }
+  }
+
+  return {
+    ...baseResult,
+    stickingPointSummary,
+    formDistortionScore,
+    audioSyncConfidence,
+  };
 }
 
