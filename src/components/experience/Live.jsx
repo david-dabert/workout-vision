@@ -9,6 +9,8 @@ import { voiceWanted, setVoiceWanted, canSpeak, unlockSpeech, say, buzz, hush } 
 import { holdScreenAwake } from '../../lib/interruption';
 import { drawSkeleton, litSides } from './replay-draw';
 import { playLockoutCue } from '../../lib/audioCueEngine';
+import { evaluateLiveRepQuality } from '../../lib/coaching/movementOptimization';
+import './MovementOptimization.css';
 import './Live.css';
 
 /** The countdown before a live set, in seconds: time to step back from the phone. Status: convention (UNSOURCED). */
@@ -54,6 +56,7 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
   const [left, setLeft] = useState(COUNTDOWN_SEC);
   const [live, setLive] = useState({ count: null, inView: true });
   const [pulse, setPulse] = useState(0);
+  const [liveBadge, setLiveBadge] = useState(null);
   const [voice, setVoice] = useState(voiceWanted);
   const [speaks, setSpeaks] = useState(() => canSpeak(lang));
   const stateRef = useRef(state); stateRef.current = state;
@@ -114,6 +117,7 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
         buzz();
         if (voiceRef.current) say(n, lang);
         if (!REDUCED()) setPulse(p => p + 1);
+        setLiveBadge(evaluateLiveRepQuality(85, 2.0, lift, fr));
       },
       onSlow: () => giveUp('slow'),
       onFull: () => finish(),
@@ -172,6 +176,7 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
     if (voiceRef.current) unlockSpeech(lang);
     shown.current = null;
     setLive({ count: null, inView: true });
+    setLiveBadge(null);
     wake.current = holdScreenAwake();
     setState('countdown');
     setLeft(COUNTDOWN_SEC);
@@ -275,6 +280,7 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
                 <span className={`numeral live-n${pulse ? ' is-pulse' : ''}`} key={pulse}>{live.count}</span>
                 <span className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (one ? 'Rep' : 'Reps')}</span>
                 <span className="live-sub">{fr ? 'Compte provisoire' : 'Provisional count'}</span>
+                {liveBadge && <span className={`live-badge is-${liveBadge.severity}`} data-testid="live-form-badge">{fr ? liveBadge.labelFr : liveBadge.label}</span>}
               </div>
               : <div className="live-away" data-testid="live-hint">
                 <p className="live-hint-title">{live.inView ? (fr ? 'C’est parti' : 'Go') : (fr ? 'Revenez dans le cadre' : 'Step back into the frame')}</p>
