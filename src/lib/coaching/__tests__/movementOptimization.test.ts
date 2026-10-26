@@ -62,9 +62,9 @@ describe('Movement Optimization & Kinematic Hypertrophy Engine', () => {
   it('calculates velocity loss and classifies fatigue tier correctly', () => {
     // Rep 1: 1.0s conc (fastest); Rep 2: 1.2s; Rep 3: 1.5s (fatigued) -> (1.5 - 1.0)/1.5 = 33% (optimal_hypertrophy)
     const hypertrophyReps: RepDetail[] = [
-      { index: 1, startTime: 0, endTime: 3.5, concentricSec: 1.0, eccentricSec: 2.5, romDegrees: 85 },
-      { index: 2, startTime: 4, endTime: 7.7, concentricSec: 1.2, eccentricSec: 2.5, romDegrees: 85 },
-      { index: 3, startTime: 8, endTime: 12.0, concentricSec: 1.5, eccentricSec: 2.5, romDegrees: 85 },
+      { index: 1, startTime: 0, endTime: 3.5, concentricSec: 1.0, eccentricSec: 2.5, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
+      { index: 2, startTime: 4, endTime: 7.7, concentricSec: 1.2, eccentricSec: 2.5, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
+      { index: 3, startTime: 8, endTime: 12.0, concentricSec: 1.5, eccentricSec: 2.5, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
     ];
     const hypResult = analyzeMovementOptimization(hypertrophyReps, 'squat', false);
     expect(hypResult.velocityLossPercent).toBe(33);
@@ -72,8 +72,8 @@ describe('Movement Optimization & Kinematic Hypertrophy Engine', () => {
 
     // Reps with severe fatigue (>35% velocity loss): 1.0s -> 2.0s = 50%
     const failureReps: RepDetail[] = [
-      { index: 1, startTime: 0, endTime: 3.5, concentricSec: 1.0, eccentricSec: 2.5, romDegrees: 85 },
-      { index: 2, startTime: 4, endTime: 8.5, concentricSec: 2.0, eccentricSec: 2.5, romDegrees: 85 },
+      { index: 1, startTime: 0, endTime: 3.5, concentricSec: 1.0, eccentricSec: 2.5, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
+      { index: 2, startTime: 4, endTime: 8.5, concentricSec: 2.0, eccentricSec: 2.5, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
     ];
     const failResult = analyzeMovementOptimization(failureReps, 'squat', false);
     expect(failResult.velocityLossPercent).toBe(50);
@@ -81,8 +81,8 @@ describe('Movement Optimization & Kinematic Hypertrophy Engine', () => {
 
     // Constant speed reps (<20% velocity loss)
     const speedReps: RepDetail[] = [
-      { index: 1, startTime: 0, endTime: 3.5, concentricSec: 1.0, eccentricSec: 2.5, romDegrees: 85 },
-      { index: 2, startTime: 4, endTime: 7.5, concentricSec: 1.05, eccentricSec: 2.5, romDegrees: 85 },
+      { index: 1, startTime: 0, endTime: 3.5, concentricSec: 1.0, eccentricSec: 2.5, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
+      { index: 2, startTime: 4, endTime: 7.5, concentricSec: 1.05, eccentricSec: 2.5, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
     ];
     const speedResult = analyzeMovementOptimization(speedReps, 'squat', false);
     expect(speedResult.velocityLossPercent).toBeLessThan(20);
@@ -91,9 +91,9 @@ describe('Movement Optimization & Kinematic Hypertrophy Engine', () => {
 
   it('computes physics-based mechanical work, calories, and time under tension', () => {
     const reps: RepDetail[] = [
-      { index: 1, startTime: 1.0, endTime: 4.5, concentricSec: 1.2, eccentricSec: 2.3, romDegrees: 85 },
-      { index: 2, startTime: 5.0, endTime: 8.5, concentricSec: 1.2, eccentricSec: 2.3, romDegrees: 85 },
-      { index: 3, startTime: 9.0, endTime: 12.5, concentricSec: 1.2, eccentricSec: 2.3, romDegrees: 85 },
+      { index: 1, startTime: 1.0, endTime: 4.5, concentricSec: 1.2, eccentricSec: 2.3, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
+      { index: 2, startTime: 5.0, endTime: 8.5, concentricSec: 1.2, eccentricSec: 2.3, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
+      { index: 3, startTime: 9.0, endTime: 12.5, concentricSec: 1.2, eccentricSec: 2.3, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
     ];
 
     const result = analyzeMovementOptimization(reps, 'squat', false);
