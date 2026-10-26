@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   decodeBiomechanicalPhases,
-  PHASE_NAMES,
   BiomechanicalDecodeResult,
 } from '../BiomechanicalDecoder';
 
