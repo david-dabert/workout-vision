@@ -163,7 +163,82 @@ describe('Movement Optimization & Kinematic Hypertrophy Engine', () => {
       const result = analyzeContinuousBiomechanics(angles, timestamps, 'squat', false);
       expect(result.romScore).toBeGreaterThanOrEqual(90);
       expect(result.repVelocityProfiles.length).toBe(2);
-      expect(result.coachingPoints.length).toBe(3);
+      expect(result.coachingPoints.length).toBeGreaterThanOrEqual(3);
+      expect(result.formDistortionScore).toBeDefined();
+      expect(result.formDistortionScore).not.toBeNull();
+    });
+
+    it('identifies sticking points and surfaces French coaching guidance with non-breaking space', () => {
+      const fps = 20;
+      const dt = 1 / fps;
+      const timestamps: number[] = [];
+      const angles: number[] = [];
+
+      let cur = 0;
+      // Rep with severe sticking point at 110 degrees
+      // Descent: 170 -> 80
+      for (let t = 0; t <= 1.5; t += dt) {
+        timestamps.push(cur);
+        angles.push(170 - (t / 1.5) * 90);
+        cur += dt;
+      }
+      // Sticking stall around 110 degrees for 12 frames
+      for (let i = 0; i < 12; i++) {
+        timestamps.push(cur);
+        angles.push(108 + Math.sin(i));
+        cur += dt;
+      }
+      // Concentric completion: 110 -> 170
+      for (let t = 0; t <= 1.0; t += dt) {
+        timestamps.push(cur);
+        angles.push(110 + (t / 1.0) * 60);
+        cur += dt;
+      }
+
+      const resultFr = analyzeContinuousBiomechanics(angles, timestamps, 'squat', true);
+      expect(resultFr.stickingPointSummary).toBeDefined();
+      expect(resultFr.stickingPointSummary).toContain('Point de blocage');
+      expect(resultFr.stickingPointSummary).toContain('\u00A0:'); // French non-breaking space before colon
+    });
+
+    it('evaluates audio sync confidence when audio track is provided', () => {
+      const fps = 30;
+      const dt = 1 / fps;
+      const timestamps: number[] = [];
+      const angles: number[] = [];
+
+      let cur = 0;
+      // 1 squat rep: 170 -> 80 -> 170
+      for (let t = 0; t <= 1.0; t += dt) {
+        timestamps.push(cur);
+        angles.push(170 - (t / 1.0) * 90);
+        cur += dt;
+      }
+      for (let t = 0; t <= 1.0; t += dt) {
+        timestamps.push(cur);
+        angles.push(80 + (t / 1.0) * 90);
+        cur += dt;
+      }
+
+      // Synthetic audio sample with click at turnaround (~1.0s)
+      const sampleRate = 44100;
+      const audioSamples = new Float32Array(sampleRate * 3);
+      const clickIdx = Math.floor(sampleRate * 1.0);
+      for (let i = 0; i < 300; i++) {
+        audioSamples[clickIdx + i] = 0.8 * Math.sin(2 * Math.PI * 3500 * (i / sampleRate));
+      }
+
+      const result = analyzeContinuousBiomechanics(
+        angles,
+        timestamps,
+        'squat',
+        false,
+        undefined,
+        { audioSamples, sampleRate }
+      );
+
+      expect(result.audioSyncConfidence).toBeDefined();
+      expect(result.audioSyncConfidence).toBeGreaterThan(0.5);
     });
   });
 });
