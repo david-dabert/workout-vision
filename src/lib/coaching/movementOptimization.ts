@@ -11,6 +11,16 @@
 import { RepDetail } from '../counting/core';
 import { getExercise, getKinematicArchetype, KinematicArchetype } from '../exercises/index';
 
+export interface RepVelocityProfile {
+  repIndex: number;
+  durationSec: number;
+  concentricSec: number;
+  eccentricSec: number;
+  romDegrees: number;
+  velocityLossPercent: number; // % loss relative to fastest rep in set
+  tier: 'speed' | 'optimal_hypertrophy' | 'failure';
+}
+
 export interface MovementOptimizationResult {
   romScore: number;            // 0 - 100 %
   controlIndex: number;        // 0 - 100 %
@@ -23,12 +33,13 @@ export interface MovementOptimizationResult {
   caloriesKcal: number;        // kcal (indicative estimate per R8)
   timeUnderTensionSec: number; // seconds
   tempoCadence: string;        // e.g. "2-0-1"
+  repVelocityProfiles: RepVelocityProfile[];
   formBadge: FormBadge;
   coachingPoints: string[];
 }
 
 export interface FormBadge {
-  id: 'OPTIMAL_STRETCH' | 'CONTROLLED_TEMPO' | 'MOMENTUM_DETECTED' | 'PARTIAL_RANGE' | 'GOOD_FORM';
+  id: 'OPTIMAL_STRETCH' | 'CONTROLLED_TEMPO' | 'MOMENTUM_DETECTED' | 'PARTIAL_RANGE' | 'GOOD_FORM' | 'VELOCITY_LOSS';
   label: string;
   labelFr: string;
   severity: 'positive' | 'warning' | 'neutral';
@@ -90,6 +101,7 @@ export function analyzeMovementOptimization(
       caloriesKcal: 0,
       timeUnderTensionSec: 0,
       tempoCadence: '0-0-0',
+      repVelocityProfiles: [],
       formBadge: {
         id: 'GOOD_FORM',
         label: 'Awaiting Reps',
@@ -135,8 +147,8 @@ export function analyzeMovementOptimization(
   let velocityLossPercent = 0;
   let fatigueTier: 'speed' | 'optimal_hypertrophy' | 'failure' = 'speed';
 
+  const minConc = concTimes.length > 0 ? Math.min(...concTimes) : 0;
   if (concTimes.length >= 2) {
-    const minConc = Math.min(...concTimes);
     const lastConc = concTimes[concTimes.length - 1];
     velocityLossPercent = Math.max(0, Math.min(100, Math.round(((lastConc - minConc) / lastConc) * 100)));
     if (velocityLossPercent >= 35) {
@@ -147,6 +159,32 @@ export function analyzeMovementOptimization(
       fatigueTier = 'speed';
     }
   }
+
+  // Construct rep velocity profile for each whole rep
+  const repVelocityProfiles: RepVelocityProfile[] = wholeReps.map((r, idx) => {
+    const durationSec = Math.round(((r.endTime || 0) - (r.startTime || 0)) * 100) / 100;
+    const conc = Math.round((r.concentricSec || 0) * 100) / 100;
+    const ecc = Math.round((r.eccentricSec || 0) * 100) / 100;
+    const rom = Math.round((r.romDegrees || 0) * 10) / 10;
+    const repLoss = (minConc > 0 && conc > 0)
+      ? Math.max(0, Math.min(100, Math.round(((conc - minConc) / conc) * 100)))
+      : 0;
+    let tier: 'speed' | 'optimal_hypertrophy' | 'failure' = 'speed';
+    if (repLoss >= 35) {
+      tier = 'failure';
+    } else if (repLoss >= 20) {
+      tier = 'optimal_hypertrophy';
+    }
+    return {
+      repIndex: idx + 1,
+      durationSec,
+      concentricSec: conc,
+      eccentricSec: ecc,
+      romDegrees: rom,
+      velocityLossPercent: repLoss,
+      tier,
+    };
+  });
 
   // 4. Physics-based Mechanical Work (kJ) & Caloric Expenditure (kcal)
   const refMass = ARCHETYPE_DISPLACED_MASS_KG[archetype] || 50;
@@ -296,6 +334,7 @@ export function analyzeMovementOptimization(
     caloriesKcal,
     timeUnderTensionSec,
     tempoCadence,
+    repVelocityProfiles,
     formBadge,
     coachingPoints: coachingPoints.slice(0, 3),
   };
@@ -308,10 +347,20 @@ export function evaluateLiveRepQuality(
   romDeg: number,
   eccentricSec: number,
   lift = 'squat',
-  fr = false
+  fr = false,
+  velocitySlowed = false
 ): FormBadge {
   const archetype = getKinematicArchetype(lift);
   const targetRom = ARCHETYPE_ROM_TARGETS[archetype] || 80;
+
+  if (velocitySlowed) {
+    return {
+      id: 'VELOCITY_LOSS',
+      label: 'Deceleration (>35%) — Near Failure',
+      labelFr: 'Ralentissement (>35\u00A0%) — Proche de l’échec',
+      severity: 'warning',
+    };
+  }
 
   if (eccentricSec > 0 && eccentricSec < 0.8) {
     return {
