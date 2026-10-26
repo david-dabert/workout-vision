@@ -16,9 +16,11 @@ import FilmExerciseDrawer from './FilmExerciseDrawer';
 import './Film.css';
 
 function getDisplayName(key, lang) {
+  const name = exerciseName(key, lang);
+  if (name && name !== key) return name;
   const cat = getExercise(key);
   if (cat) return lang === 'fr' ? cat.name_fr : cat.name;
-  return exerciseName(key, lang);
+  return key.replace(/_/g, ' ');
 }
 
 export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero: arrivedByTransition = false }) {
@@ -42,13 +44,13 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
   // so a Film screen still fading out never shares the name with the next one.
   const [hero, setHero] = useState(arrivedByTransition);
   useEffect(() => { if (!hero) return undefined; const t = setTimeout(() => setHero(false), 700); return () => clearTimeout(t); }, [hero]);
-  const view = filmView(countingLiftKey);
+  const view = filmView(activeLift) || filmView(countingLiftKey);
   const test = FITNESS_TESTS[activeLift] ?? null;
   // The nine card lifts show the framing of their reference set; every other exercise, the guide's drawings.
   // An exercise of the guide with an animated figure of the app (GuideFigure.jsx) shows it in place of the drawings.
-  const figure = hasFigure(countingLiftKey), guide = figure ? null : guideExercise(countingLiftKey), animated = !figure && hasGuideFigure(guide?.key);
-  const tier = tierOf(countingLiftKey);
-  const [bw, bh] = figure ? restBox(countingLiftKey) : animated ? GUIDE_BOX : [1, 1];
+  const figure = hasFigure(activeLift), guide = figure ? null : (guideExercise(activeLift) || guideExercise(countingLiftKey)), animated = !figure && hasGuideFigure(guide?.key);
+  const tier = tierOf(activeLift);
+  const [bw, bh] = figure ? restBox(activeLift) : animated ? GUIDE_BOX : [1, 1];
 
   // The frame takes the height left once everything else on the screen down to "Filmer ma série" is
   // laid out: a long name wraps to three lines, the guide's credit to three more (review 05 of step 2,
@@ -79,9 +81,9 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
   }, [activeLift, lang, live]);
 
   useEffect(() => {
-    if (!canvas.current) return;
-    return createLiftScene(canvas.current, countingLiftKey, 'rest');
-  }, [countingLiftKey]);
+    if (!canvas.current || !figure) return;
+    return createLiftScene(canvas.current, activeLift, 'rest');
+  }, [activeLift, figure]);
 
   function handleFile(e) {
     const f = e.target.files?.[0];
@@ -111,32 +113,27 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
         <button className="icon-btn press" onClick={onBack} aria-label={fr ? 'Retour' : 'Back'}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
         </button>
-        <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
+        <div className="film-topbar-end">
+          {!test && (
+            <button
+              type="button"
+              className="film-switch-btn press"
+              onClick={() => setDrawerOpen(true)}
+              aria-label={fr ? 'Changer d’exercice' : 'Change exercise'}
+              data-testid="film-switch-exercise"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              <span>{fr ? 'Changer' : 'Change'}</span>
+            </button>
+          )}
+          <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
+        </div>
       </div>
       <p className="eyebrow" data-reveal style={{ '--i': 0 }}>{test ? (fr ? 'Test de condition physique' : 'Fitness test') : fr ? (view === 'side' ? 'Filmé de profil' : 'Filmé de face') : (view === 'side' ? 'Filmed from the side' : 'Filmed from the front')}</p>
-      <div className="film-title-row" data-reveal style={{ '--i': 1 }}>
-        <h2 className="title">{getDisplayName(activeLift, lang)}</h2>
-        {!test && (
-          <button
-            type="button"
-            className="film-switch-btn press"
-            onClick={() => setDrawerOpen(true)}
-            aria-label={fr ? 'Changer d’exercice' : 'Change exercise'}
-            data-testid="film-switch-exercise"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-            </svg>
-            <span>{fr ? 'Changer' : 'Change'}</span>
-          </button>
-        )}
-      </div>
-      {catalogItem && (
-        <p className="film-catalog-tag" data-reveal style={{ '--i': 1 }}>
-          {catalogItem.equipment} · {catalogItem.primary_muscles.map(m => m.replace(/_/g, ' ')).join(', ')}
-        </p>
-      )}
+      <h2 className="title" data-reveal style={{ '--i': 1 }}>{getDisplayName(activeLift, lang)}</h2>
       {tier && <p className={`tier tier-${tier}`} data-reveal style={{ '--i': 1 }}>{tierLabel(tier, fr)}</p>}
       <div ref={frame} className={animated ? 'frame is-guide-figure' : 'frame'} data-reveal style={{ '--i': 2, aspectRatio: `${bw} / ${bh}`, '--ar': bw / bh, viewTransitionName: hero ? 'lift-hero' : undefined }}>
         {figure ? <canvas ref={canvas} aria-hidden="true" /> : animated ? <GuideFigure exercise={guide.key} /> : guide?.frames.length > 0 && <GuideFrames exercise={guide} fr={fr} />}

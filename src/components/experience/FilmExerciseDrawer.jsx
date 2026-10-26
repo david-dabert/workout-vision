@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useT } from '../../lib/LanguageContext';
-import { searchExercises, getAllExercises, KinematicArchetype } from '../../lib/exercises/index';
+import { searchExercises, getAllExercises } from '../../lib/exercises/index';
 import './FilmExerciseDrawer.css';
 
 const ARCHETYPE_FILTERS = [

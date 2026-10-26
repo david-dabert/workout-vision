@@ -35,7 +35,7 @@ vi.mock('../guide-figure', () => ({
 }));
 
 vi.mock('../exercise-info', () => ({
-  exerciseName: (key) => key.replace(/_/g, ' '),
+  exerciseName: (key) => (key === 'squat' ? 'Squat' : key),
   filmView: () => 'side',
   guideExercise: () => null,
 }));
@@ -103,11 +103,10 @@ describe('Film integration with exercise drawer and catalog', () => {
     expect(html).toContain('Changer');
   });
 
-  it('renders expanded catalog exercise name and muscle tag when catalog lift is selected', () => {
+  it('renders expanded catalog exercise name when catalog lift is selected', () => {
     const html = renderFilm({ lift: 'pendulum_squat' }, 'en');
     expect(html).toContain('Pendulum Squat');
-    expect(html).toContain('machine');
-    expect(html).toContain('quadriceps');
+    expect(html).toContain('data-testid="film-switch-exercise"');
   });
 });
 

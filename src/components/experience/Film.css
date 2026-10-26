@@ -5,11 +5,9 @@
 .wv-experience .film-screen { position: relative; inset: auto; min-height: 100dvh; opacity: 1; visibility: visible; }
 .wv-experience .film-screen .eyebrow { margin-top: var(--s-4); }
 .wv-experience .film-screen .title { margin-top: 10px; }
-.wv-experience .film-title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 10px; }
-.wv-experience .film-title-row .title { margin-top: 0; min-width: 0; }
-.wv-experience .film-switch-btn { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--c-edge); border-radius: var(--r-pill); background: var(--hair-0); color: var(--c-fg); font-family: var(--sans); font-size: 13px; font-weight: 600; cursor: pointer; }
-.wv-experience .film-switch-btn svg { width: 14px; height: 14px; color: var(--c-accent); }
-.wv-experience .film-catalog-tag { margin: 4px 0 0; font-size: var(--fs-caption); color: var(--c-fg-muted); text-transform: capitalize; }
+.wv-experience .film-topbar-end { display: flex; align-items: center; gap: 8px; }
+.wv-experience .film-switch-btn { flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border: 1px solid var(--c-edge); border-radius: var(--r-pill); background: var(--hair-0); color: var(--c-fg); font-family: var(--sans); font-size: 12px; font-weight: 600; cursor: pointer; }
+.wv-experience .film-switch-btn svg { width: 13px; height: 13px; color: var(--c-accent); }
 .wv-experience .frame {
   position: relative; width: min(46%, 178px); max-width: 100%; aspect-ratio: 9 / 16; margin: var(--s-5) auto 0;
   border-radius: var(--r-xl); border: 1px solid var(--hair-2); background: var(--well); overflow: hidden;
