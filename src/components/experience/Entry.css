@@ -152,12 +152,20 @@
 .wv-experience .mask > span { display: block; translate: 0 112%; }
 .wv-experience .entry-keys { display: flex; flex-direction: column; gap: 10px; margin-top: 28px; opacity: 0; }
 /* The keys: bone fill for the one way in, a 3:1 outline for the example (WCAG 1.4.11). Radius 4, 58 px, verbs. */
-.wv-experience .enter, .wv-experience .entry-demo {
+.wv-experience :is(.enter, .entry-demo, .entry-interactive) {
   pointer-events: auto; position: relative; z-index: 2; width: 100%; height: 58px; min-height: 44px; border-radius: 4px;
   display: inline-flex; align-items: center; justify-content: center; text-align: center;
   font-size: 17px; font-weight: 600; letter-spacing: 0; overflow: hidden;
 }
 .wv-experience .enter { background: var(--c-fg); color: var(--void); }
+.wv-experience .entry-interactive {
+  gap: 10px; font-size: 15px; border: 1.5px solid var(--lamp-line);
+  color: var(--lamp-hi); background: color-mix(in srgb, var(--void) 70%, transparent);
+}
+.wv-experience .entry-interactive-pill {
+  font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.1em;
+  padding: 3px 6px; border-radius: var(--r-pill); background: var(--c-accent); color: var(--void); font-weight: 700;
+}
 .wv-experience .entry-demo { border: 1.5px solid color-mix(in srgb, var(--c-fg) 40%, transparent); color: var(--c-fg); }
 .wv-experience .enter > span { position: relative; z-index: 1; }
 .wv-experience .entry .enter::after { background: radial-gradient(170px circle at var(--px, 50%) var(--py, 50%), color-mix(in srgb, var(--void) 14%, transparent), transparent 65%); }
@@ -293,7 +301,7 @@ html, body { background: #080706; color-scheme: dark; }
   .wv-experience .entry-l2 { margin-top: 8px; font-size: 18px; }
   .wv-experience .entry-l3 { margin-top: 12px; }
   .wv-experience .entry-keys { margin-top: 18px; gap: 8px; }
-  .wv-experience :is(.enter, .entry-demo) { height: 52px; }
+  .wv-experience :is(.enter, .entry-demo, .entry-interactive) { height: 52px; }
   .wv-experience .entry-credit { margin-top: 2px; }
 }
 @media (max-height: 600px) {
@@ -301,11 +309,11 @@ html, body { background: #080706; color-scheme: dark; }
   .wv-experience .entry-l2 { font-size: 16px; }
   .wv-experience .entry-l3 { margin-top: 8px; }
   .wv-experience .entry-keys { margin-top: 12px; }
-  .wv-experience :is(.enter, .entry-demo) { height: 48px; }
+  .wv-experience :is(.enter, .entry-demo, .entry-interactive) { height: 48px; }
   .wv-experience .entry-view { min-height: 90px; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .wv-experience .entry:not(.play) :is(.enter, .entry-demo, .entry-credit) { pointer-events: none; }
+  .wv-experience .entry:not(.play) :is(.enter, .entry-demo, .entry-interactive, .entry-credit) { pointer-events: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .wv-experience [data-reveal] { opacity: 1; translate: none; }

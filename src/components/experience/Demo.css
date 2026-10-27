@@ -32,3 +32,56 @@
 }
 
 .wv-experience .demo-real { margin-top: var(--s-6, 48px); display: flex; flex-direction: column; gap: var(--s-3, 16px); }
+
+.wv-experience .demo-lab-banner {
+  margin-top: var(--s-5);
+  padding: var(--s-4);
+  border-radius: var(--r-l);
+  border: 1px solid var(--lamp-line);
+  background: color-mix(in srgb, var(--void) 65%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.wv-experience .demo-lab-banner-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.wv-experience .demo-lab-banner-pill {
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--void);
+  background: var(--c-accent);
+  padding: 3px 7px;
+  border-radius: var(--r-pill);
+  font-weight: 700;
+}
+
+.wv-experience .demo-lab-banner-title {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: var(--fs-name);
+  font-weight: 400;
+  color: var(--bone);
+}
+
+.wv-experience .demo-lab-banner-desc {
+  margin: 0;
+  font-size: var(--fs-caption);
+  line-height: 1.45;
+  color: var(--ash);
+}
+
+.wv-experience .demo-lab-banner-btn {
+  margin-top: var(--s-2);
+}
+
+.wv-experience .demo-video-lab-btn {
+  margin-top: var(--s-2);
+  width: 100%;
+}

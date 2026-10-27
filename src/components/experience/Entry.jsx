@@ -17,14 +17,16 @@ import './Entry.css';
 // approved by David on 9 October 2026: test/real-phone/swarm/copy-entry.md. U+202F is not needed (no ? ! ; or « »).
 const COPY = {
   fr: {
-    title: 'Filmez votre série.', line: 'L’appli compte vos répétitions, sur votre téléphone.',
+    title: 'Filmez votre série.', line: 'Laboratoire de biomécanique et Velocity-Based Training sur votre téléphone. Zéro capteur. Zéro serveur.',
     privacy: 'La vidéo reste sur votre téléphone.', start: 'Commencer',
-    test: 'Version de test', demo: 'Voir un exemple', credit: 'Conçue à Bordeaux par David Dabert',
+    test: 'Version de test', demo: 'Voir un exemple', interactiveDemo: 'Démo biomécanique (1 clic)',
+    credit: 'Conçue à Bordeaux par David Dabert',
   },
   en: {
-    title: 'Film your set.', line: 'The app counts your reps, on your phone.',
+    title: 'Film your set.', line: 'Biomechanics laboratory and Velocity-Based Training on your phone. Zero sensors. Zero servers.',
     privacy: 'The video stays on your phone.', start: 'Start',
-    test: 'Test version', demo: 'See an example', credit: 'Made in Bordeaux by David Dabert',
+    test: 'Test version', demo: 'See an example', interactiveDemo: 'Interactive Biomechanics Demo (1-click)',
+    credit: 'Made in Bordeaux by David Dabert',
   },
 };
 // Where the build sends anonymous usage counts (src/lib/events.js), the privacy line must stay true: it speaks of the
@@ -50,6 +52,9 @@ export default function Entry({ onEnter }) {
   // The example's screen, loaded at the tap and shown only once its code is in.
   const [Demo, setDemo] = useState(null);
   const demoBtn = useRef(null), demoLoading = useRef(false);
+  // The interactive biomechanics lab demo, loaded on-demand for immediate 1-click exploration.
+  const [Lab, setLab] = useState(null);
+  const labLoading = useRef(false);
   const reduced = useRef(matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   useEffect(() => {
@@ -87,6 +92,23 @@ export default function Entry({ onEnter }) {
     requestAnimationFrame(() => demoBtn.current?.focus({ preventScroll: true }));
   }
 
+  function openLab() {
+    if (labLoading.current || leaving.current) return;
+    labLoading.current = true;
+    import('./DemoInteractiveLab').then(m => {
+      if (!leaving.current) {
+        scene.current?.pause();
+        setLab(() => m.default);
+      }
+    }, err => {
+      setLab(() => () => { throw err; });
+    }).finally(() => { labLoading.current = false; });
+  }
+  function closeLab() {
+    setLab(null);
+    scene.current?.resume();
+  }
+
   // "Commencer" leads to the choice of lift; the credit, to À propos (its address, read by the router once the app
   // mounts). Either way the entry has been seen.
   function enter(to) {
@@ -108,7 +130,7 @@ export default function Entry({ onEnter }) {
   return <div className="entry-experience wv-experience">
     <canvas ref={canvas} className="entry-stage" aria-hidden="true" />
     <div className="vignette" aria-hidden="true" />
-    <section className={`screen entry is-active ${phase} ${skipped ? 'skip' : ''}${Demo ? ' demo-open' : ''}`} aria-label="WorkoutVision" inert={Demo ? true : undefined}>
+    <section className={`screen entry is-active ${phase} ${skipped ? 'skip' : ''}${Demo || Lab ? ' demo-open' : ''}`} aria-label="WorkoutVision" inert={Demo || Lab ? true : undefined}>
       {/* A tap anywhere shows the entry at once: for the eye only. VoiceOver and the keyboard read the words as they
           are, and the layer goes once used, so it no longer lies over the screen (second audit, 3 October). */}
       {!skipped && <button className="entry-skip" type="button" tabIndex={-1} aria-hidden="true" onClick={() => { scene.current?.skip(); setSkipped(true); }} />}
@@ -128,11 +150,16 @@ export default function Entry({ onEnter }) {
         </p>
         <div className="entry-keys">
           <button type="button" className="enter tactile" onClick={() => enter()}><span>{text.start}</span></button>
+          <button type="button" className="entry-interactive press" onClick={openLab}>
+            <span className="entry-interactive-pill">LAB</span>
+            <span>{text.interactiveDemo}</span>
+          </button>
           <button type="button" className="entry-demo press" ref={demoBtn} onClick={openDemo}>{text.demo}</button>
         </div>
         <a className="entry-credit" href="#about" onClick={e => { e.preventDefault(); enter('about'); }}>{text.credit}{'\u00A0'}<span aria-hidden="true">›</span></a>
       </div>
     </section>
-    {Demo && <Demo onClose={closeDemo} onStart={enter} />}
+    {Lab && <Lab onClose={closeLab} onStart={() => { closeLab(); enter(); }} />}
+    {Demo && <Demo onClose={closeDemo} onStart={enter} onOpenLab={openLab} />}
   </div>;
 }
