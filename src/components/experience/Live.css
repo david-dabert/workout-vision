@@ -57,3 +57,83 @@
   .wv-experience .live-frame { min-height: min(52svh, 420px); }
   .wv-experience .live-n, .wv-experience .live-cd { font-size: clamp(96px, 22svh, 160px); }
 }
+
+/* Live biomechanical telemetry & real-time phase classification */
+.wv-experience .live-phase-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 4px 12px;
+  border-radius: var(--r-full);
+  background: var(--well);
+  border: 1px solid var(--hair-2);
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+  text-transform: uppercase;
+  letter-spacing: var(--track-label);
+  color: var(--bone-2);
+}
+.wv-experience .live-phase-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.wv-experience .live-phase-pill.is-concentric {
+  border-color: var(--c-accent);
+  color: var(--c-accent);
+}
+.wv-experience .live-phase-pill.is-amortization_sticking {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+.wv-experience .live-phase-pill.is-eccentric {
+  border-color: var(--c-fg-muted);
+  color: var(--c-fg);
+}
+.wv-experience .live-phase-pill.is-lockout_rest {
+  border-color: var(--hair-2);
+  color: var(--bone-2);
+}
+
+.wv-experience .live-telemetry-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 4px 12px;
+  border-radius: var(--r-md);
+  background: var(--well);
+  border: 1px solid var(--hair-2);
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+  color: var(--bone-2);
+}
+.wv-experience .live-telem-item {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+.wv-experience .live-telem-item b {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--c-fg);
+}
+.wv-experience .live-telem-item small {
+  font-size: var(--fs-caption);
+  color: var(--c-fg-muted);
+}
+.wv-experience .live-telem-sep {
+  color: var(--c-fg-muted);
+  opacity: 0.6;
+}
+.wv-experience .live-telem-loss {
+  font-weight: 600;
+  color: var(--c-fg-muted);
+}
+.wv-experience .live-telem-loss.is-warning {
+  color: var(--amber);
+  font-weight: 700;
+}
+
