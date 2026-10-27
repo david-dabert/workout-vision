@@ -90,4 +90,20 @@
 .wv-experience .about-link { align-self: center; display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; font-size: var(--fs-caption); color: var(--bone-2); text-decoration: underline; text-underline-offset: 3px; border-radius: var(--r-pill); }
 /* The note after the app restarted during a session (Choice.jsx, CrashNote): the usage note's line, its two keys side by side. */
 .wv-experience .crash-keys { display: flex; justify-content: center; flex-wrap: wrap; }
+.wv-experience .all-header-block { display: flex; flex-direction: column; gap: 4px; }
+.wv-experience .all-kicker { font-family: var(--mono); font-size: 10px; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--c-accent); }
+.wv-experience .all-realms-bar { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-top: var(--s-3); padding-bottom: 2px; }
+.wv-experience .all-realms-bar::-webkit-scrollbar { display: none; }
+.wv-experience .all-realm-chip { flex: none; padding: 5px 12px; border: 1px solid var(--hair-2); border-radius: var(--r-pill); background: var(--well); color: var(--c-fg-muted); font-size: var(--fs-caption); font-weight: 500; cursor: pointer; white-space: nowrap; transition: all var(--d-fast) var(--ease); }
+.wv-experience .all-realm-chip:hover { border-color: var(--lamp-line); color: var(--bone); }
+.wv-experience .all-realm-chip.is-active { border-color: var(--lamp-line-strong); background: var(--bio-glow); color: var(--c-accent); font-weight: 600; }
+.wv-experience .all-count-row { display: flex; align-items: center; justify-content: space-between; margin-top: var(--s-3); }
+.wv-experience .all-search-clear { position: absolute; right: 14px; top: 50%; translate: 0 -50%; width: 28px; height: 28px; display: grid; place-items: center; border: none; background: transparent; color: var(--c-fg-muted); font-size: 1.25rem; cursor: pointer; }
+.wv-experience .all-search-clear:hover { color: var(--c-fg); }
+.wv-experience .item-text-wrap { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.wv-experience .item-sub-dot { color: var(--ash-2); }
+.wv-experience .item-sub-eq { color: var(--ash); }
+.wv-experience .item-sub-muscle { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em; color: var(--c-accent); }
+.wv-experience .all-exercises .item { border-bottom: 1px solid var(--hair-0); transition: background var(--d-fast); }
+.wv-experience .all-exercises .item:hover { background: var(--bio-glow); }
 .wv-experience .choose-head + .row-link { margin-top: 0; border-top: 0; }
