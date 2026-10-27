@@ -1,17 +1,22 @@
 import { useMemo } from 'react';
-import { analyzeMovementOptimization } from '../../lib/coaching/movementOptimization';
+import { analyzeMovementOptimization, analyzeContinuousBiomechanics } from '../../lib/coaching/movementOptimization';
 import { getExercise } from '../../lib/exercises/index';
 import './MovementOptimization.css';
 
 /**
  * Movement Optimization Card
  * Displays ROM Score, Control & Tempo Index, Form Quality Badge,
- * and actionable Hypertrophy Coaching Summary on the Result screen.
+ * Sticking Point Diagnostics, and actionable Hypertrophy Coaching Summary.
  */
-export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr = false }) {
+export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr = false, result = null }) {
   const analysis = useMemo(() => {
+    if (result && Array.isArray(result.angles) && result.angles.length > 0) {
+      const fps = 30;
+      const timestamps = result.timestamps || result.angles.map((_, i) => i / fps);
+      return analyzeContinuousBiomechanics(result.angles, timestamps, lift, fr);
+    }
     return analyzeMovementOptimization(reps, lift, fr);
-  }, [reps, lift, fr]);
+  }, [reps, lift, fr, result]);
 
   const exercise = useMemo(() => {
     return getExercise(lift);
@@ -122,6 +127,28 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
             {fr ? `Cadence\u00A0: ${analysis.tempoCadence}` : `Tempo: ${analysis.tempoCadence}`}
           </span>
         </div>
+
+        {analysis.formDistortionScore !== null && analysis.formDistortionScore !== undefined && (
+          <div className="res-opt-metric" data-testid="form-fidelity-metric">
+            <div className="res-opt-metric-head">
+              <span className="res-opt-label">
+                {fr ? 'Fidélité de trajectoire' : 'Path Fidelity'}
+              </span>
+              <span className="res-opt-val">
+                {Math.round(Math.max(0, 1 - analysis.formDistortionScore) * 100)}%
+              </span>
+            </div>
+            <div className="res-opt-bar-track">
+              <div
+                className={`res-opt-bar-fill ${analysis.formDistortionScore < 0.2 ? 'is-good' : analysis.formDistortionScore < 0.4 ? 'is-mid' : 'is-warn'}`}
+                style={{ width: `${Math.round(Math.max(10, Math.min(100, (1 - analysis.formDistortionScore) * 100)))}%` }}
+              />
+            </div>
+            <span className="res-opt-sub">
+              {fr ? 'Modèle cinématique' : 'Kinematic template'}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="res-opt-disclaimer">
@@ -159,6 +186,20 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {analysis.stickingPointSummary && (
+        <div className="res-opt-sticking" data-testid="sticking-point-box">
+          <div className="res-opt-sticking-head">
+            <span className="res-opt-sticking-badge">
+              {fr ? 'Point de blocage' : 'Sticking Point'}
+            </span>
+            <span className="res-opt-sticking-title">
+              {fr ? 'Ralentissement biomécanique' : 'Biomechanical Deceleration'}
+            </span>
+          </div>
+          <p className="res-opt-sticking-desc">{analysis.stickingPointSummary}</p>
         </div>
       )}
 
