@@ -388,4 +388,44 @@
   height: 16px;
 }
 
+/* Machine Guidance Hallmark Banner */
+.res-opt-machine-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.75rem 0.875rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  background: var(--well);
+  border: 1px solid var(--lamp-line);
+}
+
+.res-opt-machine-badge {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.res-opt-machine-kicker {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+.res-opt-machine-name {
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  color: var(--bone);
+}
+
+.res-opt-machine-cue {
+  margin: 0;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--c-fg-muted);
+}
+
+
 

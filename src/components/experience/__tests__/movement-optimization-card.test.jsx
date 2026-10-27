@@ -103,4 +103,21 @@ describe('MovementOptimizationCard component', () => {
     expect(html).toContain('data-testid="sticking-point-box"');
     expect(html).toContain('Sticking Point');
   });
+
+  it('renders machine guidance banner and stretch hypertrophy metric for machine movements', () => {
+    const reps = [
+      { index: 1, startTime: 1.0, endTime: 3.5, concentricSec: 1.0, eccentricSec: 2.0, romDegrees: 90, peakSpeed: 100, meanSpeed: 60 },
+      { index: 2, startTime: 4.0, endTime: 7.0, concentricSec: 1.2, eccentricSec: 2.0, romDegrees: 92, peakSpeed: 100, meanSpeed: 60 },
+    ];
+
+    const html = renderToStaticMarkup(
+      <MovementOptimizationCard reps={reps} lift="pendulum_squat" fr={true} />
+    );
+
+    expect(html).toContain('data-testid="machine-profile-banner"');
+    expect(html).toContain('Squat pendulaire');
+    expect(html).toContain('Trajectoire pendulaire guidée');
+    expect(html).toContain('data-testid="stretch-hypertrophy-metric"');
+    expect(html).toContain('Tension d’étirement');
+  });
 });
