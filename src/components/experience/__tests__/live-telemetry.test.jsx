@@ -64,4 +64,20 @@ describe('Live biomechanical telemetry & phase classification', () => {
     // When landmarks are null, returns null
     expect(extractLiveJointAngle(null, { joint: 'knee' })).toBeNull();
   });
+
+  it('evaluates L5/S1 lumbar inverse dynamics with shear and compressive reaction forces', async () => {
+    const { computeL5S1InverseDynamics } = await import('../../../lib/biomechanics/l5s1InverseDynamics');
+    const fakeLandmarks = Array.from({ length: 33 }, () => ({ x: 0.5, y: 0.5, visibility: 0.9 }));
+    fakeLandmarks[11] = { x: 0.8, y: 0.4, visibility: 0.95 };
+    fakeLandmarks[12] = { x: 0.9, y: 0.4, visibility: 0.95 };
+    fakeLandmarks[23] = { x: 0.45, y: 0.6, visibility: 0.95 };
+    fakeLandmarks[24] = { x: 0.55, y: 0.6, visibility: 0.95 };
+
+    const l5s1 = computeL5S1InverseDynamics({ landmarks: fakeLandmarks, lift: 'deadlift', loadKg: 60 });
+    expect(l5s1).not.toBeNull();
+    if (!l5s1) return;
+    expect(l5s1.shearForceN).toBeGreaterThan(400);
+    expect(l5s1.compressiveForceN).toBeGreaterThan(2000);
+    expect(l5s1.reactionTorqueNm).toBeGreaterThan(100);
+  });
 });

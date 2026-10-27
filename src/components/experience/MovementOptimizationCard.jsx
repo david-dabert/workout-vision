@@ -171,6 +171,30 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
             </span>
           </div>
         )}
+
+        {analysis.lumbarKinetics && (
+          <div className="res-opt-metric" data-testid="lumbar-kinetics-metric">
+            <div className="res-opt-metric-head">
+              <span className="res-opt-label">
+                {fr ? 'Cisaillement lombaire (L5/S1)' : 'Lumbar Shear (L5/S1)'}
+              </span>
+              <span className="res-opt-val">
+                {analysis.lumbarKinetics.peakShearForceN} N
+              </span>
+            </div>
+            <div className="res-opt-bar-track">
+              <div
+                className={`res-opt-bar-fill ${analysis.lumbarKinetics.safetyTier === 'optimal' ? 'is-good' : analysis.lumbarKinetics.safetyTier === 'moderate' ? 'is-mid' : 'is-warn'}`}
+                style={{ width: `${Math.min(100, Math.round((analysis.lumbarKinetics.peakShearForceN / 600) * 100))}%` }}
+              />
+            </div>
+            <span className="res-opt-sub">
+              {fr
+                ? `Compression\u00A0: ${analysis.lumbarKinetics.peakCompressiveForceN} N (limite\u00A0: 3400 N)`
+                : `Compression: ${analysis.lumbarKinetics.peakCompressiveForceN} N (limit: 3400 N)`}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="res-opt-disclaimer">

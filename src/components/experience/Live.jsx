@@ -10,6 +10,8 @@ import { holdScreenAwake } from '../../lib/interruption';
 import { drawSkeleton, litSides, trailPoints } from './replay-draw';
 import { playLockoutCue, playVelocityLossAlert } from '../../lib/audioCueEngine';
 import { evaluateLiveRepQuality } from '../../lib/coaching/movementOptimization';
+import { HierarchicalDetector } from '../../lib/hierarchicalDetector';
+import { computeL5S1InverseDynamics } from '../../lib/biomechanics/l5s1InverseDynamics';
 import './MovementOptimization.css';
 import './Live.css';
 
@@ -156,7 +158,22 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
   const doneRef = useRef(onDone); doneRef.current = onDone;
   const startRef = useRef(onStart); startRef.current = onStart;
   const voiceRef = useRef(voice); voiceRef.current = voice;
-  const def = liftDefinition(lift);
+  const [isAuto, setIsAuto] = useState(() => lift === 'auto');
+  const [activeLift, setActiveLift] = useState(() => (lift === 'auto' ? null : lift));
+  const [liveSpine, setLiveSpine] = useState('optimal');
+  const activeLiftRef = useRef(activeLift); activeLiftRef.current = activeLift;
+  const isAutoRef = useRef(isAuto); isAutoRef.current = isAuto;
+  const detector = useRef(null);
+  const lastSpine = useRef('optimal');
+
+  useEffect(() => {
+    if (isAuto) {
+      detector.current = new HierarchicalDetector({ fps: 15, mode: 'gym' });
+    }
+  }, [isAuto]);
+
+  const effectiveLift = activeLift || (lift !== 'auto' ? lift : 'squat');
+  const def = liftDefinition(effectiveLift) || liftDefinition('squat');
   const wholeBody = ['knee', 'hip'].includes(def?.joint);
   // The framing step of the Film screen, word for word: the hint whenever the person is not in view.
   const framing = wholeBody ? (fr ? 'Le corps entier dans le cadre, pieds compris.' : 'Your whole body in the frame, feet included.') : (fr ? 'Au moins de la tête aux hanches dans le cadre, mains comprises.' : 'At least head to hips in the frame, hands included.');
@@ -220,6 +237,30 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
 
       drawSkeleton(ctx, lm, box, sides, def, 1, trails);
 
+      // Zero-Touch Ambient AI Detection if isAuto
+      if (isAutoRef.current && detector.current && !activeLiftRef.current) {
+        detector.current.update({ landmarks: lm, timestampMs: now });
+        const dState = detector.current.getState();
+        if (dState.exercise && (dState.confidence ?? 0) >= 0.70) {
+          activeLiftRef.current = dState.exercise;
+          setActiveLift(dState.exercise);
+          if (voiceRef.current) {
+            say(exerciseName(dState.exercise, fr), lang);
+          }
+        }
+      }
+
+      // Real-time L5/S1 Lumbar Spine Biomechanical Inverse Dynamics
+      const effectiveCurrentLift = activeLiftRef.current || (lift !== 'auto' ? lift : 'squat');
+      const l5s1 = computeL5S1InverseDynamics({
+        landmarks: lm,
+        lift: effectiveCurrentLift,
+      });
+      if (l5s1 && l5s1.safetyTier !== lastSpine.current) {
+        lastSpine.current = l5s1.safetyTier;
+        setLiveSpine(l5s1.safetyTier);
+      }
+
       // Real-time 1D micro-sequence phase classification (15 Hz)
       const angle = extractLiveJointAngle(lm, def);
       if (angle !== null) {
@@ -243,7 +284,7 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
       }
     };
     const e = createLiveEngine({
-      lift, video: videoRef.current,
+      lift: effectiveLift, video: videoRef.current,
       onPose: draw,
       onPreview: ({ body: b, ms }) => { setBody(b); previews.current += 1; if (previews.current >= SPEED_SAMPLES) setSlow(ms > SLOW_MS); },
       onCount: c => { setLive(c); shown.current = nextShown(shown.current, c.count); },
@@ -423,7 +464,7 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
     if (on) unlockSpeech(lang); else hush();
   }
 
-  const name = exerciseName(lift, lang);
+  const name = activeLift ? exerciseName(activeLift, lang) : isAuto ? (fr ? 'Mode Intelligent (Auto)' : 'Smart Ambient Mode') : exerciseName(lift, lang);
   const settingUp = ['opening', 'loading', 'ready'].includes(state);
   const counting = state === 'running';
   const [problemTitle, problemText] = state === 'problem' ? problemWords(problem, fr) : [];
@@ -439,6 +480,22 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
         </button>
         <span className="pill live-pill"><i className="live-dot" aria-hidden="true" />{fr ? 'En direct' : 'Live'}</span>
         <div className="live-tools">
+          <button className={`icon-btn press live-auto-btn${isAuto ? ' is-on' : ''}`}
+            onClick={() => {
+              const next = !isAuto;
+              setIsAuto(next);
+              isAutoRef.current = next;
+              if (next && !detector.current) {
+                detector.current = new HierarchicalDetector({ fps: 15, mode: 'gym' });
+              }
+            }}
+            aria-pressed={isAuto}
+            aria-label={fr ? 'Mode intelligent (auto-détection du mouvement)' : 'Smart ambient mode (auto-detect)'}
+            data-testid="live-auto-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+            </svg>
+          </button>
           {speaks && <button className={`icon-btn press live-voice${voice ? ' is-on' : ''}`} aria-pressed={voice} onClick={toggleVoice}
             aria-label={fr ? 'Annoncer les répétitions à voix haute' : 'Say each rep out loud'} data-testid="live-voice">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" />{voice ? <path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" /> : <path d="M17 9l5 6M22 9l-5 6" />}</svg>
@@ -474,6 +531,18 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
                 <span className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (one ? 'Rep' : 'Reps')}</span>
                 <span className="live-sub">{fr ? 'Compte provisoire' : 'Provisional count'}</span>
                 {liveBadge && <span className={`live-badge is-${liveBadge.severity}`} data-testid="live-form-badge">{fr ? liveBadge.labelFr : liveBadge.label}</span>}
+                {liveSpine === 'high_shear_risk' && (
+                  <div className="live-spine-alert" role="alert" data-testid="live-spine-alert">
+                    <i className="live-spine-dot" aria-hidden="true" />
+                    <span>{fr ? 'Cisaillement L5/S1 élevé (>500 N)' : 'High L5/S1 Shear Warning'}</span>
+                  </div>
+                )}
+                {isAuto && (
+                  <div className="live-auto-chip" data-testid="live-auto-chip">
+                    <span className="live-auto-pulse" aria-hidden="true" />
+                    <span>{activeLift ? (fr ? `Mouvement\u00A0: ${exerciseName(activeLift, lang)}` : `Detected: ${exerciseName(activeLift, lang)}`) : (fr ? 'Recherche du mouvement…' : 'Detecting movement…')}</span>
+                  </div>
+                )}
                 {livePhase && (
                   <div className={`live-phase-pill is-${livePhase.phase}`} data-testid="live-phase-pill">
                     <i className="live-phase-dot" aria-hidden="true" />
@@ -505,6 +574,18 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
               : <div className="live-away" data-testid="live-hint">
                 <p className="live-hint-title">{live.inView ? (fr ? 'C’est parti' : 'Go') : (fr ? 'Revenez dans le cadre' : 'Step back into the frame')}</p>
                 <p className="live-hint">{live.inView ? (fr ? 'Le compte s’affiche à la première répétition.' : 'The count appears at the first rep.') : framing}</p>
+                {liveSpine === 'high_shear_risk' && (
+                  <div className="live-spine-alert" role="alert" data-testid="live-spine-alert">
+                    <i className="live-spine-dot" aria-hidden="true" />
+                    <span>{fr ? 'Cisaillement L5/S1 élevé (>500 N)' : 'High L5/S1 Shear Warning'}</span>
+                  </div>
+                )}
+                {isAuto && (
+                  <div className="live-auto-chip" data-testid="live-auto-chip">
+                    <span className="live-auto-pulse" aria-hidden="true" />
+                    <span>{activeLift ? (fr ? `Mouvement\u00A0: ${exerciseName(activeLift, lang)}` : `Detected: ${exerciseName(activeLift, lang)}`) : (fr ? 'Recherche du mouvement…' : 'Detecting movement…')}</span>
+                  </div>
+                )}
                 {livePhase && (
                   <div className={`live-phase-pill is-${livePhase.phase}`} data-testid="live-phase-pill">
                     <i className="live-phase-dot" aria-hidden="true" />

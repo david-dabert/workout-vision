@@ -137,3 +137,49 @@
   font-weight: 700;
 }
 
+/* L5/S1 Lumbar Spine Shear Warning & Ambient Auto-Detect */
+.wv-experience .live-spine-alert {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 3px 10px;
+  border-radius: var(--r-full);
+  background: var(--well);
+  border: 1px solid var(--amber);
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  color: var(--amber);
+}
+.wv-experience .live-spine-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--amber);
+}
+.wv-experience .live-auto-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 4px 12px;
+  border-radius: var(--r-full);
+  background: var(--well);
+  border: 1px solid var(--c-accent);
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+  color: var(--c-accent);
+}
+.wv-experience .live-auto-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-accent);
+  animation: live-pulse 1s infinite alternate var(--ease);
+}
+.wv-experience .live-auto-btn.is-on {
+  color: var(--c-accent);
+  border-color: var(--c-accent);
+}
+
