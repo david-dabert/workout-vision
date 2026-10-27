@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { exerciseName } from './exercise-info';
-import { liftDefinition } from '../../lib/counting/core';
+import { liftDefinition, classify1DTemporalRepPhase } from '../../lib/counting/core';
 import { createLiveEngine, SLOW_MS } from '../../lib/liveEngine';
 import { nextShown, shownForResult } from '../../lib/liveCounter';
 import { openCamera, closeCamera, cameraProblem, canOpenCamera } from '../../lib/liveCamera';
@@ -12,6 +12,90 @@ import { playLockoutCue, playVelocityLossAlert } from '../../lib/audioCueEngine'
 import { evaluateLiveRepQuality } from '../../lib/coaching/movementOptimization';
 import './MovementOptimization.css';
 import './Live.css';
+
+// Displaced mass (kg) and vertical travel distance (m) by movement family.
+// Sources: Garhammer (1993), Cronin et al. (2004), González-Badillo et al. (2017). Status: literature.
+const LIVE_ARCHETYPE_MASS_KG = {
+  squat: 66,
+  hinge: 50,
+  push: 52,
+  pull: 70,
+  isolation: 15,
+};
+const LIVE_ARCHETYPE_DISP_M = {
+  squat: 0.45,
+  hinge: 0.40,
+  push: 0.35,
+  pull: 0.40,
+  isolation: 0.30,
+};
+
+export const PHASE_LABELS = {
+  fr: {
+    concentric: 'Propulsion',
+    amortization_sticking: 'Point critique',
+    eccentric: 'Descente',
+    lockout_rest: 'Départ',
+  },
+  en: {
+    concentric: 'Propulsion',
+    amortization_sticking: 'Sticking point',
+    eccentric: 'Lowering',
+    lockout_rest: 'Ready',
+  },
+};
+
+export function computeLiveConcentricPower(lift = 'squat', concentricSec = 0.8) {
+  const l = (lift || '').toLowerCase();
+  let archetype = 'isolation';
+  if (l.includes('squat') || l.includes('lunge') || l.includes('leg_press') || l.includes('step_up')) {
+    archetype = 'squat';
+  } else if (l.includes('deadlift') || l.includes('rdl') || l.includes('clean') || l.includes('snatch') || l.includes('swing')) {
+    archetype = 'hinge';
+  } else if (l.includes('press') || l.includes('push') || l.includes('dip')) {
+    archetype = 'push';
+  } else if (l.includes('pull') || l.includes('row') || l.includes('chin')) {
+    archetype = 'pull';
+  }
+
+  const mass = LIVE_ARCHETYPE_MASS_KG[archetype] || 50;
+  const disp = LIVE_ARCHETYPE_DISP_M[archetype] || 0.40;
+  const g = 9.81;
+  const validConc = Math.max(0.2, concentricSec);
+  const joules = mass * g * disp;
+  const powerWatts = Math.round(joules / validConc);
+  const velocityMs = Math.round((disp / validConc) * 100) / 100;
+  return { powerWatts, velocityMs };
+}
+
+function jointAngleFromPoints(a, b, c) {
+  if (!a || !b || !c) return null;
+  const rad = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
+  let deg = Math.abs(rad * (180 / Math.PI));
+  if (deg > 180) deg = 360 - deg;
+  return deg;
+}
+
+export function extractLiveJointAngle(lm, def) {
+  if (!lm) return null;
+  const joint = def?.joint;
+  if (joint === 'elbow') {
+    const leftVis = ((lm[11]?.visibility ?? 0) + (lm[13]?.visibility ?? 0) + (lm[15]?.visibility ?? 0)) / 3;
+    const rightVis = ((lm[12]?.visibility ?? 0) + (lm[14]?.visibility ?? 0) + (lm[16]?.visibility ?? 0)) / 3;
+    const pts = leftVis >= rightVis ? [lm[11], lm[13], lm[15]] : [lm[12], lm[14], lm[16]];
+    return jointAngleFromPoints(pts[0], pts[1], pts[2]);
+  }
+  if (joint === 'hip') {
+    const leftVis = ((lm[11]?.visibility ?? 0) + (lm[23]?.visibility ?? 0) + (lm[25]?.visibility ?? 0)) / 3;
+    const rightVis = ((lm[12]?.visibility ?? 0) + (lm[24]?.visibility ?? 0) + (lm[26]?.visibility ?? 0)) / 3;
+    const pts = leftVis >= rightVis ? [lm[11], lm[23], lm[25]] : [lm[12], lm[24], lm[26]];
+    return jointAngleFromPoints(pts[0], pts[1], pts[2]);
+  }
+  const leftVis = ((lm[23]?.visibility ?? 0) + (lm[25]?.visibility ?? 0) + (lm[27]?.visibility ?? 0)) / 3;
+  const rightVis = ((lm[24]?.visibility ?? 0) + (lm[26]?.visibility ?? 0) + (lm[28]?.visibility ?? 0)) / 3;
+  const pts = leftVis >= rightVis ? [lm[23], lm[25], lm[27]] : [lm[24], lm[26], lm[28]];
+  return jointAngleFromPoints(pts[0], pts[1], pts[2]);
+}
 
 /** The countdown before a live set, in seconds: time to step back from the phone. Status: convention (UNSOURCED). */
 export const COUNTDOWN_SEC = 3;
@@ -57,6 +141,14 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
   const [live, setLive] = useState({ count: null, inView: true });
   const [pulse, setPulse] = useState(0);
   const [liveBadge, setLiveBadge] = useState(null);
+  const [livePhase, setLivePhase] = useState(null);
+  const [liveTelemetry, setLiveTelemetry] = useState(null);
+  const peakPowerWatts = useRef(0);
+  const angleHistory = useRef([]);
+  const lastAngleTime = useRef(0);
+  const lastAngle = useRef(null);
+  const lastVel = useRef(0);
+  const lastPhaseUpdate = useRef(0);
   const [voice, setVoice] = useState(voiceWanted);
   const [speaks, setSpeaks] = useState(() => canSpeak(lang));
   const stateRef = useRef(state); stateRef.current = state;
@@ -127,6 +219,28 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
       }
 
       drawSkeleton(ctx, lm, box, sides, def, 1, trails);
+
+      // Real-time 1D micro-sequence phase classification (15 Hz)
+      const angle = extractLiveJointAngle(lm, def);
+      if (angle !== null) {
+        const dt = lastAngleTime.current > 0 ? Math.max(0.03, Math.min(0.2, (now - lastAngleTime.current) / 1000)) : 0.067;
+        const vel = lastAngle.current !== null ? (angle - lastAngle.current) / dt : 0;
+        const acc = (vel - lastVel.current) / dt;
+        lastAngle.current = angle;
+        lastAngleTime.current = now;
+        lastVel.current = vel;
+
+        angleHistory.current.push(angle);
+        if (angleHistory.current.length > 15) angleHistory.current.shift();
+
+        if (angleHistory.current.length >= 3) {
+          const pred = classify1DTemporalRepPhase(angleHistory.current, vel, acc, def?.rest ?? 'high');
+          if (now - lastPhaseUpdate.current > 150) {
+            lastPhaseUpdate.current = now;
+            setLivePhase(pred);
+          }
+        }
+      }
     };
     const e = createLiveEngine({
       lift, video: videoRef.current,
@@ -158,6 +272,24 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
         if (voiceRef.current) say(n, lang);
         if (!REDUCED()) setPulse(p => p + 1);
         setLiveBadge(evaluateLiveRepQuality(85, repDuration > 0 ? repDuration * 0.6 : 2.0, lift, fr, velocitySlowed));
+
+        // Compute live concentric mechanical power (Watts), bar velocity (m/s), and neuromuscular decay
+        const validRepDur = repDuration >= 0.6 && repDuration <= 10.0 ? repDuration : 2.0;
+        const concentricSec = Math.max(0.25, validRepDur * 0.45);
+        const power = computeLiveConcentricPower(lift, concentricSec);
+
+        if (power.powerWatts > peakPowerWatts.current) {
+          peakPowerWatts.current = power.powerWatts;
+        }
+        const powerLoss = peakPowerWatts.current > 0
+          ? Math.max(0, Math.round(((peakPowerWatts.current - power.powerWatts) / peakPowerWatts.current) * 100))
+          : 0;
+
+        setLiveTelemetry({
+          powerWatts: power.powerWatts,
+          velocityMs: power.velocityMs,
+          powerLossPercent: powerLoss,
+        });
       },
       onSlow: () => giveUp('slow'),
       onFull: () => finish(),
@@ -217,8 +349,16 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
     shown.current = null;
     lastRepTimestamp.current = 0;
     fastestRepDuration.current = Infinity;
+    peakPowerWatts.current = 0;
+    angleHistory.current = [];
+    lastAngleTime.current = 0;
+    lastAngle.current = null;
+    lastVel.current = 0;
+    lastPhaseUpdate.current = 0;
     setLive({ count: null, inView: true });
     setLiveBadge(null);
+    setLivePhase(null);
+    setLiveTelemetry(null);
     wake.current = holdScreenAwake();
     setState('countdown');
     setLeft(COUNTDOWN_SEC);
@@ -264,6 +404,15 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
   }
 
   function again() {
+    setLiveBadge(null);
+    setLivePhase(null);
+    setLiveTelemetry(null);
+    peakPowerWatts.current = 0;
+    angleHistory.current = [];
+    lastAngleTime.current = 0;
+    lastAngle.current = null;
+    lastVel.current = 0;
+    lastPhaseUpdate.current = 0;
     engine.current?.preview();
     setState('ready');
   }
@@ -325,10 +474,43 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
                 <span className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (one ? 'Rep' : 'Reps')}</span>
                 <span className="live-sub">{fr ? 'Compte provisoire' : 'Provisional count'}</span>
                 {liveBadge && <span className={`live-badge is-${liveBadge.severity}`} data-testid="live-form-badge">{fr ? liveBadge.labelFr : liveBadge.label}</span>}
+                {livePhase && (
+                  <div className={`live-phase-pill is-${livePhase.phase}`} data-testid="live-phase-pill">
+                    <i className="live-phase-dot" aria-hidden="true" />
+                    <span>{PHASE_LABELS[fr ? 'fr' : 'en'][livePhase.phase] || livePhase.phase}</span>
+                  </div>
+                )}
+                {liveTelemetry && (
+                  <div className="live-telemetry-strip" data-testid="live-telemetry-strip">
+                    <span className="live-telem-item">
+                      <b>{liveTelemetry.powerWatts}</b>
+                      <small>W</small>
+                    </span>
+                    <span className="live-telem-sep" aria-hidden="true">·</span>
+                    <span className="live-telem-item">
+                      <b>{liveTelemetry.velocityMs}</b>
+                      <small>m/s</small>
+                    </span>
+                    {liveTelemetry.powerLossPercent > 0 && (
+                      <>
+                        <span className="live-telem-sep" aria-hidden="true">·</span>
+                        <span className={`live-telem-loss ${liveTelemetry.powerLossPercent >= 20 ? 'is-warning' : ''}`} data-testid="live-power-loss">
+                          -{liveTelemetry.powerLossPercent}%
+                        </span>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
               : <div className="live-away" data-testid="live-hint">
                 <p className="live-hint-title">{live.inView ? (fr ? 'C’est parti' : 'Go') : (fr ? 'Revenez dans le cadre' : 'Step back into the frame')}</p>
                 <p className="live-hint">{live.inView ? (fr ? 'Le compte s’affiche à la première répétition.' : 'The count appears at the first rep.') : framing}</p>
+                {livePhase && (
+                  <div className={`live-phase-pill is-${livePhase.phase}`} data-testid="live-phase-pill">
+                    <i className="live-phase-dot" aria-hidden="true" />
+                    <span>{PHASE_LABELS[fr ? 'fr' : 'en'][livePhase.phase] || livePhase.phase}</span>
+                  </div>
+                )}
               </div>)}
             {state === 'paused' && <div className="live-away" role="status">
               <p className="live-hint-title">{fr ? 'Série en pause' : 'Set paused'}</p>
