@@ -42,7 +42,7 @@ describe('Front Door Reframing & Interactive Biomechanics Lab Demo', () => {
     expect(html).toContain('entry-interactive');
   });
 
-  it('renders interactive lab showcase banner on DemoView when onOpenLab is provided', () => {
+  it('renders interactive lab button in DemoVideos on squat video when onOpenLab is provided', () => {
     const mockResult = { reps: [], count: 5 };
     const html = renderToStaticMarkup(
       <LanguageProvider>
@@ -60,9 +60,8 @@ describe('Front Door Reframing & Interactive Biomechanics Lab Demo', () => {
       </LanguageProvider>
     );
 
-    expect(html).toContain('demo-lab-banner');
-    expect(html).toContain('Squat olympique · Analyse biomécanique');
-    expect(html).toContain('Lancer l’analyse interactive (1 clic)');
+    expect(html).toContain('demo-video-lab-btn');
+    expect(html).toContain('Explorer en laboratoire interactif (Watts, 3D)');
   });
 
   it('renders interactive lab screen with sticking points, power in Watts, and trajectory diagnostics', () => {

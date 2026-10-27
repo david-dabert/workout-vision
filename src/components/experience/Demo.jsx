@@ -20,10 +20,6 @@ const COPY = {
     word: n => (n > 1 ? 'Répétitions' : 'Répétition'),
     done: n => `Fin de série\u00A0: ${n} ${n > 1 ? 'répétitions comptées' : 'répétition comptée'}.`,
     go: 'À vous', again: 'Revoir l’exemple',
-    labPill: 'Laboratoire 3D',
-    labTitle: 'Squat olympique · Analyse biomécanique',
-    labDesc: 'Testez la technologie en un clic\u00A0: Watts concentriques, points de blocage et dynamique de trajectoire axiale.',
-    labAction: 'Lancer l’analyse interactive (1 clic)',
   },
   en: {
     tag: 'Example', real: 'Real sets, counted by the app', close: 'Close the example', eyebrow: 'Drawn squat',
@@ -31,10 +27,6 @@ const COPY = {
     word: n => (n === 1 ? 'Rep' : 'Reps'),
     done: n => `End of set: ${n} ${n === 1 ? 'rep' : 'reps'} counted.`,
     go: 'Your turn', again: 'Watch again',
-    labPill: '3D Lab',
-    labTitle: 'Olympic Squat · Biomechanical Analysis',
-    labDesc: 'Experience the technology in 1 click: concentric Watts, sticking points, and 3D axial trajectory dynamics.',
-    labAction: 'Launch interactive analysis (1-click)',
   },
 };
 
@@ -68,17 +60,6 @@ export function DemoView({ lang, t, result, duration, canvasRef, onClose, onStar
           {onReplay && <button type="button" className="btn-ghost press" onClick={onReplay}>{c.again}</button>}
         </div>
       </div>
-      {/* Interactive Biomechanics Showcase Card */}
-      {onOpenLab && <section className="demo-lab-banner" aria-label={c.labTitle}>
-        <div className="demo-lab-banner-head">
-          <span className="demo-lab-banner-pill">{c.labPill}</span>
-          <h3 className="demo-lab-banner-title">{c.labTitle}</h3>
-        </div>
-        <p className="demo-lab-banner-desc">{c.labDesc}</p>
-        <button type="button" className="btn-primary press demo-lab-banner-btn" onClick={onOpenLab}>
-          {c.labAction}
-        </button>
-      </section>}
       {/* Real sets, below the drawn one (David, 6 October): words to be confirmed by David (R10). */}
       <section className="demo-real" aria-label={c.real}>
         <p className="eyebrow demo-eyebrow">{c.real}</p>
