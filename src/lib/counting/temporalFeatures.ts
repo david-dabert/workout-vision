@@ -228,3 +228,242 @@ export function computeTrajectorySimilarityMatrix(windows: TemporalFeatureWindow
 
   return matrix;
 }
+
+export interface HarmonicPeriodicityResult {
+  fundamentalPeriodSec: number;       // Repetition cycle duration (seconds), or 0 if aperiodic
+  cadenceRegularity: number;          // Autocorrelation peak coefficient (0..1)
+  estimatedReps: number;              // Total reps estimated via harmonic autocorrelation
+  lagSamples: number;                 // Lag in frames
+  autocorrelationCurve: Float32Array; // Normalized autocorrelation coefficients across checked lags
+}
+
+/**
+ * Computes global autocorrelation periodicity to determine repetition cadence and harmonic rep count.
+ * Unlike instantaneous threshold crossing, autocorrelation evaluates periodic signal recurrence
+ * across the entire sequence, making it immune to intra-rep pauses or sticking-point decelerations.
+ */
+export function computeAutocorrelationPeriodicity(
+  angles: (number | null)[],
+  timestamps: number[],
+  options: {
+    minPeriodSec?: number;
+    maxPeriodSec?: number;
+  } = {}
+): HarmonicPeriodicityResult {
+  const { minPeriodSec = 0.6, maxPeriodSec = 6.0 } = options;
+
+  const validEntries: { angle: number; time: number }[] = [];
+  for (let i = 0; i < Math.min(angles.length, timestamps.length); i++) {
+    const a = angles[i];
+    if (a !== null && Number.isFinite(a)) {
+      validEntries.push({ angle: a, time: timestamps[i] });
+    }
+  }
+
+  const n = validEntries.length;
+  if (n < 8) {
+    return {
+      fundamentalPeriodSec: 0,
+      cadenceRegularity: 0,
+      estimatedReps: 0,
+      lagSamples: 0,
+      autocorrelationCurve: new Float32Array(0),
+    };
+  }
+
+  const totalTime = validEntries[n - 1].time - validEntries[0].time;
+  const nominalFps = totalTime > 0 ? (n - 1) / totalTime : 15;
+
+  const minLag = Math.max(2, Math.floor(minPeriodSec * nominalFps));
+  const maxLag = Math.min(Math.floor(n / 2), Math.ceil(maxPeriodSec * nominalFps));
+
+  if (minLag >= maxLag) {
+    return {
+      fundamentalPeriodSec: 0,
+      cadenceRegularity: 0,
+      estimatedReps: 0,
+      lagSamples: 0,
+      autocorrelationCurve: new Float32Array(0),
+    };
+  }
+
+  // Calculate mean and variance
+  let sum = 0;
+  for (let i = 0; i < n; i++) sum += validEntries[i].angle;
+  const mean = sum / n;
+
+  let varSum = 0;
+  for (let i = 0; i < n; i++) {
+    const diff = validEntries[i].angle - mean;
+    varSum += diff * diff;
+  }
+
+  if (varSum < 1e-4) {
+    return {
+      fundamentalPeriodSec: 0,
+      cadenceRegularity: 0,
+      estimatedReps: 0,
+      lagSamples: 0,
+      autocorrelationCurve: new Float32Array(0),
+    };
+  }
+
+  const numLags = maxLag - minLag + 1;
+  const autocorr = new Float32Array(numLags);
+
+  let bestLag = 0;
+  let maxCorr = -1;
+
+  for (let lag = minLag; lag <= maxLag; lag++) {
+    let crossSum = 0;
+    const count = n - lag;
+    for (let i = 0; i < count; i++) {
+      crossSum += (validEntries[i].angle - mean) * (validEntries[i + lag].angle - mean);
+    }
+    // Normalized by variance scaled by overlap fraction
+    const coeff = crossSum / (varSum * (count / n));
+    const clamped = Math.max(-1, Math.min(1, coeff));
+    autocorr[lag - minLag] = clamped;
+
+    if (clamped > maxCorr) {
+      maxCorr = clamped;
+      bestLag = lag;
+    }
+  }
+
+  const cadenceRegularity = Math.max(0, maxCorr);
+  const fundamentalPeriodSec = bestLag > 0 && nominalFps > 0 ? Math.round((bestLag / nominalFps) * 100) / 100 : 0;
+  const estimatedReps = fundamentalPeriodSec > 0 && totalTime > 0
+    ? Math.max(0, Math.round(totalTime / fundamentalPeriodSec))
+    : 0;
+
+  return {
+    fundamentalPeriodSec,
+    cadenceRegularity: Math.round(cadenceRegularity * 100) / 100,
+    estimatedReps,
+    lagSamples: bestLag,
+    autocorrelationCurve: autocorr,
+  };
+}
+
+export type TemporalKinematicPhase = 'eccentric' | 'amortization_sticking' | 'concentric' | 'lockout_rest';
+
+export interface PhaseClassificationResult {
+  phase: TemporalKinematicPhase;
+  confidence: number;
+  probabilities: {
+    eccentric: number;
+    amortization_sticking: number;
+    concentric: number;
+    lockout_rest: number;
+  };
+}
+
+/**
+ * 1D Micro-Sequence Kinematic Phase Classifier.
+ * Zero-allocation, lightweight on-device sequence model computing posterior probabilities
+ * over kinematic phases from trajectory curvature, velocity, and acceleration.
+ */
+export function classify1DTemporalRepPhase(
+  trajectory: Float32Array | number[],
+  velocityDegPerSec: number,
+  accelerationDegPerSec2: number,
+  rest: 'high' | 'low' = 'high'
+): PhaseClassificationResult {
+  const isDescending = velocityDegPerSec < -5;
+  const isAscending = velocityDegPerSec > 5;
+  const absVel = Math.abs(velocityDegPerSec);
+  const absAcc = Math.abs(accelerationDegPerSec2);
+
+  // Compute unnormalized logit activations
+  let logitEcc = 0;
+  let logitConc = 0;
+  let logitSticking = 0;
+  let logitRest = 0;
+
+  if (rest === 'high') {
+    if (isDescending) {
+      logitEcc = 2.0 + absVel / 30;
+      logitConc = -2.0;
+      logitSticking = absVel < 15 ? 0.8 : -1.0;
+      logitRest = -1.5;
+    } else if (isAscending) {
+      logitConc = 2.0 + absVel / 30;
+      logitEcc = -2.0;
+      logitSticking = absVel < 20 && absAcc > 10 ? 1.2 : -1.0;
+      logitRest = -1.5;
+    } else {
+      if (absAcc > 15) {
+        logitSticking = 2.5 + absAcc / 20;
+        logitRest = -1.0;
+      } else {
+        logitRest = 2.5;
+        logitSticking = 0.2;
+      }
+      logitEcc = -1.0;
+      logitConc = -1.0;
+    }
+  } else {
+    if (isAscending) {
+      logitConc = 2.0 + absVel / 30;
+      logitEcc = -2.0;
+      logitSticking = absVel < 20 && absAcc > 10 ? 1.2 : -1.0;
+      logitRest = -1.5;
+    } else if (isDescending) {
+      logitEcc = 2.0 + absVel / 30;
+      logitConc = -2.0;
+      logitSticking = absVel < 15 ? 0.8 : -1.0;
+      logitRest = -1.5;
+    } else {
+      if (absAcc > 15) {
+        logitSticking = 2.5 + absAcc / 20;
+        logitRest = -1.0;
+      } else {
+        logitRest = 2.5;
+        logitSticking = 0.2;
+      }
+      logitEcc = -1.0;
+      logitConc = -1.0;
+    }
+  }
+
+  // Softmax normalization
+  const maxLogit = Math.max(logitEcc, logitConc, logitSticking, logitRest);
+  const expEcc = Math.exp(logitEcc - maxLogit);
+  const expConc = Math.exp(logitConc - maxLogit);
+  const expSticking = Math.exp(logitSticking - maxLogit);
+  const expRest = Math.exp(logitRest - maxLogit);
+  const sumExp = expEcc + expConc + expSticking + expRest;
+
+  const pEcc = expEcc / sumExp;
+  const pConc = expConc / sumExp;
+  const pSticking = expSticking / sumExp;
+  const pRest = expRest / sumExp;
+
+  let bestPhase: TemporalKinematicPhase = 'lockout_rest';
+  let bestProb = pRest;
+
+  if (pEcc > bestProb) {
+    bestPhase = 'eccentric';
+    bestProb = pEcc;
+  }
+  if (pConc > bestProb) {
+    bestPhase = 'concentric';
+    bestProb = pConc;
+  }
+  if (pSticking > bestProb) {
+    bestPhase = 'amortization_sticking';
+    bestProb = pSticking;
+  }
+
+  return {
+    phase: bestPhase,
+    confidence: Math.round(bestProb * 100) / 100,
+    probabilities: {
+      eccentric: Math.round(pEcc * 100) / 100,
+      amortization_sticking: Math.round(pSticking * 100) / 100,
+      concentric: Math.round(pConc * 100) / 100,
+      lockout_rest: Math.round(pRest * 100) / 100,
+    },
+  };
+}

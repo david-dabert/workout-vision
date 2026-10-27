@@ -1899,6 +1899,11 @@ export {
   standardizeTrajectory,
   cosineSimilarity,
   computeTrajectorySimilarityMatrix,
+  computeAutocorrelationPeriodicity,
+  classify1DTemporalRepPhase,
   type TemporalFeatureWindow,
   type TemporalExtractionOptions,
+  type HarmonicPeriodicityResult,
+  type PhaseClassificationResult,
+  type TemporalKinematicPhase,
 } from './temporalFeatures';
