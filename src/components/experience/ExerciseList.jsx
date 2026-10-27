@@ -94,16 +94,6 @@ export default function ExerciseList({ onChoose, all = false, copy = null }) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
         <label className="sr" htmlFor="all-search">{fr ? 'Rechercher un exercice' : 'Search exercises'}</label>
         <input id="all-search" type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder={fr ? 'Nom, muscle, matériel…' : 'Name, muscle, equipment…'} />
-        {query && (
-          <button
-            type="button"
-            className="all-search-clear press"
-            onClick={() => setQuery('')}
-            aria-label={fr ? 'Effacer la recherche' : 'Clear search'}
-          >
-            ×
-          </button>
-        )}
       </div>
 
       <div className="all-realms-bar" role="tablist" aria-label={fr ? 'Filtrer par groupe musculaire' : 'Filter by muscle group'}>
