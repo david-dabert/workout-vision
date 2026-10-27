@@ -54,6 +54,8 @@ export interface MovementOptimizationResult {
   stickingPoints?: StickingPointMarker[];
   stickingPointSummary?: string | null;
   formDistortionScore?: number | null;
+  pathEfficiencyPercent?: number | null;
+  sagittalDriftPercent?: number | null;
   audioSyncConfidence?: number | null;
 }
 
@@ -546,6 +548,22 @@ export function analyzeContinuousBiomechanics(
     ? Math.round((totalDistortion / repCountWithTrajectory) * 1000) / 1000
     : null;
 
+  const pathEfficiencyPercent = formDistortionScore !== null
+    ? Math.max(50, Math.min(100, Math.round((1 - formDistortionScore * 0.8) * 100)))
+    : null;
+  const sagittalDriftPercent = pathEfficiencyPercent !== null
+    ? Math.max(0, 100 - pathEfficiencyPercent)
+    : null;
+
+  if (sagittalDriftPercent !== null && sagittalDriftPercent >= 20) {
+    const driftCue = fr
+      ? `Dérive de trajectoire (${sagittalDriftPercent}%)\u00A0: verrouillez l'axe vertical pour éviter les déperditions de force.`
+      : `Trajectory drift detected (${sagittalDriftPercent}%): lock your vertical path to prevent axial force loss.`;
+    if (!baseResult.coachingPoints.includes(driftCue) && baseResult.coachingPoints.length < 3) {
+      baseResult.coachingPoints.push(driftCue);
+    }
+  }
+
   let stickingPointSummary: string | null = null;
   if (mostSevereSticking) {
     const anglePct = Math.round(mostSevereSticking.angle * 100);
@@ -590,6 +608,8 @@ export function analyzeContinuousBiomechanics(
     stickingPoints,
     stickingPointSummary,
     formDistortionScore,
+    pathEfficiencyPercent,
+    sagittalDriftPercent,
     audioSyncConfidence,
   };
 }

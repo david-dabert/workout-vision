@@ -165,7 +165,9 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
               />
             </div>
             <span className="res-opt-sub">
-              {fr ? 'Modèle cinématique' : 'Kinematic template'}
+              {analysis.pathEfficiencyPercent !== null && analysis.pathEfficiencyPercent !== undefined
+                ? (fr ? `Efficacité axiale\u00A0: ${analysis.pathEfficiencyPercent}%` : `Axial efficiency: ${analysis.pathEfficiencyPercent}%`)
+                : (fr ? 'Modèle cinématique' : 'Kinematic template')}
             </span>
           </div>
         )}
