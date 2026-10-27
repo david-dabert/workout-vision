@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { analyzeMovementOptimization, analyzeContinuousBiomechanics } from '../../lib/coaching/movementOptimization';
 import { getExercise } from '../../lib/exercises/index';
+import { downloadBvhFile } from '../../lib/biomechanics/bvhExport';
 import './MovementOptimization.css';
 
 /**
@@ -195,6 +196,50 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
             </span>
           </div>
         )}
+
+        {analysis.morphology && (
+          <div className="res-opt-metric" data-testid="morphology-retargeting-metric">
+            <div className="res-opt-metric-head">
+              <span className="res-opt-label">
+                {fr ? 'Morphologie & Leviers' : 'Anatomy & Levers'}
+              </span>
+              <span className="res-opt-val">
+                {analysis.morphology.femurTibiaRatio} (F/T)
+              </span>
+            </div>
+            <div className="res-opt-bar-track">
+              <div
+                className={`res-opt-bar-fill ${analysis.morphology.morphotype === 'balanced' ? 'is-good' : 'is-mid'}`}
+                style={{ width: `${Math.min(100, Math.round((analysis.morphology.femurTibiaRatio / 1.3) * 100))}%` }}
+              />
+            </div>
+            <span className="res-opt-sub">
+              {fr ? analysis.morphology.morphotypeLabel.fr : analysis.morphology.morphotypeLabel.en}
+            </span>
+          </div>
+        )}
+
+        {analysis.groundStabilityScore !== null && analysis.groundStabilityScore !== undefined && (
+          <div className="res-opt-metric" data-testid="ground-stability-metric">
+            <div className="res-opt-metric-head">
+              <span className="res-opt-label">
+                {fr ? 'Ancrage sol cinématique' : 'Ground Contact Stability'}
+              </span>
+              <span className="res-opt-val">
+                {analysis.groundStabilityScore}%
+              </span>
+            </div>
+            <div className="res-opt-bar-track">
+              <div
+                className="res-opt-bar-fill is-good"
+                style={{ width: `${Math.min(100, analysis.groundStabilityScore)}%` }}
+              />
+            </div>
+            <span className="res-opt-sub">
+              {fr ? 'Zéro glissement (ZUPT cinématique)' : 'Zero foot skating (ZUPT lock)'}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="res-opt-disclaimer">
@@ -271,6 +316,24 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           <span className="res-opt-muscles-list">
             {exercise.primary_muscles.map(m => m.replace(/_/g, ' ')).join(', ')}
           </span>
+        </div>
+      )}
+
+      {analysis.bvhData && (
+        <div className="res-opt-export">
+          <button
+            type="button"
+            className="res-opt-export-btn press"
+            onClick={() => downloadBvhFile(analysis.bvhData, `mocap-${lift}-${Date.now()}.bvh`)}
+            data-testid="export-bvh-btn"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <span>{fr ? 'Exporter Mocap 3D (.bvh)' : 'Export 3D Mocap (.bvh)'}</span>
+          </button>
         </div>
       )}
     </div>

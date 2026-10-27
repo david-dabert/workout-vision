@@ -352,3 +352,40 @@
   color: var(--c-fg-muted);
 }
 
+/* Morphological Retargeting & Ground Stability & Mocap Export */
+.res-opt-export {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--c-rule);
+}
+
+.res-opt-export-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border-radius: var(--r-full);
+  background: var(--hair-1);
+  border: 1px solid var(--c-rule);
+  color: var(--c-fg);
+  font-family: inherit;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.res-opt-export-btn:hover {
+  background: var(--hair-2);
+  border-color: var(--c-accent);
+  color: var(--c-accent);
+}
+
+.res-opt-export-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+
