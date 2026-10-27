@@ -17,6 +17,8 @@ import { computeL5S1InverseDynamics } from '../biomechanics/l5s1InverseDynamics'
 import { analyzeMorphology, MorphologyProfile } from '../biomechanics/morphologyRetargeting';
 import { KinematicFootLocker, Landmark3D } from '../biomechanics/kinematicFootLocking';
 import { exportToBVH } from '../biomechanics/bvhExport';
+import { resolveKinematicAlias, KinematicMachineProfile } from '../biomechanics/kinematicAliasing';
+import { analyzeSetHypertrophy, SetHypertrophyReport, TrajectorySample } from '../biomechanics/hypertrophyDiagnostics';
 
 export interface RepVelocityProfile {
   repIndex: number;
@@ -73,6 +75,8 @@ export interface MovementOptimizationResult {
   morphology?: MorphologyProfile | null;
   groundStabilityScore?: number | null;
   bvhData?: string | null;
+  hypertrophyReport?: SetHypertrophyReport;
+  machineProfile?: KinematicMachineProfile;
 }
 
 export interface FormBadge {
@@ -435,6 +439,32 @@ export function analyzeMovementOptimization(
   ];
   const bvhData = exportToBVH(bvhFrames, { frameRate: 30, scale: 100 });
 
+  // Point 8: Machine Aliasing & Hypertrophy Diagnostics
+  const machineProfile = resolveKinematicAlias(lift);
+  const repSamples = wholeReps.map(r => {
+    const startMs = (r.startTime || 0) * 1000;
+    const endMs = (r.endTime || 0) * 1000;
+    const eccMs = (r.eccentricSec || 1.5) * 1000;
+    const peakRom = r.romDegrees || avgRom;
+    const restAngle = machineProfile.restPosition === 'high' ? 165 : 45;
+    const bottomAngle = machineProfile.restPosition === 'high' ? Math.max(50, 165 - peakRom) : Math.min(170, 45 + peakRom);
+
+    const samples: TrajectorySample[] = [
+      { timestampMs: startMs, jointAngle: restAngle },
+      { timestampMs: startMs + eccMs * 0.5, jointAngle: (restAngle + bottomAngle) / 2 },
+      { timestampMs: startMs + eccMs, jointAngle: bottomAngle },
+      { timestampMs: startMs + eccMs + 100, jointAngle: bottomAngle },
+      { timestampMs: startMs + eccMs + (endMs - (startMs + eccMs)) * 0.5, jointAngle: (restAngle + bottomAngle) / 2 },
+      { timestampMs: endMs, jointAngle: restAngle },
+    ];
+    return { samples };
+  });
+
+  const hypertrophyReport = analyzeSetHypertrophy(repSamples, machineProfile);
+  if (hypertrophyReport.bounceCount > 0 && coachingPoints.length < 3) {
+    coachingPoints.push(fr ? hypertrophyReport.primaryCoachingTakeawayFr : hypertrophyReport.primaryCoachingTakeawayEn);
+  }
+
   return {
     romScore,
     controlIndex: controlScore,
@@ -458,6 +488,8 @@ export function analyzeMovementOptimization(
     morphology,
     groundStabilityScore,
     bvhData,
+    hypertrophyReport,
+    machineProfile,
   };
 }
 
@@ -685,6 +717,30 @@ export function analyzeContinuousBiomechanics(
     }
   }
 
+  // Continuous frame-accurate hypertrophy telemetry
+  const continuousRepSamples: { samples: TrajectorySample[] }[] = [];
+  for (const r of decoded.reps) {
+    const startFrame = timeToFrame(r.startTime);
+    const endFrame = timeToFrame(r.endTime);
+    if (startFrame < endFrame && endFrame < angles.length) {
+      const sliceSamples: TrajectorySample[] = [];
+      for (let f = startFrame; f <= endFrame; f++) {
+        const val = angles[f];
+        if (val !== null && !isNaN(val)) {
+          const tMs = (timestamps[f] ?? f / 30) * 1000;
+          sliceSamples.push({ timestampMs: tMs, jointAngle: val });
+        }
+      }
+      if (sliceSamples.length >= 4) {
+        continuousRepSamples.push({ samples: sliceSamples });
+      }
+    }
+  }
+
+  const continuousHypertrophyReport = continuousRepSamples.length > 0
+    ? analyzeSetHypertrophy(continuousRepSamples, baseResult.machineProfile || resolveKinematicAlias(lift))
+    : baseResult.hypertrophyReport;
+
   return {
     ...baseResult,
     stickingPoints,
@@ -693,6 +749,7 @@ export function analyzeContinuousBiomechanics(
     pathEfficiencyPercent,
     sagittalDriftPercent,
     audioSyncConfidence,
+    hypertrophyReport: continuousHypertrophyReport,
   };
 }
 

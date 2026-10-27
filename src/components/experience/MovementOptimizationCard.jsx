@@ -36,6 +36,30 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
         </span>
       </div>
 
+      {analysis.machineProfile && analysis.machineProfile.machineType !== 'free_planar' && (
+        <div className="res-opt-machine-banner" data-testid="machine-profile-banner">
+          <div className="res-opt-machine-badge">
+            <span className="res-opt-machine-kicker">{fr ? 'Guidage mécanique' : 'Machine Guidance'}</span>
+            <span className="res-opt-machine-name">
+              {fr ? analysis.machineProfile.canonicalNameFr : analysis.machineProfile.canonicalNameEn}
+            </span>
+          </div>
+          <p className="res-opt-machine-cue">
+            {fr
+              ? (analysis.machineProfile.fixedSegment === 'torso_guided' ? 'Trajectoire pendulaire guidée · verrouillage du plan d’appui'
+                : analysis.machineProfile.fixedSegment === 'torso_fixed' ? 'Dossier rigide 45° · focalisation quadriceps'
+                : analysis.machineProfile.fixedSegment === 'sternum_fixed' ? 'Appui sternal · suppression du balancier lombaire'
+                : analysis.machineProfile.fixedSegment === 'humerus_fixed' ? 'Pupitre Scott · verrouillage huméral et isolation biceps'
+                : 'Guidage machine stabilisé · cinématique alignée')
+              : (analysis.machineProfile.fixedSegment === 'torso_guided' ? 'Guided pendulum arc · footplate plane locked'
+                : analysis.machineProfile.fixedSegment === 'torso_fixed' ? 'Fixed 45° backpad · quad-focused tracking'
+                : analysis.machineProfile.fixedSegment === 'sternum_fixed' ? 'Sternal chest support · zero spinal cheating'
+                : analysis.machineProfile.fixedSegment === 'humerus_fixed' ? 'Scott preacher pad · locked humerus isolation'
+                : 'Stabilized machine guidance · aligned kinematics')}
+          </p>
+        </div>
+      )}
+
       <div className="res-opt-metrics">
         <div className="res-opt-metric">
           <div className="res-opt-metric-head">
@@ -237,6 +261,30 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
             </div>
             <span className="res-opt-sub">
               {fr ? 'Zéro glissement (ZUPT cinématique)' : 'Zero foot skating (ZUPT lock)'}
+            </span>
+          </div>
+        )}
+
+        {analysis.hypertrophyReport && (
+          <div className="res-opt-metric" data-testid="stretch-hypertrophy-metric">
+            <div className="res-opt-metric-head">
+              <span className="res-opt-label">
+                {fr ? 'Tension d’étirement' : 'Stretch Hypertrophy'}
+              </span>
+              <span className="res-opt-val">
+                {analysis.hypertrophyReport.avgStretchScore}%
+              </span>
+            </div>
+            <div className="res-opt-bar-track">
+              <div
+                className={`res-opt-bar-fill ${analysis.hypertrophyReport.avgStretchScore >= 85 ? 'is-good' : analysis.hypertrophyReport.avgStretchScore >= 65 ? 'is-mid' : 'is-warn'}`}
+                style={{ width: `${Math.min(100, Math.max(10, analysis.hypertrophyReport.avgStretchScore))}%` }}
+              />
+            </div>
+            <span className="res-opt-sub">
+              {analysis.hypertrophyReport.bounceCount === 0
+                ? (fr ? 'Inversion contrôlée sans rebond' : 'Controlled reversal, zero bounce')
+                : (fr ? `${analysis.hypertrophyReport.bounceCount} rebond(s) d’élan détecté(s)` : `${analysis.hypertrophyReport.bounceCount} momentum bounce(s) detected`)}
             </span>
           </div>
         )}
