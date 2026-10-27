@@ -24,6 +24,14 @@ export interface RepVelocityProfile {
   tier: 'speed' | 'optimal_hypertrophy' | 'failure';
 }
 
+export interface StickingPointMarker {
+  repIndex: number;
+  timestamp: number;
+  angleDeg: number;
+  velocityDropPercent: number;
+  severity: 'mild' | 'moderate' | 'severe';
+}
+
 export interface MovementOptimizationResult {
   romScore: number;            // 0 - 100 %
   controlIndex: number;        // 0 - 100 %
@@ -39,6 +47,7 @@ export interface MovementOptimizationResult {
   repVelocityProfiles: RepVelocityProfile[];
   formBadge: FormBadge;
   coachingPoints: string[];
+  stickingPoints?: StickingPointMarker[];
   stickingPointSummary?: string | null;
   formDistortionScore?: number | null;
   audioSyncConfidence?: number | null;
@@ -117,6 +126,7 @@ export function analyzeMovementOptimization(
       coachingPoints: fr
         ? ['Effectuez vos répétitions pour afficher l’analyse biomécanique.']
         : ['Perform your reps to display biomechanical feedback.'],
+      stickingPoints: [],
     };
   }
 
@@ -343,6 +353,7 @@ export function analyzeMovementOptimization(
     repVelocityProfiles,
     formBadge,
     coachingPoints: coachingPoints.slice(0, 3),
+    stickingPoints: [],
   };
 }
 
@@ -463,6 +474,7 @@ export function analyzeContinuousBiomechanics(
   let totalDistortion = 0;
   let repCountWithTrajectory = 0;
   let mostSevereSticking: { angle: number; severity: 'mild' | 'moderate' | 'severe' } | null = null;
+  const stickingPoints: StickingPointMarker[] = [];
 
   const template = getCanonicalTemplate(lift);
 
@@ -487,6 +499,18 @@ export function analyzeContinuousBiomechanics(
         repCountWithTrajectory++;
 
         if (alignment.stickingPoint) {
+          const stickingFrame = startFrame + alignment.stickingPoint.frameIndex;
+          const stickingTimestamp = timestamps[Math.min(timestamps.length - 1, stickingFrame)] ?? r.startTime;
+          const stickingAngleDeg = slice[alignment.stickingPoint.frameIndex] ?? Math.round(alignment.stickingPoint.normalizedAngle * (r.romDegrees || 80));
+          const velocityDropPct = Math.max(0, Math.round((1 - alignment.stickingPoint.warpVelocity) * 100));
+          stickingPoints.push({
+            repIndex: r.repIndex,
+            timestamp: stickingTimestamp,
+            angleDeg: Math.round(stickingAngleDeg),
+            velocityDropPercent: velocityDropPct,
+            severity: alignment.stickingPoint.severity,
+          });
+
           if (!mostSevereSticking || alignment.stickingPoint.severity === 'severe') {
             mostSevereSticking = {
               angle: alignment.stickingPoint.normalizedAngle,
@@ -543,6 +567,7 @@ export function analyzeContinuousBiomechanics(
 
   return {
     ...baseResult,
+    stickingPoints,
     stickingPointSummary,
     formDistortionScore,
     audioSyncConfidence,

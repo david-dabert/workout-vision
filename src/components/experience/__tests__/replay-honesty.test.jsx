@@ -62,6 +62,17 @@ describe('the replay of a counted set', () => {
     expect((await replay('fr', counted({ bodyCheck: { flagged: true, agreement: 0.2, second: null } }), 'bicep_curl', null)).html).not.toContain('rp-doubted');
     expect((await replay('fr', counted(), 'bicep_curl', 2)).html).not.toContain('rp-doubted');
   });
+
+  it('renders sticking point pins on the scrubber line when continuous angles are validated', async () => {
+    const stallAngles = times.map(t => {
+      if (t >= 0 && t <= 0.5) return 160 - (t / 0.5) * 55;
+      if (t > 0.5 && t <= 1.2) return 105;
+      if (t > 1.2 && t <= 1.8) return 105 - ((t - 1.2) / 0.6) * 45;
+      return 60 + ((t - 1.8) / 0.6) * 100;
+    });
+    const { html } = await replay('fr', counted({ angles: stallAngles }), 'bicep_curl', 2);
+    expect(html).toContain('class="rp-line"');
+  });
 });
 
 describe('the replay of an exercise the core does not offer', () => {

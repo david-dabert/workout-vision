@@ -17,6 +17,7 @@ import { replayClock } from './replay-clock';
 import { keepsMeasures } from './saved-set';
 import { jointName } from './lift-meta';
 import { RESULT } from './result-copy';
+import { analyzeContinuousBiomechanics } from '../../lib/coaching/movementOptimization';
 
 // The set replayed with the skeleton the pose model tracked on it: what the app saw,
 // frame by frame, with the joint whose angle counts the reps in the lamp's colour.
@@ -286,6 +287,22 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   // Between the two phases of a rep, the turn is a pause, said so ("Inflexion" was no gym word; honesty audit of 14 October
   // 2026, CORE-12). Awaiting David's approval of the word (R10).
   const phaseWord = { concentric: fr ? 'Concentrique' : 'Concentric', eccentric: fr ? 'Excentrique' : 'Eccentric' }[phase] || (isTransition ? 'Pause' : NB);
+
+  // Sticking points computed from continuous biomechanics when validated measures are kept (measured)
+  const stickingPoints = useMemo(() => {
+    if (!measured || !result.angles || !result.timestamps || result.angles.length === 0) return [];
+    try {
+      const bio = analyzeContinuousBiomechanics(result.angles, result.timestamps, lift, fr);
+      return bio.stickingPoints || [];
+    } catch {
+      return [];
+    }
+  }, [result.angles, result.timestamps, lift, fr, measured]);
+
+  const activeSticking = measured && stickingPoints.find(sp => Math.abs(sp.timestamp - now) <= 0.35);
+  const stickingWord = fr ? 'Point de blocage' : 'Sticking point';
+  const displayPhaseWord = activeSticking ? stickingWord : phaseWord;
+
   // The chip's angle is the core's, read in 3D (the number the count reads), named by its joint; the picture draws no 2D
   // angle beside it, which disagreed with it (replay-draw.js). Shown with the measures only (measures.js).
   const JOINT_WORD = { elbow: ['Coude', 'Elbow'], shoulder: ['Épaule', 'Shoulder'], knee: ['Genou', 'Knee'], hip: ['Hanche', 'Hip'] };
@@ -312,9 +329,9 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
             : <div className="rp-video rp-still" role="img" data-testid="rp-still" onClick={toggle}
               aria-label={fr ? 'Votre série comptée en direct, rejouée avec le squelette suivi par l’appli' : 'Your set counted live, replayed with the skeleton the app tracked'} />}
           <canvas ref={canvasRef} className="rp-canvas" aria-hidden="true" />
-          {reps.length > 0 && <div className={`rp-chip${phaseWord === NB ? ' is-idle' : ''}`} aria-hidden="true">
+          {reps.length > 0 && <div className={`rp-chip${displayPhaseWord === NB ? ' is-idle' : ''}${activeSticking ? ' is-sticking' : ''}`} aria-hidden="true">
             <span className="rp-count"><span className="rp-n">{begun}</span><span className="rp-of">/{NB}{reps.length}</span></span>
-            <span className="rp-phase">{phaseWord}</span>
+            <span className="rp-phase">{displayPhaseWord}</span>
             {measured && curAngle !== null && jointWord && <span className="rp-angle" data-testid="rp-angle">{jointWord}{NB}{Math.round(curAngle)}°</span>}
           </div>}
           {broken && <p className="rp-broken" role="alert">{fr ? 'Cette vidéo ne se lit pas dans ce navigateur.' : 'This video does not play in this browser.'}</p>}
@@ -328,6 +345,10 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
         {reps.map((r, i) => {
           const from = Math.min(100, (r.startTime / length) * 100), to = Math.min(100, (r.endTime / length) * 100);
           return <span key={r.index ?? i} className={`rp-rep${i === current ? ' is-on' : ''}`} style={{ left: `${Math.min(from, 99.2)}%`, width: `${Math.max(0.8, to - from)}%` }} />;
+        })}
+        {stickingPoints.map((sp, idx) => {
+          const pos = Math.min(100, (sp.timestamp / length) * 100);
+          return <span key={`sp-${idx}`} className={`rp-sticking-pin${activeSticking === sp ? ' is-active' : ''}`} data-testid="rp-sticking-pin" style={{ left: `${pos}%` }} title={fr ? `Point de blocage\u00A0: ${sp.angleDeg}°` : `Sticking point: ${sp.angleDeg}°`} />;
         })}
         <i className="rp-now" style={{ left: `${Math.min(100, (now / length) * 100)}%` }} />
       </div>

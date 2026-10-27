@@ -199,6 +199,12 @@ describe('Movement Optimization & Kinematic Hypertrophy Engine', () => {
       expect(resultFr.stickingPointSummary).toBeDefined();
       expect(resultFr.stickingPointSummary).toContain('Point de blocage');
       expect(resultFr.stickingPointSummary).toContain('\u00A0:'); // French non-breaking space before colon
+      expect(resultFr.stickingPoints).toBeDefined();
+      expect(resultFr.stickingPoints!.length).toBeGreaterThan(0);
+      const sp = resultFr.stickingPoints![0];
+      expect(sp.timestamp).toBeGreaterThan(0);
+      expect(sp.angleDeg).toBeGreaterThan(80);
+      expect(sp.velocityDropPercent).toBeGreaterThan(0);
     });
 
     it('evaluates audio sync confidence when audio track is provided', () => {
