@@ -103,12 +103,16 @@ describe('Movement Optimization & Kinematic Hypertrophy Engine', () => {
     const result = analyzeMovementOptimization(reps, 'squat', false);
     expect(result.mechanicalWorkKj).toBeGreaterThan(0.5);
     expect(result.caloriesKcal).toBeGreaterThan(0.5);
+    expect(result.averagePowerWatts).toBeGreaterThan(100);
+    expect(result.peakPowerWatts).toBeGreaterThan(100);
+    expect(result.powerLossPercent).toBeGreaterThanOrEqual(0);
     expect(result.timeUnderTensionSec).toBeCloseTo(10.5, 1);
     expect(result.tempoCadence).toBe('2-0-1');
     expect(result.repVelocityProfiles.length).toBe(3);
     expect(result.repVelocityProfiles[0].repIndex).toBe(1);
     expect(result.repVelocityProfiles[0].concentricSec).toBe(1.2);
     expect(result.repVelocityProfiles[0].eccentricSec).toBe(2.3);
+    expect(result.repVelocityProfiles[0].powerWatts).toBeGreaterThan(100);
   });
 
   describe('Live rep quality evaluation', () => {
