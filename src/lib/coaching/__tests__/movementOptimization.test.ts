@@ -170,6 +170,10 @@ describe('Movement Optimization & Kinematic Hypertrophy Engine', () => {
       expect(result.coachingPoints.length).toBeGreaterThanOrEqual(3);
       expect(result.formDistortionScore).toBeDefined();
       expect(result.formDistortionScore).not.toBeNull();
+      expect(result.pathEfficiencyPercent).toBeDefined();
+      expect(result.pathEfficiencyPercent).toBeGreaterThanOrEqual(50);
+      expect(result.sagittalDriftPercent).toBeDefined();
+      expect(result.sagittalDriftPercent).toBeGreaterThanOrEqual(0);
     });
 
     it('identifies sticking points and surfaces French coaching guidance with non-breaking space', () => {
