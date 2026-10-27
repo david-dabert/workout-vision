@@ -18,7 +18,7 @@ const COPY = {
     tag: 'Exemple', real: 'Des séries réelles, comptées par l’appli', close: 'Fermer l’exemple', eyebrow: 'Squat dessiné',
     sub: 'Un squat dessiné pour l’exemple, compté par l’appli comme votre série le sera.',
     word: n => (n > 1 ? 'Répétitions' : 'Répétition'),
-    done: n => `Fin de série : ${n} ${n > 1 ? 'répétitions comptées' : 'répétition comptée'}.`,
+    done: n => `Fin de série\u00A0: ${n} ${n > 1 ? 'répétitions comptées' : 'répétition comptée'}.`,
     go: 'À vous', again: 'Revoir l’exemple',
   },
   en: {
@@ -31,7 +31,7 @@ const COPY = {
 };
 
 /** The screen at time t of the example; the figure is drawn by the caller into canvasRef. */
-export function DemoView({ lang, t, result, duration, canvasRef, onClose, onStart, onReplay }) {
+export function DemoView({ lang, t, result, duration, canvasRef, onClose, onStart, onReplay, onOpenLab }) {
   const c = COPY[lang] || COPY.fr;
   const shown = countAt(result.reps, t), done = t >= duration;
   return <div className="wv-experience demo-experience">
@@ -63,13 +63,13 @@ export function DemoView({ lang, t, result, duration, canvasRef, onClose, onStar
       {/* Real sets, below the drawn one (David, 6 October): words to be confirmed by David (R10). */}
       <section className="demo-real" aria-label={c.real}>
         <p className="eyebrow demo-eyebrow">{c.real}</p>
-        <DemoVideos fr={lang !== 'en'} />
+        <DemoVideos fr={lang !== 'en'} onOpenLab={onOpenLab} />
       </section>
     </div></section>
   </div>;
 }
 
-export default function Demo({ onClose, onStart }) {
+export default function Demo({ onClose, onStart, onOpenLab }) {
   const { lang } = useT();
   // Built and counted once per page (demo-set.js keeps them), so every render sees the same set.
   const set = demoSet(), result = demoResult();
@@ -133,5 +133,5 @@ export default function Demo({ onClose, onStart }) {
   }, [onClose]);
 
   return <DemoView lang={lang} t={t} result={result} duration={set.duration} canvasRef={canvas}
-    onClose={onClose} onStart={onStart} onReplay={reduced ? undefined : () => { setT(0); setRun(n => n + 1); }} />;
+    onClose={onClose} onStart={onStart} onOpenLab={onOpenLab} onReplay={reduced ? undefined : () => { setT(0); setRun(n => n + 1); }} />;
 }

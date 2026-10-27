@@ -1,0 +1,118 @@
+/* Interactive Biomechanics Demo Screen */
+.wv-experience.demo-lab-experience {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--c-surface);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wv-experience .demo-lab-screen {
+  position: relative;
+  min-height: 100%;
+  padding-bottom: 60px;
+}
+
+.wv-experience .demo-lab-wrap {
+  width: 100%;
+  max-width: 480px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.wv-experience .demo-lab-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s-3);
+}
+
+.wv-experience .demo-lab-badge {
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+  border: 1px solid var(--c-accent);
+  border-radius: var(--r-pill);
+  padding: 4px 10px;
+}
+
+.wv-experience .demo-lab-eyebrow {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-fg-muted);
+}
+
+.wv-experience .demo-lab-title {
+  margin: var(--s-2) 0 var(--s-1);
+  font-family: var(--serif);
+  font-size: var(--fs-heading);
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--bone);
+}
+
+.wv-experience .demo-lab-sub {
+  margin: 0 0 var(--s-4);
+  font-size: var(--fs-caption);
+  line-height: 1.45;
+  color: var(--ash);
+}
+
+.wv-experience .demo-lab-stage {
+  position: relative;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  margin-bottom: var(--s-3);
+}
+
+.wv-experience .demo-lab-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-l);
+  width: 100%;
+  aspect-ratio: var(--ar, 0.5625);
+  max-height: 52svh;
+  box-shadow: 0 0 0 1px var(--c-rule);
+  background: var(--void);
+}
+
+.wv-experience .demo-lab-line {
+  margin-top: var(--s-2);
+}
+
+.wv-experience .demo-lab-hint {
+  margin: var(--s-1) 0 var(--s-3);
+  font-size: var(--fs-label);
+  font-family: var(--mono);
+  text-align: center;
+  color: var(--c-fg-muted);
+}
+
+.wv-experience .demo-lab-controls {
+  display: flex;
+  gap: var(--s-3);
+  margin-bottom: var(--s-5);
+}
+
+.wv-experience .demo-lab-analysis {
+  margin-bottom: var(--s-5);
+}
+
+.wv-experience .demo-lab-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.wv-experience .demo-lab-start-btn {
+  font-size: 16px;
+  font-weight: 600;
+}
