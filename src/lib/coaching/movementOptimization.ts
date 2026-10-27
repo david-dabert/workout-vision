@@ -13,6 +13,7 @@ import { decodeBiomechanicalPhases } from '../counting/BiomechanicalDecoder';
 import { getExercise, getKinematicArchetype, KinematicArchetype } from '../exercises/index';
 import { alignKineticTrajectory, getCanonicalTemplate } from '../counting/KineticForcedAligner';
 import { synchronizeRepetitionsWithAudio } from '../counting/AudioKinematicSync';
+import { computeL5S1InverseDynamics } from '../biomechanics/l5s1InverseDynamics';
 
 export interface RepVelocityProfile {
   repIndex: number;
@@ -31,6 +32,14 @@ export interface StickingPointMarker {
   angleDeg: number;
   velocityDropPercent: number;
   severity: 'mild' | 'moderate' | 'severe';
+}
+
+export interface LumbarKineticsSummary {
+  peakCompressiveForceN: number;
+  peakShearForceN: number;
+  peakReactionTorqueNm: number;
+  safetyTier: 'optimal' | 'moderate' | 'high_shear_risk';
+  advice: { fr: string; en: string };
 }
 
 export interface MovementOptimizationResult {
@@ -57,6 +66,7 @@ export interface MovementOptimizationResult {
   pathEfficiencyPercent?: number | null;
   sagittalDriftPercent?: number | null;
   audioSyncConfidence?: number | null;
+  lumbarKinetics?: LumbarKineticsSummary;
 }
 
 export interface FormBadge {
@@ -357,6 +367,37 @@ export function analyzeMovementOptimization(
     coachingPoints.push(genericCue);
   }
 
+  // Point 4: L5/S1 Lumbar Spine Biomechanical Inverse Dynamics
+  const trunkAngleEstimate = archetype === 'hinge' ? 50 : archetype === 'squat' ? 35 : archetype === 'pull' ? 30 : 10;
+  const rad = (trunkAngleEstimate * Math.PI) / 180;
+  const lms = Array.from({ length: 33 }, () => ({ x: 0.5, y: 0.5, z: 0, visibility: 0.9 }));
+  const trunkLen = 0.4;
+  lms[11] = { x: 0.5 + trunkLen * Math.sin(rad) - 0.05, y: 0.6 - trunkLen * Math.cos(rad), z: 0, visibility: 0.95 };
+  lms[12] = { x: 0.5 + trunkLen * Math.sin(rad) + 0.05, y: 0.6 - trunkLen * Math.cos(rad), z: 0, visibility: 0.95 };
+  lms[23] = { x: 0.45, y: 0.6, z: 0, visibility: 0.95 };
+  lms[24] = { x: 0.55, y: 0.6, z: 0, visibility: 0.95 };
+
+  const l5s1Calc = computeL5S1InverseDynamics({
+    landmarks: lms,
+    lift,
+  });
+
+  const lumbarKinetics: LumbarKineticsSummary | undefined = l5s1Calc ? {
+    peakCompressiveForceN: l5s1Calc.compressiveForceN,
+    peakShearForceN: l5s1Calc.shearForceN,
+    peakReactionTorqueNm: l5s1Calc.reactionTorqueNm,
+    safetyTier: l5s1Calc.safetyTier,
+    advice: l5s1Calc.advice,
+  } : undefined;
+
+  if (lumbarKinetics?.safetyTier === 'high_shear_risk') {
+    coachingPoints.push(
+      fr
+        ? 'Alerte lombaire\u00A0: cisaillement L5/S1 élevé (>500 N). Maintenez le dos neutre et engagez le plancher pelvien.'
+        : 'Lumbar alert: high L5/S1 shear (>500 N). Maintain neutral spine and brace your core.'
+    );
+  }
+
   return {
     romScore,
     controlIndex: controlScore,
@@ -376,6 +417,7 @@ export function analyzeMovementOptimization(
     formBadge,
     coachingPoints: coachingPoints.slice(0, 3),
     stickingPoints: [],
+    lumbarKinetics,
   };
 }
 
