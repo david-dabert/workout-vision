@@ -110,6 +110,26 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           </span>
         </div>
 
+        <div className="res-opt-metric" data-testid="concentric-power-metric">
+          <div className="res-opt-metric-head">
+            <span className="res-opt-label">
+              {fr ? 'Puissance concentrique' : 'Concentric Power'}
+            </span>
+            <span className="res-opt-val">{analysis.averagePowerWatts} W</span>
+          </div>
+          <div className="res-opt-bar-track">
+            <div
+              className="res-opt-bar-fill is-good"
+              style={{ width: `${Math.min(100, Math.max(15, (analysis.averagePowerWatts / Math.max(1, analysis.peakPowerWatts || 300)) * 100))}%` }}
+            />
+          </div>
+          <span className="res-opt-sub">
+            {fr
+              ? `Pic\u00A0: ${analysis.peakPowerWatts} W (chute\u00A0: ${analysis.powerLossPercent}%)`
+              : `Peak: ${analysis.peakPowerWatts} W (drop: ${analysis.powerLossPercent}%)`}
+          </span>
+        </div>
+
         <div className="res-opt-metric">
           <div className="res-opt-metric-head">
             <span className="res-opt-label">
@@ -181,7 +201,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
                 </div>
                 <div className="res-opt-vbt-rep-times">
                   <span>{p.concentricSec > 0 ? `${p.concentricSec}s` : '—'}</span>
-                  <span>{p.romDegrees > 0 ? `${Math.round(p.romDegrees)}°` : ''}</span>
+                  <span>{p.powerWatts ? `${p.powerWatts}W` : (p.romDegrees > 0 ? `${Math.round(p.romDegrees)}°` : '')}</span>
                 </div>
               </div>
             ))}

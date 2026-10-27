@@ -22,6 +22,7 @@ export interface RepVelocityProfile {
   romDegrees: number;
   velocityLossPercent: number; // % loss relative to fastest rep in set
   tier: 'speed' | 'optimal_hypertrophy' | 'failure';
+  powerWatts?: number;         // mechanical concentric power (Watts)
 }
 
 export interface StickingPointMarker {
@@ -42,6 +43,9 @@ export interface MovementOptimizationResult {
   fatigueTier: 'speed' | 'optimal_hypertrophy' | 'failure';
   mechanicalWorkKj: number;    // kJ
   caloriesKcal: number;        // kcal (indicative estimate per R8)
+  averagePowerWatts: number;   // average concentric mechanical power (Watts)
+  peakPowerWatts: number;      // peak concentric mechanical power (Watts)
+  powerLossPercent: number;    // % drop from peak to final rep power
   timeUnderTensionSec: number; // seconds
   tempoCadence: string;        // e.g. "2-0-1"
   repVelocityProfiles: RepVelocityProfile[];
@@ -114,6 +118,9 @@ export function analyzeMovementOptimization(
       fatigueTier: 'speed',
       mechanicalWorkKj: 0,
       caloriesKcal: 0,
+      averagePowerWatts: 0,
+      peakPowerWatts: 0,
+      powerLossPercent: 0,
       timeUnderTensionSec: 0,
       tempoCadence: '0-0-0',
       repVelocityProfiles: [],
@@ -176,6 +183,32 @@ export function analyzeMovementOptimization(
     }
   }
 
+  // 4. Physics-based Mechanical Work (kJ), Concentric Power (Watts) & Caloric Expenditure (kcal)
+  const refMass = ARCHETYPE_DISPLACED_MASS_KG[archetype] || 50;
+  const refDisp = ARCHETYPE_DISPLACEMENT_METERS[archetype] || 0.40;
+  const g = 9.81; // m/s²
+
+  // Calculate per-rep mechanical work (Joules) and concentric power (Watts)
+  const repWorkAndPower = wholeReps.map(r => {
+    const repRom = r.romDegrees || avgRom;
+    const disp = refDisp * Math.max(0.3, Math.min(1.5, repRom / targetRom));
+    const repJoules = refMass * g * disp;
+    const concSec = r.concentricSec && r.concentricSec > 0 ? r.concentricSec : Math.max(0.3, avgConcentric);
+    const powerWatts = Math.round(repJoules / concSec);
+    return { joules: repJoules, powerWatts };
+  });
+
+  const totalWorkJoules = repWorkAndPower.reduce((sum, item) => sum + item.joules, 0);
+  const mechanicalWorkKj = Math.round((totalWorkJoules / 1000) * 10) / 10;
+  // Metabolic energy: skeletal muscle efficiency ~0.22, eccentric phase factor ~1.25, 4184 Joules/kcal
+  const caloriesKcal = Math.round(((totalWorkJoules * 1.25) / (0.22 * 4184)) * 10) / 10;
+
+  const powers = repWorkAndPower.map(p => p.powerWatts);
+  const averagePowerWatts = powers.length > 0 ? Math.round(powers.reduce((a, b) => a + b, 0) / powers.length) : 0;
+  const peakPowerWatts = powers.length > 0 ? Math.max(...powers) : 0;
+  const lastRepPower = powers.length > 0 ? powers[powers.length - 1] : 0;
+  const powerLossPercent = peakPowerWatts > 0 ? Math.max(0, Math.round(((peakPowerWatts - lastRepPower) / peakPowerWatts) * 100)) : 0;
+
   // Construct rep velocity profile for each whole rep
   const repVelocityProfiles: RepVelocityProfile[] = wholeReps.map((r, idx) => {
     const durationSec = Math.round(((r.endTime || 0) - (r.startTime || 0)) * 100) / 100;
@@ -199,25 +232,9 @@ export function analyzeMovementOptimization(
       romDegrees: rom,
       velocityLossPercent: repLoss,
       tier,
+      powerWatts: repWorkAndPower[idx]?.powerWatts ?? 0,
     };
   });
-
-  // 4. Physics-based Mechanical Work (kJ) & Caloric Expenditure (kcal)
-  const refMass = ARCHETYPE_DISPLACED_MASS_KG[archetype] || 50;
-  const refDisp = ARCHETYPE_DISPLACEMENT_METERS[archetype] || 0.40;
-  const g = 9.81; // m/s²
-
-  // Sum mechanical work across each rep based on its excursion
-  const totalWorkJoules = wholeReps.reduce((sum, r) => {
-    const repRom = r.romDegrees || avgRom;
-    const disp = refDisp * Math.max(0.3, Math.min(1.5, repRom / targetRom));
-    const repJoules = refMass * g * disp;
-    return sum + repJoules;
-  }, 0);
-
-  const mechanicalWorkKj = Math.round((totalWorkJoules / 1000) * 10) / 10;
-  // Metabolic energy: skeletal muscle efficiency ~0.22, eccentric phase factor ~1.25, 4184 Joules/kcal
-  const caloriesKcal = Math.round(((totalWorkJoules * 1.25) / (0.22 * 4184)) * 10) / 10;
 
   // 5. Time Under Tension (TUT) and Tempo Cadence
   const tutSum = wholeReps.reduce((sum, r) => sum + Math.max(0, (r.endTime || 0) - (r.startTime || 0)), 0);
@@ -348,6 +365,9 @@ export function analyzeMovementOptimization(
     fatigueTier,
     mechanicalWorkKj,
     caloriesKcal,
+    averagePowerWatts,
+    peakPowerWatts,
+    powerLossPercent,
     timeUnderTensionSec,
     tempoCadence,
     repVelocityProfiles,
