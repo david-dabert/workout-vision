@@ -47,6 +47,13 @@
 .wv-experience .rp-rep { position: absolute; top: 50%; height: 10px; margin-top: -5px; border-radius: 5px; background: rgba(232, 189, 126, 0.34); transition: background var(--d-fast) var(--ease), box-shadow var(--d-fast) var(--ease); }
 .wv-experience .rp-rep.is-on { background: var(--lamp-hi); box-shadow: 0 0 12px rgba(247, 220, 174, 0.55); }
 .wv-experience .rp-now { position: absolute; top: 9px; bottom: 9px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--c-fg); pointer-events: none; }
+.wv-experience .rp-sticking-pin {
+  position: absolute; top: 50%; width: 6px; height: 6px; margin-top: -3px; margin-left: -3px;
+  border-radius: 50%; background: var(--c-accent); box-shadow: 0 0 6px var(--c-accent);
+  pointer-events: none; z-index: 2; transition: transform var(--d-fast) var(--ease), box-shadow var(--d-fast) var(--ease);
+}
+.wv-experience .rp-sticking-pin.is-active { transform: scale(1.6); box-shadow: 0 0 10px var(--c-accent); }
+.wv-experience .rp-chip.is-sticking .rp-phase { color: var(--c-accent); font-weight: 600; }
 .wv-experience .rp-detail { flex: none; min-height: 19px; margin: 2px 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--c-fg-muted); text-wrap: balance; }
 .wv-experience .rp-prov { flex: none; margin: 4px 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: inherit; text-wrap: balance; }
 
