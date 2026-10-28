@@ -13,6 +13,8 @@ import { evaluateLiveRepQuality } from '../../lib/coaching/movementOptimization'
 import { HierarchicalDetector } from '../../lib/hierarchicalDetector';
 import { computeL5S1InverseDynamics } from '../../lib/biomechanics/l5s1InverseDynamics';
 import { resolveKinematicAlias } from '../../lib/biomechanics/kinematicAliasing';
+import { evaluateFraming, AutonomousFramingCoach } from '../../lib/coaching/autonomousFraming';
+import { AutoSetGate } from '../../lib/coaching/autoSetGate';
 import './MovementOptimization.css';
 import './Live.css';
 
@@ -170,6 +172,10 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
   const bounceWarningFired = useRef(false);
   const lockoutDwellStart = useRef(0);
   const tensionAlertFired = useRef(false);
+  const framingCoach = useRef(new AutonomousFramingCoach(700, 3500));
+  const autoGate = useRef(new AutoSetGate({ braceDwellSec: 1.2, rackDwellSec: 3.5 }));
+  const [framingEval, setFramingEval] = useState(null);
+  const [isAutoGated] = useState(true);
 
   useEffect(() => {
     if (isAuto) {
@@ -321,6 +327,37 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
           }
         }
       }
+
+      // Autonomous Camera Framing & Hands-Free Auto-Gate
+      const fEval = evaluateFraming(lm, wholeBody);
+      setFramingEval(fEval);
+
+      if (stateRef.current === 'ready') {
+        if (voiceRef.current) {
+          const cue = framingCoach.current.update(fEval, now);
+          if (cue) say(cue, lang);
+        }
+
+        if (isAutoGated) {
+          const gateAction = autoGate.current.update(fEval.isReadyToLift, angle, true, now);
+          if (gateAction === 'TRIGGER_COUNTDOWN') {
+            start();
+          }
+        }
+      } else if (stateRef.current === 'running' && isAutoGated) {
+        autoGate.current.setReps(shown.current ?? 0);
+        const kinematicProfile = resolveKinematicAlias(effectiveCurrentLift);
+        const isHighRest = kinematicProfile.restPosition === 'high';
+        const targetStretch = kinematicProfile.optimalStretchAngle;
+        const isNearLockout = angle !== null
+          ? (isHighRest ? angle > targetStretch + 20 : angle < targetStretch - 20)
+          : true;
+
+        const gateAction = autoGate.current.update(fEval.isReadyToLift, angle, isNearLockout, now);
+        if (gateAction === 'TRIGGER_FINISH') {
+          finish();
+        }
+      }
     };
     const e = createLiveEngine({
       lift: effectiveLift, video: videoRef.current,
@@ -426,6 +463,8 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
   }, []);
 
   function start() {
+    autoGate.current.onSetStarted();
+    framingCoach.current.reset();
     if (voiceRef.current) unlockSpeech(lang);
     shown.current = null;
     lastRepTimestamp.current = 0;
@@ -463,6 +502,8 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
   }
 
   async function finish() {
+    autoGate.current.reset();
+    framingCoach.current.reset();
     if (!['running', 'paused'].includes(stateRef.current) && engine.current?.mode !== 'draining') return;
     setState('finishing');
     release();
@@ -558,9 +599,23 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
           <div className="live-over">
             {state === 'opening' && <p className="live-hint" role="status">{fr ? 'Ouverture de la caméra…' : 'Opening the camera…'}</p>}
             {state === 'loading' && <p className="live-hint" role="status">{fr ? 'Préparation…' : 'Getting ready…'}</p>}
-            {state === 'ready' && <p className="live-hint" role="status" data-testid="live-hint">{body
-              ? (fr ? 'On vous voit. Touchez Démarrer, puis mettez-vous en place.' : 'You are in view. Tap Start, then get into position.')
-              : framing}</p>}
+            {state === 'ready' && (
+              <div className="live-ready-guidance" data-testid="live-ready-guidance">
+                <p className="live-hint" role="status" data-testid="live-hint">
+                  {body
+                    ? (framingEval && framingEval.status !== 'OPTIMAL'
+                      ? (fr ? framingEval.cueFr : framingEval.cueEn)
+                      : (fr ? 'On vous voit. Touchez Démarrer, puis mettez-vous en place.' : 'You are in view. Tap Start, then get into position.'))
+                    : framing}
+                </p>
+                {framingEval?.isReadyToLift && (
+                  <div className="live-auto-brace-badge" data-testid="live-auto-brace-badge">
+                    <span className="live-auto-pulse" aria-hidden="true" />
+                    <span>{fr ? 'Cadrage optimal\u00A0: stabilisez-vous pour démarrer' : 'Optimal framing: hold still to start'}</span>
+                  </div>
+                )}
+              </div>
+            )}
             {state === 'countdown' && <div className="live-countdown" role="timer" aria-live="assertive">
               <span className="live-cd numeral" key={left}>{left}</span>
               <span className="live-sub">{fr ? 'Mettez-vous en place' : 'Get into position'}</span>
@@ -610,6 +665,10 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
                     )}
                   </div>
                 )}
+                <div className="live-handsfree-indicator" data-testid="live-handsfree-indicator">
+                  <i className="live-handsfree-dot" aria-hidden="true" />
+                  <span>{fr ? 'ZÉRO-TOUCH' : 'ZERO-TOUCH'}</span>
+                </div>
               </div>
               : <div className="live-away" data-testid="live-hint">
                 <p className="live-hint-title">{live.inView ? (fr ? 'C’est parti' : 'Go') : (fr ? 'Revenez dans le cadre' : 'Step back into the frame')}</p>
