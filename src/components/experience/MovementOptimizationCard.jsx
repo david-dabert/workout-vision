@@ -36,6 +36,64 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
         </span>
       </div>
 
+      {analysis.coachPrescription && (
+        <div className="res-opt-prescription-card" data-testid="coach-prescription-card">
+          <div className="res-opt-prescription-header">
+            <div className="res-opt-prescription-title-group">
+              <span className="res-opt-prescription-kicker">
+                {fr ? 'Le Verdict du Coach' : 'The Coach’s Prescription'}
+              </span>
+              <h4 className="res-opt-prescription-title">
+                {fr ? analysis.coachPrescription.tierLabelFr : analysis.coachPrescription.tierLabelEn}
+              </h4>
+            </div>
+            <div className="res-opt-compliance-score" data-testid="compliance-score">
+              <span className="res-opt-score-val">{analysis.coachPrescription.executionComplianceScore}%</span>
+              <span className="res-opt-score-lbl">{fr ? 'Standard d’élite' : 'Elite Standard'}</span>
+            </div>
+          </div>
+
+          {analysis.coachPrescription.limitingFactor.category !== 'none' && (
+            <div className="res-opt-bottleneck-box" data-testid="coach-limiting-factor">
+              <div className="res-opt-bottleneck-head">
+                <span className="res-opt-bottleneck-badge">
+                  {fr ? 'Facteur limitant #1' : 'Bottleneck #1'}
+                </span>
+                <span className="res-opt-bottleneck-title">
+                  {fr
+                    ? analysis.coachPrescription.limitingFactor.titleFr
+                    : analysis.coachPrescription.limitingFactor.titleEn}
+                </span>
+              </div>
+              <p className="res-opt-bottleneck-detail">
+                {fr
+                  ? analysis.coachPrescription.limitingFactor.detailFr
+                  : analysis.coachPrescription.limitingFactor.detailEn}
+              </p>
+            </div>
+          )}
+
+          <div className="res-opt-next-set-banner" data-testid="next-set-prescription">
+            <span className="res-opt-next-set-kicker">
+              {fr ? 'Consigne pour la série suivante' : 'Prescription for Set N+1'}
+            </span>
+            <p className="res-opt-next-set-cue">
+              {fr
+                ? analysis.coachPrescription.nextSetPrescription.cueFr
+                : analysis.coachPrescription.nextSetPrescription.cueEn}
+            </p>
+            <div className="res-opt-next-set-focus">
+              <span className="res-opt-focus-label">{fr ? 'Focus mental\u00A0:' : 'Mental cue:'}</span>
+              <span className="res-opt-focus-text">
+                {fr
+                  ? analysis.coachPrescription.nextSetPrescription.mentalFocusFr
+                  : analysis.coachPrescription.nextSetPrescription.mentalFocusEn}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {analysis.machineProfile && analysis.machineProfile.machineType !== 'free_planar' && (
         <div className="res-opt-machine-banner" data-testid="machine-profile-banner">
           <div className="res-opt-machine-badge">

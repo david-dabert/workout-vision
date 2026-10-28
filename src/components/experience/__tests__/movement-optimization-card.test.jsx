@@ -120,4 +120,31 @@ describe('MovementOptimizationCard component', () => {
     expect(html).toContain('data-testid="stretch-hypertrophy-metric"');
     expect(html).toContain('Tension d’étirement');
   });
+
+  it('renders Coach Prescription card and Next-Set Cue banner with bilingual feedback', () => {
+    const reps = [
+      { index: 1, startTime: 1.0, endTime: 3.5, concentricSec: 1.0, eccentricSec: 2.0, romDegrees: 90, peakSpeed: 100, meanSpeed: 60 },
+      { index: 2, startTime: 4.0, endTime: 7.0, concentricSec: 1.2, eccentricSec: 2.0, romDegrees: 92, peakSpeed: 100, meanSpeed: 60 },
+    ];
+
+    const htmlFr = renderToStaticMarkup(
+      <MovementOptimizationCard reps={reps} lift="squat" fr={true} />
+    );
+
+    expect(htmlFr).toContain('data-testid="coach-prescription-card"');
+    expect(htmlFr).toContain('Le Verdict du Coach');
+    expect(htmlFr).toContain('data-testid="compliance-score"');
+    expect(htmlFr).toContain('data-testid="next-set-prescription"');
+    expect(htmlFr).toContain('Consigne pour la série suivante');
+    expect(htmlFr).toContain('Focus mental\u00A0:');
+
+    const htmlEn = renderToStaticMarkup(
+      <MovementOptimizationCard reps={reps} lift="squat" fr={false} />
+    );
+
+    expect(htmlEn).toContain('The Coach’s Prescription');
+    expect(htmlEn).toContain('Prescription for Set N+1');
+    expect(htmlEn).toContain('Mental cue:');
+  });
 });
+
