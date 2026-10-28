@@ -605,7 +605,7 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
                   {body
                     ? (framingEval && framingEval.status !== 'OPTIMAL'
                       ? (fr ? framingEval.cueFr : framingEval.cueEn)
-                      : (fr ? 'On vous voit. Touchez Démarrer ou stabilisez-vous.' : 'You are in view. Tap Start or hold still.'))
+                      : (fr ? 'On vous voit. Touchez Démarrer, puis mettez-vous en place.' : 'You are in view. Tap Start, then get into position.'))
                     : framing}
                 </p>
                 {framingEval?.isReadyToLift && (
