@@ -8,10 +8,11 @@ import { openCamera, closeCamera, cameraProblem, canOpenCamera } from '../../lib
 import { voiceWanted, setVoiceWanted, canSpeak, unlockSpeech, say, buzz, hush } from '../../lib/liveVoice';
 import { holdScreenAwake } from '../../lib/interruption';
 import { drawSkeleton, litSides, trailPoints } from './replay-draw';
-import { playLockoutCue, playVelocityLossAlert } from '../../lib/audioCueEngine';
+import { playLockoutCue, playVelocityLossAlert, playStretchDepthClick, playBounceWarning, playContinuousTensionAlert } from '../../lib/audioCueEngine';
 import { evaluateLiveRepQuality } from '../../lib/coaching/movementOptimization';
 import { HierarchicalDetector } from '../../lib/hierarchicalDetector';
 import { computeL5S1InverseDynamics } from '../../lib/biomechanics/l5s1InverseDynamics';
+import { resolveKinematicAlias } from '../../lib/biomechanics/kinematicAliasing';
 import './MovementOptimization.css';
 import './Live.css';
 
@@ -165,6 +166,10 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
   const isAutoRef = useRef(isAuto); isAutoRef.current = isAuto;
   const detector = useRef(null);
   const lastSpine = useRef('optimal');
+  const stretchDepthHit = useRef(false);
+  const bounceWarningFired = useRef(false);
+  const lockoutDwellStart = useRef(0);
+  const tensionAlertFired = useRef(false);
 
   useEffect(() => {
     if (isAuto) {
@@ -261,7 +266,7 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
         setLiveSpine(l5s1.safetyTier);
       }
 
-      // Real-time 1D micro-sequence phase classification (15 Hz)
+      // Real-time 1D micro-sequence phase classification (15 Hz) & Earbud Acoustic Co-Pilot
       const angle = extractLiveJointAngle(lm, def);
       if (angle !== null) {
         const dt = lastAngleTime.current > 0 ? Math.max(0.03, Math.min(0.2, (now - lastAngleTime.current) / 1000)) : 0.067;
@@ -270,6 +275,20 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
         lastAngle.current = angle;
         lastAngleTime.current = now;
         lastVel.current = vel;
+
+        // Subconscious Earbud Stretch-Depth Acoustic Click
+        const kinematicProfile = resolveKinematicAlias(effectiveCurrentLift);
+        const isHighRest = kinematicProfile.restPosition === 'high';
+        const targetStretch = kinematicProfile.optimalStretchAngle;
+        const inStretchZone = isHighRest ? angle <= targetStretch : angle >= targetStretch;
+        const inRestReturnZone = isHighRest ? angle > targetStretch + 15 : angle < targetStretch - 15;
+
+        if (inStretchZone && !stretchDepthHit.current) {
+          playStretchDepthClick();
+          stretchDepthHit.current = true;
+        } else if (inRestReturnZone) {
+          stretchDepthHit.current = false;
+        }
 
         angleHistory.current.push(angle);
         if (angleHistory.current.length > 15) angleHistory.current.shift();
@@ -280,6 +299,26 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
             lastPhaseUpdate.current = now;
             setLivePhase(pred);
           }
+
+          // Ballistic Turnaround Jerk Bounce Warning
+          if (pred === 'amortization_sticking' && Math.abs(acc) > kinematicProfile.turnaroundTolerance * 1.5) {
+            if (!bounceWarningFired.current) {
+              playBounceWarning();
+              bounceWarningFired.current = true;
+            }
+          }
+
+          // Continuous Tension Lockout Resting Alert (>1200ms at lockout)
+          if (pred === 'lockout_rest') {
+            if (lockoutDwellStart.current === 0) lockoutDwellStart.current = now;
+            if (now - lockoutDwellStart.current > 1200 && !tensionAlertFired.current) {
+              playContinuousTensionAlert();
+              tensionAlertFired.current = true;
+            }
+          } else {
+            lockoutDwellStart.current = 0;
+            tensionAlertFired.current = false;
+          }
         }
       }
     };
@@ -289,6 +328,7 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
       onPreview: ({ body: b, ms }) => { setBody(b); previews.current += 1; if (previews.current >= SPEED_SAMPLES) setSlow(ms > SLOW_MS); },
       onCount: c => { setLive(c); shown.current = nextShown(shown.current, c.count); },
       onRep: n => {
+        bounceWarningFired.current = false;
         const repNow = performance.now();
         let velocitySlowed = false;
         let repDuration = 0;

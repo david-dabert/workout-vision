@@ -46,4 +46,31 @@ describe('AudioCoach Web Audio Synthesizer', () => {
       audioCoach.playCountdownTick(0);
     }).not.toThrow();
   });
+
+  it('safely handles playStretchDepthClick and tactile feedback', () => {
+    expect(() => {
+      audioCoach.playStretchDepthClick();
+    }).not.toThrow();
+  });
+
+  it('safely handles playBounceWarning for ballistic turnaround', () => {
+    expect(() => {
+      audioCoach.playBounceWarning();
+    }).not.toThrow();
+  });
+
+  it('safely handles playContinuousTensionAlert for lockout dwell', () => {
+    expect(() => {
+      audioCoach.playContinuousTensionAlert();
+    }).not.toThrow();
+  });
+
+  it('safely handles playLockoutCue and playTurnaroundCue', () => {
+    expect(() => {
+      audioCoach.playLockoutCue(0);
+      audioCoach.playLockoutCue(-0.5);
+      audioCoach.playTurnaroundCue();
+    }).not.toThrow();
+  });
 });
+
