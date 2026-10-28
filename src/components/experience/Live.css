@@ -178,8 +178,45 @@
   background: var(--c-accent);
   animation: live-pulse 1s infinite alternate var(--ease);
 }
-.wv-experience .live-auto-btn.is-on {
-  color: var(--c-accent);
-  border-color: var(--c-accent);
+.wv-experience .live-ready-guidance {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+}
+.wv-experience .live-auto-brace-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 4px 12px;
+  border-radius: var(--r-full);
+  background: var(--well);
+  border: 1px solid var(--c-accent);
+  color: var(--lamp-hi);
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+.wv-experience .live-handsfree-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  padding: 3px 10px;
+  border-radius: var(--r-full);
+  background: var(--well);
+  border: 1px solid var(--hair-2);
+  color: var(--bone-2);
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+  letter-spacing: var(--track-label);
+}
+.wv-experience .live-handsfree-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--c-accent);
 }
 
