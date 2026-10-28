@@ -427,5 +427,147 @@
   color: var(--c-fg-muted);
 }
 
+/* Coach's Prescription Card ("Le Verdict du Coach") */
+.res-opt-prescription-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+  background: var(--well);
+  border: 1px solid var(--lamp-line);
+  border-radius: 10px;
+}
 
+.res-opt-prescription-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
 
+.res-opt-prescription-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.res-opt-prescription-kicker {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+.res-opt-prescription-title {
+  margin: 0;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  color: var(--bone);
+}
+
+.res-opt-compliance-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.res-opt-score-val {
+  font-family: var(--mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--c-accent);
+  line-height: 1;
+}
+
+.res-opt-score-lbl {
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--c-fg-muted);
+}
+
+/* #1 Limiting Factor Bottleneck Box */
+.res-opt-bottleneck-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 6px;
+  background: var(--hair-1);
+  border: 1px solid var(--c-edge);
+}
+
+.res-opt-bottleneck-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.res-opt-bottleneck-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  color: var(--bone-2);
+  border: 1px solid var(--c-edge);
+}
+
+.res-opt-bottleneck-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--bone);
+}
+
+.res-opt-bottleneck-detail {
+  margin: 0;
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--c-fg-muted);
+}
+
+/* Next Set Actionable Prescription Banner */
+.res-opt-next-set-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: var(--hair-0);
+  border: 1px solid var(--c-rule);
+}
+
+.res-opt-next-set-kicker {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+.res-opt-next-set-cue {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  font-weight: 500;
+  color: var(--c-fg);
+}
+
+.res-opt-next-set-focus {
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  font-size: 0.6875rem;
+}
+
+.res-opt-focus-label {
+  font-weight: 600;
+  color: var(--c-accent);
+}
+
+.res-opt-focus-text {
+  color: var(--c-fg-muted);
+}

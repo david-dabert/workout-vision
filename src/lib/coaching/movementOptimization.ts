@@ -19,6 +19,13 @@ import { KinematicFootLocker, Landmark3D } from '../biomechanics/kinematicFootLo
 import { exportToBVH } from '../biomechanics/bvhExport';
 import { resolveKinematicAlias, KinematicMachineProfile } from '../biomechanics/kinematicAliasing';
 import { analyzeSetHypertrophy, SetHypertrophyReport, TrajectorySample } from '../biomechanics/hypertrophyDiagnostics';
+import {
+  getOptimalExecutionBlueprint,
+  generateCoachPrescription,
+  OptimalExecutionBlueprint,
+  CoachPrescription,
+  SetExecutionTelemetry,
+} from './optimalExecution';
 
 export interface RepVelocityProfile {
   repIndex: number;
@@ -77,6 +84,8 @@ export interface MovementOptimizationResult {
   bvhData?: string | null;
   hypertrophyReport?: SetHypertrophyReport;
   machineProfile?: KinematicMachineProfile;
+  optimalBlueprint?: OptimalExecutionBlueprint;
+  coachPrescription?: CoachPrescription;
 }
 
 export interface FormBadge {
@@ -465,6 +474,23 @@ export function analyzeMovementOptimization(
     coachingPoints.push(fr ? hypertrophyReport.primaryCoachingTakeawayFr : hypertrophyReport.primaryCoachingTakeawayEn);
   }
 
+  // Point 9: Optimal Execution Blueprint & Coach Prescription Engine
+  const optimalBlueprint = getOptimalExecutionBlueprint(lift);
+  const minAngleDeg = machineProfile.restPosition === 'high' ? Math.max(45, 165 - avgRom) : undefined;
+  const maxAngleDeg = machineProfile.restPosition === 'low' ? Math.min(170, 45 + avgRom) : undefined;
+
+  const setTelemetry: SetExecutionTelemetry = {
+    avgRomDeg: avgRom,
+    minAngleDeg,
+    maxAngleDeg,
+    avgEccentricSec: avgEccentric,
+    bounceCount: hypertrophyReport.bounceCount,
+    continuousTensionPercent: hypertrophyReport.continuousTensionPercentage,
+    velocityLossPercent,
+  };
+
+  const coachPrescription = generateCoachPrescription(setTelemetry, lift, fr);
+
   return {
     romScore,
     controlIndex: controlScore,
@@ -490,6 +516,8 @@ export function analyzeMovementOptimization(
     bvhData,
     hypertrophyReport,
     machineProfile,
+    optimalBlueprint,
+    coachPrescription,
   };
 }
 
@@ -741,6 +769,18 @@ export function analyzeContinuousBiomechanics(
     ? analyzeSetHypertrophy(continuousRepSamples, baseResult.machineProfile || resolveKinematicAlias(lift))
     : baseResult.hypertrophyReport;
 
+  const continuousPrescription = continuousHypertrophyReport
+    ? generateCoachPrescription({
+        avgRomDeg: baseResult.averageRomDeg,
+        minAngleDeg: baseResult.machineProfile?.restPosition === 'high' ? Math.max(45, 165 - baseResult.averageRomDeg) : undefined,
+        maxAngleDeg: baseResult.machineProfile?.restPosition === 'low' ? Math.min(170, 45 + baseResult.averageRomDeg) : undefined,
+        avgEccentricSec: baseResult.averageEccentricSec,
+        bounceCount: continuousHypertrophyReport.bounceCount,
+        continuousTensionPercent: continuousHypertrophyReport.continuousTensionPercentage,
+        velocityLossPercent: baseResult.velocityLossPercent,
+      }, lift, fr)
+    : baseResult.coachPrescription;
+
   return {
     ...baseResult,
     stickingPoints,
@@ -750,6 +790,7 @@ export function analyzeContinuousBiomechanics(
     sagittalDriftPercent,
     audioSyncConfidence,
     hypertrophyReport: continuousHypertrophyReport,
+    coachPrescription: continuousPrescription,
   };
 }
 
