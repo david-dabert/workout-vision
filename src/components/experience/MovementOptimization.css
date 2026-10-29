@@ -571,3 +571,80 @@
 .res-opt-focus-text {
   color: var(--c-fg-muted);
 }
+
+/* Progressive Disclosure: Collapsible Deep Dive for Advanced Biomechanics */
+.res-opt-deep-dive {
+  margin-top: 1rem;
+  border-top: 1px solid var(--c-rule);
+  padding-top: 0.75rem;
+}
+
+.res-opt-deep-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0.5rem;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  transition: background var(--d-fast) var(--ease);
+}
+
+.res-opt-deep-summary::-webkit-details-marker {
+  display: none;
+}
+
+.res-opt-deep-summary:hover {
+  background: var(--bio-glow);
+}
+
+.res-opt-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.res-opt-summary-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.res-opt-summary-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.res-opt-summary-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--c-fg);
+  line-height: 1.25;
+}
+
+.res-opt-summary-sub {
+  font-size: 0.6875rem;
+  color: var(--c-fg-muted);
+  line-height: 1.3;
+}
+
+.res-opt-summary-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--hair-2);
+  color: var(--c-accent);
+  background: var(--well);
+  flex-shrink: 0;
+}
+
+.res-opt-deep-content {
+  margin-top: 0.75rem;
+}

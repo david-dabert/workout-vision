@@ -101,11 +101,11 @@ function HighlightMatch({ text, query }) {
   );
 }
 
-export default function FilmExerciseDrawer({ currentLift, onSelect, onClose }) {
+export default function FilmExerciseDrawer({ currentLift, onSelect, onClose, initialArchetype = 'all', initialQuery = '' }) {
   const { lang } = useT();
   const fr = lang === 'fr';
-  const [query, setQuery] = useState('');
-  const [archetype, setArchetype] = useState('all');
+  const [query, setQuery] = useState(initialQuery);
+  const [archetype, setArchetype] = useState(initialArchetype);
   const [equipment, setEquipment] = useState('all');
   const [expandedId, setExpandedId] = useState(null);
   const inputRef = useRef(null);
