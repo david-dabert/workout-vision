@@ -94,10 +94,26 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
         </div>
       )}
 
-      {analysis.machineProfile && analysis.machineProfile.machineType !== 'free_planar' && (
-        <div className="res-opt-machine-banner" data-testid="machine-profile-banner">
-          <div className="res-opt-machine-badge">
-            <span className="res-opt-machine-kicker">{fr ? 'Guidage mécanique' : 'Machine Guidance'}</span>
+      <details className="res-opt-deep-dive" data-testid="res-opt-deep-dive">
+        <summary className="res-opt-deep-summary press" data-testid="res-opt-deep-summary">
+          <div className="res-opt-summary-left">
+            <span className="res-opt-summary-icon" aria-hidden="true">🔬</span>
+            <div className="res-opt-summary-text">
+              <strong className="res-opt-summary-title">
+                {fr ? 'Biomécanique détaillée & Cinématique 3D' : 'Detailed Biomechanics & 3D Kinematics'}
+              </strong>
+              <span className="res-opt-summary-sub">
+                {fr ? 'Angles, puissance (W), perte de vitesse (VBT) et cinématique' : 'Angles, power (W), velocity loss (VBT) and kinematics'}
+              </span>
+            </div>
+          </div>
+          <span className="res-opt-summary-badge">{fr ? 'Détails' : 'Details'}</span>
+        </summary>
+        <div className="res-opt-deep-content">
+          {analysis.machineProfile && analysis.machineProfile.machineType !== 'free_planar' && (
+            <div className="res-opt-machine-banner" data-testid="machine-profile-banner">
+              <div className="res-opt-machine-badge">
+                <span className="res-opt-machine-kicker">{fr ? 'Guidage mécanique' : 'Machine Guidance'}</span>
             <span className="res-opt-machine-name">
               {fr ? analysis.machineProfile.canonicalNameFr : analysis.machineProfile.canonicalNameEn}
             </span>
@@ -442,6 +458,8 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           </button>
         </div>
       )}
+        </div>
+      </details>
     </div>
   );
 }

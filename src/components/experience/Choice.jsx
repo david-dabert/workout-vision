@@ -19,6 +19,7 @@ import { InstallRow } from './Install';
 import { pendingIncident, dismissIncident } from '../../lib/crashLog';
 import { CRASH, crashLine } from './crash-copy';
 import FilmExerciseDrawer from './FilmExerciseDrawer';
+import OneTouchHub from './OneTouchHub';
 import './Choice.css';
 
 // The list of every counted exercise loads after the choice has shown (ExerciseList.jsx).
@@ -95,6 +96,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
   const { lang, tExercise } = useT(), fr = lang === 'fr';
   const railRef = useRef(null), dotsRef = useRef(null), cards = useRef([]);
   const [catalogOpen, setCatalogOpen] = useState(false);
+  const [catalogArchetype, setCatalogArchetype] = useState('all');
   // The guide's names load after the choice; until then a set of an exercise without a card is not
   // named, so the welcome never shows an internal key (review of 29 September).
   const [nameOf, setNameOf] = useState(null);
@@ -156,6 +158,27 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
         {/* The home in three groups (David, 16 October 2026: "for me it just didn't make sense"): training, the
             professionals' tools, then what is there to explore, the Manifesto last. */}
         {<h2 className="section-head choose-head" data-testid="choose-head-training">{fr ? 'Votre entraînement' : 'Your training'}</h2>}
+        <OneTouchHub
+          fr={fr}
+          onStartLift={() => {
+            setCatalogArchetype('all');
+            setCatalogOpen(true);
+          }}
+          onMobility={onReference}
+          onHistory={onHistory}
+          onSelectCategory={catKey => {
+            const archMap = {
+              all: 'all',
+              chest_arms: 'push',
+              back_shoulders: 'pull',
+              legs: 'squat',
+              core: 'isolation',
+              beta: 'all',
+            };
+            setCatalogArchetype(archMap[catKey] || 'all');
+            setCatalogOpen(true);
+          }}
+        />
         {/* The app on the Home Screen never receives a coach's link, which opens in the browser: a way to paste one in
             (Programme.jsx, PasteLink; excellence hunt, 9 October 2026). */}
         {!received && onProgramme && onHomeScreen() && <button className="row-link press" onClick={onProgramme} data-testid="choice-programme-link">
@@ -265,6 +288,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
       {catalogOpen && (
         <FilmExerciseDrawer
           currentLift={null}
+          initialArchetype={catalogArchetype}
           onSelect={key => {
             setCatalogOpen(false);
             onChoose(key);
