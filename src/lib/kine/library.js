@@ -153,7 +153,156 @@ export const LIBRARY = Object.freeze([
   },
 ]);
 
-export const exerciseById = id => LIBRARY.find(e => e.id === id) ?? null;
+/**
+ * Standardized Functional Mobility & Physical Therapy Screening Library.
+ * Grounded in sports medicine and clinical physical therapy protocols (Squat University / Gray Cook FMS).
+ */
+export const MOBILITY_SCREENS = Object.freeze([
+  {
+    id: 'test-dorsiflexion-cheville',
+    file: 'squat-u-dorsiflexion',
+    category: 'mobility_screen',
+    compare: true,
+    dosage: { reps: 5, sets: 1 },
+    targets: [35, 40],
+    fr: {
+      title: 'Bilan de flexion de cheville (Test genou-au-mur)',
+      position: 'En fente semi-à-genoux face à un mur, pied perpendiculaire, talon au sol.',
+      steps: [
+        'Avancer le genou dans l’axe du 2e orteil vers le mur.',
+        'Garder le talon strictement plaqué au sol sans le soulever.',
+        'Maintenir la flexion maximale 3 secondes, puis relâcher.',
+      ],
+      camera: 'Téléphone posé de profil au sol, cadrant la cheville, le pied et le genou.',
+    },
+    en: {
+      title: 'Ankle Dorsiflexion Screen (Knee-to-Wall Test)',
+      position: 'In a half-kneeling lunge facing a wall, foot square, heel pinned to the floor.',
+      steps: [
+        'Drive the knee forward over the 2nd toe toward the wall.',
+        'Keep the heel strictly pinned to the ground without lifting.',
+        'Hold the terminal dorsiflexion for 3 seconds, then release.',
+      ],
+      camera: 'Phone placed side-on at floor level, framing the ankle, foot, and knee.',
+    },
+  },
+  {
+    id: 'test-rotation-hanche',
+    file: 'squat-u-rotation-hanche',
+    category: 'mobility_screen',
+    compare: true,
+    dosage: { reps: 5, sets: 1 },
+    targets: [35, 45],
+    fr: {
+      title: 'Bilan de rotation de hanche (Conflit et mobilité capsulaire)',
+      position: 'Assis sur une table haute, genoux à 90°, cuisses parallèles.',
+      steps: [
+        'Tourner le bas de jambe vers l’extérieur pour tester la rotation interne.',
+        'Maintenir 3 secondes sans incliner le tronc.',
+        'Tourner le bas de jambe vers l’intérieur pour tester la rotation externe.',
+      ],
+      camera: 'Téléphone posé face au patient à hauteur des genoux.',
+    },
+    en: {
+      title: 'Hip Rotation Screen (Capsular Mobility & Impingement)',
+      position: 'Seated on an elevated bench/table, knees at 90°, thighs parallel.',
+      steps: [
+        'Pivot the lower leg outward to assess internal rotation.',
+        'Hold for 3 seconds without leaning the torso.',
+        'Pivot the lower leg inward to assess external rotation.',
+      ],
+      camera: 'Phone placed facing the subject at knee height.',
+    },
+  },
+  {
+    id: 'test-mobilite-epaule-rachis',
+    file: 'squat-u-epaule-rachis',
+    category: 'mobility_screen',
+    compare: true,
+    dosage: { reps: 3, sets: 1 },
+    targets: [170, 180],
+    fr: {
+      title: 'Bilan d’élévation d’épaule et extension thoracique',
+      position: 'Debout, dos appuyé à un mur plat, talons à 10 cm du mur.',
+      steps: [
+        'Plaquer le bas du dos et les côtes contre le mur.',
+        'Lever les deux bras tendus au-dessus de la tête jusqu’au mur.',
+        'Ne pas cambrer le bas du dos pour tricher sur l’amplitude.',
+      ],
+      camera: 'Téléphone posé de profil à hauteur de poitrine.',
+    },
+    en: {
+      title: 'Overhead Shoulder & Thoracic Extension Screen',
+      position: 'Standing with upper back against a flat wall, heels 10 cm from the wall.',
+      steps: [
+        'Keep the lower back flat and ribs down against the wall.',
+        'Raise straight arms overhead toward the wall.',
+        'Do not hyperextend the lumbar spine to compensate for stiff shoulders.',
+      ],
+      camera: 'Phone placed side-on at chest height.',
+    },
+  },
+  {
+    id: 'test-stabilite-unipodale',
+    file: 'squat-u-stabilite-unipodale',
+    category: 'mobility_screen',
+    compare: true,
+    dosage: { reps: 5, sets: 1 },
+    targets: [0, 5],
+    fr: {
+      title: 'Bilan de stabilité unipodale (Test de Trendelenburg & Valgus)',
+      position: 'Debout sur une jambe, bras croisés sur la poitrine.',
+      steps: [
+        'Fléchir légèrement le genou d’appui à 30-45°.',
+        'Garder le bassin parfaitement horizontal sans bascule.',
+        'Maintenir le genou aligné avec le 2e orteil sans rentrée vers l’intérieur.',
+      ],
+      camera: 'Téléphone posé de face à hauteur du bassin.',
+    },
+    en: {
+      title: 'Single-Leg Dynamic Stability Screen (Trendelenburg & Valgus)',
+      position: 'Standing on one leg, arms folded across the chest.',
+      steps: [
+        'Lower into a single-leg mini squat (30-45° knee flexion).',
+        'Maintain level hips without pelvic drop.',
+        'Keep the knee tracking strictly over the 2nd toe without medial collapse.',
+      ],
+      camera: 'Phone placed front-on at hip height.',
+    },
+  },
+  {
+    id: 'test-aslr-chaine-posterieure',
+    file: 'squat-u-aslr',
+    category: 'mobility_screen',
+    compare: true,
+    dosage: { reps: 5, sets: 1 },
+    targets: [80, 85],
+    fr: {
+      title: 'Bilan de souplesse de jambe tendue (ASLR Ischio-jambiers)',
+      position: 'Couché sur le dos au sol, les deux jambes tendues, bras le long du corps.',
+      steps: [
+        'Lever une jambe tendue le plus haut possible sans plier le genou.',
+        'La jambe opposée doit rester plaquée au sol sans se fléchir.',
+        'Maintenir 2 secondes au point haut et redescendre sous contrôle.',
+      ],
+      camera: 'Téléphone posé de profil au sol au niveau du bassin.',
+    },
+    en: {
+      title: 'Active Straight Leg Raise Screen (ASLR Hamstring Length)',
+      position: 'Lying flat on the back, both legs extended straight, arms by sides.',
+      steps: [
+        'Raise one straight leg as high as possible without bending the knee.',
+        'Keep the opposite leg pinned flat to the floor without knee flexion.',
+        'Hold for 2 seconds at peak height and lower under control.',
+      ],
+      camera: 'Phone placed side-on at floor level aligned with hips.',
+    },
+  },
+]);
+
+export const ALL_EXERCISES = Object.freeze([...LIBRARY, ...MOBILITY_SCREENS]);
+
+export const exerciseById = id => ALL_EXERCISES.find(e => e.id === id) ?? null;
 
 // Where the references' media are served: the build's address (VITE_KINE_MEDIA_URL), or none.
 export const MEDIA_BASE = (import.meta.env?.VITE_KINE_MEDIA_URL || '').replace(/\/?$/, '/');
@@ -163,3 +312,4 @@ export const hasMedia = () => MEDIA_BASE !== '/';
 export function mediaUrl(exercise, kind = 'mp4') {
   return hasMedia() && exercise ? `${MEDIA_BASE}${exercise.file}.${kind}` : null;
 }
+
