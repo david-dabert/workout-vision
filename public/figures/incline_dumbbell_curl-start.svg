@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none" stroke="#E8C17A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <line data-role="ground" x1="29.47" y1="136.87" x2="210.53" y2="136.87" />
+  <line data-joint="11,12" x1="53.27" y1="71.53" x2="53.27" y2="71.53" />
+  <line data-joint="23,24" x1="99.02" y1="136.87" x2="99.02" y2="136.87" />
+  <line data-joint="mid_shoulder,mid_hip" x1="53.27" y1="71.53" x2="99.02" y2="136.87" />
+  <line data-joint="mid_shoulder,0" x1="53.27" y1="71.53" x2="49.47" y2="41.08" />
+  <line data-joint="11,13" x1="53.27" y1="71.53" x2="53.27" y2="117.09" />
+  <line data-joint="13,15" x1="53.27" y1="117.09" x2="56.88" y2="157.78" />
+  <line data-joint="12,14" x1="53.27" y1="71.53" x2="53.27" y2="117.09" />
+  <line data-joint="14,16" x1="53.27" y1="117.09" x2="56.88" y2="157.78" />
+  <line data-joint="23,25" x1="99.02" y1="136.87" x2="165.86" y2="136.87" />
+  <line data-joint="25,27" x1="165.86" y1="136.87" x2="165.86" y2="203.87" />
+  <line data-joint="27,31" x1="165.86" y1="203.87" x2="190.53" y2="215" />
+  <line data-joint="27,29" x1="165.86" y1="203.87" x2="156.31" y2="207.22" />
+  <line data-joint="24,26" x1="99.02" y1="136.87" x2="165.86" y2="136.87" />
+  <line data-joint="26,28" x1="165.86" y1="136.87" x2="165.86" y2="203.87" />
+  <line data-joint="28,32" x1="165.86" y1="203.87" x2="190.53" y2="215" />
+  <line data-joint="28,30" x1="165.86" y1="203.87" x2="156.31" y2="207.22" />
+  <circle data-joint="0" cx="49.47" cy="41.08" r="16.08" />
+</svg>
