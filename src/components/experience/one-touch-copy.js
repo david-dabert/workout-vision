@@ -52,7 +52,7 @@ export const ONE_TOUCH = {
       history: {
         badge: '📊',
         title: 'My Progress',
-        sub: 'Your sets and progress history',
+        sub: 'History and progress',
       },
     },
     quickCategoriesLabel: 'Browse by muscle group:',
