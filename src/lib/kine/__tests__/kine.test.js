@@ -72,6 +72,21 @@ describe('programme and result links', () => {
     expect(r.date).toBe('');
   });
 
+  it('admits lower-body kinetic measures (knee, ankle, hip, pelvis) across zero-server result links', () => {
+    const r = cleanResult({
+      id: 'test-dorsiflexion-cheville',
+      date: '2026-10-29T10:00',
+      verdict: 'match',
+      joints: [
+        { name: 'leftAnkle', within: 0.95, range: 1.0 },
+        { name: 'leftKnee', within: 0.90, range: 0.85 },
+        { name: 'pelvis', within: 0.98, range: 0.95 },
+        { name: 'invalidJoint', within: 0.5, range: 0.5 },
+      ],
+    });
+    expect(r.joints.map(j => j.name)).toEqual(['leftAnkle', 'leftKnee', 'pelvis']);
+  });
+
   it('finds the result link in pasted text, words and other "#" around it', () => {
     const link = resultLink('https://example.org/app/', { id: 'mains-jointes', verdict: 'match', joints: [], holds: [] });
     const payload = link.slice(link.indexOf(RESULT_KEY) + RESULT_KEY.length);

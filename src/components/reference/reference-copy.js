@@ -6,8 +6,30 @@ const clock = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(
 const deg = x => `${Math.round(x)}°`;
 
 export const JOINT_NAMES = {
-  fr: { rightShoulder: 'Épaule droite', leftShoulder: 'Épaule gauche', rightElbow: 'Coude droit', leftElbow: 'Coude gauche', leftArm: 'Bras gauche', rightArm: 'Bras droit', leftForearm: 'Avant-bras gauche', rightForearm: 'Avant-bras droit' },
-  en: { rightShoulder: 'Right shoulder', leftShoulder: 'Left shoulder', rightElbow: 'Right elbow', leftElbow: 'Left elbow', leftArm: 'Left arm', rightArm: 'Right arm', leftForearm: 'Left forearm', rightForearm: 'Right forearm' },
+  fr: {
+    rightShoulder: 'Épaule droite', leftShoulder: 'Épaule gauche',
+    rightElbow: 'Coude droit', leftElbow: 'Coude gauche',
+    leftArm: 'Bras gauche', rightArm: 'Bras droit',
+    leftForearm: 'Avant-bras gauche', rightForearm: 'Avant-bras droit',
+    rightHip: 'Hanche droite', leftHip: 'Hanche gauche',
+    rightKnee: 'Genou droit', leftKnee: 'Genou gauche',
+    rightAnkle: 'Cheville droite', leftAnkle: 'Cheville gauche',
+    leftThigh: 'Cuisse gauche', rightThigh: 'Cuisse droite',
+    leftShin: 'Jambe gauche', rightShin: 'Jambe droite',
+    torso: 'Tronc', pelvis: 'Bassin',
+  },
+  en: {
+    rightShoulder: 'Right shoulder', leftShoulder: 'Left shoulder',
+    rightElbow: 'Right elbow', leftElbow: 'Left elbow',
+    leftArm: 'Left arm', rightArm: 'Right arm',
+    leftForearm: 'Left forearm', rightForearm: 'Right forearm',
+    rightHip: 'Right hip', leftHip: 'Left hip',
+    rightKnee: 'Right knee', leftKnee: 'Left knee',
+    rightAnkle: 'Right ankle', leftAnkle: 'Left ankle',
+    leftThigh: 'Left thigh', rightThigh: 'Right thigh',
+    leftShin: 'Left shin', rightShin: 'Right shin',
+    torso: 'Torso', pelvis: 'Pelvis',
+  },
 };
 
 export const COPY = {

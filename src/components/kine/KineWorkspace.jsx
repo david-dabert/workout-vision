@@ -4,7 +4,7 @@ import { useT } from '../../lib/LanguageContext';
 import { hapticLight } from '../../lib/haptics';
 import { useCondensingTopbar } from '../experience/topbar';
 import { Topbar, GroupHead } from '../experience/Showcase';
-import { LIBRARY, exerciseById, hasMedia } from '../../lib/kine/library';
+import { LIBRARY, MOBILITY_SCREENS, exerciseById, hasMedia } from '../../lib/kine/library';
 import ExerciseCard from './ExerciseCard';
 import { cleanProgramme, programmeLink } from '../../lib/kine/links';
 import { readProfile, saveProfile, nextInvoiceNumber, takeFollowUpRequest, EMPTY_PROFILE } from '../../lib/kine/store';
@@ -123,6 +123,14 @@ function ProgrammeTab({ fr, k, profile }) {
           action={<button type="button" className={`rc-btn press ${has(ex.id) ? '' : 'is-primary'}`} onClick={() => add(ex)} disabled={has(ex.id)} data-testid={`kn-add-${ex.id}`}>{has(ex.id) ? k.added : k.add}</button>} />)}
       </div>
     </section>
+
+    {MOBILITY_SCREENS?.length > 0 && <section className="sc-section" data-testid="kn-mobility-screens-section">
+      <GroupHead title={k.mobilityScreens || (fr ? 'Bilans de mobilité et tests fonctionnels' : 'Mobility screens and functional tests')} />
+      <div className="kn-cards">
+        {MOBILITY_SCREENS.map(ex => <ExerciseCard key={ex.id} ex={ex} fr={fr} k={k}
+          action={<button type="button" className={`rc-btn press ${has(ex.id) ? '' : 'is-primary'}`} onClick={() => add(ex)} disabled={has(ex.id)} data-testid={`kn-add-${ex.id}`}>{has(ex.id) ? k.added : k.add}</button>} />)}
+      </div>
+    </section>}
   </>;
 }
 
