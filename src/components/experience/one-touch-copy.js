@@ -18,7 +18,7 @@ export const ONE_TOUCH = {
       history: {
         badge: '📊',
         title: 'Mon Suivi',
-        sub: 'Vos séries et votre progression',
+        sub: 'Historique et progression',
       },
     },
     quickCategoriesLabel: 'Explorer par groupe musculaire\u00A0:',
