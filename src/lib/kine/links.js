@@ -67,7 +67,10 @@ export function resultPayload(text) {
 
 // The measures a result may name (src/lib/reference/compare.js joints and the library's directions, either side): any
 // other name in a link is dropped, so that it can never reach a lookup by name (a forged "__proto__").
-export const MEASURES = Object.freeze(['leftShoulder', 'rightShoulder', 'leftElbow', 'rightElbow', 'leftArm', 'rightArm', 'leftForearm', 'rightForearm']);
+export const MEASURES = Object.freeze([
+  'leftShoulder', 'rightShoulder', 'leftElbow', 'rightElbow', 'leftArm', 'rightArm', 'leftForearm', 'rightForearm',
+  'leftHip', 'rightHip', 'leftKnee', 'rightKnee', 'leftAnkle', 'rightAnkle', 'leftThigh', 'rightThigh', 'leftShin', 'rightShin', 'torso', 'pelvis',
+]);
 const share = (v, hi) => (Number.isFinite(v) ? Math.round(Math.min(hi, Math.max(0, v)) * 100) / 100 : null);
 
 export function cleanResult(r) {
