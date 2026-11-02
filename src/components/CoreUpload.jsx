@@ -37,7 +37,7 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
   const [overlayLeaving, setOverlayLeaving] = useState(false);
   const [landmarks, setLandmarks] = useState(null);
   const [frameSize, setFrameSize] = useState(null);
-  const trueNRef = useRef(null);
+  const [reportMeta, setReportMeta] = useState({ count: null, id: null });
   // The count the user saved on the result, once saved: the replay states it beside the detected marks.
   const [savedCount, setSavedCount] = useState(null);
   // The left/right comparison the result screen saved with the set (sides-line.js), for the report.
@@ -45,7 +45,6 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
   // What the saved set measured (Result.jsx onSaved): its reps and wave, read again for the person's count when found,
   // and whether the body check doubted the joint; the report opened from the result reads them.
   const [savedMeasures, setSavedMeasures] = useState(null);
-  const savedIdRef = useRef(null);
   const abort = useRef(null);
   const closeTimer = useRef(null);
   // The blind question (blind.js): on David's phone (#collecte), the person's count is asked while the video is read,
@@ -143,8 +142,7 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
     setOverlay(name);
   }
   function openReport(savedN, savedId) {
-    trueNRef.current = savedN;
-    savedIdRef.current = savedId ?? null;
+    setReportMeta({ count: savedN, id: savedId ?? null });
     track('report_open', { lift });
     openOverlay('report');
   }
@@ -163,7 +161,7 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
       {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} onByHand={byHand('interrupted')} />}
       {view === 'result' && <Result result={result} lift={lift} videoFile={file} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={result.notRead ? undefined : () => openOverlay('replay')} onNewSet={onNewSet} onChangeLift={onClose} onRefilm={refilm} planned={planned} blind={blind} onSaved={(n, sides, measures) => { setSavedCount(n); setSavedSides(sides ?? null); setSavedMeasures(measures ?? null); }} />}
     </ScreenFade>
-    {view === 'result' && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={savedMeasures?.reps ?? []} setId={savedIdRef.current} sides={savedSides} wave={savedMeasures?.wave ?? null} recounted={!!savedMeasures?.recounted} doubted={!!savedMeasures?.doubted} planned={planned} leaving={overlayLeaving} onBack={closeOverlay} />}
+    {view === 'result' && overlay === 'report' && <Report lift={lift} count={reportMeta.count ?? result.count} counted={result.count} arm={result.arm} reps={savedMeasures?.reps ?? []} setId={reportMeta.id} sides={savedSides} wave={savedMeasures?.wave ?? null} recounted={!!savedMeasures?.recounted} doubted={!!savedMeasures?.doubted} planned={planned} result={result} leaving={overlayLeaving} onBack={closeOverlay} />}
     {view === 'result' && overlay === 'replay' && <Replay file={file} result={result} lift={lift} saved={savedCount} leaving={overlayLeaving} onBack={closeOverlay} />}
   </>;
 }

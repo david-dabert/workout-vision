@@ -26,7 +26,7 @@ export function warmReportPdf() {
  * reps: the saved set's reps, when their details were measured with step 3c's boundaries: the app's, or those read again
  * for the person's count (recounted). doubted: the body check flagged the set's joint (saved-set.js keepsMeasures).
  */
-export default function Report({ lift, count, counted, arm, date, source, afterRefusal = false, proposed = false, proposedBy = null, leaving, onBack, reps, setId, sides = null, wave = null, planned = null, recounted = false, doubted = false }) {
+export default function Report({ lift, count, counted, arm, date, source, afterRefusal = false, proposed = false, proposedBy = null, leaving, onBack, reps, setId, sides = null, wave = null, planned = null, recounted = false, doubted = false, result = null }) {
   const { lang } = useT(), fr = lang === 'fr';
   const [name, setName] = useState('');
   const [context, setContext] = useState(''); // '' | alone | friend | coach | physio
@@ -66,7 +66,8 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
     loadSets().then(all => { if (live) setPrevious(previousOf(all)); }, () => { if (live) setPrevious(null); });
     return () => { live = false; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, afterRefusal, proposed, proposedBy, first, previousSet: previous ?? null, sides, lift, wave, planned, rpe, pain, recounted, doubted });
+  const activeWave = wave || (result?.angles ? { a: result.angles, t: result.timestamps || result.angles.map((_, i) => i / 30) } : null);
+  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, afterRefusal, proposed, proposedBy, first, previousSet: previous ?? null, sides, lift, wave: activeWave, planned, rpe, pain, recounted, doubted });
   const sheetRef = useRef(sheet);
   sheetRef.current = sheet;
 
@@ -207,6 +208,119 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
         {sheet.own.length > 0 && <div className="sh-people sh-details sh-own" data-testid="sh-own">
           {sheet.own.map(([label, value]) => <span key={label}><em>{label}</em><span>{value}</span></span>)}
         </div>}
+
+        {/* 1. Coach's Prescription ("Le Verdict du Coach") */}
+        {sheet.optimization?.coachPrescription && (
+          <div className="sh-coach-prescription" data-testid="sh-coach-prescription">
+            <div className="sh-cp-head">
+              <div className="sh-cp-titles">
+                <span className="sh-cp-kicker">{fr ? 'Le Verdict du Coach' : 'The Coach’s Prescription'}</span>
+                <h4 className="sh-cp-title">{fr ? sheet.optimization.coachPrescription.tierLabelFr : sheet.optimization.coachPrescription.tierLabelEn}</h4>
+              </div>
+              <div className="sh-cp-score">
+                <span className="sh-cp-score-val">{sheet.optimization.coachPrescription.executionComplianceScore}%</span>
+                <span className="sh-cp-score-lbl">{fr ? 'Standard d’élite' : 'Elite Standard'}</span>
+              </div>
+            </div>
+            {sheet.optimization.coachPrescription.limitingFactor?.category !== 'none' && (
+              <div className="sh-cp-bottleneck">
+                <div className="sh-cp-bottleneck-head">
+                  <span className="sh-cp-bottleneck-badge">{fr ? 'Facteur limitant #1' : 'Bottleneck #1'}</span>
+                  <span className="sh-cp-bottleneck-title">{fr ? sheet.optimization.coachPrescription.limitingFactor.titleFr : sheet.optimization.coachPrescription.limitingFactor.titleEn}</span>
+                </div>
+                <p className="sh-cp-bottleneck-desc">{fr ? sheet.optimization.coachPrescription.limitingFactor.detailFr : sheet.optimization.coachPrescription.limitingFactor.detailEn}</p>
+              </div>
+            )}
+            <div className="sh-cp-next-set">
+              <span className="sh-cp-next-kicker">{fr ? 'Consigne pour la série suivante' : 'Prescription for Set N+1'}</span>
+              <p className="sh-cp-next-cue">{fr ? sheet.optimization.coachPrescription.nextSetPrescription.cueFr : sheet.optimization.coachPrescription.nextSetPrescription.cueEn}</p>
+              <div className="sh-cp-focus">
+                <em>{fr ? 'Focus mental\u00A0:' : 'Mental cue:'}</em>
+                <span>{fr ? sheet.optimization.coachPrescription.nextSetPrescription.mentalFocusFr : sheet.optimization.coachPrescription.nextSetPrescription.mentalFocusEn}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 2. Detailed Biomechanics & 3D Kinematics */}
+        {sheet.optimization && (
+          <div className="sh-biomechanics-section" data-testid="sh-biomechanics-section">
+            <div className="sh-sec-head">
+              <span className="sh-sec-title">{fr ? 'Biomécanique détaillée & Cinématique 3D' : 'Detailed Biomechanics & 3D Kinematics'}</span>
+              <span className="sh-sec-sub">{fr ? 'Angles, puissance (W), perte de vitesse (VBT) et cinématique' : 'Angles, power (W), velocity loss (VBT) and kinematics'}</span>
+            </div>
+            <div className="sh-bio-grid">
+              {(sheet.optimizationMetrics || []).map(m => (
+                <div key={m.label} className="sh-bio-card">
+                  <div className="sh-bio-card-head">
+                    <span className="sh-bio-lbl">{m.label}</span>
+                    <span className="sh-bio-val">{m.val}</span>
+                  </div>
+                  <div className="sh-bio-track"><div className="sh-bio-bar" style={{ width: `${m.fillPct}%` }} /></div>
+                  <span className="sh-bio-sub">{m.sub}</span>
+                </div>
+              ))}
+            </div>
+            <p className="sh-bio-disclaimer">{fr ? '* Estimation indicative basée sur le travail mécanique de la série.' : '* Indicative estimate based on mechanical work.'}</p>
+          </div>
+        )}
+
+        {/* 3. Rep-by-Rep Velocity Profile (VBT) */}
+        {sheet.optimization?.repVelocityProfiles?.length > 0 && (
+          <div className="sh-vbt-section" data-testid="sh-vbt-section">
+            <div className="sh-sec-head">
+              <span className="sh-sec-title">{fr ? 'Profil de Vitesse par Répétition (VBT)' : 'Rep-by-Rep Velocity Profile (VBT)'}</span>
+              <span className="sh-sec-sub">{fr ? 'Ralentissement vs rep la plus rapide' : 'Deceleration vs fastest rep'}</span>
+            </div>
+            <div className="sh-vbt-strip">
+              {sheet.optimization.repVelocityProfiles.map(p => (
+                <div key={p.repIndex} className={`sh-vbt-card is-${p.tier}`}>
+                  <div className="sh-vbt-card-head">
+                    <span className="sh-vbt-num">R{p.repIndex}</span>
+                    <span className="sh-vbt-loss">{p.velocityLossPercent}%</span>
+                  </div>
+                  <div className="sh-vbt-track"><div className="sh-vbt-bar" style={{ width: `${Math.max(12, Math.min(100, p.velocityLossPercent))}%` }} /></div>
+                  <div className="sh-vbt-times">
+                    <span>{p.concentricSec > 0 ? `${p.concentricSec}s` : '—'}</span>
+                    <span>{p.powerWatts ? `${p.powerWatts}W` : (p.romDegrees > 0 ? `${Math.round(p.romDegrees)}°` : '')}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 4. Sticking Point */}
+        {sheet.optimization?.stickingPointSummary && (
+          <div className="sh-sticking-box" data-testid="sh-sticking-box">
+            <div className="sh-sticking-head">
+              <span className="sh-sticking-badge">{fr ? 'Point de blocage' : 'Sticking Point'}</span>
+              <span className="sh-sticking-title">{fr ? 'Ralentissement biomécanique' : 'Biomechanical Deceleration'}</span>
+            </div>
+            <p className="sh-sticking-desc">{sheet.optimization.stickingPointSummary}</p>
+          </div>
+        )}
+
+        {/* 5. Hypertrophy Recommendations */}
+        {sheet.optimization?.coachingPoints?.length > 0 && (
+          <div className="sh-coaching-section" data-testid="sh-coaching-section">
+            <span className="sh-sec-title">{fr ? 'Recommandations hypertrophie' : 'Hypertrophic Stimulus Cues'}</span>
+            <ul className="sh-cues-list">
+              {sheet.optimization.coachingPoints.map((cue, idx) => (
+                <li key={idx} className="sh-cue-item">
+                  <span className="sh-cue-bullet">•</span>
+                  <span>{cue}</span>
+                </li>
+              ))}
+            </ul>
+            {sheet.optimization.targetMuscles?.length > 0 && (
+              <div className="sh-target-muscles">
+                <em>{fr ? 'Muscles cibles\u00A0:' : 'Target muscles:'}</em>
+                <span>{sheet.optimization.targetMuscles.join(', ')}</span>
+              </div>
+            )}
+          </div>
+        )}
         {/* The set's two figures, set like the count, under it. */}
         {sheet.stats.length > 0 && <div className="sh-stats" data-testid="sh-stats">
           {sheet.stats.map(([label, value]) => <span key={label}><em>{label}</em><b>{value}</b></span>)}

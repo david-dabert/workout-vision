@@ -15,12 +15,19 @@ vi.mock('web-demuxer', () => ({
   },
 }));
 
-let decoders;
+let decoders, canvases;
 beforeEach(() => {
   decoders = [];
+  canvases = [];
   globalThis.__destroyed = false;
   globalThis.location = { origin: 'https://app.test' };
-  globalThis.document = { createElement: () => ({ getContext: () => ({ drawImage() {}, save() {}, restore() {}, translate() {}, rotate() {} }) }) };
+  globalThis.document = {
+    createElement: () => {
+      const c = { width: 640, height: 480, getContext: () => ({ drawImage() {}, save() {}, restore() {}, translate() {}, rotate() {} }) };
+      canvases.push(c);
+      return c;
+    },
+  };
   globalThis.VideoDecoder = class {
     static async isConfigSupported() { return { supported: true }; }
     constructor({ output }) { this.output = output; this.closed = false; this.decodeQueueSize = 0; decoders.push(this); }
@@ -37,13 +44,15 @@ function makeFrame(t) { const f = { timestamp: t * 1e6, closed: false, close() {
 const chunks = n => new ReadableStream({ start(c) { for (let i = 0; i < n; i++) c.enqueue({ t: i / 30 }); c.close(); } });
 
 describe('WebCodecs decoding on an error or a cancel', () => {
-  it('an error in the frame callback closes the decoder and every frame still queued', async () => {
+  it('an error in the frame callback closes the decoder, every frame still queued, and zeroes canvas memory', async () => {
     const { extractFramesWebCodecs } = await import('../frameExtractor');
     globalThis.__emit = true; globalThis.__stream = () => chunks(60);
     await expect(extractFramesWebCodecs(new Blob(['x']), 15, Infinity, 640, async () => { throw new Error('callback failed'); }, null, {})).rejects.toThrow('callback failed');
     expect(decoders[0].closed).toBe(true);
     expect(frames.every(f => f.closed)).toBe(true);
     expect(globalThis.__destroyed).toBe(true);
+    expect(canvases.length).toBeGreaterThan(0);
+    expect(canvases.every(c => c.width === 0 && c.height === 0)).toBe(true);
   });
   it('a cancel while waiting for a frame ends the decoding at once', async () => {
     const { extractFramesWebCodecs } = await import('../frameExtractor');

@@ -21,7 +21,8 @@ export default function LiveSession({ lift, onClose, onRecord, planned = null })
   // What the saved set measured (Result.jsx onSaved): its reps and wave, read again for the person's count when found,
   // and whether the body check doubted the joint; the report opened from the result reads them.
   const [savedMeasures, setSavedMeasures] = useState(null);
-  const trueNRef = useRef(null), savedIdRef = useRef(null), closeTimer = useRef(null);
+  const [reportMeta, setReportMeta] = useState({ count: null, id: null });
+  const closeTimer = useRef(null);
   useEffect(() => () => clearTimeout(closeTimer.current), []);
 
   function done(output, shown) {
@@ -39,8 +40,7 @@ export default function LiveSession({ lift, onClose, onRecord, planned = null })
   }
   function openOverlay(name) { clearTimeout(closeTimer.current); setOverlayLeaving(false); setOverlay(name); }
   function openReport(savedN, savedId) {
-    trueNRef.current = savedN;
-    savedIdRef.current = savedId ?? null;
+    setReportMeta({ count: savedN, id: savedId ?? null });
     track('report_open', { lift });
     openOverlay('report');
   }
@@ -57,7 +57,7 @@ export default function LiveSession({ lift, onClose, onRecord, planned = null })
       {result && <Result result={result} lift={lift} liveShown={liveShown} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport}
         onReplay={() => openOverlay('replay')} onNewSet={onRecord} onChangeLift={onClose} onRefilm={again} planned={planned} onSaved={(n, sides, measures) => { setSavedCount(n); setSavedSides(sides ?? null); setSavedMeasures(measures ?? null); }} />}
     </ScreenFade>
-    {result && overlay === 'report' && <Report lift={lift} count={trueNRef.current ?? result.count} counted={result.count} arm={result.arm} reps={savedMeasures?.reps ?? []} setId={savedIdRef.current} sides={savedSides} wave={savedMeasures?.wave ?? null} recounted={!!savedMeasures?.recounted} doubted={!!savedMeasures?.doubted} planned={planned} leaving={overlayLeaving} onBack={closeOverlay} />}
+    {result && overlay === 'report' && <Report lift={lift} count={reportMeta.count ?? result.count} counted={result.count} arm={result.arm} reps={savedMeasures?.reps ?? []} setId={reportMeta.id} sides={savedSides} wave={savedMeasures?.wave ?? null} recounted={!!savedMeasures?.recounted} doubted={!!savedMeasures?.doubted} planned={planned} result={result} leaving={overlayLeaving} onBack={closeOverlay} />}
     {result && overlay === 'replay' && <Replay file={null} result={result} lift={lift} saved={savedCount} leaving={overlayLeaving} onBack={closeOverlay} />}
   </>;
 }

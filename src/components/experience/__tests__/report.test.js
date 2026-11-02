@@ -234,6 +234,26 @@ describe('reportPdf', () => {
     const text = await pdfText(reportPdf(reportSheet({ ...base, notes })));
     expect(text.match(/\/Type \/Page\b/g).length).toBeGreaterThan(1);
   });
+
+  it('includes Coach Verdict and Detailed Biomechanics in the PDF when optimization is present', async () => {
+    const reps = [
+      { startTime: 0, endTime: 1.5, romDegrees: 63.6, concentricSec: 1.0, eccentricSec: 0.5, peakSpeed: 120, meanSpeed: 80 },
+      { startTime: 1.8, endTime: 3.2, romDegrees: 64.0, concentricSec: 0.93, eccentricSec: 0.5, peakSpeed: 125, meanSpeed: 82 },
+      { startTime: 3.5, endTime: 4.9, romDegrees: 63.0, concentricSec: 0.93, eccentricSec: 0.5, peakSpeed: 118, meanSpeed: 79 },
+      { startTime: 5.2, endTime: 6.9, romDegrees: 64.2, concentricSec: 1.27, eccentricSec: 0.5, peakSpeed: 110, meanSpeed: 75 },
+      { startTime: 7.2, endTime: 8.6, romDegrees: 63.8, concentricSec: 0.88, eccentricSec: 0.5, peakSpeed: 122, meanSpeed: 81 },
+      { startTime: 8.9, endTime: 10.3, romDegrees: 63.5, concentricSec: 0.95, eccentricSec: 0.5, peakSpeed: 121, meanSpeed: 80 },
+    ];
+    const s = reportSheet({ ...base, lift: 'lateral_raise', reps, count: 6, counted: 6, arm: 'left', pain: 7, rpe: 9 });
+    expect(s.optimization).not.toBeNull();
+    expect(s.optimization.coachPrescription).toBeDefined();
+    expect(s.optimizationMetrics.length).toBe(11);
+    expect(s.optimizationMetrics[0].label).toContain('amplitude');
+    const blob = reportPdf(s);
+    expect(blob).toBeInstanceOf(Blob);
+    const text = await pdfText(blob);
+    expect(text.startsWith('%PDF-')).toBe(true);
+  });
 });
 
 // Step 3c passed: each rep's time, range and phases, and what the set measured.

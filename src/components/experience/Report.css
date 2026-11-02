@@ -141,3 +141,312 @@
 .wv-experience .sh-wave .strip-key { display: inline-flex; align-items: center; gap: 6px; }
 .wv-experience .sh-wave .strip-key .sw-out { background: #8A6630; }
 .wv-experience .sh-wave .strip-key .sw-back { background: #CDB68E; margin-left: 6px; }
+
+/* Coach's Prescription on paper sheet */
+.wv-experience .sh-coach-prescription {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--paper-rule-2);
+  border: 1px solid var(--paper-rule);
+  border-radius: 9px;
+  color: var(--paper-ink);
+}
+.wv-experience .sh-cp-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+.wv-experience .sh-cp-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.wv-experience .sh-cp-kicker {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--paper-ash);
+}
+.wv-experience .sh-cp-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--paper-ink);
+}
+.wv-experience .sh-cp-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+.wv-experience .sh-cp-score-val {
+  font-family: var(--serif);
+  font-size: 20px;
+  line-height: 1;
+  color: var(--paper-gold);
+}
+.wv-experience .sh-cp-score-lbl {
+  font-family: var(--mono);
+  font-size: 7.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-ash);
+}
+.wv-experience .sh-cp-bottleneck {
+  padding: 8px 10px;
+  background: var(--paper);
+  border: 1px solid var(--paper-rule);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.wv-experience .sh-cp-bottleneck-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.wv-experience .sh-cp-bottleneck-badge {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-gold);
+}
+.wv-experience .sh-cp-bottleneck-title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--paper-ink);
+}
+.wv-experience .sh-cp-bottleneck-desc {
+  margin: 0;
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: var(--paper-ink);
+}
+.wv-experience .sh-cp-next-set {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+}
+.wv-experience .sh-cp-next-kicker {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--paper-ash);
+}
+.wv-experience .sh-cp-next-cue {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--paper-ink);
+}
+.wv-experience .sh-cp-focus {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 10.5px;
+  color: var(--paper-ink);
+}
+.wv-experience .sh-cp-focus em {
+  font-style: normal;
+  font-weight: 500;
+  color: var(--paper-ash);
+}
+
+/* Detailed Biomechanics Section */
+.wv-experience .sh-biomechanics-section,
+.wv-experience .sh-vbt-section,
+.wv-experience .sh-coaching-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--paper-rule);
+}
+.wv-experience .sh-sec-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.wv-experience .sh-sec-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--paper-ash);
+}
+.wv-experience .sh-sec-sub {
+  font-size: 10.5px;
+  color: var(--paper-ash);
+}
+.wv-experience .sh-bio-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.wv-experience .sh-bio-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  background: var(--paper-rule-2);
+  border: 1px solid var(--paper-rule);
+  border-radius: 6px;
+}
+.wv-experience .sh-bio-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px;
+}
+.wv-experience .sh-bio-lbl {
+  font-family: var(--mono);
+  font-size: 7.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--paper-ash);
+}
+.wv-experience .sh-bio-val {
+  font-family: var(--serif);
+  font-size: 13.5px;
+  color: var(--paper-ink);
+}
+.wv-experience .sh-bio-track {
+  width: 100%;
+  height: 3px;
+  background: var(--paper-rule);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.wv-experience .sh-bio-bar {
+  height: 100%;
+  background: var(--paper-gold);
+  border-radius: 2px;
+}
+.wv-experience .sh-bio-sub {
+  font-size: 9px;
+  color: var(--paper-ash);
+}
+.wv-experience .sh-bio-disclaimer {
+  margin: 2px 0 0;
+  font-size: 9px;
+  color: var(--paper-ash);
+}
+
+/* VBT Rep-by-Rep strip */
+.wv-experience .sh-vbt-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
+  gap: 6px;
+}
+.wv-experience .sh-vbt-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px 7px;
+  background: var(--paper-rule-2);
+  border: 1px solid var(--paper-rule);
+  border-radius: 6px;
+}
+.wv-experience .sh-vbt-card-head {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 8.5px;
+}
+.wv-experience .sh-vbt-num { color: var(--paper-ash); }
+.wv-experience .sh-vbt-loss { color: var(--paper-gold); font-weight: 500; }
+.wv-experience .sh-vbt-card.is-failure .sh-vbt-loss { color: var(--paper-ash); }
+.wv-experience .sh-vbt-track {
+  width: 100%;
+  height: 3px;
+  background: var(--paper-rule);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.wv-experience .sh-vbt-bar {
+  height: 100%;
+  background: var(--paper-gold);
+}
+.wv-experience .sh-vbt-times {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--paper-ash);
+}
+
+/* Sticking Point Box */
+.wv-experience .sh-sticking-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px 12px;
+  background: var(--paper-rule-2);
+  border: 1px solid var(--paper-rule);
+  border-radius: 6px;
+}
+.wv-experience .sh-sticking-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wv-experience .sh-sticking-badge {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-gold);
+}
+.wv-experience .sh-sticking-title {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--paper-ink);
+}
+.wv-experience .sh-sticking-desc {
+  margin: 0;
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: var(--paper-ink);
+}
+
+/* Hypertrophy Coaching Cues */
+.wv-experience .sh-cues-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wv-experience .sh-cue-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--paper-ink);
+}
+.wv-experience .sh-cue-bullet {
+  color: var(--paper-gold);
+  line-height: 1.45;
+}
+.wv-experience .sh-target-muscles {
+  display: flex;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--paper-ash);
+  padding-top: 4px;
+}
+.wv-experience .sh-target-muscles em {
+  font-style: normal;
+  font-weight: 500;
+}
