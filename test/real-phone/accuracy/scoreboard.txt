@@ -55,7 +55,7 @@ Right when sure (R16, sure.ts; measured, decides nothing): of 14 sets that decid
    sets-09oct-video-mode/lying_biceps_curl_11.json.gz  label 11  before 10 (off -1)  now 10 (off -1)
    sets-09oct-video-mode/machine_chest_supported_row_6.json.gz  label 6  before 6 (exact)  now 6 (exact)
    sets-09oct-video-mode/machine_seated_back_extension_18.json.gz  label 18  before 18 (exact)  now 18 (exact)
-   sets-09oct-video-mode/pendulum_squat_7.json.gz  label 7  before 5 (off -2)  now 5 (off -2)
+-> sets-09oct-video-mode/pendulum_squat_7.json.gz  label 7  before 5 (off -2)  now 6 (off -1)
    sets-09oct-video-mode/seated_dumbbell_curl_10.json.gz  label 10  before 10 (exact)  now 10 (exact)
    sets-09oct-video-mode/sissy_squat_5_5011.json.gz  label 5  before refused (refused)  now refused (refused)  (proposal 4)
    sets-09oct-video-mode/sissy_squat_7_5006.json.gz  label 7  before 7 (exact)  now 7 (exact)

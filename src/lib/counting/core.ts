@@ -1398,7 +1398,9 @@ function detectReps(
  * much shorter than the median; in a 2-cycle set, the shorter cycle serves as the tempo reference when it lasts
  * at least SPLIT_TWO_MIN_SEC), a rep lasting well over the median is split at its fullest in-set return when
  * that return covered SPLIT_RETURN_SHARE of the way from the working extreme to the rest threshold and both
- * pieces are whole reps by length and range. Cut last reps are added after this pass and are never split.
+ * pieces are whole reps by length and range. Multi-rep continuous runs are split recursively until all pieces
+ * satisfy the duration ceiling (2 November 2026; guaranteed termination as each split requires piece duration >= minPiece).
+ * Cut last reps are added after this pass and are never split.
  * Mutates `cycles`.
  */
 function splitOverlongReps(
@@ -1435,11 +1437,10 @@ function splitOverlongReps(
   };
   const minPiece = Math.max(MIN_REP_SEC, SPLIT_PIECE * md);
   const firstValid = smoothed.findIndex(a => a !== null);
-  const out: Cycle[] = [];
-  for (const c of cycles) {
+  const splitCycle = (c: Cycle): Cycle[] => {
     const dur = timestamps[c.complete] - timestamps[c.enter];
     const longMult = c.enter === firstValid ? SPLIT_LONG_FIRST : SPLIT_LONG;
-    if (dur <= longMult * md || c.cut) { out.push(c); continue; }
+    if (dur <= longMult * md || c.cut) return [c];
     let reached = false, extreme = -Infinity, ret = Infinity, retIdx = -1;
     let bestShare = -Infinity, bestK = -1;
     for (let i = c.enter; i <= c.complete; i++) {
@@ -1465,10 +1466,13 @@ function splitOverlongReps(
       && range(c.enter, k) >= minRom && range(k, c.complete) >= minRom;
     // T4: a split whose return fell short of SPLIT_RETURN_SHARE is made when both pieces match the set's rep shape.
     if (pieces && ((isRegular && bestShare >= SPLIT_RETURN_SHARE) || (isDeepRegular && bestShare >= SPLIT_DEEP_RETURN) || (shape && shapePart('s') && shape.matches(c.enter, k, 'whole') && shape.matches(k, c.complete, 'whole')))) {
-      out.push({ enter: c.enter, complete: k }, { enter: k, complete: c.complete });
-    } else {
-      out.push(c);
+      return [...splitCycle({ enter: c.enter, complete: k }), ...splitCycle({ enter: k, complete: c.complete })];
     }
+    return [c];
+  };
+  const out: Cycle[] = [];
+  for (const c of cycles) {
+    out.push(...splitCycle(c));
   }
   cycles.splice(0, cycles.length, ...out);
 }
