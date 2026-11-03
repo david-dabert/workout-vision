@@ -49,7 +49,16 @@
 .wv-experience .sh-opener { margin: 0; font-size: 13px; line-height: 1.5; color: var(--paper-ink); text-wrap: pretty; }
 .wv-experience .sh-people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; font-size: 12px; color: var(--paper-ink); overflow-wrap: anywhere; }
 .wv-experience .sh-people em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-ash); }
+.wv-experience .sh-count-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 12px; border-top: 1px solid var(--paper-rule); }
+.wv-experience .sh-count-row .sh-count { padding-top: 0; border-top: none; }
 .wv-experience .sh-count { display: flex; align-items: baseline; gap: 12px; padding-top: 12px; border-top: 1px solid var(--paper-rule); }
+.wv-experience .sh-mockup-frame { width: 72px; height: 72px; border-radius: 8px; background: var(--paper-rule-2); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+.wv-experience .sh-mockup-frame .guide-frames,
+.wv-experience .sh-mockup-frame .guide-animated,
+.wv-experience .sh-mockup-frame canvas,
+.wv-experience .sh-mockup-frame img { width: 100%; height: 100%; object-fit: contain; }
+.wv-experience .sh-mocap-export { margin-top: 10px; margin-bottom: 6px; }
+.wv-experience .sh-mocap-export .res-opt-export-btn { margin-top: 0; width: 100%; }
 .wv-experience .sh-n { font-family: var(--serif); font-size: 58px; line-height: 0.9; color: var(--paper-gold); font-variant-numeric: lining-nums; }
 .wv-experience .sh-nl { display: flex; flex-direction: column; font-size: 12px; color: var(--paper-ash); }
 .wv-experience .sh-nl b { font-weight: 500; color: var(--paper-ink); font-size: 13px; }

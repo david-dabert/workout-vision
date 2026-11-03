@@ -36,6 +36,7 @@ async function sweep([W, H]) {
     const titleH = await page.locator('.film-screen .title').evaluate(el => el.offsetHeight);
     lines.push({ key, W, H, top: Math.round(box.y), bottom: Math.round(box.y + box.height), titleH });
     await page.locator('.film-screen .icon-btn').click();
+    await page.locator('.film-screen').waitFor({ state: 'detached' });
     await page.locator('.all-exercises').waitFor();
     await page.waitForTimeout(300);
   }
@@ -43,7 +44,10 @@ async function sweep([W, H]) {
   return lines;
 }
 
-const all = (await Promise.all(sizes.map(sweep))).flat();
+const all = [];
+for (const size of sizes) {
+  all.push(...await sweep(size));
+}
 await browser.close();
 const browserName = process.env.WV_BROWSER === 'chromium' ? 'Chromium' : 'WebKit';
 const text = `# ${browserName}, iPhone 14 profile, fr-FR, Reduce Motion\n` + all.map(l => `${l.key} ${l.W}x${l.H} title ${l.titleH} button bottom ${l.bottom} of ${l.H}`).join('\n') + '\n';

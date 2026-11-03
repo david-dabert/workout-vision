@@ -144,7 +144,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {boolean} [o.doubted]  the body check flagged the joint the measures are read on (saved-set.js keepsMeasures)
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, proposedBy = null, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, rpe = null, pain = null, recounted = false, doubted = false, optimization = null }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, proposedBy = null, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, rpe = null, pain = null, recounted = false, doubted = false, optimization = null, result = null }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -257,9 +257,13 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
 
   // Optimization & Coach's Prescription (PR #296 / Coach Prescription Engine)
   let opt = optimization;
-  if (!opt && shown && lift && ((allReps.length > 0) || (wave?.a?.length > 0 && wave?.t?.length > 0))) {
+  if (!opt && shown && lift && ((allReps.length > 0) || (wave?.a?.length > 0 && wave?.t?.length > 0) || (result?.angles?.length > 0) || count > 0)) {
     try {
-      if (allReps.length > 0) {
+      if (result && Array.isArray(result.angles) && result.angles.length > 0) {
+        const fps = 30;
+        const timestamps = result.timestamps || result.angles.map((_, i) => i / fps);
+        opt = analyzeContinuousBiomechanics(result.angles, timestamps, lift, fr);
+      } else if (allReps.length > 0) {
         opt = analyzeMovementOptimization(allReps, lift, fr);
         if (wave?.a?.length > 0 && wave?.t?.length > 0) {
           try {
@@ -272,10 +276,16 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
               opt.formDistortionScore = cont.formDistortionScore;
               opt.pathEfficiencyPercent = cont.pathEfficiencyPercent;
             }
+            if (cont.bvhData && !opt.bvhData) {
+              opt.bvhData = cont.bvhData;
+            }
           } catch (_) {}
         }
       } else if (wave?.a?.length > 0 && wave?.t?.length > 0) {
         opt = analyzeContinuousBiomechanics(wave.a, wave.t, lift, fr);
+      } else if (count > 0) {
+        const fallbackReps = Array.from({ length: Number(count) }, (_, i) => ({ rep: i + 1, range: 90, duration: 2.0 }));
+        opt = analyzeMovementOptimization(fallbackReps, lift, fr);
       }
       if (opt && !opt.targetMuscles) {
         const ex = getExercise(lift);
@@ -298,6 +308,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     // Movement optimization, Coach's Prescription & detailed biomechanics
     optimization: opt,
     optimizationMetrics: buildOptimizationMetrics(opt, fr),
+    liftKey: lift,
     // No brand: the report names no app (David, 29 September).
     brand: '',
     date: date.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),

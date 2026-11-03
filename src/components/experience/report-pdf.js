@@ -5,6 +5,7 @@ import { PAGE_H, COLUMN, MARGIN, GAP, COLOR, pdfDoc, wrapText } from './pdf-kit'
 import { repStrokes, waveGeometry } from './wave';
 import { partialIn } from './tempo';
 import { wideDetail } from './report-sheet';
+import { drawings } from './sheet-drawings';
 
 const SHORT_MARK = '▾';                          // report-sheet.js: after a short rep's range
 
@@ -89,6 +90,20 @@ export function reportPdf(sheet) {
   const plannedTop = wordTop + 19.5 + 18 * lift.lines.length + 2;
   planned?.lines.forEach((line, k) => drawLine(line, planned.raster, wx, plannedTop + k * 18, 12, 1.5, COLOR.ink));
   const wordsEnd = planned ? plannedTop + 18 * planned.lines.length : wordTop + 19.5 + 18 * lift.lines.length;
+  // Exercise mockup drawing frames (first and last pose), positioned on the right of the count block
+  const lKey = sheet.liftKey || sheet.lift;
+  const draw = sheet.drawing || (drawings ? drawings.of({ items: [{ key: lKey }] }).get(lKey) : null);
+  if (draw && (draw.start || draw.end)) {
+    const art = 44;
+    const frames = [draw.start, draw.end].filter(Boolean);
+    const totalW = frames.length * art + (frames.length - 1) * 6;
+    const ax = MARGIN + COLUMN - totalW;
+    frames.forEach((f, k) => {
+      try {
+        doc.addImage(f.data, f.format, ax + k * (art + 6), top, art, art, f.alias, 'FAST');
+      } catch (_) {}
+    });
+  }
   y = Math.max(top + above - bNum + 58 * 0.9, wordsEnd) + GAP;
 
   // The opener: sans 13 in ink, as .sh-opener, the caption of the count under it (critic, 30 September).
@@ -195,7 +210,7 @@ export function reportPdf(sheet) {
 
     write(upper(sheet.fr ? 'Biomécanique détaillée & Cinématique 3D' : 'Detailed Biomechanics & 3D Kinematics'), MARGIN, y, 'mono', 9, 1.5, COLOR.ash, 9 * 0.12);
     y += 13.5;
-    write(sheet.fr ? 'Angles, puissance (W), perte de vitesse (VBT) et cinématique' : 'Angles, power (W), velocity loss (VBT) and kinematics', MARGIN, y, 'sans', 9.5, 1.3, COLOR.ash);
+    write(sheet.fr ? 'Angles, puissance (W), perte de vitesse et cinématique' : 'Angles, power (W), velocity loss and kinematics', MARGIN, y, 'sans', 9.5, 1.3, COLOR.ash);
     y += 13 + 6;
 
     for (let r = 0; r < nRows; r++) {

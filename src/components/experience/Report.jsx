@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useT } from '../../lib/LanguageContext';
-import { exerciseName } from './exercise-info';
+import { exerciseName, guideExercise } from './exercise-info';
 import { reportSheet, reportFileName, measuresFile, wideDetail, NAME_MAX, NOTES_MAX } from './report-sheet';
 import { knownSets, loadSets, previousSet } from './sets';
 import { liftDefinition } from '../../lib/counting/core';
@@ -10,12 +10,16 @@ import './Report.css';
 import RepWave from './RepWave';
 import { MeasureGuide } from './measure-guide';
 import { shareSheet } from '../../lib/shareSheet';
+import { downloadBvhFile } from '../../lib/biomechanics/bvhExport';
 
 // The PDF code (jsPDF and the app's fonts) loads apart from the screens, once,
 // and is warmed as soon as a report is likely, so the share happens within the tap.
 let kit = null, loading = null, warmed = false;
-export function warmReportPdf() {
+export function warmReportPdf(lift = null) {
   loading ||= import('./report-pdf').then(m => (kit = m), e => { loading = null; throw e; });
+  if (lift) {
+    import('./sheet-drawings').then(sd => sd.drawings.warm([lift])).catch(() => {});
+  }
   return loading;
 }
 
@@ -67,13 +71,14 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
     return () => { live = false; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const activeWave = wave || (result?.angles ? { a: result.angles, t: result.timestamps || result.angles.map((_, i) => i / 30) } : null);
-  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, afterRefusal, proposed, proposedBy, first, previousSet: previous ?? null, sides, lift, wave: activeWave, planned, rpe, pain, recounted, doubted });
+  const sheet = reportSheet({ lang, date: when, name, context, partner, level, notes, liftName, count, counted, arm, joint: liftDefinition(lift)?.joint, reps, source, afterRefusal, proposed, proposedBy, first, previousSet: previous ?? null, sides, lift, wave: activeWave, planned, rpe, pain, recounted, doubted, result });
   const sheetRef = useRef(sheet);
   sheetRef.current = sheet;
+  const guide = guideExercise(lift);
 
   function prepare() {
     setStatus('preparing');
-    warmReportPdf().then(() => { setStatus('ready'); setNote(''); }, () => {
+    warmReportPdf(lift).then(() => { setStatus('ready'); setNote(''); }, () => {
       failures.current += 1;
       setStatus('error');
       setNote(failures.current > 1
@@ -194,9 +199,16 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
         {sheet.people.length > 0 && <div className="sh-people">
           {sheet.people.map(([label, value]) => <span key={label}><em>{label}</em><span>{value}</span></span>)}
         </div>}
-        <div className="sh-count">
-          <span className="sh-n">{sheet.count}</span>
-          <span className="sh-nl"><b>{sheet.word}</b><span>{sheet.lift}</span>{sheet.planned && <span className="sh-planned" data-testid="sh-planned">{sheet.planned}</span>}</span>
+        <div className="sh-count-row">
+          <div className="sh-count">
+            <span className="sh-n">{sheet.count}</span>
+            <span className="sh-nl"><b>{sheet.word}</b><span>{sheet.lift}</span>{sheet.planned && <span className="sh-planned" data-testid="sh-planned">{sheet.planned}</span>}</span>
+          </div>
+          {guide?.frames?.length > 0 && (
+            <div className="sh-mockup-frame" data-testid="sh-mockup-frame" aria-hidden="true">
+              <img src={guide.frames[0]} width="72" height="72" alt="" loading="lazy" />
+            </div>
+          )}
         </div>
         {/* The numeral leads; the sentence is its caption (critic, 30 September). */}
         {sheet.opener && <p className="sh-opener">{sheet.opener}</p>}
@@ -208,6 +220,24 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
         {sheet.own.length > 0 && <div className="sh-people sh-details sh-own" data-testid="sh-own">
           {sheet.own.map(([label, value]) => <span key={label}><em>{label}</em><span>{value}</span></span>)}
         </div>}
+
+        {sheet.optimization?.bvhData && (
+          <div className="sh-mocap-export" data-testid="sh-mocap-export">
+            <button
+              type="button"
+              className="res-opt-export-btn press"
+              onClick={() => downloadBvhFile(sheet.optimization.bvhData, `mocap-${lift}-${Date.now()}.bvh`)}
+              data-testid="report-export-bvh-btn"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span>{fr ? 'Exporter Mocap 3D (.bvh)' : 'Export 3D Mocap (.bvh)'}</span>
+            </button>
+          </div>
+        )}
 
         {/* 1. Coach's Prescription ("Le Verdict du Coach") */}
         {sheet.optimization?.coachPrescription && (
