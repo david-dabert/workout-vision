@@ -1,62 +1,39 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
-import { loadDemoTelemetry, FALLBACK_DEMO_TELEMETRY } from './demo-telemetry-data';
-import { poseAt, repAt, phaseAt, into } from './replay-track';
+import { loadDemoTelemetry, LAB_CLIPS, LEAD_LAB_CLIP } from './demo-telemetry-data';
+import { poseAt, repAt, phaseAt, into, angleAt } from './replay-track';
 import { drawSkeleton, litSides, trailPoints } from './replay-draw';
 import { steadyFrames, trailAt } from './replay-smooth';
 import { liftDefinition } from '../../lib/counting/core';
+import { experimentalLabel } from './measures';
+import { LAB, JOINT_OF, JOINT_NAME } from './lab-copy';
+import { labFacts, decimal } from './lab-facts';
 import MovementOptimizationCard from './MovementOptimizationCard';
 import './DemoInteractiveLab.css';
 import './Replay.css';
 
-const COPY = {
-  fr: {
-    back: 'Retour',
-    tag: 'Laboratoire Biomécanique',
-    badge: 'Démo Interactive · Squat Olympique',
-    title: 'Analyse biomécanique complète',
-    sub: 'Série réelle filmée chez Basic-Fit. Suivi articulaire 3D, puissance concentrique en Watts, points critiques de blocage et dynamique de trajectoire axiale.',
-    play: 'Lire',
-    pause: 'Pause',
-    slow: 'Ralenti',
-    revoir: 'Revoir depuis le début',
-    start: 'Commencer ma propre série',
-    sticking: 'Point critique de blocage',
-    concentric: 'Propulsion',
-    eccentric: 'Descente contrôlée',
-    knee: 'Genou',
-    rep: 'Rép.',
-    scrubHint: 'Glissez sur la ligne temporelle pour inspecter les points de blocage.',
-  },
-  en: {
-    back: 'Back',
-    tag: 'Biomechanics Laboratory',
-    badge: 'Interactive Demo · Olympic Squat',
-    title: 'Full Biomechanical Analysis',
-    sub: 'Real set filmed at Basic-Fit. 3D joint tracking, concentric power in Watts, critical sticking points, and axial trajectory dynamics.',
-    play: 'Play',
-    pause: 'Pause',
-    slow: 'Slow motion',
-    revoir: 'Watch from start',
-    start: 'Start my own set',
-    sticking: 'Critical sticking point',
-    concentric: 'Concentric drive',
-    eccentric: 'Controlled descent',
-    knee: 'Knee',
-    rep: 'Rep',
-    scrubHint: 'Drag across the timeline to inspect sticking points.',
-  },
-};
+const NB = '\u00A0';
+const REDUCED = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export default function DemoInteractiveLab({ onClose, onStart }) {
+/**
+ * The landing lab: one real set, played with the skeleton the app tracked, the count the app gave beside the count David
+ * made, and three plain facts. Everything drawn or written comes from the set's own telemetry (scripts/make-demo-telemetry.mjs,
+ * through the app's counting path): the joint angle is read from the angles at the video's time, not typed, and when the
+ * telemetry cannot load the video plays alone (R8). The deeper analysis sits behind one tap, under the experimental label.
+ */
+export default function DemoInteractiveLab({ clip = LEAD_LAB_CLIP, onClose, onStart, initialTelemetry = null }) {
   const { lang } = useT();
   const fr = lang !== 'en';
-  const c = COPY[fr ? 'fr' : 'en'];
+  const c = LAB[fr ? 'fr' : 'en'];
+  const cfg = LAB_CLIPS[clip] || LAB_CLIPS[LEAD_LAB_CLIP];
+  const L = fr ? 'fr' : 'en';
 
-  const [data, setData] = useState(FALLBACK_DEMO_TELEMETRY);
+  const [data, setData] = useState(initialTelemetry || null);
+  const [failed, setFailed] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [slow, setSlow] = useState(false);
   const [now, setNow] = useState(0);
+  const [length, setLength] = useState(0);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -64,41 +41,45 @@ export default function DemoInteractiveLab({ onClose, onStart }) {
   const dragRef = useRef(null);
 
   useEffect(() => {
+    if (initialTelemetry) {
+      setData(initialTelemetry);
+      return undefined;
+    }
     let active = true;
-    loadDemoTelemetry().then(t => {
-      if (active && t) setData(t);
+    loadDemoTelemetry(cfg.id).then(t => {
+      if (!active) return;
+      if (t) setData(t); else setFailed(true);
     });
     return () => { active = false; };
-  }, []);
+  }, [cfg.id, initialTelemetry]);
 
-  const videoBase = `${import.meta.env.BASE_URL}demo/bodyweight-squat-9`;
-  const duration = data.metadata?.duration || 26.92;
-  const fw = data.metadata?.width || 360;
-  const fh = data.metadata?.height || 640;
+  const videoBase = `${import.meta.env.BASE_URL}demo/${cfg.id}`;
+  const duration = length || data?.metadata?.duration || 0;
+  const fw = cfg.width, fh = cfg.height;
 
-  const def = liftDefinition('squat');
-  const sides = litSides(def, null);
-  const frames = steadyFrames ? steadyFrames(data.imageLandmarks || [], data.timestamps || []) : (data.imageLandmarks || []);
+  const def = useMemo(() => liftDefinition(cfg.lift), [cfg.lift]);
+  const sides = useMemo(() => litSides(def, data?.arm), [def, data]);
+  const frames = useMemo(() => (data ? steadyFrames(data.imageLandmarks || [], data.timestamps || []) : []), [data]);
+  const facts = useMemo(() => labFacts(data?.reps || []), [data]);
 
-  const stickingPoints = data.biomechanicsFr?.stickingPoints || [];
-  const activeSticking = stickingPoints.find(sp => Math.abs(sp.timestamp - now) <= 0.45);
-
-  const currentRep = repAt(data.reps || [], now);
-  const begunCount = (data.reps || []).filter(r => r.startTime <= now).length;
+  const reps = data?.reps || [];
+  const currentRep = repAt(reps, now);
+  const begunCount = reps.filter(r => r.startTime <= now).length;
 
   let phaseWord = '';
-  if (activeSticking) {
-    phaseWord = c.sticking;
-  } else if (currentRep >= 0) {
-    const p = phaseAt(data.reps[currentRep], now, 'eccentric');
-    phaseWord = p === 'concentric' ? c.concentric : p === 'eccentric' ? c.eccentric : '';
+  if (currentRep >= 0) {
+    const p = phaseAt(reps[currentRep], now, def?.first ?? 'concentric');
+    phaseWord = p === 'concentric' ? c.effort : p === 'eccentric' ? c.back_phase : '';
   }
+  // The chip's angle is the one the count reads, at the video's time, named by its joint (Replay.jsx does the same).
+  const angle = data ? angleAt(data.angles, data.timestamps, now) : null;
+  const jointName = JOINT_NAME[def?.joint]?.[L] ?? null;
 
-  // Draw overlay skeleton
+  // Draw the skeleton over the video, at the frame on screen.
   useEffect(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+    if (!video || !canvas || !data) return undefined;
 
     let raf = 0;
     let vfc = 0;
@@ -165,12 +146,10 @@ export default function DemoInteractiveLab({ onClose, onStart }) {
       if (vfc && 'cancelVideoFrameCallback' in video) video.cancelVideoFrameCallback(vfc);
       ['seeked', 'loadeddata', 'pause', 'ended'].forEach(e => video.removeEventListener(e, still));
     };
-  }, [frames, data.timestamps, def, sides, fw, fh]);
+  }, [frames, data, def, sides, fw, fh]);
 
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.playbackRate = slow ? 0.5 : 1;
-    }
+    if (videoRef.current) videoRef.current.playbackRate = slow ? 0.5 : 1;
   }, [slow]);
 
   function play() {
@@ -187,7 +166,7 @@ export default function DemoInteractiveLab({ onClose, onStart }) {
   function seekTo(t) {
     const video = videoRef.current;
     if (!video) return;
-    const clamped = Math.max(0, Math.min(duration, t));
+    const clamped = Math.max(0, Math.min(duration || t, t));
     video.currentTime = clamped;
     setNow(clamped);
   }
@@ -209,8 +188,7 @@ export default function DemoInteractiveLab({ onClose, onStart }) {
       d.moved = true;
       videoRef.current?.pause();
     }
-    const t = timeAt(e.clientX);
-    seekTo(t);
+    seekTo(timeAt(e.clientX));
   }
 
   function up(e) {
@@ -224,7 +202,7 @@ export default function DemoInteractiveLab({ onClose, onStart }) {
     const t = timeAt(e.clientX);
     let hit = -1;
     let gap = Infinity;
-    (data.reps || []).forEach((r, i) => {
+    reps.forEach((r, i) => {
       if (t < r.startTime - 0.3 || t > r.endTime + 0.3) return;
       const g = Math.abs(t - (r.startTime + r.endTime) / 2);
       if (g < gap) {
@@ -232,28 +210,36 @@ export default function DemoInteractiveLab({ onClose, onStart }) {
         hit = i;
       }
     });
-    seekTo(hit >= 0 ? into(data.reps[hit]) : t);
+    seekTo(hit >= 0 ? into(reps[hit]) : t);
   }
+
+  // The keyboard moves the line a second at a time, as a slider does.
+  function keys(e) {
+    const step = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key];
+    if (step === undefined) return;
+    e.preventDefault();
+    seekTo((videoRef.current?.currentTime ?? 0) + step);
+  }
+
+  const showFacts = data && facts.reps > 0;
 
   return (
     <div className="wv-experience demo-lab-experience" data-testid="demo-interactive-lab">
       <section className="screen is-active demo-lab-screen" aria-label={c.title}>
         <div className="wrap demo-lab-wrap">
-          {/* Top navigation */}
           <div className="topbar demo-lab-topbar">
             <button type="button" className="icon-btn press" onClick={onClose} aria-label={c.back}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M15 6l-6 6 6 6" />
               </svg>
             </button>
-            <span className="pill demo-lab-badge">{c.badge}</span>
+            <span className="pill demo-lab-badge">{c.badge(cfg.name[L])}</span>
           </div>
 
-          <p className="eyebrow demo-lab-eyebrow" data-reveal style={{ '--i': 0 }}>{c.tag}</p>
+          <p className="eyebrow demo-lab-eyebrow" data-reveal style={{ '--i': 0 }}>{c.eyebrow}</p>
           <h2 className="demo-lab-title" data-reveal style={{ '--i': 1 }}>{c.title}</h2>
-          <p className="demo-lab-sub" data-reveal style={{ '--i': 2 }}>{c.sub}</p>
+          <p className="demo-lab-sub" data-reveal style={{ '--i': 2 }}>{c.sub(cfg.name[L], cfg.place[L], JOINT_OF[def?.joint]?.[L] ?? '')}</p>
 
-          {/* Interactive Replay Stage */}
           <div className="demo-lab-stage" data-reveal style={{ '--i': 3 }}>
             <div className="demo-lab-frame" style={{ '--ar': fw / fh }}>
               <video
@@ -263,7 +249,11 @@ export default function DemoInteractiveLab({ onClose, onStart }) {
                 poster={`${videoBase}.jpg`}
                 playsInline
                 muted
-                preload="metadata"
+                loop
+                autoPlay={!REDUCED()}
+                preload="auto"
+                aria-label={c.videoLabel}
+                onLoadedMetadata={e => { const d = e.currentTarget.duration; if (Number.isFinite(d) && d > 0) setLength(d); }}
                 onPlay={() => setPlaying(true)}
                 onPause={() => setPlaying(false)}
                 onEnded={() => setPlaying(false)}
@@ -271,62 +261,54 @@ export default function DemoInteractiveLab({ onClose, onStart }) {
               />
               <canvas ref={canvasRef} className="rp-canvas" aria-hidden="true" />
 
-              {/* Real-time HUD telemetry chip */}
-              <div className={`rp-chip${phaseWord ? '' : ' is-idle'}${activeSticking ? ' is-sticking' : ''}`} aria-hidden="true">
-                <span className="rp-count">
-                  <span className="rp-n">{begunCount}</span>
-                  <span className="rp-of">/{'\u00A0'}{data.count}</span>
-                </span>
-                {phaseWord && <span className="rp-phase">{phaseWord}</span>}
-                <span className="rp-angle">{c.knee}{'\u00A0'}{activeSticking ? activeSticking.angleDeg : 92}°</span>
-              </div>
+              {data && (
+                <div className={`rp-chip${phaseWord ? '' : ' is-idle'}`} aria-hidden="true">
+                  <span className="rp-count">
+                    <span className="rp-n">{begunCount}</span>
+                    <span className="rp-of">/{NB}{data.count}</span>
+                  </span>
+                  {phaseWord && <span className="rp-phase">{phaseWord}</span>}
+                  {angle !== null && jointName && <span className="rp-angle" data-testid="lab-angle">{jointName}{NB}{Math.round(angle)}°</span>}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Interactive Timeline Scrubber with Sticking Point Pins */}
-          <div
-            ref={lineRef}
-            className="rp-line demo-lab-line"
-            role="slider"
-            tabIndex={0}
-            aria-label={fr ? 'Position dans la vidéo' : 'Video timeline'}
-            aria-valuemin={0}
-            aria-valuemax={Math.round(duration * 10) / 10}
-            aria-valuenow={Math.round(now * 10) / 10}
-            onPointerDown={down}
-            onPointerMove={move}
-            onPointerUp={up}
-            onPointerCancel={() => { dragRef.current = null; }}
-          >
-            {(data.reps || []).map((r, i) => {
-              const from = Math.min(100, (r.startTime / duration) * 100);
-              const to = Math.min(100, (r.endTime / duration) * 100);
-              return (
-                <span
-                  key={r.index ?? i}
-                  className={`rp-rep${i === currentRep ? ' is-on' : ''}`}
-                  style={{ left: `${Math.min(from, 99.2)}%`, width: `${Math.max(0.8, to - from)}%` }}
-                />
-              );
-            })}
-            {stickingPoints.map((sp, idx) => {
-              const pos = Math.min(100, (sp.timestamp / duration) * 100);
-              return (
-                <span
-                  key={`sp-${idx}`}
-                  className={`rp-sticking-pin${activeSticking === sp ? ' is-active' : ''}`}
-                  data-testid="demo-sticking-pin"
-                  style={{ left: `${pos}%` }}
-                  title={`${c.sticking}\u00A0: ${sp.angleDeg}°`}
-                />
-              );
-            })}
-            <i className="rp-now" style={{ left: `${Math.min(100, (now / duration) * 100)}%` }} />
-          </div>
+          {data && <p className="demo-lab-verdict" data-testid="lab-verdict">{c.verdict(data.count, data.label)}</p>}
+          {failed && <p className="demo-lab-hint" role="status">{c.plain}</p>}
 
-          <p className="demo-lab-hint">{c.scrubHint}</p>
+          {data && (
+            <div
+              ref={lineRef}
+              className="rp-line demo-lab-line"
+              role="slider"
+              tabIndex={0}
+              aria-label={c.timeline}
+              aria-valuemin={0}
+              aria-valuemax={Math.round(duration * 10) / 10}
+              aria-valuenow={Math.round(now * 10) / 10}
+              onPointerDown={down}
+              onPointerMove={move}
+              onPointerUp={up}
+              onPointerCancel={() => { dragRef.current = null; }}
+              onKeyDown={keys}
+            >
+              {reps.map((r, i) => {
+                const from = duration ? Math.min(100, (r.startTime / duration) * 100) : 0;
+                const to = duration ? Math.min(100, (r.endTime / duration) * 100) : 0;
+                return (
+                  <span
+                    key={r.index ?? i}
+                    className={`rp-rep${i === currentRep ? ' is-on' : ''}`}
+                    style={{ left: `${Math.min(from, 99.2)}%`, width: `${Math.max(0.8, to - from)}%` }}
+                  />
+                );
+              })}
+              <i className="rp-now" style={{ left: `${duration ? Math.min(100, (now / duration) * 100) : 0}%` }} />
+            </div>
+          )}
+          {data && <p className="demo-lab-hint">{c.hint}</p>}
 
-          {/* Player controls */}
           <div className="rp-controls demo-lab-controls" data-reveal style={{ '--i': 4 }}>
             <button type="button" className="btn-primary press rp-play" onClick={toggle}>
               {playing ? (
@@ -341,43 +323,55 @@ export default function DemoInteractiveLab({ onClose, onStart }) {
               )}
               <span>{playing ? c.pause : c.play}</span>
             </button>
-            <button
-              type="button"
-              className={`btn-ghost press rp-slow${slow ? ' is-on' : ''}`}
-              aria-pressed={slow}
-              onClick={() => setSlow(s => !s)}
-            >
+            <button type="button" className={`btn-ghost press rp-slow${slow ? ' is-on' : ''}`} aria-pressed={slow} onClick={() => setSlow(s => !s)}>
               {c.slow}
             </button>
           </div>
 
-          {/* Deep Biomechanics & VBT Telemetry Card */}
-          <div className="demo-lab-analysis" data-reveal style={{ '--i': 5 }}>
-            <MovementOptimizationCard
-              reps={data.reps || []}
-              lift="squat"
-              fr={fr}
-              result={{
-                angles: data.angles,
-                timestamps: data.timestamps,
-              }}
-            />
-          </div>
+          {showFacts && (
+            <section className="demo-lab-facts" aria-label={c.factsLabel} data-reveal style={{ '--i': 5 }}>
+              <h3 className="section-head">{c.factsLabel}</h3>
+              <dl className="demo-lab-fact-row">
+                <div className="demo-lab-fact">
+                  <dd data-testid="lab-fact-reps">{facts.reps}</dd>
+                  <dt>{c.reps}</dt>
+                </div>
+                {facts.romDeg !== null && (
+                  <div className="demo-lab-fact">
+                    <dd data-testid="lab-fact-rom">{facts.romDeg}°</dd>
+                    <dt>{c.rom}</dt>
+                  </div>
+                )}
+                {facts.repSec !== null && (
+                  <div className="demo-lab-fact">
+                    <dd data-testid="lab-fact-pace">{decimal(facts.repSec, fr)}{NB}{c.seconds}</dd>
+                    <dt>{c.pace}</dt>
+                  </div>
+                )}
+              </dl>
+              <p className="demo-lab-caveat">{c.caveat}</p>
+              <p className="demo-lab-experimental">{experimentalLabel(fr)}</p>
+            </section>
+          )}
 
-          {/* Bottom Primary Actions */}
-          <div className="actions demo-lab-actions" data-reveal style={{ '--i': 6 }}>
+          {data && (
+            <details className="demo-lab-coach" data-reveal style={{ '--i': 6 }}>
+              <summary className="press">
+                <span>{c.coach}</span>
+                <small>{c.coachSub}</small>
+              </summary>
+              <div className="demo-lab-analysis">
+                <MovementOptimizationCard reps={reps} lift={cfg.lift} fr={fr} result={{ angles: data.angles, timestamps: data.timestamps }} />
+              </div>
+            </details>
+          )}
+
+          <div className="actions demo-lab-actions" data-reveal style={{ '--i': 7 }}>
             <button type="button" className="btn-primary press demo-lab-start-btn" onClick={onStart}>
               {c.start}
             </button>
-            <button
-              type="button"
-              className="btn-ghost press"
-              onClick={() => {
-                seekTo(0);
-                play();
-              }}
-            >
-              {c.revoir}
+            <button type="button" className="btn-ghost press" onClick={() => { seekTo(0); play(); }}>
+              {c.again}
             </button>
           </div>
         </div>

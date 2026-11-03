@@ -17,4 +17,33 @@ describe('the coach report and the stored level', () => {
     expect(sheet.length).toBeGreaterThan(0);
     expect(sheet).not.toMatch(/Niveau|Level/); // the field's label above may say it; the sheet does not
   });
+
+  it('renders Coach Verdict and Biomechanics sections on the preview sheet when reps are present', async () => {
+    const store = { wv_lang: 'fr' };
+    vi.stubGlobal('localStorage', { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } });
+    const { LanguageProvider } = await import('../../../lib/LanguageContext');
+    const { default: Report } = await import('../Report');
+    const reps = [
+      { startTime: 0, endTime: 1.5, romDegrees: 63.6, concentricSec: 1.0, eccentricSec: 0.5, peakSpeed: 120, meanSpeed: 80 },
+      { startTime: 1.8, endTime: 3.2, romDegrees: 64.0, concentricSec: 0.93, eccentricSec: 0.5, peakSpeed: 125, meanSpeed: 82 },
+      { startTime: 3.5, endTime: 4.9, romDegrees: 63.0, concentricSec: 0.93, eccentricSec: 0.5, peakSpeed: 118, meanSpeed: 79 },
+      { startTime: 5.2, endTime: 6.9, romDegrees: 64.2, concentricSec: 1.27, eccentricSec: 0.5, peakSpeed: 110, meanSpeed: 75 },
+      { startTime: 7.2, endTime: 8.6, romDegrees: 63.8, concentricSec: 0.88, eccentricSec: 0.5, peakSpeed: 122, meanSpeed: 81 },
+      { startTime: 8.9, endTime: 10.3, romDegrees: 63.5, concentricSec: 0.95, eccentricSec: 0.5, peakSpeed: 121, meanSpeed: 80 },
+    ];
+    const html = renderToStaticMarkup(
+      <LanguageProvider>
+        <Report lift="lateral_raise" count={6} counted={6} arm="left" reps={reps} onBack={() => {}} />
+      </LanguageProvider>
+    );
+    expect(html).toContain('sh-coach-prescription');
+    expect(html).toContain('Le Verdict du Coach');
+    expect(html).toContain('Standard d’élite');
+    expect(html).toContain('sh-biomechanics-section');
+    expect(html).toContain('Biomécanique détaillée &amp; Cinématique 3D');
+    expect(html).toContain('sh-vbt-section');
+    expect(html).toContain('Profil de Vitesse par Répétition');
+    expect(html).toContain('sh-coaching-section');
+    expect(html).toContain('Recommandations hypertrophie');
+  });
 });

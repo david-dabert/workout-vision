@@ -5,6 +5,7 @@ import { PAGE_H, COLUMN, MARGIN, GAP, COLOR, pdfDoc, wrapText } from './pdf-kit'
 import { repStrokes, waveGeometry } from './wave';
 import { partialIn } from './tempo';
 import { wideDetail } from './report-sheet';
+import { drawings } from './sheet-drawings';
 
 const SHORT_MARK = '▾';                          // report-sheet.js: after a short rep's range
 
@@ -89,6 +90,20 @@ export function reportPdf(sheet) {
   const plannedTop = wordTop + 19.5 + 18 * lift.lines.length + 2;
   planned?.lines.forEach((line, k) => drawLine(line, planned.raster, wx, plannedTop + k * 18, 12, 1.5, COLOR.ink));
   const wordsEnd = planned ? plannedTop + 18 * planned.lines.length : wordTop + 19.5 + 18 * lift.lines.length;
+  // Exercise mockup drawing frames (first and last pose), positioned on the right of the count block
+  const lKey = sheet.liftKey || sheet.lift;
+  const draw = sheet.drawing || (drawings ? drawings.of({ items: [{ key: lKey }] }).get(lKey) : null);
+  if (draw && (draw.start || draw.end)) {
+    const art = 44;
+    const frames = [draw.start, draw.end].filter(Boolean);
+    const totalW = frames.length * art + (frames.length - 1) * 6;
+    const ax = MARGIN + COLUMN - totalW;
+    frames.forEach((f, k) => {
+      try {
+        doc.addImage(f.data, f.format, ax + k * (art + 6), top, art, art, f.alias, 'FAST');
+      } catch (_) {}
+    });
+  }
   y = Math.max(top + above - bNum + 58 * 0.9, wordsEnd) + GAP;
 
   // The opener: sans 13 in ink, as .sh-opener, the caption of the count under it (critic, 30 September).
@@ -108,6 +123,238 @@ export function reportPdf(sheet) {
   pairs(sheet.details || [], 3, wideDetail);
   // The person's own pain and effort (report-sheet.js, own), labelled the same way.
   pairs(sheet.own || [], 2);
+
+  // 1. Coach's Prescription ("Le Verdict du Coach")
+  if (sheet.optimization?.coachPrescription) {
+    const cp = sheet.optimization.coachPrescription;
+    const hasLimit = cp.limitingFactor && cp.limitingFactor.category !== 'none';
+    const limitTitle = sheet.fr ? cp.limitingFactor?.titleFr : cp.limitingFactor?.titleEn;
+    const limitDetail = sheet.fr ? cp.limitingFactor?.detailFr : cp.limitingFactor?.detailEn;
+    const limitLines = limitDetail ? lines(limitDetail, 9.5, COLUMN - 24).lines : [];
+
+    const nextCue = sheet.fr ? cp.nextSetPrescription?.cueFr : cp.nextSetPrescription?.cueEn;
+    const nextCueLines = nextCue ? lines(nextCue, 9.5, COLUMN - 20).lines : [];
+    const focusText = sheet.fr ? cp.nextSetPrescription?.mentalFocusFr : cp.nextSetPrescription?.mentalFocusEn;
+
+    const prescH = 34 + (hasLimit ? 22 + limitLines.length * 13 : 0) + 24 + nextCueLines.length * 13 + (focusText ? 15 : 0) + 10;
+    if (room() < prescH && y > MARGIN) newPage();
+
+    doc.setDrawColor(COLOR.rule);
+    doc.setLineWidth(1);
+    doc.setFillColor(COLOR.rowRule);
+    doc.roundedRect(MARGIN, y, COLUMN, prescH, 6, 6, 'FD');
+
+    let py = y + 8;
+    write(upper(sheet.fr ? 'Le Verdict du Coach' : 'The Coach’s Prescription'), MARGIN + 10, py, 'mono', 8.5, 1.2, COLOR.ash, 8.5 * 0.12);
+
+    const scoreVal = `${cp.executionComplianceScore}%`;
+    const scoreValW = width(scoreVal, 'serif', 17);
+    const scoreLbl = upper(sheet.fr ? 'Standard d’élite' : 'Elite Standard');
+    const scoreLblW = width(scoreLbl, 'mono', 7.5, 7.5 * 0.08);
+    const rightEdge = MARGIN + COLUMN - 10;
+    write(scoreVal, rightEdge - scoreValW, py - 2, 'serif', 17, 1, COLOR.count);
+    write(scoreLbl, rightEdge - scoreLblW, py + 14, 'mono', 7.5, 1.2, COLOR.ash, 7.5 * 0.08);
+
+    py += 13;
+    const tierTitle = sheet.fr ? cp.tierLabelFr : cp.tierLabelEn;
+    write(tierTitle, MARGIN + 10, py, 'sansMedium', 12.5, 1.2, COLOR.ink);
+    py += 17;
+
+    if (hasLimit) {
+      const boxH = 18 + limitLines.length * 13;
+      doc.setDrawColor(COLOR.rule);
+      doc.setFillColor(COLOR.paper);
+      doc.roundedRect(MARGIN + 8, py, COLUMN - 16, boxH, 4, 4, 'FD');
+
+      const badgeTxt = upper(sheet.fr ? 'Facteur limitant #1' : 'Bottleneck #1');
+      write(badgeTxt, MARGIN + 14, py + 4, 'mono', 8, 1.2, COLOR.count, 8 * 0.08);
+      const bW = width(badgeTxt, 'mono', 8, 8 * 0.08);
+      write(limitTitle, MARGIN + 18 + bW, py + 4, 'sansMedium', 9, 1.2, COLOR.ink);
+
+      limitLines.forEach((l, idx) => {
+        drawLine(l, false, MARGIN + 14, py + 17 + idx * 13, 9, 1.3, COLOR.ink);
+      });
+      py += boxH + 6;
+    }
+
+    const nextHead = upper(sheet.fr ? 'Consigne pour la série suivante' : 'Prescription for Set N+1');
+    write(nextHead, MARGIN + 10, py, 'mono', 8, 1.2, COLOR.ash, 8 * 0.1);
+    py += 11;
+    nextCueLines.forEach((l, idx) => {
+      drawLine(l, false, MARGIN + 10, py + idx * 13, 9, 1.3, COLOR.ink);
+    });
+    py += nextCueLines.length * 13 + 3;
+
+    if (focusText) {
+      const focusLabel = sheet.fr ? 'Focus mental\u00A0:' : 'Mental cue:';
+      write(focusLabel, MARGIN + 10, py, 'sansMedium', 8.5, 1.2, COLOR.ash);
+      const flW = width(focusLabel, 'sansMedium', 8.5);
+      write(focusText, MARGIN + 14 + flW, py, 'sans', 8.5, 1.2, COLOR.ink);
+    }
+
+    y += prescH + GAP;
+  }
+
+  // 2. Detailed Biomechanics & 3D Kinematics
+  if (sheet.optimizationMetrics?.length) {
+    const secHeadH = 13.5 + 13 + 4;
+    const cellW = (COLUMN - 8) / 2;
+    const cellH = 40;
+    const rowH = cellH + 6;
+    const nRows = Math.ceil(sheet.optimizationMetrics.length / 2);
+
+    if (room() < secHeadH + 2 * rowH && y > MARGIN) newPage();
+
+    rule();
+    y += 1 + 10;
+
+    write(upper(sheet.fr ? 'Biomécanique détaillée & Cinématique 3D' : 'Detailed Biomechanics & 3D Kinematics'), MARGIN, y, 'mono', 9, 1.5, COLOR.ash, 9 * 0.12);
+    y += 13.5;
+    write(sheet.fr ? 'Angles, puissance (W), perte de vitesse et cinématique' : 'Angles, power (W), velocity loss and kinematics', MARGIN, y, 'sans', 9.5, 1.3, COLOR.ash);
+    y += 13 + 6;
+
+    for (let r = 0; r < nRows; r++) {
+      if (room() < rowH && y > MARGIN) {
+        newPage();
+        write(upper(sheet.fr ? 'Biomécanique détaillée (suite)' : 'Detailed Biomechanics (cont.)'), MARGIN, y, 'mono', 8.5, 1.5, COLOR.ash, 8.5 * 0.12);
+        y += 14;
+      }
+      for (let c = 0; c < 2; c++) {
+        const idx = r * 2 + c;
+        if (idx >= sheet.optimizationMetrics.length) break;
+        const m = sheet.optimizationMetrics[idx];
+        const cx = MARGIN + c * (cellW + 8);
+
+        doc.setDrawColor(COLOR.rule);
+        doc.setLineWidth(0.75);
+        doc.setFillColor(COLOR.rowRule);
+        doc.roundedRect(cx, y, cellW, cellH, 4, 4, 'FD');
+
+        write(upper(m.label), cx + 6, y + 5, 'mono', 7.5, 1.2, COLOR.ash, 7.5 * 0.05);
+        const valW = width(m.val, 'serif', 12.5);
+        write(m.val, cx + cellW - 6 - valW, y + 4, 'serif', 12.5, 1, COLOR.ink);
+
+        const barW = cellW - 12;
+        doc.setFillColor(COLOR.rule);
+        doc.rect(cx + 6, y + 19, barW, 2.5, 'F');
+        doc.setFillColor(COLOR.count);
+        doc.rect(cx + 6, y + 19, (barW * Math.min(100, Math.max(5, m.fillPct))) / 100, 2.5, 'F');
+
+        write(m.sub, cx + 6, y + 26, 'sans', 7.5, 1.2, COLOR.ash);
+      }
+      y += rowH;
+    }
+
+    const disc = sheet.fr ? '* Estimation indicative basée sur le travail mécanique de la série.' : '* Indicative estimate based on mechanical work.';
+    write(disc, MARGIN, y, 'sans', 7.5, 1.2, COLOR.ash);
+    y += 10 + GAP;
+  }
+
+  // 3. Rep-by-Rep Velocity Profile (VBT)
+  if (sheet.optimization?.repVelocityProfiles?.length) {
+    const vbt = sheet.optimization.repVelocityProfiles;
+    const vbtHeadH = 13.5 + 13 + 6;
+    const repCardH = 40;
+    const repRowH = repCardH + 6;
+
+    if (room() < vbtHeadH + repRowH && y > MARGIN) newPage();
+
+    rule();
+    y += 1 + 10;
+    write(upper(sheet.fr ? 'Profil de Vitesse par Répétition (VBT)' : 'Rep-by-Rep Velocity Profile (VBT)'), MARGIN, y, 'mono', 8.5, 1.5, COLOR.ash, 8.5 * 0.12);
+    y += 13.5;
+    write(sheet.fr ? 'Ralentissement vs rep la plus rapide' : 'Deceleration vs fastest rep', MARGIN, y, 'sans', 9, 1.3, COLOR.ash);
+    y += 13 + 4;
+
+    const perRow = Math.min(vbt.length, 7);
+    const chunkW = (COLUMN - 4 * (perRow - 1)) / perRow;
+    for (let i = 0; i < vbt.length; i += perRow) {
+      if (room() < repRowH && y > MARGIN) newPage();
+      const chunk = vbt.slice(i, i + perRow);
+      chunk.forEach((p, k) => {
+        const rx = MARGIN + k * (chunkW + 4);
+        doc.setDrawColor(COLOR.rule);
+        doc.setLineWidth(0.75);
+        doc.setFillColor(COLOR.rowRule);
+        doc.roundedRect(rx, y, chunkW, repCardH, 3, 3, 'FD');
+
+        write(`R${p.repIndex}`, rx + 4, y + 4, 'mono', 8, 1.2, COLOR.ash);
+        const lossTxt = `${p.velocityLossPercent}%`;
+        const lossW = width(lossTxt, 'mono', 8);
+        write(lossTxt, rx + chunkW - 4 - lossW, y + 4, 'mono', 8, 1.2, p.tier === 'failure' ? COLOR.ash : COLOR.count);
+
+        const bw = chunkW - 8;
+        doc.setFillColor(COLOR.rule);
+        doc.rect(rx + 4, y + 17, bw, 2.5, 'F');
+        doc.setFillColor(COLOR.count);
+        doc.rect(rx + 4, y + 17, (bw * Math.max(10, Math.min(100, p.velocityLossPercent))) / 100, 2.5, 'F');
+
+        const timeTxt = p.concentricSec > 0 ? `${p.concentricSec}s` : '—';
+        write(timeTxt, rx + 4, y + 24, 'mono', 7.5, 1.2, COLOR.ink);
+        const pwrTxt = p.powerWatts ? `${p.powerWatts}W` : (p.romDegrees > 0 ? `${Math.round(p.romDegrees)}°` : '');
+        if (pwrTxt) {
+          const pwrW = width(pwrTxt, 'mono', 7.5);
+          write(pwrTxt, rx + chunkW - 4 - pwrW, y + 24, 'mono', 7.5, 1.2, COLOR.ash);
+        }
+      });
+      y += repRowH;
+    }
+    y += GAP - 2;
+  }
+
+  // 4. Sticking Point
+  if (sheet.optimization?.stickingPointSummary) {
+    const spDesc = sheet.optimization.stickingPointSummary;
+    const spLines = lines(spDesc, 9.5, COLUMN - 20).lines;
+    const spH = 22 + spLines.length * 13 + 6;
+
+    if (room() < spH && y > MARGIN) newPage();
+
+    doc.setDrawColor(COLOR.rule);
+    doc.setLineWidth(1);
+    doc.setFillColor(COLOR.rowRule);
+    doc.roundedRect(MARGIN, y, COLUMN, spH, 4, 4, 'FD');
+
+    const badge = upper(sheet.fr ? 'Point de blocage' : 'Sticking Point');
+    write(badge, MARGIN + 10, y + 6, 'mono', 8, 1.2, COLOR.count, 8 * 0.08);
+    const bW = width(badge, 'mono', 8, 8 * 0.08);
+    write(sheet.fr ? 'Ralentissement biomécanique' : 'Biomechanical Deceleration', MARGIN + 16 + bW, y + 6, 'sansMedium', 9, 1.2, COLOR.ink);
+
+    spLines.forEach((l, idx) => {
+      drawLine(l, false, MARGIN + 10, y + 19 + idx * 13, 9.5, 1.3, COLOR.ink);
+    });
+
+    y += spH + GAP;
+  }
+
+  // 5. Hypertrophy Recommendations
+  if (sheet.optimization?.coachingPoints?.length) {
+    const cues = sheet.optimization.coachingPoints;
+    const cueBlocks = cues.map(c => lines(c, 9.5, COLUMN - 14));
+
+    if (room() < 40 && y > MARGIN) newPage();
+
+    write(upper(sheet.fr ? 'Recommandations hypertrophie' : 'Hypertrophic Stimulus Cues'), MARGIN, y, 'mono', 8.5, 1.5, COLOR.ash, 8.5 * 0.12);
+    y += 14;
+
+    cueBlocks.forEach(b => {
+      if (room() < b.lines.length * 13 + 4 && y > MARGIN) newPage();
+      write('•', MARGIN, y, 'sans', 10, 1.3, COLOR.count);
+      b.lines.forEach((l, idx) => {
+        drawLine(l, false, MARGIN + 12, y + idx * 13, 9.5, 1.3, COLOR.ink);
+      });
+      y += b.lines.length * 13 + 4;
+    });
+
+    if (sheet.optimization.targetMuscles?.length) {
+      const muscLbl = sheet.fr ? 'Muscles cibles\u00A0: ' : 'Target muscles: ';
+      write(muscLbl, MARGIN, y, 'sansMedium', 8.5, 1.2, COLOR.ash);
+      const mlW = width(muscLbl, 'sansMedium', 8.5);
+      write(sheet.optimization.targetMuscles.join(', '), MARGIN + mlW, y, 'sans', 8.5, 1.2, COLOR.ink);
+      y += 12;
+    }
+    y += GAP;
+  }
   // The set's two experimental figures: a rule, two columns, a label in capitals over a serif value in ink, smaller
   // than the count and not in its gold. On synthetic bodies with a known truth, time under tension reads 30 to 59 %
   // short and phase times 45 to 54 % short (synth.txt), so they are not set like the count (R8; assessment of

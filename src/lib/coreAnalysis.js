@@ -1,4 +1,5 @@
 import { countReps, liftDefinition } from './counting/core';
+import { liftSet, isDepthAxisCompoundLift } from './counting/lift3d';
 import { poseDoubt } from './counting/doubt';
 import { readIsWhole } from './collector';
 import { FITNESS_TESTS, isTest, openRise, riseHalfTimes, scoreTest } from './fitness-tests';
@@ -38,8 +39,15 @@ export class FrozenSkeletonsError extends Error {
 }
 
 // tuning: a recount with nearby settings (core.ts CountTuning), only from withSensitivity below; the app's count has none.
-export function summarizeCount(worldLandmarks, timestamps, lift, tuning = undefined) {
-  const core = countReps(worldLandmarks, timestamps, lift, tuning);
+export function summarizeCount(worldLandmarks, timestamps, lift, tuning = undefined, imageLandmarks = undefined) {
+  let effectiveWorld = worldLandmarks;
+  if (imageLandmarks && Array.isArray(imageLandmarks) && imageLandmarks.length > 0 && isDepthAxisCompoundLift(lift, worldLandmarks)) {
+    const lifted = liftSet(worldLandmarks, imageLandmarks, 'fused');
+    if (lifted && Array.isArray(lifted.frames) && lifted.frames.length === worldLandmarks.length) {
+      effectiveWorld = lifted.frames;
+    }
+  }
+  const core = countReps(effectiveWorld, timestamps, lift, tuning);
   // A strict majority of unavailable joint angles is the only counting refusal.
   // Use the core's own raw-angle validity (before outlier removal/bridging).
   // A two-sided exercise is counted on both sides, so each must be in sight: the less visible side decides
@@ -62,9 +70,9 @@ export function summarizeCount(worldLandmarks, timestamps, lift, tuning = undefi
     const halves = riseHalfTimes(core.smoothedAngles, timestamps, core.lowThreshold, core.highThreshold, liftDefinition(lift).rest, core.reps);
     const reps = core.reps.map((r, i) => ({ ...r, halfTime: halves[i] }));
     const t = scoreTest(reps, timestamps.at(-1), FITNESS_TESTS[lift].windowSec, open, timestamps[0]);  // count = reps kept, the open rise among them
-    return { ...core, count: t.score, reps: t.reps, refused, doubt, test: { windowSec: FITNESS_TESTS[lift].windowSec, t0: t.t0, complete: t.complete, beyond: t.beyond, open: t.open, counted: core.count } };
+    return { ...core, count: t.score, reps: t.reps, refused, doubt, worldLandmarks: effectiveWorld, test: { windowSec: FITNESS_TESTS[lift].windowSec, t0: t.t0, complete: t.complete, beyond: t.beyond, open: t.open, counted: core.count } };
   }
-  return { ...core, refused, doubt };
+  return { ...core, refused, doubt, worldLandmarks: effectiveWorld };
 }
 
 /**
@@ -167,7 +175,7 @@ export function withSensitivity(result, lift) {
   let sensitivity = null;
   try {
     const counts = SENSITIVITY_GRID.map(tuning => {
-      const r = summarizeCount(result.worldLandmarks, result.timestamps, lift, tuning);
+      const r = summarizeCount(result.worldLandmarks, result.timestamps, lift, tuning, result.imageLandmarks);
       return r.refused ? null : r.count;
     });
     sensitivity = { moved: counts.some(c => c !== result.count), counts };
@@ -200,7 +208,7 @@ export function recountTo(result, lift, n) {
     || Math.abs(n - result.count) > 3 || isTest(lift) || !Array.isArray(result.worldLandmarks) || !Array.isArray(result.timestamps)) return null;
   for (const tuning of RECOUNT_GRID) {
     let r;
-    try { r = summarizeCount(result.worldLandmarks, result.timestamps, lift, tuning); } catch { continue; }
+    try { r = summarizeCount(result.worldLandmarks, result.timestamps, lift, tuning, result.imageLandmarks); } catch { continue; }
     if (!r.refused && r.count === n) return { tuning, reps: r.reps, smoothedAngles: r.smoothedAngles, arm: r.arm, confidence: r.confidence };
   }
   return null;
@@ -385,7 +393,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     const sorted = [...poseMs].sort((a, b) => a - b), at = q => (sorted.length ? Math.round(sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] * 10) / 10 : null);
     const pose = { delegate: init?.delegate ?? null, renderer: init?.renderer ?? null, msMedian: at(0.5), msP90: at(0.9), samples: sorted.length };
 
-    const countSummary = summarizeCount(worldLandmarks, timestamps, lift);
+    const countSummary = summarizeCount(worldLandmarks, timestamps, lift, undefined, imageLandmarks);
     // The engines wired here on 11-13 October 2026 are no longer run on a set (honesty audit of 14 October 2026): the
     // bilateral symmetry score and trunk shift (asymmetryCoaching.js), consistency, SPARC and the form checks
     // (smoothness.js), joint loads from a fixed 75 kg body (jointTorqueEngine.js), the "execution certificate"

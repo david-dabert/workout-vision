@@ -103,7 +103,7 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   // The app's outcome on a whole video, and on a set it refuses, the proposal it offers (shown, decides nothing).
   const videoCount = (s: ReturnType<typeof videoSets>['sets'][number]) => {
     if (s.appRefused) return { now: 'refused' as const };
-    const r: any = summarizeCount(s.wl, s.ts, s.lift);
+    const r: any = summarizeCount(s.wl, s.ts, s.lift, undefined, s.il ?? undefined);
     if (!r.refused) return { now: r.count, doubt: r.doubt };
     const p: any = s.il ? withProposal({ ...r, worldLandmarks: s.wl, timestamps: s.ts, imageLandmarks: s.il }, s.lift) : null;
     return { now: 'refused' as const, note: p?.proposal?.count ? `(proposal ${p.proposal.count})` : '(no proposal)' };

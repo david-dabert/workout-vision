@@ -207,6 +207,10 @@ export async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, on
       const cleanup = () => {
         video.pause();
         clearTimeout(stallTimeout);
+        if (canvas) {
+          canvas.width = 0;
+          canvas.height = 0;
+        }
       };
 
       // Safety timeout: if no frames arrive within 20 seconds of play(),

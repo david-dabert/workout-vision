@@ -7,7 +7,7 @@
 // alpha (white strokes on black), and on the cream paper the strokes would barely show. So each frame is drawn on a
 // canvas, its strokes painted in the sheet's ink with their alpha kept, laid on the sheet's paper, and kept as a JPEG,
 // which jsPDF embeds as it is, with nothing to decode within the tap.
-import { guideExercise } from './exercise-info';
+import { getGuideExercise as guideExercise } from '../../lib/exerciseGuide';
 import { PAPER } from './palette';
 import SOURCES from './guide-sources.json';
 

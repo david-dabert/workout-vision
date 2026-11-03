@@ -1,8 +1,8 @@
 // Ported from design/experience-prototype.html: particle geometry, seeds and rendering unchanged.
 import entry from './entry-pose.json';
 import { RGB, rgba } from './palette';
-const DPR = Math.min(2, window.devicePixelRatio || 1);
-const LITE = (navigator.hardwareConcurrency || 8) <= 4;
+const DPR = Math.min(2, typeof window !== 'undefined' ? (window.devicePixelRatio || 1) : 1);
+const LITE = typeof navigator !== 'undefined' ? (navigator.hardwareConcurrency || 8) <= 4 : false;
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const easeOut = (k) => 1 - Math.pow(1 - k, 3);
 const easeIn = (k) => k * k * k;

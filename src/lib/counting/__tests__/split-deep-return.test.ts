@@ -35,4 +35,19 @@ describe('deep return split and post-set exit guard', () => {
     const res = countReps(raw.worldLandmarks, raw.timestamps, raw.lift);
     expect(res.count).toBe(13);
   });
+
+  it('detects continuous constant-tension flexion repetitions turning around short of highThreshold', () => {
+    const REST = 170, WORK = 50;
+    const path: Segment[] = [
+      { hold: REST, sec: 0.5 },
+      { to: WORK, sec: 1 }, { to: 135, sec: 0.9 }, // Rep 1 (returns 71% of 120° ROM)
+      { to: WORK, sec: 0.9 }, { to: 135, sec: 0.9 }, // Rep 2
+      { to: WORK, sec: 0.9 }, { to: REST, sec: 1 }, // Rep 3
+      { hold: REST, sec: 0.5 },
+    ];
+    const sps = 30;
+    const a = sample(path, REST, sps);
+    const res = countReps(a.map(x => jointFrame('elbow', { left: x })), timestamps(a.length, sps), 'bicep_curl');
+    expect(res.count).toBe(3);
+  });
 });

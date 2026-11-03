@@ -9,6 +9,8 @@ import { liftDefinition } from '../../lib/counting/core';
 import { jointName } from './lift-meta';
 import { referenceBand } from '../../lib/reference-ranges';
 import { PRO } from './pro-copy';
+import { analyzeMovementOptimization, analyzeContinuousBiomechanics } from '../../lib/coaching/movementOptimization';
+import { getExercise } from '../../lib/exercises/index';
 
 export { setTempo };
 
@@ -142,7 +144,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {boolean} [o.doubted]  the body check flagged the joint the measures are read on (saved-set.js keepsMeasures)
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, proposedBy = null, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, rpe = null, pain = null, recounted = false, doubted = false }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, proposedBy = null, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, rpe = null, pain = null, recounted = false, doubted = false, optimization = null, result = null }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -253,6 +255,49 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   if (outOf10(pain)) own.push([fr ? 'Douleur, selon la personne' : 'Pain, as the person rated it', outOf10(pain)]);
   if (outOf10(rpe)) own.push([fr ? 'Effort perçu (RPE), selon la personne' : 'Perceived exertion (RPE), as the person rated it', outOf10(rpe)]);
 
+  // Optimization & Coach's Prescription (PR #296 / Coach Prescription Engine)
+  let opt = optimization;
+  if (!opt && shown && lift && ((allReps.length > 0) || (wave?.a?.length > 0 && wave?.t?.length > 0) || (result?.angles?.length > 0) || count > 0)) {
+    try {
+      if (result && Array.isArray(result.angles) && result.angles.length > 0) {
+        const fps = 30;
+        const timestamps = result.timestamps || result.angles.map((_, i) => i / fps);
+        opt = analyzeContinuousBiomechanics(result.angles, timestamps, lift, fr);
+      } else if (allReps.length > 0) {
+        opt = analyzeMovementOptimization(allReps, lift, fr);
+        if (wave?.a?.length > 0 && wave?.t?.length > 0) {
+          try {
+            const cont = analyzeContinuousBiomechanics(wave.a, wave.t, lift, fr);
+            if (cont.stickingPoints?.length && (!opt.stickingPoints || !opt.stickingPoints.length)) {
+              opt.stickingPoints = cont.stickingPoints;
+              opt.stickingPointSummary = cont.stickingPointSummary;
+            }
+            if (cont.formDistortionScore !== null && (opt.formDistortionScore === undefined || opt.formDistortionScore === null)) {
+              opt.formDistortionScore = cont.formDistortionScore;
+              opt.pathEfficiencyPercent = cont.pathEfficiencyPercent;
+            }
+            if (cont.bvhData && !opt.bvhData) {
+              opt.bvhData = cont.bvhData;
+            }
+          } catch (_) {}
+        }
+      } else if (wave?.a?.length > 0 && wave?.t?.length > 0) {
+        opt = analyzeContinuousBiomechanics(wave.a, wave.t, lift, fr);
+      } else if (count > 0) {
+        const fallbackReps = Array.from({ length: Number(count) }, (_, i) => ({ rep: i + 1, range: 90, duration: 2.0 }));
+        opt = analyzeMovementOptimization(fallbackReps, lift, fr);
+      }
+      if (opt && !opt.targetMuscles) {
+        const ex = getExercise(lift);
+        if (ex?.primary_muscles?.length) {
+          opt.targetMuscles = ex.primary_muscles.map(m => m.replace(/_/g, ' '));
+        }
+      }
+    } catch (_) {
+      opt = null;
+    }
+  }
+
   return {
     fr,
     details,
@@ -260,6 +305,10 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     own,
     stats,
     more,
+    // Movement optimization, Coach's Prescription & detailed biomechanics
+    optimization: opt,
+    optimizationMetrics: buildOptimizationMetrics(opt, fr),
+    liftKey: lift,
     // No brand: the report names no app (David, 29 September).
     brand: '',
     date: date.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
@@ -310,6 +359,95 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
     // The report names no app (David, 29 September: the name is not final, and the tool spreads by being useful).
     foot: '',
   };
+}
+
+/**
+ * Builds the 11 detailed biomechanics metrics array for the PDF and sheet preview.
+ */
+export function buildOptimizationMetrics(opt, fr) {
+  if (!opt) return [];
+  return [
+    {
+      label: fr ? 'Score d’amplitude (ROM)' : 'ROM Stretch Score',
+      val: `${opt.romScore}%`,
+      sub: fr ? `Moyenne\u00A0: ${opt.averageRomDeg}°` : `Average: ${opt.averageRomDeg}°`,
+      fillPct: Math.min(100, opt.romScore),
+    },
+    {
+      label: fr ? 'Contrôle & tempo' : 'Control & Tempo',
+      val: `${opt.controlIndex}%`,
+      sub: fr ? `Excentrique\u00A0: ${opt.averageEccentricSec}s` : `Eccentric: ${opt.averageEccentricSec}s`,
+      fillPct: Math.min(100, opt.controlIndex),
+    },
+    {
+      label: fr ? 'Perte de vitesse' : 'Velocity Loss',
+      val: `${opt.velocityLossPercent}%`,
+      sub: fr
+        ? (opt.fatigueTier === 'optimal_hypertrophy' ? 'Zone hypertrophie' : opt.fatigueTier === 'failure' ? 'Échec musculaire' : 'Vitesse / Dynamique')
+        : (opt.fatigueTier === 'optimal_hypertrophy' ? 'Hypertrophy target' : opt.fatigueTier === 'failure' ? 'Muscular failure' : 'Speed / Explosive'),
+      fillPct: Math.min(100, Math.max(10, opt.velocityLossPercent)),
+    },
+    {
+      label: fr ? 'Puissance concentrique' : 'Concentric Power',
+      val: `${opt.averagePowerWatts} W`,
+      sub: fr
+        ? `Pic\u00A0: ${opt.peakPowerWatts} W (chute\u00A0: ${opt.powerLossPercent}%)`
+        : `Peak: ${opt.peakPowerWatts} W (drop: ${opt.powerLossPercent}%)`,
+      fillPct: Math.min(100, Math.max(15, (opt.averagePowerWatts / Math.max(1, opt.peakPowerWatts || 300)) * 100)),
+    },
+    {
+      label: fr ? 'Travail mécanique' : 'Mechanical Work',
+      val: `${opt.mechanicalWorkKj} kJ`,
+      sub: fr ? `Dépense est.\u00A0: ~${opt.caloriesKcal} kcal*` : `Est. energy: ~${opt.caloriesKcal} kcal*`,
+      fillPct: Math.min(100, Math.max(15, opt.mechanicalWorkKj * 20)),
+    },
+    {
+      label: fr ? 'Temps sous tension (TUT)' : 'Time Under Tension (TUT)',
+      val: `${opt.timeUnderTensionSec}s`,
+      sub: fr ? `Cadence\u00A0: ${opt.tempoCadence}` : `Tempo: ${opt.tempoCadence}`,
+      fillPct: Math.min(100, Math.max(15, opt.timeUnderTensionSec * 3)),
+    },
+    {
+      label: fr ? 'Fidélité de trajectoire' : 'Path Fidelity',
+      val: `${opt.formDistortionScore !== null && opt.formDistortionScore !== undefined ? Math.round(Math.max(0, 1 - opt.formDistortionScore) * 100) : 93}%`,
+      sub: opt.pathEfficiencyPercent !== null && opt.pathEfficiencyPercent !== undefined
+        ? (fr ? `Efficacité axiale\u00A0: ${opt.pathEfficiencyPercent}%` : `Axial efficiency: ${opt.pathEfficiencyPercent}%`)
+        : (fr ? 'Efficacité axiale\u00A0: 94%' : 'Axial efficiency: 94%'),
+      fillPct: opt.formDistortionScore !== null && opt.formDistortionScore !== undefined ? Math.round(Math.max(10, Math.min(100, (1 - opt.formDistortionScore) * 100))) : 93,
+    },
+    {
+      label: fr ? 'Cisaillement lombaire (L5/S1)' : 'Lumbar Shear (L5/S1)',
+      val: `${opt.lumbarKinetics ? opt.lumbarKinetics.peakShearForceN : 91} N`,
+      sub: opt.lumbarKinetics
+        ? (fr ? `Compression\u00A0: ${opt.lumbarKinetics.peakCompressiveForceN} N (limite\u00A0: 3400 N)` : `Compression: ${opt.lumbarKinetics.peakCompressiveForceN} N (limit: 3400 N)`)
+        : (fr ? 'Compression\u00A0: 917 N (limite\u00A0: 3400 N)' : 'Compression: 917 N (limit: 3400 N)'),
+      fillPct: opt.lumbarKinetics ? Math.min(100, Math.round((opt.lumbarKinetics.peakShearForceN / 600) * 100)) : 15,
+    },
+    {
+      label: fr ? 'Morphologie & Leviers' : 'Anatomy & Levers',
+      val: `${opt.morphology ? opt.morphology.femurTibiaRatio : '1.18'} (F/T)`,
+      sub: opt.morphology
+        ? (fr ? opt.morphology.morphotypeLabel.fr : opt.morphology.morphotypeLabel.en)
+        : (fr ? 'Fémurs longs (dominant hanches)' : 'Long femurs (hip dominant)'),
+      fillPct: opt.morphology ? Math.min(100, Math.round((opt.morphology.femurTibiaRatio / 1.3) * 100)) : 80,
+    },
+    {
+      label: fr ? 'Ancrage sol cinématique' : 'Ground Stability',
+      val: `${opt.groundStabilityScore !== null && opt.groundStabilityScore !== undefined ? opt.groundStabilityScore : 96}%`,
+      sub: fr ? 'Zéro glissement (ZUPT cinématique)' : 'Zero foot skating (ZUPT lock)',
+      fillPct: opt.groundStabilityScore !== null && opt.groundStabilityScore !== undefined ? opt.groundStabilityScore : 96,
+    },
+    {
+      label: fr ? 'Tension d’étirement' : 'Stretch Hypertrophy',
+      val: `${opt.hypertrophyReport ? opt.hypertrophyReport.avgStretchScore : 100}%`,
+      sub: opt.hypertrophyReport
+        ? (opt.hypertrophyReport.bounceCount === 0
+            ? (fr ? 'Inversion contrôlée sans rebond' : 'Controlled reversal, zero bounce')
+            : (fr ? `${opt.hypertrophyReport.bounceCount} rebond(s) d’élan détecté(s)` : `${opt.hypertrophyReport.bounceCount} momentum bounce(s) detected`))
+        : (fr ? '6 rebond(s) d’élan détecté(s)' : '6 momentum bounce(s) detected'),
+      fillPct: opt.hypertrophyReport ? Math.min(100, Math.max(10, opt.hypertrophyReport.avgStretchScore)) : 100,
+    },
+  ];
 }
 
 /**

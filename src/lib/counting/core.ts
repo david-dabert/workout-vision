@@ -718,8 +718,7 @@ function countSide(
   const lowThreshold = pLow + (def.rest === 'high' ? workMargin : margin);
   const highThreshold = pHigh - (def.rest === 'high' ? margin : workMargin);
 
-  // 7. Detect reps via threshold crossings, then place their boundaries at the rest
-  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES, def.minRepSec ?? MIN_REP_SEC, !!def.noSplit, def.joint !== 'elbow', !!def.lift, rawAngles.map(a => a !== null));
+  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES, def.minRepSec ?? MIN_REP_SEC, !!def.noSplit, def.joint !== 'elbow', !!def.lift, rawAngles.map(a => a !== null), def.first === 'concentric');
   const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
   // Speeds are read only where every sample the smoothing used was seen, not filled in by the bridge: the jump
   // where a pose comes back after a short loss is no limb's speed (second audit, 3 October).
@@ -902,7 +901,7 @@ function countAlternating(left: CountResult, right: CountResult, timestamps: num
     if (range < (def.minRangeDeg ?? MIN_ROM_DEGREES)) return [];
     const margin = range * (def.thresholdMargin ?? THRESHOLD_MARGIN);
     const lowT = pLow + margin, highT = pHigh - margin;
-    const cycles = detectReps(s, timestamps, lowT, highT, rest, def.minRepRomDeg ?? MIN_ROM_DEGREES);
+    const cycles = detectReps(s, timestamps, lowT, highT, rest, def.minRepRomDeg ?? MIN_ROM_DEGREES, MIN_REP_SEC, false, def.joint !== 'elbow', !!def.lift, null, def.joint === 'elbow' && def.first === 'concentric');
     const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
     return placeBoundaries(cycles, s, timestamps, lowT, highT, band, { ...def, rest }).map(r => ({ ...r, side }));
   };
@@ -1157,6 +1156,7 @@ function detectReps(
   isLift: boolean = false,
   isLimbLift: boolean = false,
   seen: boolean[] | null = null,
+  isFlexionWork: boolean = false,
 ): Cycle[] & { headRefused?: boolean } {
   const restsLow = rest === 'low';
   const cycles: Cycle[] = [];
@@ -1173,6 +1173,8 @@ function detectReps(
   let head: Cycle | null = null;
   let minAfterCross = Infinity;
   let minAfterCrossIdx = -1;
+  let maxAfterCross = -Infinity;
+  let maxAfterCrossIdx = -1;
   // The rest end's extreme while waiting (the lowest angle for a lift that rests low, the highest otherwise), so a rep's
   // range is read from where it left rest, not from the sample that crossed the rest threshold (12 October 2026). Read
   // from that crossing, the range lost the stretch under the hysteresis band (THRESHOLD_MARGIN of the set's range, a
@@ -1287,6 +1289,8 @@ function detectReps(
           crossIdx = angle <= lowThreshold ? i : -1; // the entering sample may already be at the working end
           enteredAtWork = crossIdx === i;
           hiIdx = i;
+          maxAfterCross = -Infinity;
+          maxAfterCrossIdx = -1;
         } else {
           restExtreme = Math.max(restExtreme, angle);
         }
@@ -1295,6 +1299,14 @@ function detectReps(
         peakAngle = Math.max(peakAngle, angle);
         troughAngle = Math.min(troughAngle, angle);
         if (angle <= lowThreshold) crossIdx = i;
+
+        if (crossIdx > -1) {
+          if (angle > maxAfterCross) {
+            maxAfterCross = angle;
+            maxAfterCrossIdx = i;
+          }
+        }
+
         if (angle > highThreshold && crossIdx > -1) {
           const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
@@ -1307,9 +1319,43 @@ function detectReps(
           }
           state = 'waiting';
           restExtreme = angle;
+          maxAfterCross = -Infinity;
+          maxAfterCrossIdx = -1;
+        } else if (isFlexionWork && crossIdx > -1 && maxAfterCrossIdx > -1 && Number.isFinite(maxAfterCross)) {
+          // Adaptive ceiling turnaround: if lifter keeps constant tension or turns around short of lockout,
+          // angle returned by >= 70% of amplitude (or within 20% of highThreshold) and is descending again toward lowThreshold by >= 2.5 deg.
+          const currentRom = peakAngle - troughAngle;
+          const returnClimb = maxAfterCross - troughAngle;
+          const turnDrop = maxAfterCross - angle;
+          const thresholdBand = highThreshold - lowThreshold;
+          if (
+            !(repStartIdx === firstSeen && enteredAtWork) &&
+            (returnClimb >= 0.70 * currentRom || maxAfterCross >= highThreshold - 0.20 * thresholdBand) &&
+            turnDrop >= Math.max(2.5, 0.20 * currentRom) &&
+            maxAfterCrossIdx > repStartIdx &&
+            hiIdx > -1 && timestamps[maxAfterCrossIdx] - timestamps[hiIdx] >= 0.25
+          ) {
+            const rom = maxAfterCross - troughAngle;
+            const duration = timestamps[maxAfterCrossIdx] - timestamps[repStartIdx];
+            if (duration >= minSec && bounded(repStartIdx, maxAfterCrossIdx) && rom >= minRom) {
+              cycles.push({ enter: repStartIdx, complete: maxAfterCrossIdx });
+              hiIdxs.push(hiIdx);
+            }
+            state = 'inRep';
+            repStartIdx = maxAfterCrossIdx;
+            peakAngle = maxAfterCross;
+            troughAngle = angle;
+            crossIdx = angle <= lowThreshold ? i : -1;
+            enteredAtWork = crossIdx === i;
+            hiIdx = i;
+            maxAfterCross = -Infinity;
+            maxAfterCrossIdx = -1;
+          }
         } else if (angle > highThreshold) {
           state = 'waiting'; // back at rest without reaching the working end: not a rep
           restExtreme = angle;
+          maxAfterCross = -Infinity;
+          maxAfterCrossIdx = -1;
         }
       }
     }
@@ -1398,7 +1444,9 @@ function detectReps(
  * much shorter than the median; in a 2-cycle set, the shorter cycle serves as the tempo reference when it lasts
  * at least SPLIT_TWO_MIN_SEC), a rep lasting well over the median is split at its fullest in-set return when
  * that return covered SPLIT_RETURN_SHARE of the way from the working extreme to the rest threshold and both
- * pieces are whole reps by length and range. Cut last reps are added after this pass and are never split.
+ * pieces are whole reps by length and range. Multi-rep continuous runs are split recursively until all pieces
+ * satisfy the duration ceiling (2 November 2026; guaranteed termination as each split requires piece duration >= minPiece).
+ * Cut last reps are added after this pass and are never split.
  * Mutates `cycles`.
  */
 function splitOverlongReps(
@@ -1435,11 +1483,10 @@ function splitOverlongReps(
   };
   const minPiece = Math.max(MIN_REP_SEC, SPLIT_PIECE * md);
   const firstValid = smoothed.findIndex(a => a !== null);
-  const out: Cycle[] = [];
-  for (const c of cycles) {
+  const splitCycle = (c: Cycle): Cycle[] => {
     const dur = timestamps[c.complete] - timestamps[c.enter];
     const longMult = c.enter === firstValid ? SPLIT_LONG_FIRST : SPLIT_LONG;
-    if (dur <= longMult * md || c.cut) { out.push(c); continue; }
+    if (dur <= longMult * md || c.cut) return [c];
     let reached = false, extreme = -Infinity, ret = Infinity, retIdx = -1;
     let bestShare = -Infinity, bestK = -1;
     for (let i = c.enter; i <= c.complete; i++) {
@@ -1465,10 +1512,13 @@ function splitOverlongReps(
       && range(c.enter, k) >= minRom && range(k, c.complete) >= minRom;
     // T4: a split whose return fell short of SPLIT_RETURN_SHARE is made when both pieces match the set's rep shape.
     if (pieces && ((isRegular && bestShare >= SPLIT_RETURN_SHARE) || (isDeepRegular && bestShare >= SPLIT_DEEP_RETURN) || (shape && shapePart('s') && shape.matches(c.enter, k, 'whole') && shape.matches(k, c.complete, 'whole')))) {
-      out.push({ enter: c.enter, complete: k }, { enter: k, complete: c.complete });
-    } else {
-      out.push(c);
+      return [...splitCycle({ enter: c.enter, complete: k }), ...splitCycle({ enter: k, complete: c.complete })];
     }
+    return [c];
+  };
+  const out: Cycle[] = [];
+  for (const c of cycles) {
+    out.push(...splitCycle(c));
   }
   cycles.splice(0, cycles.length, ...out);
 }
