@@ -166,7 +166,7 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
         <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
       </div>
       <h2 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Rapport de séance' : 'Session report'}</h2>
-      <p className="report-sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Dossier de performance biomécanique & cinématique 3D.' : 'Biomechanical performance dossier & 3D kinematics.'}</p>
+      <p className="report-sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Tout est facultatif\u00A0: seul ce que vous remplissez apparaît sur le PDF.' : 'Everything is optional: only what you fill in appears on the PDF.'}</p>
 
       <article className="sheet" data-reveal style={{ '--i': 2 }} aria-label={fr ? 'Aperçu du PDF' : 'PDF preview'}>
         <div className="sh-top">{sheet.brand && <span>{sheet.brand}</span>}<span>{sheet.date}</span></div>
@@ -351,9 +351,9 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
             </svg>
-            <h3 className="report-custom-title">{fr ? 'Personnaliser le rapport' : 'Customize report'}</h3>
+            <div className="report-custom-title">{fr ? 'Personnaliser le rapport' : 'Customize report'}</div>
           </div>
-          <p className="report-custom-sub">{fr ? 'Tout est facultatif\u00A0: seul ce que vous remplissez apparaît sur le PDF.' : 'Everything is optional: only what you fill in appears on the PDF.'}</p>
+          <p className="report-custom-sub">{fr ? 'Complétez vos notes athlète, vos ressentis et vos informations d’entraînement.' : 'Add your athlete notes, perceived exertion, and session context.'}</p>
         </div>
         <div className="field">
           <label htmlFor="fName">{fr ? 'Votre nom' : 'Your name'}</label>

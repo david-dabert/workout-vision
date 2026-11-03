@@ -196,7 +196,8 @@
   font-family: var(--serif);
   font-size: 20px;
   line-height: 1;
-  color: var(--paper-gold);
+  font-weight: 600;
+  color: var(--paper-ink);
 }
 .wv-experience .sh-cp-score-lbl {
   font-family: var(--mono);
@@ -225,7 +226,8 @@
   font-size: 8px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--paper-gold);
+  color: var(--paper-ash);
+  font-weight: 500;
 }
 .wv-experience .sh-cp-bottleneck-title {
   font-size: 11px;
@@ -372,7 +374,7 @@
   font-size: 8.5px;
 }
 .wv-experience .sh-vbt-num { color: var(--paper-ash); }
-.wv-experience .sh-vbt-loss { color: var(--paper-gold); font-weight: 500; }
+.wv-experience .sh-vbt-loss { color: var(--paper-ink); font-weight: 600; }
 .wv-experience .sh-vbt-card.is-failure .sh-vbt-loss { color: var(--paper-ash); }
 .wv-experience .sh-vbt-track {
   width: 100%;
@@ -413,7 +415,8 @@
   font-size: 8px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--paper-gold);
+  color: var(--paper-ash);
+  font-weight: 500;
 }
 .wv-experience .sh-sticking-title {
   font-size: 10.5px;
@@ -445,7 +448,8 @@
   color: var(--paper-ink);
 }
 .wv-experience .sh-cue-bullet {
-  color: var(--paper-gold);
+  color: var(--paper-ash);
+  font-weight: 600;
   line-height: 1.45;
 }
 .wv-experience .sh-target-muscles {
