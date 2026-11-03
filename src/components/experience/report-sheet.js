@@ -369,7 +369,7 @@ export function buildOptimizationMetrics(opt, fr) {
       fillPct: Math.min(100, opt.controlIndex),
     },
     {
-      label: fr ? 'Perte de vitesse (VBT)' : 'Velocity Loss (VBT)',
+      label: fr ? 'Perte de vitesse' : 'Velocity Loss',
       val: `${opt.velocityLossPercent}%`,
       sub: fr
         ? (opt.fatigueTier === 'optimal_hypertrophy' ? 'Zone hypertrophie' : opt.fatigueTier === 'failure' ? 'Échec musculaire' : 'Vitesse / Dynamique')

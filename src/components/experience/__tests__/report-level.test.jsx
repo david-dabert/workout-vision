@@ -42,7 +42,7 @@ describe('the coach report and the stored level', () => {
     expect(html).toContain('sh-biomechanics-section');
     expect(html).toContain('Biomécanique détaillée &amp; Cinématique 3D');
     expect(html).toContain('sh-vbt-section');
-    expect(html).toContain('Profil de Vitesse par Répétition (VBT)');
+    expect(html).toContain('Profil de Vitesse par Répétition');
     expect(html).toContain('sh-coaching-section');
     expect(html).toContain('Recommandations hypertrophie');
   });

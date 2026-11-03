@@ -247,7 +247,7 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
           <div className="sh-biomechanics-section" data-testid="sh-biomechanics-section">
             <div className="sh-sec-head">
               <span className="sh-sec-title">{fr ? 'Biomécanique détaillée & Cinématique 3D' : 'Detailed Biomechanics & 3D Kinematics'}</span>
-              <span className="sh-sec-sub">{fr ? 'Angles, puissance (W), perte de vitesse (VBT) et cinématique' : 'Angles, power (W), velocity loss (VBT) and kinematics'}</span>
+              <span className="sh-sec-sub">{fr ? 'Angles, puissance (W), perte de vitesse et cinématique' : 'Angles, power (W), velocity loss and kinematics'}</span>
             </div>
             <div className="sh-bio-grid">
               {(sheet.optimizationMetrics || []).map(m => (
@@ -265,11 +265,11 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
           </div>
         )}
 
-        {/* 3. Rep-by-Rep Velocity Profile (VBT) */}
+        {/* 3. Rep-by-Rep Velocity Profile */}
         {sheet.optimization?.repVelocityProfiles?.length > 0 && (
           <div className="sh-vbt-section" data-testid="sh-vbt-section">
             <div className="sh-sec-head">
-              <span className="sh-sec-title">{fr ? 'Profil de Vitesse par Répétition (VBT)' : 'Rep-by-Rep Velocity Profile (VBT)'}</span>
+              <span className="sh-sec-title">{fr ? 'Profil de Vitesse par Répétition' : 'Rep-by-Rep Velocity Profile'}</span>
               <span className="sh-sec-sub">{fr ? 'Ralentissement vs rep la plus rapide' : 'Deceleration vs fastest rep'}</span>
             </div>
             <div className="sh-vbt-strip">

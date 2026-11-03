@@ -13,7 +13,6 @@ import { LanguageProvider } from '../../../lib/LanguageContext';
 import Entry from '../Entry';
 import { DemoView } from '../Demo';
 import DemoInteractiveLab from '../DemoInteractiveLab';
-import { FALLBACK_DEMO_TELEMETRY } from '../demo-telemetry-data';
 
 describe('Front Door Reframing & Interactive Biomechanics Lab Demo', () => {
   it('renders reframed biomechanics laboratory & VBT copy on Entry in French', () => {
@@ -64,23 +63,29 @@ describe('Front Door Reframing & Interactive Biomechanics Lab Demo', () => {
     expect(html).toContain('Explorer en laboratoire interactif (Watts, 3D)');
   });
 
-  it('renders interactive lab screen with sticking points, power in Watts, and trajectory diagnostics', () => {
+  it('renders interactive lab screen with real telemetry facts and controls', () => {
     globalThis.localStorage = { getItem: k => (k === 'wv_lang' ? 'fr' : null), setItem: () => {} };
+    const mockTelemetry = {
+      lift: 'bicep_curl',
+      count: 5,
+      label: 5,
+      reps: [{ startTime: 0, endTime: 1.5, romDegrees: 100 }],
+      angles: [160, 50, 160],
+      timestamps: [0, 1, 2],
+    };
     const html = renderToStaticMarkup(
       <LanguageProvider>
-        <DemoInteractiveLab onClose={() => {}} onStart={() => {}} />
+        <DemoInteractiveLab onClose={() => {}} onStart={() => {}} initialTelemetry={mockTelemetry} />
       </LanguageProvider>
     );
 
     expect(html).toContain('demo-interactive-lab');
-    expect(html).toContain('Analyse biomécanique complète');
-    expect(html).toContain('Démo Interactive · Squat Olympique');
-    expect(html).toContain('demo-sticking-pin');
-    // Movement optimization card with concentric power and metrics
-    expect(html).toContain('movement-optimization-card');
-    expect(html).toContain('Puissance concentrique');
-    expect(html).toMatch(/\d+\s*W/);
-    expect(html).toContain('Score d’amplitude (ROM)');
-    expect(html).toContain('94%');
+    expect(html).toContain('Voyez ce que l’appli voit.');
+    expect(html).toContain('Série réelle');
+    expect(html).toContain('demo-lab-facts');
+    expect(html).toContain('Ce que l’appli a mesuré');
+    expect(html).toContain('Répétitions');
+    expect(html).toContain('Amplitude moyenne');
+    expect(html).toContain('Filmer ma propre série');
   });
 });

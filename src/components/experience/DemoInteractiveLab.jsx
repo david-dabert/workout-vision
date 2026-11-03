@@ -21,14 +21,14 @@ const REDUCED = () => typeof matchMedia === 'function' && matchMedia('(prefers-r
  * through the app's counting path): the joint angle is read from the angles at the video's time, not typed, and when the
  * telemetry cannot load the video plays alone (R8). The deeper analysis sits behind one tap, under the experimental label.
  */
-export default function DemoInteractiveLab({ clip = LEAD_LAB_CLIP, onClose, onStart }) {
+export default function DemoInteractiveLab({ clip = LEAD_LAB_CLIP, onClose, onStart, initialTelemetry = null }) {
   const { lang } = useT();
   const fr = lang !== 'en';
   const c = LAB[fr ? 'fr' : 'en'];
   const cfg = LAB_CLIPS[clip] || LAB_CLIPS[LEAD_LAB_CLIP];
   const L = fr ? 'fr' : 'en';
 
-  const [data, setData] = useState(null);
+  const [data, setData] = useState(initialTelemetry || null);
   const [failed, setFailed] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [slow, setSlow] = useState(false);
@@ -41,13 +41,17 @@ export default function DemoInteractiveLab({ clip = LEAD_LAB_CLIP, onClose, onSt
   const dragRef = useRef(null);
 
   useEffect(() => {
+    if (initialTelemetry) {
+      setData(initialTelemetry);
+      return undefined;
+    }
     let active = true;
     loadDemoTelemetry(cfg.id).then(t => {
       if (!active) return;
       if (t) setData(t); else setFailed(true);
     });
     return () => { active = false; };
-  }, [cfg.id]);
+  }, [cfg.id, initialTelemetry]);
 
   const videoBase = `${import.meta.env.BASE_URL}demo/${cfg.id}`;
   const duration = length || data?.metadata?.duration || 0;
