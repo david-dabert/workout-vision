@@ -15,12 +15,18 @@ import { downloadBvhFile } from '../../lib/biomechanics/bvhExport';
 // The PDF code (jsPDF and the app's fonts) loads apart from the screens, once,
 // and is warmed as soon as a report is likely, so the share happens within the tap.
 let kit = null, loading = null, warmed = false;
-export function warmReportPdf(lift = null) {
+const drawingsWarmed = new Set();
+export async function warmReportPdf(lift = null) {
   loading ||= import('./report-pdf').then(m => (kit = m), e => { loading = null; throw e; });
-  if (lift) {
-    import('./sheet-drawings').then(sd => sd.drawings.warm([lift])).catch(() => {});
+  const m = await loading;
+  if (lift && !drawingsWarmed.has(lift)) {
+    try {
+      const sd = await import('./sheet-drawings');
+      await sd.drawings.warm([lift]);
+      drawingsWarmed.add(lift);
+    } catch (_) {}
   }
-  return loading;
+  return m;
 }
 
 /**
@@ -75,6 +81,14 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
   const sheetRef = useRef(sheet);
   sheetRef.current = sheet;
   const guide = guideExercise(lift);
+  const [activeFrame, setActiveFrame] = useState(0);
+  useEffect(() => {
+    if (!guide?.frames?.length || guide.frames.length < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const timer = setInterval(() => {
+      setActiveFrame(f => (f + 1) % guide.frames.length);
+    }, 850);
+    return () => clearInterval(timer);
+  }, [guide]);
 
   function prepare() {
     setStatus('preparing');
@@ -180,8 +194,15 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
             <span className="sh-nl"><b>{sheet.word}</b><span>{sheet.lift}</span>{sheet.planned && <span className="sh-planned" data-testid="sh-planned">{sheet.planned}</span>}</span>
           </div>
           {guide?.frames?.length > 0 && (
-            <div className="sh-mockup-frame" data-testid="sh-mockup-frame" aria-hidden="true">
-              <img src={guide.frames[0]} width="72" height="72" alt="" loading="lazy" />
+            <div className="sh-mockup-frame" data-testid="sh-mockup-frame" aria-hidden="true" title={sheet.lift}>
+              <img
+                src={guide.frames[activeFrame % guide.frames.length]}
+                width="72"
+                height="72"
+                alt=""
+                loading="eager"
+              />
+              <span className="sh-mockup-phase">{activeFrame + 1}/{guide.frames.length}</span>
             </div>
           )}
         </div>
