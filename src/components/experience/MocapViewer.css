@@ -1,0 +1,171 @@
+/* Interactive 3D Mocap Viewer container and canvas */
+.mocap-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: 14px 16px;
+  background: var(--basalt);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-l);
+  box-shadow: var(--shadow-card);
+  color: var(--c-fg);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.mocap-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.mocap-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mocap-kicker {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+.mocap-title {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--c-fg);
+}
+
+.mocap-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mocap-badge {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-fg-muted);
+  padding: 3px 7px;
+  border: 1px solid var(--hair-2);
+  border-radius: var(--r-s);
+  background: var(--well);
+}
+
+.mocap-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-s);
+  color: var(--c-fg-muted);
+  cursor: pointer;
+}
+
+.mocap-reset-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+.mocap-canvas-wrap {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  background: linear-gradient(180deg, var(--bio-glow) 0%, var(--well) 100%);
+  border: 1px solid var(--hair-2);
+  border-radius: var(--r-m);
+  overflow: hidden;
+  touch-action: none;
+}
+
+.mocap-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.mocap-canvas:active {
+  cursor: grabbing;
+}
+
+.mocap-compass {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 2px 6px;
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-s);
+  background: var(--basalt);
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--c-accent);
+  pointer-events: none;
+}
+
+.mocap-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mocap-play-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--hair-2);
+  border-radius: var(--r-s);
+  background: var(--well);
+  color: var(--c-fg);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.mocap-play-btn svg {
+  width: 12px;
+  height: 12px;
+}
+
+.mocap-scrubber {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--c-rule);
+  border-radius: 2px;
+  outline: none;
+}
+
+.mocap-scrubber::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--c-accent);
+  cursor: pointer;
+}
+
+.mocap-frame-num {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--c-fg-muted);
+  min-width: 32px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
