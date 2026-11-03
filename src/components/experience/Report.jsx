@@ -166,34 +166,9 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
         <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
       </div>
       <h2 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Rapport de séance' : 'Session report'}</h2>
-      <p className="report-sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Tout est facultatif\u00A0: seul ce que vous remplissez apparaît sur le PDF.' : 'Everything is optional: only what you fill in appears on the PDF.'}</p>
-      <div className="field">
-        <label htmlFor="fName">{fr ? 'Votre nom' : 'Your name'}</label>
-        <input id="fName" type="text" autoComplete="off" autoCapitalize="words" autoCorrect="off" spellCheck={false} enterKeyHint="next" maxLength={NAME_MAX}
-          placeholder={fr ? 'Prénom et nom' : 'First and last name'} value={name} onChange={e => setName(e.target.value)} onKeyDown={next(notesRef)} />
-      </div>
-      <Choice id="fWith" label={fr ? 'Entraînement' : 'Training'} value={context} onChange={v => { setContext(v); setPartner(''); }}
-        options={[['alone', fr ? 'En solo' : 'Alone'], ['friend', fr ? 'En binôme' : 'With a friend'], ['coach', fr ? 'Avec un coach' : 'With a coach'], ['physio', fr ? 'Séance kiné' : 'Physiotherapy']]} pairs />
-      {(context === 'friend' || context === 'coach' || context === 'physio') && <div className="field fade-in">
-        <label htmlFor="fPartner">{context === 'physio' ? (fr ? 'Nom du kinésithérapeute' : 'Physiotherapist’s name') : context === 'coach' ? (fr ? 'Nom du coach' : 'Coach’s name') : (fr ? 'Nom du partenaire' : 'Friend’s name')}</label>
-        <input id="fPartner" ref={partnerRef} type="text" autoComplete="off" autoCapitalize="words" autoCorrect="off" spellCheck={false} enterKeyHint="next" maxLength={NAME_MAX}
-          placeholder={fr ? 'Prénom et nom' : 'First and last name'} value={partner} onChange={e => setPartner(e.target.value)} onKeyDown={next(notesRef)} />
-      </div>}
-      <Choice id="fLevel" label={fr ? 'Niveau' : 'Level'} value={level} onChange={setLevel}
-        options={[['beginner', fr ? 'Débutant' : 'Beginner'], ['intermediate', fr ? 'Intermédiaire' : 'Intermediate'], ['expert', fr ? 'Confirmé' : 'Expert']]} />
-      {/* The person's pain, 0 to 10, every value offered (honesty audit of 14 October 2026, CORE-20: it was 0, 2, 4, 6, 8
-          under a "VAS" label, then graded). Printed as given, as theirs. Awaiting David's approval of the words (R10). */}
-      <Choice id="fPain" label={fr ? 'Douleur ressentie, de 0 à 10' : 'Pain felt, from 0 to 10'} value={pain === null ? '' : String(pain)} onChange={v => setPain(v === '' ? null : Number(v))}
-        options={Array.from({ length: 11 }, (_, i) => [String(i), String(i)])} cols={6} />
-      <Choice id="fRpe" label={fr ? 'Effort perçu (RPE)' : 'Perceived exertion (RPE)'} value={rpe === null ? '' : String(rpe)} onChange={v => setRpe(v === '' ? null : Number(v))}
-        options={[['6', '6'], ['7', '7'], ['8', '8'], ['9', '9'], ['10', '10']]} cols={5} />
-      <div className="field">
-        <label htmlFor="fNotes">Notes</label>
-        <textarea id="fNotes" ref={notesRef} rows="3" autoCapitalize="sentences" maxLength={NOTES_MAX}
-          placeholder={fr ? 'Observations, consignes pour la prochaine séance…' : 'Observations, instructions for the next session…'} value={notes} onChange={e => setNotes(e.target.value)} />
-      </div>
+      <p className="report-sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Dossier de performance biomécanique & cinématique 3D.' : 'Biomechanical performance dossier & 3D kinematics.'}</p>
 
-      <article className="sheet" data-reveal style={{ '--i': 3 }} aria-label={fr ? 'Aperçu du PDF' : 'PDF preview'}>
+      <article className="sheet" data-reveal style={{ '--i': 2 }} aria-label={fr ? 'Aperçu du PDF' : 'PDF preview'}>
         <div className="sh-top">{sheet.brand && <span>{sheet.brand}</span>}<span>{sheet.date}</span></div>
         <h3 className="sh-title">{sheet.title}</h3>
         {sheet.people.length > 0 && <div className="sh-people">
@@ -368,6 +343,42 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
         {/* Experimental, at the foot of the sheet as at the foot of every PDF page (R8). */}
         {sheet.experimental && <p className="sh-exp" data-testid="sh-exp">{sheet.experimental}</p>}
       </article>
+
+      <div className="report-custom-drawer" data-reveal style={{ '--i': 3 }}>
+        <div className="report-custom-head">
+          <div className="report-custom-title-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="report-custom-icon">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+            <h3 className="report-custom-title">{fr ? 'Personnaliser le rapport' : 'Customize report'}</h3>
+          </div>
+          <p className="report-custom-sub">{fr ? 'Tout est facultatif\u00A0: seul ce que vous remplissez apparaît sur le PDF.' : 'Everything is optional: only what you fill in appears on the PDF.'}</p>
+        </div>
+        <div className="field">
+          <label htmlFor="fName">{fr ? 'Votre nom' : 'Your name'}</label>
+          <input id="fName" type="text" autoComplete="off" autoCapitalize="words" autoCorrect="off" spellCheck={false} enterKeyHint="next" maxLength={NAME_MAX}
+            placeholder={fr ? 'Prénom et nom' : 'First and last name'} value={name} onChange={e => setName(e.target.value)} onKeyDown={next(notesRef)} />
+        </div>
+        <Choice id="fWith" label={fr ? 'Entraînement' : 'Training'} value={context} onChange={v => { setContext(v); setPartner(''); }}
+          options={[['alone', fr ? 'En solo' : 'Alone'], ['friend', fr ? 'En binôme' : 'With a friend'], ['coach', fr ? 'Avec un coach' : 'With a coach'], ['physio', fr ? 'Séance kiné' : 'Physiotherapy']]} pairs />
+        {(context === 'friend' || context === 'coach' || context === 'physio') && <div className="field fade-in">
+          <label htmlFor="fPartner">{context === 'physio' ? (fr ? 'Nom du kinésithérapeute' : 'Physiotherapist’s name') : context === 'coach' ? (fr ? 'Nom du coach' : 'Coach’s name') : (fr ? 'Nom du partenaire' : 'Friend’s name')}</label>
+          <input id="fPartner" ref={partnerRef} type="text" autoComplete="off" autoCapitalize="words" autoCorrect="off" spellCheck={false} enterKeyHint="next" maxLength={NAME_MAX}
+            placeholder={fr ? 'Prénom et nom' : 'First and last name'} value={partner} onChange={e => setPartner(e.target.value)} onKeyDown={next(notesRef)} />
+        </div>}
+        <Choice id="fLevel" label={fr ? 'Niveau' : 'Level'} value={level} onChange={setLevel}
+          options={[['beginner', fr ? 'Débutant' : 'Beginner'], ['intermediate', fr ? 'Intermédiaire' : 'Intermediate'], ['expert', fr ? 'Confirmé' : 'Expert']]} />
+        <Choice id="fPain" label={fr ? 'Douleur ressentie, de 0 à 10' : 'Pain felt, from 0 to 10'} value={pain === null ? '' : String(pain)} onChange={v => setPain(v === '' ? null : Number(v))}
+          options={Array.from({ length: 11 }, (_, i) => [String(i), String(i)])} cols={6} />
+        <Choice id="fRpe" label={fr ? 'Effort perçu (RPE)' : 'Perceived exertion (RPE)'} value={rpe === null ? '' : String(rpe)} onChange={v => setRpe(v === '' ? null : Number(v))}
+          options={[['6', '6'], ['7', '7'], ['8', '8'], ['9', '9'], ['10', '10']]} cols={5} />
+        <div className="field">
+          <label htmlFor="fNotes">Notes</label>
+          <textarea id="fNotes" ref={notesRef} rows="3" autoCapitalize="sentences" maxLength={NOTES_MAX}
+            placeholder={fr ? 'Observations, consignes pour la prochaine séance…' : 'Observations, instructions for the next session…'} value={notes} onChange={e => setNotes(e.target.value)} />
+        </div>
+      </div>
 
       <div className="share-bar">
         <p className="share-note" role="status">{note}</p>

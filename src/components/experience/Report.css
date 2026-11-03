@@ -459,3 +459,43 @@
   font-style: normal;
   font-weight: 500;
 }
+
+/* Athlete customization drawer below the sheet */
+.wv-experience .report-custom-drawer {
+  margin-top: var(--s-5);
+  margin-bottom: var(--s-4);
+  padding: var(--s-4);
+  background: var(--basalt);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-m);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.wv-experience .report-custom-head {
+  margin-bottom: var(--s-2);
+}
+.wv-experience .report-custom-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wv-experience .report-custom-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--c-accent);
+}
+.wv-experience .report-custom-title {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: var(--fs-sub);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--c-fg);
+}
+.wv-experience .report-custom-sub {
+  margin: 4px 0 0;
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--c-fg-muted);
+}

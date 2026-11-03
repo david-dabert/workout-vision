@@ -31,14 +31,14 @@ async function sweep([W, H]) {
     const button = page.locator('.film-screen .actions .btn-primary');
     await button.waitFor();
     await page.evaluate(() => document.fonts.ready);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(60);
     const box = await button.boundingBox();
     const titleH = await page.locator('.film-screen .title').evaluate(el => el.offsetHeight);
     lines.push({ key, W, H, top: Math.round(box.y), bottom: Math.round(box.y + box.height), titleH });
     await page.locator('.film-screen .icon-btn').click();
     await page.locator('.film-screen').waitFor({ state: 'detached' });
     await page.locator('.all-exercises').waitFor();
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(40);
   }
   await context.close();
   return lines;
