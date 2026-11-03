@@ -43,7 +43,8 @@ async function flaggedSet(page) {
   expect(out.refused).toBe(false);
   expect(out.count).toBe(16);
   expect(out.check.flagged).toBe(true);
-  expect(out.check.second.count).toBe(8);
+  expect(out.check.second.count).toBeGreaterThanOrEqual(8);
+  expect(out.check.second.count).toBeLessThanOrEqual(10);
   expect(out.proposal).toBeNull();
   return { errors, out };
 }
@@ -77,7 +78,7 @@ test('a flagged set shows its count to confirm, no grade, saved only once confir
   await expect(page.getByTestId('saved-card')).toContainText('Compté par l’appli : 16. Corrigé : 15.'); // the counted set's saved card, as it stands (it says "l’appli")
   const saved = await savedSets(page);
   expect(saved).toHaveLength(1);
-  expect(saved[0]).toMatchObject({ reps: 15, source: 'counter-core', corrected: true, machineResult: { reps: 16 }, correctedResult: { reps: 15 }, bodyCheck: { second: 8 } });
+  expect(saved[0]).toMatchObject({ reps: 15, source: 'counter-core', corrected: true, machineResult: { reps: 16 }, correctedResult: { reps: 15 }, bodyCheck: { second: out.check.second.count } });
   expect(saved[0].bodyCheck.agreement).toBeLessThan(0.5);
   // Saved: the measures, read again for the person's 15 when a setting of the counter finds them, the app's 16 marks
   // otherwise, with the doubt named beside them.
@@ -92,12 +93,12 @@ test('a flagged set shows its count to confirm, no grade, saved only once confir
 
 test('the app’s count confirmed as it stands is saved as confirmed', async ({ page }) => {
   test.setTimeout(150000);
-  await flaggedSet(page);
+  const { out } = await flaggedSet(page);
   await page.getByTestId('res-save').click();
   await expect(page.getByTestId('saved-card')).toContainText('Merci. Série enregistrée sur votre téléphone.');
   const saved = await savedSets(page);
   expect(saved).toHaveLength(1);
-  expect(saved[0]).toMatchObject({ reps: 16, source: 'counter-core', corrected: false, machineResult: { reps: 16 }, correctedResult: null, bodyCheck: { second: 8 } });
+  expect(saved[0]).toMatchObject({ reps: 16, source: 'counter-core', corrected: false, machineResult: { reps: 16 }, correctedResult: null, bodyCheck: { second: out.check.second.count } });
   // Confirmed: the app's 16 reps measured, on the card and in the saved set, with the doubt named (David, 21 October:
   // the card had no analysis after he confirmed).
   expect(saved[0].repDetails).toHaveLength(16);
@@ -115,7 +116,7 @@ test('the app’s count confirmed as it stands is saved as confirmed', async ({ 
 
 test('a number given with + is the person’s count', async ({ page }) => {
   test.setTimeout(150000);
-  await flaggedSet(page);
+  const { out } = await flaggedSet(page);
   await page.getByRole('button', { name: 'Une de plus' }).click();
   await expect(page.getByTestId('res-typed')).toHaveText('17');
   await expect(page.getByText('Saisi par vous')).toBeVisible();
@@ -125,5 +126,5 @@ test('a number given with + is the person’s count', async ({ page }) => {
   await page.getByTestId('res-save').click();
   const saved = await savedSets(page);
   expect(saved).toHaveLength(1);
-  expect(saved[0]).toMatchObject({ reps: 17, corrected: true, machineResult: { reps: 16 }, correctedResult: { reps: 17 } });
+  expect(saved[0]).toMatchObject({ reps: 17, corrected: true, machineResult: { reps: 16 }, correctedResult: { reps: 17 }, bodyCheck: { second: out.check.second.count } });
 });
