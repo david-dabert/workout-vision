@@ -718,8 +718,7 @@ function countSide(
   const lowThreshold = pLow + (def.rest === 'high' ? workMargin : margin);
   const highThreshold = pHigh - (def.rest === 'high' ? margin : workMargin);
 
-  // 7. Detect reps via threshold crossings, then place their boundaries at the rest
-  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES, def.minRepSec ?? MIN_REP_SEC, !!def.noSplit, def.joint !== 'elbow', !!def.lift, rawAngles.map(a => a !== null));
+  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES, def.minRepSec ?? MIN_REP_SEC, !!def.noSplit, def.joint !== 'elbow', !!def.lift, rawAngles.map(a => a !== null), def.first === 'concentric');
   const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
   // Speeds are read only where every sample the smoothing used was seen, not filled in by the bridge: the jump
   // where a pose comes back after a short loss is no limb's speed (second audit, 3 October).
@@ -902,7 +901,7 @@ function countAlternating(left: CountResult, right: CountResult, timestamps: num
     if (range < (def.minRangeDeg ?? MIN_ROM_DEGREES)) return [];
     const margin = range * (def.thresholdMargin ?? THRESHOLD_MARGIN);
     const lowT = pLow + margin, highT = pHigh - margin;
-    const cycles = detectReps(s, timestamps, lowT, highT, rest, def.minRepRomDeg ?? MIN_ROM_DEGREES);
+    const cycles = detectReps(s, timestamps, lowT, highT, rest, def.minRepRomDeg ?? MIN_ROM_DEGREES, MIN_REP_SEC, false, def.joint !== 'elbow', !!def.lift, null, def.joint === 'elbow' && def.first === 'concentric');
     const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
     return placeBoundaries(cycles, s, timestamps, lowT, highT, band, { ...def, rest }).map(r => ({ ...r, side }));
   };
@@ -1157,6 +1156,7 @@ function detectReps(
   isLift: boolean = false,
   isLimbLift: boolean = false,
   seen: boolean[] | null = null,
+  isFlexionWork: boolean = false,
 ): Cycle[] & { headRefused?: boolean } {
   const restsLow = rest === 'low';
   const cycles: Cycle[] = [];
@@ -1173,6 +1173,8 @@ function detectReps(
   let head: Cycle | null = null;
   let minAfterCross = Infinity;
   let minAfterCrossIdx = -1;
+  let maxAfterCross = -Infinity;
+  let maxAfterCrossIdx = -1;
   // The rest end's extreme while waiting (the lowest angle for a lift that rests low, the highest otherwise), so a rep's
   // range is read from where it left rest, not from the sample that crossed the rest threshold (12 October 2026). Read
   // from that crossing, the range lost the stretch under the hysteresis band (THRESHOLD_MARGIN of the set's range, a
@@ -1287,6 +1289,8 @@ function detectReps(
           crossIdx = angle <= lowThreshold ? i : -1; // the entering sample may already be at the working end
           enteredAtWork = crossIdx === i;
           hiIdx = i;
+          maxAfterCross = -Infinity;
+          maxAfterCrossIdx = -1;
         } else {
           restExtreme = Math.max(restExtreme, angle);
         }
@@ -1295,6 +1299,14 @@ function detectReps(
         peakAngle = Math.max(peakAngle, angle);
         troughAngle = Math.min(troughAngle, angle);
         if (angle <= lowThreshold) crossIdx = i;
+
+        if (crossIdx > -1) {
+          if (angle > maxAfterCross) {
+            maxAfterCross = angle;
+            maxAfterCrossIdx = i;
+          }
+        }
+
         if (angle > highThreshold && crossIdx > -1) {
           const rom = peakAngle - troughAngle;
           const duration = timestamps[i] - timestamps[repStartIdx];
@@ -1307,9 +1319,43 @@ function detectReps(
           }
           state = 'waiting';
           restExtreme = angle;
+          maxAfterCross = -Infinity;
+          maxAfterCrossIdx = -1;
+        } else if (isFlexionWork && crossIdx > -1 && maxAfterCrossIdx > -1 && Number.isFinite(maxAfterCross)) {
+          // Adaptive ceiling turnaround: if lifter keeps constant tension or turns around short of lockout,
+          // angle returned by >= 70% of amplitude (or within 20% of highThreshold) and is descending again toward lowThreshold by >= 2.5 deg.
+          const currentRom = peakAngle - troughAngle;
+          const returnClimb = maxAfterCross - troughAngle;
+          const turnDrop = maxAfterCross - angle;
+          const thresholdBand = highThreshold - lowThreshold;
+          if (
+            !(repStartIdx === firstSeen && enteredAtWork) &&
+            (returnClimb >= 0.70 * currentRom || maxAfterCross >= highThreshold - 0.20 * thresholdBand) &&
+            turnDrop >= Math.max(2.5, 0.20 * currentRom) &&
+            maxAfterCrossIdx > repStartIdx &&
+            hiIdx > -1 && timestamps[maxAfterCrossIdx] - timestamps[hiIdx] >= 0.25
+          ) {
+            const rom = maxAfterCross - troughAngle;
+            const duration = timestamps[maxAfterCrossIdx] - timestamps[repStartIdx];
+            if (duration >= minSec && bounded(repStartIdx, maxAfterCrossIdx) && rom >= minRom) {
+              cycles.push({ enter: repStartIdx, complete: maxAfterCrossIdx });
+              hiIdxs.push(hiIdx);
+            }
+            state = 'inRep';
+            repStartIdx = maxAfterCrossIdx;
+            peakAngle = maxAfterCross;
+            troughAngle = angle;
+            crossIdx = angle <= lowThreshold ? i : -1;
+            enteredAtWork = crossIdx === i;
+            hiIdx = i;
+            maxAfterCross = -Infinity;
+            maxAfterCrossIdx = -1;
+          }
         } else if (angle > highThreshold) {
           state = 'waiting'; // back at rest without reaching the working end: not a rep
           restExtreme = angle;
+          maxAfterCross = -Infinity;
+          maxAfterCrossIdx = -1;
         }
       }
     }

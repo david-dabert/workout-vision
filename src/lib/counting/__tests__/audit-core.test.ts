@@ -87,8 +87,8 @@ describe('the side counted is the side that moves (FINDING-011)', () => {
 // Second audit, 3 October: the outlier filter's median window (0.5 s, nine samples at 15 a second) spans most of a
 // fast rep, so the turn of a 0.7 s curl sat more than 40° from the median and was erased as a glitch.
 describe('fast reps keep their turn (second audit)', () => {
-  // Expected to fail: three fixes tried on 3 October each failed a gate (TRIED.md); the case stays visible.
-  it.fails('eight continuous curls of 0.7 s are eight', () => {
+  // Passed with phase turnaround symmetry for flexion-working lifts (3 November 2026).
+  it('eight continuous curls of 0.7 s are eight', () => {
     const a = sample([{ hold: 160, sec: 1 }, ...cycles({ rest: 160, work: 40, reps: 8, firstSec: 0.35, secondSec: 0.35, restSec: 0 }), { hold: 160, sec: 1 }], 160, SPS);
     const ts = timestamps(a.length, SPS);
     expect(countReps(frames(a), ts, 'bicep_curl').count).toBe(8);
