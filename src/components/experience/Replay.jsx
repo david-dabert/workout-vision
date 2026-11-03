@@ -18,6 +18,7 @@ import { keepsMeasures } from './saved-set';
 import { jointName } from './lift-meta';
 import { RESULT } from './result-copy';
 import { analyzeContinuousBiomechanics } from '../../lib/coaching/movementOptimization';
+import MocapViewer from './MocapViewer';
 
 // The set replayed with the skeleton the pose model tracked on it: what the app saw,
 // frame by frame, with the joint whose angle counts the reps in the lamp's colour.
@@ -34,6 +35,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   const [slow, setSlow] = useState(false);
   const [now, setNow] = useState(0);
   const [broken, setBroken] = useState(false);
+  const [mocapMode, setMocapMode] = useState(false);
 
   // A refused set shows no reps here either: the result said it could not count them.
   const times = result.timestamps || [], reps = (!result.refused && result.reps) || [];
@@ -317,25 +319,37 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
         <button ref={backRef} className="icon-btn press" onClick={onBack} aria-label={fr ? 'Retour' : 'Back'}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
         </button>
+        <button
+          type="button"
+          className="rp-mocap-toggle press"
+          onClick={() => setMocapMode(m => !m)}
+          data-testid="rp-mocap-toggle"
+        >
+          {mocapMode ? (fr ? 'Voir la vidéo' : 'View video') : (fr ? 'Mocap 3D' : '3D Mocap')}
+        </button>
         <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
       </div>
       <div className="rp-stage" data-reveal style={{ '--i': 0 }}>
-        <div className="rp-frame" style={{ '--ar': fw / fh }}>
-          {file ? <video ref={videoRef} className="rp-video" src={url || undefined} playsInline muted preload="auto"
-            aria-label={fr ? 'Votre série, avec le squelette suivi par l’appli' : 'Your set, with the skeleton the app tracked'}
-            onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} onError={() => setBroken(true)}
-            onLoadedMetadata={e => { const d = e.currentTarget.duration; if (Number.isFinite(d) && d > 0) setLength(d); seekTo(reps[0] ? into(reps[0]) : 0); }}
-            onClick={toggle} />
-            : <div className="rp-video rp-still" role="img" data-testid="rp-still" onClick={toggle}
-              aria-label={fr ? 'Votre série comptée en direct, rejouée avec le squelette suivi par l’appli' : 'Your set counted live, replayed with the skeleton the app tracked'} />}
-          <canvas ref={canvasRef} className="rp-canvas" aria-hidden="true" />
-          {reps.length > 0 && <div className={`rp-chip${displayPhaseWord === NB ? ' is-idle' : ''}${activeSticking ? ' is-sticking' : ''}`} aria-hidden="true">
-            <span className="rp-count"><span className="rp-n">{begun}</span><span className="rp-of">/{NB}{reps.length}</span></span>
-            <span className="rp-phase">{displayPhaseWord}</span>
-            {measured && curAngle !== null && jointWord && <span className="rp-angle" data-testid="rp-angle">{jointWord}{NB}{Math.round(curAngle)}°</span>}
-          </div>}
-          {broken && <p className="rp-broken" role="alert">{fr ? 'Cette vidéo ne se lit pas dans ce navigateur.' : 'This video does not play in this browser.'}</p>}
-        </div>
+        {mocapMode ? (
+          <MocapViewer worldLandmarks={result.worldLandmarks || null} lift={lift} fr={fr} />
+        ) : (
+          <div className="rp-frame" style={{ '--ar': fw / fh }}>
+            {file ? <video ref={videoRef} className="rp-video" src={url || undefined} playsInline muted preload="auto"
+              aria-label={fr ? 'Votre série, avec le squelette suivi par l’appli' : 'Your set, with the skeleton the app tracked'}
+              onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} onError={() => setBroken(true)}
+              onLoadedMetadata={e => { const d = e.currentTarget.duration; if (Number.isFinite(d) && d > 0) setLength(d); seekTo(reps[0] ? into(reps[0]) : 0); }}
+              onClick={toggle} />
+              : <div className="rp-video rp-still" role="img" data-testid="rp-still" onClick={toggle}
+                aria-label={fr ? 'Votre série comptée en direct, rejouée avec le squelette suivi par l’appli' : 'Your set counted live, replayed with the skeleton the app tracked'} />}
+            <canvas ref={canvasRef} className="rp-canvas" aria-hidden="true" />
+            {reps.length > 0 && <div className={`rp-chip${displayPhaseWord === NB ? ' is-idle' : ''}${activeSticking ? ' is-sticking' : ''}`} aria-hidden="true">
+              <span className="rp-count"><span className="rp-n">{begun}</span><span className="rp-of">/{NB}{reps.length}</span></span>
+              <span className="rp-phase">{displayPhaseWord}</span>
+              {measured && curAngle !== null && jointWord && <span className="rp-angle" data-testid="rp-angle">{jointWord}{NB}{Math.round(curAngle)}°</span>}
+            </div>}
+            {broken && <p className="rp-broken" role="alert">{fr ? 'Cette vidéo ne se lit pas dans ce navigateur.' : 'This video does not play in this browser.'}</p>}
+          </div>
+        )}
       </div>
       <div ref={lineRef} className="rp-line" role="slider" tabIndex={0}
         aria-label={fr ? 'Position dans la vidéo' : 'Position in the video'}

@@ -11,6 +11,7 @@ import RepWave from './RepWave';
 import { MeasureGuide } from './measure-guide';
 import { shareSheet } from '../../lib/shareSheet';
 import { downloadBvhFile } from '../../lib/biomechanics/bvhExport';
+import MocapViewer from './MocapViewer';
 
 // The PDF code (jsPDF and the app's fonts) loads apart from the screens, once,
 // and is warmed as soon as a report is likely, so the share happens within the tap.
@@ -217,21 +218,26 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
           {sheet.own.map(([label, value]) => <span key={label}><em>{label}</em><span>{value}</span></span>)}
         </div>}
 
-        {sheet.optimization?.bvhData && (
-          <div className="sh-mocap-export" data-testid="sh-mocap-export">
-            <button
-              type="button"
-              className="res-opt-export-btn press"
-              onClick={() => downloadBvhFile(sheet.optimization.bvhData, `mocap-${lift}-${Date.now()}.bvh`)}
-              data-testid="report-export-bvh-btn"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-              <span>{fr ? 'Exporter Mocap 3D (.bvh)' : 'Export 3D Mocap (.bvh)'}</span>
-            </button>
+        {sheet.optimization && (
+          <div className="sh-mocap-section" data-testid="sh-mocap-section">
+            <MocapViewer worldLandmarks={result?.worldLandmarks || null} lift={lift} fr={fr} />
+            {sheet.optimization?.bvhData && (
+              <div className="sh-mocap-export" data-testid="sh-mocap-export">
+                <button
+                  type="button"
+                  className="res-opt-export-btn press"
+                  onClick={() => downloadBvhFile(sheet.optimization.bvhData, `mocap-${lift}-${Date.now()}.bvh`)}
+                  data-testid="report-export-bvh-btn"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                  <span>{fr ? 'Télécharger fichier Mocap (.bvh)' : 'Download Mocap file (.bvh)'}</span>
+                </button>
+              </div>
+            )}
           </div>
         )}
 
