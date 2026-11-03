@@ -1,5 +1,5 @@
 Public scoreboard 2026-11-03: 1064 build sets, 517 exact (49%). Of the 949 in the baseline that decide, 468 exact now, 468 before; 0 became off by 3 or more. The 115 bench and overhead press sets are measured and decide nothing (PLAN.md).
-Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 949 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; Countix's two readings of a clip counted as two sets, as in the headline; measured, decides nothing): 4 gained, 4 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [-0.6, +0.6].
+Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 949 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; Countix's two readings of a clip counted as two sets, as in the headline; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
 Pose doubt (counting/doubt.js, experimental, decides nothing): of 946 counted sets, 194 flagged: 69 exact (36%), 18 off by 3+ (9%); 752 not flagged: 448 exact (60%), 25 off by 3+ (3%). Sets off by 3+ flagged: 18 of 43.
 Right when sure (R16, sure.ts; measured, decides nothing): of 949 sets that decide, 829 counted. With the body check alone (before 19 October 2026), shown as sure 753: 433 exact (58%), 303 off by 1 or 2, 17 off by 3+; asked to confirm 76: 35 exact (46%), 37 off by 1 or 2, 4 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 670: 408 exact (61%), 256 off by 1 or 2, 6 off by 3+; asked to confirm 159: 60 exact (38%), 84 off by 1 or 2, 15 off by 3+.
 
@@ -34,18 +34,6 @@ Countix by distinct clip: 447 labelled clips from 435 YouTube videos, each read 
 | mmfit overhead_press (press: measured, decides nothing, PLAN.md) | 39 | 25 | 14 | 0 | 0 |
 | mmfit squat | 40 | 40 | 0 | 0 | 0 |
 
--> public/countix/build/LPQSm5megAo_000000_1201.json.gz  label 3  before 4  now 3
--> public/countix/build/NFcwjLi-rJI_000012_0.json.gz  label 3  before 2  now 1
--> public/countix/build/rFRinf9b-Vw_000001_0.json.gz  label 2  before 2  now 3
--> public/countix/build/rlgoBYYovXo_000000_0.json.gz  label 2  before 1  now 2
--> public/countix-whole/build/0Mfq1D151S0_000018_4805.json.gz  label 3  before 3  now 4
--> public/countix-whole/build/2BC4P5QWDSk_000008_200.json.gz  label 4  before 3  now 2
--> public/countix-whole/build/2p19BDth7Zc_000003_5133.json.gz  label 3  before 2  now 3
--> public/countix-whole/build/NFcwjLi-rJI_000012_0.json.gz  label 3  before 2  now 1
--> public/countix-whole/build/Py0A9wWkWao_000198_0.json.gz  label 5  before 3  now 4
--> public/countix-whole/build/kBuEWVA9vL8_000387_1902.json.gz  label 2  before 2  now 3
--> public/countix-whole/build/rFRinf9b-Vw_000001_0.json.gz  label 2  before 2  now 3
--> public/countix-whole/build/rlgoBYYovXo_000000_0.json.gz  label 2  before 1  now 2
 
 Not scored (5274), each with its reason:
 public/countix/APkos_Kqa3M_000017_0: left out: battle rope training is not a lift the app counts
