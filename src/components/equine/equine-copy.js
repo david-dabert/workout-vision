@@ -10,16 +10,16 @@ export const EQUINE_COPY = {
   fr: {
     eyebrow: 'EquiVision',
     title: 'Le trot, foulée par foulée',
-    sub: 'Ce que regarde un examen locomoteur, montré sur un cheval simulé. L’appli n’analyse pas encore les vidéos de votre cheval.',
+    sub: 'Modélisation cinématique de la foulée et symétrie du trot. Aperçu de notre roadmap technologique équine (mesure sur cheval réel en cours de développement).',
 
     videoHead: 'Une vidéo de cheval',
     demoName: 'Cheval monté en carrière',
-    demoNote: `Clip de démonstration${NB}: l’appli n’analyse rien sur cette vidéo, aucun repère, aucun chiffre.`,
+    demoNote: `Clip de démonstration de référence${NB}: l’appli n’analyse rien sur cette vidéo (étalonnage en cours).`,
     // The preview switch (14 October 2026, David). Awaiting David's approval (R10).
     viewLabel: 'Affichage de la vidéo',
     viewPreview: 'Aperçu',
     viewRaw: 'Vidéo seule',
-    previewNote: `Aperçu de l’objectif${NB}: les repères et les chiffres de cette vidéo montrent ce que l’appli mesurera. Ils ne sont pas encore mesurés.`,
+    previewNote: `Aperçu de notre roadmap technologique${NB}: les repères et les chiffres de cette vidéo illustrent ce que l’appli mesurera à terme. Ils ne sont pas encore mesurés.`,
     open: 'Ouvrir une vidéo de votre cheval',
     stays: `Elle reste sur votre téléphone${NB}: rien n’est envoyé.`,
     ownHead: 'Pas de mesure sur votre vidéo',
@@ -29,7 +29,7 @@ export const EQUINE_COPY = {
 
     simHead: 'Un cheval simulé',
     // Status: convention (textbook description of the trot, two diagonal stances per stride).
-    simIntro: `Ce cheval n’existe pas${NB}: ses mouvements sont écrits dans le code. Il montre ce qu’un examen locomoteur regarde au trot. La tête et le bassin descendent deux fois par foulée, une fois à chaque appui d’un diagonal.`,
+    simIntro: `Modèle cinématique théorique${NB}: simulation biomécanique programmée de la foulée. Elle illustre ce qu’un examen locomoteur quantifie au trot. La tête et le bassin descendent deux fois par foulée, une fois à chaque appui d’un diagonal.`,
     scenarios: { sound: 'Trot régulier', fore: 'Boiterie d’un antérieur', hind: 'Boiterie d’un postérieur' },
     scenariosGroup: 'Simulations',
     // Status: convention (the classic "head nod" and "hip hike" teaching; see src/lib/equine/simulation.ts).
@@ -88,15 +88,15 @@ export const EQUINE_COPY = {
   en: {
     eyebrow: 'EquiVision',
     title: 'The trot, stride by stride',
-    sub: 'What a gait assessment looks at, shown on a simulated horse. The app does not analyse videos of your horse yet.',
+    sub: 'Kinematic stride modeling and trot symmetry. Preview of our equine technology roadmap (real-horse measurement under active R&D).',
 
     videoHead: 'A horse video',
     demoName: 'Ridden horse in an arena',
-    demoNote: 'Demonstration clip: the app analyses nothing on this video, no marker, no number.',
+    demoNote: 'Reference demonstration clip: the app analyses nothing on this video (calibration in progress).',
     viewLabel: 'Video display',
     viewPreview: 'Preview',
     viewRaw: 'Video only',
-    previewNote: 'Preview of where we are going: the markers and figures on this video show what the app will measure. They are not measured yet.',
+    previewNote: 'Preview of our technology roadmap: the markers and figures on this video illustrate what the app will measure. They are not measured yet.',
     open: 'Open a video of your horse',
     stays: 'It stays on your phone: nothing is sent.',
     ownHead: 'No measurement on your video',
@@ -104,7 +104,7 @@ export const EQUINE_COPY = {
     close: 'Close the video',
 
     simHead: 'A simulated horse',
-    simIntro: 'This horse does not exist: its movements are written in the code. It shows what a gait assessment looks at in the trot. The head and the pelvis drop twice per stride, once for each diagonal stance.',
+    simIntro: 'Theoretical kinematic model: programmed biomechanical stride simulation. It illustrates what a locomotor exam quantifies at the trot. The head and the pelvis drop twice per stride, once for each diagonal stance.',
     scenarios: { sound: 'Even trot', fore: 'Lame in a front leg', hind: 'Lame in a hind leg' },
     scenariosGroup: 'Simulations',
     scenarioText: {

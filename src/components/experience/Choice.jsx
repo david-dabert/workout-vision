@@ -237,19 +237,17 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{pro.choiceRow}</b><small>{pro.choiceRowSub}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {(onEquine || onSports || onCoaches || onBuddies || onManifesto) && <h2 className="section-head choose-head" data-testid="choose-head-explore">{fr ? 'À découvrir' : 'To explore'}</h2>}
-        {/* EquiVision: a demo on a simulated horse; the app analyses no horse on a video (honesty pass, 14 October 2026,
-            EQ-16). Its icon is a curve, not a tick, which would read as "validated" or "sound". French of this row, of
-            the sports row and of the footer links below awaiting David's approval (R10). */}
+        {(onEquine || onSports || onCoaches || onBuddies || onManifesto) && <h2 className="section-head choose-head" data-testid="choose-head-explore">{fr ? 'Roadmap & Nouvelles disciplines' : 'Roadmap & New Disciplines'}</h2>}
+        {/* EquiVision: horse locomotion and gait biomechanics roadmap */}
         {onEquine && <button className="row-link press" onClick={onEquine} data-testid="choice-equine">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12c2.2-6 4.4-6 6.6 0s4.4 6 6.6 0 4.4-6 6.6 0" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'EquiVision\u00A0: le trot du cheval' : 'EquiVision: the horse’s trot'}</b><small>{fr ? 'Une démo sur un cheval simulé. L’appli n’analyse pas encore les vidéos de votre cheval.' : 'A demo on a simulated horse. The app does not analyse videos of your horse yet.'}</small></span>
+          <span className="row-txt"><span className="row-head"><b>{fr ? 'EquiVision\u00A0: biomécanique équine' : 'EquiVision: Equine Biomechanics'}</b><span className="tag tier-tag tier-roadmap">Roadmap R&D</span></span><small>{fr ? 'Modélisation du trot, symétrie de la foulée et examen locomoteur' : 'Trot modeling, stride symmetry, and locomotor analysis'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {/* Other sports: demonstration clips; the app analyses none of these sports on a video yet (SP-25). */}
+        {/* Multi-Sports Lab: markerless motion capture roadmap for golf, tennis, rowing... */}
         {onSports && <button className="row-link press" onClick={onSports} data-testid="choice-sports">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'Autres sports' : 'Other sports'}</b><small>{fr ? 'Golf, tennis, aviron, ski et d’autres, en démo' : 'Golf, tennis, rowing, skiing and more, as demos'}</small></span>
+          <span className="row-txt"><span className="row-head"><b>{fr ? 'Multi-Sports Lab\u00A0: golf, tennis, aviron…' : 'Multi-Sports Lab: Golf, Tennis, Rowing…'}</b><span className="tag tier-tag tier-roadmap">Roadmap R&D</span></span><small>{fr ? 'Tempo de swing, ratios de cadence et cinématique sans capteur' : 'Swing tempo, cadence ratios, and markerless kinematics'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Coach & Physio Matcher */}
@@ -267,7 +265,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
         {/* The WorkoutVision Manifesto: The Science, History, and Mechanics of Optimal Lifting */}
         {onManifesto && <button className="row-link press" onClick={onManifesto} data-testid="choice-manifesto">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /><path d="M9 7h6M9 11h4" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'Le Manifeste WorkoutVision' : 'The WorkoutVision Manifesto'}</b><small>{fr ? 'La science, l’histoire et la mécanique du mouvement' : 'The science, history, and mechanics of optimal lifting'}</small></span>
+          <span className="row-txt"><span className="row-head"><b>{fr ? 'Le Manifeste WorkoutVision' : 'The WorkoutVision Manifesto'}</b></span><small>{fr ? 'La science, l’histoire et la mécanique du mouvement' : 'The science, history, and mechanics of optimal lifting'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Before the long list of every exercise, where it is read on the first scroll, not after 181 rows. */}
