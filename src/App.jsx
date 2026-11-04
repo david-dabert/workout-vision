@@ -280,7 +280,7 @@ function AppInner() {
     // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
     // the old live capture (LiveCapture.jsx) and the dashboard; "live" without a lift, or in a build without VITE_LIVE, too. Every other page falls through to the choice of lift.
     key = 'choice';
-    screen = <Choice held={heldProgramme} onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro', () => setProStart(null))} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} onUsage={() => go('comptage')} onManifesto={() => go('manifesto')} onEquine={() => go('equine')} onSports={() => go('sports')} onCoaches={() => go('coaches')} onBuddies={() => go('buddies')} onErgonomics={() => go('ergonomics')} onReference={() => go('kine')} onChat={() => go('chat')} />;
+    screen = <Choice held={heldProgramme} onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro', () => setProStart(null))} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} onUsage={() => go('comptage')} onManifesto={() => go('manifesto')} onReference={() => go('kine')} />;
   }
 
   // The screen on show, a breadcrumb of the crash log on the phone (crashLog.js); the analysis marks its phases itself.

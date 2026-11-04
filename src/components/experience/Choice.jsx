@@ -276,7 +276,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
         <Suspense fallback={null}><ExerciseList onChoose={onChoose} /></Suspense>
         {/* Installing the app (Install.jsx): a quiet row at the foot of the list, never once the app is installed. */}
         <InstallRow fr={fr} />
-        <p className="foot">{fr ? 'Chaque comptage reste à confirmer\u00A0: ces mouvements sont en bêta ou expérimentaux.' : 'Every count is yours to confirm: these movements are Beta or Experimental.'}</p>
+        <p className="foot">{fr ? 'Analyse biomécanique par vision par ordinateur, traitée localement sur votre téléphone.' : 'Computer vision biomechanical analysis, processed locally on your phone.'}</p>
         <div className="choice-foot-links">
           {/* Why the app exists, in David's words (About.jsx). */}
           {onAbout && <button type="button" className="about-link press" onClick={onAbout} data-testid="about-link">{ABOUT[fr ? 'fr' : 'en'].link}</button>}
