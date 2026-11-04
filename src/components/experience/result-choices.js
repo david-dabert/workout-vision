@@ -29,11 +29,11 @@ export function countChoices(result, { liveShown = null } = {}) {
   let main = null;
   if (!result?.notRead && !liveDiffers) {
     if (!refused && pos(result?.count)) main = result.count;
-    else if (refused && pos(result?.proposal?.count)) main = result.proposal.count;
+    else if ((refused || result?.count === 0) && pos(result?.proposal?.count)) main = result.proposal.count;
   }
   if (main === null) return { main: null, alts: [], state: 'ask', rule: CHOICE_RULE };
   const flagged = !refused && (result?.bodyCheck?.flagged === true || result?.sensitivity?.moved === true);
-  return { main, alts: [main + 1, main - 1].filter(pos), state: refused || flagged ? 'check' : 'counted', rule: CHOICE_RULE };
+  return { main, alts: [main + 1, main - 1].filter(pos), state: refused || result?.count === 0 || flagged ? 'check' : 'counted', rule: CHOICE_RULE };
 }
 
 /** Whether n is in the list of the first k numbers: [main, ...alts] cut to k. */
