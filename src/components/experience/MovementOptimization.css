@@ -402,7 +402,7 @@
 
 .res-opt-machine-badge {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.5rem;
 }
 
@@ -501,7 +501,7 @@
 
 .res-opt-bottleneck-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.5rem;
 }
 
@@ -510,10 +510,14 @@
   font-size: 9px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  padding: 0.125rem 0.375rem;
+  padding: 2px 6px;
   border-radius: 4px;
   color: var(--bone-2);
   border: 1px solid var(--c-edge);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .res-opt-bottleneck-title {
@@ -608,7 +612,15 @@
 }
 
 .res-opt-summary-icon {
-  font-size: 1.25rem;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-m);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--depth-1);
+  border: 1px solid var(--hair-2);
+  color: var(--c-accent);
   flex-shrink: 0;
 }
 
@@ -642,6 +654,10 @@
   border: 1px solid var(--hair-2);
   color: var(--c-accent);
   background: var(--well);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
   flex-shrink: 0;
 }
 

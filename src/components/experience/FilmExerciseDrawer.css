@@ -162,7 +162,7 @@
 .film-drawer-search input {
   width: 100%;
   height: 44px;
-  padding: 0 110px 0 42px;
+  padding: 0 130px 0 42px;
   border: none;
   background: transparent;
   color: var(--c-fg);
@@ -174,31 +174,50 @@
   outline: none;
 }
 
-.film-search-clear {
+.film-search-actions {
   position: absolute;
-  right: 88px;
-  width: 24px;
-  height: 24px;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.film-search-clear {
+  position: static;
+  width: 22px;
+  height: 22px;
   display: grid;
   place-items: center;
-  border: none;
-  background: transparent;
+  padding: 0;
+  border: 1px solid var(--hair-2);
+  border-radius: 50%;
+  background: var(--depth-1);
   color: var(--c-fg-muted);
-  font-size: 1.25rem;
   cursor: pointer;
+  transition: all var(--d-fast) var(--ease);
 }
 
 .film-search-clear:hover {
+  border-color: var(--lamp-line);
   color: var(--c-fg);
+  background: var(--bio-glow);
 }
 
 .film-search-badge {
-  position: absolute;
-  right: 12px;
+  position: static;
   font-family: var(--mono);
   font-size: 10px;
   letter-spacing: 0.04em;
   color: var(--c-fg-muted);
+  border: 1px solid var(--hair-2);
+  border-radius: var(--r-pill);
+  background: var(--depth-1);
+  padding: 3px 8px;
+  line-height: 1;
+  white-space: nowrap;
   pointer-events: none;
 }
 

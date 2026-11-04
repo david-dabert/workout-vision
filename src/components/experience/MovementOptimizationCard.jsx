@@ -97,7 +97,12 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
       <details className="res-opt-deep-dive" data-testid="res-opt-deep-dive">
         <summary className="res-opt-deep-summary press" data-testid="res-opt-deep-summary">
           <div className="res-opt-summary-left">
-            <span className="res-opt-summary-icon" aria-hidden="true">🔬</span>
+            <span className="res-opt-summary-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+              </svg>
+            </span>
             <div className="res-opt-summary-text">
               <strong className="res-opt-summary-title">
                 {fr ? 'Biomécanique détaillée & Cinématique 3D' : 'Detailed Biomechanics & 3D Kinematics'}
@@ -114,10 +119,10 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
             <div className="res-opt-machine-banner" data-testid="machine-profile-banner">
               <div className="res-opt-machine-badge">
                 <span className="res-opt-machine-kicker">{fr ? 'Guidage mécanique' : 'Machine Guidance'}</span>
-            <span className="res-opt-machine-name">
-              {fr ? analysis.machineProfile.canonicalNameFr : analysis.machineProfile.canonicalNameEn}
-            </span>
-          </div>
+                <span className="res-opt-machine-name">
+                  {fr ? analysis.machineProfile.canonicalNameFr : analysis.machineProfile.canonicalNameEn}
+                </span>
+              </div>
           <p className="res-opt-machine-cue">
             {fr
               ? (analysis.machineProfile.fixedSegment === 'torso_guided' ? 'Trajectoire pendulaire guidée · verrouillage du plan d’appui'

@@ -16,7 +16,7 @@
 .wv-experience .un-events summary { display: inline-flex; align-items: center; min-height: 44px; font-size: var(--fs-caption); color: var(--bone-2); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; list-style: none; }
 .wv-experience .un-events summary::-webkit-details-marker { display: none; }
 .wv-experience .un-events ul { margin: 0 0 var(--s-2); padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
-.wv-experience .un-events li { font-size: var(--fs-caption); padding: 5px 10px 4px; border: 1px solid var(--hair-2); border-radius: var(--r-pill); color: var(--bone-2); background: var(--well); }
+.wv-experience .un-events li { font-size: var(--fs-caption); padding: 4px 10px; display: inline-flex; align-items: center; justify-content: center; line-height: 1; border: 1px solid var(--hair-2); border-radius: var(--r-pill); color: var(--bone-2); background: var(--well); }
 /* The state and the switch, side by side; the switch is 44 px tall. */
 .wv-experience .un-stop { margin-top: 2px; display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); }
 .wv-experience .un-state { margin: 0; font-size: var(--fs-body); line-height: 1.4; color: var(--c-fg); }

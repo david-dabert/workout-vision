@@ -6,17 +6,17 @@ export const ONE_TOUCH = {
     hubTitle: 'Accès rapide',
     modes: {
       lift: {
-        badge: '🏋️',
+        badge: '',
         title: 'S’entraîner',
         sub: 'Lancer ou choisir un mouvement',
       },
       mobility: {
-        badge: '🩺',
+        badge: '',
         title: 'Mobilité & Santé',
         sub: 'Bilans de souplesse et posture',
       },
       history: {
-        badge: '📊',
+        badge: '',
         title: 'Mon Suivi',
         sub: 'Historique et progression',
       },
@@ -40,17 +40,17 @@ export const ONE_TOUCH = {
     hubTitle: 'Quick Access',
     modes: {
       lift: {
-        badge: '🏋️',
+        badge: '',
         title: 'Start Lift',
         sub: 'Record or choose a movement',
       },
       mobility: {
-        badge: '🩺',
+        badge: '',
         title: 'Mobility & Health',
         sub: 'Joint screening and posture checks',
       },
       history: {
-        badge: '📊',
+        badge: '',
         title: 'My Progress',
         sub: 'History and progress',
       },
