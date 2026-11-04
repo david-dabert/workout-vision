@@ -247,7 +247,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
         {/* Multi-Sports Lab: markerless motion capture roadmap for golf, tennis, rowing... */}
         {onSports && <button className="row-link press" onClick={onSports} data-testid="choice-sports">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" /></svg></span>
-          <span className="row-txt"><span className="row-head"><b>{fr ? 'Multi-Sports Lab\u00A0: golf, tennis, aviron…' : 'Multi-Sports Lab: Golf, Tennis, Rowing…'}</b><span className="tag tier-tag tier-roadmap">Roadmap R&D</span></span><small>{fr ? 'Tempo de swing, ratios de cadence et cinématique sans capteur' : 'Swing tempo, cadence ratios, and markerless kinematics'}</small></span>
+          <span className="row-txt"><span className="row-head"><b>Multi-Sports Lab</b><span className="tag tier-tag tier-roadmap">Roadmap R&D</span></span><small>{fr ? 'Golf, tennis, aviron\u00A0: cinématique sans capteur et cadence' : 'Golf, tennis, rowing: markerless kinematics and cadence'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Coach & Physio Matcher */}
