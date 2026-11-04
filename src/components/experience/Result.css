@@ -161,6 +161,8 @@
 .wv-experience .result-screen .saved .btn-primary { border-radius: 4px; background: var(--c-fg); color: var(--c-surface); box-shadow: none; font-size: 17px; }
 .wv-experience .result-screen .saved .btn-primary::after { display: none; }
 .wv-experience .result-screen .saved .btn-ghost { height: 58px; border: 1.5px solid var(--c-edge); border-radius: 4px; }
+.wv-experience .result-screen .saved .res-report-btn { border: 1px solid var(--lamp); background: var(--depth-1); color: var(--bone); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.wv-experience .result-screen .saved .res-report-badge { font-size: 10px; font-family: var(--font-mono, monospace); letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 6px; border-radius: 999px; background: var(--lamp); color: var(--basalt); font-weight: 700; margin-left: 6px; }
 /* The earned line once a set is saved (moment.js): the serif of the count, after the confirmation, never before; in
    the text colour, a record included, since gold is the measured count's alone (final direction). */
 .wv-experience .moment { margin: 0 0 8px; text-align: center; font-family: var(--serif); font-size: 28px; line-height: 1.15; color: var(--c-fg); text-wrap: balance; animation: moment-in 0.7s var(--ease) both; }

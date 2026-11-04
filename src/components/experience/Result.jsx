@@ -924,12 +924,13 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
           {/* A gym session is several sets of one lift: the next set goes straight back to filming this lift, and
               changing lift is the quieter choice beside it (WP1.3 of docs/SPEC-production.md). Once saved, the next
               set is the one thing left to do (design pass of 4 October). */}
-          <button className="btn-primary press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
-          <button className="text-btn press" onClick={after(onChangeLift)} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
-          <button ref={reportRef} className="btn-ghost press" onClick={() => onReport(trueN, savedId.current)}>
+          <button ref={reportRef} className="btn-ghost press res-report-btn" onClick={() => onReport(trueN, savedId.current)} data-testid="res-report-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
             <span>{fr ? 'Rapport de séance' : 'Session report'}</span>
+            <span className="res-report-badge" aria-hidden="true">3D Mocap</span>
           </button>
+          <button className="btn-primary press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
+          <button className="text-btn press" onClick={after(onChangeLift)} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
           <button className="text-btn press" onClick={challenge}>{fr ? 'Défier un ami' : 'Challenge a friend'}</button>
           <p className="share-note" role="status">{shareNote}</p>
           {/* Once, on the saved card of the first set saved where the app is not installed: how to install it (Install.jsx).
@@ -991,6 +992,6 @@ function ReportCount({ fr, report }) {
   return <p className="report-count" data-testid="report-count">
     <span>{fr ? 'Signaler ce comptage' : 'Report this count'}</span>
     <a className="text-btn" href={reportEmailUrl(report)}>{fr ? 'Par e-mail' : 'By email'}</a>
-    <a className="text-btn" href={reportIssueUrl(report)} target="_blank" rel="noreferrer">{fr ? 'Sur GitHub' : 'On GitHub'}</a>
+    <a className="text-btn" href={reportIssueUrl(report)} target="_blank" rel="noreferrer">{fr ? 'Support technique' : 'Technical support'}</a>
   </p>;
 }
