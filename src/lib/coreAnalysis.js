@@ -94,7 +94,8 @@ export const PROPOSAL_MAX_SAMPLES = 3 * 60 * TARGET_FPS;
  * curls at half their count (5 for 10), one cycle per left-right pair (TRIED.md, 8 October; delegated decision, 8 October).
  */
 export function withProposal(result, lift) {
-  if (!result?.refused || isTest(lift) || liftDefinition(lift)?.bothSides || !(result.timestamps?.length <= PROPOSAL_MAX_SAMPLES)) return result;
+  const needsProposal = !!result?.refused || result?.count === 0;
+  if (!needsProposal || isTest(lift) || liftDefinition(lift)?.bothSides || !(result.timestamps?.length <= PROPOSAL_MAX_SAMPLES)) return result;
   const t0 = performance.now();
   const p = pscProposal(result);
   return { ...result, proposal: p ? { ...p, ms: Math.round(performance.now() - t0) } : null };

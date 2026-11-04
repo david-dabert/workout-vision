@@ -106,6 +106,17 @@ const BACK_COMPOUND_LIFTS = new Set([
   'close_grip_lat_pulldown',
   'wide_grip_lat_pulldown',
   'banded_lat_pulldown',
+  'leg_extension',
+  'seated_leg_extension',
+  'chest_press',
+  'machine_chest_press',
+  'bench_press',
+  'dumbbell_bench_press',
+  'incline_bench_press',
+  'push_up',
+  'seated_cable_row',
+  'seated_row',
+  'machine_row',
 ]);
 
 /**

@@ -37,33 +37,42 @@
 .wv-experience .fade-in { animation: fade-in var(--d-ui) var(--ease) both; }
 @media (prefers-reduced-motion: reduce) { .wv-experience .fade-in { animation: none; } }
 
-/* Paper sheet */
+/* Obsidian sports-science HUD dossier */
 .wv-experience .sheet {
-  margin-top: var(--s-5); background: var(--paper); color: var(--paper-ink); border-radius: var(--r-paper); padding: 22px 20px 18px;
+  margin-top: var(--s-5);
+  background: linear-gradient(180deg, var(--depth-1) 0%, var(--basalt) 100%);
+  color: var(--bone);
+  border: 1px solid var(--hair-2);
+  border-radius: var(--r-l);
+  padding: 24px 20px 20px;
   box-shadow: 0 50px 80px -40px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.04);
-  display: flex; flex-direction: column; gap: 12px;
+  backdrop-filter: blur(var(--blur));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
-.wv-experience .sh-top { display: flex; justify-content: flex-end; align-items: baseline; gap: 10px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--paper-ash); }
-.wv-experience .sh-title { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1; letter-spacing: normal; color: var(--paper-ink); }
+.wv-experience .sh-top { display: flex; justify-content: flex-end; align-items: baseline; gap: 10px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ash); }
+.wv-experience .sh-title { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 32px; line-height: 1.05; letter-spacing: normal; color: var(--bone); }
 /* The opener: one sentence that sums up the set, under the title (set-opener.js). */
-.wv-experience .sh-opener { margin: 0; font-size: 13px; line-height: 1.5; color: var(--paper-ink); text-wrap: pretty; }
-.wv-experience .sh-people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; font-size: 12px; color: var(--paper-ink); overflow-wrap: anywhere; }
-.wv-experience .sh-people em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-ash); }
-.wv-experience .sh-count-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 12px; border-top: 1px solid var(--paper-rule); }
+.wv-experience .sh-opener { margin: 0; font-size: 13px; line-height: 1.5; color: var(--bone-2); text-wrap: pretty; }
+.wv-experience .sh-people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; font-size: 12px; color: var(--bone); overflow-wrap: anywhere; }
+.wv-experience .sh-people em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); }
+.wv-experience .sh-count-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 14px; border-top: 1px solid var(--hair-2); }
 .wv-experience .sh-count-row .sh-count { padding-top: 0; border-top: none; }
-.wv-experience .sh-count { display: flex; align-items: baseline; gap: 12px; padding-top: 12px; border-top: 1px solid var(--paper-rule); }
+.wv-experience .sh-count { display: flex; align-items: baseline; gap: 12px; padding-top: 14px; border-top: 1px solid var(--hair-2); }
 .wv-experience .sh-mockup-frame {
   position: relative;
   width: 76px;
   height: 76px;
   border-radius: 12px;
-  background: var(--basalt);
-  border: 1px solid var(--c-rule);
+  background: var(--void);
+  border: 1px solid var(--hair-2);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   flex-shrink: 0;
+  box-shadow: inset 0 0 16px var(--void);
 }
 .wv-experience .sh-mockup-frame .guide-frames,
 .wv-experience .sh-mockup-frame .guide-animated,
@@ -80,31 +89,40 @@
   font-family: var(--mono);
   font-size: 8px;
   letter-spacing: 0.05em;
-  color: var(--paper-ash);
-  background: var(--paper-rule-2);
+  color: var(--bone-2);
+  background: var(--hair-2);
   padding: 1px 4px;
   border-radius: 4px;
 }
 .wv-experience .sh-mocap-export { margin-top: 10px; margin-bottom: 6px; }
 .wv-experience .sh-mocap-export .res-opt-export-btn { margin-top: 0; width: 100%; }
-.wv-experience .sh-n { font-family: var(--serif); font-size: 58px; line-height: 0.9; color: var(--paper-gold); font-variant-numeric: lining-nums; }
-.wv-experience .sh-nl { display: flex; flex-direction: column; font-size: 12px; color: var(--paper-ash); }
-.wv-experience .sh-nl b { font-weight: 500; color: var(--paper-ink); font-size: 13px; }
-.wv-experience .sh-nl .sh-planned { margin-top: 2px; color: var(--paper-ink); }
-.wv-experience .sh-line { margin: 0; font-size: 12px; color: var(--paper-ash); }
+.wv-experience .sh-n {
+  font-family: var(--serif);
+  font-size: 64px;
+  line-height: 0.9;
+  background: var(--gold-num);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-variant-numeric: lining-nums;
+}
+.wv-experience .sh-nl { display: flex; flex-direction: column; font-size: 12px; color: var(--ash); }
+.wv-experience .sh-nl b { font-weight: 500; color: var(--bone); font-size: 14px; }
+.wv-experience .sh-nl .sh-planned { margin-top: 2px; color: var(--lamp); }
+.wv-experience .sh-line { margin: 0; font-size: 12px; color: var(--ash); }
 .wv-experience .sh-table { width: 100%; border-collapse: collapse; font-size: 11.5px; font-variant-numeric: tabular-nums; table-layout: fixed; }
 /* Fixed columns, so the PDF can set the same table: Rep 11%, Tempo 32%, Range 21%, Peak and Mean 18% each. */
 .wv-experience .sh-table th:first-child { width: 14%; }
 .wv-experience .sh-table th:nth-child(2) { width: 29%; }
 .wv-experience .sh-table th:nth-child(3) { width: 21%; }
 .wv-experience .sh-table th:nth-child(4), .wv-experience .sh-table th:nth-child(5) { width: 18%; }
-.wv-experience .sh-table th { text-align: left; font-family: var(--mono); font-weight: 400; font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--paper-ash); padding: 6px 4px 6px 0; border-bottom: 1px solid var(--paper-rule);
+.wv-experience .sh-table th { text-align: left; font-family: var(--mono); font-weight: 400; font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ash); padding: 6px 4px 6px 0; border-bottom: 1px solid var(--hair-2);
   /* A French head no longer runs into the next column ("AMPLITUDE" into "PIC", #12). */
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wv-experience .sh-table td { padding: 5px 4px 5px 0; border-bottom: 1px solid var(--paper-rule-2); font-family: var(--mono); }
-.wv-experience .sh-notes em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-ash); }
-.wv-experience .sh-notes p { margin: 4px 0 0; font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
-.wv-experience .sh-foot { padding-top: 10px; border-top: 1px solid var(--paper-rule); font-size: 10px; line-height: 1.5; color: var(--paper-ash); }
+.wv-experience .sh-table td { padding: 6px 4px 6px 0; border-bottom: 1px solid var(--hair); font-family: var(--mono); color: var(--bone); }
+.wv-experience .sh-notes em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); }
+.wv-experience .sh-notes p { margin: 4px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--bone-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+.wv-experience .sh-foot { padding-top: 10px; border-top: 1px solid var(--hair-2); font-size: 10px; line-height: 1.5; color: var(--ash); }
 
 /* Share bar: the share stays in reach at every height. The sheet scrolls under
    it and meets it 20 px below the sheet, where the prototype puts the button. */
@@ -131,64 +149,64 @@
 }
 .wv-experience .report-json-btn svg { width: 14px; height: 14px; color: var(--c-accent); }
 
-/* The wave on paper (RepWave.jsx, wave.js): the measured angle as a rule-coloured hairline, each rep in the
-   count's colour, its return lighter, as the PDF draws it (report-pdf.js). */
+/* The wave on obsidian HUD: the measured angle as a rule-coloured hairline, each rep in the
+   count's colour, its return lighter. */
 .wv-experience .sh-wave .wave { cursor: default; }
 .wv-experience .sh-wave .strip-head { margin-bottom: 6px; }
-.wv-experience .sh-wave .strip-label { color: var(--paper-ash); }
-.wv-experience .sh-wave .strip-key { color: var(--paper-ash); }
+.wv-experience .sh-wave .strip-label { color: var(--ash); }
+.wv-experience .sh-wave .strip-key { color: var(--ash); }
 .wv-experience .sh-wave svg { height: 64px; }
-.wv-experience .sh-wave .w-line { stroke: var(--paper-rule); }
-/* The reference band (reference-ranges.js) on paper, the PDF's row rule colour (report-pdf.js). The screen's fill is
-   set on the rect itself (RepWave.jsx), so a page without this sheet never draws it black. */
-.wv-experience .sh-wave .w-ref { fill: #F0EADF; fill-opacity: 1; }
-.wv-experience .sh-wave .w-out { stroke: #8A6630; }
-.wv-experience .sh-wave .w-back { stroke: #CDB68E; }
-.wv-experience .sh-wave .w-rep.part .w-out { stroke: var(--paper-ash); }
+.wv-experience .sh-wave .w-line { stroke: var(--hair-2); }
+/* The reference band on obsidian sheet */
+.wv-experience .sh-wave .w-ref { fill: var(--void); fill-opacity: 0.6; }
+.wv-experience .sh-wave .w-out { stroke: var(--lamp); }
+.wv-experience .sh-wave .w-back { stroke: var(--lamp-line); }
+.wv-experience .sh-wave .w-rep.part .w-out { stroke: var(--ash); }
 .wv-experience .sh-wave .wave { align-items: stretch; }
 .wv-experience .sh-wave .strip-head { align-items: flex-start; text-align: left; }
 /* The key to the measures (measure-guide.jsx): a glossary whose terms are the table's headings, in the table's own
-   small capitals, the definitions in ink, and the tempo shown as its four phases, each digit set like the count. */
-.wv-experience .sheet .mg { display: grid; gap: 10px; padding-top: 12px; border-top: 1px solid var(--paper-rule); }
-.wv-experience .sheet .mg-title { margin: 0; font-family: var(--mono); font-weight: 400; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-ash); }
+   small capitals, the definitions in bone, and the tempo shown as its four phases, each digit set like the count. */
+.wv-experience .sheet .mg { display: grid; gap: 10px; padding-top: 12px; border-top: 1px solid var(--hair-2); }
+.wv-experience .sheet .mg-title { margin: 0; font-family: var(--mono); font-weight: 400; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); }
 .wv-experience .sheet .mg-list { display: grid; gap: 9px; margin: 0; }
 .wv-experience .sheet .mg-row { display: grid; grid-template-columns: 27% minmax(0, 1fr); gap: 10px; align-items: baseline; }
-.wv-experience .sheet .mg-row dt { font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--paper-gold); }
-.wv-experience .sheet .mg-row dd { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--paper-ink); text-wrap: pretty; }
+.wv-experience .sheet .mg-row dt { font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--lamp); }
+.wv-experience .sheet .mg-row dd { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--bone-2); text-wrap: pretty; }
 .wv-experience .sheet .mg-tempo { display: flex; gap: 6px; margin-top: 8px; }
-.wv-experience .sheet .mg-ph { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 2px 6px; border: 1px solid var(--paper-rule); border-radius: 9px; }
-.wv-experience .sheet .mg-ph b { font-family: var(--serif); font-weight: 400; font-size: 24px; line-height: 1; color: var(--paper-gold); font-variant-numeric: lining-nums; }
-.wv-experience .sheet .mg-ph small { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--paper-ash); white-space: nowrap; }
-/* Report composition (David's iPhone, 5 October: harmony). How the count was made sits under it as labelled details,
+.wv-experience .sheet .mg-ph { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 2px 6px; border: 1px solid var(--hair); border-radius: 9px; background: var(--depth-1); }
+.wv-experience .sheet .mg-ph b { font-family: var(--serif); font-weight: 400; font-size: 24px; line-height: 1; color: var(--lamp); font-variant-numeric: lining-nums; }
+.wv-experience .sheet .mg-ph small { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ash); white-space: nowrap; }
+/* Report composition: How the count was made sits under it as labelled details,
    like the people above; the set's two figures are set like the count; footnotes are small; the experimental notice
-   closes the sheet, as it closes every PDF page. */
+   closes the sheet. */
 .wv-experience .sheet .sh-details { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 /* The person's own pain and effort: two answers, two columns, so their labels stand on one line. */
 .wv-experience .sheet .sh-own { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-/* A label that wraps ("COMPTÉ PAR L’APP") keeps the three values on one line, as in the PDF. */
+/* A label that wraps keeps the three values on one line. */
 .wv-experience .sheet .sh-details > span { display: flex; flex-direction: column; justify-content: space-between; gap: 2px; }
-/* A long value ("proposée par l’appli, confirmée par la personne", report-sheet.js wideDetail) takes the whole row. */
+/* A long value takes the whole row. */
 .wv-experience .sheet .sh-details > span.is-wide { grid-column: 1 / -1; }
-.wv-experience .sheet .sh-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding-top: 12px; border-top: 1px solid var(--paper-rule); }
-.wv-experience .sheet .sh-stats em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--paper-ash); }
-/* Experimental figures (time under tension, tempo): smaller than the count and in ink, not its gold (R8, 14 October). */
-.wv-experience .sheet .sh-stats b { display: block; margin-top: 4px; font-family: var(--serif); font-weight: 400; font-size: 17px; line-height: 1; color: var(--paper-ink); font-variant-numeric: lining-nums tabular-nums; }
-.wv-experience .sheet .sh-foot-notes { margin: -4px 0 0; font-size: 10px; color: var(--paper-ash); white-space: pre-wrap; }
-.wv-experience .sheet .sh-exp { margin: 0; padding-top: 10px; border-top: 1px solid var(--paper-rule); font-size: 9.5px; line-height: 1.5; color: var(--paper-ash); }
+.wv-experience .sheet .sh-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding-top: 12px; border-top: 1px solid var(--hair-2); }
+.wv-experience .sheet .sh-stats em { display: block; font-style: normal; font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ash); }
+/* Experimental figures (time under tension, tempo): in bone. */
+.wv-experience .sheet .sh-stats b { display: block; margin-top: 4px; font-family: var(--serif); font-weight: 400; font-size: 17px; line-height: 1; color: var(--bone); font-variant-numeric: lining-nums tabular-nums; }
+.wv-experience .sheet .sh-foot-notes { margin: -4px 0 0; font-size: 10px; color: var(--ash); white-space: pre-wrap; }
+.wv-experience .sheet .sh-exp { margin: 0; padding-top: 10px; border-top: 1px solid var(--hair-2); font-size: 9.5px; line-height: 1.5; color: var(--ash); }
 .wv-experience .sh-wave .strip-key { display: inline-flex; align-items: center; gap: 6px; }
-.wv-experience .sh-wave .strip-key .sw-out { background: #8A6630; }
-.wv-experience .sh-wave .strip-key .sw-back { background: #CDB68E; margin-left: 6px; }
+.wv-experience .sh-wave .strip-key .sw-out { background: var(--lamp); }
+.wv-experience .sh-wave .strip-key .sw-back { background: var(--lamp-line); margin-left: 6px; }
 
-/* Coach's Prescription on paper sheet */
+/* Coach's Prescription on obsidian sheet */
 .wv-experience .sh-coach-prescription {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 12px 14px;
-  background: var(--paper-rule-2);
-  border: 1px solid var(--paper-rule);
-  border-radius: 9px;
-  color: var(--paper-ink);
+  padding: 14px 16px;
+  background: var(--depth-1);
+  border: 1px solid var(--hair-2);
+  border-radius: var(--r-m);
+  color: var(--bone);
+  box-shadow: var(--shadow-sm);
 }
 .wv-experience .sh-cp-head {
   display: flex;
@@ -206,13 +224,13 @@
   font-size: 8.5px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--paper-ash);
+  color: var(--lamp);
 }
 .wv-experience .sh-cp-title {
   margin: 0;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
-  color: var(--paper-ink);
+  color: var(--bone);
 }
 .wv-experience .sh-cp-score {
   display: flex;
@@ -222,23 +240,23 @@
 }
 .wv-experience .sh-cp-score-val {
   font-family: var(--serif);
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1;
   font-weight: 600;
-  color: var(--paper-ink);
+  color: var(--lamp-hi);
 }
 .wv-experience .sh-cp-score-lbl {
   font-family: var(--mono);
   font-size: 7.5px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--paper-ash);
+  color: var(--ash);
 }
 .wv-experience .sh-cp-bottleneck {
-  padding: 8px 10px;
-  background: var(--paper);
-  border: 1px solid var(--paper-rule);
-  border-radius: 6px;
+  padding: 10px 12px;
+  background: var(--void);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-s);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -254,19 +272,19 @@
   font-size: 8px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--paper-ash);
+  color: var(--lamp);
   font-weight: 500;
 }
 .wv-experience .sh-cp-bottleneck-title {
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 500;
-  color: var(--paper-ink);
+  color: var(--bone);
 }
 .wv-experience .sh-cp-bottleneck-desc {
   margin: 0;
-  font-size: 10.5px;
+  font-size: 11px;
   line-height: 1.45;
-  color: var(--paper-ink);
+  color: var(--bone-2);
 }
 .wv-experience .sh-cp-next-set {
   display: flex;
@@ -279,25 +297,25 @@
   font-size: 8px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--paper-ash);
+  color: var(--ash);
 }
 .wv-experience .sh-cp-next-cue {
   margin: 0;
   font-size: 11px;
   line-height: 1.45;
-  color: var(--paper-ink);
+  color: var(--bone-2);
 }
 .wv-experience .sh-cp-focus {
   display: flex;
   align-items: baseline;
   gap: 6px;
   font-size: 10.5px;
-  color: var(--paper-ink);
+  color: var(--bone);
 }
 .wv-experience .sh-cp-focus em {
   font-style: normal;
   font-weight: 500;
-  color: var(--paper-ash);
+  color: var(--lamp);
 }
 
 /* Detailed Biomechanics Section */
@@ -307,8 +325,8 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-top: 12px;
-  border-top: 1px solid var(--paper-rule);
+  padding-top: 14px;
+  border-top: 1px solid var(--hair-2);
 }
 .wv-experience .sh-sec-head {
   display: flex;
@@ -320,11 +338,11 @@
   font-size: 9px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--paper-ash);
+  color: var(--lamp);
 }
 .wv-experience .sh-sec-sub {
   font-size: 10.5px;
-  color: var(--paper-ash);
+  color: var(--ash);
 }
 .wv-experience .sh-bio-grid {
   display: grid;
@@ -335,10 +353,10 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 8px 10px;
-  background: var(--paper-rule-2);
-  border: 1px solid var(--paper-rule);
-  border-radius: 6px;
+  padding: 10px 12px;
+  background: var(--depth-1);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-s);
 }
 .wv-experience .sh-bio-card-head {
   display: flex;
@@ -351,33 +369,33 @@
   font-size: 7.5px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--paper-ash);
+  color: var(--ash);
 }
 .wv-experience .sh-bio-val {
   font-family: var(--serif);
-  font-size: 13.5px;
-  color: var(--paper-ink);
+  font-size: 14px;
+  color: var(--bone);
 }
 .wv-experience .sh-bio-track {
   width: 100%;
   height: 3px;
-  background: var(--paper-rule);
+  background: var(--hair-2);
   border-radius: 2px;
   overflow: hidden;
 }
 .wv-experience .sh-bio-bar {
   height: 100%;
-  background: var(--paper-gold);
+  background: var(--lamp);
   border-radius: 2px;
 }
 .wv-experience .sh-bio-sub {
   font-size: 9px;
-  color: var(--paper-ash);
+  color: var(--ash);
 }
 .wv-experience .sh-bio-disclaimer {
   margin: 2px 0 0;
   font-size: 9px;
-  color: var(--paper-ash);
+  color: var(--ash);
 }
 
 /* VBT Rep-by-Rep strip */
@@ -390,10 +408,10 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
-  padding: 6px 7px;
-  background: var(--paper-rule-2);
-  border: 1px solid var(--paper-rule);
-  border-radius: 6px;
+  padding: 8px 8px;
+  background: var(--depth-1);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-s);
 }
 .wv-experience .sh-vbt-card-head {
   display: flex;
@@ -401,26 +419,26 @@
   font-family: var(--mono);
   font-size: 8.5px;
 }
-.wv-experience .sh-vbt-num { color: var(--paper-ash); }
-.wv-experience .sh-vbt-loss { color: var(--paper-ink); font-weight: 600; }
-.wv-experience .sh-vbt-card.is-failure .sh-vbt-loss { color: var(--paper-ash); }
+.wv-experience .sh-vbt-num { color: var(--ash); }
+.wv-experience .sh-vbt-loss { color: var(--bone); font-weight: 600; }
+.wv-experience .sh-vbt-card.is-failure .sh-vbt-loss { color: var(--ash); }
 .wv-experience .sh-vbt-track {
   width: 100%;
   height: 3px;
-  background: var(--paper-rule);
+  background: var(--hair-2);
   border-radius: 2px;
   overflow: hidden;
 }
 .wv-experience .sh-vbt-bar {
   height: 100%;
-  background: var(--paper-gold);
+  background: var(--lamp);
 }
 .wv-experience .sh-vbt-times {
   display: flex;
   justify-content: space-between;
   font-family: var(--mono);
   font-size: 8px;
-  color: var(--paper-ash);
+  color: var(--ash);
 }
 
 /* Sticking Point Box */
@@ -428,10 +446,10 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 9px 12px;
-  background: var(--paper-rule-2);
-  border: 1px solid var(--paper-rule);
-  border-radius: 6px;
+  padding: 10px 12px;
+  background: var(--depth-1);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-s);
 }
 .wv-experience .sh-sticking-head {
   display: flex;
@@ -443,19 +461,19 @@
   font-size: 8px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--paper-ash);
+  color: var(--lamp);
   font-weight: 500;
 }
 .wv-experience .sh-sticking-title {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 500;
-  color: var(--paper-ink);
+  color: var(--bone);
 }
 .wv-experience .sh-sticking-desc {
   margin: 0;
-  font-size: 10.5px;
+  font-size: 11px;
   line-height: 1.45;
-  color: var(--paper-ink);
+  color: var(--bone-2);
 }
 
 /* Hypertrophy Coaching Cues */
@@ -473,10 +491,10 @@
   gap: 7px;
   font-size: 11px;
   line-height: 1.45;
-  color: var(--paper-ink);
+  color: var(--bone-2);
 }
 .wv-experience .sh-cue-bullet {
-  color: var(--paper-ash);
+  color: var(--lamp);
   font-weight: 600;
   line-height: 1.45;
 }
@@ -484,7 +502,7 @@
   display: flex;
   gap: 6px;
   font-size: 10px;
-  color: var(--paper-ash);
+  color: var(--ash);
   padding-top: 4px;
 }
 .wv-experience .sh-target-muscles em {

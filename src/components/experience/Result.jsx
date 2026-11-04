@@ -213,7 +213,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // A refused set may carry PSC's count (coreAnalysis.js, withProposal; 8 October 2026): the slot opens on it, labelled
   // "Proposition de l'appli", and nothing is saved until the person confirms or changes it (R8: a number to confirm,
   // never a silent count, no grade, no measure). Status: validated on the bench (TRIED.md, 8 October).
-  const proposal = result.refused && Number.isInteger(result.proposal?.count) && result.proposal.count > 0 ? result.proposal.count : null;
+  const proposal = (result.refused || unsure) && Number.isInteger(result.proposal?.count) && result.proposal.count > 0 ? result.proposal.count : null;
   // An exercise the core does not offer (universalProposal.js; counting research of 14 October 2026): refused, its number
   // at most a proposal. That engine's number is right on 10 of 35 labelled sets, so the slot opens empty and the number
   // is offered as one key labelled "Proposition de l'appli": confirming it takes a tap on it, then on Confirm (second
