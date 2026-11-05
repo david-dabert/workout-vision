@@ -25,7 +25,7 @@ all, guided view       n  24  count exact  20 (83 %), off >= 3: 2  range error m
 Measure errors per view (printed, not gated): phase time relative error, time under tension error, range error.
 view  0 deg: conc. -46 %  ecc. -45 %  time under tension -37 % (mean absolute 37 %)  range -36 %
 view 30 deg: conc. -45 %  ecc. -45 %  time under tension -30 % (mean absolute 30 %)  range -27 %
-view 60 deg: conc. -47 %  ecc. -49 %  time under tension -43 % (mean absolute 43 %)  range -29 %
+view 60 deg: conc. -47 %  ecc. -49 %  time under tension -42 % (mean absolute 42 %)  range -29 %
 view 90 deg: conc. -53 %  ecc. -55 %  time under tension -59 % (mean absolute 59 %)  range -29 %
 
 Measure errors split (printed, not gated): definition = app pipeline on the true angle vs truth; pose = app vs that.
@@ -100,7 +100,7 @@ Each set: id, true reps, app count, range error (deg), conc./ecc. error (s), pos
   soldier-bicep_curl-v30-a-10               8  8   -44   -0.6  -0.6  100 %  not-compared-lift  -11    -
   soldier-bicep_curl-v30-a0                 5  5   -45   -0.5  -0.7  100 %  not-compared-lift    0    -
   soldier-bicep_curl-v30-a20                7  7   -42   -0.6  -0.7  100 %  not-compared-lift   18    -
-  soldier-bicep_curl-v60-a-10               5  6   -87   -0.8  -1.1  100 %  not-compared-lift  -11    -
+  soldier-bicep_curl-v60-a-10               5  6   -87   -0.7  -1.1  100 %  not-compared-lift  -11    -
   soldier-bicep_curl-v60-a0                 6  6   -97   -1.0  -1.0  100 %  not-compared-lift    0    -
   soldier-bicep_curl-v60-a20                8 16  -113   -0.9  -1.2  100 %  not-compared-lift   18    -
   soldier-bicep_curl-v90-a-10               6  2   -30   -0.4  -0.5  100 %  not-compared-lift  -11    -
@@ -125,7 +125,7 @@ Each set: id, true reps, app count, range error (deg), conc./ecc. error (s), pos
   soldier-overhead_press-v30-a0             5  5   -46   -0.9  -0.6   63 %  not-compared-lift   -0    -
   soldier-overhead_press-v30-a20            7  9   -45   -0.7  -0.6   88 %  not-compared-lift    6    -
   soldier-overhead_press-v60-a-10           5  0     -      -     -  100 %  not-compared-lift  -22    -
-  soldier-overhead_press-v60-a0             6  9   -57   -1.3  -0.8  100 %  not-compared-lift   -0    -
+  soldier-overhead_press-v60-a0             6  9   -57   -1.3  -0.7  100 %  not-compared-lift   -0    -
   soldier-overhead_press-v60-a20            8 13   -66   -0.9  -0.8  100 %  not-compared-lift    3    -
   soldier-overhead_press-v90-a-10           6  7   -49   -0.6  -0.7   90 %  not-compared-lift  -23    -
   soldier-overhead_press-v90-a0             7 13   -48   -1.0  -0.8   90 %  not-compared-lift   -0    -
