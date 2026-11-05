@@ -376,7 +376,7 @@ export function buildOptimizationMetrics(opt, fr) {
     {
       label: fr ? 'Contrôle & tempo' : 'Control & Tempo',
       val: `${opt.controlIndex}%`,
-      sub: fr ? `Excentrique\u00A0: ${opt.averageEccentricSec}s` : `Eccentric: ${opt.averageEccentricSec}s`,
+      sub: fr ? `Excentrique\u00A0: ${opt.averageEccentricSec}\u00A0s` : `Eccentric: ${opt.averageEccentricSec}\u00A0s`,
       fillPct: Math.min(100, opt.controlIndex),
     },
     {
@@ -389,21 +389,21 @@ export function buildOptimizationMetrics(opt, fr) {
     },
     {
       label: fr ? 'Puissance concentrique' : 'Concentric Power',
-      val: `${opt.averagePowerWatts} W`,
+      val: `${opt.averagePowerWatts}\u00A0W`,
       sub: fr
-        ? `Pic\u00A0: ${opt.peakPowerWatts} W (chute\u00A0: ${opt.powerLossPercent}%)`
-        : `Peak: ${opt.peakPowerWatts} W (drop: ${opt.powerLossPercent}%)`,
+        ? `Pic\u00A0: ${opt.peakPowerWatts}\u00A0W (chute\u00A0: ${opt.powerLossPercent}%)`
+        : `Peak: ${opt.peakPowerWatts}\u00A0W (drop: ${opt.powerLossPercent}%)`,
       fillPct: Math.min(100, Math.max(15, (opt.averagePowerWatts / Math.max(1, opt.peakPowerWatts || 300)) * 100)),
     },
     {
       label: fr ? 'Travail mécanique' : 'Mechanical Work',
-      val: `${opt.mechanicalWorkKj} kJ`,
-      sub: fr ? `Dépense est.\u00A0: ~${opt.caloriesKcal} kcal*` : `Est. energy: ~${opt.caloriesKcal} kcal*`,
+      val: `${opt.mechanicalWorkKj}\u00A0kJ`,
+      sub: fr ? `Dépense est.\u00A0: ~${opt.caloriesKcal}\u00A0kcal*` : `Est. energy: ~${opt.caloriesKcal}\u00A0kcal*`,
       fillPct: Math.min(100, Math.max(15, opt.mechanicalWorkKj * 20)),
     },
     {
       label: fr ? 'Temps sous tension (TUT)' : 'Time Under Tension (TUT)',
-      val: `${opt.timeUnderTensionSec}s`,
+      val: `${opt.timeUnderTensionSec}\u00A0s`,
       sub: fr ? `Cadence\u00A0: ${opt.tempoCadence}` : `Tempo: ${opt.tempoCadence}`,
       fillPct: Math.min(100, Math.max(15, opt.timeUnderTensionSec * 3)),
     },
@@ -417,10 +417,10 @@ export function buildOptimizationMetrics(opt, fr) {
     },
     {
       label: fr ? 'Cisaillement lombaire (L5/S1)' : 'Lumbar Shear (L5/S1)',
-      val: `${opt.lumbarKinetics ? opt.lumbarKinetics.peakShearForceN : 91} N`,
+      val: `${opt.lumbarKinetics ? opt.lumbarKinetics.peakShearForceN : 91}\u00A0N`,
       sub: opt.lumbarKinetics
-        ? (fr ? `Compression\u00A0: ${opt.lumbarKinetics.peakCompressiveForceN} N (limite\u00A0: 3400 N)` : `Compression: ${opt.lumbarKinetics.peakCompressiveForceN} N (limit: 3400 N)`)
-        : (fr ? 'Compression\u00A0: 917 N (limite\u00A0: 3400 N)' : 'Compression: 917 N (limit: 3400 N)'),
+        ? (fr ? `Compression\u00A0: ${opt.lumbarKinetics.peakCompressiveForceN}\u00A0N (limite\u00A0: 3400\u00A0N)` : `Compression: ${opt.lumbarKinetics.peakCompressiveForceN}\u00A0N (limit: 3400\u00A0N)`)
+        : (fr ? 'Compression\u00A0: 917\u00A0N (limite\u00A0: 3400\u00A0N)' : 'Compression: 917\u00A0N (limit: 3400\u00A0N)'),
       fillPct: opt.lumbarKinetics ? Math.min(100, Math.round((opt.lumbarKinetics.peakShearForceN / 600) * 100)) : 15,
     },
     {

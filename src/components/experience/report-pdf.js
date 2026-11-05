@@ -199,7 +199,7 @@ export function reportPdf(sheet) {
   if (sheet.optimizationMetrics?.length) {
     const secHeadH = 13.5 + 13 + 4;
     const cellW = (COLUMN - 8) / 2;
-    const cellH = 40;
+    const cellH = 46;
     const rowH = cellH + 6;
     const nRows = Math.ceil(sheet.optimizationMetrics.length / 2);
 
@@ -230,17 +230,17 @@ export function reportPdf(sheet) {
         doc.setFillColor(COLOR.rowRule);
         doc.roundedRect(cx, y, cellW, cellH, 4, 4, 'FD');
 
-        write(upper(m.label), cx + 6, y + 5, 'mono', 7.5, 1.2, COLOR.ash, 7.5 * 0.05);
-        const valW = width(m.val, 'serif', 12.5);
-        write(m.val, cx + cellW - 6 - valW, y + 4, 'serif', 12.5, 1, COLOR.ink);
+        // Vertical stack: Label -> Hero Value -> Bar -> Subtitle
+        write(upper(m.label), cx + 6, y + 4.5, 'mono', 7, 1.2, COLOR.ash, 7 * 0.05);
+        write(m.val, cx + 6, y + 13.5, 'serif', 13.5, 1, COLOR.ink);
 
         const barW = cellW - 12;
         doc.setFillColor(COLOR.rule);
-        doc.rect(cx + 6, y + 19, barW, 2.5, 'F');
+        doc.rect(cx + 6, y + 29, barW, 2.5, 'F');
         doc.setFillColor(COLOR.count);
-        doc.rect(cx + 6, y + 19, (barW * Math.min(100, Math.max(5, m.fillPct))) / 100, 2.5, 'F');
+        doc.rect(cx + 6, y + 29, (barW * Math.min(100, Math.max(5, m.fillPct))) / 100, 2.5, 'F');
 
-        write(m.sub, cx + 6, y + 26, 'sans', 7.5, 1.2, COLOR.ash);
+        write(m.sub, cx + 6, y + 36, 'sans', 7, 1.2, COLOR.ash);
       }
       y += rowH;
     }

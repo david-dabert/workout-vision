@@ -360,21 +360,23 @@
 }
 .wv-experience .sh-bio-card-head {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 4px;
+  flex-direction: column;
+  gap: 2px;
 }
 .wv-experience .sh-bio-lbl {
   font-family: var(--mono);
-  font-size: 7.5px;
-  letter-spacing: 0.05em;
+  font-size: 8px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ash);
+  line-height: 1.25;
 }
 .wv-experience .sh-bio-val {
   font-family: var(--serif);
-  font-size: 14px;
+  font-size: 16px;
   color: var(--bone);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
 }
 .wv-experience .sh-bio-track {
   width: 100%;

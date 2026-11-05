@@ -172,7 +172,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
             />
           </div>
           <span className="res-opt-sub">
-            {fr ? `Excentrique\u00A0: ${analysis.averageEccentricSec}s` : `Eccentric: ${analysis.averageEccentricSec}s`}
+            {fr ? `Excentrique\u00A0: ${analysis.averageEccentricSec}\u00A0s` : `Eccentric: ${analysis.averageEccentricSec}\u00A0s`}
           </span>
         </div>
 
@@ -201,7 +201,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
             <span className="res-opt-label">
               {fr ? 'Travail mécanique' : 'Mechanical Work'}
             </span>
-            <span className="res-opt-val">{analysis.mechanicalWorkKj} kJ</span>
+            <span className="res-opt-val">{analysis.mechanicalWorkKj}\u00A0kJ</span>
           </div>
           <div className="res-opt-bar-track">
             <div
@@ -210,7 +210,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
             />
           </div>
           <span className="res-opt-sub">
-            {fr ? `Dépense est.\u00A0: ~${analysis.caloriesKcal} kcal*` : `Est. energy: ~${analysis.caloriesKcal} kcal*`}
+            {fr ? `Dépense est.\u00A0: ~${analysis.caloriesKcal}\u00A0kcal*` : `Est. energy: ~${analysis.caloriesKcal}\u00A0kcal*`}
           </span>
         </div>
 
@@ -219,7 +219,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
             <span className="res-opt-label">
               {fr ? 'Puissance concentrique' : 'Concentric Power'}
             </span>
-            <span className="res-opt-val">{analysis.averagePowerWatts} W</span>
+            <span className="res-opt-val">{analysis.averagePowerWatts}\u00A0W</span>
           </div>
           <div className="res-opt-bar-track">
             <div
@@ -229,8 +229,8 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           </div>
           <span className="res-opt-sub">
             {fr
-              ? `Pic\u00A0: ${analysis.peakPowerWatts} W (chute\u00A0: ${analysis.powerLossPercent}%)`
-              : `Peak: ${analysis.peakPowerWatts} W (drop: ${analysis.powerLossPercent}%)`}
+              ? `Pic\u00A0: ${analysis.peakPowerWatts}\u00A0W (chute\u00A0: ${analysis.powerLossPercent}%)`
+              : `Peak: ${analysis.peakPowerWatts}\u00A0W (drop: ${analysis.powerLossPercent}%)`}
           </span>
         </div>
 
@@ -239,7 +239,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
             <span className="res-opt-label">
               {fr ? 'Temps sous tension (TUT)' : 'Time Under Tension (TUT)'}
             </span>
-            <span className="res-opt-val">{analysis.timeUnderTensionSec}s</span>
+            <span className="res-opt-val">{analysis.timeUnderTensionSec}\u00A0s</span>
           </div>
           <div className="res-opt-bar-track">
             <div
@@ -283,7 +283,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
                 {fr ? 'Cisaillement lombaire (L5/S1)' : 'Lumbar Shear (L5/S1)'}
               </span>
               <span className="res-opt-val">
-                {analysis.lumbarKinetics.peakShearForceN} N
+                {analysis.lumbarKinetics.peakShearForceN}\u00A0N
               </span>
             </div>
             <div className="res-opt-bar-track">
@@ -294,8 +294,8 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
             </div>
             <span className="res-opt-sub">
               {fr
-                ? `Compression\u00A0: ${analysis.lumbarKinetics.peakCompressiveForceN} N (limite\u00A0: 3400 N)`
-                : `Compression: ${analysis.lumbarKinetics.peakCompressiveForceN} N (limit: 3400 N)`}
+                ? `Compression\u00A0: ${analysis.lumbarKinetics.peakCompressiveForceN}\u00A0N (limite\u00A0: 3400\u00A0N)`
+                : `Compression: ${analysis.lumbarKinetics.peakCompressiveForceN}\u00A0N (limit: 3400\u00A0N)`}
             </span>
           </div>
         )}
