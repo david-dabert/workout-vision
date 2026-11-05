@@ -410,6 +410,35 @@ class AudioCoachService {
     osc.start(now);
     osc.stop(now + duration);
   }
+
+  /**
+   * Synthesizes an acoustic alert indicating mechanical failure or extreme fatigue breakdown
+   */
+  public playFailureAlert(): void {
+    if (!this.config.enabled) return;
+    const ctx = this.getContext();
+    if (!ctx || !this.masterGain) return;
+
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    // Dissonant minor third descent: 370 Hz down to 220 Hz
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(370, now);
+    osc.frequency.exponentialRampToValueAtTime(220, now + 0.12);
+
+    gain.gain.setValueAtTime(0.20, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+
+    osc.start(now);
+    osc.stop(now + 0.12);
+
+    this.triggerHaptic([30, 50, 30]);
+  }
 }
 
 export const audioCoach = new AudioCoachService();

@@ -1946,6 +1946,7 @@ function detectPartialReps(
 // ─── Universal Kinematic Manifold Temporal Features ───
 export {
   extractTemporalFeatureWindows,
+  extractTemporalFeatureMatrix,
   standardizeTrajectory,
   cosineSimilarity,
   computeTrajectorySimilarityMatrix,
