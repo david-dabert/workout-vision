@@ -1,0 +1,161 @@
+/* Investor Showcase Modal & Biomechanical Share Card */
+.wv-experience .showcase-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--shade);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-4);
+}
+
+.wv-experience .showcase-card {
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: var(--r-l, 20px);
+  background: var(--c-surface, var(--basalt));
+  border: 1px solid var(--c-rule);
+  padding: var(--s-5);
+  box-shadow: 0 20px 40px var(--shade);
+}
+
+.wv-experience .showcase-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s-4);
+}
+
+.wv-experience .showcase-badge {
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+.wv-experience .showcase-close {
+  background: transparent;
+  border: none;
+  color: var(--c-fg-muted);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.wv-experience .showcase-hud {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-6) var(--s-4);
+  background: var(--well, var(--basalt));
+  border-radius: var(--r-m);
+  border: 1px solid var(--hair-0);
+  margin: var(--s-3) 0;
+}
+
+.wv-experience .showcase-phase {
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+  margin-bottom: var(--s-2);
+}
+
+.wv-experience .showcase-numeral {
+  font-family: var(--mono);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--lamp-hi, var(--c-fg));
+  font-variant-numeric: tabular-nums;
+  transition: font-size 0.2s ease-out;
+}
+
+.wv-experience .showcase-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-2);
+  margin-top: var(--s-4);
+}
+
+.wv-experience .showcase-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--s-3);
+  background: var(--basalt);
+  border-radius: var(--r-s);
+  border: 1px solid var(--hair-0);
+  text-align: center;
+}
+
+.wv-experience .showcase-metric-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c-fg-muted);
+  margin-bottom: 4px;
+}
+
+.wv-experience .showcase-metric-val {
+  font-family: var(--mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--c-fg);
+}
+
+.wv-experience .showcase-result-hero {
+  padding: var(--s-4);
+  background: var(--well, var(--basalt));
+  border-radius: var(--r-m);
+  border: 1px solid var(--c-rule);
+  margin-bottom: var(--s-4);
+}
+
+.wv-experience .showcase-sovereign-tag {
+  margin-top: var(--s-3);
+  padding: var(--s-2) var(--s-3);
+  background: var(--basalt);
+  border-radius: var(--r-s);
+  border: 1px solid var(--hair-0);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--c-accent);
+  text-align: center;
+}
+
+.wv-experience .showcase-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  margin-top: var(--s-4);
+}
+
+.wv-experience .showcase-qr-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-4);
+  background: var(--well, var(--basalt));
+  border-radius: var(--r-m);
+  border: 1px solid var(--c-rule);
+  margin: var(--s-3) 0;
+  text-align: center;
+}
+
+.wv-experience .showcase-qr-img {
+  width: 180px;
+  height: 180px;
+  border-radius: var(--r-s);
+  border: 1px solid var(--hair-0);
+  margin: var(--s-2) 0;
+}
