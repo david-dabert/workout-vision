@@ -146,3 +146,47 @@
   color: var(--lamp-hi);
   border-color: var(--lamp-line);
 }
+
+.wv-experience .pro-qr-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: color-mix(in srgb, var(--void) 85%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-4);
+}
+.wv-experience .pro-qr-card {
+  max-width: 340px;
+  width: 100%;
+  padding: var(--s-4);
+  background: var(--well);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-m);
+  text-align: center;
+}
+.wv-experience .pro-qr-head {
+  margin: 0 0 var(--s-2) 0;
+  font-size: var(--fs-title);
+  color: var(--c-fg);
+}
+.wv-experience .pro-qr-sub {
+  margin: 0 0 var(--s-4) 0;
+  font-size: var(--fs-caption);
+  color: var(--c-fg-muted);
+  line-height: 1.4;
+}
+.wv-experience .pro-qr-box {
+  background: var(--paper);
+  padding: var(--s-3);
+  border-radius: var(--r-s);
+  display: inline-block;
+  margin-bottom: var(--s-4);
+}
+.wv-experience .pro-qr-img {
+  width: 220px;
+  height: 220px;
+  display: block;
+}
+
