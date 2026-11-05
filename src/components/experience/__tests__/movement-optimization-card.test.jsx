@@ -31,6 +31,8 @@ describe('MovementOptimizationCard component', () => {
     expect(html).toContain('Velocity Loss (VBT)');
     expect(html).toContain('Mechanical Work');
     expect(html).toContain('Time Under Tension (TUT)');
+    expect(html).toContain('data-testid="smas-adaptation-metric"');
+    expect(html).toContain('Neuromuscular Adaptation (S-MAS)');
     expect(html).toContain('data-testid="vbt-profile-strip"');
     expect(html).toContain('data-testid="vbt-rep-1"');
     expect(html).toContain('data-testid="vbt-rep-2"');
@@ -51,6 +53,7 @@ describe('MovementOptimizationCard component', () => {
     expect(html).toContain('Optimisation Biomécanique');
     expect(html).toContain('Score d’amplitude (ROM)');
     expect(html).toContain('Profil de Vitesse par Répétition (VBT)');
+    expect(html).toContain('Adaptation neuromusculaire (S-MAS)');
     expect(html).toContain('Recommandations hypertrophie');
     expect(html).toContain('Moyenne\u00A0:');
   });
