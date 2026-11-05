@@ -359,7 +359,7 @@ function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, o
     if (!linkReady) { say(link === 'too-long' ? c.tooLong : c.linkError); return; }
     try {
       const QRCode = (await import('qrcode')).default;
-      const url = await QRCode.toDataURL(link, { width: 256, margin: 2, color: { dark: '#000000', light: '#ffffff' } });
+      const url = await QRCode.toDataURL(link, { width: 256, margin: 2 });
       setQrDataUrl(url);
       setShowQrModal(true);
     } catch (e) {
@@ -492,22 +492,13 @@ function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, o
       </div>
 
       {showQrModal && (
-        <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={c.qrTitle} data-testid="pro-qr-modal" style={{
-          position: 'fixed', inset: 0, zIndex: 9999,
-          background: 'rgba(0,0,0,0.85)', display: 'flex',
-          alignItems: 'center', justifyContent: 'center', padding: 20,
-        }}>
-          <div className="card" style={{
-            maxWidth: 340, width: '100%', padding: '24px',
-            background: 'var(--surface, #181512)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: 16, textAlign: 'center',
-          }}>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: 18 }}>{c.qrTitle}</h3>
-            <p style={{ margin: '0 0 16px 0', fontSize: 13, color: 'var(--text-secondary, #aaa)', lineHeight: 1.4 }}>{c.qrSub}</p>
+        <div className="pro-qr-backdrop" role="dialog" aria-modal="true" aria-label={c.qrTitle} data-testid="pro-qr-modal">
+          <div className="pro-qr-card">
+            <h3 className="pro-qr-head">{c.qrTitle}</h3>
+            <p className="pro-qr-sub">{c.qrSub}</p>
             {qrDataUrl && (
-              <div style={{ background: '#ffffff', padding: 12, borderRadius: 12, display: 'inline-block', marginBottom: 16 }}>
-                <img src={qrDataUrl} alt={c.qrTitle} style={{ width: 220, height: 220, display: 'block' }} data-testid="pro-qr-img" />
+              <div className="pro-qr-box">
+                <img src={qrDataUrl} alt={c.qrTitle} className="pro-qr-img" data-testid="pro-qr-img" />
               </div>
             )}
             <div>
