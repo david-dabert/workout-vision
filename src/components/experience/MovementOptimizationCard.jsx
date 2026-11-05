@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { analyzeMovementOptimization, analyzeContinuousBiomechanics } from '../../lib/coaching/movementOptimization';
 import { getExercise } from '../../lib/exercises/index';
 import { downloadBvhFile } from '../../lib/biomechanics/bvhExport';
+import { evaluateSetBaselines } from '../../lib/biomechanicalBaseline';
 import MocapViewer from './MocapViewer';
 import './MovementOptimization.css';
 
@@ -23,6 +24,21 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
   const exercise = useMemo(() => {
     return getExercise(lift);
   }, [lift]);
+
+  const baselineReport = useMemo(() => {
+    if (!Array.isArray(reps) || reps.length === 0) return null;
+    const kinReps = reps.map((r, i) => ({
+      repIndex: r.index ?? i + 1,
+      concentricVelocity: r.concentricSec > 0 ? (r.romDegrees || 90) / r.concentricSec : 60,
+      concentricDuration: r.concentricSec || 1.0,
+      eccentricDuration: r.eccentricSec || 2.0,
+      romDegrees: r.romDegrees || 90,
+      trunkLeanDegrees: r.trunkLeanDegrees || 18,
+      symmetryIndex: r.symmetryIndex || 95,
+      stickingDeceleration: r.stickingDeceleration || 0,
+    }));
+    return evaluateSetBaselines(kinReps);
+  }, [reps]);
 
   const badgeText = fr ? analysis.formBadge.labelFr : analysis.formBadge.label;
 
@@ -341,6 +357,30 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
             </div>
             <span className="res-opt-sub">
               {fr ? 'Zéro glissement (ZUPT cinématique)' : 'Zero foot skating (ZUPT lock)'}
+            </span>
+          </div>
+        )}
+
+        {baselineReport && (
+          <div className="res-opt-metric" data-testid="smas-adaptation-metric">
+            <div className="res-opt-metric-head">
+              <span className="res-opt-label">
+                {fr ? 'Adaptation neuromusculaire (S-MAS)' : 'Neuromuscular Adaptation (S-MAS)'}
+              </span>
+              <span className="res-opt-val">
+                {baselineReport.overallSmasScore}/100
+              </span>
+            </div>
+            <div className="res-opt-bar-track">
+              <div
+                className={`res-opt-bar-fill ${baselineReport.overallSmasScore >= 80 ? 'is-good' : baselineReport.overallSmasScore >= 60 ? 'is-mid' : 'is-warn'}`}
+                style={{ width: `${baselineReport.overallSmasScore}%` }}
+              />
+            </div>
+            <span className="res-opt-sub">
+              {fr
+                ? (baselineReport.breakdownDetected ? `Rupture biomécanique rep ${baselineReport.fatigueOnsetRep ?? 'fin'}` : 'Signature de référence préservée')
+                : (baselineReport.breakdownDetected ? `Biomechanical breakdown at rep ${baselineReport.fatigueOnsetRep ?? 'end'}` : 'Uncompromised baseline preserved')}
             </span>
           </div>
         )}

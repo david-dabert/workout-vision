@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { RGB, rgba } from './palette';
 import { liftDefinition } from '../../lib/counting/core';
+import { stabilizeMotionSequence } from '../../lib/kinesiology/groundContact';
 import './MocapViewer.css';
 
 /**
@@ -109,7 +110,7 @@ export default function MocapViewer({ worldLandmarks = null, lift = 'squat', fr 
   // 3D Motion Frames
   const frames = useMemo(() => {
     if (Array.isArray(worldLandmarks) && worldLandmarks.length > 2 && Array.isArray(worldLandmarks[0])) {
-      return worldLandmarks;
+      return stabilizeMotionSequence(worldLandmarks);
     }
     return generateSyntheticMotion(lift);
   }, [worldLandmarks, lift]);
