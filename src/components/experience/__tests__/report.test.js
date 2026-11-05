@@ -388,6 +388,21 @@ describe('rep details', () => {
     expect(s.summary.join('\n')).toContain('8');
   });
 
+  it('disambiguates previous set comparison when recorded earlier on the same calendar day', () => {
+    const sameDayPrev = { count: 7, reps: Array.from({ length: 7 }, (_, i) => rep(i * 3, 2.2, 103, 1.0, 1.2)), date: new Date(2026, 8, 26, 10, 0) };
+    const sEn = reportSheet({ ...base, lang: 'en', reps, first: 'concentric', previousSet: sameDayPrev });
+    expect(sEn.summary.join('\n')).toContain(`Previous set (earlier today): 7${NBSP}reps, avg range 103°, avg duration 2.2${NBSP}s`);
+
+    const sFr = reportSheet({ ...base, lang: 'fr', reps, first: 'concentric', previousSet: sameDayPrev });
+    expect(sFr.summary.join('\n')).toContain(`Série précédente (ce jour)${NBSP}: 7${NBSP}rép., amplitude moy. 103°, durée moy. 2,2${NBSP}s`);
+  });
+
+  it('keeps "Set of [day]" / "Série du [day]" when previous set was on an earlier calendar day', () => {
+    const prevDay = { count: 7, reps: Array.from({ length: 7 }, (_, i) => rep(i * 3, 2.2, 103, 1.0, 1.2)), date: new Date(2026, 8, 20) };
+    const sEn = reportSheet({ ...base, lang: 'en', reps, first: 'concentric', previousSet: prevDay });
+    expect(sEn.summary.join('\n')).toContain(`Set of 20 Sept: 7${NBSP}reps, avg range 103°, avg duration 2.2${NBSP}s`);
+  });
+
   it('omits the previous-set line when no previous set is provided', () => {
     const s = reportSheet({ ...base, reps, first: 'concentric' });
     expect(s.summary.join('\n')).not.toContain('20 sept');
@@ -538,3 +553,5 @@ describe('measuresFile', () => {
     expect(measuresFile({ ...set, fr: true, count: 3 }).count.source).toBe('corrigé par la personne');
   });
 });
+
+

@@ -166,7 +166,11 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   if (!shown && previousSet && Number.isFinite(previousSet.count)) {
     const prevDate = previousSet.date instanceof Date ? previousSet.date : new Date(previousSet.date);
     const day = prevDate.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short' });
-    summary.push(fr ? `Série du ${day}${colon}${previousSet.count}${NBSP}rép.` : `Set of ${day}${colon}${previousSet.count}${NBSP}${previousSet.count === 1 ? 'rep' : 'reps'}`);
+    const currDate = date instanceof Date ? date : new Date(date);
+    const sameDay = date && prevDate && (prevDate.getFullYear() === currDate.getFullYear() && prevDate.getMonth() === currDate.getMonth() && prevDate.getDate() === currDate.getDate());
+    const labelFr = sameDay ? 'Série précédente (ce jour)' : `Série du ${day}`;
+    const labelEn = sameDay ? 'Previous set (earlier today)' : `Set of ${day}`;
+    summary.push(fr ? `${labelFr}${colon}${previousSet.count}${NBSP}rép.` : `${labelEn}${colon}${previousSet.count}${NBSP}${previousSet.count === 1 ? 'rep' : 'reps'}`);
   }
   if (measures && shown) {
     summary.push((fr ? 'Temps sous tension' : 'Time under tension') + colon + sec(measures.tut));
@@ -208,9 +212,13 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
         const day = prevDate.toLocaleDateString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short' });
         const avg = setAverages(previousSet.reps), prevAvgRange = Math.round(avg.rom), prevAvgDur = avg.dur;
         const durFr = prevAvgDur === null ? '' : `, durée moy. ${decimal(prevAvgDur, fr)}${NBSP}s`, durEn = prevAvgDur === null ? '' : `, avg duration ${decimal(prevAvgDur, false)}${NBSP}s`;
+        const currDate = date instanceof Date ? date : new Date(date);
+        const sameDay = date && prevDate && (prevDate.getFullYear() === currDate.getFullYear() && prevDate.getMonth() === currDate.getMonth() && prevDate.getDate() === currDate.getDate());
+        const labelFr = sameDay ? 'Série précédente (ce jour)' : `Série du ${day}`;
+        const labelEn = sameDay ? 'Previous set (earlier today)' : `Set of ${day}`;
         summary.push(fr
-          ? `Série du ${day}${colon}${previousSet.count}${NBSP}rép., amplitude moy. ${prevAvgRange}°${durFr}`
-          : `Set of ${day}${colon}${previousSet.count}${NBSP}${previousSet.count === 1 ? 'rep' : 'reps'}, avg range ${prevAvgRange}°${durEn}`);
+          ? `${labelFr}${colon}${previousSet.count}${NBSP}rép., amplitude moy. ${prevAvgRange}°${durFr}`
+          : `${labelEn}${colon}${previousSet.count}${NBSP}${previousSet.count === 1 ? 'rep' : 'reps'}, avg range ${prevAvgRange}°${durEn}`);
       }
     }
   }
