@@ -313,8 +313,8 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
                   </div>
                   <div className="sh-vbt-track"><div className="sh-vbt-bar" style={{ width: `${Math.max(12, Math.min(100, p.velocityLossPercent))}%` }} /></div>
                   <div className="sh-vbt-times">
-                    <span>{p.concentricSec > 0 ? `${p.concentricSec}s` : '—'}</span>
-                    <span>{p.powerWatts ? `${p.powerWatts}W` : (p.romDegrees > 0 ? `${Math.round(p.romDegrees)}°` : '')}</span>
+                    <span className="sh-vbt-sec">{p.concentricSec > 0 ? `${p.concentricSec}\u00A0s` : '—'}</span>
+                    <span className="sh-vbt-pwr">{p.powerWatts ? `${p.powerWatts}\u00A0W` : (p.romDegrees > 0 ? `${Math.round(p.romDegrees)}°` : '—')}</span>
                   </div>
                 </div>
               ))}

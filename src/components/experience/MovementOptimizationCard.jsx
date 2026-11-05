@@ -398,8 +398,8 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
                   />
                 </div>
                 <div className="res-opt-vbt-rep-times">
-                  <span>{p.concentricSec > 0 ? `${p.concentricSec}s` : '—'}</span>
-                  <span>{p.powerWatts ? `${p.powerWatts}W` : (p.romDegrees > 0 ? `${Math.round(p.romDegrees)}°` : '')}</span>
+                  <span className="res-opt-vbt-time">{p.concentricSec > 0 ? `${p.concentricSec}\u00A0s` : '—'}</span>
+                  <span className="res-opt-vbt-power">{p.powerWatts ? `${p.powerWatts}\u00A0W` : (p.romDegrees > 0 ? `${Math.round(p.romDegrees)}°` : '—')}</span>
                 </div>
               </div>
             ))}

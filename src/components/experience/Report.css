@@ -401,14 +401,14 @@
 /* VBT Rep-by-Rep strip */
 .wv-experience .sh-vbt-strip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
   gap: 6px;
 }
 .wv-experience .sh-vbt-card {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  padding: 8px 8px;
+  padding: 8px 10px;
   background: var(--depth-1);
   border: 1px solid var(--hair);
   border-radius: var(--r-s);
@@ -416,11 +416,12 @@
 .wv-experience .sh-vbt-card-head {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
   font-family: var(--mono);
   font-size: 8.5px;
 }
 .wv-experience .sh-vbt-num { color: var(--ash); }
-.wv-experience .sh-vbt-loss { color: var(--bone); font-weight: 600; }
+.wv-experience .sh-vbt-loss { color: var(--bone); font-weight: 600; font-variant-numeric: tabular-nums; }
 .wv-experience .sh-vbt-card.is-failure .sh-vbt-loss { color: var(--ash); }
 .wv-experience .sh-vbt-track {
   width: 100%;
@@ -428,6 +429,7 @@
   background: var(--hair-2);
   border-radius: 2px;
   overflow: hidden;
+  margin: 2px 0 3px;
 }
 .wv-experience .sh-vbt-bar {
   height: 100%;
@@ -435,10 +437,21 @@
 }
 .wv-experience .sh-vbt-times {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 2px;
   font-family: var(--mono);
+}
+.wv-experience .sh-vbt-sec {
+  font-size: 9px;
+  color: var(--bone);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.wv-experience .sh-vbt-pwr {
   font-size: 8px;
   color: var(--ash);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
 }
 
 /* Sticking Point Box */
