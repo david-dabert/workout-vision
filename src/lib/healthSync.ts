@@ -328,10 +328,10 @@ export function computeRecoveryReadiness(health: HealthSyncSummary): {
 
   if (score >= 85) {
     readinessLevel = 'optimal';
-    insight = 'Récupération maximale : conditions optimales pour une intensité élevée ou des records personnels.';
+    insight = 'Récupération maximale. Conditions optimales pour une intensité élevée ou des records personnels.';
   } else if (score < 60) {
     readinessLevel = 'fatigued';
-    insight = 'Indicateurs de fatigue détectés : envisager un volume modéré ou une gestion stricte du RIR.';
+    insight = 'Indicateurs de fatigue détectés. Envisager un volume modéré ou une gestion stricte du RIR.';
   }
 
   return { score, readinessLevel, insight };
