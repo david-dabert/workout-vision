@@ -138,3 +138,24 @@
   gap: var(--s-2);
   margin-top: var(--s-4);
 }
+
+.wv-experience .showcase-qr-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-4);
+  background: var(--well, var(--basalt));
+  border-radius: var(--r-m);
+  border: 1px solid var(--c-rule);
+  margin: var(--s-3) 0;
+  text-align: center;
+}
+
+.wv-experience .showcase-qr-img {
+  width: 180px;
+  height: 180px;
+  border-radius: var(--r-s);
+  border: 1px solid var(--hair-0);
+  margin: var(--s-2) 0;
+}

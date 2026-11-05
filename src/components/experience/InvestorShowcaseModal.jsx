@@ -8,7 +8,25 @@ export default function InvestorShowcaseModal({ isOpen, onClose }) {
   const [frame, setFrame] = useState(null);
   const [summary, setSummary] = useState(null);
   const [copyFeedback, setCopyFeedback] = useState(false);
+  const [showQr, setShowQr] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState(null);
   const engineRef = useRef(null);
+
+  const toggleQr = async () => {
+    if (!qrDataUrl) {
+      try {
+        const QRCode = (await import('qrcode')).default;
+        const url = await QRCode.toDataURL('https://david-dabert.github.io/workout-vision/#demo', {
+          margin: 1,
+          width: 240,
+        });
+        setQrDataUrl(url);
+      } catch {
+        // Fallback
+      }
+    }
+    setShowQr((prev) => !prev);
+  };
 
   useEffect(() => {
     if (!isOpen) {
@@ -19,6 +37,7 @@ export default function InvestorShowcaseModal({ isOpen, onClose }) {
       setFrame(null);
       setSummary(null);
       setCopyFeedback(false);
+      setShowQr(false);
     }
   }, [isOpen]);
 
@@ -107,9 +126,20 @@ export default function InvestorShowcaseModal({ isOpen, onClose }) {
             <div className="showcase-sovereign-tag">
               🔒 100&nbsp;% sur l’appareil • Zéro serveur • Confidentialité totale
             </div>
+            {showQr && qrDataUrl && (
+              <div className="showcase-qr-box">
+                <img src={qrDataUrl} alt="QR Code Démo WorkoutVision" className="showcase-qr-img" />
+                <p className="pro-sub" style={{ margin: '4px 0 0', fontSize: '13px' }}>
+                  Pointez l’appareil photo de votre smartphone pour ouvrir la démo en direct.
+                </p>
+              </div>
+            )}
             <div className="showcase-actions">
               <button className="primary-btn" onClick={handleStart}>
                 Lancer la démonstration (Squat 9 reps)
+              </button>
+              <button className="secondary-btn" onClick={toggleQr}>
+                {showQr ? 'Masquer le QR code' : 'Tester sur votre smartphone (QR code)'}
               </button>
               <button className="text-btn" onClick={onClose}>
                 Fermer
@@ -191,10 +221,20 @@ export default function InvestorShowcaseModal({ isOpen, onClose }) {
             <div className="showcase-sovereign-tag">
               🔒 Analysé 100&nbsp;% en WebAssembly/WebGPU sur l'appareil • Zéro fuite cloud
             </div>
-
+            {showQr && qrDataUrl && (
+              <div className="showcase-qr-box">
+                <img src={qrDataUrl} alt="QR Code Démo WorkoutVision" className="showcase-qr-img" />
+                <p className="pro-sub" style={{ margin: '4px 0 0', fontSize: '13px' }}>
+                  Pointez l’appareil photo de votre smartphone pour ouvrir la démo en direct.
+                </p>
+              </div>
+            )}
             <div className="showcase-actions">
               <button className="primary-btn" onClick={handleShare}>
                 {copyFeedback ? '✓ Résumé copié dans le presse-papier' : 'Partager la carte biomécanique'}
+              </button>
+              <button className="secondary-btn" onClick={toggleQr}>
+                {showQr ? 'Masquer le QR code' : 'Afficher le QR code pour un invité'}
               </button>
               <button className="secondary-btn" onClick={handleStart}>
                 Relancer la démonstration
