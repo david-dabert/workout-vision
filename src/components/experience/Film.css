@@ -84,8 +84,8 @@
   padding: 0 16px;
   border-radius: var(--r-pill);
   border: 1px solid var(--hair-2);
-  background: var(--hair-1);
-  color: var(--bone-2);
+  background: var(--well);
+  color: var(--bone);
   font-family: var(--sans);
   font-size: 13px;
   font-weight: 500;
@@ -94,13 +94,13 @@
 }
 .wv-experience .film-sample-btn:hover {
   border-color: var(--lamp-line);
-  color: var(--c-accent);
+  color: var(--lamp-hi);
   background: var(--bio-glow);
 }
 .wv-experience .film-sample-btn svg {
   width: 13px;
   height: 13px;
-  color: var(--c-accent);
+  color: var(--lamp);
 }
 
 .wv-experience .film-tilt-pill {
@@ -112,11 +112,11 @@
   padding: 4px 12px;
   border-radius: var(--r-pill);
   border: 1px solid var(--hair-2);
-  background: var(--depth-1);
+  background: var(--well);
   font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.05em;
-  color: var(--c-fg-muted);
+  font-size: var(--fs-label);
+  letter-spacing: 0.08em;
+  color: var(--bone);
   text-transform: uppercase;
 }
 .wv-experience .film-tilt-pill.is-ideal {
@@ -125,9 +125,9 @@
   background: var(--bio-glow);
 }
 .wv-experience .film-tilt-pill.is-warning {
-  border-color: var(--c-edge);
-  color: var(--c-fg);
-  background: var(--depth-2);
+  border-color: var(--hair-2);
+  color: var(--bone);
+  background: var(--well);
 }
 .wv-experience .film-tilt-dot {
   width: 6px;
