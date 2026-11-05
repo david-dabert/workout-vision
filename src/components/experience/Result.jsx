@@ -927,7 +927,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
           <button ref={reportRef} className="btn-ghost press res-report-btn" onClick={() => onReport(trueN, savedId.current)} data-testid="res-report-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
             <span>{fr ? 'Rapport de séance' : 'Session report'}</span>
-            <span className="res-report-badge" aria-hidden="true">3D Mocap</span>
+            <span className="res-report-badge" aria-hidden="true">3D Mocap & PDF</span>
           </button>
           <button className="btn-primary press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
           <button className="text-btn press" onClick={after(onChangeLift)} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
