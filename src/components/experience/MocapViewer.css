@@ -3,9 +3,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
-  padding: 14px 16px;
+  padding: 16px 18px;
   background: var(--basalt);
-  border: 1px solid var(--c-rule);
+  border: 1px solid var(--hair-2);
   border-radius: var(--r-l);
   box-shadow: var(--shadow-card);
   color: var(--c-fg);
@@ -28,7 +28,7 @@
 
 .mocap-kicker {
   font-family: var(--mono);
-  font-size: 8.5px;
+  font-size: var(--fs-label);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--c-accent);
@@ -37,7 +37,7 @@
 .mocap-title {
   margin: 0;
   font-family: var(--sans);
-  font-size: 13.5px;
+  font-size: 14.5px;
   font-weight: 600;
   color: var(--c-fg);
 }
@@ -50,13 +50,13 @@
 
 .mocap-badge {
   font-family: var(--mono);
-  font-size: 8px;
+  font-size: var(--fs-label);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--c-fg-muted);
-  padding: 3px 7px;
+  color: var(--bone);
+  padding: 4px 9px;
   border: 1px solid var(--hair-2);
-  border-radius: var(--r-s);
+  border-radius: var(--r-pill);
   background: var(--well);
 }
 
@@ -64,14 +64,20 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   padding: 0;
-  background: transparent;
-  border: 1px solid var(--c-rule);
-  border-radius: var(--r-s);
-  color: var(--c-fg-muted);
+  background: var(--well);
+  border: 1px solid var(--hair-2);
+  border-radius: var(--r-pill);
+  color: var(--bone);
   cursor: pointer;
+  transition: all var(--d-fast) var(--ease);
+}
+.mocap-reset-btn:hover {
+  border-color: var(--lamp-line);
+  color: var(--lamp-hi);
+  background: var(--bio-glow);
 }
 
 .mocap-reset-btn svg {
@@ -82,7 +88,7 @@
 .mocap-canvas-wrap {
   position: relative;
   width: 100%;
-  height: 240px;
+  height: 260px;
   background: linear-gradient(180deg, var(--bio-glow) 0%, var(--well) 100%);
   border: 1px solid var(--hair-2);
   border-radius: var(--r-m);
@@ -105,13 +111,14 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  padding: 2px 6px;
-  border: 1px solid var(--c-rule);
-  border-radius: var(--r-s);
-  background: var(--basalt);
+  padding: 3px 8px;
+  border: 1px solid var(--hair-2);
+  border-radius: var(--r-pill);
+  background: var(--well);
   font-family: var(--mono);
-  font-size: 8px;
-  color: var(--c-accent);
+  font-size: var(--fs-label);
+  letter-spacing: 0.08em;
+  color: var(--lamp-hi);
   pointer-events: none;
 }
 
@@ -125,15 +132,21 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: 1px solid var(--hair-2);
-  border-radius: var(--r-s);
+  border-radius: var(--r-pill);
   background: var(--well);
-  color: var(--c-fg);
+  color: var(--bone);
   cursor: pointer;
   flex-shrink: 0;
+  transition: all var(--d-fast) var(--ease);
+}
+.mocap-play-btn:hover {
+  border-color: var(--lamp-line);
+  color: var(--lamp-hi);
+  background: var(--bio-glow);
 }
 
 .mocap-play-btn svg {
@@ -163,9 +176,9 @@
 
 .mocap-frame-num {
   font-family: var(--mono);
-  font-size: 9px;
-  color: var(--c-fg-muted);
-  min-width: 32px;
+  font-size: var(--fs-label);
+  color: var(--bone);
+  min-width: 38px;
   text-align: right;
   font-variant-numeric: tabular-nums;
 }

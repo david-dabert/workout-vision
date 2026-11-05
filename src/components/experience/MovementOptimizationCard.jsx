@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { analyzeMovementOptimization, analyzeContinuousBiomechanics } from '../../lib/coaching/movementOptimization';
 import { getExercise } from '../../lib/exercises/index';
 import { downloadBvhFile } from '../../lib/biomechanics/bvhExport';
+import MocapViewer from './MocapViewer';
 import './MovementOptimization.css';
 
 /**
@@ -448,6 +449,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
 
       {analysis.bvhData && (
         <div className="res-opt-export">
+          <MocapViewer worldLandmarks={result?.worldLandmarks || null} lift={lift} fr={fr} />
           <button
             type="button"
             className="res-opt-export-btn press"
