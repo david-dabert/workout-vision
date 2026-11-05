@@ -83,6 +83,8 @@ describe('the exercise sheet in the builder', () => {
       expect(reasons).toEqual([c.guideOnlyPro, c.notCountedPro, c.holdPro]);
       // The PDF button says it is preparing until the PDF's code and the drawings are ready.
       expect(html).toContain(c.preparing);
+      expect(html).toContain('data-testid="pro-qr-btn"');
+      expect(html).toContain(`>${c.showQr}</span>`);
     });
   }
 

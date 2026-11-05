@@ -244,6 +244,8 @@ function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, o
   const [packed, setPacked] = useState({ of: '', link: '' });
   const [showLink, setShowLink] = useState(false);
   const [confirm, setConfirm] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState('');
   const noteTimer = useRef(0), shareAt = useRef({ pdf: -Infinity, link: -Infinity });
   const programme = programmeOf(draft), shape = programme ? JSON.stringify(programme) : '';
   // The link is the programme's as it stands, made in the render itself (the plain form), so the tap shares it at once
@@ -353,6 +355,19 @@ function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, o
       .catch(e => { if (e.name !== 'AbortError') copy(); });
   }
 
+  async function openQr() {
+    if (!linkReady) { say(link === 'too-long' ? c.tooLong : c.linkError); return; }
+    try {
+      const QRCode = (await import('qrcode')).default;
+      const url = await QRCode.toDataURL(link, { width: 256, margin: 2, color: { dark: '#000000', light: '#ffffff' } });
+      setQrDataUrl(url);
+      setShowQrModal(true);
+    } catch (e) {
+      console.error('[programme qr]', e);
+      say(c.linkError);
+    }
+  }
+
   return <div className="wv-experience">
     <section ref={screenRef} className="screen is-active pro-screen pro-edit" data-testid="pro-editor"><div className="wrap">
       <div className="topbar">
@@ -448,6 +463,10 @@ function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, o
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1" /><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1" /></svg>
             <span>{c.shareLink}</span>
           </button>
+          <button type="button" className="btn-line press" aria-disabled={!linkReady || undefined} onClick={openQr} data-testid="pro-qr-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM17 17h4v4h-4zM14 20h3v1h-3z"/></svg>
+            <span>{c.showQr}</span>
+          </button>
           <button type="button" className="btn-ghost press pro-copy" aria-disabled={!linkReady || undefined} onClick={copy} data-testid="pro-copy">{c.copyLink}</button>
         </div>
         {showLink && linkReady && <div className="field">
@@ -471,6 +490,34 @@ function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, o
           </div>
           : <button type="button" className="text-btn press" onClick={() => setConfirm(true)}>{c.deleteDraft}</button>}
       </div>
+
+      {showQrModal && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={c.qrTitle} data-testid="pro-qr-modal" style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.85)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', padding: 20,
+        }}>
+          <div className="card" style={{
+            maxWidth: 340, width: '100%', padding: '24px',
+            background: 'var(--surface, #181512)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: 16, textAlign: 'center',
+          }}>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: 18 }}>{c.qrTitle}</h3>
+            <p style={{ margin: '0 0 16px 0', fontSize: 13, color: 'var(--text-secondary, #aaa)', lineHeight: 1.4 }}>{c.qrSub}</p>
+            {qrDataUrl && (
+              <div style={{ background: '#ffffff', padding: 12, borderRadius: 12, display: 'inline-block', marginBottom: 16 }}>
+                <img src={qrDataUrl} alt={c.qrTitle} style={{ width: 220, height: 220, display: 'block' }} data-testid="pro-qr-img" />
+              </div>
+            )}
+            <div>
+              <button type="button" className="btn-primary press" onClick={() => setShowQrModal(false)} data-testid="pro-qr-close">
+                {c.closeQr}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div></section>
   </div>;
 }
