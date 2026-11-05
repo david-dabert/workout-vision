@@ -72,5 +72,11 @@ describe('AudioCoach Web Audio Synthesizer', () => {
       audioCoach.playTurnaroundCue();
     }).not.toThrow();
   });
+
+  it('safely handles playFailureAlert for fatigue collapse', () => {
+    expect(() => {
+      audioCoach.playFailureAlert();
+    }).not.toThrow();
+  });
 });
 

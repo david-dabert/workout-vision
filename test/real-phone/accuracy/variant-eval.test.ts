@@ -7,7 +7,7 @@
 // the 68 occlusion sets (occlusion).
 // Compare two runs with: node scripts/compare-variants.mjs <before.json> <after.json>
 // Research tool: it changes nothing and gates nothing.
-import { test } from 'vitest';
+import { test, expect } from 'vitest';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
@@ -16,6 +16,9 @@ import { summarizeCount } from '../../../src/lib/coreAnalysis';
 import { liftDefinition } from '../../../src/lib/counting/core';
 import { pscProposal } from '../../../src/lib/counting/psc.js';
 import { ROOT, benchSets, countInWindow, labelledSets, publicSets, videoSets } from './sets';
+import { runActivity } from '../../../src/lib/activity/engine';
+import { volleyball } from '../../../src/lib/activity/specs/volleyball';
+import { syntheticJumps } from '../../../src/lib/activity/synthetic';
 
 // WV_CORE_BENCH='{"zWeight":0.5}' (7 October): the survey techniques of src/lib/counting/survey.ts, switched for this
 // run only (research; the app never sets it).
@@ -23,7 +26,7 @@ if (process.env.WV_CORE_BENCH) (globalThis as any).__WV_CORE_BENCH__ = JSON.pars
 // WV_PSC_FILL=1 (8 October): where the core refuses, PSC's proposal (src/lib/counting/psc.js pscProposal, as the app
 // offers it on the low-confidence screen) is read as the count; no proposal stays a refusal.
 const FILL = !!process.env.WV_PSC_FILL;
-type Suite = 'david' | 'publicA' | 'publicB' | 'synthetic' | 'video' | 'repcount' | 'occlusion';
+type Suite = 'david' | 'publicA' | 'publicB' | 'synthetic' | 'video' | 'repcount' | 'occlusion' | 'multisport';
 type Entry = { suite: Suite; lift: string; label: number; count: number | 'refused'; filled?: boolean };
 const gz = (f: string) => JSON.parse(gunzipSync(readFileSync(f)).toString());
 
@@ -63,5 +66,27 @@ test.skipIf(!process.env.VARIANT_EVAL)('every set, as the live counter counts it
       sets[`${suite === 'synthetic' ? 'synth' : suite}/${f}`] = { suite, lift, label: r.reps.length, ...counted(c, () => r) };
     }
   }
+  // Multi-sport suite: evaluate universal activity specifications (e.g. volleyball jumps and plyometrics)
+  const multiJumps = [{ flight: 0.55 }, { flight: 0.7, approach: 3 }, { flight: 0.45 }, { flight: 0.62, approach: 3 }];
+  for (const rate of [15, 30, 60]) {
+    const read = syntheticJumps({ jumps: multiJumps, rate, phase: 0, noisePx: 1.0 });
+    const r = runActivity(volleyball, read);
+    const m = r.measures.find(x => x.key === 'jumps');
+    sets[`multisport/volleyball_${rate}fps`] = {
+      suite: 'multisport',
+      lift: 'volleyball_jumps',
+      label: 4,
+      count: r.refused ? 'refused' : (m ? m.value : 'refused'),
+    };
+  }
   writeFileSync(process.env.VARIANT_EVAL!, JSON.stringify({ sets }, null, 0) + '\n');
 }, 1_800_000);
+
+test('multisport harness processes activity specifications alongside strength sets', () => {
+  const multiJumps = [{ flight: 0.55 }, { flight: 0.7, approach: 3 }, { flight: 0.45 }, { flight: 0.62, approach: 3 }];
+  const read = syntheticJumps({ jumps: multiJumps, rate: 30, phase: 0, noisePx: 0.5 });
+  const r = runActivity(volleyball, read);
+  expect(r.refused).toBeNull();
+  const m = r.measures.find(x => x.key === 'jumps');
+  expect(m?.value).toBe(4);
+});

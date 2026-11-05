@@ -2,12 +2,13 @@ import { describe, it, expect } from 'vitest';
 import {
   standardizeTrajectory,
   extractTemporalFeatureWindows,
+  extractTemporalFeatureMatrix,
   cosineSimilarity,
   computeTrajectorySimilarityMatrix,
   computeAutocorrelationPeriodicity,
   classify1DTemporalRepPhase,
 } from '../temporalFeatures';
-import { extractTemporalFeatureWindows as fromCore } from '../core';
+import { extractTemporalFeatureWindows as fromCore, extractTemporalFeatureMatrix as fromCoreMatrix } from '../core';
 
 describe('Temporal Kinematic Feature Extractor', () => {
   it('standardizes trajectory array into zero-mean, unit-variance vector', () => {
@@ -81,8 +82,24 @@ describe('Temporal Kinematic Feature Extractor', () => {
     }
   });
 
+  it('extracts continuous sliding-window feature matrix tensor [M x 8]', () => {
+    const fps = 15;
+    const timestamps = Array.from({ length: 45 }, (_, i) => i / fps);
+    const angles = timestamps.map(t => 90 + 30 * Math.sin(2 * Math.PI * t));
+
+    const matrix = extractTemporalFeatureMatrix(angles, timestamps, {
+      windowSec: 1.0,
+      hopSec: 0.2,
+      resamplePoints: 16,
+    });
+    expect(matrix.length).toBeGreaterThan(0);
+    expect(matrix[0].length).toBe(8);
+    expect(matrix[0] instanceof Float32Array).toBe(true);
+  });
+
   it('is cleanly exported from core.ts', () => {
     expect(typeof fromCore).toBe('function');
+    expect(typeof fromCoreMatrix).toBe('function');
   });
 
   describe('Harmonic Autocorrelation Periodicity', () => {

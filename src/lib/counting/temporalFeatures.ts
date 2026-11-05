@@ -196,6 +196,19 @@ export function extractTemporalFeatureWindows(
 }
 
 /**
+ * Extracts a sequence of sliding-window feature vectors as a continuous tensor matrix [M x 8]
+ * for universal manifold embedding matching and zero-shot phase clustering.
+ */
+export function extractTemporalFeatureMatrix(
+  angles: (number | null)[],
+  timestamps: number[],
+  options?: TemporalExtractionOptions
+): Float32Array[] {
+  const windows = extractTemporalFeatureWindows(angles, timestamps, options);
+  return windows.map(w => w.featureVector);
+}
+
+/**
  * Computes cosine similarity between two feature vectors: dot(a, b) / (|a| * |b|)
  */
 export function cosineSimilarity(a: Float32Array, b: Float32Array): number {
