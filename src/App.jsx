@@ -71,7 +71,8 @@ const KineResult = lazyScreen(() => import('./components/kine/KineResult.jsx'));
 const Chat = lazyScreen(() => import('./components/chat/Chat.jsx'));
 // The activity engine's screen (docs/VISION.md): volleyball on synthetic jumps, opened from the sports rail.
 const Activity = lazyScreen(() => import('./components/activity/ActivityScreen.jsx'));
-const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto, equine: Equine, veterinary: Equine, sports: SportsBiomechanics, golf: SportsBiomechanics, tennis: SportsBiomechanics, padel: SportsBiomechanics, cycling: SportsBiomechanics, baseball: SportsBiomechanics, rowing: SportsBiomechanics, skiing: SportsBiomechanics, swimming: SportsBiomechanics, coaches: CoachFinder, coach: CoachFinder, physio: CoachFinder, buddies: GymBuddy, buddy: GymBuddy, ergonomics: Ergonomics, workplace: Ergonomics, kine: KineWorkspace, reeducation: KineWorkspace, kinep: KinePatient, kiner: KineResult, chat: Chat, volleyball: Activity, comptage: UsageNotice };
+const InvestorShowcase = lazyScreen(() => import('./components/experience/InvestorShowcaseModal.jsx'));
+const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto, equine: Equine, veterinary: Equine, sports: SportsBiomechanics, golf: SportsBiomechanics, tennis: SportsBiomechanics, padel: SportsBiomechanics, cycling: SportsBiomechanics, baseball: SportsBiomechanics, rowing: SportsBiomechanics, skiing: SportsBiomechanics, swimming: SportsBiomechanics, coaches: CoachFinder, coach: CoachFinder, physio: CoachFinder, buddies: GymBuddy, buddy: GymBuddy, ergonomics: Ergonomics, workplace: Ergonomics, kine: KineWorkspace, reeducation: KineWorkspace, kinep: KinePatient, kiner: KineResult, chat: Chat, volleyball: Activity, comptage: UsageNotice, showcase: InvestorShowcase, demo: InvestorShowcase, investisseur: InvestorShowcase };
 
 // Hidden, not deleted: lazy imports for features outside the core path
 // const ManualLog = safeLazy(() => import('./components/ManualLog'));
@@ -276,6 +277,9 @@ function AppInner() {
   } else if (page === 'chat') {
     key = 'chat';
     screen = <Chat onClose={() => go('dashboard')} onHistory={() => go('history')} />;
+  } else if (page === 'showcase' || page === 'demo' || page === 'investisseur') {
+    key = 'showcase';
+    screen = <InvestorShowcase isOpen={true} onClose={() => go('dashboard')} />;
   } else {
     // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
     // the old live capture (LiveCapture.jsx) and the dashboard; "live" without a lift, or in a build without VITE_LIVE, too. Every other page falls through to the choice of lift.
