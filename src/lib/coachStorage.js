@@ -16,6 +16,10 @@ const clientWorkoutStore = localforage.createInstance({ name: 'workoutVision', s
  * @property {string} [phone] - Contact phone
  * @property {string} [gym] - Gym or studio name
  * @property {string} [logoDataUrl] - Base64 logo image (small, < 100KB)
+ * @property {string} [stripePaymentLink] - Direct Stripe payment link (e.g. buy.stripe.com)
+ * @property {string} [paypalMeUrl] - PayPal.me payment link
+ * @property {string} [iban] - SEPA IBAN for direct wire transfer
+ * @property {import('./coachBranding').CoachBrandConfig} [brand] - Custom white-label branding configuration
  */
 
 /**

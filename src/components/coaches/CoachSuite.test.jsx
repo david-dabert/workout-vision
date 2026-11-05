@@ -61,6 +61,15 @@ describe('the office after the honesty pass', () => {
     expect(html).toContain('le nom du client');
     expect(html).not.toContain('un SIRET valide');
   });
+  it('renders direct payment link fields and sovereign white-label branding controls', async () => {
+    const html = await renderAccounting('fr');
+    expect(html).toContain('data-testid="acc-stripe"');
+    expect(html).toContain('data-testid="acc-paypal"');
+    expect(html).toContain('data-testid="acc-iban"');
+    expect(html).toContain('data-testid="acc-brand"');
+    expect(html).toContain('data-testid="brand-apply-btn"');
+    expect(html).toContain('data-testid="brand-reset-btn"');
+  });
   it('says the simulator opens on an example, writes no default description, and warns the invoices live on this phone', async () => {
     const html = await renderAccounting('fr');
     expect(html).toContain('data-testid="acc-sim-tag">Exemple<');

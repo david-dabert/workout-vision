@@ -10,6 +10,9 @@ import { hapticLight, hapticTap } from '../../lib/haptics';
 import { Range, Metric } from '../experience/Showcase';
 import { OFFICE, PAYMENT_MODE_EN } from './office-copy';
 import { useOfficePdf } from './office-share';
+import {
+  getSavedBrandProfile, saveBrandProfile, resetBrandToDefault, DEFAULT_BRAND,
+} from '../../lib/coachBranding';
 
 // Comptabilité (honesty pass of 14 October 2026, wave 2B: ACC-1 to ACC-6, INV-1 to INV-7). A simulator of the month at
 // the coach's own values, with the dated rates of accounting.ts (RATES, status literature); the coach's file, kept on
@@ -24,7 +27,7 @@ const SvgFile = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 const SvgCopy = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>;
 const SvgDownload = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>;
 
-const EMPTY_PROFILE = { name: '', siret: '', address: '', cartePro: '', rcpPro: '', gym: '', mediator: '' };
+const EMPTY_PROFILE = { name: '', siret: '', address: '', cartePro: '', rcpPro: '', gym: '', mediator: '', stripePaymentLink: '', paypalMeUrl: '', iban: '' };
 
 export default function CoachAccounting({ fr, clients, selectedClient, profile, onSaveProfile }) {
   const t = OFFICE[fr ? 'fr' : 'en'];
@@ -54,6 +57,37 @@ export default function CoachAccounting({ fr, clients, selectedClient, profile, 
     hapticTap();
     await onSaveProfile(draft);
     setSavedNote(true);
+  };
+
+  // ─── Sovereign White-Label Branding ───
+  const [brandDraft, setBrandDraft] = useState(() => getSavedBrandProfile());
+  const [brandSavedNote, setBrandSavedNote] = useState(false);
+  const setBrandField = (k) => (e) => {
+    setBrandSavedNote(false);
+    setBrandDraft(b => ({ ...b, [k]: e.target.value }));
+  };
+  const handleBrandLogoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setBrandDraft(prev => ({ ...prev, logoDataUrl: String(reader.result), isCustomBranded: true }));
+    };
+    reader.readAsDataURL(file);
+  };
+  const handleApplyBrand = (e) => {
+    e.preventDefault();
+    hapticTap();
+    const next = { ...brandDraft, isCustomBranded: true };
+    saveBrandProfile(next);
+    setBrandSavedNote(true);
+  };
+  const handleResetBrand = () => {
+    hapticLight();
+    resetBrandToDefault();
+    setBrandDraft({ ...DEFAULT_BRAND });
+    saveBrandProfile(DEFAULT_BRAND);
+    setBrandSavedNote(true);
   };
 
   // ─── The invoice ───
@@ -232,11 +266,67 @@ export default function CoachAccounting({ fr, clients, selectedClient, profile, 
           <Field label={t.fRcp} value={draft.rcpPro} onChange={setField('rcpPro')} placeholder={t.fRcpPh} />
           <Field label={t.fGym} value={draft.gym} onChange={setField('gym')} placeholder={t.fGymPh} />
           <Field label={t.fMediator} value={draft.mediator} onChange={setField('mediator')} placeholder={t.fMediatorPh} />
+          <Field label={t.fStripeLink} value={draft.stripePaymentLink || ''} onChange={setField('stripePaymentLink')} placeholder={t.fStripeLinkPh} testId="acc-stripe" />
+          <Field label={t.fPaypalLink} value={draft.paypalMeUrl || ''} onChange={setField('paypalMeUrl')} placeholder={t.fPaypalLinkPh} testId="acc-paypal" />
+          <Field label={t.fIban} value={draft.iban || ''} onChange={setField('iban')} placeholder={t.fIbanPh} testId="acc-iban" />
         </div>
         <div className="form-actions-row">
           <button type="submit" className="btn-save press" data-testid="acc-save-profile">{t.saveProfile}</button>
         </div>
         {savedNote && <p className="sc-frame-note" role="status">{t.profileSaved}</p>}
+      </form>
+
+      {/* Sovereign White-Label Branding Card */}
+      <form className="invoice-builder-card" onSubmit={handleApplyBrand} data-testid="acc-brand">
+        <div className="invoice-builder-header">
+          <div>
+            <h4>{t.brandHead}</h4>
+            <p className="section-subtext">{t.brandSub}</p>
+          </div>
+        </div>
+        <div className="invoice-controls-row">
+          <Field label={t.fBrandName} value={brandDraft.brandName || ''} onChange={setBrandField('brandName')} placeholder={t.fBrandNamePh} testId="brand-name" />
+          <Field label={t.fTagline} value={brandDraft.tagline || ''} onChange={setBrandField('tagline')} placeholder={t.fTaglinePh} testId="brand-tagline" />
+          <div className="invoice-field">
+            <label htmlFor="brand-accent-color">{t.fAccentColor}</label>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <input
+                id="brand-accent-color"
+                type="color"
+                value={brandDraft.accentColor || '#D97706'}
+                onChange={e => { setBrandSavedNote(false); setBrandDraft(b => ({ ...b, accentColor: e.target.value })); }}
+                style={{ width: '40px', height: '36px', padding: 0, border: 'none', background: 'none', cursor: 'pointer' }}
+                data-testid="brand-color-picker"
+              />
+              <input
+                type="text"
+                value={brandDraft.accentColor || ''}
+                onChange={setBrandField('accentColor')}
+                placeholder="#D97706"
+                style={{ flex: 1 }}
+                data-testid="brand-color-text"
+              />
+            </div>
+          </div>
+          <div className="invoice-field">
+            <label htmlFor="brand-logo-file">{t.fLogo}</label>
+            <input
+              id="brand-logo-file"
+              type="file"
+              accept="image/png, image/svg+xml, image/jpeg"
+              onChange={handleBrandLogoChange}
+              data-testid="brand-logo-input"
+            />
+            {brandDraft.logoDataUrl && (
+              <small style={{ marginTop: '0.25rem', color: 'var(--accent)' }}>Logo chargé</small>
+            )}
+          </div>
+        </div>
+        <div className="form-actions-row">
+          <button type="submit" className="btn-save press" data-testid="brand-apply-btn">{t.applyBrand}</button>
+          <button type="button" className="btn-cancel press" onClick={handleResetBrand} data-testid="brand-reset-btn">{t.resetBrand}</button>
+        </div>
+        {brandSavedNote && <p className="sc-frame-note" role="status">{t.brandSaved}</p>}
       </form>
 
       {/* The invoice */}
@@ -446,6 +536,19 @@ export function InvoicePaper({ inv, fr, number }) {
       </table>
       <div className="inv-total-row">
         <div className="inv-amounts"><b className="total-ttc">Total à payer{'\u00A0'}: {money(inv.total)}</b></div>
+        {(inv.coach.stripePaymentLink || inv.coach.paypalMeUrl || inv.coach.iban) && (
+          <div className="inv-direct-payment" data-testid="inv-direct-payment">
+            {inv.coach.stripePaymentLink && (
+              <div><small>Paiement direct en ligne{'\u00A0'}: <a href={inv.coach.stripePaymentLink} target="_blank" rel="noopener noreferrer">{inv.coach.stripePaymentLink}</a></small></div>
+            )}
+            {inv.coach.paypalMeUrl && (
+              <div><small>PayPal{'\u00A0'}: <a href={inv.coach.paypalMeUrl} target="_blank" rel="noopener noreferrer">{inv.coach.paypalMeUrl}</a></small></div>
+            )}
+            {inv.coach.iban && (
+              <div><small>Virement bancaire (IBAN){'\u00A0'}: {inv.coach.iban}</small></div>
+            )}
+          </div>
+        )}
         <div className="inv-legal-mentions">{inv.mentions.map((m, i) => <small key={i}>{m}</small>)}</div>
       </div>
       {!fr && <p className="office-hint">The invoice is a French document: its words stay in French.</p>}

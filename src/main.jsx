@@ -9,6 +9,10 @@ import { collectSwitchAtLoad } from './lib/phoneCollect'
 import { holdInstallPrompt } from './lib/install'
 import { startCrashLog } from './lib/crashLog'
 import { whenWritesDone } from './lib/pendingWrites'
+import { applyBrandToDocument, getSavedBrandProfile } from './lib/coachBranding'
+
+// White-label custom branding (PWA dynamic manifest and theme variables)
+applyBrandToDocument(getSavedBrandProfile());
 
 // The crash log kept on the phone (crashLog.js): a previous session that did not end cleanly is found here, before the
 // app renders, and the choice of lift says so. A reload by the service worker below is a clean navigation (pagehide).
