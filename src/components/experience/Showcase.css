@@ -36,9 +36,9 @@
 /* Tags: the guide's tag (Guide.css .tag), here so a screen opened first never lacks it. Demo and an ok verdict in
    ash, a verdict that asks for attention in the gold outline (no red in the app: errors in the lamp). */
 .wv-experience .sc-tag {
-  display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
-  font-family: var(--mono); font-size: var(--fs-label); line-height: 1.3; letter-spacing: 0.08em; text-transform: uppercase;
-  padding: 5px 10px 4px; border-radius: var(--r-pill); border: 1px solid var(--hair-2); color: var(--c-fg-muted);
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; max-width: 100%;
+  font-family: var(--mono); font-size: var(--fs-label); line-height: 1; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: var(--r-pill); border: 1px solid var(--hair-2); color: var(--c-fg-muted);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .wv-experience .sc-tag.is-on, .wv-experience .sc-tag.is-warn { border-color: var(--lamp-line); color: var(--lamp-hi); }

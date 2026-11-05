@@ -185,19 +185,24 @@ export default function FilmExerciseDrawer({ currentLift, onSelect, onClose, ini
             placeholder={fr ? 'Rechercher un mouvement, machine, muscle…' : 'Search movement, machine, muscle…'}
             data-testid="drawer-search-input"
           />
-          {query && (
-            <button
-              type="button"
-              className="film-search-clear"
-              onClick={() => setQuery('')}
-              aria-label={fr ? 'Effacer la recherche' : 'Clear search'}
-            >
-              ×
-            </button>
-          )}
-          <span className="film-search-badge" role="status">
-            {results.length} {fr ? 'variantes' : 'variations'}
-          </span>
+          <div className="film-search-actions">
+            {query && (
+              <button
+                type="button"
+                className="film-search-clear press"
+                onClick={() => setQuery('')}
+                aria-label={fr ? 'Effacer la recherche' : 'Clear search'}
+              >
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            )}
+            <span className="film-search-badge" role="status">
+              {results.length} {fr ? 'variantes' : 'variations'}
+            </span>
+          </div>
         </div>
 
         <div className="film-drawer-filters-container">

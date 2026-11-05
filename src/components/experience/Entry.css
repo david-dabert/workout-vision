@@ -90,10 +90,9 @@
 @keyframes reveal { from { opacity: 0; translate: 0 18px; } to { opacity: 1; translate: 0 0; } }
 .wv-experience .appear { animation: reveal var(--d-appear) var(--ease) both; }
 .wv-experience .topbar { display: flex; align-items: center; justify-content: space-between; min-height: 48px; }
-.wv-experience .brand-sm { height: 44px; font-size: 10.5px; letter-spacing: 0.42em; text-transform: uppercase; color: var(--c-fg-muted); }
-.wv-experience .pill { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-fg-muted); border: 1px solid var(--hair-2); border-radius: var(--r-pill); padding: 6px 10px 5px; }
+.wv-experience .pill { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-fg-muted); border: 1px solid var(--hair-2); border-radius: var(--r-pill); padding: 4px 10px; display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
 /* Lift tier (liftTiers.js): Beta in the lamp's colour, Experimental in ash; always legible, never a badge of quality. */
-.wv-experience .tier { align-self: flex-start; display: inline-block; margin: 6px 0 0; font-family: var(--mono); font-size: var(--fs-label); line-height: 1.45; letter-spacing: 0.08em; border: 1px solid currentColor; border-radius: var(--r-pill); padding: 5px 10px 4px; max-width: 100%; }
+.wv-experience .tier { align-self: flex-start; display: inline-flex; align-items: center; justify-content: center; margin: 6px 0 0; font-family: var(--mono); font-size: var(--fs-label); line-height: 1; letter-spacing: 0.08em; border: 1px solid currentColor; border-radius: var(--r-pill); padding: 4px 10px; max-width: 100%; }
 .wv-experience .tier-beta { color: var(--c-accent); text-transform: uppercase; }
 /* Experimental is a sentence, not a badge: plain caption text, no box (design/SYSTEM.md, #7). */
 .wv-experience .tier-experimental { border: 0; padding: 0; font: 400 var(--fs-caption)/1.45 var(--sans); letter-spacing: 0; color: var(--c-fg-muted); }

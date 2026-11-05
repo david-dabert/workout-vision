@@ -77,9 +77,8 @@
 .wv-experience .tag.tier-in-progress { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; padding: 4px 8px; border: 1px solid var(--hair-2); color: var(--ash); border-radius: var(--r-pill); background: var(--well); }
 /* Experimental on a fitness-test row is the ash pill the guide shows, not the cards' plain caption (Entry.css .tier-experimental). */
 .wv-experience .row-link .tag { flex-shrink: 0; }
-.wv-experience .row-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
-.wv-experience .row-link .tag.tier-experimental { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; padding: 5px 10px 4px; border: 1px solid var(--hair-2); color: var(--c-fg-muted); }
-.wv-experience .row-link .tag.tier-roadmap { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; padding: 4px 8px; border: 1px solid var(--lamp-line); color: var(--c-accent); border-radius: var(--r-pill); background: var(--bio-glow); }
+.wv-experience .row-link .tag.tier-experimental { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; padding: 4px 10px; border: 1px solid var(--hair-2); color: var(--c-fg-muted); display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
+.wv-experience .row-link .tag.tier-roadmap { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; padding: 4px 8px; border: 1px solid var(--lamp-line); color: var(--c-accent); border-radius: var(--r-pill); background: var(--bio-glow); display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
 /* The note on anonymous usage counts (UsageNote, Choice.jsx), under "Vos séries": its button reads as a link, 44 px tall. */
 .wv-experience .usage-note { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .wv-experience .usage-note p { margin: 0; }

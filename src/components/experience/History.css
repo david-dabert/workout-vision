@@ -26,7 +26,7 @@
 .wv-experience .hist-meta > span { display: flex; flex-wrap: wrap; margin-left: -1.3em; }
 .wv-experience .hist-meta > span > span { white-space: nowrap; }
 .wv-experience .hist-meta > span > span::before { content: '\00B7'; content: '\00B7' / ''; display: inline-block; width: 1.3em; text-align: center; }
-.wv-experience .hist-tag { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 10px 4px; border-radius: var(--r-pill); border: 1px solid var(--hair-2); color: var(--c-fg-muted); }
+.wv-experience .hist-tag { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; display: inline-flex; align-items: center; justify-content: center; line-height: 1; border-radius: var(--r-pill); border: 1px solid var(--hair-2); color: var(--c-fg-muted); }
 .wv-experience .hist-detail { display: flex; flex-direction: column; gap: 10px; padding: 0 0 20px 70px; }
 .wv-experience .hist-corr { margin: 0; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--c-fg-muted); }
 .wv-experience .hist-detail .text-btn { align-self: flex-start; padding: 0; border-radius: var(--r-pill); }

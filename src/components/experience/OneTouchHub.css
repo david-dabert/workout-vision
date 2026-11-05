@@ -42,25 +42,40 @@
   transform: translateY(1px);
 }
 
-.wv-onetouch-btn.is-lift {
-  border-left: 3px solid var(--c-accent);
-}
-
-.wv-onetouch-btn.is-mobility {
-  border-left: 3px solid var(--lamp);
-}
-
-.wv-onetouch-btn.is-history {
-  border-left: 3px solid var(--lamp-hi);
-}
-
 .wv-onetouch-ico {
-  font-size: 24px;
-  line-height: 1;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-m);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background: var(--depth-1);
+  border: 1px solid var(--hair-2);
+  transition: all var(--d-fast) var(--ease);
+}
+
+.wv-onetouch-btn.is-lift .wv-onetouch-ico {
+  color: var(--c-accent);
+  background: var(--bio-glow);
+  border-color: var(--lamp-line);
+}
+
+.wv-onetouch-btn.is-mobility .wv-onetouch-ico {
+  color: var(--lamp-hi);
+  background: var(--bio-glow);
+  border-color: var(--lamp-line);
+}
+
+.wv-onetouch-btn.is-history .wv-onetouch-ico {
+  color: var(--bone);
+  background: var(--depth-2);
+  border-color: var(--hair-2);
+}
+
+.wv-onetouch-btn:hover .wv-onetouch-ico {
+  transform: scale(1.04);
+  border-color: var(--lamp-line-strong);
 }
 
 .wv-onetouch-text {
@@ -81,10 +96,8 @@
 .wv-onetouch-sub {
   font-size: 12px;
   color: var(--c-fg-muted);
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.35;
+  text-wrap: pretty;
 }
 
 .wv-onetouch-arrow {
@@ -143,6 +156,8 @@
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  line-height: 1;
   transition: all var(--d-fast) var(--ease);
 }
 
