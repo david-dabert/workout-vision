@@ -254,8 +254,8 @@ export function reportPdf(sheet) {
   if (sheet.optimization?.repVelocityProfiles?.length) {
     const vbt = sheet.optimization.repVelocityProfiles;
     const vbtHeadH = 13.5 + 13 + 6;
-    const repCardH = 46;
-    const repRowH = repCardH + 6;
+    const repCardH = 48;
+    const repRowH = repCardH + 8;
 
     if (room() < vbtHeadH + repRowH && y > MARGIN) newPage();
 
@@ -266,39 +266,40 @@ export function reportPdf(sheet) {
     write(sheet.fr ? 'Ralentissement vs rep la plus rapide' : 'Deceleration vs fastest rep', MARGIN, y, 'sans', 9, 1.3, COLOR.ash);
     y += 13 + 4;
 
-    const perRow = Math.min(vbt.length, 5);
-    const chunkW = (COLUMN - 6 * (perRow - 1)) / perRow;
+    const perRow = Math.min(vbt.length, 4);
+    const cardGap = 8;
+    const chunkW = (COLUMN - cardGap * (perRow - 1)) / perRow;
     for (let i = 0; i < vbt.length; i += perRow) {
       if (room() < repRowH && y > MARGIN) newPage();
       const chunk = vbt.slice(i, i + perRow);
       chunk.forEach((p, k) => {
-        const rx = MARGIN + k * (chunkW + 6);
+        const rx = MARGIN + k * (chunkW + cardGap);
         doc.setDrawColor(COLOR.rule);
         doc.setLineWidth(0.75);
         doc.setFillColor(COLOR.rowRule);
-        doc.roundedRect(rx, y, chunkW, repCardH, 3, 3, 'FD');
+        doc.roundedRect(rx, y, chunkW, repCardH, 3.5, 3.5, 'FD');
 
         // Line 1: Rep number and velocity loss percentage
-        write(`R${p.repIndex}`, rx + 5, y + 4.5, 'mono', 8, 1.2, COLOR.ash);
+        write(`R${p.repIndex}`, rx + 6, y + 5, 'mono', 8, 1.2, COLOR.ash);
         const lossTxt = `${p.velocityLossPercent}%`;
         const lossW = width(lossTxt, 'mono', 8);
-        write(lossTxt, rx + chunkW - 5 - lossW, y + 4.5, 'mono', 8, 1.2, p.tier === 'failure' ? COLOR.ash : COLOR.count);
+        write(lossTxt, rx + chunkW - 6 - lossW, y + 5, 'mono', 8, 1.2, p.tier === 'failure' ? COLOR.ash : COLOR.count);
 
         // Line 2: Velocity loss progress bar
-        const bw = chunkW - 10;
+        const bw = chunkW - 12;
         doc.setFillColor(COLOR.rule);
-        doc.rect(rx + 5, y + 17, bw, 2.5, 'F');
+        doc.rect(rx + 6, y + 17.5, bw, 2.5, 'F');
         doc.setFillColor(COLOR.count);
-        doc.rect(rx + 5, y + 17, (bw * Math.max(10, Math.min(100, p.velocityLossPercent))) / 100, 2.5, 'F');
+        doc.rect(rx + 6, y + 17.5, (bw * Math.max(10, Math.min(100, p.velocityLossPercent))) / 100, 2.5, 'F');
 
         // Line 3: Concentric duration (standalone line, guaranteed no collision)
-        const timeTxt = p.concentricSec > 0 ? `${p.concentricSec} s` : '—';
-        write(timeTxt, rx + 5, y + 25.5, 'mono', 7.5, 1.2, COLOR.ink);
+        const timeTxt = p.concentricSec > 0 ? `${p.concentricSec}\u00A0s` : '—';
+        write(timeTxt, rx + 6, y + 25.5, 'mono', 7.5, 1.2, COLOR.ink);
 
         // Line 4: Mechanical power or ROM (cleanly separated on its own baseline)
-        const pwrTxt = p.powerWatts ? `${p.powerWatts} W` : (p.romDegrees > 0 ? `${Math.round(p.romDegrees)}°` : '');
+        const pwrTxt = p.powerWatts ? `${p.powerWatts}\u00A0W` : (p.romDegrees > 0 ? `${Math.round(p.romDegrees)}°` : '');
         if (pwrTxt) {
-          write(pwrTxt, rx + 5, y + 35, 'mono', 7, 1.2, COLOR.ash);
+          write(pwrTxt, rx + 6, y + 35.5, 'mono', 7, 1.2, COLOR.ash);
         }
       });
       y += repRowH;

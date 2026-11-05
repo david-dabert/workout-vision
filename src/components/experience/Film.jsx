@@ -112,6 +112,12 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
     return () => window.removeEventListener('deviceorientation', handleOrientation);
   }, []);
 
+  useEffect(() => {
+    // Quietly warm the primary pitch demo video into SW cache for zero-latency, offline basement gym pitches
+    const demoUrl = `${import.meta.env.BASE_URL}demo/bodyweight-squat-9.mp4`;
+    fetch(demoUrl).catch(() => {});
+  }, []);
+
   async function handleSampleVideo() {
     if (sampleLoading) return;
     setSampleLoading(true);
