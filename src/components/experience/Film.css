@@ -72,3 +72,66 @@
 .wv-experience .film-mode-opt { min-height: 44px; border-radius: var(--r-pill); border: 0; background: transparent; color: var(--c-fg-muted); font-size: var(--fs-caption); display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
 .wv-experience .film-mode-opt.is-on { background: rgba(232, 189, 126, 0.14); color: var(--lamp-hi); box-shadow: inset 0 0 0 1px var(--lamp-line); }
 .wv-experience .film-mode .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #E0624A; }
+
+.wv-experience .film-sample-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 6px;
+  padding: 0 16px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--hair-2);
+  background: var(--hair-1);
+  color: var(--bone-2);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--d-fast) var(--ease);
+}
+.wv-experience .film-sample-btn:hover {
+  border-color: var(--lamp-line);
+  color: var(--c-accent);
+  background: var(--bio-glow);
+}
+.wv-experience .film-sample-btn svg {
+  width: 13px;
+  height: 13px;
+  color: var(--c-accent);
+}
+
+.wv-experience .film-tilt-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: var(--s-3) auto 0;
+  padding: 4px 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--hair-2);
+  background: var(--depth-1);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  color: var(--c-fg-muted);
+  text-transform: uppercase;
+}
+.wv-experience .film-tilt-pill.is-ideal {
+  border-color: var(--lamp-line);
+  color: var(--lamp-hi);
+  background: var(--bio-glow);
+}
+.wv-experience .film-tilt-pill.is-warning {
+  border-color: var(--c-edge);
+  color: var(--c-fg);
+  background: var(--depth-2);
+}
+.wv-experience .film-tilt-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}

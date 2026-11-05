@@ -96,6 +96,44 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
     setDrawerOpen(false);
   }
 
+  const [sampleLoading, setSampleLoading] = useState(false);
+  const [deviceTilt, setDeviceTilt] = useState(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('DeviceOrientationEvent' in window)) return undefined;
+    function handleOrientation(e) {
+      if (e.beta !== null && e.beta !== undefined) {
+        // Upright vertical phone has |beta| ~ 90 deg. Deviation from true vertical is |90 - |beta||.
+        const deviation = Math.round(Math.abs(90 - Math.abs(e.beta)));
+        setDeviceTilt(deviation);
+      }
+    }
+    window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+    return () => window.removeEventListener('deviceorientation', handleOrientation);
+  }, []);
+
+  async function handleSampleVideo() {
+    if (sampleLoading) return;
+    setSampleLoading(true);
+    try {
+      let demoFile = 'bodyweight-squat-9.mp4';
+      const l = (activeLift || '').toLowerCase();
+      if (l.includes('curl')) demoFile = 'bicep-curl-5.mp4';
+      else if (l.includes('pulldown') || l.includes('pull')) demoFile = 'lat-pulldown-6.mp4';
+      else if (l.includes('dip')) demoFile = 'dip-13.mp4';
+      else if (l.includes('ez')) demoFile = 'ez-curl-10.mp4';
+
+      const res = await fetch(`${import.meta.env.BASE_URL}demo/${demoFile}`);
+      const blob = await res.blob();
+      const file = new File([blob], demoFile, { type: 'video/mp4' });
+      onFile(file);
+    } catch (_) {
+      fileRef.current?.click();
+    } finally {
+      setSampleLoading(false);
+    }
+  }
+
   // Knee and hip lifts are filmed with the whole body in frame; arm lifts with at least head to hips, which is
   // what their count needs (the figure shows the reference set's own, wider framing).
   const wholeBody = ['knee', 'hip'].includes(liftDefinition(countingLiftKey)?.joint);
@@ -155,6 +193,16 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
           : test || guide?.similar
           ? (fr ? 'Mouvement proche, d’après le guide. Dessins\u00A0: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.' : 'A similar movement, from the guide. Drawings: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.')
           : fr ? 'Le mouvement, d’après le guide. Dessins\u00A0: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.' : 'The movement, from the guide. Drawings: Everkinetic, via bryllim/workout-guide, CC BY-SA 4.0.'}</p>}
+      {deviceTilt !== null && (
+        <div className={`film-tilt-pill ${deviceTilt <= 18 ? 'is-ideal' : 'is-warning'}`} data-testid="film-tilt-pill">
+          <span className="film-tilt-dot" aria-hidden="true" />
+          <span>
+            {deviceTilt <= 18
+              ? (fr ? `Angle caméra\u00A0: ${deviceTilt}° · Aligné` : `Camera tilt: ${deviceTilt}° · Aligned`)
+              : (fr ? `Angle caméra\u00A0: ${deviceTilt}° · Redressez le téléphone` : `Camera tilt: ${deviceTilt}° · Tilt phone upright`)}
+          </span>
+        </div>
+      )}
       {/* A fitness test is filmed as its protocol says (fitness-tests.js): its own three steps. */}
       {test ? <ol className="steps" data-reveal style={{ '--i': 4 }}>
         {test.steps[fr ? 'fr' : 'en'].map((t, i) => <li key={i}><span className="n">{i + 1}</span><span>{t}</span></li>)}
@@ -186,6 +234,20 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
           <input type="file" accept="video/*,.mov" className="hx" onChange={handleFile} />
           <span>{fr ? 'Choisir une vidéo' : 'Choose a video'}</span>
         </label>
+        <button
+          type="button"
+          className="film-sample-btn press"
+          onClick={handleSampleVideo}
+          disabled={sampleLoading}
+          data-testid="film-sample-btn"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polygon points="5 3 19 12 5 21 5 3" />
+          </svg>
+          <span>{sampleLoading
+            ? (fr ? 'Chargement de l’exemple…' : 'Loading sample set…')
+            : (fr ? 'Tester un exemple préenregistré' : 'Try with a sample set')}</span>
+        </button>
       </div>}
       {/* How to count, under the action, so the frame and the action keep their place on a short screen (fitness-tests.spec.js). */}
       {liveOffered && <div className="film-mode" role="group" aria-label={fr ? 'Comment compter' : 'How to count'} data-reveal style={{ '--i': 5 }}>

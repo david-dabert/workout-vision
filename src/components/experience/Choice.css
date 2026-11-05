@@ -105,3 +105,6 @@
 .wv-experience .all-exercises .item { border-bottom: 1px solid var(--hair-0); transition: background var(--d-fast); }
 .wv-experience .all-exercises .item:hover { background: var(--bio-glow); }
 .wv-experience .choose-head + .row-link { margin-top: 0; border-top: 0; }
+.wv-experience .topbar .offline-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: var(--r-pill); border: 1px solid var(--hair-2); background: var(--depth-1); font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--c-fg-muted); }
+.wv-experience .topbar .offline-badge svg { width: 10px; height: 10px; color: var(--c-accent); flex-shrink: 0; }
+@media (max-width: 350px) { .wv-experience .topbar .offline-badge span { display: none; } }
