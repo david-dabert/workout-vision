@@ -405,7 +405,6 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
     setLive({ count: null, inView: true });
     setLiveBadge(null);
     setLivePhase(null);
-    setLiveTelemetry(null);
     wake.current = holdScreenAwake();
     setState('countdown');
     setLeft(COUNTDOWN_SEC);
@@ -455,7 +454,6 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
   function again() {
     setLiveBadge(null);
     setLivePhase(null);
-    setLiveTelemetry(null);
     angleHistory.current = [];
     lastAngleTime.current = 0;
     lastAngle.current = null;

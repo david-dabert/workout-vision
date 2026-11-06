@@ -23,7 +23,7 @@ describe('Front Door Reframing & Interactive Biomechanics Lab Demo', () => {
       </LanguageProvider>
     );
 
-    expect(html).toContain('Comptage de répétitions et analyse du mouvement sur votre téléphone. La vidéo reste sur votre téléphone.');
+    expect(html).toContain('Comptage de répétitions et analyse du mouvement sur votre téléphone.');
     expect(html).not.toContain('entry-interactive');
   });
 
@@ -35,7 +35,7 @@ describe('Front Door Reframing & Interactive Biomechanics Lab Demo', () => {
       </LanguageProvider>
     );
 
-    expect(html).toContain('Repetition counting and movement analysis on your phone. The video stays on your phone.');
+    expect(html).toContain('Repetition counting and movement analysis on your phone.');
     expect(html).not.toContain('entry-interactive');
   });
 
