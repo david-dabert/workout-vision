@@ -1,15 +1,12 @@
 import { useMemo } from 'react';
 import { analyzeMovementOptimization, analyzeContinuousBiomechanics } from '../../lib/coaching/movementOptimization';
 import { getExercise } from '../../lib/exercises/index';
-import { downloadBvhFile } from '../../lib/biomechanics/bvhExport';
-import { evaluateSetBaselines } from '../../lib/biomechanicalBaseline';
-import MocapViewer from './MocapViewer';
 import './MovementOptimization.css';
 
 /**
  * Movement Optimization Card
  * Displays ROM Score, Control & Tempo Index, Form Quality Badge,
- * Sticking Point Diagnostics, and actionable Hypertrophy Coaching Summary.
+ * and actionable Hypertrophy Coaching Summary.
  */
 export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr = false, result = null }) {
   const analysis = useMemo(() => {
@@ -24,21 +21,6 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
   const exercise = useMemo(() => {
     return getExercise(lift);
   }, [lift]);
-
-  const baselineReport = useMemo(() => {
-    if (!Array.isArray(reps) || reps.length === 0) return null;
-    const kinReps = reps.map((r, i) => ({
-      repIndex: r.index ?? i + 1,
-      concentricVelocity: r.concentricSec > 0 ? (r.romDegrees || 90) / r.concentricSec : 60,
-      concentricDuration: r.concentricSec || 1.0,
-      eccentricDuration: r.eccentricSec || 2.0,
-      romDegrees: r.romDegrees || 90,
-      trunkLeanDegrees: r.trunkLeanDegrees || 18,
-      symmetryIndex: r.symmetryIndex || 95,
-      stickingDeceleration: r.stickingDeceleration || 0,
-    }));
-    return evaluateSetBaselines(kinReps);
-  }, [reps]);
 
   const badgeText = fr ? analysis.formBadge.labelFr : analysis.formBadge.label;
 
@@ -63,10 +45,6 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
               <h4 className="res-opt-prescription-title">
                 {fr ? analysis.coachPrescription.tierLabelFr : analysis.coachPrescription.tierLabelEn}
               </h4>
-            </div>
-            <div className="res-opt-compliance-score" data-testid="compliance-score">
-              <span className="res-opt-score-val">{analysis.coachPrescription.executionComplianceScore}%</span>
-              <span className="res-opt-score-lbl">{fr ? 'Standard d’élite' : 'Elite Standard'}</span>
             </div>
           </div>
 
@@ -122,10 +100,10 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
             </span>
             <div className="res-opt-summary-text">
               <strong className="res-opt-summary-title">
-                {fr ? 'Biomécanique détaillée & Cinématique 3D' : 'Detailed Biomechanics & 3D Kinematics'}
+                {fr ? 'Biomécanique détaillée & Cinématique' : 'Detailed Biomechanics & Kinematics'}
               </strong>
               <span className="res-opt-summary-sub">
-                {fr ? 'Angles, puissance (W), perte de vitesse (VBT) et cinématique' : 'Angles, power (W), velocity loss (VBT) and kinematics'}
+                {fr ? 'Angles, amplitude et tempo' : 'Angles, range and tempo'}
               </span>
             </div>
           </div>
@@ -196,64 +174,6 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
         <div className="res-opt-metric">
           <div className="res-opt-metric-head">
             <span className="res-opt-label">
-              {fr ? 'Perte de vitesse (VBT)' : 'Velocity Loss (VBT)'}
-            </span>
-            <span className="res-opt-val">{analysis.velocityLossPercent}%</span>
-          </div>
-          <div className="res-opt-bar-track">
-            <div
-              className={`res-opt-bar-fill ${analysis.fatigueTier === 'optimal_hypertrophy' ? 'is-good' : analysis.fatigueTier === 'failure' ? 'is-warn' : 'is-mid'}`}
-              style={{ width: `${Math.min(100, Math.max(10, analysis.velocityLossPercent))}%` }}
-            />
-          </div>
-          <span className="res-opt-sub">
-            {fr
-              ? (analysis.fatigueTier === 'optimal_hypertrophy' ? 'Zone hypertrophie' : analysis.fatigueTier === 'failure' ? 'Échec musculaire' : 'Vitesse / Dynamique')
-              : (analysis.fatigueTier === 'optimal_hypertrophy' ? 'Hypertrophy target' : analysis.fatigueTier === 'failure' ? 'Muscular failure' : 'Speed / Explosive')}
-          </span>
-        </div>
-
-        <div className="res-opt-metric">
-          <div className="res-opt-metric-head">
-            <span className="res-opt-label">
-              {fr ? 'Travail mécanique' : 'Mechanical Work'}
-            </span>
-            <span className="res-opt-val">{analysis.mechanicalWorkKj}\u00A0kJ</span>
-          </div>
-          <div className="res-opt-bar-track">
-            <div
-              className="res-opt-bar-fill is-good"
-              style={{ width: `${Math.min(100, Math.max(15, analysis.mechanicalWorkKj * 20))}%` }}
-            />
-          </div>
-          <span className="res-opt-sub">
-            {fr ? `Dépense est.\u00A0: ~${analysis.caloriesKcal}\u00A0kcal*` : `Est. energy: ~${analysis.caloriesKcal}\u00A0kcal*`}
-          </span>
-        </div>
-
-        <div className="res-opt-metric" data-testid="concentric-power-metric">
-          <div className="res-opt-metric-head">
-            <span className="res-opt-label">
-              {fr ? 'Puissance concentrique' : 'Concentric Power'}
-            </span>
-            <span className="res-opt-val">{analysis.averagePowerWatts}\u00A0W</span>
-          </div>
-          <div className="res-opt-bar-track">
-            <div
-              className="res-opt-bar-fill is-good"
-              style={{ width: `${Math.min(100, Math.max(15, (analysis.averagePowerWatts / Math.max(1, analysis.peakPowerWatts || 300)) * 100))}%` }}
-            />
-          </div>
-          <span className="res-opt-sub">
-            {fr
-              ? `Pic\u00A0: ${analysis.peakPowerWatts}\u00A0W (chute\u00A0: ${analysis.powerLossPercent}%)`
-              : `Peak: ${analysis.peakPowerWatts}\u00A0W (drop: ${analysis.powerLossPercent}%)`}
-          </span>
-        </div>
-
-        <div className="res-opt-metric">
-          <div className="res-opt-metric-head">
-            <span className="res-opt-label">
               {fr ? 'Temps sous tension (TUT)' : 'Time Under Tension (TUT)'}
             </span>
             <span className="res-opt-val">{analysis.timeUnderTensionSec}\u00A0s</span>
@@ -293,98 +213,6 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           </div>
         )}
 
-        {analysis.lumbarKinetics && (
-          <div className="res-opt-metric" data-testid="lumbar-kinetics-metric">
-            <div className="res-opt-metric-head">
-              <span className="res-opt-label">
-                {fr ? 'Cisaillement lombaire (L5/S1)' : 'Lumbar Shear (L5/S1)'}
-              </span>
-              <span className="res-opt-val">
-                {analysis.lumbarKinetics.peakShearForceN}\u00A0N
-              </span>
-            </div>
-            <div className="res-opt-bar-track">
-              <div
-                className={`res-opt-bar-fill ${analysis.lumbarKinetics.safetyTier === 'optimal' ? 'is-good' : analysis.lumbarKinetics.safetyTier === 'moderate' ? 'is-mid' : 'is-warn'}`}
-                style={{ width: `${Math.min(100, Math.round((analysis.lumbarKinetics.peakShearForceN / 600) * 100))}%` }}
-              />
-            </div>
-            <span className="res-opt-sub">
-              {fr
-                ? `Compression\u00A0: ${analysis.lumbarKinetics.peakCompressiveForceN}\u00A0N (limite\u00A0: 3400\u00A0N)`
-                : `Compression: ${analysis.lumbarKinetics.peakCompressiveForceN}\u00A0N (limit: 3400\u00A0N)`}
-            </span>
-          </div>
-        )}
-
-        {analysis.morphology && (
-          <div className="res-opt-metric" data-testid="morphology-retargeting-metric">
-            <div className="res-opt-metric-head">
-              <span className="res-opt-label">
-                {fr ? 'Morphologie & Leviers' : 'Anatomy & Levers'}
-              </span>
-              <span className="res-opt-val">
-                {analysis.morphology.femurTibiaRatio} (F/T)
-              </span>
-            </div>
-            <div className="res-opt-bar-track">
-              <div
-                className={`res-opt-bar-fill ${analysis.morphology.morphotype === 'balanced' ? 'is-good' : 'is-mid'}`}
-                style={{ width: `${Math.min(100, Math.round((analysis.morphology.femurTibiaRatio / 1.3) * 100))}%` }}
-              />
-            </div>
-            <span className="res-opt-sub">
-              {fr ? analysis.morphology.morphotypeLabel.fr : analysis.morphology.morphotypeLabel.en}
-            </span>
-          </div>
-        )}
-
-        {analysis.groundStabilityScore !== null && analysis.groundStabilityScore !== undefined && (
-          <div className="res-opt-metric" data-testid="ground-stability-metric">
-            <div className="res-opt-metric-head">
-              <span className="res-opt-label">
-                {fr ? 'Ancrage sol cinématique' : 'Ground Contact Stability'}
-              </span>
-              <span className="res-opt-val">
-                {analysis.groundStabilityScore}%
-              </span>
-            </div>
-            <div className="res-opt-bar-track">
-              <div
-                className="res-opt-bar-fill is-good"
-                style={{ width: `${Math.min(100, analysis.groundStabilityScore)}%` }}
-              />
-            </div>
-            <span className="res-opt-sub">
-              {fr ? 'Zéro glissement (ZUPT cinématique)' : 'Zero foot skating (ZUPT lock)'}
-            </span>
-          </div>
-        )}
-
-        {baselineReport && (
-          <div className="res-opt-metric" data-testid="smas-adaptation-metric">
-            <div className="res-opt-metric-head">
-              <span className="res-opt-label">
-                {fr ? 'Adaptation neuromusculaire (S-MAS)' : 'Neuromuscular Adaptation (S-MAS)'}
-              </span>
-              <span className="res-opt-val">
-                {baselineReport.overallSmasScore}/100
-              </span>
-            </div>
-            <div className="res-opt-bar-track">
-              <div
-                className={`res-opt-bar-fill ${baselineReport.overallSmasScore >= 80 ? 'is-good' : baselineReport.overallSmasScore >= 60 ? 'is-mid' : 'is-warn'}`}
-                style={{ width: `${baselineReport.overallSmasScore}%` }}
-              />
-            </div>
-            <span className="res-opt-sub">
-              {fr
-                ? (baselineReport.breakdownDetected ? `Rupture biomécanique rep ${baselineReport.fatigueOnsetRep ?? 'fin'}` : 'Signature de référence préservée')
-                : (baselineReport.breakdownDetected ? `Biomechanical breakdown at rep ${baselineReport.fatigueOnsetRep ?? 'end'}` : 'Uncompromised baseline preserved')}
-            </span>
-          </div>
-        )}
-
         {analysis.hypertrophyReport && (
           <div className="res-opt-metric" data-testid="stretch-hypertrophy-metric">
             <div className="res-opt-metric-head">
@@ -410,58 +238,6 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
         )}
       </div>
 
-      <div className="res-opt-disclaimer">
-        * {fr ? 'Estimation indicative basée sur le travail mécanique de la série.' : 'Indicative estimate based on mechanical work.'}
-      </div>
-
-      {analysis.repVelocityProfiles && analysis.repVelocityProfiles.length > 0 && (
-        <div className="res-opt-vbt-section" data-testid="vbt-profile-strip">
-          <div className="res-opt-vbt-header">
-            <h4 className="res-opt-subtitle">
-              {fr ? 'Profil de Vitesse par Répétition (VBT)' : 'Rep-by-Rep Velocity Profile (VBT)'}
-            </h4>
-            <span className="res-opt-vbt-legend">
-              {fr ? 'Ralentissement vs rep la plus rapide' : 'Deceleration vs fastest rep'}
-            </span>
-          </div>
-
-          <div className="res-opt-vbt-strip">
-            {analysis.repVelocityProfiles.map(p => (
-              <div key={p.repIndex} className={`res-opt-vbt-rep is-${p.tier}`} data-testid={`vbt-rep-${p.repIndex}`}>
-                <div className="res-opt-vbt-rep-head">
-                  <span className="res-opt-vbt-num">R{p.repIndex}</span>
-                  <span className="res-opt-vbt-loss">{p.velocityLossPercent}%</span>
-                </div>
-                <div className="res-opt-vbt-bar-track">
-                  <div
-                    className={`res-opt-vbt-bar-fill is-${p.tier}`}
-                    style={{ width: `${Math.max(12, Math.min(100, p.velocityLossPercent))}%` }}
-                  />
-                </div>
-                <div className="res-opt-vbt-rep-times">
-                  <span className="res-opt-vbt-time">{p.concentricSec > 0 ? `${p.concentricSec}\u00A0s` : '—'}</span>
-                  <span className="res-opt-vbt-power">{p.powerWatts ? `${p.powerWatts}\u00A0W` : (p.romDegrees > 0 ? `${Math.round(p.romDegrees)}°` : '—')}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {analysis.stickingPointSummary && (
-        <div className="res-opt-sticking" data-testid="sticking-point-box">
-          <div className="res-opt-sticking-head">
-            <span className="res-opt-sticking-badge">
-              {fr ? 'Point de blocage' : 'Sticking Point'}
-            </span>
-            <span className="res-opt-sticking-title">
-              {fr ? 'Ralentissement biomécanique' : 'Biomechanical Deceleration'}
-            </span>
-          </div>
-          <p className="res-opt-sticking-desc">{analysis.stickingPointSummary}</p>
-        </div>
-      )}
-
       <div className="res-opt-coaching">
         <h4 className="res-opt-subtitle">
           {fr ? 'Recommandations hypertrophie' : 'Hypertrophic Stimulus Cues'}
@@ -484,25 +260,6 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           <span className="res-opt-muscles-list">
             {exercise.primary_muscles.map(m => m.replace(/_/g, ' ')).join(', ')}
           </span>
-        </div>
-      )}
-
-      {analysis.bvhData && (
-        <div className="res-opt-export">
-          <MocapViewer worldLandmarks={result?.worldLandmarks || null} lift={lift} fr={fr} />
-          <button
-            type="button"
-            className="res-opt-export-btn press"
-            onClick={() => downloadBvhFile(analysis.bvhData, `mocap-${lift}-${Date.now()}.bvh`)}
-            data-testid="export-bvh-btn"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            <span>{fr ? 'Exporter Mocap 3D (.bvh)' : 'Export 3D Mocap (.bvh)'}</span>
-          </button>
         </div>
       )}
         </div>

@@ -11,29 +11,11 @@ import { drawSkeleton, litSides, trailPoints } from './replay-draw';
 import { playLockoutCue, playVelocityLossAlert, playStretchDepthClick, playBounceWarning, playContinuousTensionAlert } from '../../lib/audioCueEngine';
 import { evaluateLiveRepQuality } from '../../lib/coaching/movementOptimization';
 import { HierarchicalDetector } from '../../lib/hierarchicalDetector';
-import { computeL5S1InverseDynamics } from '../../lib/biomechanics/l5s1InverseDynamics';
 import { resolveKinematicAlias } from '../../lib/biomechanics/kinematicAliasing';
 import { evaluateFraming, AutonomousFramingCoach } from '../../lib/coaching/autonomousFraming';
 import { AutoSetGate } from '../../lib/coaching/autoSetGate';
 import './MovementOptimization.css';
 import './Live.css';
-
-// Displaced mass (kg) and vertical travel distance (m) by movement family.
-// Sources: Garhammer (1993), Cronin et al. (2004), González-Badillo et al. (2017). Status: literature.
-const LIVE_ARCHETYPE_MASS_KG = {
-  squat: 66,
-  hinge: 50,
-  push: 52,
-  pull: 70,
-  isolation: 15,
-};
-const LIVE_ARCHETYPE_DISP_M = {
-  squat: 0.45,
-  hinge: 0.40,
-  push: 0.35,
-  pull: 0.40,
-  isolation: 0.30,
-};
 
 export const PHASE_LABELS = {
   fr: {
@@ -49,29 +31,6 @@ export const PHASE_LABELS = {
     lockout_rest: 'Ready',
   },
 };
-
-export function computeLiveConcentricPower(lift = 'squat', concentricSec = 0.8) {
-  const l = (lift || '').toLowerCase();
-  let archetype = 'isolation';
-  if (l.includes('squat') || l.includes('lunge') || l.includes('leg_press') || l.includes('step_up')) {
-    archetype = 'squat';
-  } else if (l.includes('deadlift') || l.includes('rdl') || l.includes('clean') || l.includes('snatch') || l.includes('swing')) {
-    archetype = 'hinge';
-  } else if (l.includes('press') || l.includes('push') || l.includes('dip')) {
-    archetype = 'push';
-  } else if (l.includes('pull') || l.includes('row') || l.includes('chin')) {
-    archetype = 'pull';
-  }
-
-  const mass = LIVE_ARCHETYPE_MASS_KG[archetype] || 50;
-  const disp = LIVE_ARCHETYPE_DISP_M[archetype] || 0.40;
-  const g = 9.81;
-  const validConc = Math.max(0.2, concentricSec);
-  const joules = mass * g * disp;
-  const powerWatts = Math.round(joules / validConc);
-  const velocityMs = Math.round((disp / validConc) * 100) / 100;
-  return { powerWatts, velocityMs };
-}
 
 function jointAngleFromPoints(a, b, c) {
   if (!a || !b || !c) return null;
@@ -147,8 +106,6 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
   const [pulse, setPulse] = useState(0);
   const [liveBadge, setLiveBadge] = useState(null);
   const [livePhase, setLivePhase] = useState(null);
-  const [liveTelemetry, setLiveTelemetry] = useState(null);
-  const peakPowerWatts = useRef(0);
   const angleHistory = useRef([]);
   const lastAngleTime = useRef(0);
   const lastAngle = useRef(null);
@@ -163,11 +120,9 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
   const voiceRef = useRef(voice); voiceRef.current = voice;
   const [isAuto, setIsAuto] = useState(() => lift === 'auto');
   const [activeLift, setActiveLift] = useState(() => (lift === 'auto' ? null : lift));
-  const [liveSpine, setLiveSpine] = useState('optimal');
   const activeLiftRef = useRef(activeLift); activeLiftRef.current = activeLift;
   const isAutoRef = useRef(isAuto); isAutoRef.current = isAuto;
   const detector = useRef(null);
-  const lastSpine = useRef('optimal');
   const stretchDepthHit = useRef(false);
   const bounceWarningFired = useRef(false);
   const lockoutDwellStart = useRef(0);
@@ -261,16 +216,7 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
         }
       }
 
-      // Real-time L5/S1 Lumbar Spine Biomechanical Inverse Dynamics
       const effectiveCurrentLift = activeLiftRef.current || (lift !== 'auto' ? lift : 'squat');
-      const l5s1 = computeL5S1InverseDynamics({
-        landmarks: lm,
-        lift: effectiveCurrentLift,
-      });
-      if (l5s1 && l5s1.safetyTier !== lastSpine.current) {
-        lastSpine.current = l5s1.safetyTier;
-        setLiveSpine(l5s1.safetyTier);
-      }
 
       // Real-time 1D micro-sequence phase classification (15 Hz) & Earbud Acoustic Co-Pilot
       const angle = extractLiveJointAngle(lm, def);
@@ -390,24 +336,6 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
         if (voiceRef.current) say(n, lang);
         if (!REDUCED()) setPulse(p => p + 1);
         setLiveBadge(evaluateLiveRepQuality(85, repDuration > 0 ? repDuration * 0.6 : 2.0, lift, fr, velocitySlowed));
-
-        // Compute live concentric mechanical power (Watts), bar velocity (m/s), and neuromuscular decay
-        const validRepDur = repDuration >= 0.6 && repDuration <= 10.0 ? repDuration : 2.0;
-        const concentricSec = Math.max(0.25, validRepDur * 0.45);
-        const power = computeLiveConcentricPower(lift, concentricSec);
-
-        if (power.powerWatts > peakPowerWatts.current) {
-          peakPowerWatts.current = power.powerWatts;
-        }
-        const powerLoss = peakPowerWatts.current > 0
-          ? Math.max(0, Math.round(((peakPowerWatts.current - power.powerWatts) / peakPowerWatts.current) * 100))
-          : 0;
-
-        setLiveTelemetry({
-          powerWatts: power.powerWatts,
-          velocityMs: power.velocityMs,
-          powerLossPercent: powerLoss,
-        });
       },
       onSlow: () => giveUp('slow'),
       onFull: () => finish(),
@@ -626,12 +554,6 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
                 <span className="res-label">{fr ? (one ? 'Répétition' : 'Répétitions') : (one ? 'Rep' : 'Reps')}</span>
                 <span className="live-sub">{fr ? 'Compte provisoire' : 'Provisional count'}</span>
                 {liveBadge && <span className={`live-badge is-${liveBadge.severity}`} data-testid="live-form-badge">{fr ? liveBadge.labelFr : liveBadge.label}</span>}
-                {liveSpine === 'high_shear_risk' && (
-                  <div className="live-spine-alert" role="alert" data-testid="live-spine-alert">
-                    <i className="live-spine-dot" aria-hidden="true" />
-                    <span>{fr ? 'Cisaillement L5/S1 élevé (>500 N)' : 'High L5/S1 Shear Warning'}</span>
-                  </div>
-                )}
                 {isAuto && (
                   <div className="live-auto-chip" data-testid="live-auto-chip">
                     <span className="live-auto-pulse" aria-hidden="true" />
@@ -644,27 +566,6 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
                     <span>{PHASE_LABELS[fr ? 'fr' : 'en'][livePhase.phase] || livePhase.phase}</span>
                   </div>
                 )}
-                {liveTelemetry && (
-                  <div className="live-telemetry-strip" data-testid="live-telemetry-strip">
-                    <span className="live-telem-item">
-                      <b>{liveTelemetry.powerWatts}</b>
-                      <small>W</small>
-                    </span>
-                    <span className="live-telem-sep" aria-hidden="true">·</span>
-                    <span className="live-telem-item">
-                      <b>{liveTelemetry.velocityMs}</b>
-                      <small>m/s</small>
-                    </span>
-                    {liveTelemetry.powerLossPercent > 0 && (
-                      <>
-                        <span className="live-telem-sep" aria-hidden="true">·</span>
-                        <span className={`live-telem-loss ${liveTelemetry.powerLossPercent >= 20 ? 'is-warning' : ''}`} data-testid="live-power-loss">
-                          -{liveTelemetry.powerLossPercent}%
-                        </span>
-                      </>
-                    )}
-                  </div>
-                )}
                 <div className="live-handsfree-indicator" data-testid="live-handsfree-indicator">
                   <i className="live-handsfree-dot" aria-hidden="true" />
                   <span>{fr ? 'ZÉRO-TOUCH' : 'ZERO-TOUCH'}</span>
@@ -673,12 +574,6 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
               : <div className="live-away" data-testid="live-hint">
                 <p className="live-hint-title">{live.inView ? (fr ? 'C’est parti' : 'Go') : (fr ? 'Revenez dans le cadre' : 'Step back into the frame')}</p>
                 <p className="live-hint">{live.inView ? (fr ? 'Le compte s’affiche à la première répétition.' : 'The count appears at the first rep.') : framing}</p>
-                {liveSpine === 'high_shear_risk' && (
-                  <div className="live-spine-alert" role="alert" data-testid="live-spine-alert">
-                    <i className="live-spine-dot" aria-hidden="true" />
-                    <span>{fr ? 'Cisaillement L5/S1 élevé (>500 N)' : 'High L5/S1 Shear Warning'}</span>
-                  </div>
-                )}
                 {isAuto && (
                   <div className="live-auto-chip" data-testid="live-auto-chip">
                     <span className="live-auto-pulse" aria-hidden="true" />

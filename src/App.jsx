@@ -23,7 +23,7 @@ import { levelView, readLevel } from './components/experience/level';
 import { whenQuiet } from './lib/whenQuiet';
 import { warmPoseFiles } from './lib/pose-files';
 import { track, setEventsLang } from './lib/events';
-import { liveBuild } from './lib/buildFlags';
+import { liveBuild, showUnmeasuredRoutes } from './lib/buildFlags';
 import { payloadOf, resultsPayloadOf } from './components/experience/programme';
 import { draftFromResults } from './components/experience/programme-store';
 import { markCrash } from './lib/crashLog';
@@ -72,7 +72,49 @@ const Chat = lazyScreen(() => import('./components/chat/Chat.jsx'));
 // The activity engine's screen (docs/VISION.md): volleyball on synthetic jumps, opened from the sports rail.
 const Activity = lazyScreen(() => import('./components/activity/ActivityScreen.jsx'));
 const InvestorShowcase = lazyScreen(() => import('./components/experience/InvestorShowcaseModal.jsx'));
-const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto, equine: Equine, veterinary: Equine, sports: SportsBiomechanics, golf: SportsBiomechanics, tennis: SportsBiomechanics, padel: SportsBiomechanics, cycling: SportsBiomechanics, baseball: SportsBiomechanics, rowing: SportsBiomechanics, skiing: SportsBiomechanics, swimming: SportsBiomechanics, coaches: CoachFinder, coach: CoachFinder, physio: CoachFinder, buddies: GymBuddy, buddy: GymBuddy, ergonomics: Ergonomics, workplace: Ergonomics, kine: KineWorkspace, reeducation: KineWorkspace, kinep: KinePatient, kiner: KineResult, chat: Chat, volleyball: Activity, comptage: UsageNotice, showcase: InvestorShowcase, demo: InvestorShowcase, investisseur: InvestorShowcase };
+const LAZY = {
+  film: ExperienceFilm,
+  analyze: Analyze,
+  exercises: ExerciseGuide,
+  history: History,
+  live: LiveSession,
+  about: About,
+  comptage: UsageNotice,
+  ...(showUnmeasuredRoutes() ? {
+    pro: Pro,
+    programme: Programme,
+    resultats: Results,
+    manifesto: Manifesto,
+    science: Manifesto,
+    equine: Equine,
+    veterinary: Equine,
+    sports: SportsBiomechanics,
+    golf: SportsBiomechanics,
+    tennis: SportsBiomechanics,
+    padel: SportsBiomechanics,
+    cycling: SportsBiomechanics,
+    baseball: SportsBiomechanics,
+    rowing: SportsBiomechanics,
+    skiing: SportsBiomechanics,
+    swimming: SportsBiomechanics,
+    coaches: CoachFinder,
+    coach: CoachFinder,
+    physio: CoachFinder,
+    buddies: GymBuddy,
+    buddy: GymBuddy,
+    ergonomics: Ergonomics,
+    workplace: Ergonomics,
+    kine: KineWorkspace,
+    reeducation: KineWorkspace,
+    kinep: KinePatient,
+    kiner: KineResult,
+    chat: Chat,
+    volleyball: Activity,
+    showcase: InvestorShowcase,
+    demo: InvestorShowcase,
+    investisseur: InvestorShowcase,
+  } : {}),
+};
 
 // Hidden, not deleted: lazy imports for features outside the core path
 // const ManualLog = safeLazy(() => import('./components/ManualLog'));
@@ -222,21 +264,21 @@ function AppInner() {
   } else if (page === 'history') {
     key = 'history';
     screen = <History onClose={() => go('dashboard')} />;
-  } else if (page === 'pro') {
+  } else if (showUnmeasuredRoutes() && page === 'pro') {
     key = proStart ? `pro:${proStart.draft.id}` : 'pro';
     screen = <Pro start={proStart} onClose={() => go('dashboard', () => setProStart(null))} />;
-  } else if (page === 'programme') {
+  } else if (showUnmeasuredRoutes() && page === 'programme') {
     key = 'programme';
     // The link's payload as typed (the router lowercases the page); null once the programme is kept and the address
     // cleared (Programme.jsx), or when the programme is opened from the choice.
     screen = <Programme payload={payloadOf(window.location.hash)} held={heldProgramme} onHold={setHeldProgramme} onClose={() => go('dashboard', () => setPlanned(null))} onStart={(lift, target) => { setPlanned(target); chooseLift(lift); }} />;
-  } else if (page === 'resultats') {
+  } else if (showUnmeasuredRoutes() && page === 'resultats') {
     // The link's payload as typed; a results screen with no payload says the link does not open. One screen per link:
     // another client's link opened over this one is read afresh.
     const results = resultsPayloadOf(window.location.hash);
     key = `resultats:${results ?? ''}`;
     screen = <Results payload={results} onClose={() => go('dashboard')} onAdjust={r => { const start = draftFromResults(r); go('pro', () => setProStart(start)); }} />;
-  } else if (page === 'manifesto' || page === 'science') {
+  } else if (showUnmeasuredRoutes() && (page === 'manifesto' || page === 'science')) {
     key = 'manifesto';
     screen = <Manifesto onClose={() => go('dashboard')} onChoose={l => chooseLift(l)} />;
   } else if (page === 'comptage') {
@@ -244,47 +286,47 @@ function AppInner() {
     screen = <UsageNotice onClose={() => go('dashboard')} />;
   } else if (page === 'about') {
     key = 'about';
-    screen = <About onClose={() => go('dashboard')} onManifesto={() => go('manifesto')} />;
-  } else if (page === 'equine' || page === 'veterinary') {
+    screen = <About onClose={() => go('dashboard')} onManifesto={showUnmeasuredRoutes() ? () => go('manifesto') : undefined} />;
+  } else if (showUnmeasuredRoutes() && (page === 'equine' || page === 'veterinary')) {
     key = 'equine';
     screen = <Equine onClose={() => go('dashboard')} />;
-  } else if (page === 'sports' || page === 'golf' || page === 'tennis' || page === 'padel' || page === 'cycling' || page === 'baseball' || page === 'rowing' || page === 'skiing' || page === 'swimming') {
+  } else if (showUnmeasuredRoutes() && (page === 'sports' || page === 'golf' || page === 'tennis' || page === 'padel' || page === 'cycling' || page === 'baseball' || page === 'rowing' || page === 'skiing' || page === 'swimming')) {
     // A sport's own address opens on that sport (#rowing opens rowing); a new address is a new screen.
     key = page === 'sports' ? 'sports' : `sports:${page}`;
     screen = <SportsBiomechanics sport={page} onClose={() => go('dashboard')} onOpenEquine={() => go('equine')} onOpenVolleyball={() => go('volleyball')} />;
-  } else if (page === 'volleyball') {
+  } else if (showUnmeasuredRoutes() && page === 'volleyball') {
     key = 'volleyball';
     screen = <Activity activity="volleyball" onClose={() => go('sports')} />;
-  } else if (page === 'coaches' || page === 'coach' || page === 'physio') {
+  } else if (showUnmeasuredRoutes() && (page === 'coaches' || page === 'coach' || page === 'physio')) {
     key = 'coaches';
     screen = <CoachFinder onClose={() => go('dashboard')} onHistory={() => go('history')} />;
-  } else if (page === 'buddies' || page === 'buddy') {
+  } else if (showUnmeasuredRoutes() && (page === 'buddies' || page === 'buddy')) {
     key = 'buddies';
     screen = <GymBuddy onClose={() => go('dashboard')} />;
-  } else if (page === 'ergonomics' || page === 'workplace') {
+  } else if (showUnmeasuredRoutes() && (page === 'ergonomics' || page === 'workplace')) {
     key = 'ergonomics';
     screen = <Ergonomics onClose={() => go('dashboard')} />;
-  } else if (page === 'kine' || page === 'reeducation') {
+  } else if (showUnmeasuredRoutes() && (page === 'kine' || page === 'reeducation')) {
     key = 'kine';
     screen = <KineWorkspace onClose={() => go('dashboard')} />;
-  } else if (page === 'kinep') {
+  } else if (showUnmeasuredRoutes() && page === 'kinep') {
     // One screen per link: another programme opened over this one is read afresh.
     key = `kinep:${window.location.hash}`;
     screen = <KinePatient onClose={() => go('dashboard')} />;
-  } else if (page === 'kiner') {
+  } else if (showUnmeasuredRoutes() && page === 'kiner') {
     key = `kiner:${window.location.hash}`;
     screen = <KineResult onClose={() => go('kine')} />;
-  } else if (page === 'chat') {
+  } else if (showUnmeasuredRoutes() && page === 'chat') {
     key = 'chat';
     screen = <Chat onClose={() => go('dashboard')} onHistory={() => go('history')} />;
-  } else if (page === 'showcase' || page === 'demo' || page === 'investisseur') {
+  } else if (showUnmeasuredRoutes() && (page === 'showcase' || page === 'demo' || page === 'investisseur')) {
     key = 'showcase';
     screen = <InvestorShowcase isOpen={true} onClose={() => go('dashboard')} />;
   } else {
     // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
     // the old live capture (LiveCapture.jsx) and the dashboard; "live" without a lift, or in a build without VITE_LIVE, too. Every other page falls through to the choice of lift.
     key = 'choice';
-    screen = <Choice held={heldProgramme} onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro', () => setProStart(null))} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} onUsage={() => go('comptage')} onManifesto={() => go('manifesto')} onReference={() => go('kine')} onEquine={() => go('equine')} onSports={() => go('sports')} />;
+    screen = <Choice held={heldProgramme} onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={showUnmeasuredRoutes() ? () => go('pro', () => setProStart(null)) : undefined} onProgramme={showUnmeasuredRoutes() ? () => go('programme') : undefined} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} onUsage={() => go('comptage')} onManifesto={showUnmeasuredRoutes() ? () => go('manifesto') : undefined} onReference={showUnmeasuredRoutes() ? () => go('kine') : undefined} onEquine={showUnmeasuredRoutes() ? () => go('equine') : undefined} onSports={showUnmeasuredRoutes() ? () => go('sports') : undefined} />;
   }
 
   // The screen on show, a breadcrumb of the crash log on the phone (crashLog.js); the analysis marks its phases itself.

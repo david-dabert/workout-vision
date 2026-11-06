@@ -38,11 +38,10 @@ describe('the coach report and the stored level', () => {
     );
     expect(html).toContain('sh-coach-prescription');
     expect(html).toContain('Le Verdict du Coach');
-    expect(html).toContain('Standard d’élite');
+    expect(html).not.toContain('Standard d’élite');
     expect(html).toContain('sh-biomechanics-section');
-    expect(html).toContain('Biomécanique détaillée &amp; Cinématique 3D');
-    expect(html).toContain('sh-vbt-section');
-    expect(html).toContain('Profil de Vitesse par Répétition');
+    expect(html).toContain('Biomécanique détaillée &amp; Cinématique');
+    expect(html).not.toContain('sh-vbt-section');
     expect(html).toContain('sh-coaching-section');
     expect(html).toContain('Recommandations hypertrophie');
   });

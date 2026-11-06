@@ -11,3 +11,5 @@
 export const liveBuild = () => import.meta.env.VITE_LIVE === '1';
 /** True when this build asks for, collects and sends contributions. */
 export const contributeBuild = () => import.meta.env.VITE_CONTRIBUTE === '1';
+/** True when extended experimental / unmeasured routes (equine, 8 sports, coaches, etc.) are enabled. Off in production. */
+export const showUnmeasuredRoutes = () => import.meta.env.VITE_EXTENDED_ROUTES === '1';

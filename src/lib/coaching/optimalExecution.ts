@@ -59,7 +59,7 @@ export interface SetExecutionTelemetry {
   avgEccentricSec: number;
   bounceCount: number;
   continuousTensionPercent: number;
-  velocityLossPercent: number;
+  velocityLossPercent?: number | null;
 }
 
 /**

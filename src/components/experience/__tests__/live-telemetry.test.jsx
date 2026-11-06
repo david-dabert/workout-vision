@@ -7,35 +7,11 @@ vi.hoisted(() => {
 });
 
 import {
-  computeLiveConcentricPower,
   extractLiveJointAngle,
   PHASE_LABELS,
 } from '../Live';
 
 describe('Live biomechanical telemetry & phase classification', () => {
-  it('computes realistic concentric mechanical power and velocity for squats', () => {
-    // Standard reference squat: ~66kg body displacement, 0.45m travel, 0.8s concentric
-    const normal = computeLiveConcentricPower('squat', 0.8);
-    expect(normal.powerWatts).toBeGreaterThan(300);
-    expect(normal.powerWatts).toBeLessThan(500);
-    expect(normal.velocityMs).toBeCloseTo(0.56, 1);
-
-    // Fatigued rep: 1.6s concentric duration
-    const fatigued = computeLiveConcentricPower('squat', 1.6);
-    expect(fatigued.powerWatts).toBeLessThan(normal.powerWatts);
-    expect(fatigued.velocityMs).toBeCloseTo(0.28, 1);
-  });
-
-  it('computes concentric mechanical power across diverse lift archetypes', () => {
-    const deadlift = computeLiveConcentricPower('deadlift', 1.0);
-    expect(deadlift.powerWatts).toBeGreaterThan(150);
-
-    const bench = computeLiveConcentricPower('bench_press', 0.7);
-    expect(bench.powerWatts).toBeGreaterThan(200);
-
-    const curl = computeLiveConcentricPower('bicep_curl', 0.9);
-    expect(curl.powerWatts).toBeGreaterThan(40);
-  });
 
   it('provides bilingual labels for all 4 micro-sequence phases', () => {
     const phases = ['concentric', 'amortization_sticking', 'eccentric', 'lockout_rest'];

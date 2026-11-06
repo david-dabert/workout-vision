@@ -14,7 +14,7 @@ describe('MovementOptimizationCard component', () => {
     expect(html).not.toContain('data-testid="vbt-profile-strip"');
   });
 
-  it('renders movement metrics and VBT profile strip when reps are present', () => {
+  it('renders genuine kinematic movement metrics when reps are present', () => {
     const reps = [
       { index: 1, startTime: 1.0, endTime: 3.5, concentricSec: 1.0, eccentricSec: 1.5, romDegrees: 90, peakSpeed: 100, meanSpeed: 60 },
       { index: 2, startTime: 4.0, endTime: 6.8, concentricSec: 1.2, eccentricSec: 1.6, romDegrees: 88, peakSpeed: 100, meanSpeed: 60 },
@@ -28,16 +28,12 @@ describe('MovementOptimizationCard component', () => {
     expect(html).toContain('data-testid="movement-optimization-card"');
     expect(html).toContain('ROM Stretch Score');
     expect(html).toContain('Control &amp; Tempo');
-    expect(html).toContain('Velocity Loss (VBT)');
-    expect(html).toContain('Mechanical Work');
     expect(html).toContain('Time Under Tension (TUT)');
-    expect(html).toContain('data-testid="smas-adaptation-metric"');
-    expect(html).toContain('Neuromuscular Adaptation (S-MAS)');
-    expect(html).toContain('data-testid="vbt-profile-strip"');
-    expect(html).toContain('data-testid="vbt-rep-1"');
-    expect(html).toContain('data-testid="vbt-rep-2"');
-    expect(html).toContain('data-testid="vbt-rep-3"');
     expect(html).toContain('Hypertrophic Stimulus Cues');
+    expect(html).not.toContain('Velocity Loss');
+    expect(html).not.toContain('Mechanical Work');
+    expect(html).not.toContain('S-MAS');
+    expect(html).not.toContain('vbt-profile-strip');
   });
 
   it('renders French labels and non-breaking space typography when fr=true', () => {
@@ -52,13 +48,13 @@ describe('MovementOptimizationCard component', () => {
 
     expect(html).toContain('Optimisation Biomécanique');
     expect(html).toContain('Score d’amplitude (ROM)');
-    expect(html).toContain('Profil de Vitesse par Répétition (VBT)');
-    expect(html).toContain('Adaptation neuromusculaire (S-MAS)');
     expect(html).toContain('Recommandations hypertrophie');
     expect(html).toContain('Moyenne\u00A0:');
+    expect(html).not.toContain('Profil de Vitesse');
+    expect(html).not.toContain('S-MAS');
   });
 
-  it('renders sticking point callout and path fidelity when continuous result with angles is provided', () => {
+  it('renders path fidelity when continuous result with angles is provided', () => {
     const fps = 20;
     const dt = 1 / fps;
     const angles = [];
@@ -103,8 +99,7 @@ describe('MovementOptimizationCard component', () => {
     expect(html).toContain('data-testid="movement-optimization-card"');
     expect(html).toContain('data-testid="form-fidelity-metric"');
     expect(html).toContain('Path Fidelity');
-    expect(html).toContain('data-testid="sticking-point-box"');
-    expect(html).toContain('Sticking Point');
+    expect(html).not.toContain('data-testid="sticking-point-box"');
   });
 
   it('renders machine guidance banner and stretch hypertrophy metric for machine movements', () => {
@@ -136,7 +131,7 @@ describe('MovementOptimizationCard component', () => {
 
     expect(htmlFr).toContain('data-testid="coach-prescription-card"');
     expect(htmlFr).toContain('Le Verdict du Coach');
-    expect(htmlFr).toContain('data-testid="compliance-score"');
+    expect(htmlFr).not.toContain('data-testid="compliance-score"');
     expect(htmlFr).toContain('data-testid="next-set-prescription"');
     expect(htmlFr).toContain('Consigne pour la série suivante');
     expect(htmlFr).toContain('Focus mental\u00A0:');

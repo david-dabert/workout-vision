@@ -33,9 +33,9 @@ export interface RepVelocityProfile {
   concentricSec: number;
   eccentricSec: number;
   romDegrees: number;
-  velocityLossPercent: number; // % loss relative to fastest rep in set
-  tier: 'speed' | 'optimal_hypertrophy' | 'failure';
-  powerWatts?: number;         // mechanical concentric power (Watts)
+  velocityLossPercent?: number | null;
+  tier?: 'speed' | 'optimal_hypertrophy' | 'failure' | null;
+  powerWatts?: number | null;
 }
 
 export interface StickingPointMarker {
@@ -60,13 +60,13 @@ export interface MovementOptimizationResult {
   averageRomDeg: number;       // degrees
   averageEccentricSec: number; // seconds
   averageConcentricSec: number;// seconds
-  velocityLossPercent: number; // 0 - 100 %
-  fatigueTier: 'speed' | 'optimal_hypertrophy' | 'failure';
-  mechanicalWorkKj: number;    // kJ
-  caloriesKcal: number;        // kcal (indicative estimate per R8)
-  averagePowerWatts: number;   // average concentric mechanical power (Watts)
-  peakPowerWatts: number;      // peak concentric mechanical power (Watts)
-  powerLossPercent: number;    // % drop from peak to final rep power
+  velocityLossPercent?: number | null;
+  fatigueTier?: 'speed' | 'optimal_hypertrophy' | 'failure' | null;
+  mechanicalWorkKj?: number | null;
+  caloriesKcal?: number | null;
+  averagePowerWatts?: number | null;
+  peakPowerWatts?: number | null;
+  powerLossPercent?: number | null;
   timeUnderTensionSec: number; // seconds
   tempoCadence: string;        // e.g. "2-0-1"
   repVelocityProfiles: RepVelocityProfile[];
@@ -78,7 +78,7 @@ export interface MovementOptimizationResult {
   pathEfficiencyPercent?: number | null;
   sagittalDriftPercent?: number | null;
   audioSyncConfidence?: number | null;
-  lumbarKinetics?: LumbarKineticsSummary;
+  lumbarKinetics?: LumbarKineticsSummary | null;
   morphology?: MorphologyProfile | null;
   groundStabilityScore?: number | null;
   bvhData?: string | null;
@@ -104,24 +104,6 @@ const ARCHETYPE_ROM_TARGETS: Record<KinematicArchetype, number> = {
   isolation: 80,  // curl, pushdown, lateral raise excursion
 };
 
-// Effective displaced mass (kg) for physics-based mechanical work estimation
-const ARCHETYPE_DISPLACED_MASS_KG: Record<KinematicArchetype, number> = {
-  squat: 66,      // ~88% of 75kg standard reference adult mass
-  hinge: 50,      // ~67% of bodyweight + bar travel
-  push: 52,       // ~68% of bodyweight (push-up) or standard working press resistance
-  pull: 70,       // ~93% for pull-up / pulldown working resistance
-  isolation: 15,  // standard dumbbell / cable isolation effective resistance
-};
-
-// Reference vertical travel distance (meters) at 100% target ROM
-const ARCHETYPE_DISPLACEMENT_METERS: Record<KinematicArchetype, number> = {
-  squat: 0.45,
-  hinge: 0.40,
-  push: 0.35,
-  pull: 0.40,
-  isolation: 0.30,
-};
-
 // Target eccentric time (seconds) for controlled hypertrophic tempo
 const TARGET_ECCENTRIC_SEC = 2.0;
 const MIN_CONTROLLED_ECCENTRIC_SEC = 1.0;
@@ -145,13 +127,13 @@ export function analyzeMovementOptimization(
       averageRomDeg: 0,
       averageEccentricSec: 0,
       averageConcentricSec: 0,
-      velocityLossPercent: 0,
-      fatigueTier: 'speed',
-      mechanicalWorkKj: 0,
-      caloriesKcal: 0,
-      averagePowerWatts: 0,
-      peakPowerWatts: 0,
-      powerLossPercent: 0,
+      velocityLossPercent: null,
+      fatigueTier: null,
+      mechanicalWorkKj: null,
+      caloriesKcal: null,
+      averagePowerWatts: null,
+      peakPowerWatts: null,
+      powerLossPercent: null,
       timeUnderTensionSec: 0,
       tempoCadence: '0-0-0',
       repVelocityProfiles: [],
@@ -196,78 +178,25 @@ export function analyzeMovementOptimization(
     controlScore = Math.round(50 + ((avgEccentric - MIN_CONTROLLED_ECCENTRIC_SEC) / (TARGET_ECCENTRIC_SEC - MIN_CONTROLLED_ECCENTRIC_SEC)) * 35);
   }
 
-  // 3. Velocity Loss (%) & VBT Hypertrophic Fatigue Index
-  const concTimes = wholeReps.map(r => r.concentricSec || 0).filter(t => t > 0);
-  let velocityLossPercent = 0;
-  let fatigueTier: 'speed' | 'optimal_hypertrophy' | 'failure' = 'speed';
-
-  const minConc = concTimes.length > 0 ? Math.min(...concTimes) : 0;
-  if (concTimes.length >= 2) {
-    const lastConc = concTimes[concTimes.length - 1];
-    velocityLossPercent = Math.max(0, Math.min(100, Math.round(((lastConc - minConc) / lastConc) * 100)));
-    if (velocityLossPercent >= 35) {
-      fatigueTier = 'failure';
-    } else if (velocityLossPercent >= 20) {
-      fatigueTier = 'optimal_hypertrophy';
-    } else {
-      fatigueTier = 'speed';
-    }
-  }
-
-  // 4. Physics-based Mechanical Work (kJ), Concentric Power (Watts) & Caloric Expenditure (kcal)
-  const refMass = ARCHETYPE_DISPLACED_MASS_KG[archetype] || 50;
-  const refDisp = ARCHETYPE_DISPLACEMENT_METERS[archetype] || 0.40;
-  const g = 9.81; // m/s²
-
-  // Calculate per-rep mechanical work (Joules) and concentric power (Watts)
-  const repWorkAndPower = wholeReps.map(r => {
-    const repRom = r.romDegrees || avgRom;
-    const disp = refDisp * Math.max(0.3, Math.min(1.5, repRom / targetRom));
-    const repJoules = refMass * g * disp;
-    const concSec = r.concentricSec && r.concentricSec > 0 ? r.concentricSec : Math.max(0.3, avgConcentric);
-    const powerWatts = Math.round(repJoules / concSec);
-    return { joules: repJoules, powerWatts };
-  });
-
-  const totalWorkJoules = repWorkAndPower.reduce((sum, item) => sum + item.joules, 0);
-  const mechanicalWorkKj = Math.round((totalWorkJoules / 1000) * 10) / 10;
-  // Metabolic energy: skeletal muscle efficiency ~0.22, eccentric phase factor ~1.25, 4184 Joules/kcal
-  const caloriesKcal = Math.round(((totalWorkJoules * 1.25) / (0.22 * 4184)) * 10) / 10;
-
-  const powers = repWorkAndPower.map(p => p.powerWatts);
-  const averagePowerWatts = powers.length > 0 ? Math.round(powers.reduce((a, b) => a + b, 0) / powers.length) : 0;
-  const peakPowerWatts = powers.length > 0 ? Math.max(...powers) : 0;
-  const lastRepPower = powers.length > 0 ? powers[powers.length - 1] : 0;
-  const powerLossPercent = peakPowerWatts > 0 ? Math.max(0, Math.round(((peakPowerWatts - lastRepPower) / peakPowerWatts) * 100)) : 0;
-
-  // Construct rep velocity profile for each whole rep
+  // 3. Construct rep profile for each whole rep (genuinely measured timings & degrees only)
   const repVelocityProfiles: RepVelocityProfile[] = wholeReps.map((r, idx) => {
     const durationSec = Math.round(((r.endTime || 0) - (r.startTime || 0)) * 100) / 100;
     const conc = Math.round((r.concentricSec || 0) * 100) / 100;
     const ecc = Math.round((r.eccentricSec || 0) * 100) / 100;
     const rom = Math.round((r.romDegrees || 0) * 10) / 10;
-    const repLoss = (minConc > 0 && conc > 0)
-      ? Math.max(0, Math.min(100, Math.round(((conc - minConc) / conc) * 100)))
-      : 0;
-    let tier: 'speed' | 'optimal_hypertrophy' | 'failure' = 'speed';
-    if (repLoss >= 35) {
-      tier = 'failure';
-    } else if (repLoss >= 20) {
-      tier = 'optimal_hypertrophy';
-    }
     return {
       repIndex: idx + 1,
       durationSec,
       concentricSec: conc,
       eccentricSec: ecc,
       romDegrees: rom,
-      velocityLossPercent: repLoss,
-      tier,
-      powerWatts: repWorkAndPower[idx]?.powerWatts ?? 0,
+      velocityLossPercent: null,
+      tier: null,
+      powerWatts: null,
     };
   });
 
-  // 5. Time Under Tension (TUT) and Tempo Cadence
+  // 4. Time Under Tension (TUT) and Tempo Cadence
   const tutSum = wholeReps.reduce((sum, r) => sum + Math.max(0, (r.endTime || 0) - (r.startTime || 0)), 0);
   const timeUnderTensionSec = tutSum > 0
     ? Math.round(tutSum * 10) / 10
@@ -275,7 +204,7 @@ export function analyzeMovementOptimization(
 
   const tempoCadence = `${Math.max(1, Math.round(avgEccentric))}-0-${Math.max(1, Math.round(avgConcentric))}`;
 
-  // 6. Determine Form Quality Badge
+  // 5. Determine Form Quality Badge
   let formBadge: FormBadge;
   if (avgEccentric < MIN_CONTROLLED_ECCENTRIC_SEC) {
     formBadge = {
@@ -314,7 +243,7 @@ export function analyzeMovementOptimization(
     };
   }
 
-  // 7. Construct 2–3 Actionable Hypertrophy Coaching Points
+  // 6. Construct Actionable Hypertrophy Coaching Points
   const coachingPoints: string[] = [];
   const exercise = getExercise(lift);
 
@@ -333,26 +262,8 @@ export function analyzeMovementOptimization(
     );
   }
 
-  // Point 2: Velocity Loss & Fatigue Analysis
-  if (fatigueTier === 'optimal_hypertrophy') {
-    coachingPoints.push(
-      fr
-        ? `Perte de vitesse de ${velocityLossPercent}%\u00A0: zone idéale d’hypertrophie mécanique sans épuisement nerveux excessif.`
-        : `Velocity loss of ${velocityLossPercent}%: optimal hypertrophy stimulus with high motor unit recruitment.`
-    );
-  } else if (fatigueTier === 'failure') {
-    coachingPoints.push(
-      fr
-        ? `Perte de vitesse de ${velocityLossPercent}%\u00A0: échec musculaire atteint. Accordez 2 à 3 minutes de repos complet avant la prochaine série.`
-        : `Velocity loss of ${velocityLossPercent}%: muscular failure reached. Allow 2–3 minutes of complete rest before your next set.`
-    );
-  } else if (velocityLossPercent > 0) {
-    coachingPoints.push(
-      fr
-        ? `Perte de vitesse modérée (${velocityLossPercent}%)\u00A0: série dynamique. Pour stimuler l’hypertrophie, rapprochez-vous de l’échec.`
-        : `Moderate velocity loss (${velocityLossPercent}%): explosive or warmup set. Train closer to failure for maximal muscle growth.`
-    );
-  } else if (avgEccentric >= 1.8) {
+  // Point 2: Eccentric phase tempo control
+  if (avgEccentric >= 1.8) {
     coachingPoints.push(
       fr
         ? `Phase excentrique de ${avgEccentric.toFixed(1)}s bien contrôlée\u00A0: suppression totale de l'élan et tension mécanique continue.`
@@ -386,69 +297,7 @@ export function analyzeMovementOptimization(
     coachingPoints.push(genericCue);
   }
 
-  // Point 4: L5/S1 Lumbar Spine Biomechanical Inverse Dynamics
-  const trunkAngleEstimate = archetype === 'hinge' ? 50 : archetype === 'squat' ? 35 : archetype === 'pull' ? 30 : 10;
-  const rad = (trunkAngleEstimate * Math.PI) / 180;
-  const lms = Array.from({ length: 33 }, () => ({ x: 0.5, y: 0.5, z: 0, visibility: 0.9 }));
-  const trunkLen = 0.4;
-  lms[11] = { x: 0.5 + trunkLen * Math.sin(rad) - 0.05, y: 0.6 - trunkLen * Math.cos(rad), z: 0, visibility: 0.95 };
-  lms[12] = { x: 0.5 + trunkLen * Math.sin(rad) + 0.05, y: 0.6 - trunkLen * Math.cos(rad), z: 0, visibility: 0.95 };
-  lms[23] = { x: 0.45, y: 0.6, z: 0, visibility: 0.95 };
-  lms[24] = { x: 0.55, y: 0.6, z: 0, visibility: 0.95 };
-
-  const l5s1Calc = computeL5S1InverseDynamics({
-    landmarks: lms,
-    lift,
-  });
-
-  const lumbarKinetics: LumbarKineticsSummary | undefined = l5s1Calc ? {
-    peakCompressiveForceN: l5s1Calc.compressiveForceN,
-    peakShearForceN: l5s1Calc.shearForceN,
-    peakReactionTorqueNm: l5s1Calc.reactionTorqueNm,
-    safetyTier: l5s1Calc.safetyTier,
-    advice: l5s1Calc.advice,
-  } : undefined;
-
-  if (lumbarKinetics?.safetyTier === 'high_shear_risk') {
-    coachingPoints.push(
-      fr
-        ? 'Alerte lombaire\u00A0: cisaillement L5/S1 élevé (>500 N). Maintenez le dos neutre et engagez le plancher pelvien.'
-        : 'Lumbar alert: high L5/S1 shear (>500 N). Maintain neutral spine and brace your core.'
-    );
-  }
-
-  // Point 5: Multi-Morphology Anthropometric Retargeting
-  const morphoLms: Landmark3D[] = Array.from({ length: 33 }, () => ({ x: 0.5, y: 0.5, z: 0, visibility: 0.95 }));
-  morphoLms[11] = { x: 0.40, y: 0.25, z: 0, visibility: 0.95 };
-  morphoLms[12] = { x: 0.60, y: 0.25, z: 0, visibility: 0.95 };
-  morphoLms[23] = { x: 0.45, y: 0.55, z: 0, visibility: 0.95 };
-  morphoLms[24] = { x: 0.55, y: 0.55, z: 0, visibility: 0.95 };
-  morphoLms[25] = { x: 0.45, y: 0.75, z: 0, visibility: 0.95 };
-  morphoLms[26] = { x: 0.55, y: 0.75, z: 0, visibility: 0.95 };
-  morphoLms[27] = { x: 0.45, y: 0.92, z: 0, visibility: 0.95 };
-  morphoLms[28] = { x: 0.55, y: 0.92, z: 0, visibility: 0.95 };
-  morphoLms[15] = { x: 0.25, y: 0.55, z: 0, visibility: 0.95 };
-  morphoLms[16] = { x: 0.75, y: 0.55, z: 0, visibility: 0.95 };
-
-  const morphology = analyzeMorphology(morphoLms);
-  if (morphology && morphology.morphotype !== 'balanced' && coachingPoints.length < 3) {
-    coachingPoints.push(fr ? morphology.biomechanicalInsight.fr : morphology.biomechanicalInsight.en);
-  }
-
-  // Point 6: Kinematic Foot-Locking Ground Stability Filter
-  const footLocker = new KinematicFootLocker({ hysteresisFrames: 2 });
-  footLocker.processFrame(morphoLms, 0);
-  const fl2 = footLocker.processFrame(morphoLms, 33);
-  const groundStabilityScore = fl2.skatingReductionPercent > 0 ? fl2.skatingReductionPercent : 96;
-
-  // Point 7: Universal 3D Mocap Generation (.bvh)
-  const bvhFrames = [
-    { landmarks: morphoLms, timestampMs: 0 },
-    { landmarks: morphoLms, timestampMs: 33 },
-  ];
-  const bvhData = exportToBVH(bvhFrames, { frameRate: 30, scale: 100 });
-
-  // Point 8: Machine Aliasing & Hypertrophy Diagnostics
+  // Point 7: Machine Aliasing & Hypertrophy Diagnostics
   const machineProfile = resolveKinematicAlias(lift);
   const repSamples = wholeReps.map(r => {
     const startMs = (r.startTime || 0) * 1000;
@@ -474,7 +323,7 @@ export function analyzeMovementOptimization(
     coachingPoints.push(fr ? hypertrophyReport.primaryCoachingTakeawayFr : hypertrophyReport.primaryCoachingTakeawayEn);
   }
 
-  // Point 9: Optimal Execution Blueprint & Coach Prescription Engine
+  // Point 8: Optimal Execution Blueprint & Coach Prescription Engine
   const optimalBlueprint = getOptimalExecutionBlueprint(lift);
   const minAngleDeg = machineProfile.restPosition === 'high' ? Math.max(45, 165 - avgRom) : undefined;
   const maxAngleDeg = machineProfile.restPosition === 'low' ? Math.min(170, 45 + avgRom) : undefined;
@@ -486,7 +335,6 @@ export function analyzeMovementOptimization(
     avgEccentricSec: avgEccentric,
     bounceCount: hypertrophyReport.bounceCount,
     continuousTensionPercent: hypertrophyReport.continuousTensionPercentage,
-    velocityLossPercent,
   };
 
   const coachPrescription = generateCoachPrescription(setTelemetry, lift, fr);
@@ -497,23 +345,23 @@ export function analyzeMovementOptimization(
     averageRomDeg: Math.round(avgRom * 10) / 10,
     averageEccentricSec: Math.round(avgEccentric * 10) / 10,
     averageConcentricSec: Math.round(avgConcentric * 10) / 10,
-    velocityLossPercent,
-    fatigueTier,
-    mechanicalWorkKj,
-    caloriesKcal,
-    averagePowerWatts,
-    peakPowerWatts,
-    powerLossPercent,
+    velocityLossPercent: null,
+    fatigueTier: null,
+    mechanicalWorkKj: null,
+    caloriesKcal: null,
+    averagePowerWatts: null,
+    peakPowerWatts: null,
+    powerLossPercent: null,
     timeUnderTensionSec,
     tempoCadence,
     repVelocityProfiles,
     formBadge,
     coachingPoints: coachingPoints.slice(0, 3),
     stickingPoints: [],
-    lumbarKinetics,
-    morphology,
-    groundStabilityScore,
-    bvhData,
+    lumbarKinetics: null,
+    morphology: null,
+    groundStabilityScore: null,
+    bvhData: null,
     hypertrophyReport,
     machineProfile,
     optimalBlueprint,

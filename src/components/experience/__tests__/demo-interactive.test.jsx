@@ -15,7 +15,7 @@ import { DemoView } from '../Demo';
 import DemoInteractiveLab from '../DemoInteractiveLab';
 
 describe('Front Door Reframing & Interactive Biomechanics Lab Demo', () => {
-  it('renders reframed biomechanics laboratory & VBT copy on Entry in French', () => {
+  it('renders honest repetition counting copy on Entry in French', () => {
     globalThis.localStorage = { getItem: k => (k === 'wv_lang' ? 'fr' : null), setItem: () => {} };
     const html = renderToStaticMarkup(
       <LanguageProvider>
@@ -23,12 +23,11 @@ describe('Front Door Reframing & Interactive Biomechanics Lab Demo', () => {
       </LanguageProvider>
     );
 
-    expect(html).toContain('Laboratoire de biomécanique et Velocity-Based Training sur votre téléphone. Zéro capteur. Zéro serveur.');
-    expect(html).toContain('Démo biomécanique (1 clic)');
-    expect(html).toContain('entry-interactive');
+    expect(html).toContain('Comptage de répétitions et analyse du mouvement sur votre téléphone. La vidéo reste sur votre téléphone.');
+    expect(html).not.toContain('entry-interactive');
   });
 
-  it('renders reframed biomechanics laboratory & VBT copy on Entry in English', () => {
+  it('renders honest repetition counting copy on Entry in English', () => {
     globalThis.localStorage = { getItem: k => (k === 'wv_lang' ? 'en' : null), setItem: () => {} };
     const html = renderToStaticMarkup(
       <LanguageProvider>
@@ -36,12 +35,11 @@ describe('Front Door Reframing & Interactive Biomechanics Lab Demo', () => {
       </LanguageProvider>
     );
 
-    expect(html).toContain('Biomechanics laboratory and Velocity-Based Training on your phone. Zero sensors. Zero servers.');
-    expect(html).toContain('Interactive Biomechanics Demo (1-click)');
-    expect(html).toContain('entry-interactive');
+    expect(html).toContain('Repetition counting and movement analysis on your phone. The video stays on your phone.');
+    expect(html).not.toContain('entry-interactive');
   });
 
-  it('renders interactive lab button in DemoVideos on squat video when onOpenLab is provided', () => {
+  it('hides unmeasured interactive lab button in DemoVideos in production', () => {
     const mockResult = { reps: [], count: 5 };
     const html = renderToStaticMarkup(
       <LanguageProvider>
@@ -59,8 +57,7 @@ describe('Front Door Reframing & Interactive Biomechanics Lab Demo', () => {
       </LanguageProvider>
     );
 
-    expect(html).toContain('demo-video-lab-btn');
-    expect(html).toContain('Explorer en laboratoire interactif (Watts, 3D)');
+    expect(html).not.toContain('demo-video-lab-btn');
   });
 
   it('renders interactive lab screen with real telemetry facts and controls', () => {

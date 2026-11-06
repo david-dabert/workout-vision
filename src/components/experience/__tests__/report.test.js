@@ -247,7 +247,7 @@ describe('reportPdf', () => {
     const s = reportSheet({ ...base, lift: 'lateral_raise', reps, count: 6, counted: 6, arm: 'left', pain: 7, rpe: 9 });
     expect(s.optimization).not.toBeNull();
     expect(s.optimization.coachPrescription).toBeDefined();
-    expect(s.optimizationMetrics.length).toBe(11);
+    expect(s.optimizationMetrics.length).toBe(4);
     expect(s.optimizationMetrics[0].label).toContain('amplitude');
     const blob = reportPdf(s);
     expect(blob).toBeInstanceOf(Blob);
