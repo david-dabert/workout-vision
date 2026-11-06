@@ -75,7 +75,13 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright --version
-      - run: npx playwright install --with-deps chromium webkit
+      - name: Install Playwright browsers and dependencies
+        run: |
+          for attempt in 1 2 3; do
+            timeout 180 npx playwright install --with-deps chromium webkit && break
+            echo "Playwright install attempt $attempt timed out or failed; retrying..."
+            sleep 5
+          done
       # Live counting and contributions are off in production (src/lib/buildFlags.js; deploy.yml leaves VITE_LIVE and
       # VITE_CONTRIBUTE unset): this build switches both on, so their tests still run (live.spec.js, contribute*.spec.js).
       # The production build itself is built and tested by playwright.config.js on port 4176 (e2e/build-flags.spec.js).
@@ -118,7 +124,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps webkit
+      - name: Install Playwright WebKit and dependencies
+        run: |
+          for attempt in 1 2 3; do
+            timeout 180 npx playwright install --with-deps webkit && break
+            echo "Playwright install attempt $attempt timed out or failed; retrying..."
+            sleep 5
+          done
       - run: npm run build
       - name: Serve the production build
         run: |
@@ -168,6 +180,7 @@ jobs:
   journey:
     name: Journey (synthetic sets, production build)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       SETS: ${{ github.workspace }}/.journey-sets
     steps:
@@ -177,7 +190,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - name: Install Playwright Chromium and dependencies
+        run: |
+          for attempt in 1 2 3; do
+            timeout 180 npx playwright install --with-deps chromium && break
+            echo "Playwright install attempt $attempt timed out or failed; retrying..."
+            sleep 5
+          done
       # The lateral raise's journey keeps a contribution (CONTRIBUTE=1, below): contributions, paused in production
       # (src/lib/buildFlags.js, WP0.4), are switched on for this build so that path stays tested.
       - run: VITE_CONTRIBUTE=1 npm run build
