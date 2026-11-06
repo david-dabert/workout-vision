@@ -1692,8 +1692,14 @@ function placeBoundaries(
 
     const outer = [left, reached].filter((v): v is number => v !== null).reduce(furtherOut, restsLow ? Infinity : -Infinity);
     const rom = Number.isFinite(outer) ? Math.abs(outer - work) : Math.abs((smoothed[start] ?? work) - work);
-    const firstSec = timestamps[workFrom] - timestamps[start];
-    const secondSec = timestamps[end] - timestamps[workTo];
+    const wf = workFrom > start && (timestamps[workFrom] - timestamps[start] >= 0.2 || timestamps[first] - timestamps[start] < 0.2)
+      ? workFrom
+      : first;
+    const wt = workTo < end && workTo >= wf && (timestamps[end] - timestamps[workTo] >= 0.2 || timestamps[end] - timestamps[last] < 0.2)
+      ? workTo
+      : last;
+    const firstSec = timestamps[wf] - timestamps[start];
+    const secondSec = timestamps[end] - timestamps[wt];
     const clipped = left === null || after === null || start <= firstValid || end >= lastValid;
     // Angular speed from the smoothed angle, frame to frame.
     let peak = 0, speedSum = 0, speedN = 0;
