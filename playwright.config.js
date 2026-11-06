@@ -10,6 +10,7 @@ export default defineConfig({
     // Where Playwright's own Chromium is absent, PW_CHROMIUM names a Chromium binary to use.
     ...(process.env.PW_CHROMIUM ? { launchOptions: { executablePath: process.env.PW_CHROMIUM } } : {}),
   },
+  snapshotPathTemplate: '{testDir}/{testFileDir}/{testFileName}-snapshots/{arg}-{platform}{ext}',
   projects: [
     {
       name: 'core',
