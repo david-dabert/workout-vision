@@ -66,6 +66,7 @@ jobs:
   e2e:
     name: Browser tests (Chromium and WebKit)
     runs-on: ubuntu-latest
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -109,6 +110,7 @@ jobs:
   tour:
     name: Tour (WebKit, iPhone profile, three sizes)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
