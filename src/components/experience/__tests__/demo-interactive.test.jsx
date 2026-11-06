@@ -23,8 +23,8 @@ describe('Front Door Reframing & Interactive Biomechanics Lab Demo', () => {
       </LanguageProvider>
     );
 
-    expect(html).toContain('Laboratoire de biomécanique et Velocity-Based Training sur votre téléphone. Zéro capteur. Zéro serveur.');
-    expect(html).toContain('Démo biomécanique (1 clic)');
+    expect(html).toContain('Comptage de répétitions souverain sur votre téléphone. Zéro capteur. Zéro serveur.');
+    expect(html).toContain('Démo type (1 clic)');
     expect(html).toContain('entry-interactive');
   });
 
@@ -36,8 +36,8 @@ describe('Front Door Reframing & Interactive Biomechanics Lab Demo', () => {
       </LanguageProvider>
     );
 
-    expect(html).toContain('Biomechanics laboratory and Velocity-Based Training on your phone. Zero sensors. Zero servers.');
-    expect(html).toContain('Interactive Biomechanics Demo (1-click)');
+    expect(html).toContain('Sovereign rep counting on your phone. Zero sensors. Zero servers.');
+    expect(html).toContain('Sample demo (1-click)');
     expect(html).toContain('entry-interactive');
   });
 

@@ -1,0 +1,99 @@
+/* NavigationShell.css: Persistent 3-destination app shell (Train, Progress, Explore) */
+/* Zero raw colour literals: strictly uses tokens and variables */
+
+.wv-nav-shell {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 900;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--s-3) max(var(--s-3), env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+.wv-nav-bar {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 100%;
+  max-width: 440px;
+  min-height: 60px;
+  padding: var(--s-1) var(--s-2);
+  border-radius: var(--r-l);
+  background: var(--depth-1);
+  border: 1px solid var(--hair-2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px var(--shadow-deep);
+}
+
+.wv-nav-tab {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 48px;
+  padding: var(--s-1) 0;
+  background: transparent;
+  border: none;
+  color: var(--c-fg-muted);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all var(--d-fast) var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wv-nav-tab:hover {
+  color: var(--c-fg);
+}
+
+.wv-nav-tab.is-active {
+  color: var(--c-accent);
+}
+
+.wv-nav-ico {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  transition: transform var(--d-fast) var(--ease);
+}
+
+.wv-nav-tab:active .wv-nav-ico {
+  transform: scale(0.92);
+}
+
+.wv-nav-tab.is-active .wv-nav-ico {
+  transform: translateY(-1px);
+}
+
+.wv-nav-label {
+  line-height: 1;
+}
+
+.wv-nav-pill {
+  position: absolute;
+  bottom: 0;
+  width: 16px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--c-accent);
+}
+
+/* Widescreen presentation (Desktop / Tablet): top floating bar */
+@media (min-width: 768px) {
+  .wv-nav-shell {
+    top: var(--s-3);
+    bottom: auto;
+  }
+}

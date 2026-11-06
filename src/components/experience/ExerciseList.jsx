@@ -38,13 +38,13 @@ const REALM_FILTERS = [
   { id: 'back_shoulders', labelFr: 'Dos & Épaules', labelEn: 'Back & Shoulders', muscles: ['Back', 'Lats', 'Upper Back', 'Rear Delts', 'Shoulders'] },
   { id: 'legs', labelFr: 'Cuisses & Fessiers', labelEn: 'Legs & Glutes', muscles: ['Quads', 'Hamstrings', 'Glutes', 'Calves', 'Adductors', 'Legs', 'Posterior Chain'] },
   { id: 'core', labelFr: 'Tronc & Abdos', labelEn: 'Core & Abs', muscles: ['Core', 'Lower Back'] },
-  { id: 'beta', labelFr: 'Bêta (Vérifiés)', labelEn: 'Beta (Verified)', onlyBeta: true },
+  { id: 'beta', labelFr: 'Mouvements Pilotes', labelEn: 'Pilot Exercises', onlyBeta: true },
 ];
 
 // Each exercise's words for the search (search-text.js), cut once: its names, equipment and muscles in both languages.
 const WORDS = new Map([...ENTRIES, ...ALL].map(e => [e.key, searchWords([e.fr, e.name, ...e.aliases, e.equipment, EQUIPMENT[e.equipment], ...e.muscles, ...e.muscles.map(m => MUSCLE_FR[m] || '')].join(' '))]));
 
-// The list's honesty line: unless marked Beta, what the app counts is experimental (R8). The coach's picker keeps it
+// The list's honesty line: unless marked Pilot, what the app counts is experimental (R8). The coach's picker keeps it
 // (review of 14 October 2026: the picker had lost it with the exercise sheet), said of the counted exercises only,
 // since it lists the guide's others too; copy.note follows it there. EXPERIMENTAL_ALL: French awaiting David's
 // approval (R10).
