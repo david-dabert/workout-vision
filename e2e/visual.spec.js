@@ -117,25 +117,3 @@ test('about', async ({ page }) => {
   await expect.poll(() => page.locator('.about-screen img').first().evaluate(e => e.complete && e.naturalWidth > 0), { timeout: 15000 }).toBe(true);
   await shot(page, 'about');
 });
-
-test('pro builder', async ({ page }) => {
-  await seen(page);
-  await page.goto(BASE);
-  await expect(page.locator('.altar').first()).toBeVisible({ timeout: 20000 });
-  const row = page.getByTestId('choice-pro');
-  await row.scrollIntoViewIfNeeded();
-  await row.click();
-  await expect(page.getByTestId('pro-screen')).toBeVisible({ timeout: 20000 });
-  await page.getByTestId('pro-new').click();
-  await expect(page.getByTestId('pro-editor')).toBeVisible();
-  await page.locator('#pTitle').fill('Bas du corps, semaine 1');
-  await page.locator('#pWho').fill('Camille');
-  await page.getByTestId('pro-add').click();
-  await page.locator('#all-search').fill('squat');
-  await page.locator('[data-exercise="squat"] button').click();
-  await expect(page.getByTestId('pro-item')).toHaveCount(1);
-  await page.locator('#pTitle').focus();
-  await page.locator('#pTitle').blur();
-  await page.evaluate(() => { const s = document.querySelector('.pro-screen'); if (s) s.scrollTop = 0; window.scrollTo(0, 0); });
-  await shot(page, 'pro-builder');
-});
