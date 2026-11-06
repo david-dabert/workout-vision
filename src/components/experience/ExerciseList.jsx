@@ -38,7 +38,7 @@ const REALM_FILTERS = [
   { id: 'back_shoulders', labelFr: 'Dos & Épaules', labelEn: 'Back & Shoulders', muscles: ['Back', 'Lats', 'Upper Back', 'Rear Delts', 'Shoulders'] },
   { id: 'legs', labelFr: 'Cuisses & Fessiers', labelEn: 'Legs & Glutes', muscles: ['Quads', 'Hamstrings', 'Glutes', 'Calves', 'Adductors', 'Legs', 'Posterior Chain'] },
   { id: 'core', labelFr: 'Tronc & Abdos', labelEn: 'Core & Abs', muscles: ['Core', 'Lower Back'] },
-  { id: 'beta', labelFr: 'Bêta (Vérifiés)', labelEn: 'Beta (Verified)', onlyBeta: true },
+  { id: 'beta', labelFr: 'Bêta', labelEn: 'Beta', onlyBeta: true },
 ];
 
 // Each exercise's words for the search (search-text.js), cut once: its names, equipment and muscles in both languages.

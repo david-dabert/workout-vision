@@ -10,6 +10,25 @@ export default defineConfig({
     // Where Playwright's own Chromium is absent, PW_CHROMIUM names a Chromium binary to use.
     ...(process.env.PW_CHROMIUM ? { launchOptions: { executablePath: process.env.PW_CHROMIUM } } : {}),
   },
+  snapshotPathTemplate: '{testDir}/{testFileDir}/{testFileName}-snapshots/{arg}-{platform}{ext}',
+  projects: [
+    {
+      name: 'core',
+      testIgnore: [
+        '**/pro.spec.js',
+        '**/pro.webkit.spec.js',
+        '**/pro-builder.visual.spec.js',
+      ],
+    },
+    {
+      name: 'extended',
+      testMatch: [
+        '**/pro.spec.js',
+        '**/pro.webkit.spec.js',
+        '**/pro-builder.visual.spec.js',
+      ],
+    },
+  ],
   // The app on port 4173 is dist as built: the tests of live counting and contributions need a build with
   // VITE_LIVE=1 and VITE_CONTRIBUTE=1 (src/lib/buildFlags.js), as ci.yml's e2e job builds it (npm run build:e2e);
   // e2e/build-flags.spec.js fails at once, and says so, on a dist built without them.

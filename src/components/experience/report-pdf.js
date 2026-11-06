@@ -147,14 +147,6 @@ export function reportPdf(sheet) {
     let py = y + 8;
     write(upper(sheet.fr ? 'Le Verdict du Coach' : 'The Coach’s Prescription'), MARGIN + 10, py, 'mono', 8.5, 1.2, COLOR.ash, 8.5 * 0.12);
 
-    const scoreVal = `${cp.executionComplianceScore}%`;
-    const scoreValW = width(scoreVal, 'serif', 17);
-    const scoreLbl = upper(sheet.fr ? 'Standard d’élite' : 'Elite Standard');
-    const scoreLblW = width(scoreLbl, 'mono', 7.5, 7.5 * 0.08);
-    const rightEdge = MARGIN + COLUMN - 10;
-    write(scoreVal, rightEdge - scoreValW, py - 2, 'serif', 17, 1, COLOR.count);
-    write(scoreLbl, rightEdge - scoreLblW, py + 14, 'mono', 7.5, 1.2, COLOR.ash, 7.5 * 0.08);
-
     py += 13;
     const tierTitle = sheet.fr ? cp.tierLabelFr : cp.tierLabelEn;
     write(tierTitle, MARGIN + 10, py, 'sansMedium', 12.5, 1.2, COLOR.ink);
@@ -210,7 +202,7 @@ export function reportPdf(sheet) {
 
     write(upper(sheet.fr ? 'Biomécanique détaillée & Cinématique 3D' : 'Detailed Biomechanics & 3D Kinematics'), MARGIN, y, 'mono', 9, 1.5, COLOR.ash, 9 * 0.12);
     y += 13.5;
-    write(sheet.fr ? 'Angles, puissance (W), perte de vitesse et cinématique' : 'Angles, power (W), velocity loss and kinematics', MARGIN, y, 'sans', 9.5, 1.3, COLOR.ash);
+    write(sheet.fr ? 'Angles, amplitude et tempo' : 'Angles, range and tempo', MARGIN, y, 'sans', 9.5, 1.3, COLOR.ash);
     y += 13 + 6;
 
     for (let r = 0; r < nRows; r++) {
@@ -244,95 +236,10 @@ export function reportPdf(sheet) {
       }
       y += rowH;
     }
-
-    const disc = sheet.fr ? '* Estimation indicative basée sur le travail mécanique de la série.' : '* Indicative estimate based on mechanical work.';
-    write(disc, MARGIN, y, 'sans', 7.5, 1.2, COLOR.ash);
-    y += 10 + GAP;
+    y += GAP;
   }
 
-  // 3. Rep-by-Rep Velocity Profile (VBT)
-  if (sheet.optimization?.repVelocityProfiles?.length) {
-    const vbt = sheet.optimization.repVelocityProfiles;
-    const vbtHeadH = 13.5 + 13 + 6;
-    const repCardH = 48;
-    const repRowH = repCardH + 8;
-
-    if (room() < vbtHeadH + repRowH && y > MARGIN) newPage();
-
-    rule();
-    y += 1 + 10;
-    write(upper(sheet.fr ? 'Profil de Vitesse par Répétition (VBT)' : 'Rep-by-Rep Velocity Profile (VBT)'), MARGIN, y, 'mono', 8.5, 1.5, COLOR.ash, 8.5 * 0.12);
-    y += 13.5;
-    write(sheet.fr ? 'Ralentissement vs rep la plus rapide' : 'Deceleration vs fastest rep', MARGIN, y, 'sans', 9, 1.3, COLOR.ash);
-    y += 13 + 4;
-
-    const perRow = Math.min(vbt.length, 4);
-    const cardGap = 8;
-    const chunkW = (COLUMN - cardGap * (perRow - 1)) / perRow;
-    for (let i = 0; i < vbt.length; i += perRow) {
-      if (room() < repRowH && y > MARGIN) newPage();
-      const chunk = vbt.slice(i, i + perRow);
-      chunk.forEach((p, k) => {
-        const rx = MARGIN + k * (chunkW + cardGap);
-        doc.setDrawColor(COLOR.rule);
-        doc.setLineWidth(0.75);
-        doc.setFillColor(COLOR.rowRule);
-        doc.roundedRect(rx, y, chunkW, repCardH, 3.5, 3.5, 'FD');
-
-        // Line 1: Rep number and velocity loss percentage
-        write(`R${p.repIndex}`, rx + 6, y + 5, 'mono', 8, 1.2, COLOR.ash);
-        const lossTxt = `${p.velocityLossPercent}%`;
-        const lossW = width(lossTxt, 'mono', 8);
-        write(lossTxt, rx + chunkW - 6 - lossW, y + 5, 'mono', 8, 1.2, p.tier === 'failure' ? COLOR.ash : COLOR.count);
-
-        // Line 2: Velocity loss progress bar
-        const bw = chunkW - 12;
-        doc.setFillColor(COLOR.rule);
-        doc.rect(rx + 6, y + 17.5, bw, 2.5, 'F');
-        doc.setFillColor(COLOR.count);
-        doc.rect(rx + 6, y + 17.5, (bw * Math.max(10, Math.min(100, p.velocityLossPercent))) / 100, 2.5, 'F');
-
-        // Line 3: Concentric duration (standalone line, guaranteed no collision)
-        const timeTxt = p.concentricSec > 0 ? `${p.concentricSec}\u00A0s` : '—';
-        write(timeTxt, rx + 6, y + 25.5, 'mono', 7.5, 1.2, COLOR.ink);
-
-        // Line 4: Mechanical power or ROM (cleanly separated on its own baseline)
-        const pwrTxt = p.powerWatts ? `${p.powerWatts}\u00A0W` : (p.romDegrees > 0 ? `${Math.round(p.romDegrees)}°` : '');
-        if (pwrTxt) {
-          write(pwrTxt, rx + 6, y + 35.5, 'mono', 7, 1.2, COLOR.ash);
-        }
-      });
-      y += repRowH;
-    }
-    y += GAP - 2;
-  }
-
-  // 4. Sticking Point
-  if (sheet.optimization?.stickingPointSummary) {
-    const spDesc = sheet.optimization.stickingPointSummary;
-    const spLines = lines(spDesc, 9.5, COLUMN - 20).lines;
-    const spH = 22 + spLines.length * 13 + 6;
-
-    if (room() < spH && y > MARGIN) newPage();
-
-    doc.setDrawColor(COLOR.rule);
-    doc.setLineWidth(1);
-    doc.setFillColor(COLOR.rowRule);
-    doc.roundedRect(MARGIN, y, COLUMN, spH, 4, 4, 'FD');
-
-    const badge = upper(sheet.fr ? 'Point de blocage' : 'Sticking Point');
-    write(badge, MARGIN + 10, y + 6, 'mono', 8, 1.2, COLOR.count, 8 * 0.08);
-    const bW = width(badge, 'mono', 8, 8 * 0.08);
-    write(sheet.fr ? 'Ralentissement biomécanique' : 'Biomechanical Deceleration', MARGIN + 16 + bW, y + 6, 'sansMedium', 9, 1.2, COLOR.ink);
-
-    spLines.forEach((l, idx) => {
-      drawLine(l, false, MARGIN + 10, y + 19 + idx * 13, 9.5, 1.3, COLOR.ink);
-    });
-
-    y += spH + GAP;
-  }
-
-  // 5. Hypertrophy Recommendations
+  // 3. Hypertrophy Recommendations
   if (sheet.optimization?.coachingPoints?.length) {
     const cues = sheet.optimization.coachingPoints;
     const cueBlocks = cues.map(c => lines(c, 9.5, COLUMN - 14));

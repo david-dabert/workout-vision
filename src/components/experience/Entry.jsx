@@ -10,6 +10,7 @@ import '@fontsource/geist/600.css';
 // The count's face (C1, design review of 7 October 2026): Geist 700, preloaded by index.html.
 import '@fontsource/geist/700.css';
 import '@fontsource/geist-mono/400.css';
+import { showUnmeasuredRoutes } from '../../lib/buildFlags';
 import './Entry.css';
 
 // The entry's words (C2 of the design review, 7 October 2026): what the app does first, then a way in, then the
@@ -17,13 +18,13 @@ import './Entry.css';
 // approved by David on 9 October 2026: test/real-phone/swarm/copy-entry.md. U+202F is not needed (no ? ! ; or « »).
 const COPY = {
   fr: {
-    title: 'Filmez votre série.', line: 'Laboratoire de biomécanique et Velocity-Based Training sur votre téléphone. Zéro capteur. Zéro serveur.',
+    title: 'Filmez votre série.', line: 'Comptage de répétitions et analyse du mouvement sur votre téléphone.',
     privacy: 'La vidéo reste sur votre téléphone.', start: 'Commencer',
     test: 'Version de test', demo: 'Voir un exemple', interactiveDemo: 'Démo biomécanique (1 clic)',
     credit: 'Conçue à Bordeaux par David Dabert',
   },
   en: {
-    title: 'Film your set.', line: 'Biomechanics laboratory and Velocity-Based Training on your phone. Zero sensors. Zero servers.',
+    title: 'Film your set.', line: 'Repetition counting and movement analysis on your phone.',
     privacy: 'The video stays on your phone.', start: 'Start',
     test: 'Test version', demo: 'See an example', interactiveDemo: 'Interactive Biomechanics Demo (1-click)',
     credit: 'Made in Bordeaux by David Dabert',
@@ -150,16 +151,18 @@ export default function Entry({ onEnter }) {
         </p>
         <div className="entry-keys">
           <button type="button" className="enter tactile" onClick={() => enter()}><span>{text.start}</span></button>
-          <button type="button" className="entry-interactive press" onClick={openLab}>
-            <span className="entry-interactive-pill">LAB</span>
-            <span>{text.interactiveDemo}</span>
-          </button>
+          {showUnmeasuredRoutes() && (
+            <button type="button" className="entry-interactive press" onClick={openLab}>
+              <span className="entry-interactive-pill">LAB</span>
+              <span>{text.interactiveDemo}</span>
+            </button>
+          )}
           <button type="button" className="entry-demo press" ref={demoBtn} onClick={openDemo}>{text.demo}</button>
         </div>
         <a className="entry-credit" href="#about" onClick={e => { e.preventDefault(); enter('about'); }}>{text.credit}{'\u00A0'}<span aria-hidden="true">›</span></a>
       </div>
     </section>
-    {Lab && <Lab onClose={closeLab} onStart={() => { closeLab(); enter(); }} />}
-    {Demo && <Demo onClose={closeDemo} onStart={enter} onOpenLab={openLab} />}
+    {showUnmeasuredRoutes() && Lab && <Lab onClose={closeLab} onStart={() => { closeLab(); enter(); }} />}
+    {Demo && <Demo onClose={closeDemo} onStart={enter} onOpenLab={showUnmeasuredRoutes() ? openLab : undefined} />}
   </div>;
 }

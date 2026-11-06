@@ -370,11 +370,12 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
 }
 
 /**
- * Builds the 11 detailed biomechanics metrics array for the PDF and sheet preview.
+ * Builds the detailed biomechanics metrics array for the PDF and sheet preview.
+ * Displays only genuinely measured metrics with zero invented fallbacks.
  */
 export function buildOptimizationMetrics(opt, fr) {
   if (!opt) return [];
-  return [
+  const metrics = [
     {
       label: fr ? 'Score d’amplitude (ROM)' : 'ROM Stretch Score',
       val: `${opt.romScore}%`,
@@ -388,74 +389,36 @@ export function buildOptimizationMetrics(opt, fr) {
       fillPct: Math.min(100, opt.controlIndex),
     },
     {
-      label: fr ? 'Perte de vitesse' : 'Velocity Loss',
-      val: `${opt.velocityLossPercent}%`,
-      sub: fr
-        ? (opt.fatigueTier === 'optimal_hypertrophy' ? 'Zone hypertrophie' : opt.fatigueTier === 'failure' ? 'Échec musculaire' : 'Vitesse / Dynamique')
-        : (opt.fatigueTier === 'optimal_hypertrophy' ? 'Hypertrophy target' : opt.fatigueTier === 'failure' ? 'Muscular failure' : 'Speed / Explosive'),
-      fillPct: Math.min(100, Math.max(10, opt.velocityLossPercent)),
-    },
-    {
-      label: fr ? 'Puissance concentrique' : 'Concentric Power',
-      val: `${opt.averagePowerWatts}\u00A0W`,
-      sub: fr
-        ? `Pic\u00A0: ${opt.peakPowerWatts}\u00A0W (chute\u00A0: ${opt.powerLossPercent}%)`
-        : `Peak: ${opt.peakPowerWatts}\u00A0W (drop: ${opt.powerLossPercent}%)`,
-      fillPct: Math.min(100, Math.max(15, (opt.averagePowerWatts / Math.max(1, opt.peakPowerWatts || 300)) * 100)),
-    },
-    {
-      label: fr ? 'Travail mécanique' : 'Mechanical Work',
-      val: `${opt.mechanicalWorkKj}\u00A0kJ`,
-      sub: fr ? `Dépense est.\u00A0: ~${opt.caloriesKcal}\u00A0kcal*` : `Est. energy: ~${opt.caloriesKcal}\u00A0kcal*`,
-      fillPct: Math.min(100, Math.max(15, opt.mechanicalWorkKj * 20)),
-    },
-    {
       label: fr ? 'Temps sous tension (TUT)' : 'Time Under Tension (TUT)',
       val: `${opt.timeUnderTensionSec}\u00A0s`,
       sub: fr ? `Cadence\u00A0: ${opt.tempoCadence}` : `Tempo: ${opt.tempoCadence}`,
       fillPct: Math.min(100, Math.max(15, opt.timeUnderTensionSec * 3)),
     },
-    {
+  ];
+
+  if (opt.formDistortionScore !== null && opt.formDistortionScore !== undefined) {
+    metrics.push({
       label: fr ? 'Fidélité de trajectoire' : 'Path Fidelity',
-      val: `${opt.formDistortionScore !== null && opt.formDistortionScore !== undefined ? Math.round(Math.max(0, 1 - opt.formDistortionScore) * 100) : 93}%`,
+      val: `${Math.round(Math.max(0, 1 - opt.formDistortionScore) * 100)}%`,
       sub: opt.pathEfficiencyPercent !== null && opt.pathEfficiencyPercent !== undefined
         ? (fr ? `Efficacité axiale\u00A0: ${opt.pathEfficiencyPercent}%` : `Axial efficiency: ${opt.pathEfficiencyPercent}%`)
-        : (fr ? 'Efficacité axiale\u00A0: 94%' : 'Axial efficiency: 94%'),
-      fillPct: opt.formDistortionScore !== null && opt.formDistortionScore !== undefined ? Math.round(Math.max(10, Math.min(100, (1 - opt.formDistortionScore) * 100))) : 93,
-    },
-    {
-      label: fr ? 'Cisaillement lombaire (L5/S1)' : 'Lumbar Shear (L5/S1)',
-      val: `${opt.lumbarKinetics ? opt.lumbarKinetics.peakShearForceN : 91}\u00A0N`,
-      sub: opt.lumbarKinetics
-        ? (fr ? `Compression\u00A0: ${opt.lumbarKinetics.peakCompressiveForceN}\u00A0N (limite\u00A0: 3400\u00A0N)` : `Compression: ${opt.lumbarKinetics.peakCompressiveForceN}\u00A0N (limit: 3400\u00A0N)`)
-        : (fr ? 'Compression\u00A0: 917\u00A0N (limite\u00A0: 3400\u00A0N)' : 'Compression: 917\u00A0N (limit: 3400\u00A0N)'),
-      fillPct: opt.lumbarKinetics ? Math.min(100, Math.round((opt.lumbarKinetics.peakShearForceN / 600) * 100)) : 15,
-    },
-    {
-      label: fr ? 'Morphologie & Leviers' : 'Anatomy & Levers',
-      val: `${opt.morphology ? opt.morphology.femurTibiaRatio : '1.18'} (F/T)`,
-      sub: opt.morphology
-        ? (fr ? opt.morphology.morphotypeLabel.fr : opt.morphology.morphotypeLabel.en)
-        : (fr ? 'Fémurs longs (dominant hanches)' : 'Long femurs (hip dominant)'),
-      fillPct: opt.morphology ? Math.min(100, Math.round((opt.morphology.femurTibiaRatio / 1.3) * 100)) : 80,
-    },
-    {
-      label: fr ? 'Ancrage sol cinématique' : 'Ground Stability',
-      val: `${opt.groundStabilityScore !== null && opt.groundStabilityScore !== undefined ? opt.groundStabilityScore : 96}%`,
-      sub: fr ? 'Zéro glissement (ZUPT cinématique)' : 'Zero foot skating (ZUPT lock)',
-      fillPct: opt.groundStabilityScore !== null && opt.groundStabilityScore !== undefined ? opt.groundStabilityScore : 96,
-    },
-    {
+        : '—',
+      fillPct: Math.round(Math.max(10, Math.min(100, (1 - opt.formDistortionScore) * 100))),
+    });
+  }
+
+  if (opt.hypertrophyReport) {
+    metrics.push({
       label: fr ? 'Tension d’étirement' : 'Stretch Hypertrophy',
-      val: `${opt.hypertrophyReport ? opt.hypertrophyReport.avgStretchScore : 100}%`,
-      sub: opt.hypertrophyReport
-        ? (opt.hypertrophyReport.bounceCount === 0
-            ? (fr ? 'Inversion contrôlée sans rebond' : 'Controlled reversal, zero bounce')
-            : (fr ? `${opt.hypertrophyReport.bounceCount} rebond(s) d’élan détecté(s)` : `${opt.hypertrophyReport.bounceCount} momentum bounce(s) detected`))
-        : (fr ? '6 rebond(s) d’élan détecté(s)' : '6 momentum bounce(s) detected'),
-      fillPct: opt.hypertrophyReport ? Math.min(100, Math.max(10, opt.hypertrophyReport.avgStretchScore)) : 100,
-    },
-  ];
+      val: `${opt.hypertrophyReport.avgStretchScore}%`,
+      sub: opt.hypertrophyReport.bounceCount === 0
+        ? (fr ? 'Inversion contrôlée sans rebond' : 'Controlled reversal, zero bounce')
+        : (fr ? `${opt.hypertrophyReport.bounceCount} rebond(s) d’élan détecté(s)` : `${opt.hypertrophyReport.bounceCount} momentum bounce(s) detected`),
+      fillPct: Math.min(100, Math.max(10, opt.hypertrophyReport.avgStretchScore)),
+    });
+  }
+
+  return metrics;
 }
 
 /**

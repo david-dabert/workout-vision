@@ -63,37 +63,7 @@ describe('Movement Optimization & Kinematic Hypertrophy Engine', () => {
     expect(result.coachingPoints[0]).toContain('étirement');
   });
 
-  it('calculates velocity loss and classifies fatigue tier correctly', () => {
-    // Rep 1: 1.0s conc (fastest); Rep 2: 1.2s; Rep 3: 1.5s (fatigued) -> (1.5 - 1.0)/1.5 = 33% (optimal_hypertrophy)
-    const hypertrophyReps: RepDetail[] = [
-      { index: 1, startTime: 0, endTime: 3.5, concentricSec: 1.0, eccentricSec: 2.5, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
-      { index: 2, startTime: 4, endTime: 7.7, concentricSec: 1.2, eccentricSec: 2.5, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
-      { index: 3, startTime: 8, endTime: 12.0, concentricSec: 1.5, eccentricSec: 2.5, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
-    ];
-    const hypResult = analyzeMovementOptimization(hypertrophyReps, 'squat', false);
-    expect(hypResult.velocityLossPercent).toBe(33);
-    expect(hypResult.fatigueTier).toBe('optimal_hypertrophy');
-
-    // Reps with severe fatigue (>35% velocity loss): 1.0s -> 2.0s = 50%
-    const failureReps: RepDetail[] = [
-      { index: 1, startTime: 0, endTime: 3.5, concentricSec: 1.0, eccentricSec: 2.5, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
-      { index: 2, startTime: 4, endTime: 8.5, concentricSec: 2.0, eccentricSec: 2.5, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
-    ];
-    const failResult = analyzeMovementOptimization(failureReps, 'squat', false);
-    expect(failResult.velocityLossPercent).toBe(50);
-    expect(failResult.fatigueTier).toBe('failure');
-
-    // Constant speed reps (<20% velocity loss)
-    const speedReps: RepDetail[] = [
-      { index: 1, startTime: 0, endTime: 3.5, concentricSec: 1.0, eccentricSec: 2.5, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
-      { index: 2, startTime: 4, endTime: 7.5, concentricSec: 1.05, eccentricSec: 2.5, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
-    ];
-    const speedResult = analyzeMovementOptimization(speedReps, 'squat', false);
-    expect(speedResult.velocityLossPercent).toBeLessThan(20);
-    expect(speedResult.fatigueTier).toBe('speed');
-  });
-
-  it('computes physics-based mechanical work, calories, and time under tension', () => {
+  it('computes genuine kinematic time under tension, tempo cadence, and rep profiles', () => {
     const reps: RepDetail[] = [
       { index: 1, startTime: 1.0, endTime: 4.5, concentricSec: 1.2, eccentricSec: 2.3, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
       { index: 2, startTime: 5.0, endTime: 8.5, concentricSec: 1.2, eccentricSec: 2.3, romDegrees: 85, peakSpeed: 100, meanSpeed: 60 },
@@ -101,18 +71,20 @@ describe('Movement Optimization & Kinematic Hypertrophy Engine', () => {
     ];
 
     const result = analyzeMovementOptimization(reps, 'squat', false);
-    expect(result.mechanicalWorkKj).toBeGreaterThan(0.5);
-    expect(result.caloriesKcal).toBeGreaterThan(0.5);
-    expect(result.averagePowerWatts).toBeGreaterThan(100);
-    expect(result.peakPowerWatts).toBeGreaterThan(100);
-    expect(result.powerLossPercent).toBeGreaterThanOrEqual(0);
+    expect(result.mechanicalWorkKj).toBeNull();
+    expect(result.caloriesKcal).toBeNull();
+    expect(result.averagePowerWatts).toBeNull();
+    expect(result.peakPowerWatts).toBeNull();
+    expect(result.powerLossPercent).toBeNull();
+    expect(result.velocityLossPercent).toBeNull();
+    expect(result.fatigueTier).toBeNull();
     expect(result.timeUnderTensionSec).toBeCloseTo(10.5, 1);
     expect(result.tempoCadence).toBe('2-0-1');
     expect(result.repVelocityProfiles.length).toBe(3);
     expect(result.repVelocityProfiles[0].repIndex).toBe(1);
     expect(result.repVelocityProfiles[0].concentricSec).toBe(1.2);
     expect(result.repVelocityProfiles[0].eccentricSec).toBe(2.3);
-    expect(result.repVelocityProfiles[0].powerWatts).toBeGreaterThan(100);
+    expect(result.repVelocityProfiles[0].powerWatts).toBeNull();
   });
 
   describe('Live rep quality evaluation', () => {
@@ -176,43 +148,27 @@ describe('Movement Optimization & Kinematic Hypertrophy Engine', () => {
       expect(result.sagittalDriftPercent).toBeGreaterThanOrEqual(0);
     });
 
-    it('identifies sticking points and surfaces French coaching guidance with non-breaking space', () => {
+    it('returns empty sticking points and no sticking point summary per Prompt 1', () => {
       const fps = 20;
       const dt = 1 / fps;
       const timestamps: number[] = [];
       const angles: number[] = [];
 
       let cur = 0;
-      // Rep with severe sticking point at 110 degrees
-      // Descent: 170 -> 80
       for (let t = 0; t <= 1.5; t += dt) {
         timestamps.push(cur);
         angles.push(170 - (t / 1.5) * 90);
         cur += dt;
       }
-      // Sticking stall around 110 degrees for 12 frames
-      for (let i = 0; i < 12; i++) {
-        timestamps.push(cur);
-        angles.push(108 + Math.sin(i));
-        cur += dt;
-      }
-      // Concentric completion: 110 -> 170
       for (let t = 0; t <= 1.0; t += dt) {
         timestamps.push(cur);
-        angles.push(110 + (t / 1.0) * 60);
+        angles.push(80 + (t / 1.0) * 90);
         cur += dt;
       }
 
       const resultFr = analyzeContinuousBiomechanics(angles, timestamps, 'squat', true);
-      expect(resultFr.stickingPointSummary).toBeDefined();
-      expect(resultFr.stickingPointSummary).toContain('Point de blocage');
-      expect(resultFr.stickingPointSummary).toContain('\u00A0:'); // French non-breaking space before colon
-      expect(resultFr.stickingPoints).toBeDefined();
-      expect(resultFr.stickingPoints!.length).toBeGreaterThan(0);
-      const sp = resultFr.stickingPoints![0];
-      expect(sp.timestamp).toBeGreaterThan(0);
-      expect(sp.angleDeg).toBeGreaterThan(80);
-      expect(sp.velocityDropPercent).toBeGreaterThan(0);
+      expect(resultFr.stickingPointSummary).toBeNull();
+      expect(resultFr.stickingPoints).toEqual([]);
     });
 
     it('evaluates audio sync confidence when audio track is provided', () => {

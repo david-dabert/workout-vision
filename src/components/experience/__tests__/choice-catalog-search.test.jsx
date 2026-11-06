@@ -58,13 +58,13 @@ describe('Choice screen Universal Catalog Search Entry', () => {
     const html = renderChoice('fr');
     expect(html).toContain('data-testid="choice-catalog-search"');
     expect(html).toContain('Catalogue universel');
-    expect(html).toContain('1\u00A0200+ variantes, machines et mouvements');
+    expect(html).toContain('183 exercices et mouvements');
   });
 
   it('renders the universal catalog row button in English', () => {
     const html = renderChoice('en');
     expect(html).toContain('data-testid="choice-catalog-search"');
     expect(html).toContain('Universal catalog');
-    expect(html).toContain('1,200+ variations, machines and movements');
+    expect(html).toContain('183 exercises and movements');
   });
 });

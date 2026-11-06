@@ -20,6 +20,7 @@ import { pendingIncident, dismissIncident } from '../../lib/crashLog';
 import { CRASH, crashLine } from './crash-copy';
 import FilmExerciseDrawer from './FilmExerciseDrawer';
 import OneTouchHub from './OneTouchHub';
+import { showUnmeasuredRoutes } from '../../lib/buildFlags';
 import './Choice.css';
 
 // The list of every counted exercise loads after the choice has shown (ExerciseList.jsx).
@@ -130,7 +131,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="brand-sm">WorkoutVision</span>
           <span className="offline-badge" aria-label="100% On-Device">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-            <span>{fr ? '100% Local · Zéro serveur' : '100% On-Device · Private'}</span>
+            <span>{fr ? '100% Local · La vidéo reste sur votre téléphone' : '100% On-Device · Video stays on your phone'}</span>
           </span>
           <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
         </div>
@@ -171,7 +172,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
             setCatalogArchetype('all');
             setCatalogOpen(true);
           }}
-          onMobility={onReference}
+          onMobility={showUnmeasuredRoutes() ? onReference : null}
           onHistory={onHistory}
           onSelectCategory={catKey => {
             const archMap = {
@@ -205,7 +206,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
         </button>
         <button className="row-link press" onClick={() => setCatalogOpen(true)} data-testid="choice-catalog-search">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'Catalogue universel' : 'Universal catalog'}</b><small>{fr ? '1\u00A0200+ variantes, machines et mouvements' : '1,200+ variations, machines and movements'}</small></span>
+          <span className="row-txt"><b>{fr ? 'Catalogue universel' : 'Universal catalog'}</b><small>{fr ? '183 exercices et mouvements' : '183 exercises and movements'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>
         {/* The fitness tests (fitness-tests.js): a count in 30 seconds, under a published protocol. Each row carries its
@@ -218,7 +219,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>)}
         {/* Industrial Ergonomics & NIOSH */}
-        {onErgonomics && <button className="row-link press" onClick={onErgonomics} data-testid="choice-ergonomics">
+        {showUnmeasuredRoutes() && onErgonomics && <button className="row-link press" onClick={onErgonomics} data-testid="choice-ergonomics">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg></span>
           <span className="row-txt"><b>{fr ? 'Calculateur NIOSH' : 'NIOSH calculator'}</b><small>{fr ? 'La charge limite d’une manutention, à partir de vos valeurs' : 'The weight limit of a lift, from your values'}</small></span>{/* HOME-1; French awaiting David's approval (R10) */}
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
@@ -230,47 +231,47 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{fr ? 'Vos séries' : 'Your sets'}</b><small>{n === 0 ? (fr ? 'Restaurer une sauvegarde' : 'Restore a backup') : fr ? `${n} ${n > 1 ? 'séries' : 'série'} sur ce téléphone` : `${n} ${n === 1 ? 'set' : 'sets'} on this phone`}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {(onReference || onPro) && <h2 className="section-head choose-head" data-testid="choose-head-pro">{fr ? 'Pour les professionnels' : 'For professionals'}</h2>}
+        {showUnmeasuredRoutes() && (onReference || onPro) && <h2 className="section-head choose-head" data-testid="choose-head-pro">{fr ? 'Pour les professionnels' : 'For professionals'}</h2>}
         {/* The physiotherapist's workspace (15 October 2026, components/kine/): programmes sent as links, the patient's
             video compared with the physiotherapist's, measured on the person's own videos, above the demos. */}
-        {onReference && <button className="row-link press" onClick={onReference} data-testid="choice-reference">
+        {showUnmeasuredRoutes() && onReference && <button className="row-link press" onClick={onReference} data-testid="choice-reference">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="9" height="14" rx="2" /><rect x="13" y="5" width="9" height="14" rx="2" /><path d="M6.5 9v6M17.5 9l-2 6M17.5 9l2 6" /></svg></span>
           <span className="row-txt"><b>{fr ? 'Espace kiné' : 'Physio workspace'}</b><small>{fr ? 'Vos exercices en vidéo, le programme en un lien, le geste du patient comparé au vôtre' : 'Your exercises on video, the programme in one link, the patient’s movement compared with yours'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Espace pro (Pro.jsx): the coach's and the physiotherapist's programme builder, after the physio workspace. */}
-        {onPro && <button className="row-link press" onClick={onPro} data-testid="choice-pro">
+        {showUnmeasuredRoutes() && onPro && <button className="row-link press" onClick={onPro} data-testid="choice-pro">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 4.5V3h6v1.5" /><path d="M8.5 10h7M8.5 14h7M8.5 18h4" /></svg></span>
           <span className="row-txt"><b>{pro.choiceRow}</b><small>{pro.choiceRowSub}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {(onEquine || onSports || onCoaches || onBuddies || onManifesto) && <h2 className="section-head choose-head" data-testid="choose-head-explore">{fr ? 'Roadmap & Nouvelles disciplines' : 'Roadmap & New Disciplines'}</h2>}
+        {showUnmeasuredRoutes() && (onEquine || onSports || onCoaches || onBuddies || onManifesto) && <h2 className="section-head choose-head" data-testid="choose-head-explore">{fr ? 'Roadmap & Nouvelles disciplines' : 'Roadmap & New Disciplines'}</h2>}
         {/* EquiVision: horse locomotion and gait biomechanics roadmap */}
-        {onEquine && <button className="row-link press" onClick={onEquine} data-testid="choice-equine">
+        {showUnmeasuredRoutes() && onEquine && <button className="row-link press" onClick={onEquine} data-testid="choice-equine">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12c2.2-6 4.4-6 6.6 0s4.4 6 6.6 0 4.4-6 6.6 0" /></svg></span>
           <span className="row-txt"><span className="row-head"><b>{fr ? 'EquiVision\u00A0: biomécanique équine' : 'EquiVision: Equine Biomechanics'}</b><span className="tag tier-tag tier-roadmap">Roadmap R&D</span></span><small>{fr ? 'Modélisation du trot, symétrie de la foulée et examen locomoteur' : 'Trot modeling, stride symmetry, and locomotor analysis'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Multi-Sports Lab: markerless motion capture roadmap for golf, tennis, rowing... */}
-        {onSports && <button className="row-link press" onClick={onSports} data-testid="choice-sports">
+        {showUnmeasuredRoutes() && onSports && <button className="row-link press" onClick={onSports} data-testid="choice-sports">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" /></svg></span>
           <span className="row-txt"><span className="row-head"><b>Multi-Sports Lab</b><span className="tag tier-tag tier-roadmap">Roadmap R&D</span></span><small>{fr ? 'Golf, tennis, aviron\u00A0: cinématique sans capteur et cadence' : 'Golf, tennis, rowing: markerless kinematics and cadence'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Coach & Physio Matcher */}
-        {onCoaches && <button className="row-link press" onClick={onCoaches} data-testid="choice-coaches">
+        {showUnmeasuredRoutes() && onCoaches && <button className="row-link press" onClick={onCoaches} data-testid="choice-coaches">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M6 20v-2a6 6 0 0 1 12 0v2" /></svg></span>
           <span className="row-txt"><b>{fr ? 'Trouver un coach (démo)' : 'Find a coach (demo)'}</b><small>{fr ? 'Des profils fictifs\u00A0: l’annuaire est en préparation' : 'Fictional profiles: the directory is being prepared'}</small></span>{/* HOME-1, 14 October 2026; French awaiting David's approval (R10) */}
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Gym Buddy Matcher */}
-        {onBuddies && <button className="row-link press" onClick={onBuddies} data-testid="choice-buddies">
+        {showUnmeasuredRoutes() && onBuddies && <button className="row-link press" onClick={onBuddies} data-testid="choice-buddies">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg></span>
           <span className="row-txt"><b>{fr ? 'Partenaires de salle (démo)' : 'Gym partners (demo)'}</b><small>{fr ? 'Des profils fictifs, pour comparer vos charges' : 'Fictional profiles, to compare your working weights'}</small></span>{/* HOME-1; French awaiting David's approval (R10) */}
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* The WorkoutVision Manifesto: The Science, History, and Mechanics of Optimal Lifting */}
-        {onManifesto && <button className="row-link press" onClick={onManifesto} data-testid="choice-manifesto">
+        {showUnmeasuredRoutes() && onManifesto && <button className="row-link press" onClick={onManifesto} data-testid="choice-manifesto">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /><path d="M9 7h6M9 11h4" /></svg></span>
           <span className="row-txt"><span className="row-head"><b>{fr ? 'Le Manifeste WorkoutVision' : 'The WorkoutVision Manifesto'}</b></span><small>{fr ? 'La science, l’histoire et la mécanique du mouvement' : 'The science, history, and mechanics of optimal lifting'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
@@ -287,7 +288,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           {onAbout && <button type="button" className="about-link press" onClick={onAbout} data-testid="about-link">{ABOUT[fr ? 'fr' : 'en'].link}</button>}
           {/* The notice of the anonymous counts (UsageNotice.jsx), whenever the build sends them. */}
           {onUsage && eventsConfigured() && <button type="button" className="about-link press" onClick={onUsage} data-testid="usage-link">{fr ? 'Comptage anonyme' : 'Anonymous counts'}</button>}
-          {onChat && <button type="button" className="about-link press" onClick={onChat} data-testid="chat-link">{fr ? 'Messagerie (démo)' : 'Messaging (demo)'}</button>}{/* HOME-1: no "P2P"; French awaiting David's approval (R10) */}
+          {showUnmeasuredRoutes() && onChat && <button type="button" className="about-link press" onClick={onChat} data-testid="chat-link">{fr ? 'Messagerie (démo)' : 'Messaging (demo)'}</button>}{/* HOME-1: no "P2P"; French awaiting David's approval (R10) */}
         </div>
       </div>
       {catalogOpen && (

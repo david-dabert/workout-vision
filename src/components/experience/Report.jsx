@@ -249,10 +249,6 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
                 <span className="sh-cp-kicker">{fr ? 'Le Verdict du Coach' : 'The Coach’s Prescription'}</span>
                 <h4 className="sh-cp-title">{fr ? sheet.optimization.coachPrescription.tierLabelFr : sheet.optimization.coachPrescription.tierLabelEn}</h4>
               </div>
-              <div className="sh-cp-score">
-                <span className="sh-cp-score-val">{sheet.optimization.coachPrescription.executionComplianceScore}%</span>
-                <span className="sh-cp-score-lbl">{fr ? 'Standard d’élite' : 'Elite Standard'}</span>
-              </div>
             </div>
             {sheet.optimization.coachPrescription.limitingFactor?.category !== 'none' && (
               <div className="sh-cp-bottleneck">
@@ -274,15 +270,15 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
           </div>
         )}
 
-        {/* 2. Detailed Biomechanics & 3D Kinematics */}
-        {sheet.optimization && (
+        {/* 2. Detailed Biomechanics */}
+        {sheet.optimization && sheet.optimizationMetrics?.length > 0 && (
           <div className="sh-biomechanics-section" data-testid="sh-biomechanics-section">
             <div className="sh-sec-head">
-              <span className="sh-sec-title">{fr ? 'Biomécanique détaillée & Cinématique 3D' : 'Detailed Biomechanics & 3D Kinematics'}</span>
-              <span className="sh-sec-sub">{fr ? 'Angles, puissance (W), perte de vitesse et cinématique' : 'Angles, power (W), velocity loss and kinematics'}</span>
+              <span className="sh-sec-title">{fr ? 'Biomécanique détaillée & Cinématique' : 'Detailed Biomechanics & Kinematics'}</span>
+              <span className="sh-sec-sub">{fr ? 'Angles, amplitude et tempo' : 'Angles, range and tempo'}</span>
             </div>
             <div className="sh-bio-grid">
-              {(sheet.optimizationMetrics || []).map(m => (
+              {sheet.optimizationMetrics.map(m => (
                 <div key={m.label} className="sh-bio-card">
                   <div className="sh-bio-card-head">
                     <span className="sh-bio-lbl">{m.label}</span>
@@ -293,43 +289,6 @@ export default function Report({ lift, count, counted, arm, date, source, afterR
                 </div>
               ))}
             </div>
-            <p className="sh-bio-disclaimer">{fr ? '* Estimation indicative basée sur le travail mécanique de la série.' : '* Indicative estimate based on mechanical work.'}</p>
-          </div>
-        )}
-
-        {/* 3. Rep-by-Rep Velocity Profile */}
-        {sheet.optimization?.repVelocityProfiles?.length > 0 && (
-          <div className="sh-vbt-section" data-testid="sh-vbt-section">
-            <div className="sh-sec-head">
-              <span className="sh-sec-title">{fr ? 'Profil de Vitesse par Répétition' : 'Rep-by-Rep Velocity Profile'}</span>
-              <span className="sh-sec-sub">{fr ? 'Ralentissement vs rep la plus rapide' : 'Deceleration vs fastest rep'}</span>
-            </div>
-            <div className="sh-vbt-strip">
-              {sheet.optimization.repVelocityProfiles.map(p => (
-                <div key={p.repIndex} className={`sh-vbt-card is-${p.tier}`}>
-                  <div className="sh-vbt-card-head">
-                    <span className="sh-vbt-num">R{p.repIndex}</span>
-                    <span className="sh-vbt-loss">{p.velocityLossPercent}%</span>
-                  </div>
-                  <div className="sh-vbt-track"><div className="sh-vbt-bar" style={{ width: `${Math.max(12, Math.min(100, p.velocityLossPercent))}%` }} /></div>
-                  <div className="sh-vbt-times">
-                    <span className="sh-vbt-sec">{p.concentricSec > 0 ? `${p.concentricSec}\u00A0s` : '—'}</span>
-                    <span className="sh-vbt-pwr">{p.powerWatts ? `${p.powerWatts}\u00A0W` : (p.romDegrees > 0 ? `${Math.round(p.romDegrees)}°` : '—')}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 4. Sticking Point */}
-        {sheet.optimization?.stickingPointSummary && (
-          <div className="sh-sticking-box" data-testid="sh-sticking-box">
-            <div className="sh-sticking-head">
-              <span className="sh-sticking-badge">{fr ? 'Point de blocage' : 'Sticking Point'}</span>
-              <span className="sh-sticking-title">{fr ? 'Ralentissement biomécanique' : 'Biomechanical Deceleration'}</span>
-            </div>
-            <p className="sh-sticking-desc">{sheet.optimization.stickingPointSummary}</p>
           </div>
         )}
 

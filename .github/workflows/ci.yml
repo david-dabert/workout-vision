@@ -66,6 +66,7 @@ jobs:
   e2e:
     name: Browser tests (Chromium and WebKit)
     runs-on: ubuntu-latest
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -74,20 +75,37 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright --version
-      - run: npx playwright install --with-deps chromium webkit
+      - name: Install Playwright browsers and dependencies
+        run: |
+          for attempt in 1 2 3; do
+            timeout 180 npx playwright install --with-deps chromium webkit && break
+            echo "Playwright install attempt $attempt timed out or failed; retrying..."
+            sleep 5
+          done
       # Live counting and contributions are off in production (src/lib/buildFlags.js; deploy.yml leaves VITE_LIVE and
       # VITE_CONTRIBUTE unset): this build switches both on, so their tests still run (live.spec.js, contribute*.spec.js).
       # The production build itself is built and tested by playwright.config.js on port 4176 (e2e/build-flags.spec.js).
       - run: npm run build:e2e
       # One worker, as the timing checks of the touch tests were measured.
-      - run: npx playwright test --retries=0 --workers=1
+      - name: Browser tests (production build)
+        run: npx playwright test --project=core --retries=0 --workers=1
+      # Hidden route browser tests (pro, programme, pro builder) in their own project and step against VITE_EXTENDED_ROUTES=1
+      - name: Extended routes browser tests
+        if: always()
+        run: |
+          npm run build:extended
+          npx playwright test --project=extended --retries=0 --workers=1 --output=test-results-extended
       # A failed test leaves its page snapshot (error-context.md) and screenshots in test-results/: kept for five days, so
       # a failure that does not come back on a re-run can still be read (e2e/pack.spec.js, 18 October 2026).
+      # The extended run writes to its own folder: Playwright empties its output folder at the start of a run, so a shared
+      # one would erase the production run's failures.
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: browser-test-results-${{ github.sha }}
-          path: test-results/
+          path: |
+            test-results/
+            test-results-extended/
           retention-days: 5
 
   # The tour (PLAN.md, GROWTH, after step 1): every screen reached without a video, on the production
@@ -98,6 +116,7 @@ jobs:
   tour:
     name: Tour (WebKit, iPhone profile, three sizes)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -105,7 +124,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps webkit
+      - name: Install Playwright WebKit and dependencies
+        run: |
+          for attempt in 1 2 3; do
+            timeout 180 npx playwright install --with-deps webkit && break
+            echo "Playwright install attempt $attempt timed out or failed; retrying..."
+            sleep 5
+          done
       - run: npm run build
       - name: Serve the production build
         run: |
@@ -155,6 +180,7 @@ jobs:
   journey:
     name: Journey (synthetic sets, production build)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       SETS: ${{ github.workspace }}/.journey-sets
     steps:
@@ -164,7 +190,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - name: Install Playwright Chromium and dependencies
+        run: |
+          for attempt in 1 2 3; do
+            timeout 180 npx playwright install --with-deps chromium && break
+            echo "Playwright install attempt $attempt timed out or failed; retrying..."
+            sleep 5
+          done
       # The lateral raise's journey keeps a contribution (CONTRIBUTE=1, below): contributions, paused in production
       # (src/lib/buildFlags.js, WP0.4), are switched on for this build so that path stays tested.
       - run: VITE_CONTRIBUTE=1 npm run build

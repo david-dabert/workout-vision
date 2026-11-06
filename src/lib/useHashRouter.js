@@ -1,23 +1,37 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { showUnmeasuredRoutes } from './buildFlags';
 
-const VALID_PAGES = new Set([
-  'dashboard', 'analyze', 'exercises', 'coach', 'log', 'history', 'rest', 'profile', 'validate', 'weekly',
-  'film', 'prs', 'onboarding', 'live', 'about', 'pro', 'programme', 'resultats', 'manifesto', 'science',
-  'equine', 'veterinary', 'sports', 'golf', 'tennis', 'padel', 'cycling', 'baseball', 'rowing', 'skiing', 'swimming', 'coaches', 'physio',
-  'buddies', 'buddy', 'ergonomics', 'workplace', 'kine', 'reeducation', 'chat', 'volleyball', 'comptage',
+const CORE_PAGES = new Set([
+  'dashboard', 'analyze', 'exercises', 'history', 'film', 'live', 'about', 'comptage',
 ]);
+
+const EXTENDED_PAGES = new Set([
+  'coach', 'log', 'rest', 'profile', 'validate', 'weekly',
+  'prs', 'onboarding', 'pro', 'programme', 'resultats', 'manifesto', 'science',
+  'equine', 'veterinary', 'sports', 'golf', 'tennis', 'padel', 'cycling', 'baseball', 'rowing', 'skiing', 'swimming', 'coaches', 'physio',
+  'buddies', 'buddy', 'ergonomics', 'workplace', 'kine', 'reeducation', 'chat', 'volleyball', 'showcase', 'demo', 'investisseur',
+]);
+
+function getValidPages() {
+  if (showUnmeasuredRoutes()) {
+    return new Set([...CORE_PAGES, ...EXTENDED_PAGES]);
+  }
+  return CORE_PAGES;
+}
 
 function readHash() {
   const raw = window.location.hash.replace(/^#\/?/, '').toLowerCase();
-  // A coach's programme opens from its link, #programme=<payload> (programme.js): the page is the programme's.
-  if (raw.startsWith('programme=')) return 'programme';
-  // A client's results open on the coach's phone from their link, #resultats=<payload> (programme.js, 9 October).
-  if (raw.startsWith('resultats=')) return 'resultats';
-  // A physiotherapist's programme opens on the patient's phone, #kine-p=<payload>; a patient's result on the
-  // physiotherapist's, #kine-r=<payload> (lib/kine/links.js, 15 October 2026).
-  if (raw.startsWith('kine-p=')) return 'kinep';
-  if (raw.startsWith('kine-r=')) return 'kiner';
-  return VALID_PAGES.has(raw) ? raw : 'dashboard';
+  if (showUnmeasuredRoutes()) {
+    // A coach's programme opens from its link, #programme=<payload> (programme.js): the page is the programme's.
+    if (raw.startsWith('programme=')) return 'programme';
+    // A client's results open on the coach's phone from their link, #resultats=<payload> (programme.js, 9 October).
+    if (raw.startsWith('resultats=')) return 'resultats';
+    // A physiotherapist's programme opens on the patient's phone, #kine-p=<payload>; a patient's result on the
+    // physiotherapist's, #kine-r=<payload> (lib/kine/links.js, 15 October 2026).
+    if (raw.startsWith('kine-p=')) return 'kinep';
+    if (raw.startsWith('kine-r=')) return 'kiner';
+  }
+  return getValidPages().has(raw) ? raw : 'dashboard';
 }
 
 /**
@@ -59,7 +73,7 @@ export default function useHashRouter() {
 
   // Wrapped setter: state + hash in one call
   const setPage = useCallback((next) => {
-    const resolved = VALID_PAGES.has(next) ? next : 'dashboard';
+    const resolved = getValidPages().has(next) ? next : 'dashboard';
     known.current = resolved;
     setPageState(resolved);
     const target = resolved === 'dashboard' ? '' : resolved;

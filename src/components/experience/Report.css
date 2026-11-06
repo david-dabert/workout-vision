@@ -456,40 +456,6 @@
   line-height: 1.2;
 }
 
-/* Sticking Point Box */
-.wv-experience .sh-sticking-box {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px;
-  background: var(--depth-1);
-  border: 1px solid var(--hair);
-  border-radius: var(--r-s);
-}
-.wv-experience .sh-sticking-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.wv-experience .sh-sticking-badge {
-  font-family: var(--mono);
-  font-size: 8px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--lamp);
-  font-weight: 500;
-}
-.wv-experience .sh-sticking-title {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--bone);
-}
-.wv-experience .sh-sticking-desc {
-  margin: 0;
-  font-size: 11px;
-  line-height: 1.45;
-  color: var(--bone-2);
-}
 
 /* Hypertrophy Coaching Cues */
 .wv-experience .sh-cues-list {
