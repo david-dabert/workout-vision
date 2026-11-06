@@ -16,6 +16,11 @@ import { perfRequested } from './lib/perfFlag';
 import { isTest } from './lib/fitness-tests';
 import Choice from './components/experience/Choice';
 import Entry, { shouldShowEntry } from './components/experience/Entry';
+import NavigationShell from './components/experience/NavigationShell';
+import TrainHome from './components/experience/TrainHome';
+import SampleDemoModal from './components/experience/SampleDemoModal';
+import EvidenceRoadmap from './components/experience/EvidenceRoadmap';
+import FilmExerciseDrawer from './components/experience/FilmExerciseDrawer';
 import Stage from './components/experience/Stage';
 import ScreenFade from './components/experience/ScreenFade';
 import { loadSets, knownSets } from './components/experience/sets';
@@ -72,7 +77,7 @@ const Chat = lazyScreen(() => import('./components/chat/Chat.jsx'));
 // The activity engine's screen (docs/VISION.md): volleyball on synthetic jumps, opened from the sports rail.
 const Activity = lazyScreen(() => import('./components/activity/ActivityScreen.jsx'));
 const InvestorShowcase = lazyScreen(() => import('./components/experience/InvestorShowcaseModal.jsx'));
-const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, history: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto, equine: Equine, veterinary: Equine, sports: SportsBiomechanics, golf: SportsBiomechanics, tennis: SportsBiomechanics, padel: SportsBiomechanics, cycling: SportsBiomechanics, baseball: SportsBiomechanics, rowing: SportsBiomechanics, skiing: SportsBiomechanics, swimming: SportsBiomechanics, coaches: CoachFinder, coach: CoachFinder, physio: CoachFinder, buddies: GymBuddy, buddy: GymBuddy, ergonomics: Ergonomics, workplace: Ergonomics, kine: KineWorkspace, reeducation: KineWorkspace, kinep: KinePatient, kiner: KineResult, chat: Chat, volleyball: Activity, comptage: UsageNotice, showcase: InvestorShowcase, demo: InvestorShowcase, investisseur: InvestorShowcase };
+const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide, explore: ExerciseGuide, history: History, progress: History, live: LiveSession, about: About, pro: Pro, programme: Programme, resultats: Results, manifesto: Manifesto, science: Manifesto, equine: Equine, veterinary: Equine, sports: SportsBiomechanics, golf: SportsBiomechanics, tennis: SportsBiomechanics, padel: SportsBiomechanics, cycling: SportsBiomechanics, baseball: SportsBiomechanics, rowing: SportsBiomechanics, skiing: SportsBiomechanics, swimming: SportsBiomechanics, coaches: CoachFinder, coach: CoachFinder, physio: CoachFinder, buddies: GymBuddy, buddy: GymBuddy, ergonomics: Ergonomics, workplace: Ergonomics, kine: KineWorkspace, reeducation: KineWorkspace, kinep: KinePatient, kiner: KineResult, chat: Chat, volleyball: Activity, comptage: UsageNotice, showcase: InvestorShowcase, demo: InvestorShowcase, investisseur: InvestorShowcase };
 
 // Hidden, not deleted: lazy imports for features outside the core path
 // const ManualLog = safeLazy(() => import('./components/ManualLog'));
@@ -91,10 +96,14 @@ const LAZY = { film: ExperienceFilm, analyze: Analyze, exercises: ExerciseGuide,
 const LazyFallback = <div className="wv-experience" aria-busy="true" />;
 
 function AppInner() {
+  const { lang } = useT();
+  const fr = lang === 'fr';
   const { profile, saveProfile, profileLoading } = useProfile();
   const [page, setPage, browserMoves, browserPending] = useHashRouter();
   const [selectedLift, setSelectedLift] = useState('');
   const [videoFile, setVideoFile] = useState(null);
+  const [showDemoModal, setShowDemoModal] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
   // The page a View Transition brought in; its screen change needs no fade of its own.
   const [transitionPage, setTransitionPage] = useState(null);
   const fileSerial = useRef(0);
@@ -202,7 +211,7 @@ function AppInner() {
   const target = planned && (planned.key === undefined || planned.key === selectedLift) ? planned : null;
   const backToChoice = () => (target
     ? go('programme', () => { setSelectedLift(''); setVideoFile(null); setPlanned(null); })
-    : go('dashboard', () => { setSelectedLift(''); setVideoFile(null); }));
+    : go('train', () => { setSelectedLift(''); setVideoFile(null); }));
   const backToFilm = () => go('film', () => setVideoFile(null));
 
   let key, screen;
@@ -216,80 +225,115 @@ function AppInner() {
   } else if (page === 'analyze' && selectedLift && videoFile) {
     key = `analyze:${fileSerial.current}`;
     screen = <Analyze initialLift={selectedLift} initialFile={videoFile} planned={target} onClose={backToChoice} onRefilm={backToFilm} onNewSet={backToFilm} />;
-  } else if (page === 'exercises') {
+  } else if (page === 'exercises' || page === 'explore') {
     key = guideLift ? `guide:${guideLift}` : 'guide';
-    screen = <ExerciseGuide lift={guideLift} onClose={() => (planned && guideLift ? go('programme', () => { setGuideLift(''); setPlanned(null); }) : go('dashboard', () => setGuideLift('')))} onChoose={l => chooseLift(l, true)} />;
-  } else if (page === 'history') {
+    screen = <ExerciseGuide lift={guideLift} onClose={() => (planned && guideLift ? go('programme', () => { setGuideLift(''); setPlanned(null); }) : go('train', () => setGuideLift('')))} onChoose={l => chooseLift(l, true)} />;
+  } else if (page === 'history' || page === 'progress') {
     key = 'history';
-    screen = <History onClose={() => go('dashboard')} />;
+    screen = <History onClose={() => go('train')} />;
+  } else if (page === 'evidence') {
+    key = 'evidence';
+    screen = <EvidenceRoadmap onBack={() => go('train')} />;
   } else if (page === 'pro') {
     key = proStart ? `pro:${proStart.draft.id}` : 'pro';
-    screen = <Pro start={proStart} onClose={() => go('dashboard', () => setProStart(null))} />;
+    screen = <Pro start={proStart} onClose={() => go('train', () => setProStart(null))} />;
   } else if (page === 'programme') {
     key = 'programme';
     // The link's payload as typed (the router lowercases the page); null once the programme is kept and the address
     // cleared (Programme.jsx), or when the programme is opened from the choice.
-    screen = <Programme payload={payloadOf(window.location.hash)} held={heldProgramme} onHold={setHeldProgramme} onClose={() => go('dashboard', () => setPlanned(null))} onStart={(lift, target) => { setPlanned(target); chooseLift(lift); }} />;
+    screen = <Programme payload={payloadOf(window.location.hash)} held={heldProgramme} onHold={setHeldProgramme} onClose={() => go('train', () => setPlanned(null))} onStart={(lift, target) => { setPlanned(target); chooseLift(lift); }} />;
   } else if (page === 'resultats') {
     // The link's payload as typed; a results screen with no payload says the link does not open. One screen per link:
     // another client's link opened over this one is read afresh.
     const results = resultsPayloadOf(window.location.hash);
     key = `resultats:${results ?? ''}`;
-    screen = <Results payload={results} onClose={() => go('dashboard')} onAdjust={r => { const start = draftFromResults(r); go('pro', () => setProStart(start)); }} />;
+    screen = <Results payload={results} onClose={() => go('train')} onAdjust={r => { const start = draftFromResults(r); go('pro', () => setProStart(start)); }} />;
   } else if (page === 'manifesto' || page === 'science') {
     key = 'manifesto';
-    screen = <Manifesto onClose={() => go('dashboard')} onChoose={l => chooseLift(l)} />;
+    screen = <Manifesto onClose={() => go('train')} onChoose={l => chooseLift(l)} />;
   } else if (page === 'comptage') {
     key = 'comptage';
-    screen = <UsageNotice onClose={() => go('dashboard')} />;
+    screen = <UsageNotice onClose={() => go('train')} />;
   } else if (page === 'about') {
     key = 'about';
-    screen = <About onClose={() => go('dashboard')} onManifesto={() => go('manifesto')} />;
+    screen = <About onClose={() => go('train')} onManifesto={() => go('manifesto')} />;
   } else if (page === 'equine' || page === 'veterinary') {
     key = 'equine';
-    screen = <Equine onClose={() => go('dashboard')} />;
+    screen = <Equine onClose={() => go('train')} />;
   } else if (page === 'sports' || page === 'golf' || page === 'tennis' || page === 'padel' || page === 'cycling' || page === 'baseball' || page === 'rowing' || page === 'skiing' || page === 'swimming') {
     // A sport's own address opens on that sport (#rowing opens rowing); a new address is a new screen.
     key = page === 'sports' ? 'sports' : `sports:${page}`;
-    screen = <SportsBiomechanics sport={page} onClose={() => go('dashboard')} onOpenEquine={() => go('equine')} onOpenVolleyball={() => go('volleyball')} />;
+    screen = <SportsBiomechanics sport={page} onClose={() => go('train')} onOpenEquine={() => go('equine')} onOpenVolleyball={() => go('volleyball')} />;
   } else if (page === 'volleyball') {
     key = 'volleyball';
     screen = <Activity activity="volleyball" onClose={() => go('sports')} />;
   } else if (page === 'coaches' || page === 'coach' || page === 'physio') {
     key = 'coaches';
-    screen = <CoachFinder onClose={() => go('dashboard')} onHistory={() => go('history')} />;
+    screen = <CoachFinder onClose={() => go('train')} onHistory={() => go('history')} />;
   } else if (page === 'buddies' || page === 'buddy') {
     key = 'buddies';
-    screen = <GymBuddy onClose={() => go('dashboard')} />;
+    screen = <GymBuddy onClose={() => go('train')} />;
   } else if (page === 'ergonomics' || page === 'workplace') {
     key = 'ergonomics';
-    screen = <Ergonomics onClose={() => go('dashboard')} />;
+    screen = <Ergonomics onClose={() => go('train')} />;
   } else if (page === 'kine' || page === 'reeducation') {
     key = 'kine';
-    screen = <KineWorkspace onClose={() => go('dashboard')} />;
+    screen = <KineWorkspace onClose={() => go('train')} />;
   } else if (page === 'kinep') {
     // One screen per link: another programme opened over this one is read afresh.
     key = `kinep:${window.location.hash}`;
-    screen = <KinePatient onClose={() => go('dashboard')} />;
+    screen = <KinePatient onClose={() => go('train')} />;
   } else if (page === 'kiner') {
     key = `kiner:${window.location.hash}`;
     screen = <KineResult onClose={() => go('kine')} />;
   } else if (page === 'chat') {
     key = 'chat';
-    screen = <Chat onClose={() => go('dashboard')} onHistory={() => go('history')} />;
-  } else if (page === 'showcase' || page === 'demo' || page === 'investisseur') {
+    screen = <Chat onClose={() => go('train')} onHistory={() => go('history')} />;
+  } else if (page === 'demo') {
+    key = 'demo';
+    screen = <SampleDemoModal isOpen={true} onClose={() => go('train')} onSelectExercise={l => chooseLift(l)} />;
+  } else if (page === 'showcase' || page === 'investisseur') {
     key = 'showcase';
-    screen = <InvestorShowcase isOpen={true} onClose={() => go('dashboard')} />;
-  } else {
-    // Hidden, not deleted: rest, profile, validate, weekly, prs, coach, log,
-    // the old live capture (LiveCapture.jsx) and the dashboard; "live" without a lift, or in a build without VITE_LIVE, too. Every other page falls through to the choice of lift.
+    screen = <InvestorShowcase isOpen={true} onClose={() => go('train')} />;
+  } else if (page === 'choice') {
     key = 'choice';
     screen = <Choice held={heldProgramme} onChoose={l => { setPlanned(null); chooseLift(l); }} onPro={() => go('pro', () => setProStart(null))} onProgramme={() => go('programme')} onGuide={() => { track('guide_open'); go('exercises', () => { setGuideLift(''); setPlanned(null); }); }} onHistory={() => { track('history_open'); go('history'); }} onAbout={() => go('about')} onUsage={() => go('comptage')} onManifesto={() => go('manifesto')} onReference={() => go('kine')} onEquine={() => go('equine')} onSports={() => go('sports')} />;
+  } else {
+    // Default front door: Calling Card Train Home (train, dashboard, or initial landing)
+    key = 'train';
+    screen = (
+      <>
+        <TrainHome
+          onStartAnalysis={() => setCatalogOpen(true)}
+          onSampleDemo={() => setShowDemoModal(true)}
+          onSelectLift={l => { setPlanned(null); chooseLift(l); }}
+          onOpenEvidence={() => go('evidence')}
+          onOpenAllExercises={() => go('exercises')}
+        />
+        {catalogOpen && (
+          <FilmExerciseDrawer
+            isOpen={true}
+            onClose={() => setCatalogOpen(false)}
+            onSelectExercise={l => {
+              setCatalogOpen(false);
+              chooseLift(l);
+            }}
+          />
+        )}
+      </>
+    );
   }
 
   // The screen on show, a breadcrumb of the crash log on the phone (crashLog.js); the analysis marks its phases itself.
   const screenName = key.split(':')[0];
   useEffect(() => { markCrash({ screen: screenName, lift: selectedLift || null }); }, [screenName, selectedLift]);
+
+  const isWorkoutFlow = page === 'film' || page === 'live' || page === 'analyze';
+  const navCurrent = (page === 'history' || page === 'progress')
+    ? 'progress'
+    : (page === 'exercises' || page === 'explore')
+      ? 'explore'
+      : 'train';
 
   return <>
     <Stage />
@@ -298,6 +342,27 @@ function AppInner() {
         <Suspense fallback={LazyFallback}>{screen}</Suspense>
       </ErrorBoundary>
     </ScreenFade>
+    {showDemoModal && (
+      <SampleDemoModal
+        isOpen={true}
+        onClose={() => setShowDemoModal(false)}
+        onSelectExercise={l => {
+          setShowDemoModal(false);
+          chooseLift(l);
+        }}
+      />
+    )}
+    {!isWorkoutFlow && (
+      <NavigationShell
+        current={navCurrent}
+        fr={fr}
+        onNavigate={dest => {
+          if (dest === 'train') go('train');
+          else if (dest === 'progress') go('progress');
+          else if (dest === 'explore') go('exercises');
+        }}
+      />
+    )}
   </>;
 }
 

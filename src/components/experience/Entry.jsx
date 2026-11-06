@@ -17,15 +17,15 @@ import './Entry.css';
 // approved by David on 9 October 2026: test/real-phone/swarm/copy-entry.md. U+202F is not needed (no ? ! ; or « »).
 const COPY = {
   fr: {
-    title: 'Filmez votre série.', line: 'Laboratoire de biomécanique et Velocity-Based Training sur votre téléphone. Zéro capteur. Zéro serveur.',
+    title: 'Filmez votre série.', line: 'Comptage de répétitions souverain sur votre téléphone. Zéro capteur. Zéro serveur.',
     privacy: 'La vidéo reste sur votre téléphone.', start: 'Commencer',
-    test: 'Version de test', demo: 'Voir un exemple', interactiveDemo: 'Démo biomécanique (1 clic)',
+    test: 'Version Pilote', demo: 'Voir un exemple', interactiveDemo: 'Démo type (1 clic)',
     credit: 'Conçue à Bordeaux par David Dabert',
   },
   en: {
-    title: 'Film your set.', line: 'Biomechanics laboratory and Velocity-Based Training on your phone. Zero sensors. Zero servers.',
+    title: 'Film your set.', line: 'Sovereign rep counting on your phone. Zero sensors. Zero servers.',
     privacy: 'The video stays on your phone.', start: 'Start',
-    test: 'Test version', demo: 'See an example', interactiveDemo: 'Interactive Biomechanics Demo (1-click)',
+    test: 'Pilot version', demo: 'See an example', interactiveDemo: 'Sample demo (1-click)',
     credit: 'Made in Bordeaux by David Dabert',
   },
 };
