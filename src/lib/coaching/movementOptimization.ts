@@ -13,7 +13,6 @@ import { decodeBiomechanicalPhases } from '../counting/BiomechanicalDecoder';
 import { getExercise, getKinematicArchetype, KinematicArchetype } from '../exercises/index';
 import { alignKineticTrajectory, getCanonicalTemplate } from '../counting/KineticForcedAligner';
 import { synchronizeRepetitionsWithAudio } from '../counting/AudioKinematicSync';
-import { computeL5S1InverseDynamics } from '../biomechanics/l5s1InverseDynamics';
 import { analyzeMorphology, MorphologyProfile } from '../biomechanics/morphologyRetargeting';
 import { KinematicFootLocker, Landmark3D } from '../biomechanics/kinematicFootLocking';
 import { exportToBVH } from '../biomechanics/bvhExport';
@@ -482,10 +481,9 @@ export function analyzeContinuousBiomechanics(
     return closestIdx;
   }
 
-  // Kinetic Forced Alignment per repetition
+  // Kinetic Forced Alignment per repetition (sticking point computation excised per Prompt 1)
   let totalDistortion = 0;
   let repCountWithTrajectory = 0;
-  let mostSevereSticking: { angle: number; severity: 'mild' | 'moderate' | 'severe' } | null = null;
   const stickingPoints: StickingPointMarker[] = [];
 
   const template = getCanonicalTemplate(lift);
@@ -509,27 +507,6 @@ export function analyzeContinuousBiomechanics(
         });
         totalDistortion += alignment.normalizedDistance;
         repCountWithTrajectory++;
-
-        if (alignment.stickingPoint) {
-          const stickingFrame = startFrame + alignment.stickingPoint.frameIndex;
-          const stickingTimestamp = timestamps[Math.min(timestamps.length - 1, stickingFrame)] ?? r.startTime;
-          const stickingAngleDeg = slice[alignment.stickingPoint.frameIndex] ?? Math.round(alignment.stickingPoint.normalizedAngle * (r.romDegrees || 80));
-          const velocityDropPct = Math.max(0, Math.round((1 - alignment.stickingPoint.warpVelocity) * 100));
-          stickingPoints.push({
-            repIndex: r.repIndex,
-            timestamp: stickingTimestamp,
-            angleDeg: Math.round(stickingAngleDeg),
-            velocityDropPercent: velocityDropPct,
-            severity: alignment.stickingPoint.severity,
-          });
-
-          if (!mostSevereSticking || alignment.stickingPoint.severity === 'severe') {
-            mostSevereSticking = {
-              angle: alignment.stickingPoint.normalizedAngle,
-              severity: alignment.stickingPoint.severity,
-            };
-          }
-        }
       }
     }
   }
@@ -554,19 +531,7 @@ export function analyzeContinuousBiomechanics(
     }
   }
 
-  let stickingPointSummary: string | null = null;
-  if (mostSevereSticking) {
-    const anglePct = Math.round(mostSevereSticking.angle * 100);
-    if (fr) {
-      stickingPointSummary = `Point de blocage détecté à ${anglePct}\u00A0% d'amplitude\u00A0: maintenez l'accélération dans la transition.`;
-    } else {
-      stickingPointSummary = `Sticking point detected at ${anglePct}% ROM: focus on explosive acceleration through the transition.`;
-    }
-
-    if (!baseResult.coachingPoints.includes(stickingPointSummary)) {
-      baseResult.coachingPoints.push(stickingPointSummary);
-    }
-  }
+  const stickingPointSummary: string | null = null;
 
   // Multimodal Audio Synchronization if audio track is provided
   let audioSyncConfidence: number | null = null;

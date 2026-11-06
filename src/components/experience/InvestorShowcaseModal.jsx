@@ -124,7 +124,7 @@ export default function InvestorShowcaseModal({ isOpen, onClose }) {
               avec calcul de vitesse, HUD haute visibilité et synthèse audio psychoacoustique.
             </p>
             <div className="showcase-sovereign-tag">
-              🔒 100&nbsp;% sur l’appareil • Zéro serveur • Confidentialité totale
+              🔒 100&nbsp;% sur l’appareil • La vidéo reste sur votre téléphone
             </div>
             {showQr && qrDataUrl && (
               <div className="showcase-qr-box">

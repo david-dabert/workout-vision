@@ -148,43 +148,27 @@ describe('Movement Optimization & Kinematic Hypertrophy Engine', () => {
       expect(result.sagittalDriftPercent).toBeGreaterThanOrEqual(0);
     });
 
-    it('identifies sticking points and surfaces French coaching guidance with non-breaking space', () => {
+    it('returns empty sticking points and no sticking point summary per Prompt 1', () => {
       const fps = 20;
       const dt = 1 / fps;
       const timestamps: number[] = [];
       const angles: number[] = [];
 
       let cur = 0;
-      // Rep with severe sticking point at 110 degrees
-      // Descent: 170 -> 80
       for (let t = 0; t <= 1.5; t += dt) {
         timestamps.push(cur);
         angles.push(170 - (t / 1.5) * 90);
         cur += dt;
       }
-      // Sticking stall around 110 degrees for 12 frames
-      for (let i = 0; i < 12; i++) {
-        timestamps.push(cur);
-        angles.push(108 + Math.sin(i));
-        cur += dt;
-      }
-      // Concentric completion: 110 -> 170
       for (let t = 0; t <= 1.0; t += dt) {
         timestamps.push(cur);
-        angles.push(110 + (t / 1.0) * 60);
+        angles.push(80 + (t / 1.0) * 90);
         cur += dt;
       }
 
       const resultFr = analyzeContinuousBiomechanics(angles, timestamps, 'squat', true);
-      expect(resultFr.stickingPointSummary).toBeDefined();
-      expect(resultFr.stickingPointSummary).toContain('Point de blocage');
-      expect(resultFr.stickingPointSummary).toContain('\u00A0:'); // French non-breaking space before colon
-      expect(resultFr.stickingPoints).toBeDefined();
-      expect(resultFr.stickingPoints!.length).toBeGreaterThan(0);
-      const sp = resultFr.stickingPoints![0];
-      expect(sp.timestamp).toBeGreaterThan(0);
-      expect(sp.angleDeg).toBeGreaterThan(80);
-      expect(sp.velocityDropPercent).toBeGreaterThan(0);
+      expect(resultFr.stickingPointSummary).toBeNull();
+      expect(resultFr.stickingPoints).toEqual([]);
     });
 
     it('evaluates audio sync confidence when audio track is provided', () => {

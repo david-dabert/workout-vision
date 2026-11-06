@@ -26,7 +26,7 @@ export const PHASE_LABELS = {
   },
   en: {
     concentric: 'Propulsion',
-    amortization_sticking: 'Sticking point',
+    amortization_sticking: 'Transition',
     eccentric: 'Lowering',
     lockout_rest: 'Ready',
   },
@@ -397,7 +397,6 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
     shown.current = null;
     lastRepTimestamp.current = 0;
     fastestRepDuration.current = Infinity;
-    peakPowerWatts.current = 0;
     angleHistory.current = [];
     lastAngleTime.current = 0;
     lastAngle.current = null;
@@ -457,7 +456,6 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
     setLiveBadge(null);
     setLivePhase(null);
     setLiveTelemetry(null);
-    peakPowerWatts.current = 0;
     angleHistory.current = [];
     lastAngleTime.current = 0;
     lastAngle.current = null;
