@@ -71,9 +71,32 @@ function ProgrammeTab({ fr, k, profile }) {
     const { programmePdf } = await import('../../lib/kine/pdf');
     programmePdf(programme, { lang: fr ? 'fr' : 'en', link }).save(`programme-${(patient || 'patient').replace(/[^\p{L}\p{N}]+/gu, '-').toLowerCase()}.pdf`);
   };
+  const loadDemo = () => {
+    if (!k.demoSample) return;
+    hapticLight();
+    setPatient(k.demoSample.patient);
+    setPerDay(k.demoSample.perDay);
+    setWeeks(k.demoSample.weeks);
+    setNote(k.demoSample.note);
+    setItems(k.demoSample.items.map(it => ({ ...it })));
+  };
 
   return <>
     <section className="sc-section">
+      {k.workflowSteps && (
+        <div className="kn-workflow" data-testid="kn-workflow">
+          <ol className="kn-workflow-steps">
+            {k.workflowSteps.map((step, idx) => (
+              <li key={idx} className="kn-workflow-step">{step}</li>
+            ))}
+          </ol>
+          {k.demoPrefill && (
+            <button type="button" className="rc-btn press kn-demo-btn" onClick={loadDemo} data-testid="kn-demo-prefill">
+              {k.demoPrefill}
+            </button>
+          )}
+        </div>
+      )}
       <div className="kn-fields">
         <label className="kn-field"><span>{k.patient}</span><input value={patient} onChange={e => setPatient(e.target.value)} placeholder={k.patientPh} data-testid="kn-patient" /></label>
         <div className="kn-row">

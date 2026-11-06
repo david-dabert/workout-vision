@@ -61,7 +61,8 @@
   border-color: var(--lamp-line);
 }
 
-.wv-onetouch-btn.is-mobility .wv-onetouch-ico {
+.wv-onetouch-btn.is-mobility .wv-onetouch-ico,
+.wv-onetouch-btn.is-pro .wv-onetouch-ico {
   color: var(--lamp-hi);
   background: var(--bio-glow);
   border-color: var(--lamp-line);

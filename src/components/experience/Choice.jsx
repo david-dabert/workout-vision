@@ -172,7 +172,8 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
             setCatalogArchetype('all');
             setCatalogOpen(true);
           }}
-          onMobility={showUnmeasuredRoutes() ? onReference : null}
+          onMobility={onReference}
+          onPro={onPro}
           onHistory={onHistory}
           onSelectCategory={catKey => {
             const archMap = {
@@ -231,29 +232,29 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{fr ? 'Vos séries' : 'Your sets'}</b><small>{n === 0 ? (fr ? 'Restaurer une sauvegarde' : 'Restore a backup') : fr ? `${n} ${n > 1 ? 'séries' : 'série'} sur ce téléphone` : `${n} ${n === 1 ? 'set' : 'sets'} on this phone`}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {showUnmeasuredRoutes() && (onReference || onPro) && <h2 className="section-head choose-head" data-testid="choose-head-pro">{fr ? 'Pour les professionnels' : 'For professionals'}</h2>}
+        {(onReference || onPro) && <h2 className="section-head choose-head" data-testid="choose-head-pro">{fr ? 'Pour les professionnels' : 'For professionals'}</h2>}
         {/* The physiotherapist's workspace (15 October 2026, components/kine/): programmes sent as links, the patient's
             video compared with the physiotherapist's, measured on the person's own videos, above the demos. */}
-        {showUnmeasuredRoutes() && onReference && <button className="row-link press" onClick={onReference} data-testid="choice-reference">
+        {onReference && <button className="row-link press" onClick={onReference} data-testid="choice-reference">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="9" height="14" rx="2" /><rect x="13" y="5" width="9" height="14" rx="2" /><path d="M6.5 9v6M17.5 9l-2 6M17.5 9l2 6" /></svg></span>
           <span className="row-txt"><b>{fr ? 'Espace kiné' : 'Physio workspace'}</b><small>{fr ? 'Vos exercices en vidéo, le programme en un lien, le geste du patient comparé au vôtre' : 'Your exercises on video, the programme in one link, the patient’s movement compared with yours'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Espace pro (Pro.jsx): the coach's and the physiotherapist's programme builder, after the physio workspace. */}
-        {showUnmeasuredRoutes() && onPro && <button className="row-link press" onClick={onPro} data-testid="choice-pro">
+        {onPro && <button className="row-link press" onClick={onPro} data-testid="choice-pro">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 4.5V3h6v1.5" /><path d="M8.5 10h7M8.5 14h7M8.5 18h4" /></svg></span>
           <span className="row-txt"><b>{pro.choiceRow}</b><small>{pro.choiceRowSub}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {showUnmeasuredRoutes() && (onEquine || onSports || onCoaches || onBuddies || onManifesto) && <h2 className="section-head choose-head" data-testid="choose-head-explore">{fr ? 'Roadmap & Nouvelles disciplines' : 'Roadmap & New Disciplines'}</h2>}
+        {(onEquine || onSports || (showUnmeasuredRoutes() && (onCoaches || onBuddies)) || onManifesto) && <h2 className="section-head choose-head" data-testid="choose-head-explore">{fr ? 'Roadmap & Nouvelles disciplines' : 'Roadmap & New Disciplines'}</h2>}
         {/* EquiVision: horse locomotion and gait biomechanics roadmap */}
-        {showUnmeasuredRoutes() && onEquine && <button className="row-link press" onClick={onEquine} data-testid="choice-equine">
+        {onEquine && <button className="row-link press" onClick={onEquine} data-testid="choice-equine">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12c2.2-6 4.4-6 6.6 0s4.4 6 6.6 0 4.4-6 6.6 0" /></svg></span>
           <span className="row-txt"><span className="row-head"><b>{fr ? 'EquiVision\u00A0: biomécanique équine' : 'EquiVision: Equine Biomechanics'}</b><span className="tag tier-tag tier-roadmap">Roadmap R&D</span></span><small>{fr ? 'Modélisation du trot, symétrie de la foulée et examen locomoteur' : 'Trot modeling, stride symmetry, and locomotor analysis'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Multi-Sports Lab: markerless motion capture roadmap for golf, tennis, rowing... */}
-        {showUnmeasuredRoutes() && onSports && <button className="row-link press" onClick={onSports} data-testid="choice-sports">
+        {onSports && <button className="row-link press" onClick={onSports} data-testid="choice-sports">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" /></svg></span>
           <span className="row-txt"><span className="row-head"><b>Multi-Sports Lab</b><span className="tag tier-tag tier-roadmap">Roadmap R&D</span></span><small>{fr ? 'Golf, tennis, aviron\u00A0: cinématique sans capteur et cadence' : 'Golf, tennis, rowing: markerless kinematics and cadence'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
@@ -271,7 +272,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* The WorkoutVision Manifesto: The Science, History, and Mechanics of Optimal Lifting */}
-        {showUnmeasuredRoutes() && onManifesto && <button className="row-link press" onClick={onManifesto} data-testid="choice-manifesto">
+        {onManifesto && <button className="row-link press" onClick={onManifesto} data-testid="choice-manifesto">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /><path d="M9 7h6M9 11h4" /></svg></span>
           <span className="row-txt"><span className="row-head"><b>{fr ? 'Le Manifeste WorkoutVision' : 'The WorkoutVision Manifesto'}</b></span><small>{fr ? 'La science, l’histoire et la mécanique du mouvement' : 'The science, history, and mechanics of optimal lifting'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>

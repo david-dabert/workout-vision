@@ -9,7 +9,7 @@ import './OneTouchHub.css';
  * 3. My History & Progress
  * Along with 1-touch muscle group chips.
  */
-export default function OneTouchHub({ fr = false, onStartLift, onMobility, onHistory, onSelectCategory }) {
+export default function OneTouchHub({ fr = false, onStartLift, onMobility, onPro, onHistory, onSelectCategory }) {
   const copy = ONE_TOUCH[fr ? 'fr' : 'en'];
 
   const handleTouch = cb => {
@@ -69,6 +69,29 @@ export default function OneTouchHub({ fr = false, onStartLift, onMobility, onHis
             <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
         </button>
+
+        {onPro && (
+          <button
+            type="button"
+            className="wv-onetouch-btn is-pro tactile"
+            data-testid="onetouch-pro"
+            onClick={() => handleTouch(onPro)}
+          >
+            <span className="wv-onetouch-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="5" y="4" width="14" height="17" rx="2" />
+                <path d="M9 4.5V3h6v1.5M8.5 10h7M8.5 14h7M8.5 18h4" />
+              </svg>
+            </span>
+            <span className="wv-onetouch-text">
+              <strong className="wv-onetouch-title">{copy.modes.pro.title}</strong>
+              <small className="wv-onetouch-sub">{copy.modes.pro.sub}</small>
+            </span>
+            <svg className="wv-onetouch-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+        )}
 
         <button
           type="button"

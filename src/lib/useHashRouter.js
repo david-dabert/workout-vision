@@ -3,13 +3,15 @@ import { showUnmeasuredRoutes } from './buildFlags';
 
 const CORE_PAGES = new Set([
   'dashboard', 'analyze', 'exercises', 'history', 'film', 'live', 'about', 'comptage',
+  'pro', 'programme', 'resultats', 'manifesto', 'science',
+  'equine', 'veterinary', 'sports', 'golf', 'tennis', 'padel', 'cycling', 'baseball', 'rowing', 'skiing', 'swimming',
+  'kine', 'reeducation', 'volleyball',
 ]);
 
 const EXTENDED_PAGES = new Set([
   'coach', 'log', 'rest', 'profile', 'validate', 'weekly',
-  'prs', 'onboarding', 'pro', 'programme', 'resultats', 'manifesto', 'science',
-  'equine', 'veterinary', 'sports', 'golf', 'tennis', 'padel', 'cycling', 'baseball', 'rowing', 'skiing', 'swimming', 'coaches', 'physio',
-  'buddies', 'buddy', 'ergonomics', 'workplace', 'kine', 'reeducation', 'chat', 'volleyball', 'showcase', 'demo', 'investisseur',
+  'prs', 'onboarding', 'coaches', 'physio',
+  'buddies', 'buddy', 'ergonomics', 'workplace', 'chat', 'showcase', 'demo', 'investisseur',
 ]);
 
 function getValidPages() {
@@ -21,16 +23,14 @@ function getValidPages() {
 
 function readHash() {
   const raw = window.location.hash.replace(/^#\/?/, '').toLowerCase();
-  if (showUnmeasuredRoutes()) {
-    // A coach's programme opens from its link, #programme=<payload> (programme.js): the page is the programme's.
-    if (raw.startsWith('programme=')) return 'programme';
-    // A client's results open on the coach's phone from their link, #resultats=<payload> (programme.js, 9 October).
-    if (raw.startsWith('resultats=')) return 'resultats';
-    // A physiotherapist's programme opens on the patient's phone, #kine-p=<payload>; a patient's result on the
-    // physiotherapist's, #kine-r=<payload> (lib/kine/links.js, 15 October 2026).
-    if (raw.startsWith('kine-p=')) return 'kinep';
-    if (raw.startsWith('kine-r=')) return 'kiner';
-  }
+  // A coach's programme opens from its link, #programme=<payload> (programme.js): the page is the programme's.
+  if (raw.startsWith('programme=')) return 'programme';
+  // A client's results open on the coach's phone from their link, #resultats=<payload> (programme.js, 9 October).
+  if (raw.startsWith('resultats=')) return 'resultats';
+  // A physiotherapist's programme opens on the patient's phone, #kine-p=<payload>; a patient's result on the
+  // physiotherapist's, #kine-r=<payload> (lib/kine/links.js, 15 October 2026).
+  if (raw.startsWith('kine-p=')) return 'kinep';
+  if (raw.startsWith('kine-r=')) return 'kiner';
   return getValidPages().has(raw) ? raw : 'dashboard';
 }
 

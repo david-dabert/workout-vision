@@ -151,6 +151,9 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           <span className="res-opt-sub">
             {fr ? `Moyenne\u00A0: ${analysis.averageRomDeg}°` : `Average: ${analysis.averageRomDeg}°`}
           </span>
+          <span className="res-opt-explain">
+            {fr ? 'Angle articulaire parcouru face à l’amplitude complète du mouvement.' : 'Joint angle range reached relative to full anatomical range.'}
+          </span>
         </div>
 
         <div className="res-opt-metric">
@@ -169,6 +172,9 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           <span className="res-opt-sub">
             {fr ? `Excentrique\u00A0: ${analysis.averageEccentricSec}\u00A0s` : `Eccentric: ${analysis.averageEccentricSec}\u00A0s`}
           </span>
+          <span className="res-opt-explain">
+            {fr ? 'Régularité de la phase de descente retenue sans chute libre.' : 'Smoothness of the lowering phase without dropping the weight.'}
+          </span>
         </div>
 
         <div className="res-opt-metric">
@@ -186,6 +192,9 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           </div>
           <span className="res-opt-sub">
             {fr ? `Cadence\u00A0: ${analysis.tempoCadence}` : `Tempo: ${analysis.tempoCadence}`}
+          </span>
+          <span className="res-opt-explain">
+            {fr ? 'Durée cumulée d’effort mécanique (descente - pause - montée).' : 'Total active mechanical work duration (lowering - pause - concentric).'}
           </span>
         </div>
 
@@ -210,6 +219,9 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
                 ? (fr ? `Efficacité axiale\u00A0: ${analysis.pathEfficiencyPercent}%` : `Axial efficiency: ${analysis.pathEfficiencyPercent}%`)
                 : (fr ? 'Modèle cinématique' : 'Kinematic template')}
             </span>
+            <span className="res-opt-explain">
+              {fr ? 'Stabilité du couloir de mouvement d’une répétition à l’autre.' : 'Consistency of the movement path from rep to rep.'}
+            </span>
           </div>
         )}
 
@@ -233,6 +245,9 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
               {analysis.hypertrophyReport.bounceCount === 0
                 ? (fr ? 'Inversion contrôlée sans rebond' : 'Controlled reversal, zero bounce')
                 : (fr ? `${analysis.hypertrophyReport.bounceCount} rebond(s) d’élan détecté(s)` : `${analysis.hypertrophyReport.bounceCount} momentum bounce(s) detected`)}
+            </span>
+            <span className="res-opt-explain">
+              {fr ? 'Qualité du contrôle au point d’étirement maximal du muscle.' : 'Control quality at the muscle’s peak stretched position.'}
             </span>
           </div>
         )}

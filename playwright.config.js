@@ -14,11 +14,7 @@ export default defineConfig({
   projects: [
     {
       name: 'core',
-      testIgnore: [
-        '**/pro.spec.js',
-        '**/pro.webkit.spec.js',
-        '**/pro-builder.visual.spec.js',
-      ],
+      testIgnore: [],
     },
     {
       name: 'extended',

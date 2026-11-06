@@ -170,13 +170,25 @@ describe('No unmeasured metrics or invented physics in production markup', () =>
     expect(htmlEn).not.toContain('entry-interactive');
   });
 
-  it('renders Choice screen with honest counts and unmeasured routes hidden in production', () => {
+  it('renders Choice screen with honest counts, permanent features live, and fictitious demos hidden in production', () => {
     const store = { wv_lang: 'fr' };
     vi.stubGlobal('localStorage', { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); } });
 
     const html = renderToStaticMarkup(
       <LanguageProvider>
-        <Choice onChoose={() => {}} onGuide={() => {}} />
+        <Choice
+          onChoose={() => {}}
+          onGuide={() => {}}
+          onReference={() => {}}
+          onPro={() => {}}
+          onEquine={() => {}}
+          onSports={() => {}}
+          onManifesto={() => {}}
+          onCoaches={() => {}}
+          onBuddies={() => {}}
+          onErgonomics={() => {}}
+          onChat={() => {}}
+        />
       </LanguageProvider>
     );
 
@@ -184,12 +196,17 @@ describe('No unmeasured metrics or invented physics in production markup', () =>
     expect(html).toContain('La vidéo reste sur votre téléphone');
     expect(html).not.toContain('1 200+ variantes');
     expect(html).toContain('183 exercices et mouvements');
-    expect(html).not.toContain('data-testid="choose-head-pro"');
-    expect(html).not.toContain('data-testid="choice-reference"');
-    expect(html).not.toContain('data-testid="choice-pro"');
-    expect(html).not.toContain('data-testid="choose-head-explore"');
-    expect(html).not.toContain('data-testid="choice-equine"');
-    expect(html).not.toContain('data-testid="choice-sports"');
+    expect(html).toContain('data-testid="choose-head-pro"');
+    expect(html).toContain('data-testid="choice-reference"');
+    expect(html).toContain('data-testid="choice-pro"');
+    expect(html).toContain('data-testid="choose-head-explore"');
+    expect(html).toContain('data-testid="choice-equine"');
+    expect(html).toContain('data-testid="choice-sports"');
+    expect(html).toContain('data-testid="choice-manifesto"');
+    expect(html).not.toContain('data-testid="choice-coaches"');
+    expect(html).not.toContain('data-testid="choice-buddies"');
+    expect(html).not.toContain('data-testid="choice-ergonomics"');
+    expect(html).not.toContain('data-testid="chat-link"');
   });
 
   it('scans all string literals reachable from main.jsx with extended routes off and fails on unmeasured metrics and sticking terms', async () => {
@@ -245,7 +262,7 @@ describe('No unmeasured metrics or invented physics in production markup', () =>
             if (arg && arg.type === 'StringLiteral') {
               const src = arg.value;
               if (file.endsWith('src/App.jsx')) {
-                const extended = ['InvestorShowcaseModal', 'Equine', 'SportsBiomechanics', 'CoachFinder', 'GymBuddy', 'Ergonomics', 'Kine', 'Chat', 'Activity', 'Showcase', 'Manifesto', 'Pro', 'Programme'];
+                const extended = ['InvestorShowcaseModal', 'CoachFinder', 'GymBuddy', 'Ergonomics', 'Chat'];
                 if (extended.some(ex => src.includes(ex))) return;
               }
               const resolved = resolveImport(src, file);
@@ -277,6 +294,8 @@ describe('No unmeasured metrics or invented physics in production markup', () =>
       const rel = path.relative(process.cwd(), file);
       if (!rel.startsWith('src/components/') && !rel.startsWith('src/lib/')) continue;
       if (rel.startsWith('src/lib/counting/')) continue;
+      // CoachNutrition / office-copy is a dietary BMR calculator (kcal/kJ), not a camera physics claim.
+      if (rel.startsWith('src/components/coaches/')) continue;
       if (!file.endsWith('.js') && !file.endsWith('.jsx') && !file.endsWith('.ts') && !file.endsWith('.tsx')) continue;
       if (rel.includes('pdf-fonts/fonts.js')) continue;
 
