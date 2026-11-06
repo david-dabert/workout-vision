@@ -13,7 +13,12 @@ export const ONE_TOUCH = {
       mobility: {
         badge: '',
         title: 'Mobilité & Santé',
-        sub: 'Bilans de souplesse et posture',
+        sub: 'Espace kiné, vidéos et bilans',
+      },
+      pro: {
+        badge: '',
+        title: 'Espace Pro',
+        sub: 'Programmes coach, PDF et QR',
       },
       history: {
         badge: '',
@@ -47,7 +52,12 @@ export const ONE_TOUCH = {
       mobility: {
         badge: '',
         title: 'Mobility & Health',
-        sub: 'Joint screening and posture checks',
+        sub: 'Physio workspace, videos & screens',
+      },
+      pro: {
+        badge: '',
+        title: 'Pro Workspace',
+        sub: 'Coach programmes, PDF & QR',
       },
       history: {
         badge: '',

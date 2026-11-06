@@ -31,6 +31,9 @@ describe('the physiotherapist workspace', () => {
     for (const id of ['mains-jointes', 'rotation-externe', 'abduction-horizontale', 'elevation-paliers']) expect(html).toContain(`data-testid="kn-add-${id}"`);
     // No link to send before an exercise is chosen.
     expect(html).not.toContain('data-testid="kn-send"');
+    // The 3-step clinical workflow and 1-click demo sample button are shown.
+    expect(html).toContain('data-testid="kn-workflow"');
+    expect(html).toContain('data-testid="kn-demo-prefill"');
     // Without a media address, it says the videos are not online yet.
     expect(html).toContain('data-testid="kn-no-media"');
   });

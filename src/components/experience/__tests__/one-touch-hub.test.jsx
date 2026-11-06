@@ -5,17 +5,19 @@ import OneTouchHub from '../OneTouchHub';
 vi.mock('../OneTouchHub.css', () => ({}));
 
 describe('OneTouchHub component', () => {
-  it('renders the 3 primary one-touch modes in French', () => {
+  it('renders the primary one-touch modes in French', () => {
     const html = renderToStaticMarkup(
-      <OneTouchHub fr={true} onStartLift={() => {}} onMobility={() => {}} onHistory={() => {}} onSelectCategory={() => {}} />
+      <OneTouchHub fr={true} onStartLift={() => {}} onMobility={() => {}} onPro={() => {}} onHistory={() => {}} onSelectCategory={() => {}} />
     );
 
     expect(html).toContain('data-testid="onetouch-hub"');
     expect(html).toContain('data-testid="onetouch-lift"');
     expect(html).toContain('data-testid="onetouch-mobility"');
+    expect(html).toContain('data-testid="onetouch-pro"');
     expect(html).toContain('data-testid="onetouch-history"');
     expect(html).toContain('S’entraîner');
     expect(html).toContain('Mobilité &amp; Santé');
+    expect(html).toContain('Espace Pro');
     expect(html).toContain('Mon Suivi');
     expect(html).toContain('Explorer par groupe musculaire\u00A0:');
   });

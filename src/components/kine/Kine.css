@@ -1,6 +1,10 @@
 /* The physiotherapist's workspace and the patient's programme (components/kine/): the showcase parts (Showcase.css),
    the comparison's parts (ReferenceCompare.css) and the experience's tokens (Entry.css). Status: convention. */
 
+.wv-experience .kn-workflow { display: flex; flex-direction: column; gap: var(--s-3); margin-bottom: var(--s-4); padding: 14px 16px; border: 1px solid var(--lamp-line); border-radius: var(--r-m); background: var(--basalt); }
+.wv-experience .kn-workflow-steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-caption); color: var(--bone-2); }
+.wv-experience .kn-workflow-step { line-height: 1.4; }
+.wv-experience .kn-demo-btn { align-self: flex-start; }
 .wv-experience .kn-fields { display: flex; flex-direction: column; gap: var(--s-3); }
 .wv-experience .kn-row { display: flex; gap: var(--s-3); }
 .wv-experience .kn-row > * { flex: 1; min-width: 0; }
