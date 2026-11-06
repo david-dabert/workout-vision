@@ -54,12 +54,12 @@ describe('the frozen-share rule', () => {
 const set = JSON.parse(gunzipSync(readFileSync(resolve(__dirname, '../../../test/real-phone/sets-29sep/lateral_raise_9_front_43e71b40.json.gz'))).toString());
 
 describe('frozen skeletons (analyzeCoreVideo, defence in depth)', () => {
-  it('the healthy read repeats no skeleton and counts 8 as before', () => {
+  it('the healthy read repeats no skeleton and counts 9 as before', () => {
     expect(repeatedSkeletons(set.worldLandmarks)).toEqual({ samples: 460, repeats: 0 });
     expect(isFrozenRead(repeatedSkeletons(set.worldLandmarks))).toBe(false);
     const r = summarizeCount(set.worldLandmarks, set.timestamps, 'lateral_raise');
     expect(r.refused).toBe(false);
-    expect(r.count).toBe(8);
+    expect(r.count).toBe(9);
   });
   it('the same video read frozen on its first frame is frozen: 459 of 460 repeats', () => {
     const wl = set.worldLandmarks.map(() => set.worldLandmarks[0]);

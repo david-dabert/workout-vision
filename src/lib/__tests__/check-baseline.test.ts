@@ -25,10 +25,10 @@ describe('the check page baseline', () => {
   // The 3 October demo incident was the video of David's lateral raise of 29 September: its healthy collector read
   // has the same samples at the same times. The check row is that set; the incident read is kept apart, outside every
   // sets-* folder, so the scoreboard counts the video once (WP0.2; David's choice A, 4 October).
-  it('holds the lateral raise of 29 September, the video of the 3 October incident: David 9, the core 8 (WP0.2)', () => {
+  it('holds the lateral raise of 29 September, the video of the 3 October incident: David 9, the core 9 (WP0.2)', () => {
     const c = baseline.clips.find(c => c.id === 'lateral_raise_9_front_43e71b40')!;
     expect(where(c.file)).toEqual(['sets-29sep']);
-    expect([c.label, c.before, c.refused]).toEqual([9, 8, false]);
+    expect([c.label, c.before, c.refused]).toEqual([9, 9, false]);
     const incident = resolve(REAL, 'incidents/2026-10-03-demo/machine_lateral_raise_9_front_7b9f157e.json.gz');
     const a = JSON.parse(gunzipSync(readFileSync(incident)).toString());
     const b = JSON.parse(gunzipSync(readFileSync(resolve(REAL, 'sets-29sep', c.file))).toString());

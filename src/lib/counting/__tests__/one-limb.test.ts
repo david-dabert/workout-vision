@@ -43,7 +43,7 @@ describe('a one-limb exercise is counted on the working limb, even when the idle
 // A two-arm lift done one arm at a time (review of PR #175, 14 October 2026): the idle arm, better seen and still,
 // counts nothing, so the working arm counts. A set whose better seen arm counts reps keeps it.
 describe('a two-arm lift counts the working arm when the better seen arm stays still', () => {
-  it.each((['bicep_curl', 'lateral_raise'] as const).flatMap(key => (['left', 'right'] as Side[]).map(working => [key, working] as const)))('%s, working %s', (key, working) => {
+  it.each((['bicep_curl', 'seated_row'] as const).flatMap(key => (['left', 'right'] as Side[]).map(working => [key, working] as const)))('%s, working %s', (key, working) => {
     const def = liftDefinition(key)!;
     expect(def.eitherSide || def.together || def.bothSides, key).toBeFalsy();
     const rest = def.rest === 'high' ? 170 : 20;

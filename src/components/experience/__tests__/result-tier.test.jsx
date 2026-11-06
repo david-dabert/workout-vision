@@ -17,14 +17,15 @@ async function render(lang, lift) {
   return html.match(/<p class="tier tier-([a-z]+)">([^<]*)<\/p>/);
 }
 describe('the tier on the result screen', () => {
-  it('labels the lateral raise Experimental, in English and French', async () => {
-    const en = await render('en', 'lateral_raise');
+  it('labels an Experimental lift Experimental, in English and French', async () => {
+    const en = await render('en', 'bench_press');
     expect(en?.slice(1)).toEqual(['experimental', 'Experimental: we are still learning this exercise']);
-    const fr = await render('fr', 'lateral_raise');
+    const fr = await render('fr', 'bench_press');
     expect(fr?.slice(1)).toEqual(['experimental', 'Expérimental : nous apprenons encore à le compter']);
   });
   it('labels a Beta lift Beta', async () => {
     expect((await render('en', 'squat'))?.slice(1)).toEqual(['beta', 'Beta']);
     expect((await render('fr', 'bicep_curl'))?.slice(1)).toEqual(['beta', 'Bêta']);
+    expect((await render('en', 'lateral_raise'))?.slice(1)).toEqual(['beta', 'Beta']);
   });
 });

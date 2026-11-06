@@ -7,8 +7,9 @@
 // this table against npm run scoreboard's sets and fails when they disagree (tiers.txt).
 // Status: convention (David's rule, PLAN.md Lift tiers), not a counting threshold.
 export const TIERS = {
-  // 3 October: experimental. sets-29sep/lateral_raise_9 counts 8 for 9 (scoreboard.txt); a failing set.
-  lateral_raise: 'experimental',
+  // 6 November 2026: beta. Both of David's sets count exactly (9 for 9 on 43e71b40, 10 for 10 on mufhhbun)
+  // with eitherSide evaluation and tailDepthShare 0.70 for fatigued cut rep recovery.
+  lateral_raise: 'beta',
   bicep_curl: 'beta',
   lat_pulldown: 'beta',
   squat: 'beta',

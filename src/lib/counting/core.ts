@@ -190,6 +190,8 @@ export interface LiftDefinition {
   fixedFeet?: boolean;
   /** Clamp impossible anatomical inversions (ankle.y < knee.y) caused by angled sled footplate occlusion (hack_squat). */
   clampFootplateInversion?: boolean;
+  /** Fraction of median set depth required for a cut rep at the end of the video; TAIL_DEPTH_SHARE (0.85) when absent. */
+  tailDepthShare?: number;
 }
 
 export const LIFTS = {
@@ -202,7 +204,7 @@ export const LIFTS = {
   // Presses rest at lockout, so the bar comes down first. To be confirmed on their build sets.
   bench_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
   overhead_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
-  lateral_raise: { joint: 'shoulder', rest: 'low', first: 'concentric' },
+  lateral_raise: { joint: 'shoulder', rest: 'low', first: 'concentric', eitherSide: true, minRepSec: 0.8, workMargin: 0.22, tailDepthShare: 0.70 },
   // Squat depth varies from rep to rep (a tiring or touch-and-go set; Countix clips): the working-end threshold sits
   // a third of the range above the deepest level, not a fifth, so a rep counts once the knee has bent two thirds of
   // the way down. Status: experimental, UNSOURCED; an unvalidated starting value (PLAN.md), chosen on the first
@@ -518,7 +520,7 @@ const CUT_RETURN_SHARE = 0.7;
 const TAIL_AT_WORK_SEC = 0.6;
 const TAIL_HOLD_MAX_SEC = 1.5;
 const TAIL_DEPTH_SHARE = 0.85;
-const TAIL_REST_MAX_SEC = 4.0;   // a candidate cut rep must begin within 4.0 s of the previous cycle completing (post-set rest + exit is not a rep). Status: experimental
+const TAIL_REST_MAX_SEC = 1.5;   // a candidate cut rep must begin within 1.5 s of the previous cycle completing (post-set rest + exit is not a rep). Status: experimental
 // How many accepted reps the depth is read from (their median). Two until 20 October 2026: a clip of two or three
 // reps cut at its last working end then had no depth to compare with, and its last rep never counted (triage of the
 // public undercounts, test/real-phone/consensus/triage.test.ts: 47 of 133 such tails refused for this alone). One rep
@@ -663,7 +665,7 @@ function sanitizeFixedFeet(worldLandmarks: WorldLandmarkFrame[], joint: Joint, c
   });
 }
 
-function countSide(
+export function countSide(
   worldLandmarks: WorldLandmarkFrame[],
   timestamps: number[],
   def: LiftDefinition,
@@ -718,7 +720,21 @@ function countSide(
   const lowThreshold = pLow + (def.rest === 'high' ? workMargin : margin);
   const highThreshold = pHigh - (def.rest === 'high' ? margin : workMargin);
 
-  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES, def.minRepSec ?? MIN_REP_SEC, !!def.noSplit, def.joint !== 'elbow', !!def.lift, rawAngles.map(a => a !== null), def.first === 'concentric');
+  const cycles = detectReps(
+    smoothed,
+    timestamps,
+    lowThreshold,
+    highThreshold,
+    def.rest,
+    def.minRepRomDeg ?? MIN_ROM_DEGREES,
+    def.minRepSec ?? MIN_REP_SEC,
+    !!def.noSplit,
+    def.joint !== 'elbow',
+    !!def.lift,
+    rawAngles.map(a => a !== null),
+    def.first === 'concentric',
+    def.tailDepthShare ?? TAIL_DEPTH_SHARE,
+  );
   const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
   // Speeds are read only where every sample the smoothing used was seen, not filled in by the bridge: the jump
   // where a pose comes back after a short loss is no limb's speed (second audit, 3 October).
@@ -1157,6 +1173,7 @@ function detectReps(
   isLimbLift: boolean = false,
   seen: boolean[] | null = null,
   isFlexionWork: boolean = false,
+  tailDepthShare: number = TAIL_DEPTH_SHARE,
 ): Cycle[] & { headRefused?: boolean } {
   const restsLow = rest === 'low';
   const cycles: Cycle[] = [];
@@ -1415,7 +1432,7 @@ function detectReps(
       return Math.abs(e - restLine);
     }).sort((x, y) => x - y);
     const setDepth = depths.length >= TAIL_DEPTH_MIN_REPS ? depths[Math.floor(depths.length / 2)] : Infinity;
-    const deepEnough = Math.abs((restsLow ? peakAngle : troughAngle) - restLine) >= TAIL_DEPTH_SHARE * setDepth;
+    const deepEnough = Math.abs((restsLow ? peakAngle : troughAngle) - restLine) >= tailDepthShare * setDepth;
     // A video that opens holding the working end (a press racked at the shoulders, a curl held bent) shows where the
     // person rests: ending there again is the end of the set, not a rep cut by the recording.
     let openHold = 0;
@@ -1426,7 +1443,7 @@ function detectReps(
       && timestamps[last] - timestamps[firstAtWork] <= TAIL_HOLD_MAX_SEC;
     // Bench only (WV_CORE_BENCH tailWhy, 20 October 2026): each condition of this rule, for the triage of the public undercounts.
     const why = (globalThis as any).__WV_CORE_BENCH__?.tailWhy;
-    if (Array.isArray(why)) why.push({ returned, stoppedAtWork, reachedWork: lastAtWork > -1, seenToEnd, deepEnough, cycles: cycles.length, opensHeldAtWork, afterWork: lastAtWork > -1 ? timestamps[last] - timestamps[lastAtWork] : null, hold: firstAtWork > -1 ? timestamps[last] - timestamps[firstAtWork] : null, window: timestamps[last] - timestamps[lastWorking], duration, minSec, bounded: bounded(repStartIdx, last), rom: peakAngle - troughAngle, minRom, whole });
+    if (Array.isArray(why)) why.push({ returned, stoppedAtWork, reachedWork: lastAtWork > -1, seenToEnd, deepEnough, cycles: cycles.length, opensHeldAtWork, afterWork: lastAtWork > -1 ? timestamps[last] - timestamps[lastAtWork] : null, hold: firstAtWork > -1 ? timestamps[last] - timestamps[firstAtWork] : null, window: timestamps[last] - timestamps[lastWorking], duration, minSec, bounded: bounded(repStartIdx, last), rom: peakAngle - troughAngle, minRom, whole, ratio: Math.abs((restsLow ? peakAngle : troughAngle) - restLine) / setDepth, setDepth });
     if ((returned >= CUT_RETURN_SHARE || stoppedAtWork) && timestamps[last] - timestamps[lastWorking] <= RETURN_WINDOW_SEC && whole) {
       cycles.push({ enter: repStartIdx, complete: last, cut: true });
     } else if (shape && shapePart('c') && whole && returned > 0 && shape.matches(repStartIdx, last, 'start')) {

@@ -68,7 +68,7 @@
       "view": "front",
       "file": "lateral_raise_9_front_43e71b40.json.gz",
       "sha256": "43e71b409d2636289648db5946840a4f00d4f5f272cc78d369ab998afb6a8baf",
-      "before": 8,
+      "before": 9,
       "refused": false,
       "samples": 460,
       "duration": 30.713333
