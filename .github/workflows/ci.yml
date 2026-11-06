@@ -87,14 +87,18 @@ jobs:
         if: always()
         run: |
           npm run build:extended
-          npx playwright test --project=extended --retries=0 --workers=1
+          npx playwright test --project=extended --retries=0 --workers=1 --output=test-results-extended
       # A failed test leaves its page snapshot (error-context.md) and screenshots in test-results/: kept for five days, so
       # a failure that does not come back on a re-run can still be read (e2e/pack.spec.js, 18 October 2026).
+      # The extended run writes to its own folder: Playwright empties its output folder at the start of a run, so a shared
+      # one would erase the production run's failures.
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: browser-test-results-${{ github.sha }}
-          path: test-results/
+          path: |
+            test-results/
+            test-results-extended/
           retention-days: 5
 
   # The tour (PLAN.md, GROWTH, after step 1): every screen reached without a video, on the production
