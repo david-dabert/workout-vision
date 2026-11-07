@@ -339,3 +339,71 @@ David's order of 6 November 2026: the counting gate
 7. It is tested through the app's own entry point, with the landmarks the app passes.
 8. If it fails, it is reverted and the result stays in TRIED.md.
 9. CI refuses a pull request that touches src/lib/counting/ without touching TRIED.md.
+
+David's order of 6 November 2026: Phases 5 to 7, verbatim as they reached the Claude session on 7 November 2026 at 22:40 (an attachment, introduced as the exact text of David's order of 6 November 2026, "including the amendment regarding evidence screenshots and figure verification"). Phases 1 to 4 are recorded by their reports on issue #190; the counting gate of Phase 2 is above. These Phases 5 to 7 are those of the 6 November queue; DIRECTIVES.md numbers its own phases separately.
+
+### Phase 5: `perf/first-paint`
+
+**Goal**: Cold start to interactive choice in < 1.5 s on a 4G connection and slow phone, without waiting for the 30 MB pose model.
+
+1. **Preload the critical chain**:
+   - The two Latin font subsets (`Geist` variable, `Instrument Serif` italic) preloaded in `<head>` with `crossorigin`.
+   - Critical path CSS inlined or bundled without render-blocking `@import`.
+   - `public/boot.js` language detection executes synchronously before any stylesheet blocks paint.
+2. **Deferred heavy assets**:
+   - MediaPipe vision WASM and `.task` bundles (`pose_landmarker_full.task`) must never load during initial boot or choice screen rendering.
+   - Load only when the user taps "Filmer ma série", selects an exercise, or opens the live detector.
+3. **Offline service worker precache budget**:
+   - SW precache manifest budget strictly enforced: only core app shell, Latin font subsets, and offline boot fallback.
+   - Models remain in runtime IndexedDB cache (`workoutVision` model store), never in the 50 MB initial service worker precache list.
+4. **Verification**:
+   - `npm run build` total critical entry chunk < 150 kB gzipped.
+   - Playwright performance assertion at 375×667 emulating 4G throttle: First Contentful Paint < 800 ms, interactive choice < 1500 ms.
+   - CI check passes without downloading MediaPipe models before user interaction.
+
+---
+
+### Phase 6: `loop/blind-count`
+
+**Goal**: Establish the automated collection and evaluation loop for testers' blind counts (`blind.js`), making blind counts first-class citizens in the scoreboard.
+
+1. **Blind count recording protocol**:
+   - When a tester counts reps in the app before the app reveals its own count (the blind count flow in `BlindAsk.jsx` / `blind.js`), record:
+     - video SHA-256 hash
+     - exercise key
+     - tester count (ground truth label under R1 / R2)
+     - app measured count
+     - timestamp and anonymous session ID
+   - Store in `test/real-phone/blind/` schema with locked ground truth.
+2. **Scoreboard integration**:
+   - `npm run scoreboard:blind` reads recorded blind sets.
+   - Evaluates: exact match count, catastrophic errors (off by $\ge 3$), and refusal rate.
+   - Gate in CI: fails if any recorded blind set regresses or becomes catastrophic.
+3. **Lock & integrity**:
+   - Every blind count entry locked with its SHA-256 hash in `test/real-phone/labels.lock`.
+   - CI verifies that no existing line in `labels.lock` is modified or removed without an explicit ruling from David.
+4. **Verification**:
+   - Unit tests for the blind ingestion parser and scoreboard comparator.
+   - `npm run scoreboard:blind` executes cleanly in CI.
+
+---
+
+### Phase 7: `docs/state`
+
+**Goal**: Bring `STATE.md`, `PLAN.md`, `README.md`, and the manifest completely up to date with verified, measured facts, removing any stale, invented, or unverified claims.
+
+1. **Honest numbers only**:
+   - Cite only figures that exist on `main` and can be proven by running a committed command or referencing a committed file:
+     - Real-phone stored sets: 13 of 15 exact (not 14, not 15).
+     - Real videos: 12 of 16 exact (not 13, not 14).
+     - Public build sets: 468 of 949 deciding exact (49%).
+     - Testers' blind counts: exact count recorded from Phase 6.
+   - List any previously cited unverified figures under "Not verified" and expunge them from documentation.
+2. **Accurate legal & privacy wording**:
+   - Kiné loop and usage telemetry must be described strictly as:
+     *"Aucune vidéo ni donnée patient ne quitte le téléphone ; seuls des compteurs d'usage anonymes sont envoyés."*
+   - Never use "zero legal friction", "zero HDS", or "100% compliant".
+3. **Experimental status markers**:
+   - Mark Kinetic Forced Aligner rep path in `MovementOptimizationCard.jsx` as experimental (its template in `KineticForcedAligner.ts` is hand-written, R9).
+4. **Artifact hygiene**:
+   - Remove evidence screenshots from git tracking; attach evidence to CI artifacts or PR comments only.
