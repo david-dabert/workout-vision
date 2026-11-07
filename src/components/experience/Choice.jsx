@@ -21,8 +21,20 @@ import { showUnmeasuredRoutes } from '../../lib/buildFlags';
 import './Choice.css';
 
 const PRO_ROW = {
-  fr: { choiceRow: 'Espace pro', choiceRowSub: 'Pour les coachs et les kinésithérapeutes', programmeRow: 'Votre programme' },
-  en: { choiceRow: 'Coach office', choiceRowSub: 'For coaches and physiotherapists', programmeRow: 'Your programme' },
+  fr: {
+    choiceRow: 'Espace pro',
+    choiceRowSub: 'Pour les coachs et les kinésithérapeutes',
+    programmeRow: 'Votre programme',
+    linkRow: 'J’ai un lien de mon coach',
+    linkRowSub: 'Collez-le pour ouvrir le programme',
+  },
+  en: {
+    choiceRow: 'Coach office',
+    choiceRowSub: 'For coaches and physiotherapists',
+    programmeRow: 'Your programme',
+    linkRow: 'I have a link from my coach',
+    linkRowSub: 'Paste it to open the programme',
+  },
 };
 
 // The list of every counted exercise loads after the choice has shown (ExerciseList.jsx).
