@@ -5,9 +5,9 @@
 }.wv-experience .rail::-webkit-scrollbar { display: none; }.wv-experience .altar {
   position: relative; display: block; flex: 0 0 min(80%, 340px); height: clamp(390px, 58vh, 500px); scroll-snap-align: center;
   border-radius: var(--r-xl); overflow: hidden; isolation: isolate; text-align: left;
-  background: radial-gradient(90% 55% at 50% 0%, rgba(232, 189, 126, 0.17), transparent 70%), linear-gradient(180deg, #14110D 0%, var(--well) 100%);
+  background: radial-gradient(90% 55% at 50% 0%, rgba(232, 189, 126, 0.17), transparent 70%), linear-gradient(180deg, var(--card-top) 0%, var(--well) 100%);
   border: 1px solid var(--c-rule);
-}.wv-experience .altar canvas { position: absolute; left: 0; top: 0; width: 100%; height: 72%; display: block; }.wv-experience .altar-meta { position: absolute; left: 22px; right: 22px; bottom: 22px; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }.wv-experience .altar-idx { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.2em; color: var(--c-fg-muted); }.wv-experience .altar-name { font-family: var(--serif); font-size: 37px; line-height: 1; letter-spacing: -0.01em; }.wv-experience .altar-alias { font-size: var(--fs-caption); color: var(--c-fg-muted); }.wv-experience .altar-view { margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--c-accent); }.wv-experience .altar-view svg { width: 14px; height: 14px; flex-shrink: 0; }.wv-experience .dots { display: flex; justify-content: center; gap: 6px; margin-top: 14px; }.wv-experience .dots i { width: 16px; height: 2px; border-radius: 1px; background: var(--hair-2); transition: width var(--d-ui) var(--ease), background var(--d-ui); }.wv-experience .dots i.on { width: 30px; background: var(--c-accent); }.wv-experience .row-link { width: 100%; display: flex; align-items: center; gap: 16px; margin-top: var(--s-5); padding: 18px 2px; border-top: 1px solid var(--c-rule); border-bottom: 1px solid var(--c-rule); text-align: left; }.wv-experience .row-ico { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--hair-2); display: grid; place-items: center; color: var(--c-accent); flex-shrink: 0; }.wv-experience .row-ico svg { width: 22px; height: 22px; }.wv-experience .row-txt { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }.wv-experience .row-txt b { font-weight: 500; font-size: 16px; }.wv-experience .row-txt small { font-size: var(--fs-caption); color: var(--c-fg-muted); }.wv-experience .row-arrow { width: 18px; height: 18px; color: var(--c-fg-muted); flex-shrink: 0; }.wv-experience .foot { margin: var(--s-5) 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); text-wrap: balance; }
+}.wv-experience .altar canvas { position: absolute; left: 0; top: 0; width: 100%; height: 72%; display: block; }.wv-experience .altar-meta { position: absolute; left: 22px; right: 22px; bottom: 22px; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }.wv-experience .altar-idx { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.2em; color: var(--c-fg-muted); }.wv-experience .altar-name { font-family: var(--serif); font-size: var(--fs-altar-fallback); line-height: 1; letter-spacing: -0.01em; }.wv-experience .altar-alias { font-size: var(--fs-caption); color: var(--c-fg-muted); }.wv-experience .altar-view { margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--c-accent); }.wv-experience .altar-view svg { width: 14px; height: 14px; flex-shrink: 0; }.wv-experience .dots { display: flex; justify-content: center; gap: 6px; margin-top: 14px; }.wv-experience .dots i { width: 16px; height: 2px; border-radius: 1px; background: var(--hair-2); transition: width var(--d-ui) var(--ease), background var(--d-ui); }.wv-experience .dots i.on { width: 30px; background: var(--c-accent); }.wv-experience .row-link { width: 100%; display: flex; align-items: center; gap: 16px; margin-top: var(--s-5); padding: 18px 2px; border-top: 1px solid var(--c-rule); border-bottom: 1px solid var(--c-rule); text-align: left; }.wv-experience .row-ico { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--hair-2); display: grid; place-items: center; color: var(--c-accent); flex-shrink: 0; }.wv-experience .row-ico svg { width: 22px; height: 22px; }.wv-experience .row-txt { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }.wv-experience .row-txt b { font-weight: 500; font-size: var(--fs-input); }.wv-experience .row-txt small { font-size: var(--fs-caption); color: var(--c-fg-muted); }.wv-experience .row-arrow { width: 18px; height: 18px; color: var(--c-fg-muted); flex-shrink: 0; }.wv-experience .foot { margin: var(--s-5) 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); text-wrap: balance; }
 
 
 .wv-experience .title, .wv-experience .altar-name { color: var(--c-fg); }
@@ -28,7 +28,7 @@
 /* Sized to the card. A name longer than the card ("Soulevé de terre roumain") takes two balanced lines at the
    same size, never runs under the card's edge (David, 2 October 2026; e2e/card-names-fit.spec.js). The card's
    other lines and the rows under it are balanced too, so no line ends on one word. */
-.wv-experience .altar-name { font-size: min(34px, 8.4vw); line-height: 1.02; text-wrap: balance; }
+.wv-experience .altar-name { font-size: var(--fs-altar); line-height: 1.02; text-wrap: balance; }
 .wv-experience .altar-meta .tier, .wv-experience .altar-alias, .wv-experience .row-txt small { text-wrap: balance; }
 /* The recent lifts: one row of pills under the welcome, each a 44 px tap target (A11Y-2), scrolled sideways when
    the names are long; never two lines, so the cards keep their place (WP1.5). */
@@ -49,7 +49,7 @@
 /* Short screens (a 4.7-inch iPhone in Safari or in an app's browser): the heading gives the
    figure more room. */
 @media (max-height: 600px) {
-  .wv-experience .choose-screen .title { font-size: 32px; margin-top: 10px; }
+  .wv-experience .choose-screen .title { font-size: var(--fs-title-xs); margin-top: 10px; }
   .wv-experience .choose-screen .sub { font-size: var(--fs-caption); line-height: 1.45; margin-top: 6px; }
   .wv-experience .welcome { margin-top: 4px; }
   .wv-experience .welcome-l1 { font-size: var(--fs-name); }
@@ -58,7 +58,7 @@
   /* A returning visitor has swiped the cards before: the instruction gives its lines to the figure. */
   .wv-experience .choose-screen.has-welcome .sub { display: none; }
   .wv-experience .rail { margin-top: 12px; }
-  .wv-experience .altar-name { font-size: min(32px, 8.4vw); }
+  .wv-experience .altar-name { font-size: var(--fs-altar-xs); }
 }
 /* The row to the saved sets sits under the first row and shares its rule. */
 .wv-experience .row-link + .row-link { margin-top: 0; border-top: 0; }
@@ -71,7 +71,7 @@
 .wv-experience .all-exercises .item-btn { grid-template-columns: 56px minmax(0, 1fr); }
 .wv-experience .all-exercises .item-btn:has(.tag) { grid-template-columns: 56px minmax(0, 1fr) auto; }
 /* The longest French names keep to two lines down to 320 px (an iPhone SE, or a mini with Display Zoom). */
-.wv-experience .all-exercises .item-name { font-size: min(var(--fs-name), 6.2vw); }
+.wv-experience .all-exercises .item-name { font-size: var(--fs-name-fit); }
 /* Beta in the list is gold as on the cards; the list's .tag rule loads later and would make it ash (#15). */
 .wv-experience .tag.tier-beta { color: var(--c-accent); border-color: var(--lamp-line); }
 .wv-experience .tag.tier-in-progress { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.08em; padding: 4px 8px; border: 1px solid var(--hair-2); color: var(--ash); border-radius: var(--r-pill); background: var(--well); }
@@ -91,17 +91,17 @@
 /* The note after the app restarted during a session (Choice.jsx, CrashNote): the usage note's line, its two keys side by side. */
 .wv-experience .crash-keys { display: flex; justify-content: center; flex-wrap: wrap; }
 .wv-experience .all-header-block { display: flex; flex-direction: column; gap: 4px; }
-.wv-experience .all-kicker { font-family: var(--mono); font-size: 10px; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--c-accent); }
+.wv-experience .all-kicker { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--c-accent); }
 .wv-experience .all-realms-bar { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-top: var(--s-3); padding-bottom: 2px; max-width: 100%; box-sizing: border-box; -webkit-overflow-scrolling: touch; }
 .wv-experience .all-realms-bar::-webkit-scrollbar { display: none; }
-.wv-experience .all-realm-chip { flex: none; padding: 5px 12px; border: 1px solid var(--hair-2); border-radius: var(--r-pill); background: var(--well); color: var(--c-fg-muted); font-size: var(--fs-caption); font-weight: 500; cursor: pointer; white-space: nowrap; transition: all var(--d-fast) var(--ease); }
+.wv-experience .all-realm-chip { flex: none; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 5px 12px; border: 1px solid var(--hair-2); border-radius: var(--r-pill); background: var(--well); color: var(--c-fg-muted); font-size: var(--fs-caption); font-weight: 500; cursor: pointer; white-space: nowrap; transition: all var(--d-fast) var(--ease); }
 .wv-experience .all-realm-chip:hover { border-color: var(--lamp-line); color: var(--bone); }
 .wv-experience .all-realm-chip.is-active { border-color: var(--lamp-line-strong); background: var(--bio-glow); color: var(--c-accent); font-weight: 600; }
 .wv-experience .all-count-row { display: flex; align-items: center; justify-content: space-between; margin-top: var(--s-3); }
 .wv-experience .item-text-wrap { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .wv-experience .item-sub-dot { color: var(--ash-2); }
 .wv-experience .item-sub-eq { color: var(--ash); }
-.wv-experience .item-sub-muscle { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.04em; color: var(--c-accent); }
+.wv-experience .item-sub-muscle { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.04em; color: var(--c-accent); }
 .wv-experience .all-exercises .item { border-bottom: 1px solid var(--hair-0); transition: background var(--d-fast); }
 .wv-experience .all-exercises .item:hover { background: var(--bio-glow); }
 .wv-experience .choose-head + .row-link { margin-top: 0; border-top: 0; }

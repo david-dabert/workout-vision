@@ -27,21 +27,63 @@
   /* Colour roles beyond the prototype's: the well under figures and drawings, the list separator,
      the one gold outline, the gold of measured counts, and the paper's own gold and second rule. */
   --well: #0B0908;
+  --card-top: #14110D;
+  --frame-bezel: #0C0A08;
+  --live-dot: #E0624A;
+  --video-well: #000000;
   --hair-0: rgba(239, 232, 220, 0.07);
   --lamp-line: rgba(232, 189, 126, 0.55);
   --lamp-line-strong: rgba(232, 189, 126, 0.7);
   --gold-num: linear-gradient(180deg, #FFF3DC 0%, #F0CB8E 46%, #B9823F 100%);
+  --btn-primary-bg: linear-gradient(180deg, #F6DAAA 0%, #E3B170 55%, #C98F48 100%);
   --paper-gold: #8A6630;
   --paper-rule-2: #F0EADF;
-  /* Type: eight roles. 16 px stays only for inputs (iOS zoom) and the primary button's label. */
+  /* Type: eight roles and their responsive companions. 16 px stays for inputs (iOS zoom) and the primary button's label. */
   --fs-display: clamp(120px, min(56vw, 30svh), 260px);
+  --fs-display-expert-sm: clamp(110px, min(56vw, 22svh), 260px);
+  --fs-hero-num: min(172px, 44vw);
+  --fs-hero-num-sm: min(132px, 36vw);
+  --fs-hero-num-xs: min(108px, 30vw);
+  --fs-hero-num-long: min(124px, 31vw);
+  --fs-typed-num: min(112px, 29vw);
+  --fs-blind-typed: 72px;
   --fs-number: clamp(64px, 19vw, 76px);
+  --fs-number-beg: clamp(56px, 17vw, 76px);
+  --fs-number-beg-xs: 52px;
+  --fs-blind-pct: 44px;
+  --fs-hist-n: min(var(--fs-title), 44px);
   --fs-title: clamp(38px, 10.6vw, 50px);
+  --fs-entry-l1: clamp(38px, 11.8vw, 46px);
+  --fs-entry-l1-sm: clamp(34px, 10.6vw, 42px);
+  --fs-res-q: 42px;
+  --fs-altar-fallback: 37px;
+  --fs-altar: min(34px, 8.4vw);
+  --fs-altar-xs: min(32px, 8.4vw);
+  --fs-res-q-sm: 34px;
+  --fs-title-xs: 32px;
+  --fs-res-q-xs: 30px;
+  --fs-moment: 28px;
   --fs-heading: clamp(27px, 7.8vw, 31px);
+  --fs-low-title: 27px;
+  --fs-rp-n: 26px;
+  --fs-brand: 24px;
   --fs-name: 23px;
+  --fs-name-fit: min(var(--fs-name), 6.2vw);
+  --fs-subhead-lg: 22px;
+  --fs-metric: 21px;
+  --fs-lead: 20px;
+  --fs-item-title: 19px;
+  --fs-subhead: 18px;
+  --fs-key: 17px;
+  --fs-input: 16px;
   --fs-body: 15px;
   --fs-caption: 13px;
+  --fs-status: 12px;
+  --fs-table: 11.5px;
   --fs-label: 10.5px;
+  --fs-legend: 9.5px;
+  --fs-th: 9px;
+  --fs-thumb-tag: 7.5px;
   --track-label: 0.2em;
   /* Spacing: 4 inside a line, 8 label to value, 12 title to sub, 16 topbar to content,
      24 block to block, 32 section to section, 48 end of page. */
@@ -56,7 +98,7 @@
 .wv-experience { height: 100%; }
 .wv-experience {
   margin: 0; background: var(--c-surface); color: var(--c-fg);
-  font: 400 15px/1.5 var(--sans);
+  font: 400 var(--fs-body)/1.5 var(--sans);
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
   overflow: hidden; overscroll-behavior: none; -webkit-tap-highlight-color: transparent;
 }
@@ -133,8 +175,8 @@
   display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 2px solid var(--c-fg);
   opacity: 0; white-space: nowrap;
 }
-.wv-experience .entry .brand { margin: 0; font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 24px; line-height: 1; color: var(--c-fg); }
-.wv-experience .entry-test { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bone-2); }
+.wv-experience .entry .brand { margin: 0; font-family: var(--serif); font-style: italic; font-weight: 400; font-size: var(--fs-brand); line-height: 1; color: var(--c-fg); }
+.wv-experience .entry-test { margin: 0; font-size: var(--fs-status); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bone-2); }
 /* The viewfinder: it takes the height the words leave; its four corners frame the figure drawn on the stage behind. */
 .wv-experience .entry-view { position: relative; flex: 1 1 auto; min-height: 120px; margin-top: 20px; pointer-events: none; opacity: 0; }
 .wv-experience .entry-view i { position: absolute; width: 18px; height: 18px; border: 0 solid var(--ash); }
@@ -143,9 +185,9 @@
 .wv-experience .entry-view i:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 1.5px; border-left-width: 1.5px; }
 .wv-experience .entry-view i:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 1.5px; border-right-width: 1.5px; }
 .wv-experience .entry-copy { position: relative; z-index: 1; flex: none; display: flex; flex-direction: column; align-items: stretch; pointer-events: none; width: 100%; max-width: 440px; margin: 0 auto; }
-.wv-experience .entry-l1 { margin: 26px 0 0; font-family: var(--serif); font-style: italic; font-weight: 400; font-size: clamp(38px, 11.8vw, 46px); line-height: 1; letter-spacing: -0.015em; color: var(--c-fg); text-wrap: balance; }
-.wv-experience .entry-l2 { margin: 10px 0 0; max-width: 330px; font-size: 20px; line-height: 1.35; color: var(--bone-2); opacity: 0; }
-.wv-experience .entry-l3 { margin: 18px 0 0; display: flex; align-items: center; gap: 10px; font-size: 15px; line-height: 1.4; color: var(--bone-2); opacity: 0; }
+.wv-experience .entry-l1 { margin: 26px 0 0; font-family: var(--serif); font-style: italic; font-weight: 400; font-size: var(--fs-entry-l1); line-height: 1; letter-spacing: -0.015em; color: var(--c-fg); text-wrap: balance; }
+.wv-experience .entry-l2 { margin: 10px 0 0; max-width: 330px; font-size: var(--fs-lead); line-height: 1.35; color: var(--bone-2); opacity: 0; }
+.wv-experience .entry-l3 { margin: 18px 0 0; display: flex; align-items: center; gap: 10px; font-size: var(--fs-body); line-height: 1.4; color: var(--bone-2); opacity: 0; }
 .wv-experience .entry-l3 svg { flex: none; }
 .wv-experience .mask { display: block; overflow: hidden; padding-bottom: 0.08em; }
 .wv-experience .mask > span { display: block; translate: 0 112%; }
@@ -154,11 +196,11 @@
 .wv-experience :is(.enter, .entry-demo, .entry-interactive) {
   pointer-events: auto; position: relative; z-index: 2; width: 100%; height: 58px; min-height: 44px; border-radius: 4px;
   display: inline-flex; align-items: center; justify-content: center; text-align: center;
-  font-size: 17px; font-weight: 600; letter-spacing: 0; overflow: hidden;
+  font-size: var(--fs-key); font-weight: 600; letter-spacing: 0; overflow: hidden;
 }
 .wv-experience .enter { background: var(--c-fg); color: var(--void); }
 .wv-experience .entry-interactive {
-  gap: 10px; font-size: 15px; border: 1.5px solid var(--lamp-line);
+  gap: 10px; font-size: var(--fs-body); border: 1.5px solid var(--lamp-line);
   color: var(--lamp-hi); background: color-mix(in srgb, var(--void) 70%, transparent);
 }
 .wv-experience .entry-interactive-pill {
@@ -172,7 +214,7 @@
 .wv-experience .enter::before { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 35%, color-mix(in srgb, var(--paper) 60%, transparent) 50%, transparent 65%); translate: -130% 0; }
 .wv-experience .entry-credit {
   pointer-events: auto; position: relative; z-index: 2; align-self: center; display: inline-flex; align-items: center; min-height: 44px; margin-top: 6px; padding: 0 8px;
-  font-size: 15px; color: var(--bone-2); text-decoration: none; opacity: 0;
+  font-size: var(--fs-body); color: var(--bone-2); text-decoration: none; opacity: 0;
 }
 /* The order of appearance, all of it done 0.85 s after the words' faces are in (at most 450 ms, Entry.jsx). */
 .wv-experience .entry.play .entry-mast { animation: fade 0.5s var(--ease) 0s forwards; }
@@ -211,8 +253,8 @@
 .wv-experience .btn-primary {
   position: relative; height: 58px; width: 100%; border-radius: var(--r-m); overflow: hidden;
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  color: var(--c-on-accent); font-weight: 600; font-size: 16px; letter-spacing: 0.01em;
-  background: linear-gradient(180deg, #F6DAAA 0%, #E3B170 55%, #C98F48 100%);
+  color: var(--c-on-accent); font-weight: 600; font-size: var(--fs-input); letter-spacing: 0.01em;
+  background: var(--btn-primary-bg);
   /* A tighter glow than the prototype's: its 40 px spread laid a gold haze on the button below (#9). */
   box-shadow: 0 12px 28px -16px rgba(232, 189, 126, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(0, 0, 0, 0.18);
   min-height: 44px; cursor: pointer;
@@ -244,7 +286,7 @@
 
 /* ── Shared craft rules (26 September) ─────────────────────────────── */
 /* The page itself is the void, so nothing pale ever shows between screens. */
-html, body { background: #080706; color-scheme: dark; }
+html, body { background: var(--void); color-scheme: dark; }
 /* Screens float over one stage (dust, vignette, grain); the entry and the
    report keep their own opaque ground. */
 .wv-experience { background: transparent; }
@@ -296,16 +338,16 @@ html, body { background: #080706; color-scheme: dark; }
    the viewfinder giving up height first (it keeps at least 120 px). */
 @media (max-height: 760px) {
   .wv-experience .entry-view { margin-top: 14px; }
-  .wv-experience .entry-l1 { margin-top: 18px; font-size: clamp(34px, 10.6vw, 42px); }
-  .wv-experience .entry-l2 { margin-top: 8px; font-size: 18px; }
+  .wv-experience .entry-l1 { margin-top: 18px; font-size: var(--fs-entry-l1-sm); }
+  .wv-experience .entry-l2 { margin-top: 8px; font-size: var(--fs-subhead); }
   .wv-experience .entry-l3 { margin-top: 12px; }
   .wv-experience .entry-keys { margin-top: 18px; gap: 8px; }
   .wv-experience :is(.enter, .entry-demo, .entry-interactive) { height: 52px; }
   .wv-experience .entry-credit { margin-top: 2px; }
 }
 @media (max-height: 600px) {
-  .wv-experience .entry-l1 { margin-top: 12px; font-size: 32px; }
-  .wv-experience .entry-l2 { font-size: 16px; }
+  .wv-experience .entry-l1 { margin-top: 12px; font-size: var(--fs-title-xs); }
+  .wv-experience .entry-l2 { font-size: var(--fs-input); }
   .wv-experience .entry-l3 { margin-top: 8px; }
   .wv-experience .entry-keys { margin-top: 12px; }
   .wv-experience :is(.enter, .entry-demo, .entry-interactive) { height: 48px; }

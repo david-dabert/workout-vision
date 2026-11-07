@@ -11,7 +11,7 @@
 .wv-experience .kn-field, .wv-experience .kn-num { display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-caption); color: var(--bone-2); }
 .wv-experience .kn-field input, .wv-experience .kn-field textarea, .wv-experience .kn-field select, .wv-experience .kn-num input {
   width: 100%; min-height: 48px; padding: 12px 14px; border-radius: var(--r-s); border: 1px solid var(--c-rule); background: var(--basalt);
-  color: var(--bone); font: 400 16px/1.4 var(--sans); }
+  color: var(--bone); font: 400 var(--fs-input)/1.4 var(--sans); }
 .wv-experience .kn-field textarea { resize: vertical; }
 .wv-experience .kn-num input { font-variant-numeric: tabular-nums; }
 .wv-experience .kn-line .kn-amount { flex: 0 0 34%; }
@@ -49,7 +49,7 @@
 
 /* Follow-up (FollowUp.jsx) */
 .wv-experience .kn-patients { margin: var(--s-3) 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--s-2); }
-.wv-experience .kn-patient { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: var(--s-3); padding: 14px 16px; border: 1px solid var(--lamp-line); border-radius: var(--r-m); background: none; color: inherit; text-align: left; font: inherit; cursor: pointer; }
+.wv-experience .kn-patient { width: 100%; min-height: 44px; display: flex; justify-content: space-between; align-items: center; gap: var(--s-3); padding: 14px 16px; border: 1px solid var(--lamp-line); border-radius: var(--r-m); background: none; color: inherit; text-align: left; font: inherit; cursor: pointer; }
 .wv-experience .kn-patient > span:first-child { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .wv-experience .kn-patient b { font-weight: 600; color: var(--bone); }
 .wv-experience .kn-patient small { color: var(--ash); font-size: var(--fs-caption); }
@@ -87,6 +87,6 @@
 .wv-experience .kn-ai-card { display: flex; flex-direction: column; gap: var(--s-2); padding: 12px 14px; border: 1px dashed var(--lamp-line); border-radius: var(--r-m); }
 .wv-experience .kn-ai-summary { margin: 0; }
 .wv-experience .kn-ai-fact { margin: 0; font-weight: 500; }
-.wv-experience .kn-ai-list h4 { margin: 0 0 4px; font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.75; }
+.wv-experience .kn-ai-list h4 { margin: 0 0 4px; font-size: var(--fs-caption); letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.75; }
 .wv-experience .kn-ai-list ul { margin: 0; padding-left: 1.1em; }
-.wv-experience .kn-ai-foot { margin: 0; font-size: 0.8rem; opacity: 0.7; }
+.wv-experience .kn-ai-foot { margin: 0; font-size: var(--fs-caption); opacity: 0.7; }

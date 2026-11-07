@@ -18,7 +18,7 @@ describe('OneTouchHub component', () => {
     expect(html).toContain('S’entraîner');
     expect(html).toContain('Mobilité &amp; Santé');
     expect(html).toContain('Espace Pro');
-    expect(html).toContain('Mon Suivi');
+    expect(html).toContain('Mon suivi');
     expect(html).toContain('Explorer par groupe musculaire\u00A0:');
   });
 

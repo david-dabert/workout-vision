@@ -1,14 +1,21 @@
 // Boot scripts — moved out of inline <script> tags to comply with CSP
 // (script-src does not include 'unsafe-inline')
 
+try {
+  var initialSavedLang = localStorage.getItem('wv_lang');
+  document.documentElement.lang = initialSavedLang === 'en' ? 'en' : 'fr';
+} catch (e) {
+  try { document.documentElement.lang = 'fr'; } catch (_) { /* no document */ }
+}
+
 // 1 and 2. The two screens shown when the app cannot start, in the app's colours and language.
 // The page's CSP has no 'unsafe-inline', which blocks onclick attributes, so the button's click
 // is bound here; with onclick="location.reload()" it did nothing.
 function wvBootScreen(kind) {
   var root = document.getElementById('root');
   if (!root || root.children.length !== 0) return;
-  var fr = false;
-  try { var saved = localStorage.getItem('wv_lang'); fr = saved ? saved === 'fr' : /^fr/i.test(navigator.language || ''); } catch (e) { fr = /^fr/i.test(navigator.language || ''); }
+  var fr = true;
+  try { var saved = localStorage.getItem('wv_lang'); fr = saved ? saved === 'fr' : !/^en/i.test(navigator.language || ''); } catch (e) { fr = !/^en/i.test(navigator.language || ''); }
   // The page declares the language of the words it shows, so VoiceOver reads them in the right voice (audit of 3 October).
   try { document.documentElement.lang = fr ? 'fr' : 'en'; } catch (e) { /* no document */ }
   var t = kind === 'crash'

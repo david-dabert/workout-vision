@@ -83,7 +83,7 @@ describe('a planned value is never styled as a measure', () => {
     for (const [, sel, body] of rules) {
       expect(body, sel).not.toMatch(/--numeral-colour|--c-accent|--lamp|font-weight:\s*700|--fs-display/);
     }
-    expect(css).toMatch(/\.res-row\.is-planned \.res-row-n \{[^}]*font-size: 15px;[^}]*color: var\(--c-fg-muted\)/);
+    expect(css).toMatch(/\.res-row\.is-planned \.res-row-n \{[^}]*font-size: var\(--fs-body\);[^}]*color: var\(--c-fg-muted\)/);
   });
   it('names no set number before the sets are read', async () => {
     const fr = await render('fr', nine, { planned: plan });

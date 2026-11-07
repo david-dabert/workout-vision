@@ -153,7 +153,7 @@ export default function Entry({ onEnter }) {
           <button type="button" className="enter tactile" onClick={() => enter()}><span>{text.start}</span></button>
           {showUnmeasuredRoutes() && (
             <button type="button" className="entry-interactive press" onClick={openLab}>
-              <span className="entry-interactive-pill">LAB</span>
+              <span className="entry-interactive-pill">{lang === 'en' ? 'LAB' : 'DÉMO'}</span>
               <span>{text.interactiveDemo}</span>
             </button>
           )}

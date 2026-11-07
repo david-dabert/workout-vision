@@ -83,3 +83,71 @@ describe('the colour roles', () => {
     expect(roles).toEqual({ '--c-surface': '--void', '--c-fg': '--bone', '--c-fg-muted': '--ash', '--c-rule': '--hair', '--c-accent': '--lamp', '--c-on-accent': '--ink' });
   });
 });
+
+describe('core-loop CSS token governance (Phase 4)', () => {
+  const KINE_DIR = resolve(DIR, '../kine');
+  const REF_DIR = resolve(DIR, '../reference');
+  const kineFiles = readdirSync(KINE_DIR).filter(f => /\.(css|js|jsx)$/.test(f)).sort();
+  const refFiles = readdirSync(REF_DIR).filter(f => /\.(css|js|jsx)$/.test(f)).sort();
+
+  for (const f of kineFiles) {
+    it(`kine/${f} holds zero raw colour literals`, () => {
+      const found = colourLiterals(readFileSync(resolve(KINE_DIR, f), 'utf8'), f.endsWith('.css'));
+      expect(found, `kine/${f}: use a token (_tokens.css, Entry.css)`).toEqual({});
+    });
+  }
+
+  for (const f of refFiles) {
+    it(`reference/${f} holds zero raw colour literals`, () => {
+      const found = colourLiterals(readFileSync(resolve(REF_DIR, f), 'utf8'), f.endsWith('.css'));
+      expect(found, `reference/${f}: use a token (_tokens.css, Entry.css)`).toEqual({});
+    });
+  }
+
+  it('Entry.css holds zero raw hex colours outside the .wv-experience token block', () => {
+    const src = readFileSync(resolve(DIR, 'Entry.css'), 'utf8');
+    const open = src.indexOf('.wv-experience {');
+    const close = src.indexOf('}', open);
+    const outside = src.slice(0, open) + src.slice(close + 1);
+    const found = colourLiterals(outside, true);
+    const hexKeys = Object.keys(found).filter(k => k.startsWith('#'));
+    expect(hexKeys).toEqual([]);
+  });
+
+  const CORE_CSS = [
+    ['Entry.css', resolve(DIR, 'Entry.css')],
+    ['OneTouchHub.css', resolve(DIR, 'OneTouchHub.css')],
+    ['Choice.css', resolve(DIR, 'Choice.css')],
+    ['FilmExerciseDrawer.css', resolve(DIR, 'FilmExerciseDrawer.css')],
+    ['Guide.css', resolve(DIR, 'Guide.css')],
+    ['Film.css', resolve(DIR, 'Film.css')],
+    ['Watch.css', resolve(DIR, 'Watch.css')],
+    ['Result.css', resolve(DIR, 'Result.css')],
+    ['MovementOptimization.css', resolve(DIR, 'MovementOptimization.css')],
+    ['Replay.css', resolve(DIR, 'Replay.css')],
+    ['History.css', resolve(DIR, 'History.css')],
+    ['Level.css', resolve(DIR, 'Level.css')],
+    ['Showcase.css', resolve(DIR, 'Showcase.css')],
+    ['Kine.css', resolve(KINE_DIR, 'Kine.css')],
+    ['ReferenceCompare.css', resolve(REF_DIR, 'ReferenceCompare.css')],
+  ];
+
+  for (const [name, filePath] of CORE_CSS) {
+    it(`${name} uses design tokens for every font-size declaration`, () => {
+      let src = readFileSync(filePath, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+      if (name === 'Entry.css') {
+        const open = src.indexOf('.wv-experience {');
+        const close = src.indexOf('}', open);
+        src = src.slice(0, open) + src.slice(close + 1);
+      }
+      const rawFontSize = [...src.matchAll(/font-size\s*:\s*([^;}]+)/g)]
+        .map(m => m[1].trim())
+        .filter(v => !/^var\(--fs-[a-z0-9-]+\)$/.test(v) && v !== 'inherit');
+      const rawFontShorthand = [...src.matchAll(/(?<![-\w])font\s*:\s*([^;}]+)/g)]
+        .map(m => m[1].trim())
+        .filter(v => v !== 'inherit' && !v.includes('var(--fs-'));
+      expect(rawFontSize, `${name} raw font-size values`).toEqual([]);
+      expect(rawFontShorthand, `${name} raw font shorthand values`).toEqual([]);
+    });
+  }
+});

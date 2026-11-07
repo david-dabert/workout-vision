@@ -87,9 +87,9 @@
 .wv-experience .sc-metric { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; padding: 14px 14px 12px; border-radius: var(--r-s); border: 1px solid var(--c-rule); }
 .wv-experience .sc-metric.is-wide { grid-column: 1 / -1; }
 .wv-experience .sc-metric-label { font-family: var(--mono); font-size: var(--fs-label); line-height: 1.4; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-fg-muted); text-wrap: balance; }
-.wv-experience .sc-metric-value { font-family: var(--sans); font-weight: 600; font-size: 21px; line-height: 1.15; letter-spacing: -0.01em; color: var(--c-fg); font-variant-numeric: tabular-nums lining-nums; overflow-wrap: anywhere; text-wrap: balance; }
+.wv-experience .sc-metric-value { font-family: var(--sans); font-weight: 600; font-size: var(--fs-metric); line-height: 1.15; letter-spacing: -0.01em; color: var(--c-fg); font-variant-numeric: tabular-nums lining-nums; overflow-wrap: anywhere; text-wrap: balance; }
 .wv-experience .sc-metric-value.is-text { font-size: var(--fs-body); font-weight: 500; line-height: 1.35; letter-spacing: 0; color: var(--bone-2); }
-.wv-experience .sc-unit { font-weight: 500; font-size: 0.72em; color: var(--c-fg-muted); letter-spacing: 0; }
+.wv-experience .sc-unit { font-weight: 500; font-size: var(--fs-caption); color: var(--c-fg-muted); letter-spacing: 0; }
 .wv-experience .sc-metric-sub { font-size: var(--fs-caption); line-height: 1.4; color: var(--c-fg-muted); font-variant-numeric: tabular-nums; }
 /* Inside a value's tile, its verdict is a line of caption with its dot, not a pill: it reads with the value. */
 .wv-experience .sc-metric .sc-tag { margin-top: 2px; padding: 0; border: 0; border-radius: 0; white-space: normal; font-family: var(--sans); font-size: var(--fs-caption); line-height: 1.4; letter-spacing: 0; text-transform: none; }

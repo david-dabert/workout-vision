@@ -129,9 +129,9 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
       <div className="wrap">
         <div className="topbar">
           <span className="brand-sm">WorkoutVision</span>
-          <span className="offline-badge" aria-label="100% On-Device">
+          <span className="offline-badge" aria-label={fr ? '100\u00A0% sur cet appareil' : '100% On-Device'}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-            <span>{fr ? '100% Local · La vidéo reste sur votre téléphone' : '100% On-Device · Video stays on your phone'}</span>
+            <span>{fr ? '100\u00A0% sur cet appareil · La vidéo reste sur votre téléphone' : '100% On-Device · Video stays on your phone'}</span>
           </span>
           <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
         </div>
@@ -246,17 +246,17 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{pro.choiceRow}</b><small>{pro.choiceRowSub}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {(onEquine || onSports || (showUnmeasuredRoutes() && (onCoaches || onBuddies)) || onManifesto) && <h2 className="section-head choose-head" data-testid="choose-head-explore">{fr ? 'Roadmap & Nouvelles disciplines' : 'Roadmap & New Disciplines'}</h2>}
+        {(onEquine || onSports || (showUnmeasuredRoutes() && (onCoaches || onBuddies)) || onManifesto) && <h2 className="section-head choose-head" data-testid="choose-head-explore">{fr ? 'En préparation et nouvelles disciplines' : 'Roadmap & New Disciplines'}</h2>}
         {/* EquiVision: horse locomotion and gait biomechanics roadmap */}
         {onEquine && <button className="row-link press" onClick={onEquine} data-testid="choice-equine">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12c2.2-6 4.4-6 6.6 0s4.4 6 6.6 0 4.4-6 6.6 0" /></svg></span>
-          <span className="row-txt"><span className="row-head"><b>{fr ? 'EquiVision\u00A0: biomécanique équine' : 'EquiVision: Equine Biomechanics'}</b><span className="tag tier-tag tier-roadmap">Roadmap R&D</span></span><small>{fr ? 'Modélisation du trot, symétrie de la foulée et examen locomoteur' : 'Trot modeling, stride symmetry, and locomotor analysis'}</small></span>
+          <span className="row-txt"><span className="row-head"><b>{fr ? 'EquiVision\u00A0: biomécanique équine' : 'EquiVision: Equine Biomechanics'}</b><span className="tag tier-tag tier-roadmap">{fr ? 'En préparation' : 'Roadmap R&D'}</span></span><small>{fr ? 'Modélisation du trot, symétrie de la foulée et examen locomoteur' : 'Trot modeling, stride symmetry, and locomotor analysis'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Multi-Sports Lab: markerless motion capture roadmap for golf, tennis, rowing... */}
         {onSports && <button className="row-link press" onClick={onSports} data-testid="choice-sports">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" /></svg></span>
-          <span className="row-txt"><span className="row-head"><b>Multi-Sports Lab</b><span className="tag tier-tag tier-roadmap">Roadmap R&D</span></span><small>{fr ? 'Golf, tennis, aviron\u00A0: cinématique sans capteur et cadence' : 'Golf, tennis, rowing: markerless kinematics and cadence'}</small></span>
+          <span className="row-txt"><span className="row-head"><b>{fr ? 'Atelier multisport' : 'Multi-Sports Lab'}</b><span className="tag tier-tag tier-roadmap">{fr ? 'En préparation' : 'Roadmap R&D'}</span></span><small>{fr ? 'Golf, tennis, aviron\u00A0: cinématique sans capteur et cadence' : 'Golf, tennis, rowing: markerless kinematics and cadence'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Coach & Physio Matcher */}

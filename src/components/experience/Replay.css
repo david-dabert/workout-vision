@@ -9,6 +9,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
   padding: 4px 10px;
   background: var(--well);
   border: 1px solid var(--c-accent);
@@ -28,12 +30,12 @@
 .wv-experience .rp-stage { flex: 1 1 0; min-height: max(180px, 46svh); margin-top: 10px; container-type: size; display: grid; place-items: center; }
 /* The frame has the video's own shape, as large as the stage allows. */
 .wv-experience .rp-frame {
-  position: relative; overflow: hidden; border-radius: var(--r-l); background: #000;
+  position: relative; overflow: hidden; border-radius: var(--r-l); background: var(--video-well);
   width: min(100cqw, 100cqh * var(--ar, 0.5625)); height: min(100cqh, 100cqw / var(--ar, 0.5625));
   box-shadow: 0 0 0 1px var(--c-rule);
 }
 .wv-experience .rp-video, .wv-experience .rp-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.wv-experience .rp-video { object-fit: contain; background: #000; cursor: pointer; }
+.wv-experience .rp-video { object-fit: contain; background: var(--video-well); cursor: pointer; }
 .wv-experience .rp-canvas { pointer-events: none; }
 
 /* The rep on screen, counted as it begins, and its phase. */
@@ -45,7 +47,7 @@
 }
 .wv-experience .rp-count { display: flex; align-items: baseline; gap: 4px; }
 .wv-experience .rp-n {
-  font-family: var(--numeral-face); font-weight: var(--numeral-weight); font-size: 26px; line-height: 0.95; font-variant-numeric: lining-nums tabular-nums;
+  font-family: var(--numeral-face); font-weight: var(--numeral-weight); font-size: var(--fs-rp-n); line-height: 0.95; font-variant-numeric: lining-nums tabular-nums;
   color: var(--numeral-colour);
 }
 .wv-experience .rp-of { font-family: var(--mono); font-size: var(--fs-label); color: var(--c-fg-muted); }
