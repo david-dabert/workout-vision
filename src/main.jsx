@@ -118,3 +118,12 @@ createRoot(document.getElementById('root')).render(
     <App />
   </StrictMode>,
 );
+
+// The wordmark painted with the page (index.html, #wv-boot) gives way once the app has drawn its first frame: it fades
+// while the first screen fades in over it, then leaves the page (Phase 5 of David's order of 6 November 2026).
+requestAnimationFrame(() => requestAnimationFrame(() => {
+  const boot = document.getElementById('wv-boot');
+  if (!boot) return;
+  boot.style.opacity = '0';
+  setTimeout(() => boot.remove(), 400);
+}));

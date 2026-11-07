@@ -8,7 +8,7 @@ import { exerciseName, filmView, guideExercise } from './exercise-info';
 import { GuideFrames } from './Guide';
 import { GUIDE_BOX, hasGuideFigure } from './guide-figure';
 import { GuideFigure } from './GuideFigure';
-import { FITNESS_TESTS } from '../../lib/fitness-tests';
+import { FITNESS_TESTS } from '../../lib/fitness-test-list';
 import { canOpenCamera, readFilmMode, writeFilmMode } from '../../lib/liveCamera';
 import { liveBuild } from '../../lib/buildFlags';
 import { getExercise } from '../../lib/exercises/index';

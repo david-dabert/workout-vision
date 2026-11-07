@@ -21,6 +21,9 @@ try { document.documentElement.lang = wvLang(); } catch (e) { /* no document */ 
 function wvBootScreen(kind) {
   var root = document.getElementById('root');
   if (!root || root.children.length !== 0) return;
+  // The wordmark painted with the page (index.html) leaves with the screen that replaces the app.
+  var mark = document.getElementById('wv-boot');
+  if (mark && mark.parentNode) mark.parentNode.removeChild(mark);
   var fr = wvLang() === 'fr';
   // The page declares the language of the words it shows, so VoiceOver reads them in the right voice (audit of 3 October).
   try { document.documentElement.lang = fr ? 'fr' : 'en'; } catch (e) { /* no document */ }

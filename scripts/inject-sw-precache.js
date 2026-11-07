@@ -19,6 +19,7 @@ import { readFileSync, writeFileSync, readdirSync, statSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { createHash } from 'crypto';
+import { readBuild } from './check-entry-budget.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIST = join(__dirname, '..', 'dist');
@@ -30,6 +31,19 @@ const BASE = process.env.VERCEL ? '/' : (process.env.VITE_BASE || '/workout-visi
 const assetFiles = readdirSync(ASSETS_DIR)
   .filter(f => /\.(js|css)$/.test(f) && !/^(collect|pack|batchCollect)/i.test(f)) // every collector chunk: collect-, collectBatch-, collectSet- (review, 30 September); the video packer's (pack.html, 10 October) and the batch rules it shares with the batch collector (batchCollect-, its own chunk since then)
   .map(f => `${BASE}assets/${f}`);
+
+// The install keeps the shell only (Phase 5 of David's order of 6 November 2026, PLAN.md): the page's module script and
+// every chunk it imports statically, and the page's stylesheet, the files the choice of lift needs to open offline. Every
+// other chunk (the screens, the analysis, the PDF, the guide) is kept at the user's first choice of a lift, with the pose
+// model (public/sw.js, DEFERRED_ASSETS; src/lib/pose-files.js), so the install no longer downloads the whole app.
+const build = readBuild(DIST);
+const shellFiles = new Set([...build.chunks.map(c => c.file), ...build.sheets.map(s => s.file)]);
+const shellAssets = assetFiles.filter(u => shellFiles.has(join(DIST, u.replace(BASE, ''))));
+const deferredAssets = assetFiles.filter(u => !shellAssets.includes(u));
+if (shellAssets.length !== shellFiles.size) {
+  console.error(`[inject-sw-precache] FATAL: the shell names ${shellFiles.size} files, ${shellAssets.length} found among the built assets`);
+  process.exit(1);
+}
 
 // Also include boot.js and cache-bust.js if present
 const rootScripts = ['boot.js', 'cache-bust.js']
@@ -47,11 +61,12 @@ const fontFiles = readdirSync(ASSETS_DIR)
   .filter(f => /-latin-(?:wght|\d{3})-(?:normal|italic)-[A-Za-z0-9_-]{8}\.woff2$/.test(f))
   .map(f => `${BASE}assets/${f}`);
 
-const precacheEntries = [...assetFiles, ...fontFiles, ...rootScripts];
+const precacheEntries = [...shellAssets, ...fontFiles, ...rootScripts];
 
-// Generate a cache version based on asset hashes
+// Generate a cache version based on asset hashes: the shell's and the deferred files', so any change of code names a new
+// version, as before the split.
 const assetsHash = createHash('md5')
-  .update(precacheEntries.sort().join('\n'))
+  .update([...precacheEntries, ...deferredAssets].sort().join('\n'))
   .digest('hex')
   .slice(0, 8);
 
@@ -62,6 +77,13 @@ let sw = readFileSync(SW_PATH, 'utf-8');
 
 // Inject the asset precache list after the APP_SHELL array
 const precacheBlock = `\n// ── Auto-injected by inject-sw-precache.js ──\nconst PRECACHE_ASSETS = ${JSON.stringify(precacheEntries, null, 2)};\n`;
+
+// The files kept at the first choice of a lift (public/sw.js, message 'warm-app'), in place of the template's empty list.
+if (!/^const DEFERRED_ASSETS = \[\];$/m.test(sw)) {
+  console.error('[inject-sw-precache] FATAL: the template has no empty DEFERRED_ASSETS list to fill');
+  process.exit(1);
+}
+sw = sw.replace(/^const DEFERRED_ASSETS = \[\];$/m, `const DEFERRED_ASSETS = ${JSON.stringify(deferredAssets, null, 2)};`);
 
 // Replace the base path placeholder with the actual deployment base
 sw = sw.replaceAll('__SW_BASE__', BASE);
@@ -118,7 +140,7 @@ if (!written.includes('fresh([...APP_SHELL, ...PRECACHE_ASSETS])')) {
 }
 
 // Verify each asset file referenced in the precache list actually exists in dist/
-for (const entry of precacheEntries) {
+for (const entry of [...precacheEntries, ...deferredAssets]) {
   const relativePath = entry.replace(BASE, '');
   const fullPath = join(DIST, relativePath);
   try {
@@ -135,4 +157,4 @@ if (!fontFiles.length) {
 }
 
 console.log(`[inject-sw-precache] Fonts precached (latin woff2): ${fontFiles.map(f => f.split('/').pop()).join(', ')}`);
-console.log(`[inject-sw-precache] Injected ${precacheEntries.length} assets into SW (cache: ${cacheName}) — all assertions passed`);
+console.log(`[inject-sw-precache] Injected ${precacheEntries.length} files to keep at install and ${deferredAssets.length} to keep at the first choice of a lift (cache: ${cacheName}) — all assertions passed`);

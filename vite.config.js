@@ -155,7 +155,10 @@ export default defineConfig({
   build: {
     assetsInlineLimit: 0, // Fonts remain same-origin files under font-src 'self'.
     target: ['es2022', 'safari16'],
-    modulePreload: false,
+    // The page names every chunk its script imports (<link rel="modulepreload">), so they download together instead of
+    // one after another as each is read; a lazy screen's chunks likewise load together when it opens (Phase 5 of
+    // David's order of 6 November 2026). No polyfill: Safari before 17 ignores the links and loads as before.
+    modulePreload: { polyfill: false },
     minify: 'esbuild',
     rollupOptions: {
       input: {

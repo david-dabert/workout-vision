@@ -13,8 +13,8 @@ import { checkAndMigrateSchema } from './lib/storage';
 import ErrorBoundary from './components/ErrorBoundary';
 import PerfOverlay from './components/PerfOverlay';
 import { perfRequested } from './lib/perfFlag';
-import { isTest } from './lib/fitness-tests';
-import Choice from './components/experience/Choice';
+import { isTest } from './lib/fitness-test-list';
+import Choice, { loadCatalog } from './components/experience/Choice';
 import Entry, { shouldShowEntry } from './components/experience/Entry';
 import Stage from './components/experience/Stage';
 import ScreenFade from './components/experience/ScreenFade';
@@ -161,7 +161,8 @@ function AppInner() {
   // and only in a pause of 700 ms without a touch or a scroll, never in the middle of a swipe.
   // Filming first, then the analysis, the guide and the saved sets.
   // The live screen only in a build that offers it (buildFlags.js).
-  useEffect(() => whenQuiet([ExperienceFilm.warm, Analyze.warm, ExerciseGuide.warm, History.warm, ...(liveBuild() ? [LiveSession.warm] : [])]), []);
+  // The drawer of every exercise follows the analysis: it left the first paint (Choice.jsx, loadCatalog).
+  useEffect(() => whenQuiet([ExperienceFilm.warm, Analyze.warm, loadCatalog, ExerciseGuide.warm, History.warm, ...(liveBuild() ? [LiveSession.warm] : [])]), []);
 
   // Auto-create default profile for first-time users and skip straight to dashboard
   const autoCreatedRef = useRef(false);

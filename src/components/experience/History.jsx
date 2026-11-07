@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { exerciseName } from './exercise-info';
-import { limbLabel } from './lift-meta';
+import { limbLabel } from './limb-label';
 import Report, { warmReportPdf } from './Report';
 import { loadSets, knownSets, onSetsChanged, removeSet, countedBy, proposedBy, setTime } from './sets';
 import { exerciseProgress, recordsOf } from './progress';

@@ -41,7 +41,7 @@ describe('lift tiers', () => {
 
 // The GitHub report moved to src/lib/reportLinks.js (step 1), with its test.
 
-import { limbLabel } from '../../components/experience/lift-meta';
+import { limbLabel } from '../../components/experience/limb-label';
 import { reportSheet } from '../../components/experience/report-sheet';
 describe('the tracked limb follows the lift', () => {
   it('names the arm, the leg or the side', () => {

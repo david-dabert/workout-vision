@@ -8,6 +8,10 @@
          the barcode alone is sent, when the coach taps Rechercher (src/lib/openFoodFacts.js; 14 October 2026). The
          events plugin (vite.config.js) edits the first source list of connections in this file: no other may come before. -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' blob: https://world.openfoodfacts.org; img-src 'self' blob: data:; media-src 'self' blob:; worker-src 'self' blob:; child-src 'self' blob:; base-uri 'none'; object-src 'none'" />
+    <!-- The boot script runs first, before any stylesheet is read: it sets the page's language and the two screens
+         shown when the app cannot start (Phase 5 of David's order of 6 November 2026, PLAN.md). Classic and
+         synchronous: it is 3 kB, fetched while the stylesheet and the fonts are fetched alongside. -->
+    <script src="/boot.js"></script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -20,10 +24,13 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="manifest" href="/manifest.json" />
-    <!-- The count's face, Geist 700 latin (C1, design review of 7 October 2026), fetched with the page so a count is
-         never drawn in a fallback face and swapped mid-set. Vite rewrites the path to the built file's. -->
+    <!-- The faces of the first words, Latin subset, fetched with the page (Phase 5 of David's order of 6 November 2026):
+         Instrument Serif italic, the entry's wordmark and promise; Geist, its text. Geist ships here as static weights
+         (@fontsource/geist): 400 for the text, and 700, the count's face (C1, design review of 7 October 2026), so a count
+         is never drawn in a fallback face and swapped mid-set. Vite rewrites each path to the built file's. -->
+    <link rel="preload" as="font" type="font/woff2" href="/node_modules/@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/node_modules/@fontsource/geist/files/geist-latin-400-normal.woff2" crossorigin />
     <link rel="preload" as="font" type="font/woff2" href="/node_modules/@fontsource/geist/files/geist-latin-700-normal.woff2" crossorigin />
-    <!-- Google Fonts loaded non-blocking via boot.js to avoid hanging offline -->
     <title>WorkoutVision</title>
     <meta name="description" content="Counts your repetitions from a video, on your phone. Test version." />
     <meta property="og:title" content="WorkoutVision" />
@@ -35,8 +42,12 @@
     <meta name="twitter:description" content="Counts your repetitions from a video, on your phone. Test version." />
   </head>
   <body>
+    <!-- The wordmark where the entry's masthead puts it, painted with the page, before the app's code arrives (Phase 5 of
+         David's order of 6 November 2026): the first paint no longer waits for the scripts. Outside #root, so boot.js
+         still sees an empty root until React mounts; main.jsx fades it out once the app renders, and boot.js takes it
+         away when it draws a screen of its own. -->
+    <div id="wv-boot" aria-hidden="true" style="position:fixed;top:calc(env(safe-area-inset-top,0px) + 6px);left:20px;right:20px;height:44px;display:flex;align-items:center;z-index:1;pointer-events:none;margin:0;font:italic 400 24px/1 'Instrument Serif','Iowan Old Style','Palatino Linotype',Georgia,serif;color:#EFE8DC;transition:opacity .3s ease">WorkoutVision</div>
     <div id="root"></div>
-    <script src="/boot.js"></script>
     <script type="module" src="/src/main.jsx"></script>
     <script src="/cache-bust.js"></script>
   </body>

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { OFFERED, tierOf } from '../../lib/offer';
-import { isTest } from '../../lib/fitness-tests';
+import { isTest } from '../../lib/fitness-test-list';
 import { tierTag } from '../../lib/liftTiers';
 import { guideExercise } from './exercise-info';
 import { EQUIPMENT, Thumb } from './Guide';

@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, lazy, Suspense } from 'react';
-import { FITNESS_TESTS } from '../../lib/fitness-tests';
+import { Component, useEffect, useRef, useState, lazy, Suspense } from 'react';
+import { FITNESS_TESTS } from '../../lib/fitness-test-list';
 import { useT } from '../../lib/LanguageContext';
 import { META, createLiftScene } from './lift-scenes';
 import { CARD_ORDER } from './lift-meta';
@@ -18,7 +18,6 @@ import { onHomeScreen } from '../../lib/keep-sets';
 import { InstallRow } from './Install';
 import { pendingIncident, dismissIncident } from '../../lib/crashLog';
 import { CRASH, crashLine } from './crash-copy';
-import FilmExerciseDrawer from './FilmExerciseDrawer';
 import OneTouchHub from './OneTouchHub';
 import { showUnmeasuredRoutes } from '../../lib/buildFlags';
 import './Choice.css';
@@ -26,6 +25,11 @@ import './Choice.css';
 // The list of every counted exercise loads after the choice has shown (ExerciseList.jsx).
 // If its code cannot load (offline, after an update), the choice shows without it: the cards stay.
 const ExerciseList = lazy(() => import('./ExerciseList').catch(() => ({ default: () => null })));
+// The drawer of every exercise, with the catalogue it searches (exercises.json, about 270 kB), loads when it is opened or
+// when the page is quiet (App.jsx, whenQuiet), never with the first paint (Phase 5 of David's order of 6 November 2026).
+// If its code cannot load, the drawer closes again and the cards stay.
+export const loadCatalog = () => import('./FilmExerciseDrawer');
+const FilmExerciseDrawer = lazy(loadCatalog);
 
 // A visit that opens on saved sets is a return: the choice greets it, as in the prototype.
 let returning = null;
@@ -293,15 +297,19 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
         </div>
       </div>
       {catalogOpen && (
-        <FilmExerciseDrawer
-          currentLift={null}
-          initialArchetype={catalogArchetype}
-          onSelect={key => {
-            setCatalogOpen(false);
-            onChoose(key);
-          }}
-          onClose={() => setCatalogOpen(false)}
-        />
+        <CatalogBoundary onFail={() => setCatalogOpen(false)}>
+          <Suspense fallback={null}>
+            <FilmExerciseDrawer
+              currentLift={null}
+              initialArchetype={catalogArchetype}
+              onSelect={key => {
+                setCatalogOpen(false);
+                onChoose(key);
+              }}
+              onClose={() => setCatalogOpen(false)}
+            />
+          </Suspense>
+        </CatalogBoundary>
       )}
     </section>
   </div>;
@@ -357,4 +365,13 @@ function CollectSwitched({ fr }) {
   useEffect(() => onCollectSwitch(setState), []);
   if (!state) return null;
   return <p className="foot" role="status" data-testid="collect-switched">{COLLECT[fr ? 'fr' : 'en'][state]}</p>;
+}
+
+// The drawer's code did not load (offline, after an update): the drawer closes and the choice stays, rather than the
+// screen's error page (Phase 5 of David's order of 6 November 2026).
+class CatalogBoundary extends Component {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch() { this.props.onFail?.(); }
+  render() { return this.state.failed ? null : this.props.children; }
 }

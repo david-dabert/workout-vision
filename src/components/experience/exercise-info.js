@@ -6,7 +6,7 @@ import families from '../../lib/counting/guide-families.json';
 import { getGuideExercise } from '../../lib/exerciseGuide';
 import { META } from './lift-meta';
 import { hasFigure, liftView } from './lift-scenes';
-import { FITNESS_TESTS } from '../../lib/fitness-tests';
+import { FITNESS_TESTS } from '../../lib/fitness-test-list';
 
 const byKey = new Map(catalogue.map(e => [e.key, e]));
 
