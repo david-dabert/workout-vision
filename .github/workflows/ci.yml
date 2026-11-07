@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   quality:
@@ -40,6 +40,21 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # Labelled sets lock (CLAUDE.md R1; David's order of 6 November 2026, Phase 3): fails when any labelled file or
+      # its label changes without test/real-phone/labels.lock changing.
+      - name: Verify labelled sets lock (test/real-phone/labels.lock)
+        run: |
+          if [ -n "$GITHUB_BASE_REF" ]; then
+            git fetch --depth=1 origin "$GITHUB_BASE_REF"
+            changed=$(git diff --name-only FETCH_HEAD HEAD)
+            if echo "$changed" | grep -Eq '^test/real-phone/(sets-|landmarks/|testers/|public/).*\.json\.gz$'; then
+              if ! echo "$changed" | grep -qx 'test/real-phone/labels.lock'; then
+                echo "::error::Labelled set file changed without updating test/real-phone/labels.lock (CLAUDE.md R1)."
+                exit 1
+              fi
+            fi
+          fi
+          npx vitest run --no-cache test/real-phone/accuracy/labels-lock.test.ts
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test

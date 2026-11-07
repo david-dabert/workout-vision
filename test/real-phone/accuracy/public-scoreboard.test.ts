@@ -69,7 +69,7 @@ function repCountSection() {
     const g = rows.get(s.cls) ?? { n: 0, exact: 0, one: 0, bad: 0, refused: 0, mapped, lift: s.lift };
     g.n++;
     if (mapped) {
-      const r = summarizeCount(s.wl, s.ts, s.lift!);
+      const r = summarizeCount(s.wl, s.ts, s.lift!, undefined, s.image ?? undefined);
       const e = r.refused ? Infinity : Math.abs(r.count - s.label);
       if (r.refused) g.refused++; else if (e === 0) g.exact++; else if (e === 1) g.one++;
       if (e >= 3) g.bad++;
@@ -96,7 +96,7 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
   const rows: string[] = [], doubts: { flagged: boolean; err: number }[] = [], pairs: Pair[] = [], sure: SureRow[] = [];
   let exactNow = 0, exactBefore = 0, became = 0, added = 0, kept = 0;
   for (const s of sets) {
-    const r = summarizeCount(s.wl, s.ts, s.lift);
+    const r = summarizeCount(s.wl, s.ts, s.lift, undefined, s.il ?? undefined);
     const now = r.refused ? 'refused' : countInWindow(r.reps, s.window), before = base[s.name];
     live[s.name] = now;
     if (r.doubt && now !== 'refused') doubts.push({ flagged: r.doubt.flagged, err: Math.abs((now as number) - s.label) });
@@ -105,7 +105,7 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
     groups.set(key, g);
     // Right when sure (sure.ts): the body check as the app runs it (the public sets keep no image landmarks; the check
     // then reads the world landmarks alone, coreAnalysis.js flatImage), each count scored inside its labelled window.
-    if (decides(s.lift)) sure.push(sureRow(withBodyCheck({ ...r, worldLandmarks: s.wl, timestamps: s.ts, imageLandmarks: null }, s.lift), s.lift, s.label, x => countInWindow(x.reps, s.window)));
+    if (decides(s.lift)) sure.push(sureRow(withBodyCheck({ ...r, worldLandmarks: s.wl, timestamps: s.ts, imageLandmarks: s.il ?? null }, s.lift), s.lift, s.label, x => countInWindow(x.reps, s.window)));
     if (before === undefined) { added++; continue; }
     // A press set is shown like any other and moves no tally of the gate (PLAN.md: "measured but decide nothing").
     if (!decides(s.lift)) { if (now !== before) rows.push(`-> ${s.name}  label ${s.label}  before ${before}  now ${now}  ${PRESS_DECIDES_NOTHING}`); continue; }

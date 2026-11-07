@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { KINEMATIC_ALIASES, liftDefinition, LIFTS } from '../core';
+import { COUNT_AS, KINEMATIC_ALIASES, liftDefinition, LIFTS } from '../core';
+import guidePatterns from '../guide-patterns.json';
 import catalogue from '../../guide-catalog.json';
 import { searchMatch, searchWords } from '../../../components/experience/search-text';
+
+const PATTERNS = guidePatterns as Record<string, string>;
 
 describe('Kinematic Aliasing Registry & Catalog Expansion', () => {
   it('maps all defined gym variations to valid parent archetypes with countable definitions', () => {
@@ -10,7 +13,38 @@ describe('Kinematic Aliasing Registry & Catalog Expansion', () => {
       const parentDef = liftDefinition(parent);
       expect(parentDef, `Parent definition for ${parent} (aliased from ${alias}) must exist`).not.toBeNull();
       const aliasDef = liftDefinition(alias);
-      expect(aliasDef, `Alias definition for ${alias} must resolve`).toEqual(parentDef);
+      expect(aliasDef, `Alias definition for ${alias} must resolve`).not.toBeNull();
+      if (!Object.hasOwn(PATTERNS, alias)) {
+        expect(aliasDef, `Alias definition for ${alias} must equal ${parent}`).toEqual(parentDef);
+      }
+    }
+  });
+
+  it('checks PATTERNS before KINEMATIC_ALIASES so skull_crusher keeps its own pattern and no alias contradicts an existing pattern', () => {
+    expect(PATTERNS.skull_crusher).toBe('elbow/high/eccentric');
+    expect(liftDefinition('skull_crusher')).toEqual({
+      joint: 'elbow',
+      rest: 'high',
+      first: 'eccentric',
+    });
+
+    for (const [alias, parent] of [...Object.entries(COUNT_AS), ...Object.entries(KINEMATIC_ALIASES)]) {
+      const parentDef = liftDefinition(parent)!;
+      expect(parentDef, `Parent definition for ${parent} must exist`).not.toBeNull();
+      if (Object.hasOwn(PATTERNS, alias)) {
+        const [joint, rest, first] = PATTERNS[alias].split('/');
+        expect(
+          { joint: parentDef.joint, rest: parentDef.rest, first: parentDef.first },
+          `Alias ${alias} -> ${parent} must not contradict PATTERNS[${alias}] (${PATTERNS[alias]})`,
+        ).toEqual({ joint, rest, first });
+      }
+      if (Object.hasOwn(LIFTS, alias)) {
+        const liftDef = LIFTS[alias as keyof typeof LIFTS];
+        expect(
+          { joint: parentDef.joint, rest: parentDef.rest, first: parentDef.first },
+          `Alias ${alias} -> ${parent} must not contradict LIFTS[${alias}]`,
+        ).toEqual({ joint: liftDef.joint, rest: liftDef.rest, first: liftDef.first });
+      }
     }
   });
 
@@ -25,7 +59,9 @@ describe('Kinematic Aliasing Registry & Catalog Expansion', () => {
       expect(def.joint).toBe('knee');
       expect(def.rest).toBe('high');
       expect(def.first).toBe('eccentric');
-      expect(def.workMargin).toBeCloseTo(1 / 3, 4);
+      if (!Object.hasOwn(PATTERNS, key)) {
+        expect(def.workMargin).toBeCloseTo(1 / 3, 4);
+      }
     });
 
     it('pendulum_squat routes to hack_squat and inherits platform occlusion guards', () => {
@@ -131,10 +167,10 @@ describe('Kinematic Aliasing Registry & Catalog Expansion', () => {
       expect(liftDefinition('dumbbell_curl')).toEqual(LIFTS.bicep_curl);
     });
 
-    it('triceps extension variations route to triceps_pushdown archetype', () => {
+    it('triceps extension variations without their own pattern route to triceps_pushdown archetype', () => {
       for (const key of [
         'triceps_pushdown', 'tricep_rope_pushdown', 'straight_bar_pushdown',
-        'skull_crusher', 'lying_triceps_extension', 'overhead_cable_triceps_extension', 'overhead_dumbbell_extension',
+        'lying_triceps_extension', 'overhead_cable_triceps_extension', 'overhead_dumbbell_extension',
       ]) {
         expect(KINEMATIC_ALIASES[key]).toBe('triceps_pushdown');
         expect(liftDefinition(key)).toEqual(LIFTS.triceps_pushdown);

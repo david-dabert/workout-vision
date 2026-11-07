@@ -264,6 +264,9 @@ const PATTERNS = guidePatterns as Record<string, string>;
 // hack_squat (25 October 2026, R16): fixed-footplate machine squat. Machine occlusion at the bottom of the movement
 // causes MediaPipe ankle landmarks to glitch upwards into the air (ankle.y < knee.y), inverting the knee vector and
 // doubling reps (pendulum_squat_7 counted 14 for 7). sanitizeFixedFeet holds inverted ankles at the platform position.
+// Source: UNSOURCED. Status: experimental.
+// sissy_squat (25 October 2026): fixed-footplate apparatus squat with shallow knee angle excursion in side view
+// (minRepRomDeg 15 deg). Source: UNSOURCED. Status: experimental.
 const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRepRomDeg' | 'minRangeDeg' | 'together' | 'eitherSide' | 'togetherMinCorrelation' | 'minRepSec' | 'noSplit' | 'fixedFeet' | 'clampFootplateInversion'>> = {
   push_up: { thresholdMargin: 0.25, minRepRomDeg: 15 },
   front_raise: { together: true, eitherSide: false, togetherMinCorrelation: -Infinity },
@@ -291,10 +294,11 @@ export const COUNT_AS: Readonly<Record<string, string>> = Object.freeze({
 });
 
 /**
- * Kinematic aliasing registry (Move 37 / Kinematic Aliasing architecture):
- * Maps gym equipment variations across all movement patterns (quads, posterior chain,
- * push, pull, deltoid/arm isolations, core/spine) to their master biomechanical archetype.
- * Variations inherit parent joint geometry, rest state, first phase, side rules, and detection calibrations.
+ * Kinematic aliasing registry: maps gym equipment variations not in LIFTS or PATTERNS
+ * to their parent archetype. Variations inherit parent joint geometry, rest state,
+ * first phase, side rules, and detection calibrations; PATTERNS is checked before
+ * KINEMATIC_ALIASES in liftDefinition so no alias overrides an existing guide pattern.
+ * Source: UNSOURCED. Status: experimental.
  */
 export const KINEMATIC_ALIASES: Readonly<Record<string, string>> = Object.freeze({
   // Lower Body — Quad Dominant (Squats & Presses)
@@ -345,7 +349,6 @@ export const KINEMATIC_ALIASES: Readonly<Record<string, string>> = Object.freeze
   triceps_pushdown: 'triceps_pushdown',
   tricep_rope_pushdown: 'triceps_pushdown',
   straight_bar_pushdown: 'triceps_pushdown',
-  skull_crusher: 'triceps_pushdown',
   lying_triceps_extension: 'triceps_pushdown',
   overhead_cable_triceps_extension: 'triceps_pushdown',
   overhead_dumbbell_extension: 'triceps_pushdown',
@@ -355,19 +358,21 @@ export const KINEMATIC_ALIASES: Readonly<Record<string, string>> = Object.freeze
   hyperextension: 'back_extension',
 });
 
-/** The definition an exercise is counted by: its LIFTS entry, else its parent's (COUNT_AS / KINEMATIC_ALIASES), else its guide pattern; null if it has none. */
+/** The definition an exercise is counted by: its LIFTS entry, else its parent's (COUNT_AS), else its guide pattern (PATTERNS), else its kinematic alias (KINEMATIC_ALIASES); null if it has none. */
 export function liftDefinition(key: string): LiftDefinition | null {
   if (Object.hasOwn(LIFTS, key)) return LIFTS[key as Lift];
   if (Object.hasOwn(COUNT_AS, key)) return liftDefinition(COUNT_AS[key]);
+  if (Object.hasOwn(PATTERNS, key)) {
+    const [joint, rest, first, ...more] = PATTERNS[key].split('/') as [Joint, 'high' | 'low', 'concentric' | 'eccentric', ...string[]];
+    return {
+      joint, rest, first,
+      ...(more.includes('both') ? { bothSides: true } : more.includes('either') ? { eitherSide: true } : more.includes('together') ? { together: true } : {}),
+      ...(more.includes('lift') ? { lift: true } : {}),
+      ...(Object.hasOwn(DETECTION, key) ? DETECTION[key] : {}),
+    };
+  }
   if (Object.hasOwn(KINEMATIC_ALIASES, key)) return liftDefinition(KINEMATIC_ALIASES[key]);
-  if (!Object.hasOwn(PATTERNS, key)) return null;
-  const [joint, rest, first, ...more] = PATTERNS[key].split('/') as [Joint, 'high' | 'low', 'concentric' | 'eccentric', ...string[]];
-  return {
-    joint, rest, first,
-    ...(more.includes('both') ? { bothSides: true } : more.includes('either') ? { eitherSide: true } : more.includes('together') ? { together: true } : {}),
-    ...(more.includes('lift') ? { lift: true } : {}),
-    ...(Object.hasOwn(DETECTION, key) ? DETECTION[key] : {}),
-  };
+  return null;
 }
 
 // ─── Constants ───
@@ -518,7 +523,7 @@ const CUT_RETURN_SHARE = 0.7;
 const TAIL_AT_WORK_SEC = 0.6;
 const TAIL_HOLD_MAX_SEC = 1.5;
 const TAIL_DEPTH_SHARE = 0.85;
-const TAIL_REST_MAX_SEC = 4.0;   // a candidate cut rep must begin within 4.0 s of the previous cycle completing (post-set rest + exit is not a rep). Status: experimental
+const TAIL_REST_MAX_SEC = 4.0;   // a candidate cut rep must begin within 4.0 s of the previous cycle completing (post-set rest + exit is not a rep). Source: UNSOURCED. Status: experimental
 // How many accepted reps the depth is read from (their median). Two until 20 October 2026: a clip of two or three
 // reps cut at its last working end then had no depth to compare with, and its last rep never counted (triage of the
 // public undercounts, test/real-phone/consensus/triage.test.ts: 47 of 133 such tails refused for this alone). One rep
@@ -545,9 +550,22 @@ const SPLIT_REGULAR = 0.6;       // split only when every rep of the set lasts a
 const SPLIT_LONG = 1.7;          // a rep lasting more than this many median reps is a candidate. Source: UNSOURCED. Status: experimental, chosen on half A
 const SPLIT_LONG_FIRST = 1.8;    // a cycle entered on the first valid sample needs this many median reps to split, so pre-set adjustments stay unsplit (edges.test.ts). Source: UNSOURCED. Status: experimental
 const SPLIT_RETURN_SHARE = 0.8;  // the in-set return must cover this share of the way from the working extreme to the rest threshold. Source: UNSOURCED. Status: experimental, chosen on half A
-const SPLIT_REGULAR_DEEP = 0.45; // when a return is unequivocal (>= 85%), sets with mild tempo variation (shortest cycle >= 45% median) may split. Status: experimental
-const SPLIT_DEEP_RETURN = 0.85;   // an unequivocal deep return (>= 85%) splits an overlong rep even when set tempo varies (durations[0] < SPLIT_REGULAR * md). Status: experimental
+const SPLIT_REGULAR_DEEP = 0.45; // when a return is unequivocal (>= 85%), sets with mild tempo variation (shortest cycle >= 45% median) may split. Source: UNSOURCED. Status: experimental
+const SPLIT_DEEP_RETURN = 0.85;   // an unequivocal deep return (>= 85%) splits an overlong rep even when set tempo varies (durations[0] < SPLIT_REGULAR * md). Source: UNSOURCED. Status: experimental
 const SPLIT_PIECE = 0.6;         // each piece lasts at least this share of the median rep (and MIN_REP_SEC). Source: UNSOURCED. Status: experimental, chosen on half A
+// Fixed-footplate ankle sanitization constants (sanitizeFixedFeet, 25 October 2026). Source: UNSOURCED. Status: experimental.
+const FIXED_FEET_FOOTPLATE_QUANTILE = 0.75; // quantile of valid (ankle.y > knee.y) ankle y positions used to clamp inverted ankles. Source: UNSOURCED. Status: experimental
+const FIXED_FEET_MAX_SEEN_SHARE = 0.5;      // maximum visible frame share (< 50%) for stationary occluded platform ankle hold. Source: UNSOURCED. Status: experimental
+const FIXED_FEET_MIN_SEEN_SHARE = 0.05;     // minimum visible frame share (>= 5%) to seed median platform ankle coordinate. Source: UNSOURCED. Status: experimental
+const FIXED_FEET_HOLD_VISIBILITY = 0.99;    // visibility assigned to held platform ankle landmarks. Source: UNSOURCED. Status: experimental
+// Adaptive ceiling turnaround constants for flexion-working lifts (detectReps, 3 November 2026). Source: UNSOURCED. Status: experimental.
+const TURNAROUND_RETURN_SHARE = 0.70;       // minimum return excursion share of current ROM for an adaptive ceiling turnaround. Source: UNSOURCED. Status: experimental
+const TURNAROUND_BAND_MARGIN = 0.20;        // fraction of thresholdBand below highThreshold accepted as near-lockout turnaround. Source: UNSOURCED. Status: experimental
+const TURNAROUND_MIN_DROP_DEG = 2.5;        // minimum reversal drop in degrees after the turnaround peak. Source: UNSOURCED. Status: experimental
+const TURNAROUND_MIN_DROP_ROM_SHARE = 0.20; // minimum reversal drop as a share of current ROM. Source: UNSOURCED. Status: experimental
+const TURNAROUND_MIN_PEAK_SEC = 0.25;       // minimum elapsed seconds from hiIdx to the turnaround peak. Source: UNSOURCED. Status: experimental
+// Minimum phase duration in seconds before placeBoundaries falls back from workFrom/workTo to first/last (29 October 2026). Source: UNSOURCED. Status: experimental.
+const MIN_PHASE_BOUNDARY_SEC = 0.2;
 
 // ─── Public API ───
 
@@ -626,15 +644,15 @@ function sanitizeFixedFeet(worldLandmarks: WorldLandmarkFrame[], joint: Joint, c
     if (f[lAnkle] && f[lAnkle].visibility >= VIS_THRESHOLD) lAnks.push(f[lAnkle]);
     if (f[rAnkle] && f[rAnkle].visibility >= VIS_THRESHOLD) rAnks.push(f[rAnkle]);
   }
-  const lFootplate = clampInversion && lValidY.length ? lValidY.sort((a, b) => a - b)[Math.floor(lValidY.length * 0.75)] : null;
-  const rFootplate = clampInversion && rValidY.length ? rValidY.sort((a, b) => a - b)[Math.floor(rValidY.length * 0.75)] : null;
+  const lFootplate = clampInversion && lValidY.length ? lValidY.sort((a, b) => a - b)[Math.floor(lValidY.length * FIXED_FEET_FOOTPLATE_QUANTILE)] : null;
+  const rFootplate = clampInversion && rValidY.length ? rValidY.sort((a, b) => a - b)[Math.floor(rValidY.length * FIXED_FEET_FOOTPLATE_QUANTILE)] : null;
 
   // When ankles are clamped in a fixed platform apparatus (e.g. sissy squat machine) and occluded
   // by footplate/roller pads on a majority of frames (< 50%) but seen on >= 5% of frames, hold
-  // occluded ankle samples at their median stationary platform coordinate.
+  // occluded ankle samples at their median stationary platform coordinate. Source: UNSOURCED. Status: experimental.
   const n = worldLandmarks.length;
-  const lOccluded = lAnks.length < n * 0.5 && lAnks.length >= n * 0.05;
-  const rOccluded = rAnks.length < n * 0.5 && rAnks.length >= n * 0.05;
+  const lOccluded = lAnks.length < n * FIXED_FEET_MAX_SEEN_SHARE && lAnks.length >= n * FIXED_FEET_MIN_SEEN_SHARE;
+  const rOccluded = rAnks.length < n * FIXED_FEET_MAX_SEEN_SHARE && rAnks.length >= n * FIXED_FEET_MIN_SEEN_SHARE;
   const medPt = (pts: WorldLandmark[]) => {
     if (!pts.length) return null;
     const xs = pts.map(p => p.x).sort((a, b) => a - b);
@@ -650,12 +668,12 @@ function sanitizeFixedFeet(worldLandmarks: WorldLandmarkFrame[], joint: Joint, c
     if (!f) return null;
     let copy: WorldLandmark[] | null = null;
     if (lMed && (!f[lAnkle] || f[lAnkle].visibility < VIS_THRESHOLD)) {
-      copy = f.map((p, i) => (i === lAnkle ? { ...lMed, visibility: 0.99 } : p));
+      copy = f.map((p, i) => (i === lAnkle ? { ...lMed, visibility: FIXED_FEET_HOLD_VISIBILITY } : p));
     } else if (lFootplate != null && f[lKnee] && f[lAnkle] && f[lAnkle].y < f[lKnee].y) {
       copy = f.map((p, i) => (i === lAnkle ? { ...p, y: lFootplate } : p));
     }
     if (rMed && (!f[rAnkle] || f[rAnkle].visibility < VIS_THRESHOLD)) {
-      copy = (copy || f).map((p, i) => (i === rAnkle ? { ...rMed, visibility: 0.99 } : p));
+      copy = (copy || f).map((p, i) => (i === rAnkle ? { ...rMed, visibility: FIXED_FEET_HOLD_VISIBILITY } : p));
     } else if (rFootplate != null && f[rKnee] && f[rAnkle] && f[rAnkle].y < f[rKnee].y) {
       copy = (copy || f).map((p, i) => (i === rAnkle ? { ...p, y: rFootplate } : p));
     }
@@ -1323,17 +1341,19 @@ function detectReps(
           maxAfterCrossIdx = -1;
         } else if (isFlexionWork && crossIdx > -1 && maxAfterCrossIdx > -1 && Number.isFinite(maxAfterCross)) {
           // Adaptive ceiling turnaround: if lifter keeps constant tension or turns around short of lockout,
-          // angle returned by >= 70% of amplitude (or within 20% of highThreshold) and is descending again toward lowThreshold by >= 2.5 deg.
+          // angle returned by >= TURNAROUND_RETURN_SHARE of amplitude (or within TURNAROUND_BAND_MARGIN of highThreshold)
+          // and is descending again toward lowThreshold by >= max(TURNAROUND_MIN_DROP_DEG, TURNAROUND_MIN_DROP_ROM_SHARE * ROM).
+          // Source: UNSOURCED. Status: experimental.
           const currentRom = peakAngle - troughAngle;
           const returnClimb = maxAfterCross - troughAngle;
           const turnDrop = maxAfterCross - angle;
           const thresholdBand = highThreshold - lowThreshold;
           if (
             !(repStartIdx === firstSeen && enteredAtWork) &&
-            (returnClimb >= 0.70 * currentRom || maxAfterCross >= highThreshold - 0.20 * thresholdBand) &&
-            turnDrop >= Math.max(2.5, 0.20 * currentRom) &&
+            (returnClimb >= TURNAROUND_RETURN_SHARE * currentRom || maxAfterCross >= highThreshold - TURNAROUND_BAND_MARGIN * thresholdBand) &&
+            turnDrop >= Math.max(TURNAROUND_MIN_DROP_DEG, TURNAROUND_MIN_DROP_ROM_SHARE * currentRom) &&
             maxAfterCrossIdx > repStartIdx &&
-            hiIdx > -1 && timestamps[maxAfterCrossIdx] - timestamps[hiIdx] >= 0.25
+            hiIdx > -1 && timestamps[maxAfterCrossIdx] - timestamps[hiIdx] >= TURNAROUND_MIN_PEAK_SEC
           ) {
             const rom = maxAfterCross - troughAngle;
             const duration = timestamps[maxAfterCrossIdx] - timestamps[repStartIdx];
@@ -1692,10 +1712,10 @@ function placeBoundaries(
 
     const outer = [left, reached].filter((v): v is number => v !== null).reduce(furtherOut, restsLow ? Infinity : -Infinity);
     const rom = Number.isFinite(outer) ? Math.abs(outer - work) : Math.abs((smoothed[start] ?? work) - work);
-    const wf = workFrom > start && (timestamps[workFrom] - timestamps[start] >= 0.2 || timestamps[first] - timestamps[start] < 0.2)
+    const wf = workFrom > start && (timestamps[workFrom] - timestamps[start] >= MIN_PHASE_BOUNDARY_SEC || timestamps[first] - timestamps[start] < MIN_PHASE_BOUNDARY_SEC)
       ? workFrom
       : first;
-    const wt = workTo < end && workTo >= wf && (timestamps[end] - timestamps[workTo] >= 0.2 || timestamps[end] - timestamps[last] < 0.2)
+    const wt = workTo < end && workTo >= wf && (timestamps[end] - timestamps[workTo] >= MIN_PHASE_BOUNDARY_SEC || timestamps[end] - timestamps[last] < MIN_PHASE_BOUNDARY_SEC)
       ? workTo
       : last;
     const firstSec = timestamps[wf] - timestamps[start];
