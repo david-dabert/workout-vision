@@ -144,7 +144,7 @@ describe('the scanner', () => {
     expect(definitionsIn("<div style={cols ? { '--cols': cols } : undefined} />", false)).toEqual(['--cols']);
     expect(definitionsIn("<i style={{ /* '--x': 1, */ '--y': 2 }} />", false)).toEqual(['--y']);
     expect(definitionsIn("<i style={{ /* } */ '--x': 1 }} />", false)).toEqual(['--x']);
-    expect(definitionsIn("<i style={{\n  // don't use '--a': 1\n  '--b': 2\n}} />", false)).toEqual(['--b']);
+    expect(definitionsIn("<i style={{\n  '--i': 2, // the card's delay\n}} />;\nconst T = { a: 1, '--lamp': '#E8BD7E' };", false)).toEqual(['--i']);
   });
 
   it('keeps the code after a /* inside a string, and drops what comments say', () => {
