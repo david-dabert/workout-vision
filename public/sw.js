@@ -172,3 +172,10 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
+
+// Warm deferred screen assets when user selects an exercise
+self.addEventListener('message', (event) => {
+  if (event.data === 'WARM_DEFERRED' && typeof DEFERRED_ASSETS !== 'undefined' && Array.isArray(DEFERRED_ASSETS)) {
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(fresh(DEFERRED_ASSETS))).catch(() => {});
+  }
+});

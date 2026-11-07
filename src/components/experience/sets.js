@@ -1,7 +1,6 @@
 // The sets saved on this phone, newest first, read once and kept until one is
 // saved or deleted. Old versions of the app saved sets too; they are listed alike.
 import { useEffect, useState } from 'react';
-import { getWorkouts, deleteWorkout } from '../../lib/storage';
 
 let pending = null, known = null;
 
@@ -24,7 +23,8 @@ const tellOthers = () => { try { channel?.postMessage('changed'); } catch { /* t
 
 export function loadSets() {
   if (!pending) {
-    const mine = pending = getWorkouts({ limit: Number.MAX_SAFE_INTEGER })
+    const mine = pending = import('../../lib/storage')
+      .then(m => m.getWorkouts({ limit: Number.MAX_SAFE_INTEGER }))
       .then(list => list.filter(w => (w.exercise || w.exerciseKey) && Number.isFinite(w.reps) && Number.isFinite(setTime(w))))
       .then(list => { if (pending === mine) known = list; return list; }, e => { if (pending === mine) pending = null; throw e; });
   }
@@ -42,6 +42,7 @@ export function refreshSets() {
 export const knownSets = () => known;
 
 export async function removeSet(id) {
+  const { deleteWorkout } = await import('../../lib/storage');
   await deleteWorkout(id);
   tellOthers();
   if (known) { known = known.filter(w => w.id !== id); pending = Promise.resolve(known); }

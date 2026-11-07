@@ -3,7 +3,7 @@ import { useT } from '../../lib/LanguageContext';
 import { PRO } from './pro-copy';
 import { exerciseName, guideExercise } from './exercise-info';
 import { Thumb } from './Guide';
-import { dayWords, decodeResults, guideOnly, holdOf, resultsSummary, targetText, timeWords } from './programme';
+import { dayWords, decodeResults, guideOnly, holdOf, resultsSummary, targetText, timeWords, resultsPayloadOf } from './programme';
 import SetCells from './SetCells';
 import { useCondensingTopbar } from './topbar';
 import './Pro.css';
@@ -17,7 +17,7 @@ const BackIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor
  * (SetCells.jsx). Read only, kept nowhere: the link holds it all.
  * payload: the link's payload. onAdjust(results): opens Espace pro on the programme to adjust (App.jsx).
  */
-export default function Results({ payload, onClose, onAdjust }) {
+export default function Results({ payload = (typeof window !== 'undefined' ? resultsPayloadOf(window.location.hash) : null), onClose, onAdjust }) {
   const { lang } = useT(), fr = lang === 'fr', c = PRO[fr ? 'fr' : 'en'];
   const [state, setState] = useState({ kind: 'opening' });
   const screenRef = useRef(null);

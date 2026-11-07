@@ -1,11 +1,18 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-vi.hoisted(() => {
+const { MOCK_META } = vi.hoisted(() => {
   const any = new Proxy(function stub() {}, { get: (_, k) => (k === Symbol.toPrimitive ? () => 0 : any), apply: () => any, set: () => true });
   globalThis.window ??= { devicePixelRatio: 1 };
   globalThis.document ??= { createElement: () => any };
   globalThis.navigator ??= { hardwareConcurrency: 8 };
+  return {
+    MOCK_META: {
+      squat: { fr: 'Squat', en: 'Squat', aliasFr: 'Flexion des jambes', aliasEn: 'Deep knee bend' },
+      pushup: { fr: 'Pompes', en: 'Push-up', aliasFr: 'Pompe', aliasEn: 'Press-up' },
+      lateral_raise: { fr: 'Élévations latérales', en: 'Lateral raise', aliasFr: 'Élévation latérale', aliasEn: 'Side raise' },
+    },
+  };
 });
 
 vi.mock('../../../lib/phoneCollect', () => ({
@@ -19,15 +26,12 @@ vi.mock('../sets', () => ({
   recentLifts: () => [],
 }));
 vi.mock('../lift-scenes', () => ({
-  META: {
-    squat: { fr: 'Squat', en: 'Squat', aliasFr: 'Flexion des jambes', aliasEn: 'Deep knee bend' },
-    pushup: { fr: 'Pompes', en: 'Push-up', aliasFr: 'Pompe', aliasEn: 'Press-up' },
-    lateral_raise: { fr: 'Élévations latérales', en: 'Lateral raise', aliasFr: 'Élévation latérale', aliasEn: 'Side raise' },
-  },
+  META: MOCK_META,
   createLiftScene: () => () => {},
 }));
 vi.mock('../lift-meta', () => ({
   CARD_ORDER: ['squat', 'pushup', 'lateral_raise'],
+  META: MOCK_META,
 }));
 vi.mock('../Install', () => ({
   InstallRow: () => null,

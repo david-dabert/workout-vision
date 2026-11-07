@@ -91,6 +91,7 @@ jobs:
       - run: SYNTH_BASE="$RUNNER_TEMP/base/synth.txt" SYNTH_DIR=test/real-phone/synth/sets npx vitest run --no-cache test/real-phone/synth/analyse.test.ts
       - run: git diff --exit-code test/real-phone/synth/synth.txt
       - run: npm run build
+      - run: npm run check:entry-budget
 
   e2e:
     name: Browser tests (Chromium and WebKit)

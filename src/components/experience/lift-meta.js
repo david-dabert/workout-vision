@@ -1,5 +1,6 @@
-import { liftDefinition } from '../../lib/counting/core';
 import { betaFirst } from '../../lib/liftTiers';
+
+export { limbLabel } from './limb-label';
 
 // The lifts on the choice screen, in order, with their names in both languages and the
 // names people use for them. Kept apart from the drawing code so tests can read it.
@@ -28,18 +29,4 @@ export function jointName(joint, fr) {
   const names = { elbow: ['du coude', 'elbow'], shoulder: ['de l’épaule', 'shoulder'], knee: ['du genou', 'knee'], hip: ['de la hanche', 'hip'] };
   const n = names[joint];
   return n ? (fr ? n[0] : n[1]) : '';
-}
-
-export function limbLabel(lift, side, fr) {
-  const joint = liftDefinition(lift)?.joint || 'elbow';
-  // A both-sides exercise (walking lunge, dead bug…) is counted on both limbs, and says so.
-  if (side === 'both') {
-    if (joint === 'knee') return { text: fr ? 'les deux jambes' : 'both legs', noun: fr ? 'jambes' : 'legs', feminine: true, plural: true };
-    if (joint === 'hip') return { text: fr ? 'les deux côtés' : 'both sides', noun: fr ? 'côtés' : 'sides', feminine: false, plural: true };
-    return { text: fr ? 'les deux bras' : 'both arms', noun: fr ? 'bras' : 'arms', feminine: false, plural: true };
-  }
-  const left = side === 'left';
-  if (joint === 'knee') return { text: fr ? `jambe ${left ? 'gauche' : 'droite'}` : `${left ? 'left' : 'right'} leg`, feminine: true };
-  if (joint === 'hip') return { text: fr ? `côté ${left ? 'gauche' : 'droit'}` : `${left ? 'left' : 'right'} side`, feminine: false };
-  return { text: fr ? `bras ${left ? 'gauche' : 'droit'}` : `${left ? 'left' : 'right'} arm`, feminine: false };
 }
