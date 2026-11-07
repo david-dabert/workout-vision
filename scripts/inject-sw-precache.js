@@ -2,21 +2,17 @@
  * inject-sw-precache.js — Post-build script that injects hashed asset paths
  * into the service worker's precache list.
  *
- * Problem: The SW installs and precaches only the APP_SHELL (HTML, icons).
- * Hashed JS/CSS chunks are loaded by the browser BEFORE the SW activates,
- * so the SW never intercepts those fetches. Going offline after first load
- * means those chunks 404 → black screen.
- *
- * Solution: After Vite builds to dist/, read the hashed filenames from
- * dist/assets/, inject them into dist/sw.js's precache array, and bump
- * the cache version so returning users get the new SW.
+ * Phase 5 of David's order of 6 November 2026 (PLAN.md):
+ * Precache list strictly limited to the app shell: critical JS chunks,
+ * the page's stylesheet, Latin font subsets, and boot scripts.
+ * The remaining assets are injected as DEFERRED_ASSETS and warmed on lift selection.
  *
  * Run: node scripts/inject-sw-precache.js
  * Or automatically via postbuild npm script.
  */
 
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'fs';
-import { join, dirname } from 'path';
+import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { createHash } from 'crypto';
 
@@ -26,9 +22,50 @@ const SW_PATH = join(DIST, 'sw.js');
 const ASSETS_DIR = join(DIST, 'assets');
 const BASE = process.env.VERCEL ? '/' : (process.env.VITE_BASE || '/workout-vision/');
 
-// Read all built assets
-const assetFiles = readdirSync(ASSETS_DIR)
-  .filter(f => /\.(js|css)$/.test(f) && !/^(collect|pack|batchCollect)/i.test(f)) // every collector chunk: collect-, collectBatch-, collectSet- (review, 30 September); the video packer's (pack.html, 10 October) and the batch rules it shares with the batch collector (batchCollect-, its own chunk since then)
+function staticImports(code) {
+  const out = new Set();
+  for (const m of code.matchAll(/\bfrom\s*["'](\.{1,2}\/[^"']+?\.js)["']/g)) out.add(m[1]);
+  for (const m of code.matchAll(/\bimport\s*["'](\.{1,2}\/[^"']+?\.js)["']/g)) out.add(m[1]);
+  return [...out];
+}
+
+function getCriticalAssets(dist, base) {
+  const html = readFileSync(join(dist, 'index.html'), 'utf8');
+  const entryMatch = html.match(/<script\b[^>]*\btype=["']module["'][^>]*\bsrc=["']([^"']+)["']/i);
+  if (!entryMatch) throw new Error('index.html names no module script');
+  const entryHref = entryMatch[1];
+
+  const fileOf = href => join(dist, href.startsWith(base) ? href.slice(base.length) : href.replace(/^\//, ''));
+  const hrefOf = file => `${base}${file.slice(dist.length).replace(/^[/\\]+/, '').replace(/\\/g, '/')}`;
+
+  const criticalHrefs = [];
+  const seenFiles = new Set();
+
+  function walk(file) {
+    if (seenFiles.has(file)) return;
+    seenFiles.add(file);
+    criticalHrefs.push(hrefOf(file));
+    const code = readFileSync(file, 'utf8');
+    for (const rel of staticImports(code)) {
+      walk(resolve(file, '..', rel));
+    }
+  }
+
+  walk(fileOf(entryHref));
+
+  for (const m of html.matchAll(/<link\b[^>]*\brel=["']stylesheet["'][^>]*\bhref=["']([^"']+)["']/gi)) {
+    criticalHrefs.push(m[1]);
+  }
+
+  return criticalHrefs;
+}
+
+// Critical assets (entry module + its static imports + main stylesheet)
+const criticalAssets = getCriticalAssets(DIST, BASE);
+
+// The fonts, latin subset only, as woff2: Geist, Instrument Serif, etc.
+const fontFiles = readdirSync(ASSETS_DIR)
+  .filter(f => /-latin-(?:wght|\d{3})-(?:normal|italic)-[A-Za-z0-9_-]{8}\.woff2$/.test(f))
   .map(f => `${BASE}assets/${f}`);
 
 // Also include boot.js and cache-bust.js if present
@@ -38,18 +75,16 @@ const rootScripts = ['boot.js', 'cache-bust.js']
   })
   .map(f => `${BASE}${f}`);
 
-// The fonts, latin subset only, as woff2 (C9, design review of 7 October 2026): every face the built CSS names is
-// emitted (Geist, Geist Mono, Instrument Serif for the experience; Inter and Outfit, still named by the legacy tokens
-// of src/styles/_tokens.css for the analysis and live screens), and its latin woff2 is all a French or English page
-// needs. They are kept at install, so a screen first opened offline still has its type; the other subsets (latin-ext,
-// cyrillic, greek, vietnamese) and the .woff fallbacks stay fetched on demand, as before.
-const fontFiles = readdirSync(ASSETS_DIR)
-  .filter(f => /-latin-(?:wght|\d{3})-(?:normal|italic)-[A-Za-z0-9_-]{8}\.woff2$/.test(f))
-  .map(f => `${BASE}assets/${f}`);
+const precacheEntries = [...criticalAssets, ...fontFiles, ...rootScripts];
 
-const precacheEntries = [...assetFiles, ...fontFiles, ...rootScripts];
+// Deferred assets: all other built JS/CSS chunks not in the critical shell
+const precacheSet = new Set(precacheEntries);
+const deferredEntries = readdirSync(ASSETS_DIR)
+  .filter(f => /\.(js|css)$/.test(f) && !/^(collect|pack|batchCollect)/i.test(f))
+  .map(f => `${BASE}assets/${f}`)
+  .filter(href => !precacheSet.has(href));
 
-// Generate a cache version based on asset hashes
+// Generate a cache version based on precache entries
 const assetsHash = createHash('md5')
   .update(precacheEntries.sort().join('\n'))
   .digest('hex')
@@ -60,15 +95,13 @@ const cacheName = `wv-v${assetsHash}`;
 // Read the SW template
 let sw = readFileSync(SW_PATH, 'utf-8');
 
-// Inject the asset precache list after the APP_SHELL array
-const precacheBlock = `\n// ── Auto-injected by inject-sw-precache.js ──\nconst PRECACHE_ASSETS = ${JSON.stringify(precacheEntries, null, 2)};\n`;
+// Inject PRECACHE_ASSETS and DEFERRED_ASSETS
+const precacheBlock = `\n// ── Auto-injected by inject-sw-precache.js ──\nconst PRECACHE_ASSETS = ${JSON.stringify(precacheEntries, null, 2)};\nconst DEFERRED_ASSETS = ${JSON.stringify(deferredEntries, null, 2)};\n`;
 
 // Replace the base path placeholder with the actual deployment base
 sw = sw.replaceAll('__SW_BASE__', BASE);
 const modelHash = createHash('sha256').update(readFileSync(join(DIST, 'mediapipe/pose_landmarker_full.task'))).digest('hex');
 sw = sw.replaceAll('__MODEL_SHA256__', modelHash);
-// MediaPipe's WASM and loaders, and the decoder's WASM, by content: a library upgrade changes the name of their cache
-// (public/sw.js, WASM_CACHE; the decoder's since the third audit, C20).
 const wasmHash = createHash('sha256');
 for (const f of readdirSync(join(DIST, 'mediapipe')).filter(f => !f.endsWith('.task')).sort()) wasmHash.update(f).update(readFileSync(join(DIST, 'mediapipe', f)));
 wasmHash.update('web-demuxer.wasm').update(readFileSync(join(DIST, 'web-demuxer.wasm')));
@@ -92,8 +125,6 @@ sw = sw.replace(
 writeFileSync(SW_PATH, sw);
 
 // ─── Build-time assertions ───
-// Verify the injection actually worked. A silent failure here would deploy
-// an SW without precache, breaking offline mode.
 const written = readFileSync(SW_PATH, 'utf-8');
 
 if (written.includes('__SW_BASE__')) {
@@ -135,4 +166,4 @@ if (!fontFiles.length) {
 }
 
 console.log(`[inject-sw-precache] Fonts precached (latin woff2): ${fontFiles.map(f => f.split('/').pop()).join(', ')}`);
-console.log(`[inject-sw-precache] Injected ${precacheEntries.length} assets into SW (cache: ${cacheName}) — all assertions passed`);
+console.log(`[inject-sw-precache] Injected ${precacheEntries.length} shell assets into SW precache, ${deferredEntries.length} deferred assets (cache: ${cacheName}) — all assertions passed`);

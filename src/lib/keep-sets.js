@@ -8,7 +8,6 @@
 // - restoring that file on any phone, adding only the sets it does not already hold.
 // Safari's seven-day deletion of script-writable storage for sites not added to the home screen: WebKit,
 // "Full Third-Party Cookie Blocking and More", 24 March 2020. Status: literature, not measured by us.
-import { restoreWorkout } from './storage';
 
 export const BACKUP_KIND = 'workout-vision-sets';
 export const BACKUP_VERSION = 1;
@@ -80,7 +79,11 @@ export function readBackup(text, now = Date.now()) {
 }
 
 /** Puts a backup's sets back on this phone; returns how many were added and how many were already here. */
-export async function restoreBackup(sets, put = restoreWorkout) {
+export async function restoreBackup(sets, put) {
+  if (!put) {
+    const { restoreWorkout } = await import('./storage');
+    put = restoreWorkout;
+  }
   // Written one by one: a write that fails part-way says how many went in and how many did not, so the person
   // is not told nothing was restored (audit of 2 October). A first write that fails fails the whole restore.
   let added = 0, present = 0;

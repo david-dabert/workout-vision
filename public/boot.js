@@ -20,7 +20,8 @@ try { document.documentElement.lang = wvLang(); } catch (e) { /* no document */ 
 // is bound here; with onclick="location.reload()" it did nothing.
 function wvBootScreen(kind) {
   var root = document.getElementById('root');
-  if (!root || root.children.length !== 0) return;
+  var boot = document.getElementById('wv-boot');
+  if (!root || (root.children.length !== 0 && !boot)) return;
   var fr = wvLang() === 'fr';
   // The page declares the language of the words it shows, so VoiceOver reads them in the right voice (audit of 3 October).
   try { document.documentElement.lang = fr ? 'fr' : 'en'; } catch (e) { /* no document */ }

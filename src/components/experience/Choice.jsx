@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState, lazy, Suspense } from 'react';
-import { FITNESS_TESTS } from '../../lib/fitness-tests';
+import { FITNESS_TESTS } from '../../lib/fitness-test-list';
 import { useT } from '../../lib/LanguageContext';
-import { META, createLiftScene } from './lift-scenes';
-import { CARD_ORDER } from './lift-meta';
+import { CARD_ORDER, META } from './lift-meta';
 import { useSets, recentLifts } from './sets';
 import { isOffered, tierOf } from '../../lib/offer';
 import { holdStage } from './stage-loop';
@@ -12,16 +11,19 @@ import { ABOUT } from './about-copy';
 import { eventsConfigured, browserRefuses, countingOff, setCountingOff } from '../../lib/events';
 import { collectSwitchAtLoad, collectSwitchSeen, onCollectSwitch } from '../../lib/phoneCollect';
 import { COLLECT } from './collect-copy';
-import { PRO } from './pro-copy';
-import { loadReceived } from './programme-store';
 import { onHomeScreen } from '../../lib/keep-sets';
 import { InstallRow } from './Install';
 import { pendingIncident, dismissIncident } from '../../lib/crashLog';
 import { CRASH, crashLine } from './crash-copy';
-import FilmExerciseDrawer from './FilmExerciseDrawer';
+const FilmExerciseDrawer = lazy(() => import('./FilmExerciseDrawer'));
 import OneTouchHub from './OneTouchHub';
 import { showUnmeasuredRoutes } from '../../lib/buildFlags';
 import './Choice.css';
+
+const PRO_ROW = {
+  fr: { choiceRow: 'Espace pro', choiceRowSub: 'Pour les coachs et les kinésithérapeutes', programmeRow: 'Votre programme' },
+  en: { choiceRow: 'Coach office', choiceRowSub: 'For coaches and physiotherapists', programmeRow: 'Your programme' },
+};
 
 // The list of every counted exercise loads after the choice has shown (ExerciseList.jsx).
 // If its code cannot load (offline, after an update), the choice shows without it: the cards stay.
@@ -37,22 +39,41 @@ let returning = null;
 export function LiftCanvas({ lift, mode }) {
   const canvas = useRef(null);
   useEffect(() => {
-    const el = canvas.current, rail = el.closest('.rail');
-    if (!rail || typeof IntersectionObserver === 'undefined') return createLiftScene(el, lift, mode);
-    let scene = null, centred = false;
-    const near = new IntersectionObserver(entries => {
-      if (scene || !entries[entries.length - 1].isIntersecting) return;
-      scene = createLiftScene(el, lift, mode, { paused: true });
-      scene.setRunning(centred);
-      near.disconnect();
-    }, { root: rail, rootMargin: '0px 100%' });
-    // A separate observer without margin: a card's share of the view decides the centre.
-    const centre = new IntersectionObserver(entries => {
-      centred = entries[entries.length - 1].intersectionRatio >= 0.6;
-      scene?.setRunning(centred);
-    }, { root: rail, threshold: [0, 0.6] });
-    near.observe(el); centre.observe(el);
-    return () => { near.disconnect(); centre.disconnect(); scene?.(); };
+    const el = canvas.current;
+    if (!el) return undefined;
+    const rail = el.closest('.rail');
+    let scene = null, centred = false, unmounted = false;
+    let near = null, centre = null;
+
+    import('./lift-scenes').then(m => {
+      if (unmounted || !canvas.current) return;
+      const createLiftScene = m.createLiftScene;
+      if (!rail || typeof IntersectionObserver === 'undefined') {
+        scene = createLiftScene(el, lift, mode);
+        return;
+      }
+      near = new IntersectionObserver(entries => {
+        if (scene || !entries[entries.length - 1].isIntersecting) return;
+        scene = createLiftScene(el, lift, mode, { paused: true });
+        scene.setRunning(centred);
+        near.disconnect();
+      }, { root: rail, rootMargin: '0px 100%' });
+
+      centre = new IntersectionObserver(entries => {
+        centred = entries[entries.length - 1].intersectionRatio >= 0.6;
+        scene?.setRunning(centred);
+      }, { root: rail, threshold: [0, 0.6] });
+
+      near.observe(el);
+      centre.observe(el);
+    }).catch(() => {});
+
+    return () => {
+      unmounted = true;
+      near?.disconnect();
+      centre?.disconnect();
+      scene?.();
+    };
   }, [lift, mode]);
   return <canvas ref={canvas} aria-hidden="true" />;
 }
@@ -105,8 +126,15 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
   useRail(railRef, dotsRef);
   // The programme a coach sent, once opened from its link (Programme.jsx): one row, first under the cards.
   // held: a programme opened in this visit that the phone could not keep (App.jsx), the one opened last.
-  const [received] = useState(() => (onProgramme ? (held ? { programme: held } : loadReceived()[0] ?? null) : null));
-  const pro = PRO[fr ? 'fr' : 'en'];
+  const [received, setReceived] = useState(() => (held ? { programme: held } : null));
+  useEffect(() => {
+    if (!onProgramme || held) return;
+    import('./programme-store').then(m => {
+      const list = m.loadReceived();
+      if (list?.[0]) setReceived(list[0]);
+    }).catch(() => {});
+  }, [onProgramme, held]);
+  const pro = PRO_ROW[fr ? 'fr' : 'en'];
   // The chosen card carries the name the filming screen's frame takes, so it grows into it (View Transitions).
   const choose = (lift, i) => { cards.current.forEach((c, j) => { if (c) c.style.viewTransitionName = j === i ? 'lift-hero' : ''; }); onChoose(lift); };
   // Give storage a moment before showing the choice; late results still expose history.
@@ -293,15 +321,17 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
         </div>
       </div>
       {catalogOpen && (
-        <FilmExerciseDrawer
-          currentLift={null}
-          initialArchetype={catalogArchetype}
-          onSelect={key => {
-            setCatalogOpen(false);
-            onChoose(key);
-          }}
-          onClose={() => setCatalogOpen(false)}
-        />
+        <Suspense fallback={null}>
+          <FilmExerciseDrawer
+            currentLift={null}
+            initialArchetype={catalogArchetype}
+            onSelect={key => {
+              setCatalogOpen(false);
+              onChoose(key);
+            }}
+            onClose={() => setCatalogOpen(false)}
+          />
+        </Suspense>
       )}
     </section>
   </div>;

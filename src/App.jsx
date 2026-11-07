@@ -1,19 +1,12 @@
-import { useState, useEffect, useLayoutEffect, useRef, Suspense } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, Suspense, lazy } from 'react';
 import { flushSync } from 'react-dom';
 import { ProfileProvider, useProfile } from './lib/ProfileContext';
 import { LanguageProvider, useT } from './lib/LanguageContext';
 import useHashRouter from './lib/useHashRouter';
-// Hidden: challenges are not part of core path
-// import { parseChallengeFromURL, parseResponseFromURL } from './lib/challenges';
-import { checkAndMigrateSchema } from './lib/storage';
-// Hidden, not deleted: Dashboard and TabBar are not rendered during 3b
-// import Dashboard from './components/Dashboard';
-// import TabBar from './components/TabBar';
-
 import ErrorBoundary from './components/ErrorBoundary';
-import PerfOverlay from './components/PerfOverlay';
+const PerfOverlay = lazy(() => import('./components/PerfOverlay'));
 import { perfRequested } from './lib/perfFlag';
-import { isTest } from './lib/fitness-tests';
+import { isTest } from './lib/fitness-test-list';
 import Choice from './components/experience/Choice';
 import Entry, { shouldShowEntry } from './components/experience/Entry';
 import Stage from './components/experience/Stage';
@@ -24,8 +17,6 @@ import { whenQuiet } from './lib/whenQuiet';
 import { warmPoseFiles } from './lib/pose-files';
 import { track, setEventsLang } from './lib/events';
 import { liveBuild, showUnmeasuredRoutes } from './lib/buildFlags';
-import { payloadOf, resultsPayloadOf } from './components/experience/programme';
-import { draftFromResults } from './components/experience/programme-store';
 import { markCrash } from './lib/crashLog';
 import { lazyScreen } from './lib/lazyScreen';
 
@@ -154,7 +145,11 @@ function AppInner() {
   // The saved sets are read once the records are migrated, while the entry plays,
   // so the choice of lift never waits for them.
   useEffect(() => {
-    checkAndMigrateSchema().catch(err => console.error('[App] Schema migration error:', err)).then(() => loadSets()).catch(() => {});
+    import('./lib/storage')
+      .then(m => m.checkAndMigrateSchema())
+      .catch(err => console.error('[App] Schema migration error:', err))
+      .then(() => loadSets())
+      .catch(() => {});
   }, []);
 
   // Warm the next screens while the visitor reads, so none waits on a download: one at a time,
@@ -237,6 +232,9 @@ function AppInner() {
     // so a first analysis made offline can start (pose-files.js); inference stays in the existing worker. Not before the
     // guide page: a beginner who only reads it spends no mobile data on them (live-app audit, 10 October 2026).
     warmPoseFiles(import.meta.env.BASE_URL);
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage('WARM_DEFERRED');
+    }
     go('film', () => { setSelectedLift(lift); setVideoFile(null); setGuideLift(''); });
   };
   // A target holds only for its own exercise: one left from an earlier tap never reaches another set (excellence hunt,
@@ -271,13 +269,12 @@ function AppInner() {
     key = 'programme';
     // The link's payload as typed (the router lowercases the page); null once the programme is kept and the address
     // cleared (Programme.jsx), or when the programme is opened from the choice.
-    screen = <Programme payload={payloadOf(window.location.hash)} held={heldProgramme} onHold={setHeldProgramme} onClose={() => go('dashboard', () => setPlanned(null))} onStart={(lift, target) => { setPlanned(target); chooseLift(lift); }} />;
+    screen = <Programme held={heldProgramme} onHold={setHeldProgramme} onClose={() => go('dashboard', () => setPlanned(null))} onStart={(lift, target) => { setPlanned(target); chooseLift(lift); }} />;
   } else if (page === 'resultats') {
     // The link's payload as typed; a results screen with no payload says the link does not open. One screen per link:
     // another client's link opened over this one is read afresh.
-    const results = resultsPayloadOf(window.location.hash);
-    key = `resultats:${results ?? ''}`;
-    screen = <Results payload={results} onClose={() => go('dashboard')} onAdjust={r => { const start = draftFromResults(r); go('pro', () => setProStart(start)); }} />;
+    key = `resultats:${window.location.hash}`;
+    screen = <Results onClose={() => go('dashboard')} onAdjust={async r => { const { draftFromResults } = await import('./components/experience/programme-store'); const start = draftFromResults(r); go('pro', () => setProStart(start)); }} />;
   } else if (page === 'manifesto' || page === 'science') {
     key = 'manifesto';
     screen = <Manifesto onClose={() => go('dashboard')} onChoose={l => chooseLift(l)} />;
@@ -364,7 +361,7 @@ function App() {
   // Hidden: ?validate URL param entry point
   return (
     <>
-      {SHOW_PERF && <PerfOverlay />}
+      {SHOW_PERF && <Suspense fallback={null}><PerfOverlay /></Suspense>}
       <ErrorBoundary>
         <LanguageProvider>
           <EventsLang />

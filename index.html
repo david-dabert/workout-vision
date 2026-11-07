@@ -20,10 +20,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="manifest" href="/manifest.json" />
-    <!-- The count's face, Geist 700 latin (C1, design review of 7 October 2026), fetched with the page so a count is
-         never drawn in a fallback face and swapped mid-set. Vite rewrites the path to the built file's. -->
+    <!-- The critical fonts, preloaded in <head> with crossorigin (Phase 5 of David's order of 6 November 2026, PLAN.md). -->
     <link rel="preload" as="font" type="font/woff2" href="/node_modules/@fontsource/geist/files/geist-latin-700-normal.woff2" crossorigin />
-    <!-- Google Fonts loaded non-blocking via boot.js to avoid hanging offline -->
+    <link rel="preload" as="font" type="font/woff2" href="/node_modules/@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2" crossorigin />
+    <!-- boot.js in <head> sets language and error handlers synchronously before stylesheets block paint -->
+    <script src="/boot.js"></script>
     <title>WorkoutVision</title>
     <meta name="description" content="Counts your repetitions from a video, on your phone. Test version." />
     <meta property="og:title" content="WorkoutVision" />
@@ -35,8 +36,7 @@
     <meta name="twitter:description" content="Counts your repetitions from a video, on your phone. Test version." />
   </head>
   <body>
-    <div id="root"></div>
-    <script src="/boot.js"></script>
+    <div id="root"><div id="wv-boot" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#080706;color:#EFE8DC;font:400 32px/1.1 'Instrument Serif',Georgia,serif;letter-spacing:-0.02em;">WorkoutVision</div></div>
     <script type="module" src="/src/main.jsx"></script>
     <script src="/cache-bust.js"></script>
   </body>

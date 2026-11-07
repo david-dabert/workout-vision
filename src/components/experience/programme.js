@@ -2,7 +2,7 @@
 // client films are read against it. No server, no account: the programme lives on the coach's phone, then in the
 // link's hash (the part of an address a browser never sends), then on the client's phone. Pure: no DOM, no storage.
 import { isOffered, isKnownExercise } from '../../lib/offer';
-import { isTest } from '../../lib/fitness-tests';
+import { isTest } from '../../lib/fitness-test-list';
 import { isGuideKey } from '../../lib/guide-keys';
 import { keptAs } from './result-plan';
 

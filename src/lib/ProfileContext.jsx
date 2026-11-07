@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { getProfile as loadProfile, saveProfile as persistProfile } from './storage';
 
 const ProfileContext = createContext(null);
 
@@ -9,7 +8,8 @@ export function ProfileProvider({ children }) {
   const [storageError, setStorageError] = useState(null);
 
   useEffect(() => {
-    loadProfile()
+    import('./storage')
+      .then(m => m.getProfile())
       .then(p => {
         setProfile(p);
         setLoading(false);
@@ -23,6 +23,7 @@ export function ProfileProvider({ children }) {
 
   const saveProfile = useCallback(async (updated) => {
     try {
+      const { saveProfile: persistProfile } = await import('./storage');
       await persistProfile(updated);
       setProfile(updated);
       setStorageError(null);
@@ -35,6 +36,7 @@ export function ProfileProvider({ children }) {
 
   const refreshProfile = useCallback(async () => {
     try {
+      const { getProfile: loadProfile } = await import('./storage');
       const p = await loadProfile();
       setProfile(p);
       setStorageError(null);

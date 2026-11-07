@@ -113,7 +113,11 @@ document.addEventListener('scroll', (e) => {
   pressed.forEach(el => { if (scroller.contains(el)) unlight(el); });
 }, { passive: true, capture: true });
 
-createRoot(document.getElementById('root')).render(
+const rootEl = document.getElementById('root');
+const bootEl = document.getElementById('wv-boot');
+if (bootEl) bootEl.remove();
+
+createRoot(rootEl).render(
   <StrictMode>
     <App />
   </StrictMode>,

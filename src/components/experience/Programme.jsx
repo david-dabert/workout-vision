@@ -5,7 +5,7 @@ import { exerciseName, guideExercise } from './exercise-info';
 import { Thumb } from './Guide';
 import {
   dayWords, decodeProgramme, frequencyOf, guideOnly, holdOf, lastDayOf, plainPayload, plainResultsPayload, plannedOf, programmable, programmeId,
-  programmeLink, progressOf, resultsLink, resultsOf, sideOf,
+  programmeLink, progressOf, resultsLink, resultsOf, sideOf, payloadOf,
 } from './programme';
 import { onHomeScreen } from '../../lib/keep-sets';
 import { inAppBrowser } from '../../lib/install';
@@ -27,7 +27,7 @@ const BackIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor
  * the phone could not keep (storage refused), which the app holds for the visit (App.jsx) and gets back through onHold:
  * the return from filming, or from the choice, finds it.
  */
-export default function Programme({ payload, held = null, onHold, onClose, onStart }) {
+export default function Programme({ payload = (typeof window !== 'undefined' ? payloadOf(window.location.hash) : null), held = null, onHold, onClose, onStart }) {
   const { lang } = useT(), fr = lang === 'fr', c = PRO[fr ? 'fr' : 'en'];
   // 'opening' while a link is read; then the programme kept, an error, or none.
   const [state, setState] = useState(() => (payload ? { kind: 'opening' } : current(loadReceived(), held && programmeId(held), held)));

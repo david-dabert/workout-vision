@@ -9,7 +9,7 @@
 const NOT_FILMABLE = new Set(['walking_lunge', 'sandbag_lunge']);
 import patterns from './counting/guide-patterns.json';
 import { GUIDE_TIERS, TIERS } from './liftTiers';
-import { FITNESS_TESTS } from './fitness-tests';
+import { FITNESS_TESTS } from './fitness-test-list';
 
 // Withdrawn on 3 October 2026 (third audit, C21): the floor exercises counted on both sides
 // (guide-patterns.json 'both') that the Film screen tells the user to film in profile (guide-families.json

@@ -13,11 +13,17 @@
 // blind: { count, p } (count null for "Je ne sais pas"), and a refused set he counted blind is kept as well, marked
 // appRefused, with the app's proposal when it made one. The scoreboard reads blind.count as his blind label in a
 // section of its own, which decides nothing until he says so (test/real-phone/accuracy/sets.ts, blindSets).
-import localforage from 'localforage';
-import { setFileName, setPayload, hashVideoContent, gzipBlob } from './collector';
+import { setPayload } from './collector';
 
 export const COLLECT_KEY = 'wv_collecte';
-const store = localforage.createInstance({ name: 'workoutVision', storeName: 'collected' });
+let store = null;
+async function getStore() {
+  if (!store) {
+    const lf = (await import('localforage')).default;
+    store = lf.createInstance({ name: 'workoutVision', storeName: 'collected' });
+  }
+  return store;
+}
 
 /** Whether this phone collects (the flag David's phone carries). Unreadable storage collects nothing. */
 export function collectOn(storage = globalThis.localStorage) {
@@ -133,27 +139,34 @@ export function collectedPayload({ result, lift, kept, view, sha256, hashOf, ver
  * read, hashed or stored then). videoFile: the video the count was made from (its SHA-256 names the file, as the
  * collector names it); without it, or when it cannot be read, the landmarks' hash does.
  */
-export async function collectThisSet({ result, lift, kept, view, videoFile = null, version, blind = null, choice = null, storage = globalThis.localStorage, put = (k, v) => store.setItem(k, v) }) {
+export async function collectThisSet({ result, lift, kept, view, videoFile = null, version, blind = null, choice = null, storage = globalThis.localStorage, put }) {
   if (!collectOn(storage)) return null;
   if (!result || !Array.isArray(result.worldLandmarks) || !result.worldLandmarks.length || !Number.isInteger(kept)) return null;
+  const { setFileName, hashVideoContent, gzipBlob } = await import('./collector');
+  const s = await getStore();
+  const writePut = put || ((k, v) => s.setItem(k, v));
   let sha256 = null, hashOf = 'video';
   if (videoFile) { try { sha256 = await hashVideoContent(videoFile); } catch { sha256 = null; } }
   if (!sha256) { sha256 = await landmarksSha256(result.worldLandmarks); hashOf = 'landmarks'; }
   const payload = collectedPayload({ result, lift, kept, view, sha256, hashOf, version, blind, choice });
   const blob = await gzipBlob(JSON.stringify(payload));
   const name = setFileName(lift, kept, view, sha256);
-  await put(name, { name, blob, savedAt: new Date().toISOString() });
+  await writePut(name, { name, blob, savedAt: new Date().toISOString() });
   return name;
 }
 
 /** The files waiting on this phone, oldest first, as File objects ready for the share sheet. */
 export async function collectedFiles() {
+  const s = await getStore();
   const out = [];
-  await store.iterate(v => { if (v?.name && v.blob) out.push(v); });
+  await s.iterate(v => { if (v?.name && v.blob) out.push(v); });
   return out.sort((a, b) => String(a.savedAt).localeCompare(String(b.savedAt)))
     .map(v => new File([v.blob], v.name, { type: 'application/gzip' }));
 }
 /** How many files wait. */
-export const collectedCount = () => store.length();
+export const collectedCount = async () => (await getStore()).length();
 /** Forgets the files named (after they were shared). */
-export async function forgetCollected(names) { for (const n of names) await store.removeItem(n); }
+export async function forgetCollected(names) {
+  const s = await getStore();
+  for (const n of names) await s.removeItem(n);
+}
