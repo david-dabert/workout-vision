@@ -6,12 +6,12 @@
 .wv-experience .film-screen .eyebrow { margin-top: var(--s-4); }
 .wv-experience .film-screen .title { margin-top: 10px; }
 .wv-experience .film-topbar-end { display: flex; align-items: center; gap: 8px; }
-.wv-experience .film-switch-btn { flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border: 1px solid var(--c-edge); border-radius: var(--r-pill); background: var(--hair-0); color: var(--c-fg); font-family: var(--sans); font-size: 12px; font-weight: 600; cursor: pointer; }
+.wv-experience .film-switch-btn { flex: none; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 4px 10px; border: 1px solid var(--c-edge); border-radius: var(--r-pill); background: var(--hair-0); color: var(--c-fg); font-family: var(--sans); font-size: var(--fs-status); font-weight: 600; cursor: pointer; }
 .wv-experience .film-switch-btn svg { width: 13px; height: 13px; color: var(--c-accent); }
 .wv-experience .frame {
   position: relative; width: min(46%, 178px); max-width: 100%; aspect-ratio: 9 / 16; margin: var(--s-5) auto 0;
   border-radius: var(--r-xl); border: 1px solid var(--hair-2); background: var(--well); overflow: hidden;
-  box-shadow: inset 0 0 0 6px #0C0A08, 0 40px 80px -30px rgba(0, 0, 0, 0.85), 0 0 70px -24px rgba(232, 189, 126, 0.22);
+  box-shadow: inset 0 0 0 6px var(--frame-bezel), 0 40px 80px -30px rgba(0, 0, 0, 0.85), 0 0 70px -24px rgba(232, 189, 126, 0.22);
 }
 .wv-experience .frame canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .wv-experience .corners { position: absolute; inset: 16px; width: calc(100% - 32px); height: calc(100% - 32px); color: var(--c-accent); }
@@ -71,7 +71,7 @@
 .wv-experience .film-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: var(--s-3) 0 0; padding: 4px; border: 1px solid var(--hair-2); border-radius: var(--r-pill); }
 .wv-experience .film-mode-opt { min-height: 44px; border-radius: var(--r-pill); border: 0; background: transparent; color: var(--c-fg-muted); font-size: var(--fs-caption); display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; }
 .wv-experience .film-mode-opt.is-on { background: rgba(232, 189, 126, 0.14); color: var(--lamp-hi); box-shadow: inset 0 0 0 1px var(--lamp-line); }
-.wv-experience .film-mode .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #E0624A; }
+.wv-experience .film-mode .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--live-dot); }
 
 .wv-experience .film-sample-btn {
   display: inline-flex;
@@ -87,7 +87,7 @@
   background: var(--well);
   color: var(--bone);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--fs-caption);
   font-weight: 500;
   cursor: pointer;
   transition: all var(--d-fast) var(--ease);

@@ -109,11 +109,14 @@
   --glow-burst: 0 0 16px rgba(212, 167, 106, 0.25), 0 0 40px rgba(212, 167, 106, 0.08);
 
   /* ── Typography ── */
-  --font: 'Inter Variable', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
-  --font-display: 'Outfit Variable', var(--font);
-  --font-mono: 'SF Mono', SFMono-Regular, ui-monospace, monospace;
+  --serif: "Instrument Serif", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --font: var(--sans);
+  --font-display: var(--serif);
+  --font-mono: var(--mono);
 
-  font-family: var(--font);
+  font-family: var(--sans);
   color: var(--text-primary);
   background: var(--void);
   -webkit-font-smoothing: antialiased;

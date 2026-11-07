@@ -10,6 +10,8 @@ export const RGB = Object.freeze({
   void: [8, 7, 6],          // --void, --c-surface
   lamp: [232, 189, 126],    // --lamp, --c-accent
   lampHi: [247, 220, 174],  // --lamp-hi
+  ash: [164, 155, 141],     // --ash
+  scrim: [10, 10, 10],      // the dark ground under text drawn on a video frame
   // The particles' glow (entry-scene.js, ported from design/experience-prototype.html): a white-hot core and the
   // three dust tones, light to dark, and the bar of light under the figure.
   spark: [255, 251, 242],

@@ -1,14 +1,27 @@
 // Boot scripts — moved out of inline <script> tags to comply with CSP
 // (script-src does not include 'unsafe-inline')
 
+// The language the app opens in, by the rule of src/lib/LanguageContext.jsx (detectLang): the choice saved in
+// wv_lang, else French when the phone's language is French, else English. The page declares it before React loads,
+// so VoiceOver reads the first words in the right voice, and the two boot screens below speak the same language.
+function wvLang() {
+  try {
+    var saved = localStorage.getItem('wv_lang');
+    if (saved === 'en' || saved === 'fr') return saved;
+  } catch (e) { /* storage blocked */ }
+  var bl = '';
+  try { bl = (navigator.language || navigator.userLanguage || 'en').toLowerCase(); } catch (e) { /* no navigator */ }
+  return bl.indexOf('fr') === 0 ? 'fr' : 'en';
+}
+try { document.documentElement.lang = wvLang(); } catch (e) { /* no document */ }
+
 // 1 and 2. The two screens shown when the app cannot start, in the app's colours and language.
 // The page's CSP has no 'unsafe-inline', which blocks onclick attributes, so the button's click
 // is bound here; with onclick="location.reload()" it did nothing.
 function wvBootScreen(kind) {
   var root = document.getElementById('root');
   if (!root || root.children.length !== 0) return;
-  var fr = false;
-  try { var saved = localStorage.getItem('wv_lang'); fr = saved ? saved === 'fr' : /^fr/i.test(navigator.language || ''); } catch (e) { fr = /^fr/i.test(navigator.language || ''); }
+  var fr = wvLang() === 'fr';
   // The page declares the language of the words it shows, so VoiceOver reads them in the right voice (audit of 3 October).
   try { document.documentElement.lang = fr ? 'fr' : 'en'; } catch (e) { /* no document */ }
   var t = kind === 'crash'

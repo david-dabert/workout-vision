@@ -57,6 +57,7 @@ jobs:
           npx vitest run --no-cache test/real-phone/accuracy/labels-lock.test.ts
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm run check:css-tokens
       - run: npm test
       # The counting gates compare with the baselines the base branch holds, not those of the change itself, so a
       # change cannot pass by editing them (audit of 3 October). On a pull request, the base branch's tip. On a push,

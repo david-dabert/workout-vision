@@ -23,7 +23,8 @@
     "scoreboard:public": "SCOREBOARD=1 vitest run --no-cache test/real-phone/accuracy/public-scoreboard.test.ts",
     "exam:testers": "node scripts/tester-exam.mjs",
     "test:universal": "node scripts/benchmarks/run-unified-matrix.mjs",
-    "test:universal:full": "node scripts/benchmarks/run-unified-matrix.mjs --full"
+    "test:universal:full": "node scripts/benchmarks/run-unified-matrix.mjs --full",
+    "check:css-tokens": "vitest run src/components/experience/__tests__/raw-colours.test.js src/components/experience/__tests__/css-vars.test.js"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",

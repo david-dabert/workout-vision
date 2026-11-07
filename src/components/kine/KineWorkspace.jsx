@@ -143,7 +143,7 @@ function ProgrammeTab({ fr, k, profile }) {
         })}
       </ol>
       {programme && <div className="kn-send" data-testid="kn-send" data-link={link}>
-        {qr && <svg className="kn-qr" viewBox={`0 0 ${qr.side} ${qr.side}`} role="img" aria-label={k.qrHint} data-testid="kn-qr"><rect width={qr.side} height={qr.side} fill="#FBF7EF" /><path d={qr.d} fill="#150F08" /></svg>}
+        {qr && <svg className="kn-qr" viewBox={`0 0 ${qr.side} ${qr.side}`} role="img" aria-label={k.qrHint} data-testid="kn-qr"><rect width={qr.side} height={qr.side} fill="var(--paper)" /><path d={qr.d} fill="var(--ink)" /></svg>}
         <p className="sc-caption">{k.qrHint}</p>
         <button type="button" className="rc-btn is-primary is-wide press" onClick={share} data-testid="kn-share">{k.send}</button>
         <div className="kn-row">
