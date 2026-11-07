@@ -1,0 +1,45 @@
+# Throwaway branch ci/perf-probe only, never merged: builds, measures the first paint, and pushes the readings to probe/.
+name: perf-probe
+on:
+  push:
+    branches: [ci/perf-probe]
+    paths-ignore: ['probe/**']
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build > probe-build.txt 2>&1 || (tail -60 probe-build.txt; exit 1)
+      - run: node scripts/check-entry-budget.mjs dist > probe-budget.txt 2>&1 || true
+      - name: Every asset, gzipped and raw
+        run: |
+          (cd dist/assets && for f in *.js *.css; do printf "%8s %9s %s\n" "$(gzip -c "$f" | wc -c)" "$(wc -c < "$f")" "$f"; done | sort -n -r) > probe-gz.txt
+          head -c 4000 dist/index.html > probe-index-html.txt
+          grep -o 'PRECACHE_ASSETS = \[[^]]*\]' dist/sw.js | tr ',' '\n' | wc -l > probe-precache-count.txt
+          du -sh dist dist/assets dist/mediapipe >> probe-precache-count.txt
+      - name: Install Chromium
+        run: |
+          for attempt in 1 2 3; do timeout 180 npx playwright install --with-deps chromium && break; sleep 5; done
+      - run: npm run prebuild > /dev/null && VITE_EVENTS_URL= VITE_LIVE= VITE_CONTRIBUTE= npx vite build --outDir dist-prod --emptyOutDir > /dev/null
+      - name: Measure
+        run: |
+          npx vite preview --outDir dist-prod --port 4176 --strictPort > /dev/null 2>&1 &
+          npx --yes wait-on@8 http://127.0.0.1:4176/workout-vision/ --timeout 60000
+          npx playwright test -c playwright.probe.config.js e2e/perf.spec.js --retries=0 --workers=1 --reporter=line > probe-perf.txt 2>&1 || true
+          tail -40 probe-perf.txt
+      - name: Push the readings
+        if: always()
+        run: |
+          mkdir -p probe && mv probe-*.txt probe/ 2>/dev/null || true
+          git config user.name "perf-probe"
+          git config user.email "perf-probe@users.noreply.github.com"
+          git add probe
+          git commit -q -m "probe readings for ${GITHUB_SHA::8}" && git push -q origin HEAD:ci/perf-probe
