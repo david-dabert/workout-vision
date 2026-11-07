@@ -27,7 +27,6 @@ function load(): Item[] {
   const items: Item[] = [];
   for (const ds of ['repcount', 'countix', 'mmfit', 'cfrep']) {
     const dir = resolve(PUB, ds, 'build');
-    if (!existsSync(dir)) continue;
     for (const f of readdirSync(dir).filter(f => f.endsWith('.json.gz')).sort()) {
       const d = gz(resolve(dir, f));
       if (d.admitted === false) continue;

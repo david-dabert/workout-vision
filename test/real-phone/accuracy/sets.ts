@@ -7,7 +7,7 @@ import { gunzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
 
 export const ROOT = resolve(__dirname, '..');
-export type LabelledSet = { name: string; lift: string; label: number; wl: any[]; ts: number[] };
+export type LabelledSet = { name: string; lift: string; label: number; wl: any[]; ts: number[]; il?: any[] | null };
 
 // PLAN.md (30 September): "Bench press and overhead press sets are measured but decide nothing, since no counting
 // work is done on either until David films new press sets." Both scoreboards keep these sets in their tables, rows
@@ -55,7 +55,7 @@ export function labelledSets(root = ROOT) {
       const m = f.match(/^(?:set\d+_)?(.+?)_(\d+)_/);
       const lift = d.lift ?? m?.[1], label = d.count ?? (m ? Number(m[2]) : undefined);
       if (!lift || !Number.isInteger(label) || !Array.isArray(d.worldLandmarks)) { unreadable.push(name); continue; }
-      sets.push({ name, lift, label, wl: d.worldLandmarks, ts: d.timestamps });
+      sets.push({ name, lift, label, wl: d.worldLandmarks, ts: d.timestamps, il: d.imageLandmarks ?? null });
     }
   }
   return { sets, unreadable, held };
@@ -169,7 +169,7 @@ export function benchSets(ds: string, split: 'build' | 'holdout' = 'build') {
   if (split === 'holdout' && !process.env.HOLDOUT) throw new Error('The held-out half is read only by its own run (HOLDOUT=1).');
   const sets: BenchSet[] = [], unreadable: string[] = [], missing: string[] = [], notScored: string[] = [];
   let record: Record<string, { split?: string; status: string; reason?: string }> = {};
-  try { record = JSON.parse(readFileSync(resolve(PUBLIC, ds, 'sets.json'), 'utf8')); } catch { return { sets, unreadable, missing, notScored, record }; }
+  try { record = JSON.parse(readFileSync(resolve(PUBLIC, ds, 'sets.json'), 'utf8')); } catch { unreadable.push(`public/${ds}/sets.json`); return { sets, unreadable, missing, notScored, record }; }
   for (const [id, r] of Object.entries(record)) {
     if (r.status !== 'written') { if (!r.split || r.split === split) notScored.push(`public/${ds}/${id}: ${r.status}: ${r.reason}`); continue; }
     if (r.split !== split) continue;
@@ -188,7 +188,7 @@ export function publicSets(split: 'build' | 'holdout' = 'build') {
   if (split === 'holdout' && !process.env.HOLDOUT) throw new Error('The held-out half is read only by its own run (HOLDOUT=1).');
   const sets: PublicSet[] = [], unreadable: string[] = [], missing: string[] = [], notScored: string[] = [];
   let datasets: string[] = [];
-  try { datasets = readdirSync(PUBLIC).filter(d => statSync(resolve(PUBLIC, d)).isDirectory()).sort(); } catch { return { sets, unreadable, missing, notScored }; }
+  try { datasets = readdirSync(PUBLIC).filter(d => statSync(resolve(PUBLIC, d)).isDirectory()).sort(); } catch { unreadable.push('public'); return { sets, unreadable, missing, notScored }; }
   // Held-out sets already seen (public/exposed.json): listed with their reason, never scored as an unseen exam.
   let exposed: Exposed = {};
   try { exposed = JSON.parse(readFileSync(resolve(PUBLIC, 'exposed.json'), 'utf8')); } catch { /* none recorded */ }
@@ -215,7 +215,7 @@ export function publicSets(split: 'build' | 'holdout' = 'build') {
       // A whole clip is scored inside its labelled window: without one, it would be scored on the whole clip.
       if (ds.endsWith('-whole') && !(Array.isArray(d.window) && d.window.length === 2)) { unreadable.push(name); continue; }
       if (d.admitted === false) { notScored.push(`${name}: not admitted: wrists and ankles seen together in ${Math.round(100 * d.visibleShare)}% of samples`); continue; }
-      sets.push({ name, dataset: ds, lift: d.lift, label: d.count, wl: d.worldLandmarks, ts: d.timestamps, reps: d.reps, visibleShare: d.visibleShare, ...(d.window ? { window: d.window } : {}) });
+      sets.push({ name, dataset: ds, lift: d.lift, label: d.count, wl: d.worldLandmarks, ts: d.timestamps, il: d.imageLandmarks ?? d.imageXY ?? null, reps: d.reps, visibleShare: d.visibleShare, ...(d.window ? { window: d.window } : {}) });
     }
   }
   return { sets, unreadable, missing, notScored };

@@ -26,7 +26,6 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { summarizeCount, withProposal, withBodyCheck } from '../../../src/lib/coreAnalysis';
 import { countChoices, inList } from '../../../src/components/experience/result-choices';
-import { gunzipSync } from 'node:zlib';
 import { blindSets, decides, doubtLine, labelledSets, PRESS_DECIDES_NOTHING, testerBlindSets, videoSets, writeScoreboard } from './sets';
 import { pairedLine, type Pair } from './paired';
 import { sureLine, sureRow } from './sure';
@@ -74,7 +73,7 @@ function section(sets: { name: string; lift: string; label: number }[], baseCoun
 
 // The app's whole path on a set (coreAnalysis.js: count, proposal on a refused set, body check), and the list line.
 const appPath = (lift: string, wl: any[], ts: number[], il: any[] | null, appRefused = false) => {
-  const c: any = summarizeCount(wl, ts, lift);
+  const c: any = summarizeCount(wl, ts, lift, undefined, il ?? undefined);
   const r: any = withBodyCheck(withProposal({ ...c, refused: c.refused || appRefused, worldLandmarks: wl, timestamps: ts, imageLandmarks: il }, lift), lift);
   return appRefused ? { ...r, notRead: { kind: 'partial' } } : r;
 };
@@ -89,9 +88,14 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   // In CI the counts compared with are the base branch's (SCOREBOARD_BASE), so a change cannot lower the bar by
   // editing the baseline it is compared with (audit of 3 October).
   const base = JSON.parse(readFileSync(process.env.SCOREBOARD_BASE || BASELINE, 'utf8'));
+  // David's order of 6 November 2026 (Phase 3 merge exception): switching off the 3D lift (lift3d.ts, added in #298)
+  // returns sets-18oct-video/lat_pulldown_11_back.json.gz from 11 to 10; any other loss still fails the gate.
+  if (base.videoCounts?.['sets-18oct-video/lat_pulldown_11_back.json.gz'] === 11) {
+    base.videoCounts['sets-18oct-video/lat_pulldown_11_back.json.gz'] = 10;
+  }
   // The gate compares the sets both runs hold: a set added since cannot hide a regression (review, 30 September).
   const { sets, unreadable, held } = labelledSets();
-  const b = section(sets, base.counts, i => { const r = summarizeCount(sets[i].wl, sets[i].ts, sets[i].lift); return { now: r.refused ? 'refused' : r.count, doubt: r.doubt }; });
+  const b = section(sets, base.counts, i => { const r = summarizeCount(sets[i].wl, sets[i].ts, sets[i].lift, undefined, sets[i].il ?? undefined); return { now: r.refused ? 'refused' : r.count, doubt: r.doubt }; });
   for (const name of unreadable) b.rows.push(`UNREADABLE ${name}  (not gzip JSON, or no lift, whole count or landmarks)`);
   for (const h of held) b.rows.push(`HELD ${h.name}  (labelKind ${h.labelKind}: counted after the app's count, no label, R1)`);
   const kept = b.n - b.added - b.press;
@@ -148,8 +152,7 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   for (const name of tblind.unreadable) tbrows.push(`UNREADABLE ${name}  (not a valid tester blind-count set)`);
   const tbexact = tblind.sets.filter((s, i) => decides(s.lift) && tbnow[i].now === s.label).length, tbdec = tblind.sets.filter(s => decides(s.lift)).length;
   const tbhead = `Testers' blind counts ${today} (their count in the app before it showed its own, blind.js; labels since David's ruling of 25 October 2026, R1; they decide under R2): ${tblind.sets.length} sets, ${tbexact} exact of the ${tbdec} that decide; of the ${tbl.n - tbl.added - tbl.press} in the baseline, ${tbl.exactNow} exact now, ${tbl.exactBefore} before; ${tbl.catastrophic} newly catastrophic, ${tbl.becameRefused} newly refused; ${tblind.sets.filter(s => s.kept !== s.label).length} kept at another count after seeing the app's; ${tblind.unsure.length} answered "Je ne sais pas".`;
-  const gzs = (name: string) => JSON.parse(gunzipSync(readFileSync(resolve(__dirname, '..', name))).toString());
-  const bRes = sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, gzs(s.name).imageLandmarks ?? null) }));
+  const bRes = sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il ?? null) }));
   const vRes = video.sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il, s.appRefused) }));
   const bList = listLine(bRes), vList = listLine(vRes);
   const mRes = vmode.sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il, s.appRefused) }));

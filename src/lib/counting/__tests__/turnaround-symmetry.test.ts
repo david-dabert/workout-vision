@@ -1,37 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
 import { countReps, liftDefinition } from '../core';
-import { liftSet, isDepthAxisCompoundLift } from '../lift3d';
-import { summarizeCount } from '../../coreAnalysis';
+import { isDepthAxisCompoundLift } from '../lift3d';
 
 describe('Monocular 3D Inverse Taylor Projection (liftSet) on Depth-Axis Lifts', () => {
-  it('corrects foreshortening on compound back movements (lat_pulldown_11_back) from 10 to 11 exact', () => {
-    const filePath = resolve(__dirname, '../../../../test/real-phone/sets-18oct-video/lat_pulldown_11_back.json.gz');
-    if (!existsSync(filePath)) return;
-    const data = JSON.parse(gunzipSync(readFileSync(filePath)).toString());
-
-    // Without imageLandmarks (raw worldLandmarks alone), foreshortening causes undercount (10)
-    const rawResult = summarizeCount(data.worldLandmarks, data.timestamps, data.lift);
-    expect(rawResult.count).toBe(10);
-
-    // With imageLandmarks and inverse Taylor 3D projection, bone length invariance recovers the 11th rep
-    expect(isDepthAxisCompoundLift(data.lift, data.worldLandmarks)).toBe(true);
-    const liftedResult = summarizeCount(data.worldLandmarks, data.timestamps, data.lift, undefined, data.imageLandmarks);
-    expect(liftedResult.count).toBe(11);
-    expect(liftedResult.reps).toHaveLength(11);
-  });
-
   it('preserves planar side-view exercises without triggering 3D liftSet', () => {
     const sideFile = resolve(__dirname, '../../../../test/real-phone/sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz');
-    if (!existsSync(sideFile)) return;
     const data = JSON.parse(gunzipSync(readFileSync(sideFile)).toString());
 
     // Planar side view has depthShare >= 0.6, so isDepthAxisCompoundLift is false
     expect(isDepthAxisCompoundLift('bicep_curl', data.worldLandmarks)).toBe(false);
-    const result = summarizeCount(data.worldLandmarks, data.timestamps, 'bicep_curl', undefined, data.imageLandmarks);
-    expect(result.count).toBe(5);
   });
 
   it('verifies bone length invariance formula |dz| = sqrt(L^2 - l^2)', () => {

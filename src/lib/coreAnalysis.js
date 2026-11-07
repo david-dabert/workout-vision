@@ -1,5 +1,4 @@
 import { countReps, liftDefinition } from './counting/core';
-import { liftSet, isDepthAxisCompoundLift } from './counting/lift3d';
 import { poseDoubt } from './counting/doubt';
 import { readIsWhole } from './collector';
 import { FITNESS_TESTS, isTest, openRise, riseHalfTimes, scoreTest } from './fitness-tests';
@@ -39,14 +38,8 @@ export class FrozenSkeletonsError extends Error {
 }
 
 // tuning: a recount with nearby settings (core.ts CountTuning), only from withSensitivity below; the app's count has none.
-export function summarizeCount(worldLandmarks, timestamps, lift, tuning = undefined, imageLandmarks = undefined) {
-  let effectiveWorld = worldLandmarks;
-  if (imageLandmarks && Array.isArray(imageLandmarks) && imageLandmarks.length > 0 && isDepthAxisCompoundLift(lift, worldLandmarks)) {
-    const lifted = liftSet(worldLandmarks, imageLandmarks, 'fused');
-    if (lifted && Array.isArray(lifted.frames) && lifted.frames.length === worldLandmarks.length) {
-      effectiveWorld = lifted.frames;
-    }
-  }
+export function summarizeCount(worldLandmarks, timestamps, lift, tuning = undefined, _imageLandmarks = undefined) {
+  const effectiveWorld = worldLandmarks;
   const core = countReps(effectiveWorld, timestamps, lift, tuning);
   // A strict majority of unavailable joint angles is the only counting refusal.
   // Use the core's own raw-angle validity (before outlier removal/bridging).

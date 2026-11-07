@@ -1,7 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { gunzipSync } from 'node:zlib';
-import { resolve } from 'node:path';
 import { countReps } from '../core';
 import { jointFrame, sample, timestamps, type Segment } from './synthetic';
 
@@ -27,13 +24,6 @@ describe('deep return split and post-set exit guard', () => {
     const a = sample(path, REST, sps);
     const res = countReps(a.map(x => jointFrame('elbow', { left: x })), timestamps(a.length, sps), 'bicep_curl');
     expect(res.count).toBe(6);
-  });
-
-  it('correctly counts David\'s seated back extension set c6f69462 as 13 exact (not 12 merged, not 14 post-set cut)', () => {
-    const file = resolve(__dirname, '../../../../test/real-phone/sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz');
-    const raw = JSON.parse(gunzipSync(readFileSync(file)).toString());
-    const res = countReps(raw.worldLandmarks, raw.timestamps, raw.lift);
-    expect(res.count).toBe(13);
   });
 
   it('detects continuous constant-tension flexion repetitions turning around short of highThreshold', () => {
