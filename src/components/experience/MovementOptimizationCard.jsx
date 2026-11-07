@@ -222,7 +222,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
                 ? (fr ? `Efficacité axiale\u00A0: ${analysis.pathEfficiencyPercent}%` : `Axial efficiency: ${analysis.pathEfficiencyPercent}%`)
                 : (fr ? 'Modèle cinématique' : 'Kinematic template')}
             </span>
-            {/* R9 — Source: `alignKineticTrajectory` DTW distance between each rep's angle slice (`result.angles` on the user's video) and `getCanonicalTemplate(lift)` in `src/lib/counting/KineticForcedAligner.ts`. Status: experimental. */}
+            {/* R9 — Source: `alignKineticTrajectory` DTW distance between each rep's angle slice (`result.angles` on the user's video) and `getCanonicalTemplate(lift)` in `src/lib/counting/KineticForcedAligner.ts` (hand-written template, UNSOURCED). Status: experimental. */}
             <span className="res-opt-explain">
               {fr ? 'Écart moyen de la courbe d’angle mesurée sur votre vidéo par rapport au profil type de l’exercice.' : 'Mean distance between the angle curve measured on your video and the exercise template.'}
             </span>
