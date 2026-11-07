@@ -30,4 +30,16 @@ test.describe('a phone in German with no saved choice', () => {
     await expect(page.getByRole('heading', { name: 'Something went wrong.' })).toBeVisible({ timeout: 10000 });
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   });
+
+  test('the page says English before React loads', async ({ page }) => {
+    // The entry script is answered empty, so nothing mounts, and the language is read when the document is parsed
+    // (DOMContentLoaded), not after a delay: at that moment only boot.js's first lines can have set it, whatever
+    // the 8 s watchdog does later.
+    await page.route(/\/assets\/index-[^/]+\.js$/, r => r.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+    await page.addInitScript(() => {
+      document.addEventListener('DOMContentLoaded', () => { window.__langAtParse = document.documentElement.lang; });
+    });
+    await page.goto('/workout-vision/');
+    expect(await page.evaluate(() => window.__langAtParse)).toBe('en');
+  });
 });
