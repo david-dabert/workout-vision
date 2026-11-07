@@ -25,8 +25,9 @@ function strip(text, isStyle) {
     .split('\n').filter(line => !/^\s*\/\//.test(line)).join('\n');
 }
 
-// The expression of each style={…} attribute, ended by counting braces, with quoted strings and template literals
-// skipped, so a style closed as "} }" or chosen by a condition is read whole and nothing after it is.
+// The expression of each style={…} attribute, ended by counting braces, with quoted strings, template literals,
+// and comments skipped, so a style closed as "} }", containing a /* comment */ or chosen by a condition is read
+// whole and nothing after it is, and comments inside it define no property.
 function styleExpressions(text) {
   const out = [];
   for (const m of text.matchAll(/style=\{/g)) {
@@ -34,16 +35,47 @@ function styleExpressions(text) {
     let depth = 1;
     let quote = null;
     let i = start;
+    let expr = '';
     for (; i < text.length && depth > 0; i += 1) {
       const c = text[i];
       if (quote) {
-        if (c === '\\') i += 1;
-        else if (c === quote) quote = null;
-      } else if (c === '"' || c === "'" || c === '`') quote = c;
-      else if (c === '{') depth += 1;
-      else if (c === '}') depth -= 1;
+        expr += c;
+        if (c === '\\') {
+          i += 1;
+          if (i < text.length) expr += text[i];
+        } else if (c === quote) {
+          quote = null;
+        }
+      } else if (c === '/' && text[i + 1] === '*') {
+        const end = text.indexOf('*/', i + 2);
+        if (end === -1) {
+          i = text.length;
+          break;
+        }
+        expr += ' ';
+        i = end + 1;
+      } else if (c === '/' && text[i + 1] === '/') {
+        const end = text.indexOf('\n', i + 2);
+        if (end === -1) {
+          i = text.length;
+          break;
+        }
+        expr += '\n';
+        i = end;
+      } else if (c === '"' || c === "'" || c === '`') {
+        quote = c;
+        expr += c;
+      } else if (c === '{') {
+        depth += 1;
+        expr += c;
+      } else if (c === '}') {
+        depth -= 1;
+        if (depth > 0) expr += c;
+      } else {
+        expr += c;
+      }
     }
-    out.push(text.slice(start, i - 1));
+    out.push(expr);
   }
   return out;
 }
@@ -110,6 +142,9 @@ describe('the scanner', () => {
     expect(definitionsIn("const FALLBACK = { '--lamp': '#E8BD7E' }; const t = wide ? ['--a'] : ['--b'];", false)).toEqual([]);
     expect(definitionsIn("<i style={{ '--x': 1 } } />;\nconst T = { a: 1, '--lamp': '#E8BD7E' };\n<b style={{ color: 'red' }} />", false)).toEqual(['--x']);
     expect(definitionsIn("<div style={cols ? { '--cols': cols } : undefined} />", false)).toEqual(['--cols']);
+    expect(definitionsIn("<i style={{ /* '--x': 1, */ '--y': 2 }} />", false)).toEqual(['--y']);
+    expect(definitionsIn("<i style={{ /* } */ '--x': 1 }} />", false)).toEqual(['--x']);
+    expect(definitionsIn("<i style={{\n  '--i': 2, // the card's delay\n}} />;\nconst T = { a: 1, '--lamp': '#E8BD7E' };", false)).toEqual(['--i']);
   });
 
   it('keeps the code after a /* inside a string, and drops what comments say', () => {
