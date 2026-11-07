@@ -1,0 +1,55 @@
+
+Running 2 tests using 1 worker
+
+[1/2] e2e/perf.spec.js:72:1 › a returning visit with an empty cache: first paint under 800 ms, the choice takes a tap under 1500 ms, no pose file before the tap
+e2e/perf.spec.js:72:1 › a returning visit with an empty cache: first paint under 800 ms, the choice takes a tap under 1500 ms, no pose file before the tap
+returning visit, 4G and 4x CPU: first paint 916, 932, 908 ms (median 916); choice tappable 1081, 1070, 1056 ms (median 1070)
+
+  1) e2e/perf.spec.js:72:1 › a returning visit with an empty cache: first paint under 800 ms, the choice takes a tap under 1500 ms, no pose file before the tap 
+
+    Error: returning visit, 4G and 4x CPU: first paint 916, 932, 908 ms (median 916); choice tappable 1081, 1070, 1056 ms (median 1070)
+
+    expect(received).toBeLessThan(expected)
+
+    Expected: < 800
+    Received:   916
+
+      88 |   console.log(line);
+      89 |   test.info().annotations.push({ type: 'perf', description: line });
+    > 90 |   expect(median(fcps), line).toBeLessThan(FCP_MS);
+         |                              ^
+      91 |   expect(median(taps), line).toBeLessThan(INTERACTIVE_MS);
+      92 | });
+      93 |
+        at /home/runner/work/workout-vision/workout-vision/e2e/perf.spec.js:90:30
+
+    Error Context: test-results/perf-a-returning-visit-wit-6c4a4-no-pose-file-before-the-tap/error-context.md
+
+
+[2/2] e2e/perf.spec.js:94:1 › a first visit: first paint under 800 ms, no pose file before any tap
+e2e/perf.spec.js:94:1 › a first visit: first paint under 800 ms, no pose file before any tap
+first visit, 4G and 4x CPU: first paint 1032, 916, 924 ms (median 924); "Commencer" tappable 1316, 1195, 1207 ms (median 1207)
+
+  2) e2e/perf.spec.js:94:1 › a first visit: first paint under 800 ms, no pose file before any tap ──
+
+    Error: first visit, 4G and 4x CPU: first paint 1032, 916, 924 ms (median 924); "Commencer" tappable 1316, 1195, 1207 ms (median 1207)
+
+    expect(received).toBeLessThan(expected)
+
+    Expected: < 800
+    Received:   924
+
+      105 |   console.log(line);
+      106 |   test.info().annotations.push({ type: 'perf', description: line });
+    > 107 |   expect(median(fcps), line).toBeLessThan(FCP_MS);
+          |                              ^
+      108 | });
+      109 |
+        at /home/runner/work/workout-vision/workout-vision/e2e/perf.spec.js:107:30
+
+    Error Context: test-results/perf-a-first-visit-first-p-41848-no-pose-file-before-any-tap/error-context.md
+
+
+  2 failed
+    e2e/perf.spec.js:72:1 › a returning visit with an empty cache: first paint under 800 ms, the choice takes a tap under 1500 ms, no pose file before the tap 
+    e2e/perf.spec.js:94:1 › a first visit: first paint under 800 ms, no pose file before any tap ───

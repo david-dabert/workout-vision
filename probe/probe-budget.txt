@@ -1,0 +1,100 @@
+Critical entry chunk (page module script and its static imports):
+  103.0 kB gz   461.5 kB  index-DAsb8dI1.js
+   68.9 kB gz   222.4 kB  react-vendor-GX-L-MIn.js
+   28.9 kB gz    83.8 kB  i18n-DcBZW0LC.js
+   15.3 kB gz    42.7 kB  offer-C93EF3DW.js
+    9.7 kB gz    29.7 kB  localforage-DAlOL-2D.js
+  225.8 kB gz in all, budget 150 kB
+Stylesheet:    25.1 kB gz   138.6 kB  /workout-vision/assets/index-ufVL4GM1.css
+Preloaded font:    13.4 kB  /workout-vision/assets/geist-latin-700-normal-CFi8mLqe.woff2
+Service worker install list: 104 files,  4892.9 kB on disk (before compression)
+::error title=First paint budget::the critical entry chunk is 225796 bytes gzipped, over 150000
+::error title=First paint budget::boot.js is not in <head>
+::error title=First paint budget::no preload in <head> for /instrument-serif-latin-400-italic-[\w-]+\.woff2$/
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/About-Cfrt_Jh_.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/ActivityScreen-BBfEDGwW.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/ActivityScreen-QW2oSIb7.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Chat-CfgbwqrT.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Chat-EuiOcPVi.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/CoachFinder-B39ICtuC.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/CoachFinder-XYCQD3kp.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/CoachSuite-Cbn7eVqb.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/CoachSuite-ClCKr8M9.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/CoreUpload-DBliHnnV.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/CoreUpload-Mtzhd8Al.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Demo-9qWDmNup.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Demo-CQQiAmv1.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/DemoVideos-CLuayj3L.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/DemoVideos-DKR2YwnB.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Equine-74ABByci.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Equine-E7BAdjdD.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Ergonomics-Ed2VV4ek.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Ergonomics-P_FCib51.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/ExerciseList-Djovq1Kj.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Film-CkLNCEvc.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Film-OVvtoCwM.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Guide-CNu1fced.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Guide-D39RlfA9.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/GymBuddy-Cul348VF.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/GymBuddy-jgSyVcZk.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/History-4EVE4FDQ.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/History-BTEPpHHS.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/InvestorShowcaseModal-DPqTGyUm.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/InvestorShowcaseModal-DhOul31c.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Kine-B8nicKqs.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Kine-v2oF5p4c.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/KinePatient-9vBjCFuI.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/KineResult-DuemIHzY.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/KineWorkspace-CMQPF8f5.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Level-24AbCmU5.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/LevelPick-BO2Kbo5H.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/LevelPick-DEPNgUfW.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/LiveSession-DUUQK1kb.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/LiveSession-ysRl8EAC.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Manifesto--vtoAmua.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Manifesto-DgXlgBEw.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Pro-DKjY8hoo.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Pro-DmcDtfvv.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Programme-ezIynkeg.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Replay-CDA06lBi.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Replay-Dd_q_6Wf.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Report-CeJG_o35.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Results-DJkpAjF5.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/SendToCoach-DqmjFtBM.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/SetCells-YHdAoWRL.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Showcase-DIOlEHnV.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/Showcase-_W5vk-YH.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/SportsBiomechanics-CuktSEms.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/SportsBiomechanics-DV2GyIaU.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/UsageNotice-B9KyKGqR.css
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/UsageNotice-CQfb6L0B.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/browser-BJzWpxwN.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/browser-hmVibqd0.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/check-Dh0nUIPw.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/client-C0IM5NJb.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/coreAnalysis-v5bVa3T8.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/corePoseWorker-fqzJRnq0.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/exercise-info-DoGPrRxX.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/exerciseGuide-C3ZgH3GJ.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/exercises-C-dzne10.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/fr-BXCUtURK.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/frameExtractor-B4KVouad.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/glimpse-D8ZyGTiO.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/guide-catalog-DZ1rf3vV.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/guide-poses-BAVmixU2.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/haptics-psFtHFb6.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/interruption-DPBqg7Kt.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/jspdf-optional-stub-RJjLbDgT.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/media-CU46_iAK.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/office-pdf-tBFjublX.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/pdf-HfhLo-Y9.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/pdf-kit-E05fuXvT.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/programme-pdf-BSNS7MKt.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/replay-draw-Dk3SyfE0.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/report-pdf-iRxyFBoz.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/report-sheet-C6COr-03.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/shareSheet-D93lhEee.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/sheet-drawings-DpJLOd31.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/topbar-DlLyfBss.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/video-export-BZSr_Fou.js
+::error title=First paint budget::the install list holds a file outside the shell: /workout-vision/assets/web-demuxer-Cj2z-sgM.js
