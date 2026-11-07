@@ -44,7 +44,7 @@ export function cleanProgramme(p) {
     return item;
   }).filter(Boolean).slice(0, 20);
   if (!items.length) return null;
-  return {
+  const cleaned = {
     v: 1,
     kine: { name: clip(p.kine?.name, 80), phone: clip(p.kine?.phone, 30), email: clip(p.kine?.email, 80) },
     patient: clip(p.patient, 60),
@@ -54,9 +54,19 @@ export function cleanProgramme(p) {
     items,
     date: clip(p.date, 10),
   };
+  return cleaned;
 }
 
-export const programmeLink = (base, p) => `${String(base).split('#')[0]}#${PROGRAMME_KEY}${pack(cleanProgramme(p))}`;
+/**
+ * The programme link (#kine-p=) omits the patient's name so no patient identifier travels in the URL;
+ * links made before this change that carry `patient` still open via `cleanProgramme`.
+ */
+export const programmeLink = (base, p) => {
+  const cleaned = cleanProgramme(p);
+  if (!cleaned) return `${String(base).split('#')[0]}#${PROGRAMME_KEY}${pack(null)}`;
+  const { patient: _patient, ...wire } = cleaned;
+  return `${String(base).split('#')[0]}#${PROGRAMME_KEY}${pack(wire)}`;
+};
 
 /** A patient's result of one exercise, as sent back: the verdict and its figures, never a video or a skeleton. */
 /** The result payload inside pasted text (a message may carry words, other links or '#' around it): its last one. */
@@ -72,6 +82,8 @@ export const MEASURES = Object.freeze([
   'leftHip', 'rightHip', 'leftKnee', 'rightKnee', 'leftAnkle', 'rightAnkle', 'leftThigh', 'rightThigh', 'leftShin', 'rightShin', 'torso', 'pelvis',
 ]);
 const share = (v, hi) => (Number.isFinite(v) ? Math.round(Math.min(hi, Math.max(0, v)) * 100) / 100 : null);
+const secs = v => (Number.isFinite(v) && v >= 0 && v <= 3600 ? Math.round(v * 10) / 10 : null);
+const degVal = v => (Number.isFinite(v) && v >= 0 && v <= 360 ? Math.round(v) : null);
 
 export function cleanResult(r) {
   if (!r || typeof r !== 'object' || !exerciseById(r.id)) return null;
@@ -88,9 +100,16 @@ export function cleanResult(r) {
     prog: /^[a-z0-9]{1,13}$/.test(r.prog ?? '') ? r.prog : '',
     verdict: verdicts.includes(r.verdict) ? r.verdict : 'refused',
     tempo: Number.isFinite(r.tempo) ? Math.round(r.tempo * 100) / 100 : null,
+    ...(secs(r.attSec) != null ? { attSec: secs(r.attSec) } : {}),
+    ...(secs(r.refSec) != null ? { refSec: secs(r.refSec) } : {}),
     joints: (Array.isArray(r.joints) ? r.joints : [])
       .filter((j, i, all) => MEASURES.includes(j?.name) && all.findIndex(x => x?.name === j.name) === i).slice(0, 4)
-      .map(j => ({ name: j.name, within: share(j.within, 1), range: share(j.range, 10) })),
+      .map(j => {
+        const item = { name: j.name, within: share(j.within, 1), range: share(j.range, 10) };
+        const g = degVal(j.gap);
+        if (g != null) item.gap = g;
+        return item;
+      }),
     holds: (Array.isArray(r.holds) ? r.holds : []).slice(0, 12).map(h => ({
       ref: Math.round(Number(h.ref) || 0), att: Math.round(Number(h.att) || 0),
       refSec: Math.round((Number(h.refSec) || 0) * 10) / 10, attSec: Math.round((Number(h.attSec) || 0) * 10) / 10,
@@ -99,7 +118,16 @@ export function cleanResult(r) {
   };
 }
 
-export const resultLink = (base, r) => `${String(base).split('#')[0]}#${RESULT_KEY}${pack(cleanResult(r))}`;
+/**
+ * The result link (#kine-r=) omits the patient's name so no patient identifier travels in the URL;
+ * links made before this change that carry `patient` still open via `cleanResult`.
+ */
+export const resultLink = (base, r) => {
+  const cleaned = cleanResult(r);
+  if (!cleaned) return `${String(base).split('#')[0]}#${RESULT_KEY}${pack(null)}`;
+  const { patient: _patient, ...wire } = cleaned;
+  return `${String(base).split('#')[0]}#${RESULT_KEY}${pack(wire)}`;
+};
 
 /** The payload of a hash for a key, or null. */
 export function payloadAfter(hash, key) {

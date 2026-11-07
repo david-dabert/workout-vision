@@ -14,7 +14,7 @@ import { cleanResult } from './links';
 import { EMPTY_PROFILE, MAX_RESULTS, resultKey } from './store';
 
 export const PREFIX = 'wv_kine_';
-const RESULTS = 'wv_kine_results', CALIBRATION = 'wv_kine_calibration', PROFILE = 'wv_kine_profile', INVOICE_SEQ = 'wv_kine_invoice_seq', ATTEMPTS = 'wv_kine_attempts';
+const RESULTS = 'wv_kine_results', CALIBRATION = 'wv_kine_calibration', PROFILE = 'wv_kine_profile', INVOICE_SEQ = 'wv_kine_invoice_seq', ATTEMPTS = 'wv_kine_attempts', LABELS = 'wv_kine_labels';
 // The most calibration trials kept (calibration.js). Status: convention.
 const MAX_TRIALS = 2000;
 export const ITERATIONS = 600000;
@@ -146,6 +146,17 @@ export function restore(data, storage = localStorage) {
         const j = join(Array.isArray(current[prog]) ? current[prog] : [], list.filter(isObject), x => JSON.stringify(x), 200);
         if (j.added) { merged[prog] = j.list; report.added += j.added; next[key] = merged; }
       }
+    } else if (key === LABELS) {
+      if (!isObject(value)) { report.skipped++; continue; }
+      const current = isObject(now(key)) ? now(key) : {};
+      const merged = { ...current };
+      let addedLabels = 0;
+      for (const [prog, label] of Object.entries(value)) {
+        if (!/^[a-z0-9]{1,13}$/.test(prog) || typeof label !== 'string') { report.skipped++; continue; }
+        const clean = label.trim().slice(0, 60);
+        if (clean && !current[prog]) { merged[prog] = clean; addedLabels++; }
+      }
+      if (addedLabels) { report.added += addedLabels; next[key] = merged; }
     } else {
       report.skipped++;
     }

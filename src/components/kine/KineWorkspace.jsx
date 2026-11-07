@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { useT } from '../../lib/LanguageContext';
 import { hapticLight } from '../../lib/haptics';
@@ -6,8 +6,8 @@ import { useCondensingTopbar } from '../experience/topbar';
 import { Topbar, GroupHead } from '../experience/Showcase';
 import { LIBRARY, MOBILITY_SCREENS, exerciseById, hasMedia } from '../../lib/kine/library';
 import ExerciseCard from './ExerciseCard';
-import { cleanProgramme, programmeLink } from '../../lib/kine/links';
-import { readProfile, saveProfile, nextInvoiceNumber, takeFollowUpRequest, EMPTY_PROFILE } from '../../lib/kine/store';
+import { PROGRAMME_KEY, cleanProgramme, payloadAfter, programmeLink } from '../../lib/kine/links';
+import { readProfile, saveProfile, nextInvoiceNumber, takeFollowUpRequest, EMPTY_PROFILE, savePatientLabel } from '../../lib/kine/store';
 import ReferenceCompare from '../reference/ReferenceCompare';
 import FollowUp from './FollowUp';
 import Calibration from './Calibration';
@@ -21,6 +21,7 @@ import './Kine.css';
 // (lib/kine/links.js). Exercises with no comparison say so (R8).
 
 const today = () => new Date().toISOString().slice(0, 10);
+const fnv = s => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); };
 
 // The QR code of the programme's link, as one SVG path (error correction L, a quiet zone of 2 modules); null when the
 // link is too long for any code.
@@ -55,19 +56,32 @@ function ProgrammeTab({ fr, k, profile }) {
     kine: { name: profile.name, phone: profile.phone, email: profile.email }, patient, perDay, weeks, note, items, date: today(),
   }), [profile, patient, perDay, weeks, note, items]);
   const link = programme ? programmeLink(baseUrl(), programme) : '';
+  const programmeId = useMemo(() => {
+    const p = link ? payloadAfter(link.slice(link.indexOf('#')), PROGRAMME_KEY) : null;
+    return p ? fnv(p) : '';
+  }, [link]);
+  // The physiotherapist keeps the patient label on their own phone only, keyed by the programme's ID.
+  useEffect(() => {
+    if (programmeId && patient.trim()) savePatientLabel(programmeId, patient);
+  }, [programmeId, patient]);
   const qr = useMemo(() => qrPath(link), [link]);
   const has = id => items.some(i => i.id === id);
   const add = ex => { hapticLight(); setItems(list => (list.some(i => i.id === ex.id) ? list : [...list, { id: ex.id, reps: ex.dosage.reps, sets: ex.dosage.sets, note: '' }])); };
   const set = (id, patch) => setItems(list => list.map(i => (i.id === id ? { ...i, ...patch } : i)));
   const share = async () => {
     hapticLight();
+    if (programmeId && patient.trim()) savePatientLabel(programmeId, patient);
     const text = k.shareText(patient, profile.name);
     if (navigator.share) { try { await navigator.share({ title: k.pEyebrow, text, url: link }); return; } catch { /* closed */ } }
     copy();
   };
-  const copy = async () => { try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1800); } catch { /* blocked */ } };
+  const copy = async () => {
+    if (programmeId && patient.trim()) savePatientLabel(programmeId, patient);
+    try { await navigator.clipboard.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1800); } catch { /* blocked */ }
+  };
   const pdf = async () => {
     hapticLight();
+    if (programmeId && patient.trim()) savePatientLabel(programmeId, patient);
     const { programmePdf } = await import('../../lib/kine/pdf');
     programmePdf(programme, { lang: fr ? 'fr' : 'en', link }).save(`programme-${(patient || 'patient').replace(/[^\p{L}\p{N}]+/gu, '-').toLowerCase()}.pdf`);
   };

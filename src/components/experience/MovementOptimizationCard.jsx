@@ -151,8 +151,9 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           <span className="res-opt-sub">
             {fr ? `Moyenne\u00A0: ${analysis.averageRomDeg}°` : `Average: ${analysis.averageRomDeg}°`}
           </span>
+          {/* R9 — Source: rep excursion `r.romDegrees` from `src/lib/counting/core.ts` (`summarizeCount` peak-to-trough joint angle on the user's video), compared against `ARCHETYPE_ROM_TARGETS` written in `src/lib/coaching/movementOptimization.ts` (and `REFERENCE_RANGES` in `src/lib/reference-ranges.js`). Status: convention (reference range written in the app). */}
           <span className="res-opt-explain">
-            {fr ? 'Angle articulaire parcouru face à l’amplitude complète du mouvement.' : 'Joint angle range reached relative to full anatomical range.'}
+            {fr ? 'Amplitude mesurée sur votre vidéo, comparée à une plage de référence écrite dans l’application.' : 'Range of motion measured on your video, compared with a reference range written in the app.'}
           </span>
         </div>
 
@@ -172,8 +173,9 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           <span className="res-opt-sub">
             {fr ? `Excentrique\u00A0: ${analysis.averageEccentricSec}\u00A0s` : `Eccentric: ${analysis.averageEccentricSec}\u00A0s`}
           </span>
+          {/* R9 — Source: `r.eccentricSec` per-rep lowering duration measured from turnaround timestamps in `src/lib/counting/core.ts` (`summarizeCount`) and scored against `TARGET_ECCENTRIC_SEC = 2.0` in `src/lib/coaching/movementOptimization.ts`. Status: experimental. */}
           <span className="res-opt-explain">
-            {fr ? 'Régularité de la phase de descente retenue sans chute libre.' : 'Smoothness of the lowering phase without dropping the weight.'}
+            {fr ? 'Durée moyenne de la phase de descente mesurée sur votre vidéo.' : 'Average duration of the lowering phase measured on your video.'}
           </span>
         </div>
 
@@ -193,8 +195,9 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           <span className="res-opt-sub">
             {fr ? `Cadence\u00A0: ${analysis.tempoCadence}` : `Tempo: ${analysis.tempoCadence}`}
           </span>
+          {/* R9 — Source: sum of `(r.endTime - r.startTime)` across counted whole repetitions in `src/lib/counting/core.ts` (`summarizeCount`) and `src/lib/coaching/movementOptimization.ts`. Status: convention. */}
           <span className="res-opt-explain">
-            {fr ? 'Durée cumulée d’effort mécanique (descente - pause - montée).' : 'Total active mechanical work duration (lowering - pause - concentric).'}
+            {fr ? 'Durée cumulée des répétitions comptées sur votre vidéo.' : 'Cumulative duration of the repetitions counted on your video.'}
           </span>
         </div>
 
@@ -219,8 +222,9 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
                 ? (fr ? `Efficacité axiale\u00A0: ${analysis.pathEfficiencyPercent}%` : `Axial efficiency: ${analysis.pathEfficiencyPercent}%`)
                 : (fr ? 'Modèle cinématique' : 'Kinematic template')}
             </span>
+            {/* R9 — Source: `alignKineticTrajectory` DTW distance between each rep's angle slice (`result.angles` on the user's video) and `getCanonicalTemplate(lift)` in `src/lib/counting/KineticForcedAligner.ts`. Status: experimental. */}
             <span className="res-opt-explain">
-              {fr ? 'Stabilité du couloir de mouvement d’une répétition à l’autre.' : 'Consistency of the movement path from rep to rep.'}
+              {fr ? 'Écart moyen de la courbe d’angle mesurée sur votre vidéo par rapport au profil type de l’exercice.' : 'Mean distance between the angle curve measured on your video and the exercise template.'}
             </span>
           </div>
         )}
@@ -245,9 +249,6 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
               {analysis.hypertrophyReport.bounceCount === 0
                 ? (fr ? 'Inversion contrôlée sans rebond' : 'Controlled reversal, zero bounce')
                 : (fr ? `${analysis.hypertrophyReport.bounceCount} rebond(s) d’élan détecté(s)` : `${analysis.hypertrophyReport.bounceCount} momentum bounce(s) detected`)}
-            </span>
-            <span className="res-opt-explain">
-              {fr ? 'Qualité du contrôle au point d’étirement maximal du muscle.' : 'Control quality at the muscle’s peak stretched position.'}
             </span>
           </div>
         )}

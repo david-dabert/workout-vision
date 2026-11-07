@@ -4,7 +4,7 @@
 // (private browsing): the screens work, and simply forget. Status: convention.
 import { cleanResult } from './links';
 
-const PROFILE = 'wv_kine_profile', INVOICE_SEQ = 'wv_kine_invoice_seq', ATTEMPTS = 'wv_kine_attempts', RESULTS = 'wv_kine_results';
+const PROFILE = 'wv_kine_profile', INVOICE_SEQ = 'wv_kine_invoice_seq', ATTEMPTS = 'wv_kine_attempts', RESULTS = 'wv_kine_results', LABELS = 'wv_kine_labels';
 
 const read = (key, fallback) => {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
@@ -15,6 +15,28 @@ const write = (key, value) => { try { localStorage.setItem(key, JSON.stringify(v
 export const EMPTY_PROFILE = Object.freeze({ name: '', title: 'Masseur-kinésithérapeute', address: '', phone: '', email: '', rpps: '', siret: '', fee: 0 });
 export const readProfile = () => ({ ...EMPTY_PROFILE, ...read(PROFILE, {}) });
 export const saveProfile = p => write(PROFILE, p);
+
+/**
+ * The physiotherapist's own label for a programme's patient, kept on this phone only (never in the #kine-p or #kine-r
+ * links). Keyed by the FNV-1a hash of the #kine-p payload (`programmeId`).
+ */
+export function savePatientLabel(programmeId, label) {
+  const id = String(programmeId || '').trim();
+  const clean = String(label || '').trim().slice(0, 60);
+  if (!id) return false;
+  const all = read(LABELS, {});
+  if (!clean) {
+    delete all[id];
+  } else {
+    all[id] = clean;
+  }
+  return write(LABELS, all);
+}
+
+export const patientLabel = programmeId => {
+  const id = String(programmeId || '').trim();
+  return id ? String(read(LABELS, {})[id] || '').trim() : '';
+};
 
 /** The next invoice number, year and sequence ("2026-0007"); the sequence restarts each year. */
 export function nextInvoiceNumber(now = new Date()) {
@@ -49,12 +71,12 @@ export const resultKey = r => JSON.stringify([patientKey(r), r.id, r.date, r.ver
 // The most results the follow-up keeps (the oldest go first).
 export const MAX_RESULTS = 1000;
 /**
- * The key a patient's results are grouped under: the name as the programme gave it, without case or outer spaces; a
- * result with no name, by its programme (two unnamed patients stay apart). Two patients given the same name in their
- * programmes are one to this phone: the name is the physiotherapist's to make distinct.
+ * The key a patient's results are grouped under: the name kept on this phone for the programme (or the name an older
+ * link carried), without case or outer spaces; a result with no name, by its programme (two unnamed patients stay apart).
  */
 export const patientKey = r => {
-  const name = String(r?.patient || '').trim().toLowerCase();
+  const local = r?.prog ? patientLabel(r.prog) : '';
+  const name = String(r?.patient || local || '').trim().toLowerCase();
   return name || (r?.prog ? `#${r.prog}` : '');
 };
 
@@ -62,6 +84,10 @@ export const patientKey = r => {
 export function keepResult(result) {
   const r = cleanResult(result);
   if (!r) return 'invalid';
+  if (!r.patient && r.prog) {
+    const local = patientLabel(r.prog);
+    if (local) r.patient = local;
+  }
   const all = read(RESULTS, []);
   if (all.some(x => resultKey(x) === resultKey(r))) return 'already';
   return write(RESULTS, [...all, r].slice(-MAX_RESULTS)) ? 'kept' : 'failed';
@@ -99,10 +125,11 @@ export function followUp(results = readResults()) {
   const byPatient = new Map();
   for (const r of results) {
     const key = patientKey(r);
-    if (!byPatient.has(key)) byPatient.set(key, { key, name: r.patient.trim(), last: '', count: 0, byExercise: new Map() });
+    const displayName = (r.patient || (r.prog ? patientLabel(r.prog) : '')).trim();
+    if (!byPatient.has(key)) byPatient.set(key, { key, name: displayName, last: '', count: 0, byExercise: new Map() });
     const p = byPatient.get(key);
     p.count++;
-    if (r.date > p.last) { p.last = r.date; p.name = r.patient.trim() || p.name; }
+    if (r.date > p.last) { p.last = r.date; p.name = displayName || p.name; }
     if (!p.byExercise.has(r.id)) p.byExercise.set(r.id, []);
     p.byExercise.get(r.id).push(r);
   }

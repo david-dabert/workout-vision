@@ -196,7 +196,14 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
               <section className="sc-section">
                 <GroupHead title={c.tempo} />
                 <div className="sc-metrics">
-                  <Metric label={c.duration} value={c.tempoValue(result.end - result.start, result.reference[0].length / SAMPLE_HZ)} text sub={c.tempoSub(result.tempo)} testId="rc-tempo" />
+                  {(() => {
+                    const attSec = result.end - result.start;
+                    const refSec = result.reference[0].length / SAMPLE_HZ;
+                    const diffSec = Math.round((attSec - refSec) * 10) / 10;
+                    const diffSign = diffSec > 0 ? '+' : '';
+                    const diffStr = `${diffSign}${diffSec.toLocaleString(fr ? 'fr-FR' : 'en-GB')}\u00A0s`;
+                    return <Metric label={c.duration} value={c.tempoValue(attSec, refSec)} text sub={`${diffStr} · ${c.tempoSub(result.tempo)}`} testId="rc-tempo" />;
+                  })()}
                 </div>
               </section>
 
@@ -205,7 +212,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
                 <ul className="rc-joints">
                   {result.joints.map(j => <li key={j.name} data-testid={`rc-joint-${j.name}`}>
                     <b>{names[j.name]}</b>
-                    <span><small>{c.within}</small>{pct(j.within, fr)}</span>
+                    <span><small>{c.within}</small>{pct(j.within, fr)}{j.gapP90 != null ? ` (${deg(j.gapP90)})` : ''}</span>
                     <span><small>{c.gap}</small>{deg(j.gapP90)}</span>
                     {j.rangeShare != null && <span><small>{c.reached}</small>{pct(Math.min(j.rangeShare, 9.99), fr)}</span>}
                     <span className="rc-go"><small>{c.worstAt}</small><button type="button" className="rc-link press" onClick={() => seekRefIndex(Math.round(j.worst.atSec * SAMPLE_HZ))}>{clock(j.worst.atSec)}</button></span>

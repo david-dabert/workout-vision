@@ -5,7 +5,7 @@ import { exerciseById } from '../../lib/kine/library';
 import { resultPayload, unpack } from '../../lib/kine/links';
 import { followUp, forgetPatient, keepResult, sessionWithin } from '../../lib/kine/store';
 import { TOLERANCE_DEG, TOLERANCE_SHARE } from '../../lib/reference/compare';
-import { COPY, JOINT_NAMES, pct } from '../reference/reference-copy';
+import { COPY, JOINT_NAMES, deg, pct, sec } from '../reference/reference-copy';
 import Backup from './Backup';
 
 // The physiotherapist's follow-up (#kine, tab "Suivi"): the results patients sent back, kept on this phone when opened
@@ -54,9 +54,10 @@ function Exercise({ id, sessions, fr, k, c, names }) {
     <ul className="kn-sessions">
       {[...sessions].reverse().map((s, i) => {
         const held = s.holds.filter(h => h.status === 'held').length;
+        const secDiff = s.attSec != null && s.refSec != null ? ` (${s.attSec - s.refSec >= 0 ? '+' : ''}${sec(s.attSec - s.refSec, fr)})` : '';
         return <li key={i} className="kn-session">
-          <span className="kn-session-head"><b>{when(s.date, fr)}</b><Verdict ok={s.verdict === 'match'}>{s.verdict === 'match' ? c.match : s.verdict === 'revise' ? c.revise : c.refused}</Verdict></span>
-          {s.joints.map(j => <span key={j.name} className="kn-session-row">{nameOf(names, j.name)}<small>{k.rWithin} {j.within == null ? '–' : pct(j.within, fr)} · {k.rRange} {j.range == null ? '–' : pct(Math.min(j.range, 9.99), fr)}</small></span>)}
+          <span className="kn-session-head"><b>{when(s.date, fr)}{secDiff}</b><Verdict ok={s.verdict === 'match'}>{s.verdict === 'match' ? c.match : s.verdict === 'revise' ? c.revise : c.refused}</Verdict></span>
+          {s.joints.map(j => <span key={j.name} className="kn-session-row">{nameOf(names, j.name)}<small>{k.rWithin} {j.within == null ? '–' : `${pct(j.within, fr)}${j.gap != null ? ` (${deg(j.gap)})` : ''}`} · {k.rRange} {j.range == null ? '–' : pct(Math.min(j.range, 9.99), fr)}</small></span>)}
           {s.holds.length > 0 && <span className="kn-session-row"><small>{k.fHolds(held, s.holds.length)}</small></span>}
         </li>;
       })}

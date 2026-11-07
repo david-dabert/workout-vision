@@ -4,9 +4,9 @@ import { useCondensingTopbar } from '../experience/topbar';
 import { Topbar, GroupHead, Verdict } from '../experience/Showcase';
 import { exerciseById } from '../../lib/kine/library';
 import { RESULT_KEY, cleanResult, payloadAfter, unpack } from '../../lib/kine/links';
-import { COPY, JOINT_NAMES, pct } from '../reference/reference-copy';
+import { COPY, JOINT_NAMES, deg, pct, sec } from '../reference/reference-copy';
 import { TOLERANCE_DEG } from '../../lib/reference/compare';
-import { keepResult, patientKey, requestFollowUp } from '../../lib/kine/store';
+import { keepResult, patientKey, patientLabel, requestFollowUp } from '../../lib/kine/store';
 import { KINE } from './kine-copy';
 import '../reference/ReferenceCompare.css';
 import './Kine.css';
@@ -33,6 +33,10 @@ export default function KineResult({ onClose }) {
   // pasted in the app's follow-up.
   const copyLink = async () => { try { await navigator.clipboard.writeText(window.location.href); setCopied(true); } catch { /* blocked */ } };
   const when = r?.date ? new Date(r.date).toLocaleString(fr ? 'fr-FR' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+  const who = r ? (r.patient || (r.prog ? patientLabel(r.prog) : '')) : '';
+  const secDiff = r && r.attSec != null && r.refSec != null
+    ? `${r.attSec - r.refSec >= 0 ? '+' : ''}${sec(r.attSec - r.refSec, fr)}`
+    : null;
 
   return (
     <div className="wv-experience">
@@ -41,14 +45,14 @@ export default function KineResult({ onClose }) {
           <Topbar fr={fr} backTestId="kine-result-back-btn" onBack={onClose || (() => { window.location.hash = ''; })} />
           {!r || !ex ? <p className="sc-frame-note" data-testid="kn-bad-result">{k.rBad}</p> : <>
             <p className="eyebrow">{k.rEyebrow}{when ? ` · ${when}` : ''}</p>
-            <h1 className="title">{k.rTitle(r.patient, ex[fr ? 'fr' : 'en'].title)}</h1>
+            <h1 className="title">{k.rTitle(who, ex[fr ? 'fr' : 'en'].title)}</h1>
             <p className={`rc-verdict is-${r.verdict}`} data-testid="kn-result-verdict">{r.verdict === 'match' ? c.match : r.verdict === 'revise' ? c.revise : c.refused}</p>
-            {r.tempo != null && <p className="sub">{k.rTempo(r.tempo)}</p>}
+            {r.tempo != null && <p className="sub">{k.rTempo(r.tempo)}{secDiff ? ` (${secDiff})` : ''}</p>}
             {r.joints.length > 0 && <section className="sc-section">
               <GroupHead title={c.joints} />
               <ul className="rc-joints">{r.joints.map(j => <li key={j.name}>
                 <b>{names[j.name] || j.name}</b>
-                <span><small>{k.rWithin}</small>{j.within == null ? '–' : pct(j.within, fr)}</span>
+                <span><small>{k.rWithin}</small>{j.within == null ? '–' : `${pct(j.within, fr)}${j.gap != null ? ` (${deg(j.gap)})` : ''}`}</span>
                 <span><small>{k.rRange}</small>{j.range == null ? '–' : pct(Math.min(j.range, 9.99), fr)}</span>
               </li>)}</ul>
             </section>}

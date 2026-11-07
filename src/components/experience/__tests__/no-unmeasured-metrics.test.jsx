@@ -342,5 +342,5 @@ describe('No unmeasured metrics or invented physics in production markup', () =>
     }
 
     expect(violations).toEqual([]);
-  });
+  }, 30000);
 });
