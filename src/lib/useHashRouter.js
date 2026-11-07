@@ -5,13 +5,13 @@ const CORE_PAGES = new Set([
   'dashboard', 'analyze', 'exercises', 'history', 'film', 'live', 'about', 'comptage',
   'pro', 'programme', 'resultats', 'manifesto', 'science',
   'equine', 'veterinary', 'sports', 'golf', 'tennis', 'padel', 'cycling', 'baseball', 'rowing', 'skiing', 'swimming',
-  'kine', 'reeducation', 'volleyball',
+  'kine', 'reeducation',
 ]);
 
 const EXTENDED_PAGES = new Set([
   'coach', 'log', 'rest', 'profile', 'validate', 'weekly',
   'prs', 'onboarding', 'coaches', 'physio',
-  'buddies', 'buddy', 'ergonomics', 'workplace', 'chat', 'showcase', 'demo', 'investisseur',
+  'buddies', 'buddy', 'ergonomics', 'workplace', 'chat', 'showcase', 'demo', 'investisseur', 'volleyball',
 ]);
 
 function getValidPages() {

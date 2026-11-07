@@ -154,7 +154,7 @@ export function followUpPdf(patient, { lang = 'fr', practitioner = {} }) {
     const dated = sessions.filter(s => s.date);
     const first = dated.length > 1 ? sessionWithin(dated[0]) : null, last = dated.length > 1 ? sessionWithin(dated.at(-1)) : null;
     if (first != null && last != null) {
-      y = textBlock(k, fr ? `Point le plus faible\u00A0: ${pctText(first, fr)} du geste dans la tolérance au premier essai, ${pctText(last, fr)} au dernier (${sessions.length} essais).` : `Weakest point: ${pctText(first, fr)} of the movement within tolerance at the first attempt, ${pctText(last, fr)} at the last (${sessions.length} attempts).`, MARGIN, y, COLUMN, 9, COLOR.count) + 4;
+      y = textBlock(k, fr ? `Point le plus faible\u00A0: ${pctText(first, fr)} du geste proche de la référence au premier essai, ${pctText(last, fr)} au dernier (${sessions.length} essais).` : `Weakest point: ${pctText(first, fr)} of the movement close to the reference at the first attempt, ${pctText(last, fr)} at the last (${sessions.length} attempts).`, MARGIN, y, COLUMN, 9, COLOR.count) + 4;
     }
     for (const s of sessions) {
       newPageIfNeeded(20 + 13 * (s.joints.length + (s.holds.length ? 1 : 0)));
@@ -162,7 +162,7 @@ export function followUpPdf(patient, { lang = 'fr', practitioner = {} }) {
       k.write(`${date} · ${verdict(s.verdict)}`, MARGIN, y, 'sansMedium', 9, 1.4, COLOR.ink);
       y += 13;
       for (const j of s.joints) {
-        y = textBlock(k, `${nameOf(j.name)}\u00A0: ${fr ? 'dans la tolérance' : 'within tolerance'} ${pctText(j.within, fr)}, ${fr ? 'amplitude atteinte' : 'range reached'} ${pctText(j.range == null ? null : Math.min(j.range, 9.99), fr)}`, MARGIN + 8, y, COLUMN - 8, 8.5, COLOR.ink);
+        y = textBlock(k, `${nameOf(j.name)}\u00A0: ${fr ? 'proche de la référence' : 'close to the reference'} ${pctText(j.within, fr)}${j.gap != null ? ` (${Math.round(j.gap)}°)` : ''}, ${fr ? 'amplitude atteinte' : 'range reached'} ${pctText(j.range == null ? null : Math.min(j.range, 9.99), fr)}`, MARGIN + 8, y, COLUMN - 8, 8.5, COLOR.ink);
       }
       if (s.holds.length) {
         const held = s.holds.filter(h => h.status === 'held').length;

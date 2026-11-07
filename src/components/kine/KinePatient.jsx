@@ -108,30 +108,38 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror, dosage }
     if (loggedAt.current && updateAttemptReport(programmeId, loggedAt.current, next)) onLogged();
   }, [report, programmeId, onLogged]);
 
-  const send = async () => {
-    hapticLight();
-    const link = resultLink(`${window.location.origin}${window.location.pathname}`, {
-      id: ex.id, patient: programme.patient, kine: programme.kine.name, date: localMinute(), prog: programmeId, verdict: result.verdict, tempo: result.tempo,
-      joints: result.joints.map(j => ({ name: j.name, within: j.within, range: j.rangeShare })),
+  const resLink = useMemo(() => {
+    if (!result) return '';
+    const attSec = result.end != null && result.start != null ? result.end - result.start : null;
+    const refSec = result.reference?.[0]?.length ? result.reference[0].length / 10 : null;
+    return resultLink(`${window.location.origin}${window.location.pathname}`, {
+      id: ex.id, kine: programme.kine.name, date: localMinute(), prog: programmeId, verdict: result.verdict, tempo: result.tempo,
+      attSec, refSec,
+      joints: result.joints.map(j => ({ name: j.name, within: j.within, gap: j.gapP90, range: j.rangeShare })),
       holds: result.holds.map(h => ({ ref: shownAngle(h.refAngle, h.direction), att: shownAngle(h.attAngle, h.direction), refSec: h.refSec, attSec: h.attSec, status: h.status })),
     });
+  }, [result, ex.id, programme.kine.name, programmeId]);
+
+  const send = async () => {
+    if (!resLink) return;
+    hapticLight();
     const verdict = result.verdict === 'match' ? c.match : result.verdict === 'revise' ? c.revise : c.refused;
     const text = k.pSendText(ex[fr ? 'fr' : 'en'].title, verdict);
-    if (navigator.share) { try { await navigator.share({ text, url: link }); return; } catch { /* closed */ } }
-    const to = programme.kine.email ? `mailto:${programme.kine.email}?subject=${encodeURIComponent(text)}&body=${encodeURIComponent(link)}` : null;
-    if (to) window.location.href = to; else { try { await navigator.clipboard.writeText(link); } catch { /* blocked */ } }
+    if (navigator.share) { try { await navigator.share({ text, url: resLink }); return; } catch { /* closed */ } }
+    const to = programme.kine.email ? `mailto:${programme.kine.email}?subject=${encodeURIComponent(text)}&body=${encodeURIComponent(resLink)}` : null;
+    if (to) window.location.href = to; else { try { await navigator.clipboard.writeText(resLink); } catch { /* blocked */ } }
   };
 
   const busy = phase === 'ref' || phase === 'att' || phase === 'deep';
   // Offered once, for an attempt refused because a measure was not seen enough (not for a reference the app cannot read).
   const deepOffered = result?.verdict === 'refused' && result.reasons.length > 0 && result.reasons.every(x => x.startsWith('unseen:')) && attPose?.model !== 'heavy';
-  const pick = e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) { hapticLight(); run(f); } };
+  const pick = e => { const f = e.target.files?.[0]; if (f) { hapticLight(); run(f); } };
   return <div className="kn-attempt">
     {/* Two ways in, as the app's own exercises (Film.jsx): the camera, or a video the phone already holds (filmed
         earlier, or received). David, 17 October 2026. */}
-    <button type="button" className="rc-btn is-primary is-wide press" onClick={() => input.current?.click()} disabled={busy} data-testid={`kn-film-${ex.id}`}>{phase === 'done' ? k.pFilmAgain : k.pFilm}</button>
+    <button type="button" className="rc-btn is-primary is-wide press" onClick={() => { if (input.current) input.current.value = ''; input.current?.click(); }} disabled={busy} data-testid={`kn-film-${ex.id}`}>{phase === 'done' ? k.pFilmAgain : k.pFilm}</button>
     <input ref={input} type="file" accept="video/*,.mov" capture="environment" hidden onChange={pick} data-testid={`kn-film-${ex.id}-input`} />
-    <button type="button" className="rc-btn is-wide press" onClick={() => library.current?.click()} disabled={busy} data-testid={`kn-choose-${ex.id}`}>{k.pChoose}</button>
+    <button type="button" className="rc-btn is-wide press" onClick={() => { if (library.current) library.current.value = ''; library.current?.click(); }} disabled={busy} data-testid={`kn-choose-${ex.id}`}>{k.pChoose}</button>
     <input ref={library} type="file" accept="video/*,.mov" hidden onChange={pick} data-testid={`kn-choose-${ex.id}-input`} />
     {busy && <div className="rc-progress" role="status">
       <span>{phase === 'ref' ? k.pReadingRef : phase === 'deep' ? k.pDeepReading : k.pReading}</span>
@@ -147,7 +155,7 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror, dosage }
       {attPose?.model === 'heavy' && <p className="sc-caption" data-testid={`kn-deep-done-${ex.id}`}>{result?.verdict === 'refused' ? k.pDeepStill : k.pDeepDone}</p>}
       <ComparisonView refPose={refPose} attPose={attPose} refUrl={mediaUrl(ex, 'mp4')} attUrl={attUrl} onResult={onResult} measures={ex.measures} mirror={mirror} keep={report ? { report, title: ex[fr ? 'fr' : 'en'].title } : null} />
       {result && glimpseOn() && <AiCommentary key={attUrl} file={file} ex={ex} fr={fr} k={k} dosage={dosage} initial={report?.ai ?? null} onCommentary={onCommentary} />}
-      {result && <button type="button" className="rc-btn is-wide press" onClick={send} data-testid={`kn-send-${ex.id}`}>{k.pSend}</button>}
+      {result && <button type="button" className="rc-btn is-wide press" onClick={send} data-testid={`kn-send-${ex.id}`} data-link={resLink}>{k.pSend}</button>}
     </>}
   </div>;
 }

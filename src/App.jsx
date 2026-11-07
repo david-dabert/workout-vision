@@ -100,8 +100,8 @@ const LAZY = {
   reeducation: KineWorkspace,
   kinep: KinePatient,
   kiner: KineResult,
-  volleyball: Activity,
   ...(showUnmeasuredRoutes() ? {
+    volleyball: Activity,
     coaches: CoachFinder,
     coach: CoachFinder,
     physio: CoachFinder,
@@ -293,8 +293,8 @@ function AppInner() {
   } else if (page === 'sports' || page === 'golf' || page === 'tennis' || page === 'padel' || page === 'cycling' || page === 'baseball' || page === 'rowing' || page === 'skiing' || page === 'swimming') {
     // A sport's own address opens on that sport (#rowing opens rowing); a new address is a new screen.
     key = page === 'sports' ? 'sports' : `sports:${page}`;
-    screen = <SportsBiomechanics sport={page} onClose={() => go('dashboard')} onOpenEquine={() => go('equine')} onOpenVolleyball={() => go('volleyball')} />;
-  } else if (page === 'volleyball') {
+    screen = <SportsBiomechanics sport={page} onClose={() => go('dashboard')} onOpenEquine={() => go('equine')} onOpenVolleyball={showUnmeasuredRoutes() ? () => go('volleyball') : undefined} />;
+  } else if (showUnmeasuredRoutes() && page === 'volleyball') {
     key = 'volleyball';
     screen = <Activity activity="volleyball" onClose={() => go('sports')} />;
   } else if (showUnmeasuredRoutes() && (page === 'coaches' || page === 'coach' || page === 'physio')) {

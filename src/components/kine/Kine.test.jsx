@@ -40,14 +40,15 @@ describe('the physiotherapist workspace', () => {
 });
 
 describe('the patient programme', () => {
-  it('shows the programme of its link', async () => {
-    const { programmeLink } = await import('../../lib/kine/links');
+  it('shows the programme of its link without the patient name, and still opens a legacy link that had one', async () => {
+    const { programmeLink, pack, PROGRAMME_KEY } = await import('../../lib/kine/links');
     const link = programmeLink('https://example.org/app/', {
       kine: { name: 'Olivier', phone: '0600000000' }, patient: 'Christophe', perDay: 2, weeks: 6, note: 'Sans douleur.',
       items: [{ id: 'mains-jointes', reps: 10, sets: 5, note: 'Bien relâcher.' }, { id: 'rotation-externe', reps: 10, sets: 3 }],
     });
     const html = await render('KinePatient', link.slice(link.indexOf('#')));
-    expect(html).toContain('Christophe, vos exercices');
+    expect(html).not.toContain('Christophe');
+    expect(html).toContain('Vos exercices');
     expect(html).toContain('Préparé par Olivier');
     expect(html).toContain('2 fois par jour, pendant 6 semaines');
     expect(html).toContain('Bien relâcher.');
@@ -55,6 +56,10 @@ describe('the patient programme', () => {
     // Without a media address, no attempt can be filmed yet.
     expect(html).not.toContain('ne compare pas encore votre geste');
     expect(html).not.toContain('data-testid="kn-film-');
+    // A link made before this change still opens with its patient name.
+    const legacyHash = `#${PROGRAMME_KEY}${pack({ v: 1, kine: { name: 'Olivier' }, patient: 'Christophe', perDay: 2, weeks: 6, items: [{ id: 'mains-jointes', reps: 10, sets: 5 }] })}`;
+    const legacyHtml = await render('KinePatient', legacyHash);
+    expect(legacyHtml).toContain('Christophe, vos exercices');
   });
 
   it('lets the patient film an attempt or choose a video the phone holds', async () => {
@@ -164,7 +169,7 @@ describe('the follow-up', () => {
     const html = await render('KineWorkspace', '', 'fr', { wv_kine_results: results, 's:wv_kine_open_follow_up': 'christophe' });
     expect(html).toContain('data-testid="kn-follow-patient"');
     expect(html).toContain('Christophe');
-    expect(html).toContain('55\u00A0% du geste dans la tolérance au premier essai, 93\u00A0% au dernier');
+    expect(html).toContain('55\u00A0% du geste proche de la référence au premier essai, 93\u00A0% au dernier');
     expect(html).toContain('data-testid="kn-follow-pdf"');
   });
 
@@ -220,13 +225,17 @@ describe('the calibration', () => {
 });
 
 describe('a patient result', () => {
-  it('shows the verdict and figures of its link', async () => {
+  it('shows the verdict, local patient label, and measured difference in degrees and seconds', async () => {
     const { resultLink } = await import('../../lib/kine/links');
-    const link = resultLink('https://example.org/app/', { id: 'mains-jointes', patient: 'Christophe', verdict: 'match', tempo: 1, joints: [{ name: 'rightShoulder', within: 0.95, range: 1 }], holds: [] });
-    const html = await render('KineResult', link.slice(link.indexOf('#')));
+    const link = resultLink('https://example.org/app/', { id: 'mains-jointes', patient: 'Christophe', prog: 'abc1', verdict: 'match', tempo: 1.2, attSec: 12, refSec: 10, joints: [{ name: 'rightShoulder', within: 0.95, gap: 8, range: 1 }], holds: [] });
+    const html = await render('KineResult', link.slice(link.indexOf('#')), 'fr', { wv_kine_labels: JSON.stringify({ abc1: 'Christophe' }) });
     expect(html).toContain('data-testid="kn-result-verdict"');
+    expect(html).toContain('Christophe ·');
     expect(html).toContain('Conforme à la référence');
     expect(html).toContain('Épaule droite');
+    expect(html).toContain('Proche de la référence');
+    expect(html).toContain('95\u00A0% (8°)');
+    expect(html).toContain('(+2\u00A0s)');
     // Kept in this phone's follow-up, with the way to it.
     expect(html).toContain('data-testid="kn-result-kept"');
     expect(html).toContain('data-testid="kn-result-follow"');
