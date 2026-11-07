@@ -53,8 +53,8 @@
 .wv-experience .res-step svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
 .wv-experience .res-step:disabled { opacity: 0.35; cursor: default; }
 .wv-experience .res-slot { position: relative; flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; }
-.wv-experience .res-hero .numeral { margin: 0; padding-top: 8px; font-size: var(--fs-res-numeral); line-height: 0.8; letter-spacing: -0.045em; white-space: nowrap; }
-.wv-experience .res-hero .numeral.is-long { font-size: var(--fs-res-numeral-long); }
+.wv-experience .res-hero .numeral { margin: 0; padding-top: 8px; font-size: var(--fs-hero-num); line-height: 0.8; letter-spacing: -0.045em; white-space: nowrap; }
+.wv-experience .res-hero .numeral.is-long { font-size: var(--fs-hero-num-long); }
 /* A count the person gave is theirs, not the app's measure: --c-fg at weight 400, a dotted underline and the words
    "Saisi par vous", never the measured count's colour (C1, R8; as History.css draws a corrected set). */
 .wv-experience .numeral.is-typed { color: var(--c-fg); font-weight: 400; text-decoration: underline dotted 3px; text-underline-offset: 0.08em; }
@@ -139,8 +139,8 @@
 .wv-experience .res-cause p + p { margin-top: 6px; }
 .wv-experience .res-low .res-ask { margin: 24px 0 0; text-align: left; font-family: var(--sans); font-size: var(--fs-subhead-lg); font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; }
 .wv-experience .res-low .res-hero { margin-top: 18px; }
-.wv-experience .res-typed { padding-bottom: 6px; font-family: var(--numeral-face); font-size: var(--fs-res-typed); font-weight: 400; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: lining-nums tabular-nums; color: var(--c-fg); text-decoration: underline dotted 3px; text-underline-offset: 12px; }
-.wv-experience .res-empty { display: flex; align-items: center; height: var(--fs-res-typed); }
+.wv-experience .res-typed { padding-bottom: 6px; font-family: var(--numeral-face); font-size: var(--fs-typed-num); font-weight: 400; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: lining-nums tabular-nums; color: var(--c-fg); text-decoration: underline dotted 3px; text-underline-offset: 12px; }
+.wv-experience .res-empty { display: flex; align-items: center; height: var(--fs-typed-num); }
 .wv-experience .res-empty i { display: block; width: 44px; height: 3px; border-radius: 2px; background: var(--bone-2); }
 .wv-experience .res-hint { margin: 16px 0 0; text-align: center; font-size: var(--fs-body); line-height: 1.4; color: var(--bone-2); }
 .wv-experience .res-hint.res-centre { margin-top: 8px; }
@@ -227,14 +227,14 @@
 @media (max-height: 700px) {
   .wv-experience .res-q { margin-top: 14px; font-size: var(--fs-res-q-sm); }
   .wv-experience .res-hero { margin-top: 12px; }
-  .wv-experience .res-hero .numeral { font-size: var(--fs-res-numeral-sm); }
+  .wv-experience .res-hero .numeral { font-size: var(--fs-hero-num-sm); }
   .wv-experience .result-screen .res-low-title { margin-top: 14px; font-size: var(--fs-brand); }
   .wv-experience .res-low .res-ask { margin-top: 16px; }
 }
 /* Under 600 px (an iPhone SE in Safari): tighter still. */
 @media (max-height: 600px) {
   .wv-experience .res-q { font-size: var(--fs-res-q-xs); }
-  .wv-experience .res-hero .numeral { font-size: var(--fs-res-numeral-xs); }
+  .wv-experience .res-hero .numeral { font-size: var(--fs-hero-num-xs); }
   .wv-experience .res-step { width: 56px; height: 56px; }
   .wv-experience .res-detail { margin-top: 6px; }
   .wv-experience .result-screen .ask-q { font-size: var(--fs-low-title); }

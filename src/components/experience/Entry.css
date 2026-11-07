@@ -61,6 +61,7 @@
   --fs-altar-xs: min(32px, 8.4vw);
   --fs-res-q-sm: 34px;
   --fs-title-xs: 32px;
+  --fs-res-q-fix: 32px;
   --fs-res-q-xs: 30px;
   --fs-moment: 28px;
   --fs-heading: clamp(27px, 7.8vw, 31px);
