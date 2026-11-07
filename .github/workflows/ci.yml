@@ -22,6 +22,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
+      # Counting gate (PLAN.md, David's order of 6 November 2026, point 9): a pull request that changes any file under
+      # src/lib/counting/ must also change TRIED.md, compared against the base branch.
+      - name: Counting changes must update TRIED.md
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --depth=1 origin "$GITHUB_BASE_REF"
+          changed=$(git diff --name-only FETCH_HEAD HEAD)
+          if echo "$changed" | grep -q '^src/lib/counting/'; then
+            if ! echo "$changed" | grep -qx 'TRIED.md'; then
+              echo "::error::Pull request changes files under src/lib/counting/ without updating TRIED.md (PLAN.md, David's order of 6 November 2026)."
+              exit 1
+            fi
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 22

@@ -328,3 +328,14 @@ David's standing order of 2 October 2026, in his words: "That mean you don't nee
 David's order of 2 October 2026: the learned counter's release gate reads the held-out half of the public sets (never read before, run once) instead of new phone sessions. David's labelled sets stay the regression gate, and new confirmed sets join it. The rest of the gate and the method of a counting change stand. R1, R5 and the iPhone check before "done" are unchanged.
 
 David's order of 13-14 October 2026, given in conversation and relayed to the session of 14 October. Not in his words: the session that built the work did not keep them, so this line records the order as that session understood it, and David is asked to confirm or correct it in his words (line 266: "An order that is not in PLAN.md does not survive the session"). As understood: write the vision of WorkoutVision as a general tool for human movement (docs/VISION.md); build a generic activity engine with volleyball as its first activity, measured against synthetic jumps of known truth (src/lib/activity, src/components/activity, the #volleyball screen); keep the ideas for a coach's office (accounting from sourced rates, nutrition, client records). The vision's later ideas (the coach's office; golf, baseball and tennis on rendered bodies) wait in BACKLOG.md under 14 October 2026 (R7). The first part reached main by pull request #161, merged on 14 October 2026 at 04:08 UTC (GitHub API, merged_at 2026-10-14T04:08:30Z, merge commit 05e30a5); the repository does not record David's iPhone confirmation that R6 asks before a merge to main.
+
+David's order of 6 November 2026: the counting gate
+1. A change under src/lib/counting/ states its hypothesis in TRIED.md before code is written.
+2. It names its source, or states UNSOURCED and why.
+3. It is never chosen on David's 15 build sets (test/real-phone/sets/) or on the 16 video sets (test/real-phone/sets-18oct-video/).
+4. It is measured on public half A, public half B, RepCount-A, the occlusion sets and the synthetic sets.
+5. It loses no exact count on any section and adds no set off by 3 or more.
+6. It does not reopen a direction marked refused or withdrawn in TRIED.md without new evidence named in the entry.
+7. It is tested through the app's own entry point, with the landmarks the app passes.
+8. If it fails, it is reverted and the result stays in TRIED.md.
+9. CI refuses a pull request that touches src/lib/counting/ without touching TRIED.md.
