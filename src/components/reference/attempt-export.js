@@ -10,9 +10,10 @@
 import { recordVideo } from '../experience/video-export';
 import { SAMPLE_HZ } from '../../lib/reference/compare';
 import { drawComparison } from './overlay-draw';
+import { RGB, rgba } from '../experience/palette';
 
 // The comparison's colours on screen (ReferenceCompare.css --lamp, --bone, --ash).
-export const COLORS = Object.freeze({ lamp: '#E8BD7E', bone: '#EFE8DC', ash: '#A49B8D' });
+export const COLORS = Object.freeze({ lamp: rgba(RGB.lamp, 1), bone: rgba(RGB.bone, 1), ash: rgba(RGB.ash, 1) });
 
 /**
  * The moments the report shows: the reference's end of the movement for the main measure (the one that moves most)
@@ -73,7 +74,7 @@ function band(ctx, W, H, u, { title, verdict, legend }) {
   const tw = Math.min(ctx.measureText(title).width, W - 2 * pad);
   ctx.font = `${Math.round(26 * u)}px Georgia, serif`;
   const vw = Math.min(ctx.measureText(verdict).width, W - 2 * pad);
-  ctx.fillStyle = 'rgba(10,10,10,0.6)';
+  ctx.fillStyle = rgba(RGB.scrim, 0.6);
   ctx.fillRect(pad - 8 * u, pad - 8 * u, Math.max(tw, vw) + 16 * u, 58 * u);
   ctx.fillStyle = COLORS.bone;
   ctx.font = `500 ${Math.round(14 * u)}px system-ui, sans-serif`;
@@ -85,7 +86,7 @@ function band(ctx, W, H, u, { title, verdict, legend }) {
   ctx.font = `${Math.round(12 * u)}px system-ui, sans-serif`;
   const lines = wrap(ctx, legend, W - 2 * pad), lh = 16 * u;
   const lw = Math.max(...lines.map(l => ctx.measureText(l).width));
-  ctx.fillStyle = 'rgba(10,10,10,0.6)';
+  ctx.fillStyle = rgba(RGB.scrim, 0.6);
   ctx.fillRect(pad - 8 * u, H - pad - lines.length * lh - 6 * u, lw + 16 * u, lines.length * lh + 12 * u);
   ctx.fillStyle = COLORS.bone;
   lines.forEach((l, i) => ctx.fillText(l, pad, H - pad - (lines.length - 1 - i) * lh));

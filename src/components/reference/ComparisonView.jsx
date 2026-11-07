@@ -5,6 +5,7 @@ import { Verdict, GroupHead, Metric } from '../experience/Showcase';
 import { buildReference, compareAttempt, curves, SAMPLE_HZ, shownAngle, TOLERANCE_DEG } from '../../lib/reference/compare';
 import { ghostAnchor, nearestIndex, pathMaps } from '../../lib/reference/overlay';
 import { drawComparison, drawSkeleton } from './overlay-draw';
+import { RGB, rgba } from '../experience/palette';
 import { steadyFrames } from '../experience/replay-smooth';
 import AttemptKeep from './AttemptKeep';
 import { COPY, JOINT_NAMES, clock, deg, pct } from './reference-copy';
@@ -100,9 +101,9 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
   useEffect(() => {
     if (!result || result.verdict === 'refused' || !maps) return undefined;
     let raf = 0;
-    const lamp = cssVar(rootRef.current, '--lamp', '#E8BD7E');
-    const bone = cssVar(rootRef.current, '--bone', '#EFE8DC');
-    const ash = cssVar(rootRef.current, '--ash', '#A49B8D');
+    const lamp = cssVar(rootRef.current, '--lamp', rgba(RGB.lamp, 1));
+    const bone = cssVar(rootRef.current, '--bone', rgba(RGB.bone, 1));
+    const ash = cssVar(rootRef.current, '--ash', rgba(RGB.ash, 1));
     const frame = () => {
       const v = attVideo.current, cv = attCanvas.current;
       if (v && cv) {

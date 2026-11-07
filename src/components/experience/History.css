@@ -13,7 +13,7 @@
 .wv-experience .hist-list { list-style: none; margin: 0; padding: 0; }
 .wv-experience .hist-item { border-bottom: 1px solid var(--hair-0); }
 .wv-experience .hist-btn { width: 100%; min-height: 44px; display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 0; text-align: left; }
-.wv-experience .hist-n { font-family: var(--serif); font-size: min(var(--fs-title), 44px); line-height: 0.9; text-align: center; color: var(--c-accent); font-variant-numeric: lining-nums tabular-nums; }
+.wv-experience .hist-n { font-family: var(--serif); font-size: var(--fs-hist-n); line-height: 0.9; text-align: center; color: var(--c-accent); font-variant-numeric: lining-nums tabular-nums; }
 .wv-experience .hist-txt { display: flex; flex-direction: column; min-width: 0; }
 /* A count the person corrected is theirs, not the app's measure: bone, not lamp (SYSTEM.md; design review, 2 October). */
 .wv-experience .hist-n.is-corrected { color: var(--c-fg); }

@@ -66,7 +66,7 @@ export const COPY = {
     tempo: 'Tempo',
     duration: 'Durée du geste',
     worstAt: 'Plus grand écart',
-    tempoValue: (att, ref) => `${sec(att, true)} (référence : ${sec(ref, true)})`,
+    tempoValue: (att, ref) => `${sec(att, true)} (référence\u00A0: ${sec(ref, true)})`,
     tempoSub: t => (Math.abs(t - 1) < 0.1 ? 'Au rythme de la référence' : t > 1 ? `${(Math.round(t * 100) / 100).toLocaleString('fr-FR')} fois plus lent` : `${(Math.round((1 / t) * 100) / 100).toLocaleString('fr-FR')} fois plus rapide`),
     joints: 'Mesures',
     within: 'Proche de la référence',

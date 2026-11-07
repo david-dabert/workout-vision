@@ -6,6 +6,7 @@
 import { MIRROR, SAMPLE_HZ, shownAngle, TOLERANCE_DEG } from '../../lib/reference/compare';
 import { EDGES, ghostPoints, nearestIndex, refTimeFor } from '../../lib/reference/overlay';
 import { deg } from './reference-copy';
+import { RGB, rgba } from '../experience/palette';
 
 const JOINT_POINTS = { leftShoulder: 11, rightShoulder: 12, leftElbow: 13, rightElbow: 14 };
 // The point a measure is drawn at: a joint's own point, a direction's end (the wrist); the other side's twin when the
@@ -78,7 +79,7 @@ export function drawComparison(ctx, { t, w, h, u = 1, result, attPose, refPose, 
     let bx = Math.min(p.x + 9 * u, w - bw - 4 * u), by = Math.max(4 * u, p.y - 21 * u);
     while (placed.some(r => bx < r.x + r.w && r.x < bx + bw && by < r.y + r.h && r.y < by + bh)) by += bh + 3 * u;
     placed.push({ x: bx, y: by, w: bw, h: bh });
-    ctx.fillStyle = 'rgba(10,10,10,0.72)';
+    ctx.fillStyle = rgba(RGB.scrim, 0.72);
     ctx.fillRect(bx, by, bw, bh);
     ctx.fillStyle = bad ? lamp : bone;
     ctx.fillText(label, bx + 5 * u, by + 15 * u);

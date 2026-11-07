@@ -22,7 +22,7 @@ export const ONE_TOUCH = {
       },
       history: {
         badge: '',
-        title: 'Mon Suivi',
+        title: 'Mon suivi',
         sub: 'Historique et progression',
       },
     },
