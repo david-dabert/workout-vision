@@ -17,3 +17,17 @@ test('if the app cannot start, the screen speaks the page language and its butto
   await page.getByRole('button', { name: 'Recharger' }).click();
   await expect.poll(() => loads, { timeout: 10000 }).toBeGreaterThan(0);
 });
+
+// A phone in neither French nor English, with no saved choice, opens the app in English (detectLang,
+// src/lib/LanguageContext.jsx), so the boot screen and the page's lang say English too (7 November 2026: on
+// d36f7d7 this screen spoke French while the app opened in English). Fails on d36f7d7, passes after 9d76aee.
+test.describe('a phone in German with no saved choice', () => {
+  test.use({ locale: 'de-DE' });
+
+  test('the boot screen speaks the language the app opens in', async ({ page }) => {
+    await page.route(/\/assets\/index-[^/]+\.js$/, r => r.fulfill({ status: 200, contentType: 'text/javascript', body: 'throw new Error("boot test")' }));
+    await page.goto('/workout-vision/');
+    await expect(page.getByRole('heading', { name: 'Something went wrong.' })).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  });
+});
