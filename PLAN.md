@@ -342,6 +342,15 @@ David's order of 6 November 2026: the counting gate
 
 David's order of 6 November 2026: Phases 5 to 7, verbatim as they reached the Claude session on 7 November 2026 at 22:40 (an attachment, introduced as the exact text of David's order of 6 November 2026, "including the amendment regarding evidence screenshots and figure verification"). Phases 1 to 4 are recorded by their reports on issue #190; the counting gate of Phase 2 is above. These Phases 5 to 7 are those of the 6 November queue; DIRECTIVES.md numbers its own phases separately.
 
+Status of the 6 November order (8 November 2026):
+- Phase 1 (kine copy and patient privacy): merged in PR #326 (`31347eed`), deployed and live.
+- Phase 2 (counting gate in PLAN.md and TRIED.md): merged in PR #327 (`b3d4bfd0`), deployed and live.
+- Phase 3 (image landmarks in scoreboard, 3D lift off): merged in PR #329 (`7501f781`), deployed and live.
+- Phase 4 (core loop design tokens, 44px tap targets, CSS-token check): merged in PR #331 (`2d9993d0`), deployed and live.
+- Phase 5 (first paint < 800 ms, choice < 1500 ms, MediaPipe deferred): merged in PR #333 (`f45963d8`), deployed and live.
+- Phase 6 (phone records day and session UUID, single blind parser and gate): merged in PR #337 (`0b82f89c`), deployed and live.
+- Phase 7 (`docs/state-fixes`, DTW trajectory orientation fix, PDF card scaling): current.
+
 ### Phase 5: `perf/first-paint`
 
 **Goal**: Cold start to interactive choice in < 1.5 s on a 4G connection and slow phone, without waiting for the 30 MB pose model.

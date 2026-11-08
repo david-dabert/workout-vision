@@ -3,23 +3,22 @@ PLAN.md on counter-core prevails over this file.
 
 Before proposing any counting, measurement or data idea, read TRIED.md: it lists what was tried and closed, with the evidence.
 
-Written 8 November 2026 from PLAN.md, git at `main` `72f31228`, and GitHub (`git ls-remote`, GitHub Actions, issue `#190`).
+Written 8 November 2026 from PLAN.md, git at `main` `0b82f89c`, and GitHub (`git ls-remote`, GitHub Actions, issue `#190`).
 A line marked `(unconfirmed)` could not be confirmed from the repository or from GitHub.
 
-Current phase: Phase 7 (`docs/state`) of David's order of 6 November 2026 (PLAN.md).
-- Phases 1–4: deployed and verified.
-- Phase 5 (`perf/first-paint`): entry chunk 135.9 kB gz (< 150 kB budget), FCP 632 ms (< 800 ms), interactive choice 1204 ms (< 1500 ms), MediaPipe pose models deferred until first tap, merged in PR #333 (`f45963d8`), deployed and live.
-- Phase 6 (`loop/blind-count`): blind count collection schema (`test/real-phone/blind/`), `npm run scoreboard:blind` gate, SHA-256 integrity lock (`labels.lock`), merged in PR #334 (`72f31228`), deployed and live.
-- Phase 7 (`docs/state`): honest documentation with verified figures only, strict privacy wording, Kinetic Forced Aligner marked experimental, evidence screenshots untracked.
+Current phase: Phase 7 (`docs/state-fixes`) of David's order of 6 November 2026 (PLAN.md).
+- Phases 1–4: deployed (device verification pending).
+- Phase 5 (`perf/first-paint`): entry chunk 135.9 kB gz (< 150 kB budget), FCP < 800 ms, interactive choice < 1500 ms, MediaPipe pose models deferred until first tap, merged in PR #333 (`f45963d8`), deployed and live.
+- Phase 6 (`loop/blind-count`): blind count collection schema (`test/real-phone/blind/`), `recordedAt` and `sessionId` in shared payload, `npm run scoreboard:blind` gate, SHA-256 integrity lock (`labels.lock`), merged in PR #337 (`0b82f89c`), deployed and live.
+- Phase 7 (`docs/state-fixes`): honest documentation with verified figures only, strict privacy wording, Kinetic Forced Aligner marked experimental, evidence screenshots untracked.
 
-Last known-good commit: `72f31228` (Phase 6 merged into `main`).
-Live commit: `72f31228` on `main` (CI run `42433344932` passed, Pages deploy run `42435170346` succeeded).
+Live commit: `0b82f89c` on `main`.
 Preview: `https://david-dabert.github.io/workout-vision/`
 
 ## Scoreboards (8 November 2026)
 
 - **Real-phone scoreboard (David's 15 labelled phone sets, the R2 gate)**: **13 of 15 exact**, 2 off by 1 (`reverse_curl_10` counted 9 for 10 on collector landmarks, `lateral_raise_9` counted 8 for 9), **0 off by 3 or more**, 0 refused (`npm run scoreboard`; `test/real-phone/accuracy/scoreboard.txt`). The 5 bench and overhead press sets are measured and decide nothing (PLAN.md).
-- **David's videos read whole by the built app (`test/real-phone/sets-18oct-video/`, 16 sets)**: **12 of 16 exact**, 2 off by 1 or 2, 2 refused (`sissy_squat_5_5011`, `standing_barbell_curl_8`), and **0 known errors of 3 or more** (`test/real-phone/accuracy/scoreboard.txt`).
+- **David's videos read whole by the built app (`test/real-phone/sets-18oct-video/`, 16 sets)**: **12 of 16 exact**, 2 off by 1 or 2, 2 refused (`sissy_squat_7_5008`, `standing_barbell_curl_8`), and **0 known errors of 3 or more** (`test/real-phone/accuracy/scoreboard.txt`).
 - **Public build scoreboard (`npm run scoreboard:public`, 949 deciding sets across Countix, MM-Fit, CFRep)**:
   - Deciding exact: **468 of 949 deciding exact (49%)**, 1064 build sets total, 517 exact (49%), 0 newly off by 3 or more.
   - Per dataset (counted by sets, press included as in headline): MM-Fit 117 of 158 (74%), Countix cut 204 of 447 (46%), Countix whole 188 of 447 (42%), CFRep 8 of 12 (67%). Countix distinct clips: both readings exact on 172 of 447 (38%), either reading on 220 (49%).
@@ -32,12 +31,12 @@ Preview: `https://david-dabert.github.io/workout-vision/`
 - Pose detection, repetition counting, biomechanical metrics, storage, and PDF generation run entirely in the browser on the user's phone.
 - The app never uploads videos, frames, or landmarks to any server.
 - Usage events (`feedback-worker/`) send only anonymous operational counters when configured, gated by the CNIL audience-measurement notice and opt-out toggle (`src/components/experience/UsageNotice.jsx`).
-- Kiné patient video upload in `KinePatient.jsx` and `glimpse-proxy/` is permanently disabled (`test/real-phone/defect1-glimpse/defect1-off.test.ts`).
+- Kiné patient video upload in `KinePatient.jsx` and `glimpse-proxy/` is disabled (ruled off by David on 25 October 2026; `test/real-phone/defect1-glimpse/defect1-off.test.ts`).
 - No claims of "zero legal friction", "zero HDS", or "100% compliant" are permitted or made.
 
 ## Product & Governance State (8 November 2026)
 
-- **Offered**: 183 exercises. Tiers (`src/lib/liftTiers.js`): Beta: lateral raise, biceps curl, lat pulldown, squat, hip thrust, Romanian deadlift, leg press. Experimental: bench press, overhead press, and all other lifts. None has passed an exam.
+- **Offered**: 183 exercises. Tiers (`src/lib/liftTiers.js`): Beta: biceps curl, lat pulldown, squat, hip thrust, Romanian deadlift, leg press. Experimental: lateral raise, bench press, overhead press, and all other lifts. None has passed an exam.
 - **Experimental Markers**: Kinetic Forced Aligner trajectory matching in `MovementOptimizationCard.jsx` is explicitly marked experimental (its template in `KineticForcedAligner.ts` is hand-written, R9).
 - **French register and naming**: The screens use `"vous"`. The brand is `"WorkoutVision"`, and in French the app is referred to as `"l’appli"`.
 - **Sub-agents**: `wv-reviewer`, `wv-verifier` and `wv-control` (`.claude/agents/`).

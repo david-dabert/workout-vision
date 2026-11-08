@@ -98,8 +98,13 @@ describe('MovementOptimizationCard component', () => {
 
     expect(html).toContain('data-testid="movement-optimization-card"');
     expect(html).toContain('data-testid="form-fidelity-metric"');
-    expect(html).toContain('Path Fidelity');
+    expect(html).toContain('Path Fidelity (experimental)');
     expect(html).not.toContain('data-testid="sticking-point-box"');
+
+    const htmlFr = renderToStaticMarkup(
+      <MovementOptimizationCard reps={[]} lift="squat" fr={true} result={mockResult} />
+    );
+    expect(htmlFr).toContain('Fidélité de trajectoire (expérimental)');
   });
 
   it('renders machine guidance banner and stretch hypertrophy metric for machine movements', () => {

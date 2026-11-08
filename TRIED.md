@@ -150,6 +150,7 @@ Written 2 October 2026, after two proposals in one hour repeated closed work.
 
 ## Measures
 
+- **Kinetic Forced Aligner: DTW trajectory alignment against hand-written canonical templates** (8 November 2026; `src/lib/counting/KineticForcedAligner.ts`, `src/lib/coaching/movementOptimization.ts`). Dynamic Time Warping with Sakoe-Chiba constraint band (Sakoe & Chiba, 1978) to align extracted joint angle trajectories against canonical archetypes for form distortion scoring. The canonical templates and kineme intervals are hand-written UNSOURCED conventions parked as experimental (R9); the alignment decides no repetition count and affects no scoreboard gate. Query trajectory normalization was corrected to match the template's initial movement direction (`template.trajectory[0] >= 0.5 ? 'descent_first' : 'ascent_first'`), resolving inverted alignment distortion on curls and hip thrusts.
 - **Left/right from any view** (1 October, iteration 3). Side views read the hidden limb as visible (curl SI -87 %). Withdrawn. Shipped instead: lateral raise filmed square on only, within 10 points per set on synthetic bodies. `test/real-phone/symmetry/README.md`, `test/real-phone/synth/synth.txt`.
 - **Speed change, first to last rep** (2 October). Within timing noise (synthetic median 15 %, p90 72 %). Hidden everywhere (`SPEED_CHANGE_SHOWN`). `src/components/experience/measures.js`.
 

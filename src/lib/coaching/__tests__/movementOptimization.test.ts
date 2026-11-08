@@ -210,6 +210,33 @@ describe('Movement Optimization & Kinematic Hypertrophy Engine', () => {
       expect(result.audioSyncConfidence).toBeDefined();
       expect(result.audioSyncConfidence).toBeGreaterThan(0.5);
     });
+
+    it('evaluates low trajectory distortion (< 0.1) on clean bicep_curl and squat reps', () => {
+      const fps = 20;
+      const dt = 1 / fps;
+      const timestamps: number[] = [];
+      const angles: number[] = [];
+
+      let cur = 0;
+      // 2 clean curl reps: 160 -> 50 -> 160
+      for (let r = 0; r < 2; r++) {
+        for (let t = 0; t <= 1.5; t += dt) {
+          timestamps.push(cur);
+          angles.push(160 - (t / 1.5) * 110);
+          cur += dt;
+        }
+        for (let t = 0; t <= 1.5; t += dt) {
+          timestamps.push(cur);
+          angles.push(50 + (t / 1.5) * 110);
+          cur += dt;
+        }
+      }
+
+      const result = analyzeContinuousBiomechanics(angles, timestamps, 'bicep_curl', false);
+      expect(result.formDistortionScore).not.toBeNull();
+      expect(result.formDistortionScore).toBeLessThan(0.1);
+      expect(result.pathEfficiencyPercent).toBeGreaterThanOrEqual(90);
+    });
   });
 });
 
