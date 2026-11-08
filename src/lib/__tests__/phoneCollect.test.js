@@ -18,7 +18,7 @@ vi.mock('localforage', () => ({
   },
 }));
 
-const { COLLECT_KEY, collectOn, collectAsked, applyCollectSwitch, collectedPayload, collectThisSet, collectedFiles, collectedCount, forgetCollected, landmarksSha256 } = await import('../phoneCollect');
+const { COLLECT_KEY, collectOn, collectAsked, applyCollectSwitch, collectedPayload, collectThisSet, collectedFiles, collectedCount, forgetCollected, landmarksSha256, collectSessionId, newSessionId } = await import('../phoneCollect');
 const { blind } = await import('../../../test/real-phone/accuracy/sets');
 
 function storage(init = {}) {
@@ -125,6 +125,77 @@ describe('the file kept', () => {
     const h = await landmarksSha256(result.worldLandmarks);
     expect(name).toBe(`squat_7_side_${h.slice(0, 8)}.json.gz`);
     expect(mem.get(name).blob).toBeInstanceOf(Blob);
+  });
+});
+
+// Phase 6 of David's order of 6 November 2026: each blind-count file records when it was counted and an anonymous id
+// for the page load, beside the video's hash, the exercise, the blind count and the app's count it already carried.
+describe('the time and the anonymous session (Phase 6)', () => {
+  const UUID4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
+  it('are written when given, and left out when not', () => {
+    const p = collectedPayload({ result, lift: 'squat', kept: 7, view: 'side', sha256: 'x', hashOf: 'video', version: 'v', recordedAt: '2026-11-08', sessionId: 'a1b2c3d4-e5f6-4789-8abc-def012345678' });
+    expect(p.recordedAt).toBe('2026-11-08');
+    expect(p.sessionId).toBe('a1b2c3d4-e5f6-4789-8abc-def012345678');
+    const q = collectedPayload({ result, lift: 'squat', kept: 7, view: 'side', sha256: 'x', hashOf: 'video', version: 'v' });
+    expect('recordedAt' in q).toBe(false);
+    expect('sessionId' in q).toBe(false);
+  });
+
+  const read = async n => JSON.parse(gunzipSync(Buffer.from(await mem.get(n).blob.arrayBuffer())).toString());
+
+  it('a kept set carries the day it was kept, no finer, and every set of the page load the same random id', async () => {
+    mem.clear();
+    const s = storage({ [COLLECT_KEY]: '1' });
+    const at = new Date(2026, 10, 9, 18, 30); // 9 November 2026, 18:30 on the phone's clock
+    const a = await collectThisSet({ result, lift: 'squat', kept: 7, view: 'side', version: 'v1', storage: s, now: () => at, blind: { count: 7, p: 1 } });
+    const b = await collectThisSet({ result: { ...result, worldLandmarks: [lm(1), lm(1.1), lm(1.2)] }, lift: 'squat', kept: 9, view: 'side', version: 'v1', storage: s, now: () => at, blind: { count: 9, p: 1 } });
+    const da = await read(a), db = await read(b);
+    // The repository that keeps testers' files is public: the day, not the hour a named person trained (review of
+    // 8 November 2026). The store's own savedAt, which never leaves the phone, keeps the instant to sort the files.
+    expect(da.recordedAt).toBe('2026-11-09');
+    expect(mem.get(a).savedAt).toBe(at.toISOString());
+    expect(da.sessionId).toMatch(UUID4);
+    expect(db.sessionId).toBe(da.sessionId);
+    expect(collectSessionId()).toBe(da.sessionId);
+    // Nothing in the file says who counted: no name, no device, no address.
+    expect(Object.keys(da).filter(k => /name|user|device|email|ip|tester/i.test(k))).toEqual([]);
+  });
+
+  it('dates the set when the count is kept, not when the video\'s hash ends (review of 8 November 2026)', async () => {
+    mem.clear();
+    let t = new Date(2026, 10, 9, 23, 55).getTime();
+    // Safari suspends a page mid-hash when the phone locks: here the hash ends ten minutes later, on the next day.
+    const video = { arrayBuffer: async () => { t += 600_000; return new ArrayBuffer(4); } };
+    const n = await collectThisSet({ result, lift: 'squat', kept: 7, view: 'side', videoFile: video, version: 'v', storage: storage({ [COLLECT_KEY]: '1' }), now: () => new Date(t) });
+    expect((await read(n)).recordedAt).toBe('2026-11-09');
+  });
+
+  it('writes files the blind schema reads, the app\'s counts above 99 included', async () => {
+    const { parseBlindFile } = await import('../../../test/real-phone/blind/parse.mjs');
+    const sha = 'ab'.repeat(32), base = { lift: 'squat', view: 'side', sha256: sha, hashOf: 'video', version: 'v', recordedAt: '2026-11-09', sessionId: '00112233-4455-4677-8899-aabbccddeeff' };
+    const named = kept => `squat_${kept}_side_${sha.slice(0, 8)}.json.gz`;
+    // A counted set, kept as the app gave it.
+    const counted = collectedPayload({ ...base, result, kept: 7, blind: { count: 7, p: 1 } });
+    expect(parseBlindFile(counted, named(7)).status).toBe('set');
+    // A refused set the universal engine proposed 120 on, counted 60 blind and kept at 60.
+    const universal = { ...result, count: 0, refused: true, proposal: { count: 120, by: 'universal' } };
+    const over = collectedPayload({ ...base, result: universal, kept: 60, blind: { count: 60, p: 1 } });
+    const r = parseBlindFile(over, named(60));
+    expect(r.status).toBe('set');
+    expect([r.set.label, r.set.proposal, r.set.appRefused]).toEqual([60, 120, true]);
+    // An app count of 120, kept as given; and « Je ne sais pas ».
+    expect(parseBlindFile(collectedPayload({ ...base, result: { ...result, count: 120 }, kept: 120, blind: { count: 100 - 1, p: 1 } }), named(120)).status).toBe('set');
+    expect(parseBlindFile(collectedPayload({ ...base, result, kept: 7, blind: { count: null, p: 1 } }), named(7))).toEqual({ status: 'unsure' });
+  });
+
+  it('draws a version 4 UUID without randomUUID, and none without a random generator', () => {
+    const bytes = Uint8Array.from({ length: 16 }, (_, i) => i * 17);
+    const id = newSessionId({ getRandomValues: a => { a.set(bytes); return a; } });
+    expect(id).toMatch(UUID4);
+    expect(id).toBe('00112233-4455-4677-8899-aabbccddeeff');
+    expect(newSessionId({})).toBe(null);
+    expect(newSessionId(null)).toBe(null);
   });
 });
 

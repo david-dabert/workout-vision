@@ -1,105 +1,41 @@
+// The blind-count file through its typed entry point (schema.ts; parse.mjs is the reader, parse.test.mjs its cases).
+// What a phone writes since Phase 6 of David's order of 6 November 2026 is one blind set, with the day and the anonymous
+// session it was kept in; a file written before has neither and is read all the same; « Je ne sais pas » has no label.
 import { describe, expect, it } from 'vitest';
-import { parseBlindRecord, validateBlindRecord, type BlindCountRecord } from '../schema';
-import { evaluateBlindSets } from '../../accuracy/scoreboard-blind.test';
+import { parseBlindFile, type BlindFile } from '../schema';
 
-describe('Blind count recording protocol and schema validation', () => {
-  it('validates a complete, canonical blind count record', () => {
-    const valid: BlindCountRecord = {
-      version: 1,
-      videoSha256: '5134a3aad27a58b93da0088d431f366da362b44e3ccfbe3462b3827a839011b1',
-      lift: 'squat',
-      testerCount: 10,
-      appCount: 10,
-      appRefused: false,
-      timestamp: '2026-11-08T00:00:00.000Z',
-      sessionId: 'anon-test-session-1234',
-    };
-
-    const res = validateBlindRecord(valid);
-    expect(res.valid).toBe(true);
-    expect(res.errors).toEqual([]);
-  });
-
-  it('validates a record with landmarks and timestamps', () => {
-    const validWithLandmarks: BlindCountRecord = {
-      version: 1,
-      videoSha256: 'abcdef1234567890',
-      lift: 'bicep_curl',
-      testerCount: 8,
-      appCount: 8,
-      timestamp: Date.now(),
-      sessionId: 'sess-abc',
-      worldLandmarks: [[[0, 0, 0]]],
-      timestamps: [0],
-    };
-
-    const res = validateBlindRecord(validWithLandmarks);
-    expect(res.valid).toBe(true);
-  });
-
-  it('rejects invalid or missing videoSha256', () => {
-    const missing = { lift: 'squat', testerCount: 5, appCount: 5, timestamp: '2026-11-08', sessionId: 's1' };
-    const res1 = validateBlindRecord(missing);
-    expect(res1.valid).toBe(false);
-    expect(res1.errors.some(e => e.includes('videoSha256'))).toBe(true);
-
-    const nonHex = { ...missing, videoSha256: 'not-hex-chars!' };
-    const res2 = validateBlindRecord(nonHex);
-    expect(res2.valid).toBe(false);
-    expect(res2.errors.some(e => e.includes('videoSha256'))).toBe(true);
-  });
-
-  it('rejects missing or empty lift', () => {
-    const noLift = { videoSha256: '12345678', lift: '   ', testerCount: 5, appCount: 5, timestamp: '2026-11-08', sessionId: 's1' };
-    const res = validateBlindRecord(noLift);
-    expect(res.valid).toBe(false);
-    expect(res.errors.some(e => e.includes('lift'))).toBe(true);
-  });
-
-  it('rejects invalid testerCount (labels must be integer >= 1 under R1/R2)', () => {
-    const zero = { videoSha256: '12345678', lift: 'squat', testerCount: 0, appCount: 0, timestamp: '2026-11-08', sessionId: 's1' };
-    expect(validateBlindRecord(zero).valid).toBe(false);
-
-    const float = { videoSha256: '12345678', lift: 'squat', testerCount: 5.5, appCount: 5, timestamp: '2026-11-08', sessionId: 's1' };
-    expect(validateBlindRecord(float).valid).toBe(false);
-  });
-
-  it('parses valid JSON string with parseBlindRecord', () => {
-    const json = JSON.stringify({
-      videoSha256: 'beefcafe12345678',
-      lift: 'hip_thrust',
-      testerCount: 12,
-      appCount: 12,
-      timestamp: '2026-11-08T01:00:00Z',
-      sessionId: 'sess-001',
-    });
-    const parsed = parseBlindRecord(json);
-    expect(parsed.testerCount).toBe(12);
-    expect(parsed.lift).toBe('hip_thrust');
-  });
-
-  it('throws on parseBlindRecord with invalid data', () => {
-    expect(() => parseBlindRecord('{}')).toThrow(/Invalid blind count record/);
-  });
+const lm = Array.from({ length: 33 }, () => ({ x: 0, y: 0, z: 0, visibility: 0.9 }));
+const sha = '0f'.repeat(32);
+const name = `bicep_curl_6_side_${sha.slice(0, 8)}.json.gz`;
+const session = '00112233-4455-4677-8899-aabbccddeeff';
+const file = (over: Partial<BlindFile> = {}): BlindFile => ({
+  lift: 'bicep_curl', count: 6, view: 'side', videoSha256: sha, hashOf: 'video', labelKind: 'after-app', appCount: 6,
+  recordedAt: '2026-11-09', sessionId: session, blind: { count: 6, p: 1 },
+  worldLandmarks: [lm, lm], imageLandmarks: [lm, lm], timestamps: [0, 66.7], ...over,
 });
 
-describe('Scoreboard comparator and evaluation logic', () => {
-  it('correctly tallies exact matches, catastrophic errors, and refusal rate', () => {
-    const mockSets: any[] = [
-      { name: 'blind/set1.json', lift: 'squat', label: 10, testerCount: 10, appCount: 10, appRefused: false, wl: null, ts: null },
-      { name: 'blind/set2.json', lift: 'bicep_curl', label: 8, testerCount: 8, appCount: 7, appRefused: false, wl: null, ts: null }, // off by 1
-      { name: 'blind/set3.json', lift: 'lateral_raise', label: 12, testerCount: 12, appCount: 9, appRefused: false, wl: null, ts: null }, // off by 3 (catastrophic)
-      { name: 'blind/set4.json', lift: 'leg_press', label: 10, testerCount: 10, appCount: 'refused', appRefused: true, wl: null, ts: null }, // refused
-    ];
+describe('a blind-count file, as the phone writes it', () => {
+  it('is one blind set, with the day and the anonymous session it was kept in', () => {
+    const r = parseBlindFile(file(), name);
+    expect(r.status).toBe('set');
+    if (r.status !== 'set') return;
+    expect([r.set.lift, r.set.label, r.set.kept, r.set.videoSha256, r.set.recordedAt, r.set.sessionId]).toEqual(['bicep_curl', 6, 6, sha, '2026-11-09', session]);
+  });
 
-    const result = evaluateBlindSets(mockSets);
-    expect(result.total).toBe(4);
-    expect(result.exactCount).toBe(1);
-    expect(result.catastrophicCount).toBe(1);
-    expect(result.refusedCount).toBe(1);
-    expect(result.rows[0].verdict).toBe('exact');
-    expect(result.rows[1].verdict).toBe('off -1');
-    expect(result.rows[2].verdict).toBe('catastrophic');
-    expect(result.rows[3].verdict).toBe('refused');
+  it('written before Phase 6, without the day or the session, is read with both empty', () => {
+    const old: Partial<BlindFile> = { ...file() };
+    delete old.recordedAt;
+    delete old.sessionId;
+    const r = parseBlindFile(old, name);
+    expect(r.status === 'set' ? [r.set.recordedAt, r.set.sessionId] : r).toEqual([null, null]);
+  });
+
+  it('answered « Je ne sais pas » carries no label', () => {
+    expect(parseBlindFile(file({ blind: { count: null, p: 1 } }), name)).toEqual({ status: 'unsure' });
+  });
+
+  it('with one fixed word for a session, or a name that does not match it, is refused', () => {
+    expect(parseBlindFile(file({ sessionId: 'anon-session' }), name)).toEqual({ status: 'unreadable', reason: 'sessionId is not a UUID' });
+    expect(parseBlindFile(file(), `bicep_curl_7_side_${sha.slice(0, 8)}.json.gz`).status).toBe('unreadable');
   });
 });

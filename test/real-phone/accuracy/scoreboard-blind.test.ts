@@ -1,115 +1,118 @@
-// npm run scoreboard:blind      (SCOREBOARD_UPDATE=1 once a change is accepted)
-// Phase 6 of David's order of 6 November 2026 (PLAN.md):
-// Automated collection and evaluation loop for testers' blind counts (test/real-phone/blind/).
-// Evaluates: exact match count, catastrophic errors (off by >= 3), and refusal rate.
-// Gate in CI: fails if any recorded blind set regresses or becomes catastrophic.
-
+// npm run scoreboard:blind (Phase 6 of David's order of 6 November 2026, loop/blind-count): every blind count on disk,
+// David's (test/real-phone/sets-*/) and the testers' (test/real-phone/blind/<tester>/), against the app's outcome now,
+// set by set: exact, off by 3 or more, refused, and the refusal rate. A blind count is the number a person gave in the
+// app before it showed its own (src/lib/blind.js), a label since David's rulings of 15 October 2026 (his own) and
+// 25 October 2026 (a person he names; CLAUDE.md R1). The gate fails when one set's error grows, a set that gave a count
+// is refused, a set becomes off by 3 or more, a set of the baseline leaves the disk, or a file breaks the schema
+// (test/real-phone/blind/compare.mjs, parse.mjs). The counts compared with are the base branch's (SCOREBOARD_BASE in CI): the baseline
+// npm run scoreboard reads and writes (blindCounts, testerBlindCounts in test/real-phone/accuracy/scoreboard-baseline.json);
+// this file never writes it. The gate runs only when asked (SCOREBOARD=1), so a plain npm test changes no file; the
+// first test, the path a tester's file takes, runs in every npm test.
 import { expect, test } from 'vitest';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { summarizeCount } from '../../../src/lib/coreAnalysis';
-import { loopBlindSets, writeScoreboard } from './sets';
+import { createHash } from 'node:crypto';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { gzipSync } from 'node:zlib';
+import { blindSets, decides, labelledSets, PRESS_DECIDES_NOTHING, testerBlindSets, writeScoreboard, type BlindSet } from './sets';
+import { blindOutcome } from './outcome.mjs';
+import { blindLockEntries, lockLine } from './lock-text';
+import { compareBlind, gateFailures } from '../blind/compare.mjs';
 
-const BASELINE = process.env.SCOREBOARD_BASE || resolve(__dirname, 'blind-baseline.json');
-const SCOREBOARD_TXT = resolve(__dirname, 'scoreboard-blind.txt');
+const BASELINE = resolve(__dirname, 'scoreboard-baseline.json');
+const pct = (x: number | null) => (x === null ? '-' : `${Math.round(x * 100)}%`);
+type Read = { sets: (BlindSet & { tester?: string })[]; unsure: string[]; unreadable: string[]; why: Record<string, string> };
 
-const off = (c: number | string, label: number) =>
-  c === 'refused' ? Infinity : Math.abs((c as number) - label);
-
-export function evaluateBlindSets(sets: ReturnType<typeof loopBlindSets>['sets']) {
-  const live: Record<string, number | string> = {};
-  const rows: { name: string; lift: string; label: number; now: number | string; off: number; verdict: string }[] = [];
-
-  for (const s of sets) {
-    let now: number | string;
-    if (s.wl && s.ts && s.wl.length > 0 && s.wl.length === s.ts.length) {
-      const res: any = summarizeCount(s.wl, s.ts, s.lift, undefined, s.il ?? undefined);
-      now = res.refused ? 'refused' : res.count;
-    } else {
-      now = s.appRefused ? 'refused' : (s.appCount ?? 'refused');
-    }
-
-    live[s.name] = now;
-    const diff = off(now, s.label);
-    const verdict = now === 'refused' ? 'refused' : diff === 0 ? 'exact' : diff >= 3 ? 'catastrophic' : `off ${now > s.label ? '+' : ''}${Number(now) - s.label}`;
-    rows.push({ name: s.name, lift: s.lift, label: s.label, now, off: diff, verdict });
+// One section: the head with its tallies, a row per set, then the files with no label and what fails the gate.
+function section(title: string, read: Read, baseCounts: Record<string, number | 'refused'>) {
+  const outcomes = read.sets.map(s => blindOutcome(s));
+  const now = Object.fromEntries(read.sets.map((s, i) => [s.name, outcomes[i].now]));
+  const r = compareBlind(read.sets, baseCounts, now, decides);
+  const tally = (x: typeof r) => `${x.decide} that decide: ${x.exact} exact, ${x.catastrophic} off by 3 or more, ${x.refused} refused (refusal rate ${pct(x.refusalRate)})`;
+  const head = `${title}: ${r.n} set${r.n === 1 ? '' : 's'}, ${tally(r)}; ${r.added.length} new since the baseline, ${r.regressed.length} regressed, ${r.newlyCatastrophic.length} newly off by 3 or more, ${r.missing.length} missing; ${read.unsure.length} answered "Je ne sais pas", ${read.unreadable.length} unreadable.`;
+  const lines = [head];
+  // Per tester, the same tallies (measured, the gate is the section's).
+  const testers = [...new Set(read.sets.map(s => s.tester).filter(Boolean))] as string[];
+  for (const t of testers) {
+    const mine = read.sets.filter(s => s.tester === t);
+    lines.push(`   ${t}: ${mine.length} set${mine.length === 1 ? '' : 's'}, ${tally(compareBlind(mine, {}, now, decides))}`);
   }
-
-  const exactCount = rows.filter(r => r.off === 0).length;
-  const catastrophicCount = rows.filter(r => r.off !== Infinity && r.off >= 3).length;
-  const refusedCount = rows.filter(r => r.now === 'refused').length;
-  const total = rows.length;
-
-  return { live, rows, exactCount, catastrophicCount, refusedCount, total };
+  r.rows.forEach((row, i) => {
+    const s = read.sets[i];
+    const mark = row.regressed || row.newlyCatastrophic ? '!!' : row.before === row.now ? '  ' : '->';
+    const app = s.appRefused ? 'refused' : s.appCount ?? '-';
+    lines.push(`${mark} ${row.name}${s.tester ? `  tester ${s.tester}` : ''}  blind ${row.label}  before ${row.before ?? '-'} (${row.beforeVerdict})  now ${row.now} (${row.verdict})${outcomes[i].note ? `  ${outcomes[i].note}` : ''}  kept ${s.kept}${s.kept !== s.label ? ' (changed after the app\'s count)' : ''}  app then ${app}${s.recordedAt ? `  counted ${s.recordedAt.slice(0, 10)}` : ''}${row.decides ? '' : `  ${PRESS_DECIDES_NOTHING}`}`);
+  });
+  for (const name of read.unsure) lines.push(`   ${name}  answered "Je ne sais pas": no blind count`);
+  for (const name of read.unreadable) lines.push(`UNREADABLE ${name}  (${read.why[name]})`);
+  lines.push(...gateFailures(r));
+  return { r, now, text: lines.join('\n') };
 }
 
-test('scoreboard:blind evaluates recorded blind sets with regression and catastrophe gates', () => {
-  const { sets, unreadable } = loopBlindSets();
-  expect(unreadable, 'no unreadable blind set files').toEqual([]);
+test('a tester\'s blind file goes through the one reader, the app, the comparator and the lock', () => {
+  // A set of David's (sets-29sep, bicep curl, label 5), wrapped as the file a tester's phone keeps
+  // (src/lib/phoneCollect.js collectedPayload), in a scratch tree; nothing is written under test/real-phone. The live
+  // count is not pinned here (review of 8 November 2026): R2 may let this set move, so the test holds the blind path
+  // to the app's own outcome on the same landmarks.
+  const src = labelledSets().sets.find(s => s.name === 'sets-29sep/bicep_curl_5_side_f5e5bdf2.json.gz');
+  expect(src, 'the source set').toBeTruthy();
+  const root = mkdtempSync(join(tmpdir(), 'wv-blind-'));
+  const dir = join(root, 'blind', 'olivier');
+  mkdirSync(dir, { recursive: true });
+  const sha = (s: string) => createHash('sha256').update(s).digest('hex');
+  const file = (lift: string, kept: number, blind: { count: number | null; p: number } | undefined, seed: string) => {
+    const h = sha(seed);
+    const d: any = { lift, count: kept, view: 'side', videoSha256: h, worldLandmarks: src!.wl, imageLandmarks: src!.il ?? null, timestamps: src!.ts, labelKind: 'after-app', appCount: 5, corrected: kept !== 5, hashOf: 'video', source: 'result-screen', recordedAt: '2026-11-09', sessionId: '00112233-4455-4677-8899-aabbccddeeff' };
+    if (blind) d.blind = blind;
+    const name = `${lift}_${kept}_side_${h.slice(0, 8)}.json.gz`;
+    writeFileSync(join(dir, name), gzipSync(JSON.stringify(d)));
+    return `blind/olivier/${name}`;
+  };
+  const counted = file('bicep_curl', 5, { count: 5, p: 1 }, 'counted');
+  const unsure = file('bicep_curl', 5, { count: null, p: 1 }, 'unsure');
+  const bare = file('bicep_curl', 5, undefined, 'bare');
+  const read = testerBlindSets(root);
+  expect(read.sets.map(s => [s.name, s.tester, s.lift, s.label, s.kept, s.recordedAt, s.sessionId])).toEqual([[counted, 'olivier', 'bicep_curl', 5, 5, '2026-11-09', '00112233-4455-4677-8899-aabbccddeeff']]);
+  expect(read.unsure).toEqual([unsure]);
+  expect(read.unreadable).toEqual([bare]);
+  expect(read.why[bare]).toContain('no blind count');
+  const s = section('Testers', read, {});
+  const app = blindOutcome({ lift: 'bicep_curl', wl: src!.wl, ts: src!.ts, il: src!.il ?? null }).now;
+  expect(s.now[counted]).toBe(app);
+  expect(s.r.added).toEqual([counted]);
+  expect(gateFailures(s.r)).toEqual([]);
+  expect(s.text).toContain(`olivier: 1 set, 1 that decide: ${s.r.exact} exact, ${s.r.catastrophic} off by 3 or more, ${s.r.refused} refused (refusal rate ${s.r.refused ? '100%' : '0%'})`);
+  // Held against a baseline that holds the same outcome, it passes; one count further from its label, it fails.
+  const further = app === 'refused' ? 'refused' : app >= 5 ? app + 1 : app - 1;
+  expect(gateFailures(compareBlind(read.sets, { [counted]: app }, { [counted]: app }, decides))).toEqual([]);
+  if (further !== 'refused') expect(gateFailures(compareBlind(read.sets, { [counted]: app }, { [counted]: further }, decides))).toEqual([`REGRESSED ${counted}`]);
+  // The lock holds both: the counted file with its label, and the « Je ne sais pas » file as unsure, so neither can
+  // gain a label or leave the tree unseen (review of 8 November 2026).
+  expect(blindLockEntries(root).sort()).toEqual([[counted, 5], [unsure, 'unsure']].sort());
+  expect(lockLine(root, unsure, 'unsure')).toMatch(new RegExp(`^[0-9a-f]{64}  unsure  ${unsure.replace(/[.]/g, '\\.')}$`));
+}, 120_000);
 
-  let base: { counts?: Record<string, number | string> } = { counts: {} };
-  if (existsSync(BASELINE)) {
-    try {
-      const content = readFileSync(BASELINE, 'utf8').trim();
-      if (content) base = JSON.parse(content);
-    } catch {
-      base = { counts: {} };
-    }
-  }
-  const baseCounts = base.counts ?? {};
-
-  const evaluated = evaluateBlindSets(sets);
-
-  const regressions: string[] = [];
-  const newlyCatastrophic: string[] = [];
-
-  for (const r of evaluated.rows) {
-    const prev = baseCounts[r.name];
-    if (prev !== undefined) {
-      const prevDiff = off(prev, r.label);
-      if (prevDiff === 0 && r.off !== 0) {
-        regressions.push(`${r.name} (${r.lift}): previously exact (${r.label}), now ${r.now}`);
-      }
-      if (prevDiff < 3 && r.off >= 3) {
-        newlyCatastrophic.push(`${r.name} (${r.lift}): previously off ${prevDiff}, now off ${r.off} (${r.now} vs ${r.label})`);
-      }
-    } else {
-      if (r.off >= 3 && r.now !== 'refused') {
-        newlyCatastrophic.push(`${r.name} (${r.lift}): newly added set is catastrophic (${r.now} vs ${r.label})`);
-      }
-    }
-  }
-
+test.skipIf(!process.env.SCOREBOARD)('scoreboard:blind', () => {
+  // In CI the counts compared with are the base branch's (SCOREBOARD_BASE), so a change cannot lower the bar by editing
+  // the baseline it is compared with (audit of 3 October).
+  const base = JSON.parse(readFileSync(process.env.SCOREBOARD_BASE || BASELINE, 'utf8'));
   const today = new Date().toISOString().slice(0, 10);
-  const exactPct = evaluated.total ? Math.round((100 * evaluated.exactCount) / evaluated.total) : 0;
-  const refusalPct = evaluated.total ? Math.round((100 * evaluated.refusedCount) / evaluated.total) : 0;
-
-  const header = `Testers' blind counts scoreboard (${today}): ${evaluated.total} sets; ${evaluated.exactCount} exact (${exactPct}%); ${evaluated.catastrophicCount} catastrophic; ${evaluated.refusedCount} refused (${refusalPct}%).`;
-  console.log(header);
-
-  const lines = [header];
-  for (const r of evaluated.rows) {
-    const prev = baseCounts[r.name];
-    const prevStr = prev !== undefined ? ` (was ${prev})` : ' (new)';
-    lines.push(`   ${r.name}  lift ${r.lift}  blind ${r.label}  now ${r.now} (${r.verdict})${prevStr}`);
+  const david = blindSets(), testers = testerBlindSets();
+  const d = section('David\'s blind counts (test/real-phone/sets-*/; labels since his ruling of 15 October 2026)', david, base.blindCounts ?? {});
+  const t = section('Testers\' blind counts (test/real-phone/blind/<tester>/; labels since David\'s ruling of 25 October 2026)', testers, base.testerBlindCounts ?? {});
+  const all = { decide: d.r.decide + t.r.decide, exact: d.r.exact + t.r.exact, catastrophic: d.r.catastrophic + t.r.catastrophic, refused: d.r.refused + t.r.refused };
+  const head = `Blind counts ${today} (npm run scoreboard:blind; a count given in the app before it showed its own, CLAUDE.md R1): ${all.decide} sets that decide, ${all.exact} exact, ${all.catastrophic} off by 3 or more, ${all.refused} refused (refusal rate ${pct(all.decide ? all.refused / all.decide : null)}). Bench and overhead press sets are measured and decide nothing (PLAN.md). "->" marks a count that moved, "!!" a set that fails the gate.`;
+  const text = [head, '', d.text, '', t.text].join('\n') + '\n';
+  writeScoreboard(resolve(__dirname, 'scoreboard-blind.txt'), text);
+  process.stdout.write(text);
+  expect([...gateFailures(d.r), ...gateFailures(t.r)]).toEqual([]);
+  expect(david.unreadable).toEqual([]);
+  expect(testers.unreadable).toEqual([]);
+  // The committed baseline holds the live counts (third audit, C27): a change that moves a blind count commits the
+  // output of SCOREBOARD_UPDATE=1 npm run scoreboard, the only writer of the baseline.
+  if (process.env.SCOREBOARD_BASE) {
+    const committed = JSON.parse(readFileSync(BASELINE, 'utf8'));
+    expect(committed.blindCounts ?? {}).toEqual(d.now);
+    expect(committed.testerBlindCounts ?? {}).toEqual(t.now);
   }
-
-  writeScoreboard(SCOREBOARD_TXT, lines.join('\n') + '\n');
-
-  if (process.env.SCOREBOARD_UPDATE) {
-    writeFileSync(
-      BASELINE,
-      JSON.stringify(
-        {
-          note: `Testers' blind counts baseline (${today}), measured by npm run scoreboard:blind. SCOREBOARD_UPDATE=1 updates this file.`,
-          counts: evaluated.live,
-        },
-        null,
-        2
-      ) + '\n'
-    );
-  }
-
-  expect(regressions, 'no regression on previously exact blind sets').toEqual([]);
-  expect(newlyCatastrophic, 'no catastrophic errors on blind sets').toEqual([]);
-});
+}, 300_000);

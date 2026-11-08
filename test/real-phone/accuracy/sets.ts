@@ -5,6 +5,7 @@
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
+import { parseBlindFile, SET_FILE, TESTER_NAME } from '../blind/schema';
 
 export const ROOT = resolve(__dirname, '..');
 export type LabelledSet = { name: string; lift: string; label: number; wl: any[]; ts: number[]; il?: any[] | null };
@@ -17,12 +18,15 @@ export const PRESS_DECIDES_NOTHING = '(press: measured, decides nothing, PLAN.md
 export const decides = (lift: string) => lift !== 'bench_press' && lift !== 'overhead_press';
 
 /**
- * Writes a scoreboard's text file only when something other than its first line's date moved, so a re-run with the
+ * Writes a scoreboard's text file only when something other than its heads' run dates moved, so a re-run with the
  * same counts leaves the working tree clean (David's rule change of 15 October 2026: both agents had to discard the
- * date-only change a run left behind). The date in the file is then the day its counts last changed (R13).
+ * date-only change a run left behind). The date in the file is then the day its counts last changed (R13). A head is a
+ * line that opens with a capital and carries the run's date before ":" or " (" ("Scoreboard 2026-11-07:", "Testers'
+ * blind counts 2026-11-07 ("); until 8 November 2026 only the first line's was set aside, so the testers' head, dated
+ * since 7 November, rewrote scoreboard.txt on every day's run.
  */
 export function writeScoreboard(path: string, text: string) {
-  const undated = (t: string) => t.replace(/^([^\n]*?) \d{4}-\d{2}-\d{2}:/, '$1:');
+  const undated = (t: string) => t.replace(/^([A-Z][^\n]*?) \d{4}-\d{2}-\d{2}(?=:| \()/gm, '$1');
   if (existsSync(path) && undated(readFileSync(path, 'utf8')) === undated(text)) return;
   writeFileSync(path, text);
 }
@@ -61,106 +65,73 @@ export function labelledSets(root = ROOT) {
   return { sets, unreadable, held };
 }
 
-// David's blind counts (blind.js, phoneCollect.js; 9 October 2026): his collected files whose count he gave in the app
-// before it showed its own. The label is blind.count; `kept` is the count he saved after seeing the app's, `appCount`
-// the app's own, `appRefused` a set the app refused (with its proposal). A file answered "Je ne sais pas" (blind.count
-// null) has no label and is listed in `unsure`. Shown in their own scoreboard section, which decides nothing until David
-// says his in-app blind counts are labels (R1: they are his, but their agreement with his half-speed video counts is
-// not measured).
-export type BlindSet = LabelledSet & { kept: number; appCount: number | null; appRefused: boolean; proposal: number | null; il: any[] | null };
+// Blind counts (blind.js, phoneCollect.js; 9 October 2026): collected files whose count was given in the app before it
+// showed its own. The label is blind.count; `kept` is the count saved after seeing the app's, `appCount` the app's own,
+// `appRefused` a set the app refused (with its proposal); `videoSha256`, `hashOf`, `recordedAt` and `sessionId` as the
+// file records them (Phase 6 of David's order of 6 November 2026). A file answered "Je ne sais pas" (blind.count null)
+// has no label and is listed in `unsure`; one that breaks the schema is listed in `unreadable`, with the reason in
+// `why`. Every file is read by test/real-phone/blind/parse.mjs, the one reader of the schema (README.md there).
+// Labels since David's rulings of 15 October 2026 (his own) and 25 October 2026 (testers'; CLAUDE.md R1).
+export type BlindSet = LabelledSet & { kept: number; appCount: number | null; appRefused: boolean; proposal: number | null; il: any[] | null; videoSha256: string; hashOf: string | null; recordedAt: string | null; sessionId: string | null };
+type BlindRead = { sets: BlindSet[]; unreadable: string[]; unsure: string[]; why: Record<string, string> };
+function readBlind(root: string, dir: string, f: string, out: BlindRead, { mustBeBlind }: { mustBeBlind: boolean }) {
+  const name = `${dir}/${f}`;
+  let d: any;
+  try { d = readSet(root, dir, f); }
+  catch {
+    // In a sets-* folder labelledSets names a file it cannot open; in a tester's folder nobody else would.
+    if (mustBeBlind) { out.unreadable.push(name); out.why[name] = 'not gzip JSON'; }
+    return null;
+  }
+  const r = parseBlindFile(d, f);
+  if (r.status === 'none') {
+    if (mustBeBlind) { out.unreadable.push(name); out.why[name] = 'no blind count (blind: { count, p })'; }
+    return null;
+  }
+  if (r.status === 'unsure') { out.unsure.push(name); return null; }
+  if (r.status === 'unreadable') { out.unreadable.push(name); out.why[name] = r.reason; return null; }
+  const s = r.set;
+  return { name, lift: s.lift, label: s.label, wl: s.wl, ts: s.ts, kept: s.kept, appCount: s.appCount, appRefused: s.appRefused, proposal: s.proposal, il: s.il, videoSha256: s.videoSha256, hashOf: s.hashOf, recordedAt: s.recordedAt, sessionId: s.sessionId };
+}
+
+// David's blind counts: his collected files in the sets-* folders that carry one.
 export function blindSets(root = ROOT) {
-  const sets: BlindSet[] = [], unreadable: string[] = [], unsure: string[] = [];
+  const out: BlindRead = { sets: [], unreadable: [], unsure: [], why: {} };
   for (const dir of setDirs(root)) {
     for (const f of readdirSync(resolve(root, dir)).filter(f => f.endsWith('.json.gz')).sort()) {
-      const name = `${dir}/${f}`;
-      let d: any;
-      try { d = readSet(root, dir, f); }
-      catch { continue; } // labelledSets names it
-      if (!d.blind || typeof d.blind !== 'object') continue;
-      if (d.blind.count === null) { unsure.push(name); continue; }
-      if (!d.lift || !Number.isInteger(d.blind.count) || d.blind.count < 1 || !Array.isArray(d.worldLandmarks) || !Array.isArray(d.timestamps) || d.worldLandmarks.length !== d.timestamps.length) { unreadable.push(name); continue; }
-      sets.push({ name, lift: d.lift, label: d.blind.count, wl: d.worldLandmarks, ts: d.timestamps, kept: d.count, appCount: d.appCount ?? null, appRefused: d.appRefused === true, proposal: Number.isInteger(d.proposal) ? d.proposal : null, il: d.imageLandmarks ?? null });
+      const s = readBlind(root, dir, f, out, { mustBeBlind: false });
+      if (s) out.sets.push(s);
     }
   }
-  return { sets, unreadable, unsure };
+  return out;
 }
 
-// Testers' blind counts (blind.js, phoneCollect.js; David's R1 amendment of 25 October 2026): collected files from
-// people David names, placed in test/real-phone/testers/<tester>/ by scripts/import-sets.mjs --tester <tester>.
+// Testers' blind counts (David's R1 amendment of 25 October 2026): collected files from people David names, placed in
+// test/real-phone/blind/<tester>/ by scripts/import-sets.mjs --tester <tester> (README.md there). Every file in a
+// tester's folder must carry a blind count, or answer "Je ne sais pas".
+export const BLIND_DIR = 'blind';
 export type TesterBlindSet = BlindSet & { tester: string };
 export function testerBlindSets(root = ROOT) {
-  const sets: TesterBlindSet[] = [], unreadable: string[] = [], unsure: string[] = [];
-  const testersDir = resolve(root, 'testers');
-  if (!existsSync(testersDir)) return { sets, unreadable, unsure };
-  const testers = readdirSync(testersDir).filter(d => !d.startsWith('.') && statSync(resolve(testersDir, d)).isDirectory()).sort();
+  const out: BlindRead & { sets: TesterBlindSet[] } = { sets: [], unreadable: [], unsure: [], why: {} };
+  const blindDir = resolve(root, BLIND_DIR);
+  if (!existsSync(blindDir)) return out;
+  // A set file outside a tester's folder, or not gzip, is unreadable rather than dropped unseen; a folder that is not a
+  // tester's (__tests__) is not read (TESTER_NAME, parse.mjs; review of 8 November 2026).
+  const entries = readdirSync(blindDir).sort();
+  for (const f of entries.filter(f => SET_FILE.test(f) && statSync(resolve(blindDir, f)).isFile())) {
+    const name = `${BLIND_DIR}/${f}`;
+    out.unreadable.push(name); out.why[name] = 'a set file outside a tester\'s folder (blind/<tester>/)';
+  }
+  const testers = entries.filter(d => TESTER_NAME.test(d) && statSync(resolve(blindDir, d)).isDirectory());
   for (const tester of testers) {
-    const dir = `testers/${tester}`;
-    for (const f of readdirSync(resolve(root, dir)).filter(f => f.endsWith('.json.gz')).sort()) {
-      const name = `${dir}/${f}`;
-      let d: any;
-      try { d = readSet(root, dir, f); }
-      catch { unreadable.push(name); continue; }
-      if (!d.blind || typeof d.blind !== 'object') { unreadable.push(name); continue; }
-      if (d.blind.count === null) { unsure.push(name); continue; }
-      if (!d.lift || !Number.isInteger(d.blind.count) || d.blind.count < 1 || !Array.isArray(d.worldLandmarks) || !Array.isArray(d.timestamps) || d.worldLandmarks.length !== d.timestamps.length) { unreadable.push(name); continue; }
-      sets.push({ name, tester, lift: d.lift, label: d.blind.count, wl: d.worldLandmarks, ts: d.timestamps, kept: d.count, appCount: d.appCount ?? null, appRefused: d.appRefused === true, proposal: Number.isInteger(d.proposal) ? d.proposal : null, il: d.imageLandmarks ?? null });
+    const dir = `${BLIND_DIR}/${tester}`;
+    for (const f of readdirSync(resolve(root, dir)).filter(f => SET_FILE.test(f)).sort()) {
+      if (!f.endsWith('.json.gz')) { const name = `${dir}/${f}`; out.unreadable.push(name); out.why[name] = 'not gzip JSON (a set file is .json.gz)'; continue; }
+      const s = readBlind(root, dir, f, out, { mustBeBlind: true });
+      if (s) out.sets.push({ ...s, tester });
     }
   }
-  return { sets, unreadable, unsure };
-}
-
-// Recorded blind count loop sets (Phase 6, PLAN.md): schema in test/real-phone/blind/.
-export type LoopBlindSet = {
-  name: string;
-  videoSha256: string;
-  lift: string;
-  label: number;
-  testerCount: number;
-  appCount: number | null;
-  appRefused: boolean;
-  timestamp: string | number;
-  sessionId: string;
-  wl: any[] | null;
-  ts: number[] | null;
-  il?: any[] | null;
-};
-
-export function loopBlindSets(root = ROOT) {
-  const sets: LoopBlindSet[] = [], unreadable: string[] = [];
-  const dir = resolve(root, 'blind');
-  if (!existsSync(dir)) return { sets, unreadable };
-  for (const f of readdirSync(dir).filter(f => (f.endsWith('.json') || f.endsWith('.json.gz')) && !f.endsWith('.test.ts')).sort()) {
-    const name = `blind/${f}`;
-    let d: any;
-    try {
-      const raw = readFileSync(resolve(dir, f));
-      const str = f.endsWith('.gz') ? gunzipSync(raw).toString('utf8') : raw.toString('utf8');
-      d = JSON.parse(str);
-    } catch {
-      unreadable.push(name);
-      continue;
-    }
-    if (!d || typeof d !== 'object') { unreadable.push(name); continue; }
-    if (typeof d.videoSha256 !== 'string' || !d.lift || !Number.isInteger(d.testerCount) || d.testerCount < 1) {
-      unreadable.push(name);
-      continue;
-    }
-    sets.push({
-      name,
-      videoSha256: d.videoSha256,
-      lift: d.lift,
-      label: d.testerCount,
-      testerCount: d.testerCount,
-      appCount: Number.isInteger(d.appCount) ? d.appCount : null,
-      appRefused: !!d.appRefused || d.appCount === 'refused' || d.appCount === null,
-      timestamp: d.timestamp ?? '',
-      sessionId: d.sessionId ?? '',
-      wl: Array.isArray(d.worldLandmarks) ? d.worldLandmarks : null,
-      ts: Array.isArray(d.timestamps) ? d.timestamps : null,
-      il: Array.isArray(d.imageLandmarks) ? d.imageLandmarks : null,
-    });
-  }
-  return { sets, unreadable };
+  return out;
 }
 
 // David's real videos read whole through the built app (analyzeCoreVideo on check.html, test/real-phone/sets-*-video/,

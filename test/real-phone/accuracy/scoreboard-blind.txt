@@ -1,1 +1,5 @@
-Testers' blind counts scoreboard (2026-11-08): 0 sets; 0 exact (0%); 0 catastrophic; 0 refused (0%).
+Blind counts 2026-11-08 (npm run scoreboard:blind; a count given in the app before it showed its own, CLAUDE.md R1): 0 sets that decide, 0 exact, 0 off by 3 or more, 0 refused (refusal rate -). Bench and overhead press sets are measured and decide nothing (PLAN.md). "->" marks a count that moved, "!!" a set that fails the gate.
+
+David's blind counts (test/real-phone/sets-*/; labels since his ruling of 15 October 2026): 0 sets, 0 that decide: 0 exact, 0 off by 3 or more, 0 refused (refusal rate -); 0 new since the baseline, 0 regressed, 0 newly off by 3 or more, 0 missing; 0 answered "Je ne sais pas", 0 unreadable.
+
+Testers' blind counts (test/real-phone/blind/<tester>/; labels since David's ruling of 25 October 2026): 0 sets, 0 that decide: 0 exact, 0 off by 3 or more, 0 refused (refusal rate -); 0 new since the baseline, 0 regressed, 0 newly off by 3 or more, 0 missing; 0 answered "Je ne sais pas", 0 unreadable.
