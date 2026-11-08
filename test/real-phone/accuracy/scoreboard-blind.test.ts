@@ -47,8 +47,15 @@ test('scoreboard:blind evaluates recorded blind sets with regression and catastr
   const { sets, unreadable } = loopBlindSets();
   expect(unreadable, 'no unreadable blind set files').toEqual([]);
 
-  const base: { counts?: Record<string, number | string> } =
-    existsSync(BASELINE) ? JSON.parse(readFileSync(BASELINE, 'utf8')) : { counts: {} };
+  let base: { counts?: Record<string, number | string> } = { counts: {} };
+  if (existsSync(BASELINE)) {
+    try {
+      const content = readFileSync(BASELINE, 'utf8').trim();
+      if (content) base = JSON.parse(content);
+    } catch {
+      base = { counts: {} };
+    }
+  }
   const baseCounts = base.counts ?? {};
 
   const evaluated = evaluateBlindSets(sets);

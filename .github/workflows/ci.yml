@@ -75,7 +75,7 @@ jobs:
           else base=HEAD^1; fi
           mkdir -p "$RUNNER_TEMP/base"
           for f in test/real-phone/accuracy/scoreboard-baseline.json test/real-phone/accuracy/public-baseline.json test/real-phone/accuracy/blind-baseline.json test/real-phone/synth/synth.txt; do
-            git show "$base:$f" > "$RUNNER_TEMP/base/$(basename "$f")" 2>/dev/null || true
+            if git show "$base:$f" > "$RUNNER_TEMP/base/$(basename "$f")" 2>/dev/null; then :; else rm -f "$RUNNER_TEMP/base/$(basename "$f")"; fi
           done
       # R2: the counting regression gate on David's labelled sets. Fails when the exact count falls, any set is off
       # by 3 or more or newly refused, or the committed baseline does not hold the live counts, so the next change is
