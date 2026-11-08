@@ -35,9 +35,9 @@ Labelled sets are counted by the same code the app runs, in CI on every push and
 
 **David's sets** (test/real-phone/accuracy/scoreboard.txt, 8 November 2026):
 - stored landmark sets: 13 of the 15 that decide are exact (not 14, not 15); the 5 bench and overhead press sets are measured and decide nothing (PLAN.md);
-- real videos read whole by the built app: 12 of 16 exact (not 13, not 14), 2 refused, and 0 known errors of 3 or more (the pendulum squat error of 14 for 7 resolved to 7 exact, back extension 17 to 18 exact, sissy squat 5_5011 refused to 5 exact, sissy squat 7_5006 5 to 7 exact).
+- real videos read whole by the built app: 12 of 16 exact, 2 refused, and 0 known errors of 3 or more (not 13, not 14; the pendulum squat error of 14 for 7 resolved to 7 exact, back extension 17 to 18 exact, sissy squat 5_5011 refused to 5 exact, sissy squat 7_5006 5 to 7 exact).
 
-**Public build half** (test/real-phone/accuracy/public-scoreboard.txt, 8 November 2026): 1064 build sets, 517 exact (49%). Of the 949 in the baseline that decide, 468 exact (49%), 0 newly off by 3 or more. Per dataset: Countix cut to its labelled window 204 of 447 exact (46%), Countix whole 188 of 447 (42%), CFRep 8 of 12 (67%), MM-Fit 117 of 158 (74%). Countix by distinct clip: both readings exact on 172 of 447 (38%), either reading on 220 (49%).
+**Public build half** (test/real-phone/accuracy/public-scoreboard.txt, 8 November 2026): 1064 sets, 517 exact (49 %). Of the 949 in the baseline that decide, 468 exact (49%), 0 newly off by 3 or more. Per dataset: Countix cut to its labelled window 204 of 447 exact (46%), Countix whole 188 of 447 (42%), CFRep 8 of 12 (67%), MM-Fit 117 of 158 (74%). Countix by distinct clip: both readings exact on 172 of 447 (38%), either reading on 220 (49%).
 
 **Testers' blind counts** (test/real-phone/blind/, 8 November 2026): 0 sets recorded; collection schema, automated evaluation loop, baseline regression gate (`npm run scoreboard:blind`), and SHA-256 integrity lock (`labels.lock`) established.
 
@@ -61,7 +61,7 @@ Pose detection, counting, storage and the PDF run in the browser on the phone. T
 - The nutrition section's barcode lookup sends the barcode to Open Food Facts (src/lib/nutrition.js).
 - Saved sets stay in the phone's browser storage.
 
-The app makes no claim of "zero legal friction", "zero HDS", or "100% compliant"; the data-protection position of the app has not been reviewed by regulatory counsel.
+The app makes no claim of "zero legal friction", "zero HDS", or complete regulatory compliance; the data-protection position of the app has not been reviewed by regulatory counsel.
 
 ## Development
 
