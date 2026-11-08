@@ -2,7 +2,7 @@
 // a phone keeps when a count is kept on the result screen (src/lib/phoneCollect.js, collectedPayload) and sends only
 // through the share sheet. The reader is parse.mjs, plain JavaScript, so the Node scripts (scripts/import-sets.mjs,
 // scripts/tester-exam.mjs) and the tests read one schema; this module gives it its types (README.md here).
-import { parseBlindFile as parse, MAX_COUNT, SET_FILE, SHA256, TESTER_NAME, UUID } from './parse.mjs';
+import { parseBlindFile as parse, placeBlindFiles, MAX_COUNT, SET_FILE, SHA256, TESTER_NAME, UUID } from './parse.mjs';
 
 /** A blind-count file as the phone writes it: the collector's set, with the count kept after the app showed its own. */
 export interface BlindFile {
@@ -53,4 +53,4 @@ export type BlindRead =
 
 /** Reads one parsed file (parse.mjs); `name`, the file's own name, is checked against what the file says. */
 export const parseBlindFile = parse as unknown as (d: unknown, name?: string | null) => BlindRead;
-export { MAX_COUNT, SET_FILE, SHA256, TESTER_NAME, UUID };
+export { placeBlindFiles, MAX_COUNT, SET_FILE, SHA256, TESTER_NAME, UUID };

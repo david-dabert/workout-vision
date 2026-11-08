@@ -14,13 +14,20 @@ dist-prod
 dist-ssr
 *.local
 
-# Evidence screenshots (PLAN.md Phase 7: attach to CI artifacts or PR comments, not git tracking)
-screenshots/
-docs/screenshots/
+# Evidence screenshots go to CI artifacts or pull request comments, not to git (David's order of 6 November 2026,
+# Phase 7, PLAN.md). Test baselines (e2e/*-snapshots/) and the app's own images (public/, src/assets/) are not
+# evidence and stay tracked.
+/screenshots/
+/docs/screenshots/
+/test/real-phone/**/*.png
+/test/real-phone/**/*.jpg
+/test/real-phone/**/*.jpeg
+/test/real-phone/**/*.webp
+/test/real-phone/**/*.[Pp][Nn][Gg]
+/test/real-phone/**/*.[Jj][Pp][Gg]
+/test/real-phone/**/*.[Jj][Pp][Ee][Gg]
+/test/real-phone/**/*.[Hh][Ee][Ii][Cc]
 test/real-phone/growth-step3/shots/
-test/real-phone/round3/**/*.jpg
-test/real-phone/wave2/**/*.jpg
-test/real-phone/decoder/*.png
 
 # Editor directories and files
 .vscode/*

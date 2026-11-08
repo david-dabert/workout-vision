@@ -44,7 +44,10 @@ describe('the import of set files', () => {
     expect(plan.problems).toEqual([]);
     expect(plan.moves).toEqual([{ from: 'squat_8_side_aaaaaaaa.json.gz', to: 'blind/olivier/squat_8_side_aaaaaaaa.json.gz' }]);
     expect(planImport(['squat_8_side_aaaaaaaa.json.gz'], { mode: 'tester', tester: 'Bad Name!', existing: [] }).problems)
-      .toEqual(['a tester is named with lowercase letters, digits, - or _: Bad Name!']);
+      .toEqual(['a tester is named with lowercase letters, digits, - or _, led by a letter: Bad Name!']);
+    // A dated folder is not a tester (review of 8 November 2026).
+    expect(planImport(['squat_8_side_aaaaaaaa.json.gz'], { mode: 'tester', tester: 'sets-09nov', existing: [] }).problems).toHaveLength(1);
+    expect(planImport(['squat_8_side_aaaaaaaa.json.gz'], { mode: 'tester', tester: '2026-11-09', existing: [] }).problems).toHaveLength(1);
   });
 });
 
@@ -150,6 +153,14 @@ describe('the import script and tester exam', () => {
     expect(secondExam.code).toBe(0);
     expect(secondExam.out).toContain('0 unseen sets');
     expect(secondExam.out).toContain('EXPOSED blind/olivier/squat_8_side_11223344.json.gz');
+
+    // A set file in a folder that is not a tester's name is named and fails the exam, never skipped (review of the fix
+    // commit, 8 November 2026).
+    mkdirSync(join(root, 'blind', 'T02'), { recursive: true });
+    writeFileSync(join(root, 'blind', 'T02', 'squat_8_side_11223344.json.gz'), gzipSync(JSON.stringify(blindPayload)));
+    const misplaced = run(root, ['--record'], EXAM_SCRIPT);
+    expect(misplaced.code).toBe(1);
+    expect(misplaced.out).toContain("UNREADABLE blind/T02/squat_8_side_11223344.json.gz (the folder T02 is not a tester's name");
   });
 
   // Review of 8 November 2026: what the change does to --build, to « Je ne sais pas » files and to the exam, held by a

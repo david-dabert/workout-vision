@@ -6,7 +6,7 @@
 // (test/real-phone/blind/parse.mjs) and scored by the scoreboards' own outcome (test/real-phone/accuracy/outcome.mjs,
 // blindOutcome): the live core's count on the stored landmarks. Until then the exam also counted as refused every set the
 // phone had refused when it was kept, so one set could be refused here and exact in npm run scoreboard.
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { registerHooks } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -34,7 +34,7 @@ registerHooks({
 });
 
 const { blindOutcome } = await import('../test/real-phone/accuracy/outcome.mjs');
-const { parseBlindFile, SET_FILE, TESTER_NAME } = await import('../test/real-phone/blind/parse.mjs');
+const { parseBlindFile, placeBlindFiles } = await import('../test/real-phone/blind/parse.mjs');
 const { verdict } = await import('../test/real-phone/blind/compare.mjs');
 
 const ROOT = process.env.WV_SETS_ROOT
@@ -54,26 +54,20 @@ const exposedData = existsSync(EXPOSED_PATH)
 const exposedSets = exposedData.sets ?? (exposedData.sets = {});
 
 const today = new Date().toISOString().slice(0, 10);
-const testers = existsSync(TESTERS_DIR)
-  ? readdirSync(TESTERS_DIR).filter(d => TESTER_NAME.test(d) && statSync(join(TESTERS_DIR, d)).isDirectory()).sort()
-  : [];
+// Every set file under blind/, at any depth: a tester's is examined, any other is unreadable (placeBlindFiles, parse.mjs).
+const placed = existsSync(TESTERS_DIR) ? placeBlindFiles(TESTERS_DIR) : { testers: {}, misplaced: [] };
+const testers = Object.keys(placed.testers).sort();
 
 const unseen = [];
 const alreadyExposed = [];
 const unsure = [];
 const unreadable = [];
-// A set file outside a tester's folder is unreadable, never skipped unseen (review of 8 November 2026).
-if (existsSync(TESTERS_DIR)) {
-  for (const f of readdirSync(TESTERS_DIR).filter(x => SET_FILE.test(x) && statSync(join(TESTERS_DIR, x)).isFile()).sort()) {
-    unreadable.push(`blind/${f} (a set file outside a tester's folder)`);
-  }
-}
+for (const m of placed.misplaced) unreadable.push(`${m.name} (${m.why})`);
 
 for (const tester of testers) {
   const dir = join(TESTERS_DIR, tester);
-  for (const f of readdirSync(dir).filter(x => SET_FILE.test(x)).sort()) {
+  for (const f of placed.testers[tester]) {
     const key = `blind/${tester}/${f}`;
-    if (!f.endsWith('.json.gz')) { unreadable.push(`${key} (not gzip JSON)`); continue; }
     if (exposedSets[key]) {
       alreadyExposed.push(`${key} (exposed ${exposedSets[key]})`);
       continue;
@@ -102,7 +96,9 @@ for (const s of unseen) {
   if (recordFlag) exposedSets[s.key] = today;
 }
 
-if (recordFlag && unseen.length > 0) {
+// A run that finds an unreadable file records nothing, so the one-shot exam is not spent on a failed run (review of
+// 8 November 2026).
+if (recordFlag && unseen.length > 0 && unreadable.length === 0) {
   // The folder may be absent in a tree that has no testers/ yet (WV_SETS_ROOT in scripts/__tests__/import-sets.test.js).
   mkdirSync(dirname(EXPOSED_PATH), { recursive: true });
   writeFileSync(EXPOSED_PATH, JSON.stringify(exposedData, null, 2) + '\n');

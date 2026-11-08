@@ -8,6 +8,9 @@
 // read one schema, and by scripts/import-sets.mjs, which refuses a file this reader does not take.
 // Plain JavaScript, so Node scripts and the TypeScript tests import the same code.
 
+import { readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+
 export const SHA256 = /^[0-9a-f]{64}$/;
 export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 /**
@@ -17,12 +20,45 @@ export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{1
 export const MAX_COUNT = 99;
 /**
  * A tester's folder under test/real-phone/blind/, named as scripts/import-plan.mjs accepts a tester: lowercase letters,
- * digits, - or _, led by a letter or a digit. Any other folder (__tests__, .git) holds no tester's sets; a set file
+ * digits, - or _, led by a letter and never sets-<date>, so a dated folder (2026-11-09, sets-09nov) is not a tester. Any other folder (__tests__, .git) holds no tester's sets; a set file
  * (.json.gz, or plain .json) outside a tester's folder is unreadable, never dropped unseen (review of 8 November 2026).
  */
-export const TESTER_NAME = /^[a-z0-9][a-z0-9_-]*$/;
+export const TESTER_NAME = /^(?!sets-)[a-z][a-z0-9_-]*$/;
 /** A file that would hold a set: gzip JSON, as the phone writes it, or plain JSON, as #334's README once asked. */
 export const SET_FILE = /\.json(\.gz)?$/;
+
+/**
+ * Every set file under test/real-phone/blind/ (`blindDir`), at any depth, placed. A tester's set is
+ * blind/<tester>/<file>.json.gz, <tester> named as TESTER_NAME allows; any other set file is misplaced, with why, so
+ * the scoreboards, the lock and the exam report it instead of dropping it unseen: a folder named "T02" or "t01 2", a
+ * dated folder inside a tester's, a plain .json (review of the fix commit, 8 November 2026).
+ * @param {string} blindDir
+ * @returns {{ testers: Record<string, string[]>, misplaced: { name: string, why: string }[] }}
+ */
+export function placeBlindFiles(blindDir) {
+  /** @type {Record<string, string[]>} */
+  const testers = {};
+  /** @type {{ name: string, why: string }[]} */
+  const misplaced = [];
+  /** @param {string} dir @param {string} rel */
+  const walk = (dir, rel) => {
+    for (const f of readdirSync(dir).sort()) {
+      const path = join(dir, f);
+      const r = rel ? `${rel}/${f}` : f;
+      if (statSync(path).isDirectory()) { walk(path, r); continue; }
+      if (!SET_FILE.test(f)) continue;
+      const parts = r.split('/');
+      const name = `blind/${r}`;
+      if (parts.length === 1) misplaced.push({ name, why: "a set file outside a tester's folder (blind/<tester>/)" });
+      else if (!TESTER_NAME.test(parts[0])) misplaced.push({ name, why: `the folder ${parts[0]} is not a tester's name (lowercase letters, digits, - or _, led by a letter)` });
+      else if (parts.length > 2) misplaced.push({ name, why: "a set file below a tester's folder (blind/<tester>/<file>)" });
+      else if (!f.endsWith('.json.gz')) misplaced.push({ name, why: 'not gzip JSON (a set file is .json.gz)' });
+      else (testers[parts[0]] ||= []).push(f);
+    }
+  };
+  walk(blindDir, '');
+  return { testers, misplaced };
+}
 // The collector's file name (src/lib/collector.js setFileName; a batch file is led by its set number).
 const NAME = /^(?:set\d+_)?(.+?)_(\d+)_(side|front|angle)_([0-9a-f]{8})\.json\.gz$/;
 
