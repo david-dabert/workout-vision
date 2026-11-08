@@ -35,29 +35,36 @@ function eachRecord(store, fn) {
 /** Current schema version. Increment when workout record shape changes. */
 export const SCHEMA_VERSION = 1;
 
+let runningMigration = null;
+
 /**
  * Check and run schema migrations on app start.
  * Safe to call multiple times; only migrates if version is behind.
  * @returns {Promise<void>}
  */
 export async function checkAndMigrateSchema() {
-  try {
-    await _repairManualProvenance();
-    const storedVersion = await metaStore.getItem('schemaVersion');
-    // A version this build knows, or a newer one written by a later build: nothing to do. A rolled-back build never
-    // lowers it, so the later build's data is not marked as older than it is (audit of 6 October, action 18).
-    if (typeof storedVersion === 'number' && storedVersion >= SCHEMA_VERSION) return;
+  if (runningMigration) return runningMigration;
+  return (runningMigration = (async () => {
+    try {
+      await _repairManualProvenance();
+      const storedVersion = await metaStore.getItem('schemaVersion');
+      // A version this build knows, or a newer one written by a later build: nothing to do. A rolled-back build never
+      // lowers it, so the later build's data is not marked as older than it is (audit of 6 October, action 18).
+      if (typeof storedVersion === 'number' && storedVersion >= SCHEMA_VERSION) return;
 
-    // Run migrations in order
-    if (!storedVersion || storedVersion < 1) {
-      await _migrateToV1();
+      // Run migrations in order
+      if (!storedVersion || storedVersion < 1) {
+        await _migrateToV1();
+      }
+
+      await metaStore.setItem('schemaVersion', SCHEMA_VERSION);
+      console.log(`[Storage] Schema migrated to version ${SCHEMA_VERSION}`);
+    } catch (e) {
+      console.warn('[Storage] Schema migration failed:', e);
+    } finally {
+      runningMigration = null;
     }
-
-    await metaStore.setItem('schemaVersion', SCHEMA_VERSION);
-    console.log(`[Storage] Schema migrated to version ${SCHEMA_VERSION}`);
-  } catch (e) {
-    console.warn('[Storage] Schema migration failed:', e);
-  }
+  })());
 }
 
 /**
@@ -208,6 +215,7 @@ export async function getWorkout(id) {
  * @returns {Promise<Array>} sorted newest-first
  */
 export async function getWorkouts(options = {}) {
+  await checkAndMigrateSchema();
   const { limit = 50, offset = 0, exercise, dateFrom, dateTo } = options;
   const fromTs = dateFrom ? new Date(dateFrom).getTime() : null;
   const toTs = dateTo ? new Date(dateTo).getTime() : null;

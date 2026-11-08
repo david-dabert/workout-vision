@@ -27,9 +27,9 @@ Preview: `https://david-dabert.github.io/workout-vision/`
 
 ## Privacy & Legal Statement
 
-*"Aucune vidéo ni donnée patient ne quitte le téléphone ; seuls des compteurs d'usage anonymes sont envoyés."*
+*"Aucune vidéo ni donnée patient ne quitte le téléphone sans action explicite de l'utilisateur ; seuls des compteurs d'usage anonymes sont envoyés."* (David's ruling of 8 November 2026).
 - Pose detection, repetition counting, biomechanical metrics, storage, and PDF generation run entirely in the browser on the user's phone.
-- The app never uploads videos, frames, or landmarks to any server.
+- The app never uploads videos, frames, or landmarks to any server without explicit user action.
 - Usage events (`feedback-worker/`) send only anonymous operational counters when configured, gated by the CNIL audience-measurement notice and opt-out toggle (`src/components/experience/UsageNotice.jsx`).
 - Kiné patient video upload in `KinePatient.jsx` and `glimpse-proxy/` is disabled (ruled off by David on 24 October 2026; `glimpse-proxy/proxy.test.js`, `src/components/kine/Kine.test.jsx`, `src/lib/kine/__tests__/glimpse.test.js`).
 - The published build sends the anonymous usage counts: deploy run `42468256377` builds with `VITE_EVENTS_URL` naming the feedback worker.
