@@ -15,6 +15,14 @@ export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{1
  * app's count, its proposal, and a count kept as the app gave it have no such bound (review of 8 November 2026).
  */
 export const MAX_COUNT = 99;
+/**
+ * A tester's folder under test/real-phone/blind/, named as scripts/import-plan.mjs accepts a tester: lowercase letters,
+ * digits, - or _, led by a letter or a digit. Any other folder (__tests__, .git) holds no tester's sets; a set file
+ * (.json.gz, or plain .json) outside a tester's folder is unreadable, never dropped unseen (review of 8 November 2026).
+ */
+export const TESTER_NAME = /^[a-z0-9][a-z0-9_-]*$/;
+/** A file that would hold a set: gzip JSON, as the phone writes it, or plain JSON, as #334's README once asked. */
+export const SET_FILE = /\.json(\.gz)?$/;
 // The collector's file name (src/lib/collector.js setFileName; a batch file is led by its set number).
 const NAME = /^(?:set\d+_)?(.+?)_(\d+)_(side|front|angle)_([0-9a-f]{8})\.json\.gz$/;
 
@@ -34,7 +42,7 @@ const isTime = s => typeof s === 'string' && (isDay(s) || (/^\d{4}-\d{2}-\d{2}T\
  * the person answered "Je ne sais pas" (no label), { status: 'unreadable', reason } when the file breaks the schema,
  * and { status: 'set', set } otherwise.
  * @param {any} d the parsed JSON of the file
- * @param {string | null} [name] the file's name (typed for test/real-phone/accuracy/sets.ts, which tsc reads)
+ * @param {string | null} [name] the file's name (typed through schema.ts for test/real-phone/accuracy/sets.ts)
  */
 export function parseBlindFile(d, name = null) {
   if (!d || typeof d !== 'object' || Array.isArray(d)) return { status: 'unreadable', reason: 'not a JSON object' };

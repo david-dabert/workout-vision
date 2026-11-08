@@ -1,0 +1,4 @@
+{
+  "note": "Sets in test/real-phone/testers/<tester>/ already read by scripts/tester-exam.mjs --record: listed as exposed and never scored twice as an unseen exam.",
+  "sets": {}
+}

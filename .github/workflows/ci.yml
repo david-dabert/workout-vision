@@ -50,8 +50,11 @@ jobs:
       - name: Verify labelled sets lock (test/real-phone/labels.lock)
         env:
           BEFORE: ${{ github.event.before }}
+          # The base the pull request's merge commit was made on, not the base branch's tip when the job runs: a merge to
+          # the base in between must not read as lines this change removed (review of 8 November 2026).
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
-          if [ -n "$GITHUB_BASE_REF" ]; then git fetch --depth=1 origin "$GITHUB_BASE_REF"; base=FETCH_HEAD
+          if [ -n "$BASE_SHA" ]; then git fetch --depth=1 origin "$BASE_SHA"; base=FETCH_HEAD
           elif [ -n "$BEFORE" ] && [ "$BEFORE" != 0000000000000000000000000000000000000000 ]; then git fetch --depth=1 origin "$BEFORE"; base=FETCH_HEAD
           else base=HEAD^1; fi
           changed=$(git diff --name-only --no-renames "$base" HEAD)

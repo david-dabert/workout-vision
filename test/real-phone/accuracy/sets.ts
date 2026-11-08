@@ -5,7 +5,7 @@
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
-import { parseBlindFile } from '../blind/schema';
+import { parseBlindFile, SET_FILE, TESTER_NAME } from '../blind/schema';
 
 export const ROOT = resolve(__dirname, '..');
 export type LabelledSet = { name: string; lift: string; label: number; wl: any[]; ts: number[]; il?: any[] | null };
@@ -115,10 +115,18 @@ export function testerBlindSets(root = ROOT) {
   const out: BlindRead & { sets: TesterBlindSet[] } = { sets: [], unreadable: [], unsure: [], why: {} };
   const blindDir = resolve(root, BLIND_DIR);
   if (!existsSync(blindDir)) return out;
-  const testers = readdirSync(blindDir).filter(d => !d.startsWith('.') && statSync(resolve(blindDir, d)).isDirectory()).sort();
+  // A set file outside a tester's folder, or not gzip, is unreadable rather than dropped unseen; a folder that is not a
+  // tester's (__tests__) is not read (TESTER_NAME, parse.mjs; review of 8 November 2026).
+  const entries = readdirSync(blindDir).sort();
+  for (const f of entries.filter(f => SET_FILE.test(f) && statSync(resolve(blindDir, f)).isFile())) {
+    const name = `${BLIND_DIR}/${f}`;
+    out.unreadable.push(name); out.why[name] = 'a set file outside a tester\'s folder (blind/<tester>/)';
+  }
+  const testers = entries.filter(d => TESTER_NAME.test(d) && statSync(resolve(blindDir, d)).isDirectory());
   for (const tester of testers) {
     const dir = `${BLIND_DIR}/${tester}`;
-    for (const f of readdirSync(resolve(root, dir)).filter(f => f.endsWith('.json.gz')).sort()) {
+    for (const f of readdirSync(resolve(root, dir)).filter(f => SET_FILE.test(f)).sort()) {
+      if (!f.endsWith('.json.gz')) { const name = `${dir}/${f}`; out.unreadable.push(name); out.why[name] = 'not gzip JSON (a set file is .json.gz)'; continue; }
       const s = readBlind(root, dir, f, out, { mustBeBlind: true });
       if (s) out.sets.push({ ...s, tester });
     }

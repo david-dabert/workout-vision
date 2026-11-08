@@ -4,15 +4,14 @@
 // answer toward it (anchoring: Tversky and Kahneman 1974, Science 185:1124; status: literature). "Je ne sais pas" is
 // always offered, and a set answered so carries no blind count.
 //
-// Who is asked, for now: David's phone only (the #collecte flag, phoneCollect.js), on every set read from a video. His
-// collected files then carry his blind count beside the count he kept after seeing the app's (collectedPayload). A set
-// counted live is never asked: the live screen shows the count during the set, so no answer given after it is blind.
-// Asking other people waits on the contributions, paused in production (buildFlags.js, WP0.4), and on David's
-// decisions (sampling rate, R1 amendment, notice).
+// Who is asked: a phone with the #collecte flag (phoneCollect.js), David's and those of the testers he names, on every
+// set read from a video. The collected file then carries the blind count beside the count kept after seeing the app's,
+// with the day and an anonymous session (collectedPayload; Phase 6 of David's order of 6 November 2026). A set counted
+// live is never asked: the live screen shows the count during the set, so no answer given after it is blind.
 //
-// Whether a blind count is a label (R1): it is David's own count, so R1 allows it, but how well a count made in the gym
-// right after the set matches his half-speed count of the video is not measured yet. Until he decides, the scoreboard
-// shows his blind sets in their own section, which decides nothing (test/real-phone/accuracy/sets.ts, blindSets).
+// Whether a blind count is a label (R1): David's own since his ruling of 15 October 2026, and a tester's he names since
+// 25 October 2026. Both decide under R2 in their sections of the scoreboard, and every blind set is gated in CI, set by
+// set (npm run scoreboard:blind; test/real-phone/blind/README.md).
 
 /** The share of sets asked on David's phone. Status: convention (David's order: every set he films there). */
 export const BLIND_P_COLLECT = 1;
