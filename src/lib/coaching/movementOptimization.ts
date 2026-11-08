@@ -503,7 +503,7 @@ export function analyzeContinuousBiomechanics(
 
       if (slice.length >= 4) {
         const alignment = alignKineticTrajectory(slice, template, {
-          expectedDirection: def?.rest === 'low' ? 'ascent_first' : 'descent_first',
+          expectedDirection: template.trajectory[0] >= 0.5 ? 'descent_first' : 'ascent_first',
         });
         totalDistortion += alignment.normalizedDistance;
         repCountWithTrajectory++;

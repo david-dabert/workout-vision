@@ -1,14 +1,19 @@
 /**
  * KineticForcedAligner - Continuous Kineme Dynamic Time Warping (DTW) Alignment
  *
- * Grounded in speech recognition forced alignment (ASR) principles:
- * maps continuous, variable-rate kinematic joint trajectories onto canonical
+ * Source: Dynamic Time Warping with Sakoe-Chiba constraint band (Sakoe & Chiba, 1978:
+ * "Dynamic programming algorithm optimization for spoken word recognition", IEEE ASSP-26(1)).
+ * Status: Experimental. Canonical templates and kineme intervals are hand-written UNSOURCED
+ * conventions parked for experimental trajectory fidelity (R9); they decide no repetition
+ * count and affect no scoreboard gate (PLAN.md).
+ *
+ * Maps continuous, variable-rate kinematic joint trajectories onto canonical
  * biomechanical "kineme" states (UNRACK, ECCENTRIC, INFLECTION, STICKING_REGION,
  * CONCENTRIC, LOCKOUT) via Sakoe-Chiba constrained Dynamic Time Warping.
  *
  * Extracts:
  * 1. Sub-frame phase boundaries and turnaround inflection points.
- * 2. Local temporal warp velocities (\nu_k = dj/di) to locate sticking points.
+ * 2. Local temporal warp velocities to locate sticking points.
  * 3. Kinematic form distortion metrics comparing execution against canonical templates.
  */
 

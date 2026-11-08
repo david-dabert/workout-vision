@@ -223,7 +223,13 @@ export function reportPdf(sheet) {
         doc.roundedRect(cx, y, cellW, cellH, 4, 4, 'FD');
 
         // Vertical stack: Label -> Hero Value -> Bar -> Subtitle
-        write(upper(m.label), cx + 6, y + 4.5, 'mono', 7, 1.2, COLOR.ash, 7 * 0.05);
+        const maxLabelW = cellW - 12;
+        const textUpper = upper(m.label);
+        let labelSize = 7;
+        while (labelSize > 5.5 && width(textUpper, 'mono', labelSize, labelSize * 0.05) > maxLabelW) {
+          labelSize -= 0.25;
+        }
+        write(textUpper, cx + 6, y + 4.5, 'mono', labelSize, 1.2, COLOR.ash, labelSize * 0.05);
         write(m.val, cx + 6, y + 13.5, 'serif', 13.5, 1, COLOR.ink);
 
         const barW = cellW - 12;

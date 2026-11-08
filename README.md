@@ -52,12 +52,10 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the modules and data flow.
 
 ## Privacy
 
-*Aucune vidéo ni donnée patient ne quitte le téléphone ; seuls des compteurs d'usage anonymes sont envoyés.*
-
-Pose detection, counting, storage and the PDF run in the browser on the phone. The app never uploads the video, its frames or the landmarks. What leaves the phone leaves by a tap: a shared report, a shared or downloaded file, a report of a wrong count by e-mail or GitHub issue.
-- Usage counts (src/lib/events.js) are off in the published build: VITE_EVENTS_URL is pinned empty in .github/workflows/deploy.yml.
+Pose detection, counting, storage and the PDF run in the browser on the phone. The app never uploads the video, its frames or the landmarks: *aucune vidéo ni donnée patient ne quitte le téléphone ; seuls des compteurs d'usage anonymes sont envoyés.* What leaves the phone leaves by a tap: a shared report, a shared or downloaded file, a report of a wrong count by e-mail or GitHub issue.
+- Usage counts (src/lib/events.js) go to the server named by the repository variable VITE_EVENTS_URL in .github/workflows/deploy.yml, if set; when unset, no usage counts are sent.
 - Contributions of sets to improve the count are paused in the published build (src/lib/buildFlags.js).
-- Patient video upload in physiotherapy flows is permanently disabled (test/real-phone/defect1-glimpse/defect1-off.test.ts).
+- Patient video upload in physiotherapy flows is disabled (ruled off by David on 25 October 2026; test/real-phone/defect1-glimpse/defect1-off.test.ts).
 - The nutrition section's barcode lookup sends the barcode to Open Food Facts (src/lib/nutrition.js).
 - Saved sets stay in the phone's browser storage.
 
