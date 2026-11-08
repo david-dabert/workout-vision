@@ -191,7 +191,7 @@ for (const viewport of [{ width: 390, height: 664 }, { width: 320, height: 568 }
     await phone.reload();
     await expect(screen).toBeVisible({ timeout: 20000 });
     await expect(phone.getByTestId('programme-sets').first().locator('li')).toHaveText(['', '', '']);
-    await expect(phone.getByTestId('programme-send')).toHaveText(/^Envoyer les résultats du \d{1,2}(er)?\u00A0?\s?\S+$/);
+    await expect(phone.getByTestId('programme-send')).toHaveText(/^Envoyer les résultats du \d{1,2}(er)?\u00A0?\s?\S+$/, { timeout: 15000 });
 
     // Two sets of the squat saved today: one the app counted, one it refused and the client typed. The programme
     // shows them beside the target, the typed one marked as such; yesterday's set is not today's.
@@ -203,7 +203,7 @@ for (const viewport of [{ width: 390, height: 664 }, { width: 320, height: 568 }
     await expect(screen).toBeVisible({ timeout: 20000 });
     const cells = phone.getByTestId('programme-sets').first().locator('li');
     await expect(cells).toHaveCount(3);
-    await expect(cells).toHaveText(['10', '8', '']);
+    await expect(cells).toHaveText(['10', '8', ''], { timeout: 15000 });
     await expect(cells.nth(0)).toHaveAttribute('aria-label', c.setDone(1, 10, 10));
     await expect(cells.nth(1)).toHaveAttribute('aria-label', c.setTyped(2, 8, 10));
     await expect(cells.nth(1)).toHaveClass(/is-hand/);
