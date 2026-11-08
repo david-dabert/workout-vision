@@ -1,0 +1,4 @@
+{
+  "note": "Testers' blind counts baseline, measured by npm run scoreboard:blind. SCOREBOARD_UPDATE=1 updates this file.",
+  "counts": {}
+}

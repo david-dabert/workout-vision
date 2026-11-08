@@ -43,3 +43,30 @@ export function parseBlind(text) {
 export function blindAnswer(count, p) {
   return { count: Number.isInteger(count) && count >= 1 && count <= BLIND_MAX ? count : null, p };
 }
+
+/**
+ * Formats a blind count record adhering to the Phase 6 recording protocol (PLAN.md):
+ * - videoSha256
+ * - lift
+ * - testerCount (ground truth label under R1 / R2)
+ * - appCount (measured count by app, or null if refused)
+ * - timestamp and anonymous session ID
+ */
+export function createBlindRecord({ videoSha256, lift, testerCount, appCount = null, appRefused = false, timestamp, sessionId, worldLandmarks, timestamps, imageLandmarks }) {
+  if (!videoSha256 || typeof videoSha256 !== 'string') throw new Error('videoSha256 is required');
+  if (!lift || typeof lift !== 'string') throw new Error('lift is required');
+  if (!Number.isInteger(testerCount) || testerCount < 1) throw new Error('testerCount must be an integer >= 1');
+  return {
+    version: 1,
+    videoSha256,
+    lift,
+    testerCount,
+    appCount: Number.isInteger(appCount) ? appCount : null,
+    appRefused: !!appRefused || appCount === null,
+    timestamp: timestamp || new Date().toISOString(),
+    sessionId: sessionId || 'anon-session',
+    ...(Array.isArray(worldLandmarks) ? { worldLandmarks } : {}),
+    ...(Array.isArray(timestamps) ? { timestamps } : {}),
+    ...(Array.isArray(imageLandmarks) ? { imageLandmarks } : {}),
+  };
+}
