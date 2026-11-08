@@ -6,7 +6,7 @@
 // (test/real-phone/blind/parse.mjs) and scored by the scoreboards' own outcome (test/real-phone/accuracy/outcome.mjs,
 // blindOutcome): the live core's count on the stored landmarks. Until then the exam also counted as refused every set the
 // phone had refused when it was kept, so one set could be refused here and exact in npm run scoreboard.
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { registerHooks } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -103,6 +103,8 @@ for (const s of unseen) {
 }
 
 if (recordFlag && unseen.length > 0) {
+  // The folder may be absent in a tree that has no testers/ yet (WV_SETS_ROOT in scripts/__tests__/import-sets.test.js).
+  mkdirSync(dirname(EXPOSED_PATH), { recursive: true });
   writeFileSync(EXPOSED_PATH, JSON.stringify(exposedData, null, 2) + '\n');
 }
 
