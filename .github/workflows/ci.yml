@@ -40,8 +40,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      # Labelled sets lock (CLAUDE.md R1), against the base branch's tip on a pull request and the branch's previous tip
-      # on a push (github.event.before, as the baselines below; a new branch falls back to HEAD^1):
+      # Labelled sets lock (CLAUDE.md R1), against the base the pull request's merge commit was made on
+      # (pull_request.base.sha) and the branch's previous tip on a push (github.event.before; a new branch falls back to HEAD^1):
       # 1. a labelled set file that changes changes test/real-phone/labels.lock with it (David's order of 6 November
       #    2026, Phase 3);
       # 2. no line of the base's labels.lock changes or goes without a ruling of David's recorded in

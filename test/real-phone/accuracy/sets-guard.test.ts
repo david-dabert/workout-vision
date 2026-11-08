@@ -23,12 +23,15 @@ put('sets-01jan', 'bicep_curl_9_side_bbbbbbbb.json.gz', { videoSha256: 'b'.repea
 put('sets-01jan', 'squat_7_side_cccccccc.json.gz', { videoSha256: 'c'.repeat(64), lift: 'squat', count: 7, labelKind: 'after-app', appCount: 8, blind: { count: 7, p: 1 }, ...pose });
 put('sets-01jan', 'squat_6_side_dddddddd.json.gz', { videoSha256: 'd'.repeat(64), lift: 'squat', count: 6, labelKind: 'after-app', appCount: 0, appRefused: true, proposal: 5, blind: { count: 6, p: 1 }, ...pose });
 put('sets-01jan', 'squat_5_side_eeeeeeee.json.gz', { videoSha256: 'e'.repeat(64), lift: 'squat', count: 5, labelKind: 'after-app', appCount: 5, blind: { count: null, p: 1 }, ...pose });
-// Testers' folders (review of 8 November 2026): a set file at the blind/ root, or not gzip, is unreadable, never dropped
-// unseen; a folder that is not a tester's (__tests__) is not read.
+// Testers' folders (reviews of 8 November 2026): every set file under blind/ is read or named, at any depth. A set file
+// at the blind/ root, in a folder that is not a tester's name (__tests__, T02), below a tester's folder, or not gzip,
+// is unreadable, never dropped unseen.
 const kept = { videoSha256: 'c'.repeat(64), lift: 'squat', count: 7, labelKind: 'after-app', appCount: 8, blind: { count: 7, p: 1 }, ...pose };
 put('blind/t01', 'squat_7_side_cccccccc.json.gz', kept);
 put('blind', 'squat_7_side_ffffffff.json.gz', { ...kept, videoSha256: 'f'.repeat(64) });
 put('blind/__tests__', 'squat_7_side_cccccccc.json.gz', kept);
+put('blind/T02', 'squat_7_side_cccccccc.json.gz', kept);
+put('blind/t01/2026-11-09', 'squat_7_side_cccccccc.json.gz', kept);
 writeFileSync(join(root, 'blind', 't01', 'squat_7_side_dddddddd.json'), JSON.stringify({ ...kept, videoSha256: 'd'.repeat(64) }));
 // A whole-video folder is read by videoSets, never here.
 put('sets-01jan-video', 'squat_9.json.gz', { lift: 'squat', count: 9, ...pose });
@@ -66,9 +69,18 @@ describe('blindSets', () => {
 
 describe('testerBlindSets', () => {
   const { sets, unreadable, why } = testerBlindSets(root);
-  test('reads a tester\'s folder, not __tests__, and names each set file it cannot place', () => {
+  test('reads a tester\'s folder and names each set file it cannot place, at any depth', () => {
     expect(sets.map(s => [s.name, s.tester, s.label])).toEqual([['blind/t01/squat_7_side_cccccccc.json.gz', 't01', 7]]);
-    expect(unreadable).toEqual(['blind/squat_7_side_ffffffff.json.gz', 'blind/t01/squat_7_side_dddddddd.json']);
+    expect(unreadable).toEqual([
+      'blind/T02/squat_7_side_cccccccc.json.gz',
+      'blind/__tests__/squat_7_side_cccccccc.json.gz',
+      'blind/squat_7_side_ffffffff.json.gz',
+      'blind/t01/2026-11-09/squat_7_side_cccccccc.json.gz',
+      'blind/t01/squat_7_side_dddddddd.json',
+    ]);
     expect(why['blind/squat_7_side_ffffffff.json.gz']).toContain('outside a tester');
+    expect(why['blind/T02/squat_7_side_cccccccc.json.gz']).toContain("not a tester's name");
+    expect(why['blind/t01/2026-11-09/squat_7_side_cccccccc.json.gz']).toContain("below a tester's folder");
+    expect(why['blind/t01/squat_7_side_dddddddd.json']).toContain('not gzip');
   });
 });

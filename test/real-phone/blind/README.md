@@ -6,7 +6,8 @@ Since David's rulings it is a label: his own since 15 October 2026, and since 25
 - David's blind sets stay in the `test/real-phone/sets-*/` folder of the day he collected them.
 - Testers' blind sets live here, one folder per tester: `test/real-phone/blind/<tester>/`, a name David gives (lowercase letters, digits, `-`, `_`).
   The repository is public: give a pseudonym (`t01`, `t02`), not the person's name.
-  Until 8 November 2026 this folder was `test/real-phone/testers/`; it held no set.
+  Until 8 November 2026 testers' sets were to go in `test/real-phone/testers/`, where none had arrived; that folder now keeps only `exposed.json`, the list of sets `scripts/tester-exam.mjs --record` has read.
+  A set file anywhere else under this folder (a folder that is not a tester's name, a folder inside a tester's, a plain `.json`) is reported as unreadable, never skipped (`placeBlindFiles`, `parse.mjs`).
 
 ## From the phone to the scoreboard
 

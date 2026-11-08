@@ -9,7 +9,7 @@ Every number on this page comes from the scoreboard files in the repository, wit
 
 ## What it does
 
-- Counts the reps of 183 exercises, and scores two fitness tests over 30 seconds (the chair stand and the arm curl, src/lib/fitness-tests.js). You choose the exercise; the app does not guess it. Six are Beta: biceps curl, lat pulldown, squat, hip thrust, Romanian deadlift and leg press (src/lib/liftTiers.js). All the others are Experimental and say so on the result. No exercise has passed the exam PLAN.md requires; the exam sets are still to be filmed (test/real-phone/exam/README.md).
+- Counts the reps of 183 exercises, and scores two fitness tests over 30 seconds (the chair stand and the arm curl, src/lib/fitness-tests.js). You choose the exercise; the app does not guess it. Seven are Beta: biceps curl, lat pulldown, squat, hip thrust, Romanian deadlift, leg press and the machine seated back extension (src/lib/liftTiers.js, TIERS and GUIDE_TIERS). All the others are Experimental and say so on the result. No exercise has passed the exam PLAN.md requires; the exam sets are still to be filmed (test/real-phone/exam/README.md).
 - Shows the count and asks you to confirm it or give the true number. When most of the set cannot be seen, it says so and shows no count; where it can, it offers a number marked "Proposition de l'appli", to confirm, with no grade and no measure.
 - The guide lists 309 exercises. The 126 the counter does not offer are marked "Non compté": for those the app at most proposes a number to check, offered as one key under an empty slot, and gives none when the joints it would need were seen on fewer than half the samples, or for a hold such as the plank, whose time it does not measure (src/lib/universalProposal.js).
 - Shows, under an experimental label (none of them is validated on real phone video, src/components/experience/measures.js): each rep's range of motion in degrees, its duration, concentric and eccentric time and tempo, the angle over the whole set with each rep marked, and, for a lateral raise filmed from the front only, the range of each side (src/lib/counting/symmetry.ts).
@@ -53,9 +53,10 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the modules and data flow.
 ## Privacy
 
 Pose detection, counting, storage and the PDF run in the browser on the phone. The app never uploads the video, its frames or the landmarks: *aucune vidéo ni donnée patient ne quitte le téléphone ; seuls des compteurs d'usage anonymes sont envoyés.* What leaves the phone leaves by a tap: a shared report, a shared or downloaded file, a report of a wrong count by e-mail or GitHub issue.
-- Usage counts (src/lib/events.js) go to the server named by the repository variable VITE_EVENTS_URL in .github/workflows/deploy.yml, if set; when unset, no usage counts are sent.
+- Usage counts (src/lib/events.js) go to the server named by the repository variable VITE_EVENTS_URL in .github/workflows/deploy.yml, if set; when unset, none are sent. The published build has it set (deploy run 42468256377 builds with the feedback worker's address), so it sends them, under the audience-measurement notice and its opt-out (src/components/experience/UsageNotice.jsx).
+- A physiotherapy report leaves the phone only when the patient shares it, as a #kine-r link (src/components/kine/KinePatient.jsx).
 - Contributions of sets to improve the count are paused in the published build (src/lib/buildFlags.js).
-- Patient video upload in physiotherapy flows is disabled (ruled off by David on 25 October 2026; test/real-phone/defect1-glimpse/defect1-off.test.ts).
+- Patient video upload in physiotherapy flows is disabled (ruled off by David on 24 October 2026; glimpse-proxy/proxy.test.js, src/components/kine/Kine.test.jsx, src/lib/kine/__tests__/glimpse.test.js).
 - The nutrition section's barcode lookup sends the barcode to Open Food Facts (src/lib/nutrition.js).
 - Saved sets stay in the phone's browser storage.
 
