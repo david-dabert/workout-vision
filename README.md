@@ -33,11 +33,13 @@ These hold for the rep counter, its result screen, its report, its PDF, its JSON
 
 Labelled sets are counted by the same code the app runs, in CI on every push and pull request (npm run scoreboard, .github/workflows/ci.yml). Labels come from David or from human-annotated public datasets (R1).
 
-**David's sets** (test/real-phone/accuracy/scoreboard.txt, 7 November 2026):
-- stored landmark sets: 13 of the 15 that decide are exact; the 5 bench and overhead press sets are measured and decide nothing (PLAN.md);
-- real videos read whole by the built app: 12 of 16 exact, 2 refused, and 0 known errors of 3 or more (the pendulum squat error of 14 for 7 resolved to 7 exact, back extension 17 to 18 exact, sissy squat 5_5011 refused to 5 exact, sissy squat 7_5006 5 to 7 exact).
+**David's sets** (test/real-phone/accuracy/scoreboard.txt, 8 November 2026):
+- stored landmark sets: 13 of the 15 that decide are exact (not 14, not 15); the 5 bench and overhead press sets are measured and decide nothing (PLAN.md);
+- real videos read whole by the built app: 12 of 16 exact (not 13, not 14), 2 refused, and 0 known errors of 3 or more (the pendulum squat error of 14 for 7 resolved to 7 exact, back extension 17 to 18 exact, sissy squat 5_5011 refused to 5 exact, sissy squat 7_5006 5 to 7 exact).
 
-**Public build half** (test/real-phone/accuracy/public-scoreboard.txt, 25 October 2026): 1064 sets, 517 exact (49 %). Per dataset: Countix cut to its labelled window 203 of 447 exact (45 %), Countix whole 189 of 447 (42 %), CFRep 8 of 12, MM-Fit 117 of 158 (74 %). 44 of the 946 counted sets are off by 3 or more. Countix's two readings of a clip are not independent; by distinct clip, both readings are exact on 172 of 447 (38 %), either reading on 220 (49 %). Since 18 October a last rep the video stops at its working end counts (David's convention): Countix, whose labels count it, gained; MM-Fit, whose labels count whole reps only, lost 10. Since 20 October that rule reads the set's depth from one earlier rep instead of two, so a clip of two or three reps cut at its last working end counts that rep: Countix gained 12, no dataset lost a set. Since 25 October overlong reps in two-cycle sets (shorter cycle at least 0.8 s) and on the first sample are split, and the head return compares against one accepted rep: Countix gained 3 exact, off by 3 or more fell by 1.
+**Public build half** (test/real-phone/accuracy/public-scoreboard.txt, 8 November 2026): 1064 build sets, 517 exact (49%). Of the 949 in the baseline that decide, 468 exact (49%), 0 newly off by 3 or more. Per dataset: Countix cut to its labelled window 204 of 447 exact (46%), Countix whole 188 of 447 (42%), CFRep 8 of 12 (67%), MM-Fit 117 of 158 (74%). Countix by distinct clip: both readings exact on 172 of 447 (38%), either reading on 220 (49%).
+
+**Testers' blind counts** (test/real-phone/blind/, 8 November 2026): 0 sets recorded; collection schema, automated evaluation loop, baseline regression gate (`npm run scoreboard:blind`), and SHA-256 integrity lock (`labels.lock`) established.
 
 **Synthetic sets** (test/real-phone/synth/synth.txt, last written 6 October 2026): two rendered bodies read by the app's pose detection, 96 sets: 74 exact (77 %), 13 off by 3 or more. Ranges of motion read on average 29 degrees (30 %) below the skeleton's truth, and phase times about 0.6 s short. Synthetic bodies are not people: these figures bound what the pipeline can do in clean conditions.
 
@@ -50,13 +52,16 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the modules and data flow.
 
 ## Privacy
 
+*Aucune vidéo ni donnée patient ne quitte le téléphone ; seuls des compteurs d'usage anonymes sont envoyés.*
+
 Pose detection, counting, storage and the PDF run in the browser on the phone. The app never uploads the video, its frames or the landmarks. What leaves the phone leaves by a tap: a shared report, a shared or downloaded file, a report of a wrong count by e-mail or GitHub issue.
 - Usage counts (src/lib/events.js) are off in the published build: VITE_EVENTS_URL is pinned empty in .github/workflows/deploy.yml.
 - Contributions of sets to improve the count are paused in the published build (src/lib/buildFlags.js).
+- Patient video upload in physiotherapy flows is permanently disabled (test/real-phone/defect1-glimpse/defect1-off.test.ts).
 - The nutrition section's barcode lookup sends the barcode to Open Food Facts (src/lib/nutrition.js).
 - Saved sets stay in the phone's browser storage.
 
-The data-protection position of the app (GDPR and others) has not been reviewed; this README makes no compliance claim.
+The app makes no claim of "zero legal friction", "zero HDS", or "100% compliant"; the data-protection position of the app has not been reviewed by regulatory counsel.
 
 ## Development
 

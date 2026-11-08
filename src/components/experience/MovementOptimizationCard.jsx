@@ -205,7 +205,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           <div className="res-opt-metric" data-testid="form-fidelity-metric">
             <div className="res-opt-metric-head">
               <span className="res-opt-label">
-                {fr ? 'Fidélité de trajectoire' : 'Path Fidelity'}
+                {fr ? 'Fidélité de trajectoire (expérimental)' : 'Path Fidelity (experimental)'}
               </span>
               <span className="res-opt-val">
                 {Math.round(Math.max(0, 1 - analysis.formDistortionScore) * 100)}%
