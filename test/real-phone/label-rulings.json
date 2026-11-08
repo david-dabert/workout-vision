@@ -1,0 +1,4 @@
+{
+  "note": "David's rulings that let a line of test/real-phone/labels.lock change or go (Phase 6 of his order of 6 November 2026; scripts/check-labels-lock.mjs, test/real-phone/accuracy/labels-lock-diff.mjs). One entry per line of the lock as it stood before the change: line (that line, word for word), now (the line it becomes, word for word, or null when he rules that the set goes), date (the ruling's day, YYYY-MM-DD), ruling (David's own words) and source (where he gave it: a link to his comment, or the conversation and its time). The change must hold exactly the line now names. Only David rules on a label (CLAUDE.md R1); an agent records his ruling, never its own.",
+  "rulings": []
+}

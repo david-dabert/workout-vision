@@ -40,20 +40,31 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      # Labelled sets lock (CLAUDE.md R1; David's order of 6 November 2026, Phase 3): fails when any labelled file or
-      # its label changes without test/real-phone/labels.lock changing.
+      # Labelled sets lock (CLAUDE.md R1), against the base branch's tip on a pull request and the branch's previous tip
+      # on a push (github.event.before, as the baselines below; a new branch falls back to HEAD^1):
+      # 1. a labelled set file that changes changes test/real-phone/labels.lock with it (David's order of 6 November
+      #    2026, Phase 3);
+      # 2. no line of the base's labels.lock changes or goes without a ruling of David's recorded in
+      #    test/real-phone/label-rulings.json (the same order, Phase 6; scripts/check-labels-lock.mjs);
+      # 3. the lock holds every labelled set on disk, its SHA-256 and its label (labels-lock.test.ts).
       - name: Verify labelled sets lock (test/real-phone/labels.lock)
+        env:
+          BEFORE: ${{ github.event.before }}
         run: |
-          if [ -n "$GITHUB_BASE_REF" ]; then
-            git fetch --depth=1 origin "$GITHUB_BASE_REF"
-            changed=$(git diff --name-only FETCH_HEAD HEAD)
-            if echo "$changed" | grep -Eq '^test/real-phone/(sets-|landmarks/|testers/|public/).*\.json\.gz$'; then
-              if ! echo "$changed" | grep -qx 'test/real-phone/labels.lock'; then
-                echo "::error::Labelled set file changed without updating test/real-phone/labels.lock (CLAUDE.md R1)."
-                exit 1
-              fi
+          if [ -n "$GITHUB_BASE_REF" ]; then git fetch --depth=1 origin "$GITHUB_BASE_REF"; base=FETCH_HEAD
+          elif [ -n "$BEFORE" ] && [ "$BEFORE" != 0000000000000000000000000000000000000000 ]; then git fetch --depth=1 origin "$BEFORE"; base=FETCH_HEAD
+          else base=HEAD^1; fi
+          changed=$(git diff --name-only --no-renames "$base" HEAD)
+          if echo "$changed" | grep -Eq '^test/real-phone/(sets-|landmarks/|blind/|public/).*\.json\.gz$'; then
+            if ! echo "$changed" | grep -qx 'test/real-phone/labels.lock'; then
+              echo "::error::Labelled set file changed without updating test/real-phone/labels.lock (CLAUDE.md R1)."
+              exit 1
             fi
           fi
+          if git cat-file -e "$base:test/real-phone/labels.lock" 2>/dev/null; then
+            git show "$base:test/real-phone/labels.lock" > "$RUNNER_TEMP/labels.lock.base"
+          fi
+          node scripts/check-labels-lock.mjs "$RUNNER_TEMP/labels.lock.base" test/real-phone/labels.lock test/real-phone/label-rulings.json
           npx vitest run --no-cache test/real-phone/accuracy/labels-lock.test.ts
       - run: npm run lint
       - run: npm run typecheck
@@ -83,6 +94,11 @@ jobs:
       # So a commit that adds a labelled set, or moves a count, also commits the baselines it gives:
       # SCOREBOARD_UPDATE=1 npm run scoreboard and SCOREBOARD_UPDATE=1 npm run scoreboard:public.
       - run: SCOREBOARD_BASE="$RUNNER_TEMP/base/scoreboard-baseline.json" npm run scoreboard
+      # Blind counts, David's and the testers' (David's order of 6 November 2026, Phase 6), set by set against the same
+      # base baseline (blindCounts, testerBlindCounts): fails when one set's error grows, a set that gave a count is
+      # refused, a set becomes off by 3 or more, a set leaves, or a file breaks the schema
+      # (test/real-phone/blind/scoreboard-blind.test.ts, compare.mjs, parse.mjs).
+      - run: SCOREBOARD_BASE="$RUNNER_TEMP/base/scoreboard-baseline.json" npm run scoreboard:blind
       # The 894 public build sets (Countix): the same rule, the committed baseline included (public-scoreboard.test.ts);
       # its 76 bench press sets are shown and kept in the baseline, and decide nothing (PLAN.md).
       - run: PUBLIC_BASE="$RUNNER_TEMP/base/public-baseline.json" npm run scoreboard:public
