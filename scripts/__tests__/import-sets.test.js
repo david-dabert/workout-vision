@@ -44,7 +44,10 @@ describe('the import of set files', () => {
     expect(plan.problems).toEqual([]);
     expect(plan.moves).toEqual([{ from: 'squat_8_side_aaaaaaaa.json.gz', to: 'blind/olivier/squat_8_side_aaaaaaaa.json.gz' }]);
     expect(planImport(['squat_8_side_aaaaaaaa.json.gz'], { mode: 'tester', tester: 'Bad Name!', existing: [] }).problems)
-      .toEqual(['a tester is named with lowercase letters, digits, - or _: Bad Name!']);
+      .toEqual(['a tester is named with lowercase letters, digits, - or _, led by a letter: Bad Name!']);
+    // A dated folder is not a tester (review of 8 November 2026).
+    expect(planImport(['squat_8_side_aaaaaaaa.json.gz'], { mode: 'tester', tester: 'sets-09nov', existing: [] }).problems).toHaveLength(1);
+    expect(planImport(['squat_8_side_aaaaaaaa.json.gz'], { mode: 'tester', tester: '2026-11-09', existing: [] }).problems).toHaveLength(1);
   });
 });
 
