@@ -178,7 +178,7 @@ for (const viewport of [{ width: 390, height: 664 }, { width: 320, height: 568 }
         const midnight = new Date(now).setHours(0, 0, 0, 0);
         sets.forEach(({ ago, today, ...w }, k) => {
           const at = today ? Math.min(now, Math.max(now - ago, midnight + k + 1)) : now - ago;
-          store.put({ ...w, exercise: 'squat', createdAt: at, planned }, w.id);
+          store.put({ schemaVersion: 1, correctedResult: null, ...w, exercise: 'squat', createdAt: at, planned }, w.id);
         });
         tx.oncomplete = () => { db.close(); resolve(); };
         tx.onerror = () => reject(tx.error);

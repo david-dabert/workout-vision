@@ -410,7 +410,7 @@ Status of the 6 November order (8 November 2026):
    - List any previously cited unverified figures under "Not verified" and expunge them from documentation.
 2. **Accurate legal & privacy wording**:
    - Kiné loop and usage telemetry must be described strictly as:
-     *"Aucune vidéo ni donnée patient ne quitte le téléphone ; seuls des compteurs d'usage anonymes sont envoyés."*
+     *"Aucune vidéo ni donnée patient ne quitte le téléphone sans action explicite de l'utilisateur ; seuls des compteurs d'usage anonymes sont envoyés."* (David's ruling of 8 November 2026: qualified with user action, reflecting user-initiated sharing of PDF reports and videos).
    - Never use "zero legal friction", "zero HDS", or "100% compliant".
 3. **Experimental status markers**:
    - Mark Kinetic Forced Aligner rep path in `MovementOptimizationCard.jsx` as experimental (its template in `KineticForcedAligner.ts` is hand-written, R9).

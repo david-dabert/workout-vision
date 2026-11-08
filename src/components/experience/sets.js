@@ -108,11 +108,17 @@ export function proposedBy(w) {
 export function useSets(wait = 300) {
   const [sets, setSets] = useState(known ?? undefined);
   useEffect(() => {
-    if (known) return undefined;
     let live = true;
+    if (known) {
+      setSets(known);
+      return undefined;
+    }
     const late = setTimeout(() => { if (live) setSets(s => (s === undefined ? null : s)); }, wait);
     loadSets().then(list => { if (live) setSets(list); }, () => { if (live) setSets(null); });
     return () => { live = false; clearTimeout(late); };
   }, [wait]);
+  useEffect(() => onSetsChanged(() => {
+    loadSets().then(setSets).catch(() => {});
+  }), []);
   return sets;
 }
