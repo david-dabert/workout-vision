@@ -13,7 +13,8 @@ export function parseSetName(name) {
 
 /**
  * @param names the files handed over
- * @param mode 'exam' (into exam/<lift>/), 'build' (into `folder`, a sets-<date> folder), or 'tester' (into testers/<tester>/)
+ * @param mode 'exam' (into exam/<lift>/), 'build' (into `folder`, a sets-<date> folder), or 'tester' (into blind/<tester>/,
+ *   the testers' blind-count sets: test/real-phone/blind/README.md)
  * @param existing the set files already in test/real-phone, as '<folder>/<name>'
  */
 export function planImport(names, { mode, folder, tester, existing }) {
@@ -31,6 +32,6 @@ export function planImport(names, { mode, folder, tester, existing }) {
     if (known.has(s.hash)) problems.push(`already in the repository: ${name} is the video of ${known.get(s.hash)}`);
   }
   if (problems.length) return { moves: [], problems };
-  const dest = (name) => mode === 'exam' ? `exam/${parseSetName(name).lift}/${name}` : mode === 'tester' ? `testers/${tester}/${name}` : `${folder}/${name}`;
+  const dest = (name) => mode === 'exam' ? `exam/${parseSetName(name).lift}/${name}` : mode === 'tester' ? `blind/${tester}/${name}` : `${folder}/${name}`;
   return { moves: names.map(name => ({ from: name, to: dest(name) })), problems };
 }

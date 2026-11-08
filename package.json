@@ -21,6 +21,7 @@
     "scoreboard": "SCOREBOARD=1 vitest run --no-cache test/real-phone/accuracy/scoreboard.test.ts",
     "synth": "SYNTH_DIR=test/real-phone/synth/sets vitest run --no-cache test/real-phone/synth/analyse.test.ts",
     "scoreboard:public": "SCOREBOARD=1 vitest run --no-cache test/real-phone/accuracy/public-scoreboard.test.ts",
+    "scoreboard:blind": "SCOREBOARD=1 vitest run --no-cache test/real-phone/blind/scoreboard-blind.test.ts",
     "exam:testers": "node scripts/tester-exam.mjs",
     "test:universal": "node scripts/benchmarks/run-unified-matrix.mjs",
     "test:universal:full": "node scripts/benchmarks/run-unified-matrix.mjs --full",

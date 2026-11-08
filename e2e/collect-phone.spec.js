@@ -52,6 +52,9 @@ test('opened at #collecte, a kept set keeps its file, sent from the history and 
   expect(name).toBe(`bicep_curl_${d.count}_side_${d.videoSha256.slice(0, 8)}.json.gz`);
   expect(d.count).toBe(d.appCount);
   expect(d.blind).toEqual({ count: null, p: 1 });
+  // Phase 6 (David's order of 6 November 2026): the time the count was kept and the page load's anonymous id.
+  expect(Date.parse(d.recordedAt)).toBeGreaterThan(Date.parse('2026-11-01T00:00:00Z'));
+  expect(d.sessionId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
   expect(d.worldLandmarks.length).toBe(d.timestamps.length);
   expect(d.worldLandmarks.length).toBeGreaterThan(100);
   // The confirmation shows once: back on the choice, it is gone.

@@ -1,7 +1,7 @@
 // Verifies that every labelled set on disk matches test/real-phone/labels.lock (sha256 + label + path).
 // Fails if any labelled file or its label changes, or a labelled file is added or removed, without updating labels.lock
-// (CLAUDE.md R1; PLAN.md, David's order of 6 November 2026).
-import { createHash } from 'node:crypto';
+// (CLAUDE.md R1; PLAN.md, David's order of 6 November 2026). Blind files answered « Je ne sais pas » are locked too,
+// labelled "unsure" (lock-text.ts; Phase 6, review of 8 November 2026).
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { expect, test } from 'vitest';
@@ -15,6 +15,7 @@ import {
   testerBlindSets,
   videoSets,
 } from './sets';
+import { blindLockEntries, lockLine, type LockLabel } from './lock-text';
 
 const LOCK_PATH = resolve(ROOT, 'labels.lock');
 const HEADER = '# sha256  label  path (every labelled set read by test/real-phone/accuracy/sets.ts; CLAUDE.md R1)';
@@ -50,17 +51,15 @@ function buildLockText(): string {
     ...benches.flatMap(b => b.sets),
   ];
 
-  const byName = new Map<string, number>();
+  const byName = new Map<string, LockLabel>();
   for (const s of all) {
     byName.set(s.name, s.label);
   }
+  for (const [name, label] of blindLockEntries()) byName.set(name, label);
 
   const lines = [...byName.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([name, label]) => {
-      const sha256 = createHash('sha256').update(readFileSync(resolve(ROOT, name))).digest('hex');
-      return `${sha256}  ${label}  ${name}`;
-    });
+    .map(([name, label]) => lockLine(ROOT, name, label));
 
   return [HEADER, ...lines, ''].join('\n');
 }
