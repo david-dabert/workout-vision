@@ -1,82 +1,56 @@
-/**
- * Schema and validation for testers' blind count records.
- * Phase 6 of David's order of 6 November 2026 (PLAN.md).
- */
+// The blind-count file's schema, typed for the TypeScript tests (Phase 6 of David's order of 6 November 2026): the file
+// a phone keeps when a count is kept on the result screen (src/lib/phoneCollect.js, collectedPayload) and sends only
+// through the share sheet. The reader is parse.mjs, plain JavaScript, so the Node scripts (scripts/import-sets.mjs,
+// scripts/tester-exam.mjs) and the tests read one schema; this module gives it its types (README.md here).
+import { parseBlindFile as parse, MAX_COUNT, SHA256, UUID } from './parse.mjs';
 
-export interface BlindCountRecord {
-  version?: number;
-  videoSha256: string;
+/** A blind-count file as the phone writes it: the collector's set, with the count kept after the app showed its own. */
+export interface BlindFile {
   lift: string;
-  testerCount: number;
-  appCount: number | null;
+  /** The count kept on the result screen, after the app showed its own. */
+  count: number;
+  view?: string;
+  /** The video's SHA-256, or the landmarks' when the video could not be read (hashOf). */
+  videoSha256: string;
+  hashOf?: 'video' | 'landmarks';
+  labelKind: 'after-app';
+  appCount?: number | null;
   appRefused?: boolean;
-  timestamp: string | number;
-  sessionId: string;
-  worldLandmarks?: any[] | null;
-  timestamps?: number[] | null;
-  imageLandmarks?: any[] | null;
+  proposal?: number | null;
+  /** The day the count was kept, YYYY-MM-DD (Phase 6). */
+  recordedAt?: string;
+  /** The page load's anonymous id, a version 4 UUID (Phase 6). */
+  sessionId?: string;
+  /** The person's count before the app showed its own; count null: « Je ne sais pas ». */
+  blind: { count: number | null; p: number | null };
+  worldLandmarks: unknown[];
+  imageLandmarks?: unknown[] | null;
+  timestamps: number[];
 }
 
-export interface ValidationResult {
-  valid: boolean;
-  errors: string[];
+/** One blind set as the scoreboards read it: the label is the blind count. */
+export interface ParsedBlindSet {
+  lift: string;
+  label: number;
+  kept: number;
+  appCount: number | null;
+  appRefused: boolean;
+  proposal: number | null;
+  videoSha256: string;
+  hashOf: string | null;
+  recordedAt: string | null;
+  sessionId: string | null;
+  wl: any[];
+  ts: number[];
+  il: any[] | null;
 }
 
-export function validateBlindRecord(data: unknown): ValidationResult {
-  const errors: string[] = [];
-  if (!data || typeof data !== 'object') {
-    return { valid: false, errors: ['Record must be a non-null object'] };
-  }
+export type BlindRead =
+  | { status: 'none' }
+  | { status: 'unsure' }
+  | { status: 'unreadable'; reason: string }
+  | { status: 'set'; set: ParsedBlindSet };
 
-  const r = data as Partial<BlindCountRecord>;
-
-  if (typeof r.videoSha256 !== 'string' || !/^[0-9a-fA-F]{8,64}$/.test(r.videoSha256)) {
-    errors.push('videoSha256 must be a valid hex string (at least 8 chars)');
-  }
-
-  if (typeof r.lift !== 'string' || !r.lift.trim()) {
-    errors.push('lift must be a non-empty string naming the exercise');
-  }
-
-  if (!Number.isInteger(r.testerCount) || (r.testerCount as number) < 1) {
-    errors.push('testerCount must be an integer >= 1 (the tester’s blind label)');
-  }
-
-  if (r.appCount !== null && !Number.isInteger(r.appCount) && r.appCount !== 'refused' as any) {
-    errors.push('appCount must be an integer, null, or "refused"');
-  }
-
-  if (r.timestamp === undefined || r.timestamp === null || (typeof r.timestamp !== 'string' && typeof r.timestamp !== 'number')) {
-    errors.push('timestamp must be a non-empty string or number');
-  }
-
-  if (typeof r.sessionId !== 'string' || !r.sessionId.trim()) {
-    errors.push('sessionId must be a non-empty string');
-  }
-
-  if (r.worldLandmarks !== undefined && r.worldLandmarks !== null) {
-    if (!Array.isArray(r.worldLandmarks)) {
-      errors.push('worldLandmarks must be an array when present');
-    }
-  }
-
-  if (r.timestamps !== undefined && r.timestamps !== null) {
-    if (!Array.isArray(r.timestamps)) {
-      errors.push('timestamps must be an array when present');
-    }
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-  };
-}
-
-export function parseBlindRecord(jsonString: string): BlindCountRecord {
-  const data = JSON.parse(jsonString);
-  const { valid, errors } = validateBlindRecord(data);
-  if (!valid) {
-    throw new Error(`Invalid blind count record: ${errors.join('; ')}`);
-  }
-  return data as BlindCountRecord;
-}
+/** Reads one parsed file (parse.mjs); `name`, the file's own name, is checked against what the file says. */
+export const parseBlindFile = parse as unknown as (d: unknown, name?: string | null) => BlindRead;
+export { MAX_COUNT, SHA256, UUID };

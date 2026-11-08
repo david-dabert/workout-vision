@@ -27,6 +27,7 @@ import { resolve } from 'node:path';
 import { summarizeCount, withProposal, withBodyCheck } from '../../../src/lib/coreAnalysis';
 import { countChoices, inList } from '../../../src/components/experience/result-choices';
 import { blindSets, decides, doubtLine, labelledSets, PRESS_DECIDES_NOTHING, testerBlindSets, videoSets, writeScoreboard } from './sets';
+import { appOutcome, blindOutcome } from './outcome.mjs';
 import { pairedLine, type Pair } from './paired';
 import { sureLine, sureRow } from './sure';
 
@@ -104,14 +105,9 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   // Real video, 7 October (test/real-phone/sets-07oct-video/, README.md there): David's 13 gym videos read whole by the
   // built app (analyzeCoreVideo), his labels (R1). The same R2 rules, on their own baseline (videoCounts): no exact
   // count lost, none newly off by 3 or more, none newly refused. A read the app itself refused (partial) is refused here.
-  // The app's outcome on a whole video, and on a set it refuses, the proposal it offers (shown, decides nothing).
-  const videoCount = (s: ReturnType<typeof videoSets>['sets'][number]) => {
-    if (s.appRefused) return { now: 'refused' as const };
-    const r: any = summarizeCount(s.wl, s.ts, s.lift, undefined, s.il ?? undefined);
-    if (!r.refused) return { now: r.count, doubt: r.doubt };
-    const p: any = s.il ? withProposal({ ...r, worldLandmarks: s.wl, timestamps: s.ts, imageLandmarks: s.il }, s.lift) : null;
-    return { now: 'refused' as const, note: p?.proposal?.count ? `(proposal ${p.proposal.count})` : '(no proposal)' };
-  };
+  // The app's outcome on a whole video, and on a set it refuses, the proposal it offers (shown, decides nothing):
+  // appOutcome in outcome.mjs, shared with the blind scoreboard (test/real-phone/accuracy/scoreboard-blind.test.ts).
+  const videoCount = appOutcome;
   const video = videoSets();
   const v = section(video.sets, base.videoCounts ?? {}, i => videoCount(video.sets[i]));
   for (const name of video.unreadable) v.rows.push(`UNREADABLE ${name}  (not gzip JSON, or no lift, whole count or landmarks)`);
@@ -126,7 +122,7 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
   // David's blind counts (blindSets): the app's outcome now against the count he gave before seeing it; beside it, the
   // count he kept after seeing the app's, and whether he changed his mind.
   const blind = blindSets();
-  const bnow = blind.sets.map(s => videoCount({ ...s, appRefused: false, motion: null }) as { now: number | string; note?: string });
+  const bnow = blind.sets.map(s => blindOutcome(s) as { now: number | string; note?: string });
   // The R2 tally of the blind section, on its own baseline (blindCounts), as the stored and video sections.
   const bl = section(blind.sets, base.blindCounts ?? {}, i => ({ now: bnow[i].now }));
   const brows = blind.sets.map((s, i) => {
@@ -135,13 +131,14 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
     return `   ${s.name}  blind ${s.label}  now ${o.now} (${verdict(o.now, s.label)})${o.note ? `  ${o.note}` : ''}${changed}${decides(s.lift) ? '' : `  ${PRESS_DECIDES_NOTHING}`}`;
   });
   for (const name of blind.unsure) brows.push(`   ${name}  answered "Je ne sais pas": no blind count`);
-  for (const name of blind.unreadable) brows.push(`UNREADABLE ${name}  (a blind count, but no lift, whole count or landmarks)`);
+  for (const name of blind.unreadable) brows.push(`UNREADABLE ${name}  (${blind.why[name]}; test/real-phone/blind/parse.mjs)`);
   const bexact = blind.sets.filter((s, i) => decides(s.lift) && bnow[i].now === s.label).length, bdec = blind.sets.filter(s => decides(s.lift)).length;
   const bhead = `David's blind counts (his count in the app before it showed its own, blind.js; labels since his ruling of 15 October 2026, R1; they decide under R2): ${blind.sets.length} sets, ${bexact} exact of the ${bdec} that decide; of the ${bl.n - bl.added - bl.press} in the baseline, ${bl.exactNow} exact now, ${bl.exactBefore} before; ${bl.catastrophic} newly catastrophic, ${bl.becameRefused} newly refused; ${blind.sets.filter(s => s.kept !== s.label).length} kept at another count after seeing the app's; ${blind.unsure.length} answered "Je ne sais pas".`;
-  // Testers' blind counts (testerBlindSets, test/real-phone/testers/<tester>/; David's R1 amendment of 25 October 2026):
-  // blind counts from people David names, deciding under R2 on their own baseline (testerBlindCounts).
+  // Testers' blind counts (testerBlindSets, test/real-phone/blind/<tester>/; David's R1 amendment of 25 October 2026):
+  // blind counts from people David names, deciding under R2 on their own baseline (testerBlindCounts). Set by set, with
+  // the refusal rate, in npm run scoreboard:blind (test/real-phone/accuracy/scoreboard-blind.test.ts).
   const tblind = testerBlindSets();
-  const tbnow = tblind.sets.map(s => videoCount({ ...s, appRefused: false, motion: null }) as { now: number | string; note?: string });
+  const tbnow = tblind.sets.map(s => blindOutcome(s) as { now: number | string; note?: string });
   const tbl = section(tblind.sets, base.testerBlindCounts ?? {}, i => ({ now: tbnow[i].now }));
   const tbrows = tblind.sets.map((s, i) => {
     const o = tbnow[i];
@@ -149,7 +146,7 @@ test.skipIf(!process.env.SCOREBOARD)('scoreboard', () => {
     return `   ${s.name}  tester ${s.tester}  blind ${s.label}  now ${o.now} (${verdict(o.now, s.label)})${o.note ? `  ${o.note}` : ''}${changed}${decides(s.lift) ? '' : `  ${PRESS_DECIDES_NOTHING}`}`;
   });
   for (const name of tblind.unsure) tbrows.push(`   ${name}  answered "Je ne sais pas": no blind count`);
-  for (const name of tblind.unreadable) tbrows.push(`UNREADABLE ${name}  (not a valid tester blind-count set)`);
+  for (const name of tblind.unreadable) tbrows.push(`UNREADABLE ${name}  (${tblind.why[name]}; test/real-phone/blind/parse.mjs)`);
   const tbexact = tblind.sets.filter((s, i) => decides(s.lift) && tbnow[i].now === s.label).length, tbdec = tblind.sets.filter(s => decides(s.lift)).length;
   const tbhead = `Testers' blind counts ${today} (their count in the app before it showed its own, blind.js; labels since David's ruling of 25 October 2026, R1; they decide under R2): ${tblind.sets.length} sets, ${tbexact} exact of the ${tbdec} that decide; of the ${tbl.n - tbl.added - tbl.press} in the baseline, ${tbl.exactNow} exact now, ${tbl.exactBefore} before; ${tbl.catastrophic} newly catastrophic, ${tbl.becameRefused} newly refused; ${tblind.sets.filter(s => s.kept !== s.label).length} kept at another count after seeing the app's; ${tblind.unsure.length} answered "Je ne sais pas".`;
   const bRes = sets.map(s => ({ lift: s.lift, label: s.label, result: appPath(s.lift, s.wl, s.ts, s.il ?? null) }));

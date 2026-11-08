@@ -1,4 +1,4 @@
 {
-  "note": "Testers' blind counts baseline, measured by npm run scoreboard:blind. SCOREBOARD_UPDATE=1 updates this file.",
+  "note": "Not read since 8 November 2026: the blind counts' baselines are blindCounts and testerBlindCounts in scoreboard-baseline.json, which npm run scoreboard writes and npm run scoreboard:blind compares with (test/real-phone/blind/README.md). Kept because deleting a file under test/ waits for David's approval (CLAUDE.md R5).",
   "counts": {}
 }

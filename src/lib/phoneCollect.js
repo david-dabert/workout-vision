@@ -11,8 +11,11 @@
 // scoreboard is David's decision (R1, R13); a blind recount is kept for the sets the scoreboard publishes.
 // Since 9 October 2026 (blind.js) the file also carries the count David gave before the app showed its own, as
 // blind: { count, p } (count null for "Je ne sais pas"), and a refused set he counted blind is kept as well, marked
-// appRefused, with the app's proposal when it made one. The scoreboard reads blind.count as his blind label in a
-// section of its own, which decides nothing until he says so (test/real-phone/accuracy/sets.ts, blindSets).
+// appRefused, with the app's proposal when it made one. The scoreboard reads blind.count as the blind label, in a
+// section of its own (test/real-phone/accuracy/sets.ts, blindSets and testerBlindSets): a label since David's rulings
+// of 15 October 2026 (his own counts) and 25 October 2026 (a person he names, on a #collecte phone; CLAUDE.md R1).
+// Since 8 November 2026 (Phase 6 of his order of 6 November) the file also carries recordedAt and an anonymous
+// sessionId (collectSessionId below); its schema is test/real-phone/blind/README.md, read by test/real-phone/blind/parse.mjs.
 import { setPayload } from './collector';
 
 export const COLLECT_KEY = 'wv_collecte';
@@ -98,13 +101,37 @@ export async function landmarksSha256(worldLandmarks) {
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+// An anonymous id for this page load (Phase 6 of David's order of 6 November 2026, "timestamp and anonymous session
+// ID"): it groups the sets one person films in one visit without saying who they are. Drawn from the browser's random
+// generator when the first set is kept and held in memory for the page load; a reload draws a new one. It is written
+// into each set kept on this phone, and leaves the phone with those files, through the share sheet, and in no other way.
+/** A random UUID (version 4), or null when the browser has no random generator. */
+export function newSessionId(cryptoApi = globalThis.crypto) {
+  try {
+    if (typeof cryptoApi?.randomUUID === 'function') return cryptoApi.randomUUID();
+    // randomUUID needs a secure context; getRandomValues does not. Version 4, variant 1, as RFC 9562 §5.4 sets them.
+    const b = cryptoApi.getRandomValues(new Uint8Array(16));
+    b[6] = (b[6] & 0x0f) | 0x40;
+    b[8] = (b[8] & 0x3f) | 0x80;
+    const h = Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
+    return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+  } catch { return null; }
+}
+let sessionId = null;
+/** This page load's anonymous session id, drawn once (newSessionId); null when it cannot be drawn. */
+export function collectSessionId() {
+  if (!sessionId) sessionId = newSessionId();
+  return sessionId;
+}
+
 /**
  * One kept set as the collector's file (collector.js setPayload), with the count kept on the result screen, marked
  * 'after-app', and the app's own count. hashOf says whether videoSha256 is the video's or, failing that, the
  * landmarks' hash. view is the view the app asks this lift to be filmed from (exercise-info.js filmView), since the
- * result screen does not ask it; viewSource says so.
+ * result screen does not ask it; viewSource says so. recordedAt (the day the count was kept, YYYY-MM-DD) and sessionId
+ * (this page load's anonymous id, collectSessionId) are written when given (Phase 6; test/real-phone/blind/README.md).
  */
-export function collectedPayload({ result, lift, kept, view, sha256, hashOf, version, blind = null, choice = null }) {
+export function collectedPayload({ result, lift, kept, view, sha256, hashOf, version, blind = null, choice = null, recordedAt = null, sessionId: session = null }) {
   const m = result?.metadata || {};
   return {
     ...setPayload({
@@ -122,6 +149,8 @@ export function collectedPayload({ result, lift, kept, view, sha256, hashOf, ver
     hashOf,
     viewSource: 'app-guide',
     source: 'result-screen',
+    ...(recordedAt ? { recordedAt } : {}),
+    ...(session ? { sessionId: session } : {}),
     ...(blind ? { blind: { count: Number.isInteger(blind.count) ? blind.count : null, p: blind.p ?? null } } : {}),
     // The list offered in one tap and how the count was given (result-choices.js, saved-set.js choice).
     ...(choice ? { choice } : {}),
@@ -137,23 +166,31 @@ export function collectedPayload({ result, lift, kept, view, sha256, hashOf, ver
 /**
  * Keeps this set's file on the phone when the flag is on; returns its name, or null when the flag is off (nothing is
  * read, hashed or stored then). videoFile: the video the count was made from (its SHA-256 names the file, as the
- * collector names it); without it, or when it cannot be read, the landmarks' hash does.
+ * collector names it); without it, or when it cannot be read, the landmarks' hash does. now: the clock (for tests).
  */
-export async function collectThisSet({ result, lift, kept, view, videoFile = null, version, blind = null, choice = null, storage = globalThis.localStorage, put }) {
+export async function collectThisSet({ result, lift, kept, view, videoFile = null, version, blind = null, choice = null, storage = globalThis.localStorage, put, now = () => new Date() }) {
   if (!collectOn(storage)) return null;
   if (!result || !Array.isArray(result.worldLandmarks) || !result.worldLandmarks.length || !Number.isInteger(kept)) return null;
+  // The clock is read when the count is kept, before the video is read and hashed: Safari can suspend the page for as
+  // long as the phone stays locked (review of 8 November 2026).
+  const at = now();
   const { setFileName, hashVideoContent, gzipBlob } = await import('./collector');
   const s = await getStore();
   const writePut = put || ((k, v) => s.setItem(k, v));
   let sha256 = null, hashOf = 'video';
   if (videoFile) { try { sha256 = await hashVideoContent(videoFile); } catch { sha256 = null; } }
   if (!sha256) { sha256 = await landmarksSha256(result.worldLandmarks); hashOf = 'landmarks'; }
-  const payload = collectedPayload({ result, lift, kept, view, sha256, hashOf, version, blind, choice });
+  const payload = collectedPayload({ result, lift, kept, view, sha256, hashOf, version, blind, choice, recordedAt: keptDay(at), sessionId: collectSessionId() });
   const blob = await gzipBlob(JSON.stringify(payload));
   const name = setFileName(lift, kept, view, sha256);
-  await writePut(name, { name, blob, savedAt: new Date().toISOString() });
+  // savedAt never leaves the phone: the instant, to list the files in the order they were kept.
+  await writePut(name, { name, blob, savedAt: at.toISOString() });
   return name;
 }
+
+// The day on the phone's own calendar, which is all the file says of the time: the testers' files are kept in a
+// public repository, under a name David gives, so the hour a person trained is not written (review of 8 November 2026).
+const keptDay = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 /** The files waiting on this phone, oldest first, as File objects ready for the share sheet. */
 export async function collectedFiles() {

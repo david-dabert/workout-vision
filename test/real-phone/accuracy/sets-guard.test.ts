@@ -17,11 +17,12 @@ const put = (dir: string, name: string, d: object) => {
 };
 // The collector's file, labelled by David from the video: no labelKind.
 put('sets-01jan', 'bicep_curl_8_side_aaaaaaaa.json.gz', { lift: 'bicep_curl', count: 8, ...pose });
-// The result screen's file (phoneCollect.js): counted after the app's, with and without the blind count.
-put('sets-01jan', 'bicep_curl_9_side_bbbbbbbb.json.gz', { lift: 'bicep_curl', count: 9, labelKind: 'after-app', appCount: 9, ...pose });
-put('sets-01jan', 'squat_7_side_cccccccc.json.gz', { lift: 'squat', count: 7, labelKind: 'after-app', appCount: 8, blind: { count: 7, p: 1 }, ...pose });
-put('sets-01jan', 'squat_6_side_dddddddd.json.gz', { lift: 'squat', count: 6, labelKind: 'after-app', appCount: 0, appRefused: true, proposal: 5, blind: { count: 6, p: 1 }, ...pose });
-put('sets-01jan', 'squat_5_side_eeeeeeee.json.gz', { lift: 'squat', count: 5, labelKind: 'after-app', appCount: 5, blind: { count: null, p: 1 }, ...pose });
+// The result screen's file (phoneCollect.js): counted after the app's, with and without the blind count, named by the
+// first 8 characters of its video's SHA-256 (test/real-phone/blind/parse.mjs reads a blind file only so).
+put('sets-01jan', 'bicep_curl_9_side_bbbbbbbb.json.gz', { videoSha256: 'b'.repeat(64), lift: 'bicep_curl', count: 9, labelKind: 'after-app', appCount: 9, ...pose });
+put('sets-01jan', 'squat_7_side_cccccccc.json.gz', { videoSha256: 'c'.repeat(64), lift: 'squat', count: 7, labelKind: 'after-app', appCount: 8, blind: { count: 7, p: 1 }, ...pose });
+put('sets-01jan', 'squat_6_side_dddddddd.json.gz', { videoSha256: 'd'.repeat(64), lift: 'squat', count: 6, labelKind: 'after-app', appCount: 0, appRefused: true, proposal: 5, blind: { count: 6, p: 1 }, ...pose });
+put('sets-01jan', 'squat_5_side_eeeeeeee.json.gz', { videoSha256: 'e'.repeat(64), lift: 'squat', count: 5, labelKind: 'after-app', appCount: 5, blind: { count: null, p: 1 }, ...pose });
 // A whole-video folder is read by videoSets, never here.
 put('sets-01jan-video', 'squat_9.json.gz', { lift: 'squat', count: 9, ...pose });
 
