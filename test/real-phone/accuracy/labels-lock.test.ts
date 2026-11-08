@@ -4,12 +4,14 @@
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { execSync } from 'node:child_process';
 import { expect, test } from 'vitest';
 import {
   BENCH_ONLY,
   benchSets,
   blindSets,
   labelledSets,
+  loopBlindSets,
   publicSets,
   ROOT,
   testerBlindSets,
@@ -25,6 +27,7 @@ function buildLockText(): string {
   const vidMode = videoSets({ mode: 'video' });
   const blind = blindSets();
   const tblind = testerBlindSets();
+  const loopBlind = loopBlindSets();
   const pub = publicSets('build');
   const benches = BENCH_ONLY.map(ds => benchSets(ds, 'build'));
 
@@ -33,6 +36,7 @@ function buildLockText(): string {
   expect(vidMode.unreadable).toEqual([]);
   expect(blind.unreadable).toEqual([]);
   expect(tblind.unreadable).toEqual([]);
+  expect(loopBlind.unreadable).toEqual([]);
   expect(pub.unreadable).toEqual([]);
   expect(pub.missing).toEqual([]);
   for (const b of benches) {
@@ -46,6 +50,7 @@ function buildLockText(): string {
     ...vidMode.sets,
     ...blind.sets,
     ...tblind.sets,
+    ...loopBlind.sets,
     ...pub.sets,
     ...benches.flatMap(b => b.sets),
   ];
@@ -73,3 +78,42 @@ test('every labelled set on disk matches test/real-phone/labels.lock (sha256 and
   const committed = readFileSync(LOCK_PATH, 'utf8');
   expect(actual).toBe(committed);
 }, 120_000);
+
+test('no existing line in labels.lock is modified or removed without an explicit ruling (CLAUDE.md R1)', () => {
+  let baseContent: string | null = null;
+  const baseRef = process.env.GITHUB_BASE_REF ? `origin/${process.env.GITHUB_BASE_REF}` : 'origin/main';
+  try {
+    baseContent = execSync(`git show ${baseRef}:test/real-phone/labels.lock 2>/dev/null`, { encoding: 'utf8' });
+  } catch {
+    try {
+      baseContent = execSync('git show HEAD~1:test/real-phone/labels.lock 2>/dev/null', { encoding: 'utf8' });
+    } catch {
+      baseContent = null;
+    }
+  }
+  if (!baseContent) return;
+
+  const currentLines = new Set(
+    readFileSync(LOCK_PATH, 'utf8')
+      .split('\n')
+      .map(l => l.trim())
+      .filter(l => l && !l.startsWith('#'))
+  );
+
+  const baseLines = baseContent
+    .split('\n')
+    .map(l => l.trim())
+    .filter(l => l && !l.startsWith('#'));
+
+  const removedOrModified: string[] = [];
+  for (const line of baseLines) {
+    if (!currentLines.has(line)) {
+      removedOrModified.push(line);
+    }
+  }
+
+  expect(
+    removedOrModified,
+    `Existing lines in labels.lock were modified or removed without an explicit ruling from David:\n${removedOrModified.join('\n')}`
+  ).toEqual([]);
+});

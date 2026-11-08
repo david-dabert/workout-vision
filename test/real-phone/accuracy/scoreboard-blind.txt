@@ -1,0 +1,1 @@
+Testers' blind counts scoreboard (2026-11-08): 0 sets; 0 exact (0%); 0 catastrophic; 0 refused (0%).

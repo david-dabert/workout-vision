@@ -109,6 +109,60 @@ export function testerBlindSets(root = ROOT) {
   return { sets, unreadable, unsure };
 }
 
+// Recorded blind count loop sets (Phase 6, PLAN.md): schema in test/real-phone/blind/.
+export type LoopBlindSet = {
+  name: string;
+  videoSha256: string;
+  lift: string;
+  label: number;
+  testerCount: number;
+  appCount: number | null;
+  appRefused: boolean;
+  timestamp: string | number;
+  sessionId: string;
+  wl: any[] | null;
+  ts: number[] | null;
+  il?: any[] | null;
+};
+
+export function loopBlindSets(root = ROOT) {
+  const sets: LoopBlindSet[] = [], unreadable: string[] = [];
+  const dir = resolve(root, 'blind');
+  if (!existsSync(dir)) return { sets, unreadable };
+  for (const f of readdirSync(dir).filter(f => (f.endsWith('.json') || f.endsWith('.json.gz')) && !f.endsWith('.test.ts')).sort()) {
+    const name = `blind/${f}`;
+    let d: any;
+    try {
+      const raw = readFileSync(resolve(dir, f));
+      const str = f.endsWith('.gz') ? gunzipSync(raw).toString('utf8') : raw.toString('utf8');
+      d = JSON.parse(str);
+    } catch {
+      unreadable.push(name);
+      continue;
+    }
+    if (!d || typeof d !== 'object') { unreadable.push(name); continue; }
+    if (typeof d.videoSha256 !== 'string' || !d.lift || !Number.isInteger(d.testerCount) || d.testerCount < 1) {
+      unreadable.push(name);
+      continue;
+    }
+    sets.push({
+      name,
+      videoSha256: d.videoSha256,
+      lift: d.lift,
+      label: d.testerCount,
+      testerCount: d.testerCount,
+      appCount: Number.isInteger(d.appCount) ? d.appCount : null,
+      appRefused: !!d.appRefused || d.appCount === 'refused' || d.appCount === null,
+      timestamp: d.timestamp ?? '',
+      sessionId: d.sessionId ?? '',
+      wl: Array.isArray(d.worldLandmarks) ? d.worldLandmarks : null,
+      ts: Array.isArray(d.timestamps) ? d.timestamps : null,
+      il: Array.isArray(d.imageLandmarks) ? d.imageLandmarks : null,
+    });
+  }
+  return { sets, unreadable };
+}
+
 // David's real videos read whole through the built app (analyzeCoreVideo on check.html, test/real-phone/sets-*-video/,
 // capture.mjs there): the app's landmarks, timestamps and metadata, his label (R1), and the motion frames of the pose
 // region (24 x 24 gray, motionRhythm.js). `appRefused`: the app refused the read itself (a partial read): no count.
