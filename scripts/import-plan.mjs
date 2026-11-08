@@ -20,7 +20,7 @@ export function parseSetName(name) {
 export function planImport(names, { mode, folder, tester, existing }) {
   const problems = [];
   if (mode === 'build' && !/^sets-[0-9a-z]+$/.test(folder || '')) problems.push(`a build folder is named sets-<date>: ${folder}`);
-  if (mode === 'tester' && !/^[a-z0-9][a-z0-9_-]*$/.test(tester || '')) problems.push(`a tester is named with lowercase letters, digits, - or _: ${tester}`);
+  if (mode === 'tester' && !/^(?!sets-)[a-z][a-z0-9_-]*$/.test(tester || '')) problems.push(`a tester is named with lowercase letters, digits, - or _, led by a letter: ${tester}`);
   const known = new Map(existing.map(path => [parseSetName(path.split('/').pop())?.hash, path]).filter(([h]) => h));
   const seen = new Map();
   for (const name of names) {

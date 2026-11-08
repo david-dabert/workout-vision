@@ -32,13 +32,12 @@ Preview: `https://david-dabert.github.io/workout-vision/`
 - The app never uploads videos, frames, or landmarks to any server.
 - Usage events (`feedback-worker/`) send only anonymous operational counters when configured, gated by the CNIL audience-measurement notice and opt-out toggle (`src/components/experience/UsageNotice.jsx`).
 - Kiné patient video upload in `KinePatient.jsx` and `glimpse-proxy/` is disabled (ruled off by David on 24 October 2026; `glimpse-proxy/proxy.test.js`, `src/components/kine/Kine.test.jsx`, `src/lib/kine/__tests__/glimpse.test.js`).
-- A physiotherapy report leaves the phone only when the patient shares it, as a `#kine-r` link (`KinePatient.jsx`).
 - The published build sends the anonymous usage counts: deploy run `42468256377` builds with `VITE_EVENTS_URL` naming the feedback worker.
 - No claims of "zero legal friction", "zero HDS", or "100% compliant" are permitted or made.
 
 ## Product & Governance State (8 November 2026)
 
-- **Offered**: 183 exercises. Tiers (`src/lib/liftTiers.js`): Beta: biceps curl, lat pulldown, squat, hip thrust, Romanian deadlift, leg press. Experimental: lateral raise, bench press, overhead press, and all other lifts. None has passed an exam.
+- **Offered**: 183 exercises. Tiers (`src/lib/liftTiers.js`): Beta: biceps curl, lat pulldown, squat, hip thrust, Romanian deadlift, leg press, machine seated back extension. Experimental: lateral raise, bench press, overhead press, and all other lifts. None has passed an exam.
 - **Experimental Markers**: Kinetic Forced Aligner trajectory matching in `MovementOptimizationCard.jsx` is explicitly marked experimental (its template in `KineticForcedAligner.ts` is hand-written, R9).
 - **French register and naming**: The screens use `"vous"`. The brand is `"WorkoutVision"`, and in French the app is referred to as `"l’appli"`.
 - **Sub-agents**: `wv-reviewer`, `wv-verifier` and `wv-control` (`.claude/agents/`).

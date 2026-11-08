@@ -54,7 +54,6 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the modules and data flow.
 
 Pose detection, counting, storage and the PDF run in the browser on the phone. The app never uploads the video, its frames or the landmarks: *aucune vidéo ni donnée patient ne quitte le téléphone ; seuls des compteurs d'usage anonymes sont envoyés.* What leaves the phone leaves by a tap: a shared report, a shared or downloaded file, a report of a wrong count by e-mail or GitHub issue.
 - Usage counts (src/lib/events.js) go to the server named by the repository variable VITE_EVENTS_URL in .github/workflows/deploy.yml, if set; when unset, none are sent. The published build has it set (deploy run 42468256377 builds with the feedback worker's address), so it sends them, under the audience-measurement notice and its opt-out (src/components/experience/UsageNotice.jsx).
-- A physiotherapy report leaves the phone only when the patient shares it, as a #kine-r link (src/components/kine/KinePatient.jsx).
 - Contributions of sets to improve the count are paused in the published build (src/lib/buildFlags.js).
 - Patient video upload in physiotherapy flows is disabled (ruled off by David on 24 October 2026; glimpse-proxy/proxy.test.js, src/components/kine/Kine.test.jsx, src/lib/kine/__tests__/glimpse.test.js).
 - The nutrition section's barcode lookup sends the barcode to Open Food Facts (src/lib/nutrition.js).

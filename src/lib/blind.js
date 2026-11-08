@@ -11,7 +11,7 @@
 //
 // Whether a blind count is a label (R1): David's own since his ruling of 15 October 2026, and a tester's he names since
 // 25 October 2026. Both decide under R2 in their sections of the scoreboard, and every blind set of a lift that decides is
-// gated in CI, set by set (npm run scoreboard:blind; bench and overhead press sets decide nothing: compare.mjs).
+// gated in CI, set by set, from the change after the one that adds it (npm run scoreboard:blind; bench and overhead press sets decide nothing: compare.mjs).
 
 /** The share of sets asked on David's phone. Status: convention (David's order: every set he films there). */
 export const BLIND_P_COLLECT = 1;

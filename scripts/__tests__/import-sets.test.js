@@ -155,7 +155,7 @@ describe('the import script and tester exam', () => {
     // commit, 8 November 2026).
     mkdirSync(join(root, 'blind', 'T02'), { recursive: true });
     writeFileSync(join(root, 'blind', 'T02', 'squat_8_side_11223344.json.gz'), gzipSync(JSON.stringify(blindPayload)));
-    const misplaced = run(root, [], EXAM_SCRIPT);
+    const misplaced = run(root, ['--record'], EXAM_SCRIPT);
     expect(misplaced.code).toBe(1);
     expect(misplaced.out).toContain("UNREADABLE blind/T02/squat_8_side_11223344.json.gz (the folder T02 is not a tester's name");
   });

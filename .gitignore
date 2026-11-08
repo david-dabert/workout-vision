@@ -23,6 +23,10 @@ dist-ssr
 /test/real-phone/**/*.jpg
 /test/real-phone/**/*.jpeg
 /test/real-phone/**/*.webp
+/test/real-phone/**/*.[Pp][Nn][Gg]
+/test/real-phone/**/*.[Jj][Pp][Gg]
+/test/real-phone/**/*.[Jj][Pp][Ee][Gg]
+/test/real-phone/**/*.[Hh][Ee][Ii][Cc]
 test/real-phone/growth-step3/shots/
 
 # Editor directories and files

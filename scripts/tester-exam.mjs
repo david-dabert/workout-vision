@@ -96,7 +96,9 @@ for (const s of unseen) {
   if (recordFlag) exposedSets[s.key] = today;
 }
 
-if (recordFlag && unseen.length > 0) {
+// A run that finds an unreadable file records nothing, so the one-shot exam is not spent on a failed run (review of
+// 8 November 2026).
+if (recordFlag && unseen.length > 0 && unreadable.length === 0) {
   // The folder may be absent in a tree that has no testers/ yet (WV_SETS_ROOT in scripts/__tests__/import-sets.test.js).
   mkdirSync(dirname(EXPOSED_PATH), { recursive: true });
   writeFileSync(EXPOSED_PATH, JSON.stringify(exposedData, null, 2) + '\n');

@@ -20,10 +20,10 @@ export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{1
 export const MAX_COUNT = 99;
 /**
  * A tester's folder under test/real-phone/blind/, named as scripts/import-plan.mjs accepts a tester: lowercase letters,
- * digits, - or _, led by a letter or a digit. Any other folder (__tests__, .git) holds no tester's sets; a set file
+ * digits, - or _, led by a letter and never sets-<date>, so a dated folder (2026-11-09, sets-09nov) is not a tester. Any other folder (__tests__, .git) holds no tester's sets; a set file
  * (.json.gz, or plain .json) outside a tester's folder is unreadable, never dropped unseen (review of 8 November 2026).
  */
-export const TESTER_NAME = /^[a-z0-9][a-z0-9_-]*$/;
+export const TESTER_NAME = /^(?!sets-)[a-z][a-z0-9_-]*$/;
 /** A file that would hold a set: gzip JSON, as the phone writes it, or plain JSON, as #334's README once asked. */
 export const SET_FILE = /\.json(\.gz)?$/;
 
@@ -50,8 +50,8 @@ export function placeBlindFiles(blindDir) {
       const parts = r.split('/');
       const name = `blind/${r}`;
       if (parts.length === 1) misplaced.push({ name, why: "a set file outside a tester's folder (blind/<tester>/)" });
+      else if (!TESTER_NAME.test(parts[0])) misplaced.push({ name, why: `the folder ${parts[0]} is not a tester's name (lowercase letters, digits, - or _, led by a letter)` });
       else if (parts.length > 2) misplaced.push({ name, why: "a set file below a tester's folder (blind/<tester>/<file>)" });
-      else if (!TESTER_NAME.test(parts[0])) misplaced.push({ name, why: `the folder ${parts[0]} is not a tester's name (lowercase letters, digits, - or _)` });
       else if (!f.endsWith('.json.gz')) misplaced.push({ name, why: 'not gzip JSON (a set file is .json.gz)' });
       else (testers[parts[0]] ||= []).push(f);
     }

@@ -32,6 +32,7 @@ put('blind', 'squat_7_side_ffffffff.json.gz', { ...kept, videoSha256: 'f'.repeat
 put('blind/__tests__', 'squat_7_side_cccccccc.json.gz', kept);
 put('blind/T02', 'squat_7_side_cccccccc.json.gz', kept);
 put('blind/t01/2026-11-09', 'squat_7_side_cccccccc.json.gz', kept);
+put('blind/2026-11-09', 'squat_7_side_cccccccc.json.gz', kept);
 writeFileSync(join(root, 'blind', 't01', 'squat_7_side_dddddddd.json'), JSON.stringify({ ...kept, videoSha256: 'd'.repeat(64) }));
 // A whole-video folder is read by videoSets, never here.
 put('sets-01jan-video', 'squat_9.json.gz', { lift: 'squat', count: 9, ...pose });
@@ -72,6 +73,7 @@ describe('testerBlindSets', () => {
   test('reads a tester\'s folder and names each set file it cannot place, at any depth', () => {
     expect(sets.map(s => [s.name, s.tester, s.label])).toEqual([['blind/t01/squat_7_side_cccccccc.json.gz', 't01', 7]]);
     expect(unreadable).toEqual([
+      'blind/2026-11-09/squat_7_side_cccccccc.json.gz',
       'blind/T02/squat_7_side_cccccccc.json.gz',
       'blind/__tests__/squat_7_side_cccccccc.json.gz',
       'blind/squat_7_side_ffffffff.json.gz',
