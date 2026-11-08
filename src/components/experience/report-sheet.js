@@ -398,7 +398,7 @@ export function buildOptimizationMetrics(opt, fr) {
 
   if (opt.formDistortionScore !== null && opt.formDistortionScore !== undefined) {
     metrics.push({
-      label: fr ? 'Fidélité de trajectoire' : 'Path Fidelity',
+      label: fr ? 'Fidélité de trajectoire (expérimental)' : 'Path Fidelity (experimental)',
       val: `${Math.round(Math.max(0, 1 - opt.formDistortionScore) * 100)}%`,
       sub: opt.pathEfficiencyPercent !== null && opt.pathEfficiencyPercent !== undefined
         ? (fr ? `Efficacité axiale\u00A0: ${opt.pathEfficiencyPercent}%` : `Axial efficiency: ${opt.pathEfficiencyPercent}%`)
