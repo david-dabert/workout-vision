@@ -33,6 +33,8 @@ const isTime = s => typeof s === 'string' && (isDay(s) || (/^\d{4}-\d{2}-\d{2}T\
  * Returns { status: 'none' } when the file carries no blind count at all (not a blind set), { status: 'unsure' } when
  * the person answered "Je ne sais pas" (no label), { status: 'unreadable', reason } when the file breaks the schema,
  * and { status: 'set', set } otherwise.
+ * @param {any} d the parsed JSON of the file
+ * @param {string | null} [name] the file's name (typed for test/real-phone/accuracy/sets.ts, which tsc reads)
  */
 export function parseBlindFile(d, name = null) {
   if (!d || typeof d !== 'object' || Array.isArray(d)) return { status: 'unreadable', reason: 'not a JSON object' };
