@@ -1,0 +1,19 @@
+SOURCE_URL: https://openaccess.thecvf.com/content/CVPR2021/html/Thames_Nutrition5k_Towards_Automatic_Nutritional_Understanding_of_Generic_Food_CVPR_2021_paper.html
+RETRIEVED_UTC: 2026-10-14T06:47:30Z
+DOI: 10.1109/CVPR46437.2021.00879
+================================================================================
+
+Title: Nutrition5k: Towards Automatic Nutritional Understanding of Generic Food
+Authors: Quin Thames, Arjun Karpur, Wade Norris, Fangting Xia, Liviu Panait, Tobias Weyand, Jack Sim (Google Research)
+Conference: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2021, pp. 8903-8911
+DOI: 10.1109/CVPR46437.2021.00879
+URL: https://openaccess.thecvf.com/content/CVPR2021/html/Thames_Nutrition5k_Towards_Automatic_Nutritional_Understanding_of_Generic_Food_CVPR_2021_paper.html
+Repository: https://github.com/google-research-datasets/Nutrition5k
+
+Official Abstract:
+« Understanding the nutritional content of food from visual data is a challenging computer vision problem, with the potential to have a positive and widespread impact on public health. Studies in this area are limited to existing datasets in the field that lack sufficient diversity or labels required for training models with nutritional understanding capability. We introduce Nutrition5k, a novel dataset of 5k diverse, real world food dishes with corresponding video streams, depth images, component weights, and high accuracy nutritional content annotation. We demonstrate the potential of this dataset by training a computer vision algorithm capable of predicting the caloric and macronutrient values of a complex, real world dish at an accuracy that outperforms professional nutritionists. Further we present a baseline for incorporating depth sensor data to improve nutrition predictions. We release Nutrition5k in the hope that it will accelerate innovation in the space of nutritional understanding. »
+
+Key Experimental Findings:
+- Modality evaluation: Evaluation of 5,000 real-world dishes captured from overhead and rotating side angles with RGB-D depth sensors and precise scale measurements.
+- 2D (monocular RGB) vs RGB-D (with depth): Depth sensors significantly reduce Mean Absolute Error (MAE) and percentage error by resolving volume ambiguities.
+- On unconstrained monocular images without depth or reference markers, portion and density ambiguity remain the dominant source of error (caloric prediction errors frequently exceeding 20% to 25%).
