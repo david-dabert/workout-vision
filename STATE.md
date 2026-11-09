@@ -12,7 +12,7 @@ Current phase: Phase 7 (`docs/state-fixes`) of David's order of 6 November 2026 
 - Phase 6 (`loop/blind-count`): blind count collection schema (`test/real-phone/blind/`), `recordedAt` and `sessionId` in shared payload, `npm run scoreboard:blind` gate, SHA-256 integrity lock (`labels.lock`), merged in PR #337 (`0b82f89c`), deployed and live.
 - Phase 7 (`docs/state-fixes`): honest documentation with verified figures only, strict privacy wording, Kinetic Forced Aligner marked experimental, evidence screenshots untracked (`.gitignore`; the last 208 images under `test/real-phone/` by the follow-up to #338).
 
-Live commit: `0b82f89c` on `main`.
+Live commit: `0d2d25e4` on `main`.
 Preview: `https://david-dabert.github.io/workout-vision/`
 
 ## Scoreboards (8 November 2026)
