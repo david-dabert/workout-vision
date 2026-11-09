@@ -94,14 +94,20 @@ describe('a count the sensitivity check moved', () => {
     const { default: Result } = await import('../Result');
     return renderToStaticMarkup(<LanguageProvider><Result lift="bicep_curl" result={result} onClose={() => {}} onReplay={() => {}} /></LanguageProvider>);
   }
-  const moved = { ...nine, sensitivity: { moved: true, counts: [9, 8, 9, 9, 10, 9] } };
-  it('on any phone: the low-confidence screen, the count to confirm, the cause, no measure', async () => {
+  const moved = { ...nine, sensitivity: { moved: true, counts: [9, 7, 9, 9, 11, 9] } };
+  const minorMoved = { ...nine, sensitivity: { moved: true, counts: [9, 8, 9, 9, 10, 9] } };
+  it('on any phone: the low-confidence screen when count swings by 2+ reps or refuses', async () => {
     const html = await renderOn(moved, false);
     expect(html).toContain('L’appli n’a pas pu compter cette série avec certitude.');
     expect(html).toContain('Comptage incertain sur cette série : vérifiez le nombre.');
     expect(html).toContain('Compté par l’appli : 9');
     expect(html).toMatch(/data-testid="res-save"[^>]*>Confirmer 9 répétitions<\/button>/);
     for (const id of ['res-yes', 'res-alts', 'res-exp']) expect(html).not.toContain(`data-testid="${id}"`);
+  });
+  it('minor +-1 recount variation is accepted as confident with normal confirmation', async () => {
+    const html = await renderOn(minorMoved, false);
+    expect(html).toContain('data-testid="res-yes"');
+    expect(html).not.toContain('Comptage incertain sur cette série');
   });
   it('a video opened mid-rep: the count to confirm, with its own cause', async () => {
     const html = await renderOn({ ...nine, headRefused: true }, false);

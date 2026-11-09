@@ -184,10 +184,11 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // correction (3 October 2026). Status: convention, from R8.
   const unsure = !result.refused && result.count === 0;
   // Low confidence (screen 05b of the final direction, C4 of the design review of 7 October 2026): the app's own
-  // signals only, no new threshold. A refused set, a set counted none in, or a live set whose final count is not the
-  // one the live screen showed. The screen then shows no number, no gold and no measure until the person gives
+  // signals only, no new threshold. A refused set, a set counted none in, or a live set whose final count differs
+  // by 2 or more from the one the live screen showed (a 1-rep difference at the stop boundary is accepted).
+  // The screen then shows no number, no gold and no measure until the person gives
   // their count ("–", quick keys centred on the plan, none chosen). Status: convention, from R8.
-  const liveDiffers = !result.refused && liveShown !== null && result.count > 0 && liveShown !== result.count;
+  const liveDiffers = !result.refused && liveShown !== null && result.count > 0 && Math.abs(liveShown - result.count) >= 2;
   // A counted set whose joint disagrees with the rest of the body (counting/bodyCheck.js, coreAnalysis.js
   // withBodyCheck; 8 October 2026): its count opens the slot as one to confirm, with no grade and no measure until the
   // person answers (R8, showMeasures), and the spec-guided count beside it when it differs, both labelled; nothing is
@@ -198,12 +199,11 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // RepCount-A, David's sets) it was right 7 times in 79 where offered, the app's own count 19 times on the same sets
   // (test/real-phone/accuracy/body-check.txt). It stays in result.bodyCheck.second and the saved set, to be measured.
   const second = OFFER_BODY_SECOND && flagged && Number.isInteger(result.bodyCheck.second?.count) && result.bodyCheck.second.count > 0 && result.bodyCheck.second.count !== result.count ? result.bodyCheck.second.count : null;
-  // A counted set whose count the sensitivity check moved (coreAnalysis.js withSensitivity, stability study of 10 October
-  // 2026): recounted with nearby settings, it gives another number, so the app cannot stand behind it (R8). Shown as the
-  // body check's count to confirm, with its own cause line. On every phone since David's approval of 19 October 2026
-  // ("All the lot"): on the public sets that decide, the wrong counts shown as sure fall from 18 to 7 off by 3 or more,
-  // for 80 more sets asked, 24 of them exact (test/real-phone/accuracy/public-scoreboard.txt, sure.ts). Status: experimental.
-  const sensitive = !result.refused && result.count > 0 && !flagged && result.sensitivity?.moved === true;
+  // A counted set whose count the sensitivity check moved by 2 or more reps, or to a refusal (David's ruling of 9 November
+  // 2026: minor +-1 quantization across extreme margin shifts is accepted as confident with full analysis):
+  // recounted with nearby settings, it gives a materially different number, so the app cannot stand behind it (R8).
+  const sensitive = !result.refused && result.count > 0 && !flagged && result.sensitivity?.moved === true
+    && (result.sensitivity?.counts?.some(c => c === null || Math.abs(c - result.count) >= 2) ?? true);
   // The video opened inside a rep the counter did not count (core.ts headRefused, 19 October 2026): such a count is
   // wrong 14 times in 17 on the suites (TRIED.md, 18 October), so it is asked, never shown as sure (R8, R16).
   const openedMidRep = !result.refused && result.count > 0 && !flagged && result.headRefused === true;
