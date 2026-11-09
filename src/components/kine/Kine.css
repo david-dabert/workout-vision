@@ -90,3 +90,36 @@
 .wv-experience .kn-ai-list h4 { margin: 0 0 4px; font-size: var(--fs-caption); letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.75; }
 .wv-experience .kn-ai-list ul { margin: 0; padding-left: 1.1em; }
 .wv-experience .kn-ai-foot { margin: 0; font-size: var(--fs-caption); opacity: 0.7; }
+
+/* Scapular Dyskinesis Clinical Suite (ShoulderDyskinesisCard.jsx) */
+.wv-experience .kn-scapular-card { display: flex; flex-direction: column; gap: var(--s-3); padding: 18px 20px; border: 1px solid var(--lamp-line); border-radius: var(--r-l); background: var(--basalt); margin-top: var(--s-4); }
+.wv-experience .kn-scapular-header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--s-3); }
+.wv-experience .kn-scapular-title { margin: 4px 0 2px; font-size: var(--fs-item-title); font-weight: 700; color: var(--bone); }
+.wv-experience .kn-scapular-sub { margin: 0; font-size: var(--fs-caption); color: var(--ash); }
+.wv-experience .kn-severity-pill { padding: 4px 10px; border-radius: var(--r-pill); font-size: var(--fs-caption); font-weight: 700; border: 1px solid var(--hair-2); text-transform: uppercase; letter-spacing: 0.04em; }
+.wv-experience .kn-severity-pill.is-normal { color: var(--lamp); border-color: var(--lamp-line); background: var(--hair); }
+.wv-experience .kn-severity-pill.is-warning { color: var(--ember); border-color: var(--ember); background: var(--hair-2); }
+.wv-experience .kn-severity-pill.is-alert { color: var(--live-dot); border-color: var(--live-dot); background: var(--hair-2); }
+.wv-experience .kn-scapular-metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: var(--s-2); margin-top: var(--s-2); }
+.wv-experience .kn-metric-box { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: var(--card-top); border-radius: var(--r-m); border: 1px solid var(--hair); }
+.wv-experience .kn-metric-label { font-size: var(--fs-label); color: var(--ash); text-transform: uppercase; letter-spacing: 0.04em; }
+.wv-experience .kn-metric-val { font-size: var(--fs-subhead); font-weight: 700; color: var(--bone); font-variant-numeric: tabular-nums; }
+.wv-experience .kn-metric-val.is-normal { color: var(--lamp); }
+.wv-experience .kn-metric-val.is-alert { color: var(--live-dot); }
+.wv-experience .kn-metric-sub { font-size: var(--fs-label); color: var(--ash-2); }
+.wv-experience .kn-signatures-list { display: flex; flex-direction: column; gap: var(--s-2); margin-top: var(--s-2); }
+.wv-experience .kn-signature-item { display: flex; align-items: flex-start; gap: var(--s-2); padding: 8px 10px; background: var(--card-top); border-radius: var(--r-m); font-size: var(--fs-caption); }
+.wv-experience .kn-sig-icon { font-size: var(--fs-body); line-height: 1; flex-shrink: 0; }
+.wv-experience .kn-sig-content p { margin: 2px 0 0; color: var(--ash); font-size: var(--fs-caption); }
+.wv-experience .kn-hypotheses-block { display: flex; flex-direction: column; gap: var(--s-2); margin-top: var(--s-3); }
+.wv-experience .kn-hypo-head { margin: 0 0 4px; font-size: var(--fs-label); text-transform: uppercase; letter-spacing: 0.05em; color: var(--bone-2); }
+.wv-experience .kn-hypo-card { padding: 10px 12px; border-radius: var(--r-m); border-left: 3px solid var(--hair-2); background: var(--card-top); }
+.wv-experience .kn-hypo-card.is-alert { border-left-color: var(--live-dot); }
+.wv-experience .kn-hypo-card.is-warning { border-left-color: var(--ember); }
+.wv-experience .kn-hypo-card.is-info { border-left-color: var(--lamp); }
+.wv-experience .kn-hypo-top { display: flex; justify-content: space-between; align-items: center; gap: var(--s-2); }
+.wv-experience .kn-hypo-title { font-weight: 600; color: var(--bone); font-size: var(--fs-caption); }
+.wv-experience .kn-hypo-badge { font-size: var(--fs-label); font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: var(--hair); color: var(--bone); }
+.wv-experience .kn-hypo-desc { margin: 4px 0 2px; font-size: var(--fs-caption); color: var(--bone-2); }
+.wv-experience .kn-hypo-evidence { font-size: var(--fs-label); color: var(--ash); }
+.wv-experience .kn-scapular-actions { display: flex; gap: var(--s-2); margin-top: var(--s-3); }

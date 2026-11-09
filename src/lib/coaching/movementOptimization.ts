@@ -209,7 +209,7 @@ export function analyzeMovementOptimization(
     formBadge = {
       id: 'MOMENTUM_DETECTED',
       label: 'Momentum Detected - Control the Descent',
-      labelFr: 'Élan détecté — Contrôlez la descente',
+      labelFr: 'Élan détecté\u00A0: contrôlez la descente',
       severity: 'warning',
     };
   } else if (romScore < 75) {
@@ -384,8 +384,8 @@ export function evaluateLiveRepQuality(
   if (velocitySlowed) {
     return {
       id: 'VELOCITY_LOSS',
-      label: 'Deceleration (>35%) — Near Failure',
-      labelFr: 'Ralentissement (>35\u00A0%) — Proche de l’échec',
+      label: 'Deceleration (>35%): Near Failure',
+      labelFr: 'Ralentissement (>35\u00A0%)\u00A0: proche de l’échec',
       severity: 'warning',
     };
   }

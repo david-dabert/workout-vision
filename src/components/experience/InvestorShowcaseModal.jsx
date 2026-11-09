@@ -89,7 +89,7 @@ export default function InvestorShowcaseModal({ isOpen, onClose }) {
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({
-          title: 'WorkoutVision — Rapport Biomécanique',
+          title: 'WorkoutVision\u00A0: Rapport Biomécanique',
           text,
           url: 'https://david-dabert.github.io/workout-vision/',
         });
@@ -196,7 +196,7 @@ export default function InvestorShowcaseModal({ isOpen, onClose }) {
             <div className="showcase-result-hero">
               <span className="showcase-badge">SET VALIDÉ PAR COMPUTER VISION</span>
               <h2 className="title" style={{ marginTop: '8px' }}>
-                {summary.exerciseName}&nbsp;— {summary.totalReps} Répétitions
+                {summary.exerciseName}&nbsp;: {summary.totalReps} Répétitions
               </h2>
               <p className="pro-sub">
                 Profondeur complète validée • Régularité&nbsp;: {summary.romConsistencyScore}/100

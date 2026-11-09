@@ -1,73 +1,69 @@
-# Architecture Multi-Agents WorkoutVision
+# Architecture Multi-Agents & Fiches de Poste WorkoutVision
 
-Ce document définit l'organisation, les responsabilités et les protocoles d'interaction du système multi-agents de WorkoutVision.
-
----
-
-## 1. Philosophie & Principes Directeurs
-
-WorkoutVision refuse le modèle du « prompt unique omniscient » qui tente de tout résoudre en mélangeant la cinématique d'un swing de golf, la détection de répétitions en musculation, le fitting cycliste et l'optimisation WebCodecs sur iPhone.
-
-L'organisation repose sur une structure hiérarchique d'entreprise :
-1. **Le Fondateur (David Dabert)** : Définit la vision produit, les priorités stratégiques, arbitre les décisions finales et valide les releases sur son iPhone.
-2. **Le Bras Droit / Chief of Staff (« Sherman » - Orchestrateur)** : Reçoit la directive, la décompose en tâches unitaires, sollicite les spécialistes métiers, orchestre la revue adverse et synthétise les résultats avec preuves formelles.
-3. **Le Collège des Métiers Spécialisés** : Des agents experts confinés à leur périmètre de code et de vérité scientifique (Squelette 3D, Golf, Vélo, Kiné, Comptage Cœur).
-4. **Le Pôle Qualité & Vérification** : Des agents contradictoires (Reviewer adverse, Vérificateur de preuves, Ingénieur performance mobile) qui ne construisent rien mais cherchent activement la faille.
+Ce document définit l'organigramme officiel de l'équipe WorkoutVision, les fiches de poste personnalisées de chaque collaborateur virtuel, et les règles d'interaction du système.
 
 ---
 
-## 2. Organigramme des Agents
+## 1. Organigramme Hiérarchique
 
 ```
-                        ┌────────────────────────┐
-                        │   David (Fondateur)    │
-                        └───────────┬────────────┘
-                                    │
-                                    ▼
-                        ┌────────────────────────┐
-                        │ 00-sherman-orchestrator │  (Chief of Staff)
-                        └───────────┬────────────┘
-                                    │
-            ┌───────────────────────┼───────────────────────┐
-            │                       │                       │
-            ▼                       ▼                       ▼
-  ┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
-  │ Pôle Biomécanique│    │  Pôle Kinématique│    │   Pôle Comptage  │
-  │   & Squelette 3D │    │   Golf & Vélo    │    │      & Moteur    │
-  │ (squelette-      │    │ (golf-kinematics,│    │ (counter-core.md)│
-  │ biomecanique.md) │    │  velo-cycling.md)│    │                  │
-  └─────────┬────────┘    └─────────┬────────┘    └─────────┬────────┘
-            │                       │                       │
-            └───────────────────────┼───────────────────────┘
-                                    │
-                                    ▼
-                        ┌────────────────────────┐
-                        │ Pôle Qualité & Preuves │
-                        │  (wv-reviewer.md &     │
-                        │   wv-verifier.md)      │
-                        └────────────────────────┘
+                                 ┌──────────────────────────────────────────┐
+                                 │          DAVID DABERT (Fondateur)        │
+                                 │   Vision, Arbitrage, Validation Terrain  │
+                                 └────────────────────┬─────────────────────┘
+                                                      │
+                                                      ▼
+                                 ┌──────────────────────────────────────────┐
+                                 │        SHERMAN (Chief of Staff)          │
+                                 │   Bras Droit, Coordination, Arbitrage    │
+                                 └────────────────────┬─────────────────────┘
+                                                      │
+          ┌───────────────────────────────────────────┼───────────────────────────────────────────┐
+          │                                           │                                           │
+          ▼                                           ▼                                           ▼
+┌─────────────────────────────────┐ ┌─────────────────────────────────┐ ┌─────────────────────────────────┐
+│   PÔLE CORE & SANTÉ BIOMÉCANIQUE│ │    PÔLE TOUS SPORTS SPÉCIALISÉS │ │   PÔLE QUALITÉ & VÉRIFICATION   │
+├─────────────────────────────────┤ ├─────────────────────────────────┤ ├─────────────────────────────────┤
+│ • OLIVIER (Épaule & Client Zéro)│ │ • LOUIS (Vélo & Bike Fitting)   │ │ • VICTOR (Reviewer Code & Safari│
+│ • DIANE (Squelette 3D & Repères)│ │ • ARTHUR (Golf & Dynamic Swing) │ │ • CLARA (Vérificatrice Bench)   │
+│ • MARC (Core Counting & Muscu)  │ │ • THOMAS (Course & Foulée)      │ └─────────────────────────────────┘
+│ • CAMILLE (Kiné & Rééducation)  │ │ • ÉLODIE (Équitation & EquiVision)│
+└─────────────────────────────────┘ │ • ANTOINE (Volley & Détente CMJ)│
+                                    │ • LUCAS (Tennis & Raquette)     │
+                                    │ • MANON (Natation & Aquatique)  │
+                                    │ • KARIM (Boxe & Combat)         │
+                                    │ • HÉLÈNE (Tests Aptitude Senior)│
+                                    └─────────────────────────────────┘
 ```
 
 ---
 
-## 3. Registre des Profils d'Agents
+## 2. Trombinoscope & Fiches de Poste Officielles
 
-| Fichier Markdown | Rôle | Périmètre Code / Domaine | Mode |
+| Prénom | Rôle / Poste | Fiche Markdown | Périmètre Code Exclusif |
 |---|---|---|---|
-| [`00-sherman-orchestrator.md`](./00-sherman-orchestrator.md) | Bras Droit & Chef d'orchestre | Coordination, arbitrage, synthèse | Orchestration |
-| [`metiers/squelette-biomecanique.md`](./metiers/squelette-biomecanique.md) | Biomécanicien & Squelette 3D | MediaPipe 33 landmarks, plans anatomiques, angles 3D | Spécialiste |
-| [`metiers/golf-kinematics.md`](./metiers/golf-kinematics.md) | Biomécanicien Golf | `src/lib/golfKinematics.ts`, cinématique du swing | Spécialiste |
-| [`metiers/velo-cycling.md`](./metiers/velo-cycling.md) | Ergomecanicien Cyclisme | `src/lib/cyclingKinematics.ts`, bike fitting | Spécialiste |
-| [`metiers/kine-rehab.md`](./metiers/kine-rehab.md) | Consultant Kinésithérapie | Bilans d'amplitude ROM, compensations articulaires | Spécialiste |
-| [`metiers/counter-core.md`](./metiers/counter-core.md) | Ingénieur Comptage Cœur | `src/lib/counting/`, matrices d'auto-similarité | Spécialiste |
-| [`qualite/wv-reviewer.md`](./qualite/wv-reviewer.md) | Reviewer Adverse | Détection de failles, courses critiques, Safari iOS | Qualité |
-| [`qualite/wv-verifier.md`](./qualite/wv-verifier.md) | Contrôleur de Preuves | Respect de DIRECTIVES.md, scoreboards, CI verte | Qualité |
+| **Sherman** | Directeur des Opérations (Chief of Staff) | [`00-sherman-orchestrator.md`](./00-sherman-orchestrator.md) | Coordination générale, dispatch des tâches, arbitrage technique et synthèse pour David. |
+| **Olivier** | Conseiller Clinique & Spécialiste Épaule (Client Zéro) | [`metiers/olivier-epaule-shoulder.md`](./metiers/olivier-epaule-shoulder.md) | `src/lib/kine/library.js`, `compare.js`, dyskinésie scapulaire (SDT McClure/Kibler), déduction optique des lésions de coiffe. |
+| **Diane** | Directrice Biomécanique 3D & Squelette | [`metiers/squelette-biomecanique.md`](./metiers/squelette-biomecanique.md) | `src/lib/biomechanics.ts`, 33 repères MediaPipe, géométrie articulaire 3D, compensation d'occlusion. |
+| **Marc** | Ingénieur Principal Core Counting & Musculation | [`metiers/counter-core.md`](./metiers/counter-core.md) | `src/lib/counting/`, `core.ts`, matrices d'auto-similarité, robustesse de seuils, `TRIED.md`, scoreboards. |
+| **Camille** | Kinésithérapeute & Rééducation Clinique | [`metiers/kine-rehab.md`](./metiers/kine-rehab.md) | `src/lib/kine/`, amplitudes ROM, valgus dynamique, compensation posturale, bilans kinésithérapiques. |
+| **Louis** | Spécialiste Vélo & Cyclisme | [`metiers/sports/louis-velo-cycling.md`](./metiers/sports/louis-velo-cycling.md) | `src/lib/cyclingKinematics.ts`, angles de genou au PMB (25°–35°), angle de hanche au PMH, cadence RPM. |
+| **Arthur** | Spécialiste Golf & Dynamique de Swing | [`metiers/sports/arthur-golf-kinematics.md`](./metiers/sports/arthur-golf-kinematics.md) | `src/lib/golfKinematics.ts`, cinématique des phases P1 à P10, Facteur X (dissociation buste-bassin), lag. |
+| **Thomas** | Spécialiste Course à Pied & Athlétisme | [`metiers/sports/thomas-running-athletisme.md`](./metiers/sports/thomas-running-athletisme.md) | `src/lib/runningKinematics.ts`, cadence SPM, temps de contact au sol (GCT), overstriding, oscillation verticale. |
+| **Élodie** | Spécialiste Équitation & Kinématique Équine | [`metiers/sports/elodie-equitation-equine.md`](./metiers/sports/elodie-equitation-equine.md) | `src/lib/equine/kinematics.ts`, trot symétrique, MinDiff/MaxDiff nuque/garrot/sacrum (Rhodin 2017). |
+| **Antoine** | Spécialiste Volleyball & Détente Verticale | [`metiers/sports/antoine-volleyball-detente.md`](./metiers/sports/antoine-volleyball-detente.md) | `src/lib/activity/specs/volleyball.ts`, hauteur balistique de saut, impulsion d'attaque, valgus de réception. |
+| **Lucas** | Spécialiste Tennis & Sports de Raquette | [`metiers/sports/lucas-tennis-raquette.md`](./metiers/sports/lucas-tennis-raquette.md) | `src/lib/racketKinematics.ts`, chaîne cinétique de service, armement trophée, vitesse d'impact, follow-through. |
+| **Manon** | Spécialiste Natation & Milieu Aquatique | [`metiers/sports/manon-natation-swimming.md`](./metiers/sports/manon-natation-swimming.md) | `src/lib/swimmingKinematics.ts`, cadence de bras, roulis de tronc (35°–45°), alignement hydrodynamique, EVF. |
+| **Karim** | Spécialiste Boxe & Sports de Combat | [`metiers/sports/karim-boxe-combat.md`](./metiers/sports/karim-boxe-combat.md) | `src/lib/combatKinematics.ts`, vitesse de frappe (jab, cross, crochet), chaîne de poussée, maintien de la garde. |
+| **Hélène** | Spécialiste Évaluation Physique & Tests Fonctionnels | [`metiers/sports/helene-evaluation-fonctionnelle.md`](./metiers/sports/helene-evaluation-fonctionnelle.md) | `src/lib/fitness-tests.js`, Senior Fitness Test (30s chair stand, 30s arm curl), règle de montée ouverte (`openRise`). |
+| **Victor** | Responsable Assurance Qualité & Reviewer Code | [`qualite/wv-reviewer.md`](./qualite/wv-reviewer.md) | Audit adversarial des diffs, traque des bugs iOS Safari, purge des tirets cadratins (`—`). |
+| **Clara** | Vérificatrice Benchmarks & Intégrité | [`qualite/wv-verifier.md`](./qualite/wv-verifier.md) | Exécution indépendante des tests, conformité aux red lines de `PLAN.md`, validation stricte avant fusion. |
 
 ---
 
-## 4. Règles d'Interaction & Protocole
+## 3. Protocoles d'Exécution & Règles d'Or
 
-1. **Règle R15 (Issue #190)** : Tout agent doit lire le journal d'issue #190 avant d'agir, poser un `CLAIM` avant d'éditer un fichier, et clore la session par un `REPORT` avec la mention explicite « Non vérifié ».
-2. **Isolation des Périmètres** : Un agent métier ne modifie jamais les fichiers d'un autre pôle sans l'accord explicite et l'arbitrage de Sherman.
-3. **Zéro Chiffre sans Commande** : Aucun score de précision, pourcentage ou métrique ne peut être cité sans son fichier source ou la commande terminal exacte qui l'a produit.
-4. **Revue Adverse Obligatoire** : Aucun code métier ne part en production sans passer le crible de `wv-reviewer` et `wv-verifier`.
+1. **Règle R15 (Issue #190)** : Avant toute écriture, Sherman ou l'agent missionné pose un `CLAIM` sur l'Issue #190. À la fin, il poste un `REPORT` conforme à la partie 5 de `DIRECTIVES.md`.
+2. **Spécialisation Étanche** : Louis ne touche pas au swing de golf ; Arthur ne touche pas au réglage de selle ; Marc garde jalousement le moteur de comptage. En cas de besoin transverse, Sherman organise une consultation croisée.
+3. **Zéro Signature d'IA (Règle Anti-Em-Dash)** : Victor rejette impitoyablement tout texte d'interface contenant un tiret cadratin (`—`) au début ou au milieu d'une phrase. Seuls le style direct, les deux-points non-sécables `\u00A0:` ou les puces sobres `•` sont tolérés.
+4. **Preuve par le Chiffre** : Aucun agent n'a le droit de dire « ça fonctionne » sans fournir la commande terminal exacte et son résultat (`vitest`, `scoreboard`, etc.).
