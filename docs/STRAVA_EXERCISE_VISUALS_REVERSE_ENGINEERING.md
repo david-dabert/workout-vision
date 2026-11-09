@@ -72,15 +72,18 @@ Strava brosse 3 consignes ultra-courtes qui se mémorisent en un coup d'œil ava
 
 ---
 
-## 3. Implémentation Technique Immédiate dans WorkoutVision
+## 3. Implémentation & État Réel des Visuels d'Exercices dans WorkoutVision
 
-La beauté de WorkoutVision est que **90% du moteur mathématique existe déjà** dans notre codebase :
+Contrairement aux idées reçues ou aux estimations approximatives, **l'intégralité du catalogue d'exercices (309/309) possède déjà ses animations dans WorkoutVision** :
 
-1. **Les Poses Vectorielles Déjà Présentes (`src/components/experience/lift-poses.json`)** :
-   * Chaque exercice possède déjà ses coordonnées vectorielles encodées en base-36 pour chaque frame de son cycle (`rest`, `top`, et `loop.f`).
-2. **Le Rendu Canvas Haute Performance (`src/components/experience/lift-scenes.js`)** :
-   * Les fonctions `lerpPose()` et `mapPose()` interpolent déjà à 60 fps sans consommer de CPU.
-   * Il suffit d'ajouter une option `highlightJoints: [11, 13]` (coudes) ou `[25, 26]` (genoux) pour que le moteur applique le shader de surbrillance lumineuse Strava-style.
-3. **Poids et Budget Mémoire (< 150 kB)** :
-   * Les vidéos MP4 pèsent plusieurs mégaoctets et consomment la mémoire de l'iPhone Safari.
-   * Les vecteurs Strava-style pèsent **moins de 2 kilo-octets par exercice**, garantissant un temps de chargement instantané de moins de 100 millisecondes.
+1. **Les 309 Boucles d'Animation Vectorielles (60 FPS, Squelettes 33 Points)** :
+   * **9 mouvements cardinaux** dans `src/components/experience/lift-poses.json` (les cartes principales : squat, bench, RDL, bicep curl, lateral raise, etc.).
+   * **300 mouvements du guide** dans `src/components/experience/guide-poses.json` (générés rigoureusement par `scripts/make-guide-figures.mjs`).
+   * Ces 300 figures sont chargées à la demande par import dynamique (`import('./guide-poses.json')` dans `guide-figure.js`), ce qui maintient le bundle initial sous la barre stricte des 150 kB.
+2. **Les 306 Décompositions Visuelles Pas-à-Pas (WebP)** :
+   * Chaque dossier dans `public/guide/<exercice>/` contient 3 images WebP haute définition (`frame-1.webp`, `frame-2.webp`, `frame-3.webp`) montrant le début, l'inflexion et la fin du geste.
+3. **Le Moteur Canvas Strava-Ready (`src/components/experience/lift-scenes.js`)** :
+   * Les fonctions `lerpPose()` et `mapPose()` interpolent déjà à 60 fps sans consommer de mémoire sur iPhone Safari.
+   * Il suffit d'activer la surbrillance dynamique sur les repères moteurs (`highlightJoints`) pour obtenir l'effet néon Strava sur les 309 exercices du catalogue.
+4. **Poids et Budget Mémoire (< 150 kB)** :
+   * Là où Strava ou d'autres applications téléchargent des vidéos MP4 de plusieurs mégaoctets qui saturent la 4G et font chauffer l'iPhone, notre encodage base-36 compresse un cycle de 48 poses en moins de 2 kilo-octets par exercice.

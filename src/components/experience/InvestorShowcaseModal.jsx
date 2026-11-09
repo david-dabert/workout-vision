@@ -89,7 +89,7 @@ export default function InvestorShowcaseModal({ isOpen, onClose }) {
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({
-          title: 'WorkoutVision : Rapport Biomécanique',
+          title: 'WorkoutVision\u00A0: Rapport Biomécanique',
           text,
           url: 'https://david-dabert.github.io/workout-vision/',
         });
