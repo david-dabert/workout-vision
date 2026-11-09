@@ -141,6 +141,7 @@ export function evaluateScapularDyskinesis(
   for (let i = 0; i < N; i++) {
     const lm = landmarksSeq[i];
     const t = timestamps[i];
+    if (!lm) continue;
 
     // MediaPipe points:
     // 7/8: Ears, 11/12: Shoulders, 13/14: Elbows, 23/24: Hips
