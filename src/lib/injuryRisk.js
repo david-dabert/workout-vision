@@ -116,7 +116,7 @@ export async function assessInjuryRisk() {
     // Remove detraining and low-volume flags during intentional deloads
     for (let i = flags.length - 1; i >= 0; i--) {
       if (flags[i].type === 'detraining') {
-        flags[i].en += ' (This may be an intentional deload week — safe to ignore if planned.)';
+        flags[i].en += ' (This may be an intentional deload week: safe to ignore if planned.)';
         flags[i].fr += " (Ceci est peut-\u00eatre une semaine de d\u00e9charge intentionnelle.)";
         flags[i].risk = RISK.LOW;
       }

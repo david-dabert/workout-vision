@@ -43,7 +43,7 @@ export function formatShareText(summary: BiomechanicalSummary): string {
       : 'Proche de l’échec';
 
   return [
-    '🏋️ WorkoutVision — Analyse Biomécanique',
+    '🏋️ WorkoutVision : Analyse Biomécanique',
     `Exercice\u00A0: ${summary.exerciseName}`,
     `Répétitions\u00A0: ${summary.totalReps} (${depthLabel})`,
     '',
