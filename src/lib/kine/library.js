@@ -243,6 +243,36 @@ export const MOBILITY_SCREENS = Object.freeze([
     },
   },
   {
+    id: 'test-dyskinesie-scapulaire',
+    file: 'kine-bilan-scapulaire',
+    category: 'mobility_screen',
+    compare: true,
+    dosage: { reps: 5, sets: 1 },
+    targets: [160, 180],
+    fr: {
+      title: 'Bilan de dyskinésie scapulaire (Protocole McClure / SDT)',
+      position: 'Debout, pieds écartés largeur d’épaules, bras le long du corps.',
+      steps: [
+        'Monter les deux bras tendus dans le plan de la scapula (30° en avant du plan frontal).',
+        'Atteindre l’élévation maximale sans cambrer le bas du dos.',
+        'Redescendre lentement sous contrôle strict en 3 secondes.',
+        'Répéter 5 fois avec ou sans charge légère (1 kg).',
+      ],
+      camera: 'Téléphone posé de face ou de dos à 2 mètres, à hauteur de poitrine.',
+    },
+    en: {
+      title: 'Scapular Dyskinesis Screen (McClure SDT Protocol)',
+      position: 'Standing, feet shoulder-width apart, arms by sides.',
+      steps: [
+        'Raise both straight arms in the scapular plane (30° forward of the frontal plane).',
+        'Reach maximum overhead elevation without arching the lower back.',
+        'Lower smoothly under strict control over 3 seconds.',
+        'Repeat 5 times with or without light dumbbells (1 kg).',
+      ],
+      camera: 'Phone placed front-on or back-on at 2 meters, chest height.',
+    },
+  },
+  {
     id: 'test-stabilite-unipodale',
     file: 'squat-u-stabilite-unipodale',
     category: 'mobility_screen',
