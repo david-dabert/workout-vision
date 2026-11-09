@@ -24,11 +24,11 @@ Ce document définit l'organigramme officiel de l'équipe WorkoutVision, les fic
 ┌─────────────────────────────────┐ ┌─────────────────────────────────┐ ┌─────────────────────────────────┐
 │   PÔLE CORE & SANTÉ BIOMÉCANIQUE│ │    PÔLE TOUS SPORTS SPÉCIALISÉS │ │   PÔLE QUALITÉ & VÉRIFICATION   │
 ├─────────────────────────────────┤ ├─────────────────────────────────┤ ├─────────────────────────────────┤
-│ • DIANE (Squelette 3D & Repères)│ │ • LOUIS (Vélo & Bike Fitting)   │ │ • VICTOR (Reviewer Code & Safari│
-│ • MARC (Core Counting & Muscu)  │ │ • ARTHUR (Golf & Dynamic Swing) │ │ • CLARA (Vérificatrice Bench)   │
-│ • CAMILLE (Kiné & Rééducation)  │ │ • THOMAS (Course & Foulée)      │ └─────────────────────────────────┘
-└─────────────────────────────────┘ │ • ÉLODIE (Équitation & EquiVision)│
-                                    │ • ANTOINE (Volley & Détente CMJ)│
+│ • OLIVIER (Épaule & Client Zéro)│ │ • LOUIS (Vélo & Bike Fitting)   │ │ • VICTOR (Reviewer Code & Safari│
+│ • DIANE (Squelette 3D & Repères)│ │ • ARTHUR (Golf & Dynamic Swing) │ │ • CLARA (Vérificatrice Bench)   │
+│ • MARC (Core Counting & Muscu)  │ │ • THOMAS (Course & Foulée)      │ └─────────────────────────────────┘
+│ • CAMILLE (Kiné & Rééducation)  │ │ • ÉLODIE (Équitation & EquiVision)│
+└─────────────────────────────────┘ │ • ANTOINE (Volley & Détente CMJ)│
                                     │ • LUCAS (Tennis & Raquette)     │
                                     │ • MANON (Natation & Aquatique)  │
                                     │ • KARIM (Boxe & Combat)         │
@@ -43,6 +43,7 @@ Ce document définit l'organigramme officiel de l'équipe WorkoutVision, les fic
 | Prénom | Rôle / Poste | Fiche Markdown | Périmètre Code Exclusif |
 |---|---|---|---|
 | **Sherman** | Directeur des Opérations (Chief of Staff) | [`00-sherman-orchestrator.md`](./00-sherman-orchestrator.md) | Coordination générale, dispatch des tâches, arbitrage technique et synthèse pour David. |
+| **Olivier** | Conseiller Clinique & Spécialiste Épaule (Client Zéro) | [`metiers/olivier-epaule-shoulder.md`](./metiers/olivier-epaule-shoulder.md) | `src/lib/kine/library.js`, `compare.js`, dyskinésie scapulaire (SDT McClure/Kibler), déduction optique des lésions de coiffe. |
 | **Diane** | Directrice Biomécanique 3D & Squelette | [`metiers/squelette-biomecanique.md`](./metiers/squelette-biomecanique.md) | `src/lib/biomechanics.ts`, 33 repères MediaPipe, géométrie articulaire 3D, compensation d'occlusion. |
 | **Marc** | Ingénieur Principal Core Counting & Musculation | [`metiers/counter-core.md`](./metiers/counter-core.md) | `src/lib/counting/`, `core.ts`, matrices d'auto-similarité, robustesse de seuils, `TRIED.md`, scoreboards. |
 | **Camille** | Kinésithérapeute & Rééducation Clinique | [`metiers/kine-rehab.md`](./metiers/kine-rehab.md) | `src/lib/kine/`, amplitudes ROM, valgus dynamique, compensation posturale, bilans kinésithérapiques. |
