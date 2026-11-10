@@ -308,4 +308,69 @@
 .wv-experience .res-alts-or { flex: none; min-width: 32px; font-size: var(--fs-body); line-height: 1.4; color: var(--bone-2); }
 .wv-experience .res-alt { flex: 1 1 0; min-width: 0; font-family: var(--numeral-face); font-size: var(--fs-subhead-lg); font-weight: 400; font-variant-numeric: lining-nums tabular-nums; }
 
+/* Psychological retention quiz hook card */
+.wv-experience .res-retention-hook {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-radius: var(--r-m);
+  border: 1px solid var(--lamp-line);
+  background: var(--bio-glow);
+  text-align: left;
+}
+
+.wv-experience .res-hook-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  background: var(--c-surface);
+  border: 1px solid var(--lamp-line);
+  color: var(--c-accent);
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.wv-experience .res-hook-title {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: var(--fs-body);
+  color: var(--c-fg);
+}
+
+.wv-experience .res-hook-desc {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--c-fg-muted);
+}
+
+.wv-experience .res-hook-btn {
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-s);
+  background: var(--c-fg);
+  color: var(--c-surface);
+  font-family: var(--sans);
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--d-fast) var(--ease);
+}
+
+.wv-experience .res-hook-btn:hover {
+  background: var(--c-accent);
+  color: var(--c-surface);
+}
+
 

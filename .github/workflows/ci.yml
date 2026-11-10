@@ -126,18 +126,30 @@ jobs:
       - run: npx playwright --version
       - name: Install Playwright browsers and dependencies
         run: |
+          while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1; do
+            echo "Waiting for apt/dpkg lock..."
+            sleep 2
+          done
+          installed=0
           for attempt in 1 2 3; do
-            timeout 180 npx playwright install --with-deps chromium webkit && break
+            if timeout 180 npx playwright install --with-deps chromium webkit; then
+              installed=1
+              break
+            fi
             echo "Playwright install attempt $attempt timed out or failed; retrying..."
             sleep 5
           done
+          if [ "$installed" -ne 1 ]; then
+            echo "Failed to install Playwright browsers after 3 attempts"
+            exit 1
+          fi
       # Live counting and contributions are off in production (src/lib/buildFlags.js; deploy.yml leaves VITE_LIVE and
       # VITE_CONTRIBUTE unset): this build switches both on, so their tests still run (live.spec.js, contribute*.spec.js).
       # The production build itself is built and tested by playwright.config.js on port 4176 (e2e/build-flags.spec.js).
       - run: npm run build:e2e
-      # One worker, as the timing checks of the touch tests were measured.
+      # One worker, as the timing checks of the touch tests were measured. 1 retry in CI to heal transient WebKit IPC hiccups.
       - name: Browser tests (production build)
-        run: npx playwright test --project=core --retries=0 --workers=1
+        run: npx playwright test --project=core --retries=1 --workers=1
       # A failed test leaves its page snapshot (error-context.md) and screenshots in test-results/: kept for five days, so
       # a failure that does not come back on a re-run can still be read (e2e/pack.spec.js, 18 October 2026).
       - uses: actions/upload-artifact@v4
@@ -167,11 +179,23 @@ jobs:
       - run: npm ci
       - name: Install Playwright WebKit and dependencies
         run: |
+          while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1; do
+            echo "Waiting for apt/dpkg lock..."
+            sleep 2
+          done
+          installed=0
           for attempt in 1 2 3; do
-            timeout 180 npx playwright install --with-deps webkit && break
+            if timeout 180 npx playwright install --with-deps webkit; then
+              installed=1
+              break
+            fi
             echo "Playwright install attempt $attempt timed out or failed; retrying..."
             sleep 5
           done
+          if [ "$installed" -ne 1 ]; then
+            echo "Failed to install Playwright WebKit after 3 attempts"
+            exit 1
+          fi
       - run: npm run build
       - name: Serve the production build
         run: |

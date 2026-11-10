@@ -16,6 +16,7 @@ import { InstallRow } from './Install';
 import { pendingIncident, dismissIncident } from '../../lib/crashLog';
 import { CRASH, crashLine } from './crash-copy';
 const FilmExerciseDrawer = lazy(() => import('./FilmExerciseDrawer'));
+const BiomechanicalRetentionQuiz = lazy(() => import('./BiomechanicalRetentionQuiz'));
 import OneTouchHub from './OneTouchHub';
 import { showUnmeasuredRoutes } from '../../lib/buildFlags';
 import './Choice.css';
@@ -131,6 +132,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
   const railRef = useRef(null), dotsRef = useRef(null), cards = useRef([]);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [catalogArchetype, setCatalogArchetype] = useState('all');
+  const [profileQuizOpen, setProfileQuizOpen] = useState(false);
   // The guide's names load after the choice; until then a set of an exercise without a card is not
   // named, so the welcome never shows an internal key (review of 29 September).
   const [nameOf, setNameOf] = useState(null);
@@ -272,6 +274,11 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{fr ? 'Vos séries' : 'Your sets'}</b><small>{n === 0 ? (fr ? 'Restaurer une sauvegarde' : 'Restore a backup') : fr ? `${n} ${n > 1 ? 'séries' : 'série'} sur ce téléphone` : `${n} ${n === 1 ? 'set' : 'sets'} on this phone`}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
+        <button className="row-link press" onClick={() => setProfileQuizOpen(true)} data-testid="choice-athlete-profile">
+          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></span>
+          <span className="row-txt"><b>{fr ? 'Profil athlète & Calibration' : 'Athlete Profile & Calibration'}</b><small>{fr ? 'Vos leviers articulaires, silhouette cible et dépense réelle' : 'Your joint levers, target physique, and real calorie burn'}</small></span>
+          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
+        </button>
         {(onReference || onPro) && <h2 className="section-head choose-head" data-testid="choose-head-pro">{fr ? 'Pour les professionnels' : 'For professionals'}</h2>}
         {/* The physiotherapist's workspace (15 October 2026, components/kine/): programmes sent as links, the patient's
             video compared with the physiotherapist's, measured on the person's own videos, above the demos. */}
@@ -344,6 +351,14 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
               onChoose(key);
             }}
             onClose={() => setCatalogOpen(false)}
+          />
+        </Suspense>
+      )}
+      {profileQuizOpen && (
+        <Suspense fallback={null}>
+          <BiomechanicalRetentionQuiz
+            onClose={() => setProfileQuizOpen(false)}
+            onComplete={() => setProfileQuizOpen(false)}
           />
         </Suspense>
       )}

@@ -17,6 +17,7 @@ import { MeasureGuide } from './measure-guide';
 import { partialIn, setAverages } from './tempo';
 import RepWave from './RepWave';
 import MovementOptimizationCard from './MovementOptimizationCard';
+import BiomechanicalRetentionQuiz from './BiomechanicalRetentionQuiz';
 import { referenceBand } from '../../lib/reference-ranges';
 import { waveAngles } from './wave';
 import { savedSet } from './saved-set';
@@ -342,6 +343,14 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   }, [covered]);
 
   const liftName = exerciseName(lift, lang);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [athleteProfile, setAthleteProfile] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('wv_athlete_profile') || 'null');
+    } catch {
+      return null;
+    }
+  });
   // A refused set speaks of the limbs that were out of sight (refusal.js); a counted one, of the limbs it counted.
   const why = result.refused ? refusal(result, lift) : null;
   const limb = limbLabel(lift, why ? why.side : result.arm === 'both' ? 'both' : result.arm === 'left' ? 'left' : 'right', fr), armLabel = limb.text, e = limb.feminine ? 'e' : '';
@@ -946,6 +955,17 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
               ? (fr ? 'Votre niveau n’a pas pu être enregistré sur ce téléphone.' : 'Your level could not be saved on this phone.')
               : (fr ? 'C’est noté. L’écran s’adapte dès la prochaine série. Vous pouvez le changer dans Vos séries.' : 'Noted. The screen adapts from your next set. You can change it in Your sets.')}</p>}
           </div>}
+          {/* Psychological retention hook: get more out of your video analysis */}
+          <div className="res-retention-hook appear" data-testid="retention-quiz-hook">
+            <span className="res-hook-badge">⚡ {fr ? 'Analyse sur mesure' : 'Custom analysis'}</span>
+            <p className="res-hook-title"><b>{fr ? 'Tirez le maximum de votre vidéo' : 'Get more out of your video'}</b></p>
+            <p className="res-hook-desc">{athleteProfile
+              ? (fr ? `Profil calibré (${athleteProfile.height}\u00A0cm, ${athleteProfile.weight}\u00A0kg)\u00A0: vos leviers et tempos sont appliqués.` : `Profile calibrated (${athleteProfile.height} cm, ${athleteProfile.weight} kg): your levers and tempos are applied.`)
+              : (fr ? 'Prenez 90 secondes pour calibrer vos leviers articulaires, votre physique cible et vos charges optimales.' : 'Take 90 seconds to calibrate your joint levers, target physique, and optimal loads.')}</p>
+            <button type="button" className="res-hook-btn press" onClick={() => setShowQuiz(true)} data-testid="open-retention-quiz-btn">
+              {athleteProfile ? (fr ? 'Modifier mon profil athlète' : 'Update athlete profile') : (fr ? 'Personnaliser mon profil athlète' : 'Personalize my athlete profile')}
+            </button>
+          </div>
         </div>
       )}
 
@@ -982,7 +1002,18 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       {order.map(b => blocks[b] || null)}
       {/* The support links come after what the app measured (critic, 30 September). */}
       {report && <ReportCount fr={fr} report={report} />}
-    </div></section>
+    </div>
+    {showQuiz && (
+      <BiomechanicalRetentionQuiz
+        initialData={athleteProfile || {}}
+        onComplete={data => {
+          setAthleteProfile(data);
+          setShowQuiz(false);
+        }}
+        onClose={() => setShowQuiz(false)}
+      />
+    )}
+    </section>
   </div>;
 }
 
