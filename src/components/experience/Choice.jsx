@@ -17,7 +17,6 @@ import { pendingIncident, dismissIncident } from '../../lib/crashLog';
 import { CRASH, crashLine } from './crash-copy';
 const FilmExerciseDrawer = lazy(() => import('./FilmExerciseDrawer'));
 const BiomechanicalRetentionQuiz = lazy(() => import('./BiomechanicalRetentionQuiz'));
-import OneTouchHub from './OneTouchHub';
 import { showUnmeasuredRoutes } from '../../lib/buildFlags';
 import './Choice.css';
 
@@ -209,38 +208,6 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
         {/* The home in three groups (David, 16 October 2026: "for me it just didn't make sense"): training, the
             professionals' tools, then what is there to explore, the Manifesto last. */}
         {<h2 className="section-head choose-head" data-testid="choose-head-training">{fr ? 'Votre entraînement' : 'Your training'}</h2>}
-        <OneTouchHub
-          fr={fr}
-          onStartLift={() => {
-            setCatalogArchetype('all');
-            setCatalogZone('all');
-            setCatalogOpen(true);
-          }}
-          onMobility={onReference}
-          onPro={onPro}
-          onHistory={onHistory}
-          onSelectCategory={catKey => {
-            if (catKey === 'recents') {
-              setCatalogArchetype('recents');
-              setCatalogZone('all');
-            } else if (catKey === 'glutes') {
-              setCatalogArchetype('all');
-              setCatalogZone('glutes');
-            } else {
-              const archMap = {
-                all: 'all',
-                chest_arms: 'push',
-                back_shoulders: 'pull',
-                legs: 'squat',
-                core: 'isolation',
-                beta: 'all',
-              };
-              setCatalogArchetype(archMap[catKey] || 'all');
-              setCatalogZone('all');
-            }
-            setCatalogOpen(true);
-          }}
-        />
         {/* The app on the Home Screen never receives a coach's link, which opens in the browser: a way to paste one in
             (Programme.jsx, PasteLink; excellence hunt, 9 October 2026). */}
         {!received && onProgramme && onHomeScreen() && <button className="row-link press" onClick={onProgramme} data-testid="choice-programme-link">
