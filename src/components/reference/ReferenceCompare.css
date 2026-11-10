@@ -39,13 +39,123 @@
 .wv-experience .rc-toggle { display: flex; align-items: center; gap: var(--s-2); margin-top: var(--s-3); min-height: 44px; font-size: var(--fs-caption); color: var(--bone-2); }
 .wv-experience .rc-toggle input { width: 20px; height: 20px; accent-color: var(--lamp); }
 
-.wv-experience .rc-joints, .wv-experience .rc-holds { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
-.wv-experience .rc-joints li { display: grid; grid-template-columns: minmax(0, 1fr) repeat(3, auto); grid-template-areas: "name name name go" "a b c go"; gap: 6px var(--s-4); align-items: end; padding: 12px 0; border-bottom: 1px solid var(--hair-0); }
-.wv-experience .rc-joints b { grid-area: name; font-weight: 600; font-size: var(--fs-body); color: var(--bone); }
-.wv-experience .rc-joints span { display: flex; flex-direction: column; gap: 2px; font: 600 var(--fs-body)/1.2 var(--sans); color: var(--bone); font-variant-numeric: tabular-nums; }
-.wv-experience .rc-joints span small { font: 400 var(--fs-label)/1.2 var(--sans); color: var(--ash); }
-.wv-experience .rc-joints .rc-go { grid-area: go; align-self: end; }
-.wv-experience .rc-joints .rc-go .rc-link { padding: 0; font-size: var(--fs-body); }
+.wv-experience .rc-stage-hud {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  max-width: calc(66% - 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 4;
+  pointer-events: none;
+}
+.wv-experience .rc-hud-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--r-s);
+  background: color-mix(in srgb, var(--void) 84%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--hair-2);
+  font: 500 var(--fs-label)/1.2 var(--sans);
+  color: var(--bone);
+  white-space: nowrap;
+}
+.wv-experience .rc-hud-item.is-off {
+  border-color: color-mix(in srgb, var(--lamp) 70%, transparent);
+  background: color-mix(in srgb, var(--void) 85%, var(--lamp) 15%);
+}
+.wv-experience .rc-hud-item.is-off .rc-hud-delta {
+  color: var(--lamp);
+  font-weight: 700;
+}
+.wv-experience .rc-hud-item.is-ok .rc-hud-delta {
+  color: var(--bone-2);
+}
+.wv-experience .rc-hud-name {
+  font-weight: 600;
+  color: var(--bone);
+}
+.wv-experience .rc-hud-angles {
+  font-variant-numeric: tabular-nums;
+  color: var(--ash);
+}
+.wv-experience .rc-hud-delta {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--mono);
+}
+.wv-experience .rc-hud-unseen {
+  color: var(--ash);
+  font-style: italic;
+}
+
+.wv-experience .rc-joints, .wv-experience .rc-holds { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--s-3); }
+.wv-experience .rc-joints li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: 14px 16px;
+  background: var(--basalt);
+  border: 1px solid var(--hair-2);
+  border-radius: var(--r-m);
+}
+.wv-experience .rc-joint-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-2);
+  border-bottom: 1px solid var(--hair-0);
+  padding-bottom: 8px;
+}
+.wv-experience .rc-joints b {
+  font-weight: 600;
+  font-size: var(--fs-body);
+  color: var(--bone);
+}
+.wv-experience .rc-joint-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: var(--s-2) var(--s-3);
+  align-items: start;
+}
+.wv-experience .rc-joints span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font: 600 var(--fs-body)/1.2 var(--sans);
+  color: var(--bone);
+  font-variant-numeric: tabular-nums;
+  min-width: 0;
+}
+.wv-experience .rc-joints span small {
+  font: 400 var(--fs-label)/1.2 var(--sans);
+  color: var(--ash);
+  white-space: normal;
+  word-break: break-word;
+}
+.wv-experience .rc-joints .rc-go {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.wv-experience .rc-joints .rc-go small {
+  font: 400 var(--fs-label)/1.2 var(--sans);
+  color: var(--ash);
+}
+.wv-experience .rc-joints .rc-go .rc-link {
+  padding: 0;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--lamp);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 
 .wv-experience .rc-hold { width: 100%; min-height: 44px; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name tag" "vals tag"; gap: 4px var(--s-3); align-items: center; padding: 12px 0; border: 0; border-bottom: 1px solid var(--hair-0); background: none; text-align: left; color: inherit; }
 .wv-experience .rc-hold-name { grid-area: name; font-weight: 600; font-size: var(--fs-body); color: var(--bone); }

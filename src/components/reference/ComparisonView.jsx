@@ -175,6 +175,29 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
                 <div className="rc-stage" style={{ aspectRatio: `${attPose.width} / ${attPose.height}` }}>
                   <video ref={attVideo} src={attUrl} playsInline muted preload="auto" onLoadedMetadata={e => setDuration(e.currentTarget.duration)} onEnded={() => setPlaying(false)} data-testid="rc-att-video" />
                   <canvas ref={attCanvas} className="rc-canvas" />
+                  <div className="rc-stage-hud" data-testid="rc-stage-hud">
+                    {result.joints.map((j, k) => {
+                      const seenAtNow = result.seen?.[k]?.[refNow];
+                      const attVal = seenAtNow && result.matched?.[k]?.[refNow] != null ? Math.round(shownAngle(result.matched[k][refNow], j.direction)) : null;
+                      const refVal = result.reference?.[k]?.[refNow] != null ? Math.round(shownAngle(result.reference[k][refNow], j.direction)) : null;
+                      const diff = attVal != null && refVal != null ? attVal - refVal : null;
+                      const inTol = diff != null ? Math.abs(diff) <= TOLERANCE_DEG : null;
+                      const sign = diff != null && diff > 0 ? '+' : '';
+                      return (
+                        <div key={j.name} className={`rc-hud-item ${inTol === false ? 'is-off' : inTol === true ? 'is-ok' : 'is-unseen'}`} data-testid={`rc-hud-${j.name}`}>
+                          <span className="rc-hud-name">{names[j.name]?.split(' ')[0] ?? j.name}</span>
+                          {attVal != null && refVal != null ? (
+                            <>
+                              <span className="rc-hud-angles">{attVal}° / {refVal}°</span>
+                              <span className="rc-hud-delta">{sign}{diff}°</span>
+                            </>
+                          ) : (
+                            <span className="rc-hud-unseen">{fr ? 'Non visible' : 'Not seen'}</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                   <div className="rc-inset" style={{ aspectRatio: `${refPose.width} / ${refPose.height}` }}>
                     <video ref={refVideo} src={refUrl} playsInline muted preload="auto" data-testid="rc-ref-video" />
                     <canvas ref={refCanvas} className="rc-canvas" />
@@ -212,11 +235,15 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
                 <GroupHead title={c.joints} />
                 <ul className="rc-joints">
                   {result.joints.map(j => <li key={j.name} data-testid={`rc-joint-${j.name}`}>
-                    <b>{names[j.name]}</b>
-                    <span><small>{c.within}</small>{pct(j.within, fr)}{j.gapP90 != null ? ` (${deg(j.gapP90)})` : ''}</span>
-                    <span><small>{c.gap}</small>{deg(j.gapP90)}</span>
-                    {j.rangeShare != null && <span><small>{c.reached}</small>{pct(Math.min(j.rangeShare, 9.99), fr)}</span>}
-                    <span className="rc-go"><small>{c.worstAt}</small><button type="button" className="rc-link press" onClick={() => seekRefIndex(Math.round(j.worst.atSec * SAMPLE_HZ))}>{clock(j.worst.atSec)}</button></span>
+                    <div className="rc-joint-top">
+                      <b>{names[j.name]}</b>
+                      <span className="rc-go"><small>{c.worstAt}</small><button type="button" className="rc-link press" onClick={() => seekRefIndex(Math.round(j.worst.atSec * SAMPLE_HZ))}>{clock(j.worst.atSec)}</button></span>
+                    </div>
+                    <div className="rc-joint-metrics">
+                      <span><small>{c.within}</small>{pct(j.within, fr)}</span>
+                      <span><small>{c.gap}</small>{deg(j.gapP90)}</span>
+                      {j.rangeShare != null && <span><small>{c.reached}</small>{pct(Math.min(j.rangeShare, 9.99), fr)}</span>}
+                    </div>
                   </li>)}
                 </ul>
               </section>

@@ -51,9 +51,13 @@ export default function KineResult({ onClose }) {
             {r.joints.length > 0 && <section className="sc-section">
               <GroupHead title={c.joints} />
               <ul className="rc-joints">{r.joints.map(j => <li key={j.name}>
-                <b>{names[j.name] || j.name}</b>
-                <span><small>{k.rWithin}</small>{j.within == null ? '–' : `${pct(j.within, fr)}${j.gap != null ? ` (${deg(j.gap)})` : ''}`}</span>
-                <span><small>{k.rRange}</small>{j.range == null ? '–' : pct(Math.min(j.range, 9.99), fr)}</span>
+                <div className="rc-joint-top">
+                  <b>{names[j.name] || j.name}</b>
+                </div>
+                <div className="rc-joint-metrics">
+                  <span><small>{k.rWithin}</small>{j.within == null ? '–' : `${pct(j.within, fr)}${j.gap != null ? ` (${deg(j.gap)})` : ''}`}</span>
+                  <span><small>{k.rRange}</small>{j.range == null ? '–' : pct(Math.min(j.range, 9.99), fr)}</span>
+                </div>
               </li>)}</ul>
             </section>}
             {r.holds.length > 0 && <section className="sc-section">
