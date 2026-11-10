@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 import { analyzeMovementOptimization, analyzeContinuousBiomechanics } from '../../lib/coaching/movementOptimization';
 import { calculateIntraSetVelocityLoss } from '../../lib/biomechanics/stickingPoint';
+import { analyzeBilateralKinematicSymmetry } from '../../lib/biomechanics/bilateralSymmetry';
+import { analyzeDynamicKneeValgus } from '../../lib/biomechanics/dynamicValgus';
+import { computeBarPathMetrics } from './BarPathTracer';
 import { getExercise } from '../../lib/exercises/index';
 import './MovementOptimization.css';
 
@@ -116,6 +119,42 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
     }
     return null;
   }, [analysis, reps]);
+
+  const bilateralSymmetry = useMemo(() => {
+    if (!result) return null;
+    const landmarks = result.worldLandmarks || result.landmarks || result.imageLandmarks;
+    if (!landmarks || !landmarks.length) return null;
+    const timestamps = result.timestamps || null;
+    try {
+      return analyzeBilateralKinematicSymmetry(landmarks, timestamps, lift, reps);
+    } catch {
+      return null;
+    }
+  }, [result, lift, reps]);
+
+  const dynamicValgus = useMemo(() => {
+    if (!result) return null;
+    const landmarks = result.landmarks || result.imageLandmarks || result.worldLandmarks;
+    if (!landmarks || !landmarks.length) return null;
+    const timestamps = result.timestamps || null;
+    try {
+      return analyzeDynamicKneeValgus(landmarks, timestamps, lift);
+    } catch {
+      return null;
+    }
+  }, [result, lift]);
+
+  const barPath = useMemo(() => {
+    if (!result) return null;
+    const landmarks = result.landmarks || result.imageLandmarks || result.worldLandmarks;
+    if (!landmarks || !landmarks.length) return null;
+    const timestamps = result.timestamps || null;
+    try {
+      return computeBarPathMetrics(landmarks, timestamps);
+    } catch {
+      return null;
+    }
+  }, [result]);
 
   const badgeText = fr ? analysis.formBadge.labelFr : analysis.formBadge.label;
 
@@ -331,6 +370,81 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
               {fr
                 ? 'Ralentissement entre la répétition la plus rapide et la dernière répétition.'
                 : 'Deceleration between the fastest repetition and the final repetition.'}
+            </span>
+          </div>
+        )}
+
+        {bilateralSymmetry && (
+          <div className="res-opt-metric" data-testid="bilateral-symmetry-metric">
+            <div className="res-opt-metric-head">
+              <span className="res-opt-label">
+                {fr ? 'Symétrie bilatérale' : 'Bilateral Symmetry'}
+              </span>
+              <span className="res-opt-val">{bilateralSymmetry.symmetryScore}%</span>
+            </div>
+            <div className="res-opt-bar-track">
+              <div
+                className={`res-opt-bar-fill ${bilateralSymmetry.symmetryScore >= 90 ? 'is-good' : bilateralSymmetry.symmetryScore >= 80 ? 'is-mid' : 'is-warn'}`}
+                style={{ width: `${Math.min(100, Math.max(10, bilateralSymmetry.symmetryScore))}%` }}
+              />
+            </div>
+            <span className="res-opt-sub">
+              {fr ? bilateralSymmetry.cueFr : bilateralSymmetry.cueEn}
+            </span>
+            <span className="res-opt-explain">
+              {fr
+                ? 'Indice de symétrie cinématique gauche/droite sur l’ensemble de la série.'
+                : 'Left/right kinematic symmetry index across the entire repetition set.'}
+            </span>
+          </div>
+        )}
+
+        {dynamicValgus && (
+          <div className="res-opt-metric" data-testid="dynamic-valgus-metric">
+            <div className="res-opt-metric-head">
+              <span className="res-opt-label">
+                {fr ? 'Stabilité fémoro-tibiale (Valgus)' : 'Knee Valgus Stability'}
+              </span>
+              <span className="res-opt-val">{dynamicValgus.maxValgusDeg}°</span>
+            </div>
+            <div className="res-opt-bar-track">
+              <div
+                className={`res-opt-bar-fill ${!dynamicValgus.valgusRiskFlag ? 'is-good' : !dynamicValgus.severeRiskFlag ? 'is-mid' : 'is-warn'}`}
+                style={{ width: `${Math.min(100, Math.max(10, (dynamicValgus.maxValgusDeg / 15) * 100))}%` }}
+              />
+            </div>
+            <span className="res-opt-sub">
+              {fr ? dynamicValgus.cueFr : dynamicValgus.cueEn}
+            </span>
+            <span className="res-opt-explain">
+              {fr
+                ? 'Déviation médiale du genou mesurée dans le plan frontal.'
+                : 'Frontal plane medial knee deviation.'}
+            </span>
+          </div>
+        )}
+
+        {barPath && (
+          <div className="res-opt-metric" data-testid="bar-path-metric">
+            <div className="res-opt-metric-head">
+              <span className="res-opt-label">
+                {fr ? 'Efficacité axiale de la barre' : 'Axial Bar Path Efficiency'}
+              </span>
+              <span className="res-opt-val">{barPath.verticalEfficiency}%</span>
+            </div>
+            <div className="res-opt-bar-track">
+              <div
+                className={`res-opt-bar-fill ${barPath.isOptimal ? 'is-good' : barPath.verticalEfficiency >= 65 ? 'is-mid' : 'is-warn'}`}
+                style={{ width: `${Math.min(100, Math.max(10, barPath.verticalEfficiency))}%` }}
+              />
+            </div>
+            <span className="res-opt-sub">
+              {fr ? barPath.cueFr : barPath.cueEn}
+            </span>
+            <span className="res-opt-explain">
+              {fr
+                ? 'Ratio de verticalité entre la course utile et la dérive horizontale sagittale.'
+                : 'Verticality ratio between displacement and sagittal drift.'}
             </span>
           </div>
         )}
