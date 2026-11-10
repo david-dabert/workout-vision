@@ -263,10 +263,10 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const [rest] = useState(restClock), restBegun = useRef(false);
   let fatigueHorizon = null;
   try {
-    const prevSets = knownSets ? loadSets() : [];
+    const prevSets = typeof knownSets === 'function' ? (knownSets() || []) : [];
     const history = (prevSets || []).map((s, idx) => ({
       setIndex: idx + 1,
-      repsCount: s.count || 0,
+      repsCount: s.reps || s.count || 0,
       velocityLossPercent: s.velocityLoss?.lossPercent ?? 12,
     }));
     fatigueHorizon = predictFatigueHorizon(history, result?.velocityLoss?.lossPercent ?? null, lift);
