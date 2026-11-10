@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { CLINICAL_EVIDENCE_REGISTRY } from '../../lib/kine/clinicalEvidenceValidator';
 import './Kine.css';
 
 /**
@@ -20,6 +21,21 @@ export const PESSAC_SPECIALTIES = [
   { id: 'ankle', labelFr: 'Cheville & Achille', icon: '🦶', protocol: 'Protocole WBLT / Konor' },
   { id: 'cervical', labelFr: 'Rachis Cervical', icon: '👤', protocol: 'Protocole Yip / CVA' },
 ];
+
+export function EvidenceBox({ referenceKey }) {
+  const ref = CLINICAL_EVIDENCE_REGISTRY[referenceKey];
+  if (!ref) return null;
+  return (
+    <div className="kn-evidence-box" data-testid={`evidence-box-${referenceKey}`}>
+      <div className="kn-evidence-head">
+        <span className="kn-evidence-title">Validation clinique &amp; Littérature peer-reviewed</span>
+        <span className="kn-evidence-source">{ref.author} ({ref.year}) · {ref.journal}</span>
+      </div>
+      <p className="kn-evidence-desc">{ref.clinicalSignificance}</p>
+      <span className="kn-evidence-threshold">Norme clinique{'\u00A0'}: {ref.normativeThreshold}</span>
+    </div>
+  );
+}
 
 export default function PessacClinicSpecialtyHub({
   initialSpecialty = 'knee',
@@ -123,6 +139,9 @@ function KneeClinicalPanel({ onExportPdf }) {
         </div>
       </div>
 
+      <EvidenceBox referenceKey="dynamicKneeValgus" />
+      <EvidenceBox referenceKey="limbSymmetryIndex" />
+
       <div className="kn-scapular-actions">
         {onExportPdf && (
           <button type="button" className="btn-primary is-s" onClick={onExportPdf}>
@@ -182,6 +201,9 @@ function LumbarClinicalPanel({ onExportPdf }) {
           </div>
         </div>
       </div>
+
+      <EvidenceBox referenceKey="lumbopelvicRhythm" />
+      <EvidenceBox referenceKey="trendelenburgDrop" />
 
       <div className="kn-scapular-actions">
         {onExportPdf && (
@@ -243,6 +265,8 @@ function HipClinicalPanel({ onExportPdf }) {
         </div>
       </div>
 
+      <EvidenceBox referenceKey="fadirHipImpingement" />
+
       <div className="kn-scapular-actions">
         {onExportPdf && (
           <button type="button" className="btn-primary is-s" onClick={onExportPdf}>
@@ -302,6 +326,8 @@ function AnkleClinicalPanel({ onExportPdf }) {
           </div>
         </div>
       </div>
+
+      <EvidenceBox referenceKey="wbltAnkleDorsiflexion" />
 
       <div className="kn-scapular-actions">
         {onExportPdf && (
@@ -363,6 +389,8 @@ function CervicalClinicalPanel({ onExportPdf }) {
         </div>
       </div>
 
+      <EvidenceBox referenceKey="cranioVertebralAngle" />
+
       <div className="kn-scapular-actions">
         {onExportPdf && (
           <button type="button" className="btn-primary is-s" onClick={onExportPdf}>
@@ -422,6 +450,8 @@ function ShoulderClinicalPanel({ onExportPdf }) {
           </div>
         </div>
       </div>
+
+      <EvidenceBox referenceKey="kiblerDyskinesis" />
 
       <div className="kn-scapular-actions">
         {onExportPdf && (

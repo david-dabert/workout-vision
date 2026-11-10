@@ -123,3 +123,22 @@
 .wv-experience .kn-hypo-desc { margin: 4px 0 2px; font-size: var(--fs-caption); color: var(--bone-2); }
 .wv-experience .kn-hypo-evidence { font-size: var(--fs-label); color: var(--ash); }
 .wv-experience .kn-scapular-actions { display: flex; gap: var(--s-2); margin-top: var(--s-3); }
+
+/* Pessac Clinic Multi-Specialty Kinematics Hub */
+.wv-experience .kn-pessac-hub { display: flex; flex-direction: column; gap: var(--s-3); padding: 18px 20px; border: 1px solid var(--lamp-line); border-radius: var(--r-l); background: var(--basalt); margin-top: var(--s-4); }
+.wv-experience .kn-pessac-header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--s-3); }
+.wv-experience .kn-pessac-title { margin: 4px 0 2px; font-size: var(--fs-item-title); font-weight: 700; color: var(--bone); }
+.wv-experience .kn-pessac-sub { margin: 0; font-size: var(--fs-caption); color: var(--ash); }
+.wv-experience .kn-pessac-tabs { display: flex; gap: var(--s-2); overflow-x: auto; padding-bottom: var(--s-2); -webkit-overflow-scrolling: touch; }
+.wv-experience .kn-pessac-tab { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: var(--r-pill); border: 1px solid var(--hair-2); background: var(--card-top); color: var(--bone-2); font-size: var(--fs-caption); font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.15s ease; }
+.wv-experience .kn-pessac-tab.is-active { border-color: var(--lamp); color: var(--lamp); background: var(--hair); }
+.wv-experience .kn-pessac-content { display: flex; flex-direction: column; }
+
+/* Clinical Evidence and Reference Badges */
+.wv-experience .kn-evidence-box { display: flex; flex-direction: column; gap: var(--s-2); padding: 12px 14px; background: var(--card-top); border-radius: var(--r-m); border: 1px solid var(--hair-2); margin-top: var(--s-3); }
+.wv-experience .kn-evidence-head { display: flex; justify-content: space-between; align-items: center; }
+.wv-experience .kn-evidence-title { font-size: var(--fs-label); text-transform: uppercase; letter-spacing: 0.05em; color: var(--lamp); font-weight: 700; }
+.wv-experience .kn-evidence-source { font-size: var(--fs-label); color: var(--ash); }
+.wv-experience .kn-evidence-desc { margin: 0; font-size: var(--fs-caption); color: var(--bone-2); line-height: 1.4; }
+.wv-experience .kn-evidence-threshold { font-size: var(--fs-label); color: var(--ash-2); font-variant-numeric: tabular-nums; }
+
