@@ -20,6 +20,8 @@ export const PESSAC_SPECIALTIES = [
   { id: 'hip', labelFr: 'Hanche & CFA', icon: '🩻', protocol: 'Protocole Philippon / FADIR' },
   { id: 'ankle', labelFr: 'Cheville & Achille', icon: '🦶', protocol: 'Protocole WBLT / Konor' },
   { id: 'cervical', labelFr: 'Rachis Cervical', icon: '👤', protocol: 'Protocole Yip / CVA' },
+  { id: 'hand', labelFr: 'Main & Poignet', icon: '✋', protocol: 'Protocole Gelberman / Phalen' },
+  { id: 'foot', labelFr: 'Pied & Voûte', icon: '👟', protocol: 'Protocole Brody / Naviculaire' },
 ];
 
 export function EvidenceBox({ referenceKey }) {
@@ -85,6 +87,8 @@ export default function PessacClinicSpecialtyHub({
         {activeSpecialty === 'hip' && <HipClinicalPanel onExportPdf={onExportPdf} />}
         {activeSpecialty === 'ankle' && <AnkleClinicalPanel onExportPdf={onExportPdf} />}
         {activeSpecialty === 'cervical' && <CervicalClinicalPanel onExportPdf={onExportPdf} />}
+        {activeSpecialty === 'hand' && <HandClinicalPanel onExportPdf={onExportPdf} />}
+        {activeSpecialty === 'foot' && <FootClinicalPanel onExportPdf={onExportPdf} />}
       </div>
     </div>
   );
@@ -457,6 +461,130 @@ function ShoulderClinicalPanel({ onExportPdf }) {
         {onExportPdf && (
           <button type="button" className="btn-primary is-s" onClick={onExportPdf}>
             Exporter Bilan Épaule PDF
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function HandClinicalPanel({ onExportPdf }) {
+  return (
+    <div className="kn-scapular-card" data-testid="hand-clinical-panel">
+      <div className="kn-scapular-header">
+        <div>
+          <span className="sc-tag">Protocole Gelberman / Phalen Optique</span>
+          <h3 className="kn-scapular-title">Bilan Main, Poignet & Canal Carpien</h3>
+          <p className="kn-scapular-sub">Angles d'extension/flexion sous charge, déviation ulnaire et préhension</p>
+        </div>
+        <div className="kn-severity-pill is-normal">
+          Axe Carpien Neutre
+        </div>
+      </div>
+
+      <div className="kn-scapular-metrics-grid">
+        <div className="kn-metric-box">
+          <span className="kn-metric-label">Flexion sous Charge</span>
+          <span className="kn-metric-val is-normal">12.5°</span>
+          <span className="kn-metric-sub">Seuil critique{'\u00A0'}: &gt; 25°</span>
+        </div>
+        <div className="kn-metric-box">
+          <span className="kn-metric-label">Extension Fonctionnelle</span>
+          <span className="kn-metric-val is-normal">68.0°</span>
+          <span className="kn-metric-sub">Norme{'\u00A0'}: &gt; 60°</span>
+        </div>
+        <div className="kn-metric-box">
+          <span className="kn-metric-label">Déviation Radiale/Ulnaire</span>
+          <span className="kn-metric-val is-normal">Symétrique</span>
+          <span className="kn-metric-sub">Pas de contrainte cubitale</span>
+        </div>
+      </div>
+
+      <div className="kn-signatures-list">
+        <div className="kn-signature-item">
+          <div className="kn-sig-icon">✓</div>
+          <div className="kn-sig-content">
+            <strong>Pression intracarpienne sous contrôle</strong>
+            <p>Alignement neutre du carpe prévenant l'hyperpression du nerf médian lors des tractions et tirages.</p>
+          </div>
+        </div>
+        <div className="kn-signature-item">
+          <div className="kn-sig-icon">✓</div>
+          <div className="kn-sig-content">
+            <strong>Stabilité radio-carpienne</strong>
+            <p>Pas d'effondrement ulnaire au pic de force, protégeant le complexe fibro-cartilagineux triangulaire (TFCC).</p>
+          </div>
+        </div>
+      </div>
+
+      <EvidenceBox referenceKey="carpalTunnelFlexion" />
+
+      <div className="kn-scapular-actions">
+        {onExportPdf && (
+          <button type="button" className="btn-primary is-s" onClick={onExportPdf}>
+            Exporter Bilan Poignet PDF
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FootClinicalPanel({ onExportPdf }) {
+  return (
+    <div className="kn-scapular-card" data-testid="foot-clinical-panel">
+      <div className="kn-scapular-header">
+        <div>
+          <span className="sc-tag">Protocole Brody / Naviculaire Optique</span>
+          <h3 className="kn-scapular-title">Bilan Pied, Voûte Plantaire & Éversion</h3>
+          <p className="kn-scapular-sub">Éversion calcanéenne, affaissement de voûte et stabilité unipodale</p>
+        </div>
+        <div className="kn-severity-pill is-normal">
+          Arche Médiale Stable
+        </div>
+      </div>
+
+      <div className="kn-scapular-metrics-grid">
+        <div className="kn-metric-box">
+          <span className="kn-metric-label">Éversion Calcanéenne</span>
+          <span className="kn-metric-val is-normal">3.8°</span>
+          <span className="kn-metric-sub">Norme{'\u00A0'}: &lt; 5.0° (Brody)</span>
+        </div>
+        <div className="kn-metric-box">
+          <span className="kn-metric-label">Affaissement Naviculaire</span>
+          <span className="kn-metric-val is-normal">4.2 mm</span>
+          <span className="kn-metric-sub">Seuil hyperpronation{'\u00A0'}: &gt; 8 mm</span>
+        </div>
+        <div className="kn-metric-box">
+          <span className="kn-metric-label">Distribution d'Appui</span>
+          <span className="kn-metric-val is-normal">Trépied Préservé</span>
+          <span className="kn-metric-sub">Talon, 1er et 5e métatarses</span>
+        </div>
+      </div>
+
+      <div className="kn-signatures-list">
+        <div className="kn-signature-item">
+          <div className="kn-sig-icon">✓</div>
+          <div className="kn-sig-content">
+            <strong>Verrouillage sous-talien physiologique</strong>
+            <p>La voûte plantaire médiale conserve son ressort sans effondrement interne en charge excentrique.</p>
+          </div>
+        </div>
+        <div className="kn-signature-item">
+          <div className="kn-sig-icon">✓</div>
+          <div className="kn-sig-content">
+            <strong>Protection de l'aponévrose plantaire</strong>
+            <p>Effet Windlass préservé sans traction excessive sur l'insertion calcanéenne.</p>
+          </div>
+        </div>
+      </div>
+
+      <EvidenceBox referenceKey="navicularDropPronation" />
+
+      <div className="kn-scapular-actions">
+        {onExportPdf && (
+          <button type="button" className="btn-primary is-s" onClick={onExportPdf}>
+            Exporter Bilan Pied PDF
           </button>
         )}
       </div>

@@ -642,6 +642,10 @@ export default function BiomechanicalRetentionQuiz({ onComplete, onClose, initia
                   <span className="bio-id-val">{height} cm · {weight} kg</span>
                 </div>
                 <div className="bio-id-metric">
+                  <span className="bio-id-label">{fr ? 'Ratio fémur / buste' : 'Femur-to-torso ratio'}</span>
+                  <span className="bio-id-val">{fr ? (height >= 175 ? '1.09 (Fémurs longs)' : height <= 162 ? '0.94 (Fémurs courts)' : '1.02 (Équilibré)') : (height >= 175 ? '1.09 (Long femurs)' : height <= 162 ? '0.94 (Short femurs)' : '1.02 (Balanced)')}</span>
+                </div>
+                <div className="bio-id-metric">
                   <span className="bio-id-label">{fr ? 'Silhouette cible' : 'Target physique'}</span>
                   <span className="bio-id-val">{fr ? selectedPhysique.titleFr : selectedPhysique.titleEn}</span>
                 </div>
@@ -659,8 +663,8 @@ export default function BiomechanicalRetentionQuiz({ onComplete, onClose, initia
                 <div className="bio-rx-pill">{fr ? 'Prescription biomécanique' : 'Biomechanical prescription'}</div>
                 <p className="bio-rx-text">
                   {fr
-                    ? `Leviers articulaires équilibrés. Stance moyenne recommandée au squat, tempo excentrique 3-1-1 pour l'hypertrophie des ${selectedMuscle.labelFr.toLowerCase()}. Protection active activée sur les ${sensitivity === 'none' ? 'articulations principales' : sensitivity}.`
-                    : `Balanced joint levers. Medium stance recommended on squats, 3-1-1 eccentric tempo for ${selectedMuscle.labelEn.toLowerCase()} hypertrophy. Active protection enabled on ${sensitivity === 'none' ? 'major joints' : sensitivity}.`}
+                    ? `${height >= 175 ? 'Fémurs longs détectés\u00A0: stance large (1.2x épaules) avec rotation externe des hanches de 20° pour soulager le bas du dos et maximiser le grand fessier.' : 'Leviers articulaires compacts\u00A0: amplitude complète avec genoux avançant librement sur les orteils.'} Tempo excentrique 3-1-1 pour l'hypertrophie des ${selectedMuscle.labelFr.toLowerCase()}. Protection active activée sur les ${sensitivity === 'none' ? 'articulations principales' : sensitivity}.`
+                    : `${height >= 175 ? 'Long femurs detected: wide stance (1.2x shoulders) with 20° hip external rotation to protect lower back and maximize gluteus maximus recruitment.' : 'Compact joint levers: full depth with knees tracking forward over toes.'} 3-1-1 eccentric tempo for ${selectedMuscle.labelEn.toLowerCase()} hypertrophy. Active protection enabled on ${sensitivity === 'none' ? 'major joints' : sensitivity}.`}
                 </p>
               </div>
             </div>

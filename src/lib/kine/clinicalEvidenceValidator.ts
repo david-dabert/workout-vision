@@ -101,6 +101,24 @@ export const CLINICAL_EVIDENCE_REGISTRY: Record<string, ClinicalReference> = {
     normativeThreshold: 'Cranio-Vertebral Angle (CVA) >= 50.0 degrees',
     clinicalSignificance: 'CVA < 45 degrees confirms Forward Head Posture (FHP), increasing suboccipital compressive loading by up to 27 kg.',
   },
+  carpalTunnelFlexion: {
+    id: 'gelberman-1981',
+    author: 'Gelberman RH, et al.',
+    year: 1981,
+    title: 'The carpal tunnel syndrome: a study of carpal canal pressures.',
+    journal: 'J Bone Joint Surg Am',
+    normativeThreshold: 'Wrist flexion <= 20.0 degrees during loaded gripping',
+    clinicalSignificance: 'Wrist flexion > 30 degrees elevates carpal canal intracanal pressure eight-fold (> 30 mmHg), precipitating median nerve ischemia.',
+  },
+  navicularDropPronation: {
+    id: 'brody-1982',
+    author: 'Brody DM.',
+    year: 1982,
+    title: 'Techniques in the evaluation and treatment of running injuries.',
+    journal: 'Orthop Clin North Am',
+    normativeThreshold: 'Calcaneal eversion <= 5.0 degrees under bilateral stance',
+    clinicalSignificance: 'Rearfoot eversion > 6 degrees under load indicates excessive subtalar pronation, precipitating internal tibial torque and patellar tracking deficits.',
+  },
 };
 
 /**
@@ -162,6 +180,14 @@ export function validateClinicalMetric(
     case 'cranioVertebralAngle':
       referenceNorm = 52.0;
       isWithinNorm = value >= 48.0;
+      break;
+    case 'carpalTunnelFlexion':
+      referenceNorm = 10.0;
+      isWithinNorm = value <= 20.0;
+      break;
+    case 'navicularDropPronation':
+      referenceNorm = 4.0;
+      isWithinNorm = value <= 5.0;
       break;
     default:
       referenceNorm = 0;
