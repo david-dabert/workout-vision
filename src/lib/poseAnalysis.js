@@ -280,8 +280,9 @@ function getPoseLandmarker(opts) {
   if (poseLandmarker) return Promise.resolve(poseLandmarker);
   if (modelLoadPromise) return modelLoadPromise;
   modelLoadPromise = (async () => {
-    // The heavy model is a 30 MB download on a phone's connection: three minutes. Status: convention, UNSOURCED.
-    poseLandmarker = await withTimeout(createLandmarker(opts), poseModel === 'heavy' ? 180000 : 30000, 'Model load');
+    // The heavy model is a 30 MB download on a phone's connection: three minutes.
+    // The full model is ~9.4 MB: allow two minutes (120s) for degraded/spotty Wi-Fi resilience.
+    poseLandmarker = await withTimeout(createLandmarker(opts), poseModel === 'heavy' ? 180000 : 120000, 'Model load');
     return poseLandmarker;
   })();
   return modelLoadPromise;

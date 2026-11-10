@@ -63,6 +63,7 @@ const BILATERAL_SWAP_MAP: Record<number, number> = {
  * swapping left/right joint indices so the healthy limb becomes the target limb's reference.
  */
 export function mirrorLandmarksFrame(frame: FrameLandmarks): FrameLandmarks {
+  if (!frame) return {};
   const mirrored: FrameLandmarks = {};
 
   // Find mid-sagittal X reference (midpoint of hips or shoulders)
