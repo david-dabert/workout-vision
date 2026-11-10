@@ -18,6 +18,7 @@ import { partialIn, setAverages } from './tempo';
 import RepWave from './RepWave';
 import MovementOptimizationCard from './MovementOptimizationCard';
 import BiomechanicalRetentionQuiz from './BiomechanicalRetentionQuiz';
+import { predictFatigueHorizon } from '../../lib/coaching/fatigueHorizon';
 import { referenceBand } from '../../lib/reference-ranges';
 import { waveAngles } from './wave';
 import { savedSet } from './saved-set';
@@ -260,6 +261,18 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const [asked, setAsked] = useState(reduced);
   const [saveError, setSaveError] = useState('');
   const [rest] = useState(restClock), restBegun = useRef(false);
+  let fatigueHorizon = null;
+  try {
+    const prevSets = typeof knownSets === 'function' ? (knownSets() || []) : [];
+    const history = (prevSets || []).map((s, idx) => ({
+      setIndex: idx + 1,
+      repsCount: s.reps || s.count || 0,
+      velocityLossPercent: s.velocityLoss?.lossPercent ?? 12,
+    }));
+    fatigueHorizon = predictFatigueHorizon(history, result?.velocityLoss?.lossPercent ?? null, lift);
+  } catch {
+    fatigueHorizon = null;
+  }
   const savedId = useRef(null), restRef = useRef(null);
   // Once saved, the rest is what the user looks at on the bench: it is brought into view (critic, 30 September).
   useEffect(() => { if (step === 'saved') restRef.current?.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }, [step]); // the report compares this set with the one before it, never with itself
@@ -760,7 +773,15 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
             <p className="saved-msg">{proposal && trueN === proposal ? c.savedConfirmed(trueN) : fr ? `Merci. ${trueN} ${trueN > 1 ? 'répétitions enregistrées, saisies' : 'répétition enregistrée, saisie'} à la main.` : `Thank you. ${trueN} ${trueN === 1 ? 'rep' : 'reps'} saved, typed by hand.`}</p>
             {/* Why the card holds no analysis: the cause the screen gave before the save (R8). */}
             <p className="res-meta" data-testid="res-no-measure">{[c.noMeasure, universal ? c.universalTitle : text].filter(Boolean).join(' ')}</p>
-            <div className="rest-slot" ref={restRef}><RestClock fr={fr} clock={rest} targetSec={planned?.rest} /></div>
+            <div className="rest-slot" ref={restRef}>
+              <RestClock fr={fr} clock={rest} targetSec={planned?.rest} />
+              {fatigueHorizon && (
+                <div className="res-fatigue-horizon-badge" data-testid="fatigue-horizon-badge">
+                  <span className="res-fatigue-kicker">{fr ? 'Horizon de fatigue' : 'Fatigue Horizon'}</span>
+                  <span className="res-fatigue-cue">{fr ? fatigueHorizon.cueFr : fatigueHorizon.cueEn}</span>
+                </div>
+              )}
+            </div>
             <button className="btn-primary press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
             <button className="text-btn press" onClick={after(onChangeLift)} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
           </div>}
@@ -929,7 +950,15 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
             : (fr ? 'Merci. Série enregistrée sur votre téléphone.' : 'Thank you. Set saved on your phone.')}</p>
           {/* The rest begins as the set is saved: its clock runs at once, above the report and the
               challenge, since the next thing done on the bench is to rest (design pass, 29 September). */}
-          <div className="rest-slot" ref={restRef}><RestClock fr={fr} clock={rest} targetSec={planned?.rest} /></div>
+          <div className="rest-slot" ref={restRef}>
+            <RestClock fr={fr} clock={rest} targetSec={planned?.rest} />
+            {fatigueHorizon && (
+              <div className="res-fatigue-horizon-badge" data-testid="fatigue-horizon-badge">
+                <span className="res-fatigue-kicker">{fr ? 'Horizon de fatigue' : 'Fatigue Horizon'}</span>
+                <span className="res-fatigue-cue">{fr ? fatigueHorizon.cueFr : fatigueHorizon.cueEn}</span>
+              </div>
+            )}
+          </div>
           {/* A gym session is several sets of one lift: the next set goes straight back to filming this lift, and
               changing lift is the quieter choice beside it (WP1.3 of docs/SPEC-production.md). Once saved, the next
               set is the one thing left to do (design pass of 4 October). */}

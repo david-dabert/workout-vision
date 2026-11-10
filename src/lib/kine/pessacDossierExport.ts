@@ -24,6 +24,11 @@ export interface PatientInfo {
   prescripteur?: string;
   dateBilan?: string;
   numDossier?: string;
+  dynamicTelemetry?: {
+    valgusDeg?: number;
+    symmetryIndex?: number;
+    flessumDeg?: number;
+  };
 }
 
 export interface PessacSpecialtyItem {
@@ -141,6 +146,20 @@ export function generatePessacDossierHtml(specialtyId: string, patient: PatientI
   const prescripteur = patient.prescripteur || 'Dr. J. Martin (Chirurgien Orthopédiste / Médecin du Sport)';
   const dossierId = patient.numDossier || `PES-${Date.now().toString().slice(-6)}`;
 
+  const rawMetrics = meta.metrics.map(m => ({ ...m }));
+  if (specialtyId === 'knee' && patient.dynamicTelemetry) {
+    const dt = patient.dynamicTelemetry;
+    for (const m of rawMetrics) {
+      if (m.label === 'Valgus Dynamique Max' && dt.valgusDeg !== undefined) {
+        m.value = `${dt.valgusDeg}°`;
+      } else if (m.label === 'Indice de Symétrie (LSI)' && dt.symmetryIndex !== undefined) {
+        m.value = `${dt.symmetryIndex}\u00A0%`;
+      } else if (m.label === "Déficit d'Extension (Flessum)" && dt.flessumDeg !== undefined) {
+        m.value = `${dt.flessumDeg}°`;
+      }
+    }
+  }
+
   return `<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -224,7 +243,7 @@ export function generatePessacDossierHtml(specialtyId: string, patient: PatientI
         </tr>
       </thead>
       <tbody>
-        ${meta.metrics.map(m => `
+        ${rawMetrics.map(m => `
           <tr>
             <td><strong>${m.label}</strong></td>
             <td>${m.value}</td>

@@ -19,6 +19,7 @@ import { jointName } from './lift-meta';
 import { RESULT } from './result-copy';
 import { detectSetStickingPoints } from '../../lib/biomechanics/stickingPoint';
 import MocapViewer from './MocapViewer';
+import BarPathTracer from './BarPathTracer';
 
 // The set replayed with the skeleton the pose model tracked on it: what the app saw,
 // frame by frame, with the joint whose angle counts the reps in the lamp's colour.
@@ -36,6 +37,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   const [now, setNow] = useState(0);
   const [broken, setBroken] = useState(false);
   const [mocapMode, setMocapMode] = useState(false);
+  const [showBarPath, setShowBarPath] = useState(false);
 
   // A refused set shows no reps here either: the result said it could not count them.
   const times = result.timestamps || [], reps = (!result.refused && result.reps) || [];
@@ -323,6 +325,14 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
         >
           {mocapMode ? (fr ? 'Voir la vidéo' : 'View video') : (fr ? 'Mocap 3D' : '3D Mocap')}
         </button>
+        <button
+          type="button"
+          className={`rp-mocap-toggle press${showBarPath ? ' is-on' : ''}`}
+          onClick={() => setShowBarPath(p => !p)}
+          data-testid="rp-barpath-toggle"
+        >
+          {showBarPath ? (fr ? 'Masquer la barre' : 'Hide Bar Path') : (fr ? 'Trajectoire barre' : 'Bar Path')}
+        </button>
         <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
       </div>
       <div className="rp-stage" data-reveal style={{ '--i': 0 }}>
@@ -338,6 +348,15 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
               : <div className="rp-video rp-still" role="img" data-testid="rp-still" onClick={toggle}
                 aria-label={fr ? 'Votre série comptée en direct, rejouée avec le squelette suivi par l’appli' : 'Your set counted live, replayed with the skeleton the app tracked'} />}
             <canvas ref={canvasRef} className="rp-canvas" aria-hidden="true" />
+            {showBarPath && (
+              <BarPathTracer
+                frames={frames}
+                timestamps={times}
+                currentTime={now}
+                active={showBarPath}
+                lang={lang}
+              />
+            )}
             {reps.length > 0 && <div className={`rp-chip${phaseWord === NB ? ' is-idle' : ''}`} aria-hidden="true">
               <span className="rp-count"><span className="rp-n">{begun}</span><span className="rp-of">/{NB}{reps.length}</span></span>
               <span className="rp-phase">{phaseWord}</span>

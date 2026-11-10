@@ -373,4 +373,31 @@
   color: var(--c-surface);
 }
 
+.wv-experience .res-fatigue-horizon-badge {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: var(--hair-0);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-s);
+  font-size: var(--fs-label);
+  text-align: left;
+}
+
+.wv-experience .res-fatigue-kicker {
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--c-accent);
+}
+
+.wv-experience .res-fatigue-cue {
+  color: var(--c-fg);
+  line-height: 1.4;
+}
+
+
 
