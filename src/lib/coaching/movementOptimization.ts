@@ -25,6 +25,11 @@ import {
   CoachPrescription,
   SetExecutionTelemetry,
 } from './optimalExecution';
+import {
+  calculateIntraSetVelocityLoss,
+  detectSetStickingPoints,
+  VelocityLossTelemetry,
+} from '../biomechanics/stickingPoint';
 
 export interface RepVelocityProfile {
   repIndex: number;
@@ -61,6 +66,7 @@ export interface MovementOptimizationResult {
   averageConcentricSec: number;// seconds
   velocityLossPercent?: number | null;
   fatigueTier?: 'speed' | 'optimal_hypertrophy' | 'failure' | null;
+  velocityLoss?: VelocityLossTelemetry | null;
   mechanicalWorkKj?: number | null;
   caloriesKcal?: number | null;
   averagePowerWatts?: number | null;
@@ -337,6 +343,7 @@ export function analyzeMovementOptimization(
   };
 
   const coachPrescription = generateCoachPrescription(setTelemetry, lift, fr);
+  const velocityLoss = calculateIntraSetVelocityLoss(wholeReps);
 
   return {
     romScore,
@@ -346,6 +353,7 @@ export function analyzeMovementOptimization(
     averageConcentricSec: Math.round(avgConcentric * 10) / 10,
     velocityLossPercent: null,
     fatigueTier: null,
+    velocityLoss,
     mechanicalWorkKj: null,
     caloriesKcal: null,
     averagePowerWatts: null,
@@ -481,10 +489,20 @@ export function analyzeContinuousBiomechanics(
     return closestIdx;
   }
 
-  // Kinetic Forced Alignment per repetition (sticking point computation excised per Prompt 1)
+  // Kinetic Forced Alignment per repetition
   let totalDistortion = 0;
   let repCountWithTrajectory = 0;
   const stickingPoints: StickingPointMarker[] = [];
+  const detectedInflections = detectSetStickingPoints(decoded.reps, angles, timestamps, lift);
+  for (const inf of detectedInflections) {
+    stickingPoints.push({
+      repIndex: inf.repIndex,
+      timestamp: inf.timestamp,
+      angleDeg: inf.angleDeg,
+      velocityDropPercent: inf.velocityDropPercent,
+      severity: inf.severity,
+    });
+  }
 
   const template = getCanonicalTemplate(lift);
 

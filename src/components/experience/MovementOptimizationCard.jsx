@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { analyzeMovementOptimization, analyzeContinuousBiomechanics } from '../../lib/coaching/movementOptimization';
+import { calculateIntraSetVelocityLoss } from '../../lib/biomechanics/stickingPoint';
 import { getExercise } from '../../lib/exercises/index';
 import './MovementOptimization.css';
 
@@ -107,6 +108,14 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
   const leveragePrescription = useMemo(() => {
     return getAnthropometricPrescription(athleteProfile, lift, fr);
   }, [athleteProfile, lift, fr]);
+
+  const velocityLoss = useMemo(() => {
+    if (analysis?.velocityLoss) return analysis.velocityLoss;
+    if (Array.isArray(reps) && reps.length >= 2) {
+      return calculateIntraSetVelocityLoss(reps);
+    }
+    return null;
+  }, [analysis, reps]);
 
   const badgeText = fr ? analysis.formBadge.labelFr : analysis.formBadge.label;
 
@@ -300,6 +309,31 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
             {fr ? 'Durée cumulée des répétitions comptées sur votre vidéo.' : 'Cumulative duration of the repetitions counted on your video.'}
           </span>
         </div>
+
+        {velocityLoss && (
+          <div className="res-opt-metric" data-testid="velocity-loss-metric">
+            <div className="res-opt-metric-head">
+              <span className="res-opt-label">
+                {fr ? 'Perte de vitesse intra-série' : 'Intra-Set Velocity Decline'}
+              </span>
+              <span className="res-opt-val">{velocityLoss.lossPercent}%</span>
+            </div>
+            <div className="res-opt-bar-track">
+              <div
+                className={`res-opt-bar-fill ${velocityLoss.lossPercent < 20 ? 'is-good' : velocityLoss.lossPercent <= 40 ? 'is-mid' : 'is-warn'}`}
+                style={{ width: `${Math.min(100, Math.max(8, velocityLoss.lossPercent))}%` }}
+              />
+            </div>
+            <span className="res-opt-sub">
+              {fr ? velocityLoss.cueFr : velocityLoss.cueEn}
+            </span>
+            <span className="res-opt-explain">
+              {fr
+                ? 'Ralentissement entre la répétition la plus rapide et la dernière répétition.'
+                : 'Deceleration between the fastest repetition and the final repetition.'}
+            </span>
+          </div>
+        )}
 
         {analysis.formDistortionScore !== null && analysis.formDistortionScore !== undefined && (
           <div className="res-opt-metric" data-testid="form-fidelity-metric">
