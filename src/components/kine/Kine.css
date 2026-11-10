@@ -19,6 +19,10 @@
 .wv-experience .kn-cards { display: flex; flex-direction: column; gap: var(--s-4); }
 .wv-experience .kn-card { border: 1px solid var(--c-rule); border-radius: var(--r-m); background: var(--basalt); overflow: hidden; }
 .wv-experience .kn-video { display: block; width: 100%; max-height: 60svh; background: var(--well); object-fit: contain; }
+.wv-experience .kn-video-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-2); padding: 20px 16px; background: var(--well); border-bottom: 1px solid var(--c-rule); text-align: center; }
+.wv-experience .kn-protocol-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: var(--r-pill); background: var(--basalt); border: 1px solid var(--lamp-line); color: var(--bone); font-size: var(--fs-caption); font-weight: 500; }
+.wv-experience .kn-protocol-badge svg { width: 14px; height: 14px; color: var(--lamp); flex-shrink: 0; }
+.wv-experience .kn-targets-badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--lamp) 10%, transparent); border: 1px solid var(--lamp-line); color: var(--lamp-hi); font-size: var(--fs-caption); font-variant-numeric: tabular-nums; font-weight: 600; }
 .wv-experience .kn-card-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: var(--s-2); }
 .wv-experience .kn-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
 .wv-experience .kn-card-title { margin: 0; font: 600 var(--fs-body)/1.35 var(--sans); color: var(--bone); }

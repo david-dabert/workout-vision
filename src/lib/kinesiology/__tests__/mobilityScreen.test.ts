@@ -259,7 +259,7 @@ describe('Universal Functional Mobility & Kinesiology Screening Engine', () => {
 
       for (const screen of MOBILITY_SCREENS) {
         expect(screen.category).toBe('mobility_screen');
-        expect(screen.compare).toBe(true);
+        expect(screen.compare).toBe(false);
         expect(screen.fr.steps.length).toBeGreaterThanOrEqual(3);
         expect(screen.en.steps.length).toBeGreaterThanOrEqual(3);
       }

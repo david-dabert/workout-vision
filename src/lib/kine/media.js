@@ -57,8 +57,10 @@ export async function loadReferencePose(exercise, { signal, onProgress } = {}) {
   if (!pose) pose = await stored(exercise.file);
   if (!pose) {
     const videoUrl = mediaUrl(exercise, 'mp4');
-    if (!videoUrl) throw new Error('No media address for the reference videos');
-    const blob = await (await fetch(videoUrl, { signal })).blob();
+    if (!videoUrl) throw new Error(`No reference video available for ${exercise?.id || 'exercise'}`);
+    const res = await fetch(videoUrl, { signal });
+    if (!res.ok) throw new Error(`Failed to load reference video (${res.status}) for ${exercise?.id}`);
+    const blob = await res.blob();
     pose = await readPose(new File([blob], `${exercise.file}.mp4`, { type: blob.type || 'video/mp4' }), { signal, onProgress });
     await store(exercise.file, pose);
   }
