@@ -220,7 +220,10 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           onPro={onPro}
           onHistory={onHistory}
           onSelectCategory={catKey => {
-            if (catKey === 'glutes') {
+            if (catKey === 'recents') {
+              setCatalogArchetype('recents');
+              setCatalogZone('all');
+            } else if (catKey === 'glutes') {
               setCatalogArchetype('all');
               setCatalogZone('glutes');
             } else {
