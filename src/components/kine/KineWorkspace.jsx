@@ -11,6 +11,7 @@ import { readProfile, saveProfile, nextInvoiceNumber, takeFollowUpRequest, EMPTY
 import ReferenceCompare from '../reference/ReferenceCompare';
 import FollowUp from './FollowUp';
 import Calibration from './Calibration';
+import PessacClinicSpecialtyHub from './PessacClinicSpecialtyHub';
 import { KINE } from './kine-copy';
 import '../reference/ReferenceCompare.css';
 import './Kine.css';
@@ -246,6 +247,7 @@ export default function KineWorkspace({ onClose }) {
             </div>
           </div>
           {tab === 'programme' && <ProgrammeTab fr={fr} k={k} profile={profile} />}
+          {tab === 'specialties' && <PessacClinicSpecialtyHub />}
           {tab === 'followup' && <FollowUp fr={fr} k={k} profile={profile} initial={followUpOf} />}
           {tab === 'calibration' && <Calibration fr={fr} k={k} />}
           {tab === 'library' && <section className="sc-section"><div className="kn-cards">{LIBRARY.map(ex => <ExerciseCard key={ex.id} ex={ex} fr={fr} k={k} open />)}</div></section>}
