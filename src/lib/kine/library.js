@@ -162,7 +162,7 @@ export const MOBILITY_SCREENS = Object.freeze([
     id: 'test-dorsiflexion-cheville',
     file: 'squat-u-dorsiflexion',
     category: 'mobility_screen',
-    compare: true,
+    compare: false,
     dosage: { reps: 5, sets: 1 },
     targets: [35, 40],
     fr: {
@@ -190,7 +190,7 @@ export const MOBILITY_SCREENS = Object.freeze([
     id: 'test-rotation-hanche',
     file: 'squat-u-rotation-hanche',
     category: 'mobility_screen',
-    compare: true,
+    compare: false,
     dosage: { reps: 5, sets: 1 },
     targets: [35, 45],
     fr: {
@@ -218,7 +218,7 @@ export const MOBILITY_SCREENS = Object.freeze([
     id: 'test-mobilite-epaule-rachis',
     file: 'squat-u-epaule-rachis',
     category: 'mobility_screen',
-    compare: true,
+    compare: false,
     dosage: { reps: 3, sets: 1 },
     targets: [170, 180],
     fr: {
@@ -246,7 +246,7 @@ export const MOBILITY_SCREENS = Object.freeze([
     id: 'test-stabilite-unipodale',
     file: 'squat-u-stabilite-unipodale',
     category: 'mobility_screen',
-    compare: true,
+    compare: false,
     dosage: { reps: 5, sets: 1 },
     targets: [0, 5],
     fr: {
@@ -274,7 +274,7 @@ export const MOBILITY_SCREENS = Object.freeze([
     id: 'test-aslr-chaine-posterieure',
     file: 'squat-u-aslr',
     category: 'mobility_screen',
-    compare: true,
+    compare: false,
     dosage: { reps: 5, sets: 1 },
     targets: [80, 85],
     fr: {
@@ -305,7 +305,7 @@ export const CLINICAL_ASSESSMENTS = Object.freeze([
     id: 'test-dyskinesie-scapulaire',
     file: 'kine-bilan-scapulaire',
     category: 'clinical_assessment',
-    compare: true,
+    compare: false,
     dosage: { reps: 5, sets: 1 },
     targets: [160, 180],
     fr: {
@@ -337,12 +337,24 @@ export const ALL_EXERCISES = Object.freeze([...LIBRARY, ...MOBILITY_SCREENS, ...
 
 export const exerciseById = id => ALL_EXERCISES.find(e => e.id === id) ?? null;
 
+// Verified reference video files hosted on Cloudflare R2 bucket.
+// Synthetic and screening exercises without a recorded reference video must not construct 404 URLs.
+export const VALIDATED_ONLINE_FILES = Object.freeze(new Set([
+  'olivier-1-mains-jointes',
+  'olivier-2-rotation-externe',
+  'olivier-3-abduction-horizontale',
+  'olivier-4-elevation-paliers',
+]));
+
 // Where the references' media are served: the build's address (VITE_KINE_MEDIA_URL), or none.
 export const MEDIA_BASE = (import.meta.env?.VITE_KINE_MEDIA_URL || '').replace(/\/?$/, '/');
 export const hasMedia = () => MEDIA_BASE !== '/';
 
-/** The URL of an exercise's video, poster or pose ('mp4', 'jpg', 'pose.json'); null with no media address. */
+/** The URL of an exercise's video, poster or pose ('mp4', 'jpg', 'pose.json'); null with no media address or if file is unverified. */
 export function mediaUrl(exercise, kind = 'mp4') {
-  return hasMedia() && exercise ? `${MEDIA_BASE}${exercise.file}.${kind}` : null;
+  if (!hasMedia() || !exercise) return null;
+  if (kind === 'mp4' && !VALIDATED_ONLINE_FILES.has(exercise.file)) return null;
+  if (kind === 'jpg' || kind === 'pose.json') return null;
+  return `${MEDIA_BASE}${exercise.file}.${kind}`;
 }
 

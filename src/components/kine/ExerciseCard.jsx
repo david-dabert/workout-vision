@@ -7,9 +7,35 @@ import { mediaUrl } from '../../lib/kine/library';
 export default function ExerciseCard({ ex, fr, k, action, open: startOpen = false, stepsLabel }) {
   const t = ex[fr ? 'fr' : 'en'];
   const [open, setOpen] = useState(startOpen);
+  const [videoError, setVideoError] = useState(false);
   const video = mediaUrl(ex, 'mp4');
+
   return <article className="kn-card" data-testid={`kn-ex-${ex.id}`}>
-    {video ? <video className="kn-video" src={video} poster={mediaUrl(ex, 'jpg')} controls playsInline preload="none" /> : null}
+    {video && !videoError ? (
+      <video
+        className="kn-video"
+        src={video}
+        poster={mediaUrl(ex, 'jpg')}
+        controls
+        playsInline
+        preload="none"
+        onError={() => setVideoError(true)}
+      />
+    ) : (
+      <div className="kn-video-placeholder" data-testid={`kn-placeholder-${ex.id}`}>
+        <div className="kn-protocol-badge">
+          <svg viewBox="0 0 16 16" fill="currentColor" role="img" aria-hidden="true">
+            <path d="M4 1.5A1.5 1.5 0 0 0 2.5 3v10A1.5 1.5 0 0 0 4 14.5h8a1.5 1.5 0 0 0 1.5-1.5V3A1.5 1.5 0 0 0 12 1.5H4zm1 3.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5z" />
+          </svg>
+          <span>{fr ? 'Protocole guidé · Repères cliniques' : 'Guided protocol · Clinical benchmarks'}</span>
+        </div>
+        {ex.targets && ex.targets.length > 0 && (
+          <div className="kn-targets-badge">
+            <span>{fr ? `Cible\u00A0: ${ex.targets.join('° à ')}°` : `Target: ${ex.targets.join('° to ')}°`}</span>
+          </div>
+        )}
+      </div>
+    )}
     <div className="kn-card-body">
       <div className="kn-card-head">
         <div>
