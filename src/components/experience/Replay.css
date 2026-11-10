@@ -196,3 +196,7 @@
   flex-shrink: 0;
 }
 
+.wv-experience .rp-fault-banner.rp-spine-fault {
+  top: 48px;
+}
+

@@ -30,6 +30,8 @@ export interface PatientInfo {
     flessumDeg?: number;
     kineticSequencingIndex?: number;
     hipShootFault?: boolean;
+    lumbopelvicStabilityIndex?: number;
+    buttWinkFault?: boolean;
   };
 }
 
@@ -162,6 +164,8 @@ export function generatePessacDossierHtml(specialtyId: string, patient: PatientI
         m.value = `${dt.kineticSequencingIndex}\u00A0% KSEI`;
       } else if (m.label === 'Inversion Précoce du Rythme' && dt.hipShootFault !== undefined) {
         m.value = dt.hipShootFault ? 'Décrochage pelvien (Positif)' : 'Négative (Verrouillée)';
+      } else if (m.label === "Angle d'Inclinaison Lombaire" && dt.lumbopelvicStabilityIndex !== undefined) {
+        m.value = `${dt.lumbopelvicStabilityIndex}\u00A0% LSI${dt.buttWinkFault ? ' (Rétroversion/Butt Wink)' : ' (Neutre)'}`;
       }
     }
   }

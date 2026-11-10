@@ -19,6 +19,7 @@ import { jointName } from './lift-meta';
 import { RESULT } from './result-copy';
 import { detectSetStickingPoints } from '../../lib/biomechanics/stickingPoint';
 import { analyzeKineticChainSequencing } from '../../lib/biomechanics/kineticChainSequencing';
+import { analyzeLumbopelvicRhythm } from '../../lib/biomechanics/lumbopelvicRhythm';
 import MocapViewer from './MocapViewer';
 import BarPathTracer from './BarPathTracer';
 
@@ -289,6 +290,17 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       return null;
     }
   }, [result, reps, times, lift, measured]);
+
+  const lumbopelvic = useMemo(() => {
+    if (!measured || !reps.length) return null;
+    const landmarks = result.worldLandmarks || result.landmarks || result.imageLandmarks;
+    if (!landmarks || !landmarks.length) return null;
+    try {
+      return analyzeLumbopelvicRhythm(landmarks, times, lift, reps);
+    } catch {
+      return null;
+    }
+  }, [result, reps, times, lift, measured]);
   let head = '', detail;
   if (current >= 0) {
     const r = reps[current];
@@ -373,6 +385,12 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
               <div className="rp-fault-banner" data-testid="rp-kinetic-fault-banner">
                 <span className="rp-fault-dot" aria-hidden="true" />
                 <span>{fr ? kineticSequencing.cueFr : kineticSequencing.cueEn}</span>
+              </div>
+            )}
+            {lumbopelvic?.buttWinkDetected && (
+              <div className="rp-fault-banner rp-spine-fault" data-testid="rp-lumbopelvic-fault-banner">
+                <span className="rp-fault-dot" aria-hidden="true" />
+                <span>{fr ? lumbopelvic.cueFr : lumbopelvic.cueEn}</span>
               </div>
             )}
             {reps.length > 0 && <div className={`rp-chip${phaseWord === NB ? ' is-idle' : ''}`} aria-hidden="true">
@@ -465,6 +483,17 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
                           <span className="rc-hud-delta">{sign}{diff}°</span>
                         </div>
                         {secondary}
+                        {lumbopelvic && (
+                          <div
+                            key="lumbopelvic"
+                            className={`rc-hud-item ${lumbopelvic.tier === 'neutral' ? 'is-ok' : 'is-off'}`}
+                            data-testid="rc-hud-lumbopelvic"
+                          >
+                            <span className="rc-hud-name">{fr ? 'Rachis' : 'Spine'}</span>
+                            <span className="rc-hud-angles">{lumbopelvic.lsiPercent}% LSI</span>
+                            <span className="rc-hud-delta">{lumbopelvic.maxFlexionExcursionDeg}°</span>
+                          </div>
+                        )}
                       </>
                     );
                   })()
