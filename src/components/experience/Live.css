@@ -155,4 +155,37 @@
   border-radius: 50%;
   background: var(--c-accent);
 }
+.wv-experience .live-velocity-hud {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 3px 10px;
+  border-radius: var(--r-full);
+  background: var(--well);
+  border: 1px solid var(--hair-2);
+  color: var(--c-fg);
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+  letter-spacing: var(--track-label);
+}
+.wv-experience .live-velocity-hud.is-speed_preserved {
+  border-color: var(--c-accent);
+  color: var(--c-accent);
+}
+.wv-experience .live-velocity-hud.is-optimal_hypertrophy {
+  border-color: var(--c-accent);
+  color: var(--lamp-hi);
+}
+.wv-experience .live-velocity-hud.is-termination_failure {
+  border-color: var(--hair-2);
+  color: var(--c-fg-muted);
+}
+.wv-experience .live-velocity-speed {
+  font-weight: 600;
+}
+.wv-experience .live-velocity-loss {
+  opacity: 0.85;
+}
+
 

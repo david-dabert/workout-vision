@@ -9,6 +9,7 @@ import { voiceWanted, setVoiceWanted, canSpeak, unlockSpeech, say, buzz, hush } 
 import { holdScreenAwake } from '../../lib/interruption';
 import { drawSkeleton, litSides, trailPoints } from './replay-draw';
 import { playLockoutCue, playVelocityLossAlert, playStretchDepthClick, playBounceWarning, playContinuousTensionAlert } from '../../lib/audioCueEngine';
+import { dispatchVelocityFeedback, calculateConcentricMeanVelocity } from '../../lib/audio/velocityAudioHaptics';
 import { evaluateLiveRepQuality } from '../../lib/coaching/movementOptimization';
 import { HierarchicalDetector } from '../../lib/hierarchicalDetector';
 import { resolveKinematicAlias } from '../../lib/biomechanics/kinematicAliasing';
@@ -131,6 +132,8 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
   const autoGate = useRef(new AutoSetGate({ braceDwellSec: 1.2, rackDwellSec: 3.5 }));
   const [framingEval, setFramingEval] = useState(null);
   const [isAutoGated] = useState(true);
+  const [velocityTelemetry, setVelocityTelemetry] = useState(null);
+  const concentricSamples = useRef([]);
 
   useEffect(() => {
     if (isAuto) {
@@ -244,6 +247,8 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
 
         angleHistory.current.push(angle);
         if (angleHistory.current.length > 15) angleHistory.current.shift();
+        concentricSamples.current.push({ angle, timestamp: now / 1000 });
+        if (concentricSamples.current.length > 40) concentricSamples.current.shift();
 
         if (angleHistory.current.length >= 3) {
           const pred = classify1DTemporalRepPhase(angleHistory.current, vel, acc, def?.rest ?? 'high');
@@ -315,20 +320,35 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
         const repNow = performance.now();
         let velocitySlowed = false;
         let repDuration = 0;
+        let lossPercent = 0;
         if (lastRepTimestamp.current > 0) {
           repDuration = (repNow - lastRepTimestamp.current) / 1000;
           if (repDuration >= 0.6 && repDuration <= 10.0) {
             if (repDuration < fastestRepDuration.current) {
               fastestRepDuration.current = repDuration;
-            } else if (fastestRepDuration.current < Infinity && repDuration > fastestRepDuration.current * 1.35) {
-              velocitySlowed = true;
+              lossPercent = 0;
+            } else if (fastestRepDuration.current < Infinity && repDuration > 0) {
+              lossPercent = Math.max(0, Math.round(((repDuration - fastestRepDuration.current) / repDuration) * 100));
+              if (lossPercent >= 35) {
+                velocitySlowed = true;
+              }
             }
           }
         }
         lastRepTimestamp.current = repNow;
 
+        const velStats = calculateConcentricMeanVelocity(concentricSamples.current);
+        const meanVel = velStats?.meanVelocityDegS || (repDuration > 0 ? Math.round(90 / repDuration) : 0);
+        const feedback = dispatchVelocityFeedback(lossPercent, true, true);
+        setVelocityTelemetry({
+          lossPercent,
+          meanVelocityDegS: meanVel,
+          tier: feedback.tier,
+        });
+        concentricSamples.current = [];
+
         if (velocitySlowed) {
-          playVelocityLossAlert();
+          playVelocityLossAlert(lossPercent);
         } else {
           playLockoutCue();
         }
@@ -562,6 +582,14 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
                     <span>{PHASE_LABELS[fr ? 'fr' : 'en'][livePhase.phase] || livePhase.phase}</span>
                   </div>
                 )}
+                {velocityTelemetry && (
+                  <div className={`live-velocity-hud is-${velocityTelemetry.tier}`} data-testid="live-velocity-hud">
+                    <span className="live-velocity-speed">{velocityTelemetry.meanVelocityDegS}°/s</span>
+                    <span className="live-velocity-loss">
+                      {velocityTelemetry.lossPercent > 0 ? `-${velocityTelemetry.lossPercent}%` : (fr ? 'Vitesse max' : 'Peak speed')}
+                    </span>
+                  </div>
+                )}
                 <div className="live-handsfree-indicator" data-testid="live-handsfree-indicator">
                   <i className="live-handsfree-dot" aria-hidden="true" />
                   <span>{fr ? 'ZÉRO-TOUCH' : 'ZERO-TOUCH'}</span>
@@ -580,6 +608,14 @@ export default function Live({ lift, onBack, onDone, onRecord, onStart = () => {
                   <div className={`live-phase-pill is-${livePhase.phase}`} data-testid="live-phase-pill">
                     <i className="live-phase-dot" aria-hidden="true" />
                     <span>{PHASE_LABELS[fr ? 'fr' : 'en'][livePhase.phase] || livePhase.phase}</span>
+                  </div>
+                )}
+                {velocityTelemetry && (
+                  <div className={`live-velocity-hud is-${velocityTelemetry.tier}`} data-testid="live-velocity-hud">
+                    <span className="live-velocity-speed">{velocityTelemetry.meanVelocityDegS}°/s</span>
+                    <span className="live-velocity-loss">
+                      {velocityTelemetry.lossPercent > 0 ? `-${velocityTelemetry.lossPercent}%` : (fr ? 'Vitesse max' : 'Peak speed')}
+                    </span>
                   </div>
                 )}
               </div>)}
