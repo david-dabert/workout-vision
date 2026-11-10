@@ -5,11 +5,22 @@ import './FilmExerciseDrawer.css';
 
 const ARCHETYPE_FILTERS = [
   { id: 'all', labelEn: 'All', labelFr: 'Tous' },
+  { id: 'recents', labelEn: 'Recent', labelFr: 'Récents' },
   { id: 'squat', labelEn: 'Squat', labelFr: 'Squat' },
   { id: 'hinge', labelEn: 'Hinge', labelFr: 'Hanches' },
   { id: 'push', labelEn: 'Push', labelFr: 'Poussée' },
   { id: 'pull', labelEn: 'Pull', labelFr: 'Tirage' },
   { id: 'isolation', labelEn: 'Isolation', labelFr: 'Isolation' },
+];
+
+const ZONE_FILTERS = [
+  { id: 'all', labelEn: 'All Zones', labelFr: 'Toutes zones', muscles: [] },
+  { id: 'chest', labelEn: 'Chest', labelFr: 'Pectoraux', muscles: ['pectoralis_major'] },
+  { id: 'back', labelEn: 'Back', labelFr: 'Dos', muscles: ['latissimus_dorsi', 'erector_spinae'] },
+  { id: 'shoulders', labelEn: 'Shoulders', labelFr: 'Épaules', muscles: ['anterior_deltoid', 'lateral_deltoid', 'rear_deltoid'] },
+  { id: 'arms', labelEn: 'Arms', labelFr: 'Bras', muscles: ['biceps_brachii', 'triceps_brachii'] },
+  { id: 'legs', labelEn: 'Legs', labelFr: 'Jambes', muscles: ['quadriceps', 'hamstrings', 'glutes', 'calves'] },
+  { id: 'core', labelEn: 'Core', labelFr: 'Abdos / Tronc', muscles: ['rectus_abdominis', 'erector_spinae'] },
 ];
 
 const EQUIPMENT_FILTERS = [
@@ -101,11 +112,20 @@ function HighlightMatch({ text, query }) {
   );
 }
 
-export default function FilmExerciseDrawer({ currentLift, onSelect, onClose, initialArchetype = 'all', initialQuery = '' }) {
+export default function FilmExerciseDrawer({
+  currentLift,
+  onSelect,
+  onClose,
+  initialArchetype = 'all',
+  initialQuery = '',
+  recents = [],
+  onGuide = null,
+}) {
   const { lang } = useT();
   const fr = lang === 'fr';
   const [query, setQuery] = useState(initialQuery);
   const [archetype, setArchetype] = useState(initialArchetype);
+  const [zone, setZone] = useState('all');
   const [equipment, setEquipment] = useState('all');
   const [expandedId, setExpandedId] = useState(null);
   const inputRef = useRef(null);
@@ -124,15 +144,44 @@ export default function FilmExerciseDrawer({ currentLift, onSelect, onClose, ini
   }, []);
 
   const results = useMemo(() => {
-    let list = query.trim() ? searchExercises(query, fr ? 'fr' : 'en', 120) : allItems.slice(0, 120);
-    if (archetype !== 'all') {
-      list = list.filter(item => item.archetype === archetype);
+    let list;
+    if (archetype === 'recents') {
+      const recentKeys = (recents || []).map(r => (typeof r === 'string' ? r : r.key)).filter(Boolean);
+      const matched = [];
+      for (const k of recentKeys) {
+        const item = allItems.find(it => it.counting_key === k || it.id === k);
+        if (item && !matched.some(m => m.id === item.id)) {
+          matched.push(item);
+        }
+      }
+      list = matched;
+      if (query.trim()) {
+        const q = query.trim().toLowerCase();
+        list = list.filter(it =>
+          it.name.toLowerCase().includes(q) ||
+          it.name_fr.toLowerCase().includes(q) ||
+          it.equipment.toLowerCase().includes(q)
+        );
+      }
+    } else {
+      list = query.trim() ? searchExercises(query, fr ? 'fr' : 'en', 120) : allItems.slice(0, 120);
+      if (archetype !== 'all') {
+        list = list.filter(item => item.archetype === archetype);
+      }
+    }
+    if (zone !== 'all') {
+      const targetMuscles = ZONE_FILTERS.find(z => z.id === zone)?.muscles || [];
+      list = list.filter(item => {
+        const pMuscles = item.primary_muscles || [];
+        const sMuscles = item.secondary_muscles || [];
+        return targetMuscles.some(m => pMuscles.includes(m) || sMuscles.includes(m));
+      });
     }
     if (equipment !== 'all') {
       list = list.filter(item => item.equipment.toLowerCase().includes(equipment.toLowerCase()));
     }
     return list;
-  }, [query, archetype, equipment, fr, allItems]);
+  }, [query, archetype, zone, equipment, fr, allItems, recents]);
 
   const toggleExpand = (e, id) => {
     e.stopPropagation();
@@ -159,17 +208,40 @@ export default function FilmExerciseDrawer({ currentLift, onSelect, onClose, ini
               </span>
             </div>
           </div>
-          <button
-            type="button"
-            className="film-drawer-close press"
-            onClick={onClose}
-            aria-label={fr ? 'Fermer' : 'Close'}
-            data-testid="drawer-close-btn"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="film-drawer-header-actions">
+            {onGuide && (
+              <button
+                type="button"
+                className="film-drawer-guide-btn press"
+                onClick={() => {
+                  onClose();
+                  onGuide();
+                }}
+                data-testid="drawer-open-guide"
+                title={fr ? 'Afficher la vue anatomique 3D' : 'Show 3D anatomical view'}
+              >
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="4.5" r="2" />
+                  <path d="M4.5 9.5L12 8l7.5 1.5" />
+                  <path d="M12 8v6" />
+                  <path d="M12 14l-3.5 7" />
+                  <path d="M12 14l3.5 7" />
+                </svg>
+                <span>{fr ? 'Carte corporelle' : 'Body map'}</span>
+              </button>
+            )}
+            <button
+              type="button"
+              className="film-drawer-close press"
+              onClick={onClose}
+              aria-label={fr ? 'Fermer' : 'Close'}
+              data-testid="drawer-close-btn"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div className="film-drawer-search">
@@ -231,6 +303,20 @@ export default function FilmExerciseDrawer({ currentLift, onSelect, onClose, ini
                 onClick={() => setEquipment(eq.id)}
               >
                 {fr ? eq.labelFr : eq.labelEn}
+              </button>
+            ))}
+          </div>
+
+          <div className="film-drawer-subfilters" role="toolbar" aria-label={fr ? 'Filtrer par zone musculaire' : 'Filter by muscle area'}>
+            {ZONE_FILTERS.map(z => (
+              <button
+                key={z.id}
+                type="button"
+                className={`film-subfilter-pill${zone === z.id ? ' is-active' : ''}`}
+                onClick={() => setZone(z.id)}
+                data-testid={`zone-chip-${z.id}`}
+              >
+                {fr ? z.labelFr : z.labelEn}
               </button>
             ))}
           </div>

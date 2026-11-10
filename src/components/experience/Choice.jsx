@@ -337,6 +337,8 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <FilmExerciseDrawer
             currentLift={null}
             initialArchetype={catalogArchetype}
+            recents={recents}
+            onGuide={onGuide}
             onSelect={key => {
               setCatalogOpen(false);
               onChoose(key);
