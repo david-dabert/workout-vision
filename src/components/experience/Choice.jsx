@@ -17,7 +17,6 @@ import { pendingIncident, dismissIncident } from '../../lib/crashLog';
 import { CRASH, crashLine } from './crash-copy';
 const FilmExerciseDrawer = lazy(() => import('./FilmExerciseDrawer'));
 const BiomechanicalRetentionQuiz = lazy(() => import('./BiomechanicalRetentionQuiz'));
-import OneTouchHub from './OneTouchHub';
 import { showUnmeasuredRoutes } from '../../lib/buildFlags';
 import './Choice.css';
 
@@ -213,38 +212,6 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
             <h2 className="section-head choose-head" data-testid="choose-head-training">{fr ? 'Votre entraînement' : 'Your training'}</h2>
             <span className="choice-unified-tag">{fr ? '183 mouvements' : '183 movements'}</span>
           </div>
-          <OneTouchHub
-            fr={fr}
-            onStartLift={() => {
-              setCatalogArchetype('all');
-              setCatalogZone('all');
-              setCatalogOpen(true);
-            }}
-            onMobility={onReference}
-            onPro={onPro}
-            onHistory={onHistory}
-            onSelectCategory={catKey => {
-              if (catKey === 'recents') {
-                setCatalogArchetype('recents');
-                setCatalogZone('all');
-              } else if (catKey === 'glutes') {
-                setCatalogArchetype('all');
-                setCatalogZone('glutes');
-              } else {
-                const archMap = {
-                  all: 'all',
-                  chest_arms: 'push',
-                  back_shoulders: 'pull',
-                  legs: 'squat',
-                  core: 'isolation',
-                  beta: 'all',
-                };
-                setCatalogArchetype(archMap[catKey] || 'all');
-                setCatalogZone('all');
-              }
-              setCatalogOpen(true);
-            }}
-          />
           {/* The app on the Home Screen never receives a coach's link, which opens in the browser: a way to paste one in
               (Programme.jsx, PasteLink; excellence hunt, 9 October 2026). */}
           {!received && onProgramme && onHomeScreen() && <button className="row-link press" onClick={onProgramme} data-testid="choice-programme-link">
@@ -260,10 +227,14 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <div className="choice-unified-catalog-links" data-testid="choice-unified-catalog-links">
             <button className="row-link press is-unified" onClick={onGuide}>
               <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="4.5" r="2" /><path d="M4.5 9.5L12 8l7.5 1.5" /><path d="M12 8v6" /><path d="M12 14l-3.5 7" /><path d="M12 14l3.5 7" /></svg></span>
-              <span className="row-txt"><b>{fr ? 'Un autre exercice' : 'Another exercise'}</b><small>{fr ? 'Trouvez-le par la zone du corps' : 'Find it by body area'}</small></span>
+              <span className="row-txt"><b>{fr ? 'Trouver par zone du corps' : 'Find by body area'}</b><small>{fr ? 'Explorez le corps humain en 3D' : 'Explore the 3D anatomical map'}</small></span>
               <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
             </button>
-            <button className="row-link press is-unified" onClick={() => setCatalogOpen(true)} data-testid="choice-catalog-search">
+            <button className="row-link press is-unified" onClick={() => {
+              const el = document.getElementById('all-search');
+              if (el) { el.scrollIntoView({ behavior: 'smooth' }); el.focus(); }
+              else setCatalogOpen(true);
+            }} data-testid="choice-catalog-search">
               <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg></span>
               <span className="row-txt"><b>{fr ? 'Catalogue universel' : 'Universal catalog'}</b><small>{fr ? '183 exercices et mouvements' : '183 exercises and movements'}</small></span>
               <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>

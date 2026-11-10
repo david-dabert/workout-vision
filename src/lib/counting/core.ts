@@ -971,7 +971,8 @@ function spreadDeg(angles: (number | null)[]): number {
 }
 
 function vis(p: WorldLandmark): number {
-  return p?.visibility ?? 0;
+  if (!p) return 0;
+  return typeof p.visibility === 'number' ? p.visibility : 1.0;
 }
 
 function chooseLiftEnd(worldLandmarks: WorldLandmarkFrame[], joint: Joint, arm: 'left' | 'right'): number {
