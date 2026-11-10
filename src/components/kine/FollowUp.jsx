@@ -6,6 +6,7 @@ import { resultPayload, unpack } from '../../lib/kine/links';
 import { followUp, forgetPatient, keepResult, sessionWithin } from '../../lib/kine/store';
 import { TOLERANCE_DEG, TOLERANCE_SHARE } from '../../lib/reference/compare';
 import { COPY, JOINT_NAMES, deg, pct, sec } from '../reference/reference-copy';
+import { exportPessacDossier, PESSAC_SPECIALTIES } from '../../lib/kine/pessacDossierExport';
 import Backup from './Backup';
 
 // The physiotherapist's follow-up (#kine, tab "Suivi"): the results patients sent back, kept on this phone when opened
@@ -44,11 +45,12 @@ function Trend({ sessions, names, k, fr }) {
 
 function Exercise({ id, sessions, fr, k, c, names }) {
   const ex = exerciseById(id);
+  const title = ex ? ex[fr ? 'fr' : 'en'].title : id;
   // Progress from the first dated attempt to the last.
   const dated = sessions.filter(s => s.date);
   const first = dated.length > 1 ? sessionWithin(dated[0]) : null, last = dated.length > 1 ? sessionWithin(dated.at(-1)) : null;
   return <section className="sc-section" data-testid={`kn-follow-ex-${id}`}>
-    <GroupHead title={`${ex[fr ? 'fr' : 'en'].title} · ${k.fCount(sessions.length)}`} />
+    <GroupHead title={`${title} · ${k.fCount(sessions.length)}`} />
     {first != null && last != null && <p className="sc-caption" data-testid={`kn-follow-progress-${id}`}>{k.fFromTo(pct(first, fr), pct(last, fr))}</p>}
     <Trend sessions={sessions} names={names} k={k} fr={fr} />
     <ul className="kn-sessions">
@@ -71,6 +73,7 @@ export default function FollowUp({ fr, k, profile, initial = null }) {
   const [open, setOpen] = useState(initial);
   const [paste, setPaste] = useState('');
   const [note, setNote] = useState('');
+  const [pessacSpecialty, setPessacSpecialty] = useState('epaule');
   const refresh = () => setPatients(followUp());
 
   const add = () => {
@@ -106,6 +109,38 @@ export default function FollowUp({ fr, k, profile, initial = null }) {
       <section className="sc-section">
         <p className="sc-caption">{c.note(TOLERANCE_DEG)}</p>
         <button type="button" className="rc-btn is-primary is-wide press" onClick={exportPdf} data-testid="kn-follow-pdf">{k.fPdf}</button>
+        <div className="kn-pessac-follow-export" data-testid="kn-follow-pessac-section">
+          <label className="kn-field">
+            <span>{fr ? 'Pôle clinique (Dossier BDK)' : 'Clinical pole (BDK Dossier)'}</span>
+            <select
+              value={pessacSpecialty}
+              onChange={e => setPessacSpecialty(e.target.value)}
+              className="kn-pessac-select"
+              data-testid="kn-follow-pessac-select"
+            >
+              {PESSAC_SPECIALTIES.map(s => (
+                <option key={s.id} value={s.id}>
+                  {fr ? s.labelFr : s.labelEn}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            className="rc-btn is-line is-wide press kn-pessac-export-btn"
+            onClick={() => {
+              hapticLight();
+              exportPessacDossier(pessacSpecialty, {
+                nom: patient.name || '',
+                dateBilan: new Date().toISOString().slice(0, 10),
+                prescripteur: profile?.name ? `Kiné ${profile.name}` : undefined,
+              });
+            }}
+            data-testid="kn-follow-pessac-export"
+          >
+            {fr ? 'Imprimer le Dossier Clinique Pessac (8 Pôles BDK)' : 'Print Pessac Clinical Dossier (8-Pole BDK)'}
+          </button>
+        </div>
         {note && <p className="sc-caption" role="status">{note}</p>}
         <button type="button" className="rc-link press kn-forget" onClick={forget} data-testid="kn-follow-forget">{k.fForget}</button>
       </section>

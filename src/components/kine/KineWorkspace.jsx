@@ -12,6 +12,7 @@ import ReferenceCompare from '../reference/ReferenceCompare';
 import FollowUp from './FollowUp';
 import Calibration from './Calibration';
 import PessacClinicSpecialtyHub from './PessacClinicSpecialtyHub';
+import { exportPessacDossier } from '../../lib/kine/pessacDossierExport';
 import { KINE } from './kine-copy';
 import '../reference/ReferenceCompare.css';
 import './Kine.css';
@@ -238,7 +239,24 @@ export default function KineWorkspace({ onClose }) {
         <div className="wrap">
           <Topbar fr={fr} backTestId="kine-back-btn" onBack={onClose || (() => { window.location.hash = ''; })} />
           <p className="eyebrow">{k.eyebrow}</p>
-          <h1 className="title">{k.title}</h1>
+          <div className="kn-head-row">
+            <h1 className="title">{k.title}</h1>
+            <button
+              type="button"
+              className="rc-btn is-line press kn-dossier-quick-btn"
+              onClick={() => {
+                hapticLight();
+                exportPessacDossier('epaule', {
+                  prescripteur: profile?.name ? `Kiné ${profile.name}` : undefined,
+                  dateBilan: today(),
+                });
+              }}
+              data-testid="kn-workspace-pessac-export"
+              title={fr ? 'Imprimer le Dossier Clinique Pessac (BDK 8 Pôles)' : 'Print Pessac Clinical Dossier (8-Pole BDK)'}
+            >
+              {fr ? 'Dossier Clinique BDK' : 'Clinical Dossier BDK'}
+            </button>
+          </div>
           <p className="sub">{k.sub}</p>
           {!hasMedia() && <p className="sc-frame-note" data-testid="kn-no-media">{k.noMedia}</p>}
           <div className="sc-section">

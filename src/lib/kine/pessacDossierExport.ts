@@ -26,6 +26,25 @@ export interface PatientInfo {
   numDossier?: string;
 }
 
+export interface PessacSpecialtyItem {
+  id: string;
+  labelFr: string;
+  labelEn: string;
+  icon: string;
+  protocol: string;
+}
+
+export const PESSAC_SPECIALTIES: PessacSpecialtyItem[] = [
+  { id: 'shoulder', labelFr: 'Épaule & Scapula', labelEn: 'Shoulder & Scapula', icon: '🦾', protocol: 'Protocole McClure / SDT' },
+  { id: 'knee', labelFr: 'Genou & LCA', labelEn: 'Knee & ACL', icon: '🦵', protocol: 'Protocole Hewett / Shelbourne' },
+  { id: 'lumbar', labelFr: 'Rachis Lombaire', labelEn: 'Lumbar Spine', icon: '🦴', protocol: 'Protocole McGill / McKenzie' },
+  { id: 'hip', labelFr: 'Hanche & CFA', labelEn: 'Hip & FAI', icon: '🩻', protocol: 'Protocole Philippon / FADIR' },
+  { id: 'ankle', labelFr: 'Cheville & Achille', labelEn: 'Ankle & Achilles', icon: '🦶', protocol: 'Protocole WBLT / Konor' },
+  { id: 'cervical', labelFr: 'Rachis Cervical', labelEn: 'Cervical Spine', icon: '👤', protocol: 'Protocole Yip / CVA' },
+  { id: 'hand', labelFr: 'Main & Poignet', labelEn: 'Hand & Wrist', icon: '✋', protocol: 'Protocole Gelberman / Phalen' },
+  { id: 'foot', labelFr: 'Pied & Voûte', labelEn: 'Foot & Arch', icon: '👟', protocol: 'Protocole Brody / Naviculaire' },
+];
+
 const SPECIALTY_META: Record<string, { title: string; protocol: string; evidenceKey: keyof typeof CLINICAL_EVIDENCE_REGISTRY; metrics: { label: string; value: string; norm: string }[] }> = {
   shoulder: {
     title: 'Épaule & Scapula (Dyskinesie & Conflit Sous-Acromial)',

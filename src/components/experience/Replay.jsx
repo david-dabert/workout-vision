@@ -331,6 +331,97 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
               <span className="rp-phase">{phaseWord}</span>
               {measured && curAngle !== null && jointWord && <span className="rp-angle" data-testid="rp-angle">{jointWord}{NB}{Math.round(curAngle)}°</span>}
             </div>}
+            {measured && curAngle !== null && (
+              <div className="rc-stage-hud" data-testid="rc-stage-hud">
+                {result.joints ? (
+                  result.joints.map((j, k) => {
+                    const seenAtNow = result.seen?.[k]?.[now];
+                    const attVal = seenAtNow && result.matched?.[k]?.[now] != null ? Math.round(result.matched[k][now]) : null;
+                    const refVal = result.reference?.[k]?.[now] != null ? Math.round(result.reference[k][now]) : null;
+                    const diff = attVal != null && refVal != null ? attVal - refVal : null;
+                    const inTol = diff != null ? Math.abs(diff) <= 15 : null;
+                    const sign = diff != null && diff > 0 ? '+' : '';
+                    return (
+                      <div key={j.name} className={`rc-hud-item ${inTol === false ? 'is-off' : inTol === true ? 'is-ok' : 'is-unseen'}`} data-testid={`rc-hud-${j.name}`}>
+                        <span className="rc-hud-name">{j.name}</span>
+                        {attVal != null && refVal != null ? (
+                          <>
+                            <span className="rc-hud-angles">{attVal}° / {refVal}°</span>
+                            <span className="rc-hud-delta">{sign}{diff}°</span>
+                          </>
+                        ) : attVal != null ? (
+                          <span className="rc-hud-angles">{attVal}°</span>
+                        ) : (
+                          <span className="rc-hud-unseen">{fr ? 'Non visible' : 'Not seen'}</span>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  (() => {
+                    const attVal = Math.round(curAngle);
+                    const TARGET_MAP = {
+                      bicep_curl: { inflection: 60, rest: 150 },
+                      bicep_curl_alternating: { inflection: 60, rest: 150 },
+                      lat_pulldown: { inflection: 60, rest: 150 },
+                      seated_row: { inflection: 60, rest: 150 },
+                      dumbbell_row: { inflection: 60, rest: 150 },
+                      triceps_pushdown: { inflection: 160, rest: 70 },
+                      bench_press: { inflection: 80, rest: 165 },
+                      overhead_press: { inflection: 165, rest: 75 },
+                      lateral_raise: { inflection: 85, rest: 15 },
+                      squat: { inflection: 90, rest: 165 },
+                    };
+                    const targetConfig = TARGET_MAP[lift] || (def?.rest === 'high' ? { inflection: 70, rest: 160 } : { inflection: 90, rest: 30 });
+                    const targetAngle = (current >= 0 && (phase === def?.first || isTransition || !phase)) ? targetConfig.inflection : targetConfig.rest;
+                    const diff = attVal - targetAngle;
+                    const inTol = Math.abs(diff) <= 15;
+                    const sign = diff > 0 ? '+' : '';
+                    const lm = poseAt(frames, times, now);
+                    let secondary = null;
+                    if (def?.joint === 'knee' && lm && lm[11] && lm[23] && (lm[11].visibility ?? 0) > 0.5 && (lm[23].visibility ?? 0) > 0.5) {
+                      const dx = lm[11].x - lm[23].x, dy = lm[11].y - lm[23].y;
+                      const lean = Math.round(Math.abs(Math.atan2(dx, -dy) * 180 / Math.PI));
+                      const torsoTarget = 30;
+                      const torsoDiff = lean - torsoTarget;
+                      const torsoOk = Math.abs(torsoDiff) <= 15;
+                      const torsoSign = torsoDiff > 0 ? '+' : '';
+                      secondary = (
+                        <div key="torso" className={`rc-hud-item ${torsoOk ? 'is-ok' : 'is-off'}`} data-testid="rc-hud-torso">
+                          <span className="rc-hud-name">{fr ? 'Buste' : 'Torso'}</span>
+                          <span className="rc-hud-angles">{lean}° / {torsoTarget}°</span>
+                          <span className="rc-hud-delta">{torsoSign}{torsoDiff}°</span>
+                        </div>
+                      );
+                    } else if (def?.joint === 'elbow' && lm && lm[11] && lm[13] && (lm[11].visibility ?? 0) > 0.5 && (lm[13].visibility ?? 0) > 0.5) {
+                      const dx = lm[13].x - lm[11].x, dy = lm[13].y - lm[11].y;
+                      const sway = Math.round(Math.abs(Math.atan2(dx, dy) * 180 / Math.PI));
+                      const swayTarget = 10;
+                      const swayDiff = sway - swayTarget;
+                      const swayOk = sway <= 15;
+                      const swaySign = swayDiff > 0 ? '+' : '';
+                      secondary = (
+                        <div key="shoulder" className={`rc-hud-item ${swayOk ? 'is-ok' : 'is-off'}`} data-testid="rc-hud-shoulder">
+                          <span className="rc-hud-name">{fr ? 'Épaule' : 'Shoulder'}</span>
+                          <span className="rc-hud-angles">{sway}° / {swayTarget}°</span>
+                          <span className="rc-hud-delta">{swaySign}{swayDiff}°</span>
+                        </div>
+                      );
+                    }
+                    return (
+                      <>
+                        <div className={`rc-hud-item ${inTol ? 'is-ok' : 'is-off'}`} data-testid="rc-hud-primary">
+                          <span className="rc-hud-name">{jointWord || (fr ? 'Angle' : 'Angle')}</span>
+                          <span className="rc-hud-angles">{attVal}° / {targetAngle}°</span>
+                          <span className="rc-hud-delta">{sign}{diff}°</span>
+                        </div>
+                        {secondary}
+                      </>
+                    );
+                  })()
+                )}
+              </div>
+            )}
             {broken && <p className="rp-broken" role="alert">{fr ? 'Cette vidéo ne se lit pas dans ce navigateur.' : 'This video does not play in this browser.'}</p>}
           </div>
         )}
