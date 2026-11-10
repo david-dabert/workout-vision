@@ -3,10 +3,83 @@ import { analyzeMovementOptimization, analyzeContinuousBiomechanics } from '../.
 import { getExercise } from '../../lib/exercises/index';
 import './MovementOptimization.css';
 
+function getAnthropometricPrescription(profile, lift, fr) {
+  if (!profile || !profile.height) return null;
+  const h = Number(profile.height);
+  const ratio = h >= 175 ? 1.09 : h <= 162 ? 0.94 : 1.02;
+  const ratioType = h >= 175 ? 'long' : h <= 162 ? 'short' : 'balanced';
+
+  const isSquat = /squat/i.test(lift);
+  const isHinge = /deadlift|rdl|thrust/i.test(lift);
+  const isPress = /press|bench|push/i.test(lift);
+
+  let stance = '';
+  let angle = '';
+  let cue = '';
+
+  if (isSquat) {
+    if (ratioType === 'long') {
+      stance = fr ? 'Stance large (1.2x épaules)' : 'Wide stance (1.2x shoulders)';
+      angle = fr ? 'Pointes à 20-25°' : '20-25° foot flare';
+      cue = fr
+        ? 'Fémurs longs\u00A0: stance élargi et rotation externe pour réduire le bras de levier lombaire et maximiser le grand fessier.'
+        : 'Long femurs: wider stance and external hip rotation to reduce lumbar moment arm and recruit gluteus maximus.';
+    } else if (ratioType === 'short') {
+      stance = fr ? 'Stance épaules (1.0x)' : 'Shoulder width (1.0x)';
+      angle = fr ? 'Pointes à 10-15°' : '10-15° foot flare';
+      cue = fr
+        ? 'Leviers compacts\u00A0: genoux avançant librement sur les orteils, buste verticalisé et trajectoire axiale directe.'
+        : 'Compact levers: knees track freely forward over toes, upright torso and direct axial bar path.';
+    } else {
+      stance = fr ? 'Stance standard (1.1x)' : 'Standard stance (1.1x)';
+      angle = fr ? 'Pointes à 15°' : '15° foot flare';
+      cue = fr
+        ? 'Leviers équilibrés\u00A0: répartition homogène quadriceps et chaîne postérieure sans compensation axiale.'
+        : 'Balanced levers: even distribution across quadriceps and posterior chain without spinal compensation.';
+    }
+  } else if (isHinge) {
+    if (ratioType === 'long') {
+      stance = fr ? 'Hanches hautes au départ' : 'Higher hip start';
+      angle = fr ? 'Verrouillage dorsal actif' : 'Active lat lock';
+      cue = fr
+        ? 'Bras de levier fémoral étendu\u00A0: départ hanches hautes et verrouillage des dorsaux pour fixer la colonne lombaire.'
+        : 'Extended femur lever: higher hip setup and lat engagement to maintain neutral lumbar spine.';
+    } else {
+      stance = fr ? 'Départ hanches compact' : 'Compact hip setup';
+      angle = fr ? 'Poussée jambes dominante' : 'Quad-dominant drive';
+      cue = fr
+        ? 'Leviers compacts\u00A0: transfert de force immédiat du sol par extension simultanée genoux et hanches.'
+        : 'Compact levers: immediate floor drive via synchronized knee and hip extension.';
+    }
+  } else if (isPress) {
+    stance = fr ? 'Prise indexée aux épaules' : 'Shoulder-calibrated grip';
+    angle = fr ? 'Coudes à 45° du buste' : '45° elbow tuck';
+    cue = fr
+      ? 'Protection acromio-claviculaire\u00A0: coudes convergents à 45° pour préserver la coiffe des rotateurs au pic de charge.'
+      : 'Rotator cuff protection: 45° tucked elbows to safeguard anterior shoulder capsule under peak load.';
+  } else {
+    stance = fr ? 'Alignement morphologique actif' : 'Active morpho-alignment';
+    angle = fr ? 'Gainage pelvien neutre' : 'Neutral pelvic bracing';
+    cue = fr
+      ? 'Trajectoire adaptée à votre envergure\u00A0: maintien de la courbure vertébrale physiologique sur toute l\'amplitude.'
+      : 'Path matched to your levers: maintains physiological spinal alignment across full range of motion.';
+  }
+
+  return {
+    ratio,
+    ratioLabel: fr
+      ? (ratioType === 'long' ? 'Ratio fémur/buste 1.09 (Fémurs longs)' : ratioType === 'short' ? 'Ratio fémur/buste 0.94 (Fémurs courts)' : 'Ratio fémur/buste 1.02 (Équilibré)')
+      : (ratioType === 'long' ? 'Femur/torso ratio 1.09 (Long femurs)' : ratioType === 'short' ? 'Femur/torso ratio 0.94 (Short femurs)' : 'Femur/torso ratio 1.02 (Balanced)'),
+    stance,
+    angle,
+    cue,
+  };
+}
+
 /**
  * Movement Optimization Card
  * Displays ROM Score, Control & Tempo Index, Form Quality Badge,
- * and actionable Hypertrophy Coaching Summary.
+ * actionable Hypertrophy Coaching Summary, and Anthropometric Leverage Guidance.
  */
 export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr = false, result = null }) {
   const analysis = useMemo(() => {
@@ -22,6 +95,19 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
     return getExercise(lift);
   }, [lift]);
 
+  const athleteProfile = useMemo(() => {
+    try {
+      const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('wv_athlete_profile') : null;
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const leveragePrescription = useMemo(() => {
+    return getAnthropometricPrescription(athleteProfile, lift, fr);
+  }, [athleteProfile, lift, fr]);
+
   const badgeText = fr ? analysis.formBadge.labelFr : analysis.formBadge.label;
 
   return (
@@ -34,6 +120,20 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           {badgeText}
         </span>
       </div>
+
+      {leveragePrescription && (
+        <div className="res-opt-leverage-banner" data-testid="anthropometric-leverage-banner">
+          <div className="res-opt-leverage-head">
+            <span className="res-opt-leverage-kicker">{fr ? 'Morpho-Anatomie Calibrée' : 'Calibrated Morpho-Anatomy'}</span>
+            <span className="res-opt-leverage-ratio">{leveragePrescription.ratioLabel}</span>
+          </div>
+          <p className="res-opt-leverage-cue">{leveragePrescription.cue}</p>
+          <div className="res-opt-leverage-tags">
+            <span className="res-opt-tag-stance">{leveragePrescription.stance}</span>
+            <span className="res-opt-tag-angle">{leveragePrescription.angle}</span>
+          </div>
+        </div>
+      )}
 
       {analysis.coachPrescription && (
         <div className="res-opt-prescription-card" data-testid="coach-prescription-card">

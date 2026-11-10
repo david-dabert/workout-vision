@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CLINICAL_EVIDENCE_REGISTRY } from '../../lib/kine/clinicalEvidenceValidator';
+import { exportPessacDossier } from '../../lib/kine/pessacDossierExport';
 import './Kine.css';
 
 /**
@@ -45,6 +46,7 @@ export default function PessacClinicSpecialtyHub({
   onClose = null,
 }) {
   const [activeSpecialty, setActiveSpecialty] = useState(initialSpecialty);
+  const handleExport = onExportPdf || (() => exportPessacDossier(activeSpecialty));
 
   return (
     <div className="kn-pessac-hub" data-testid="pessac-specialty-hub">
@@ -54,11 +56,16 @@ export default function PessacClinicSpecialtyHub({
           <h2 className="kn-pessac-title">Plateforme Cinématique Multi-Spécialités</h2>
           <p className="kn-pessac-sub">Objectivation optique haute précision pour chaque pôle clinique</p>
         </div>
-        {onClose && (
-          <button type="button" className="btn-ghost is-s" onClick={onClose} data-testid="pessac-close-btn">
-            Fermer
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button type="button" className="btn-primary is-s" onClick={() => handleExport(activeSpecialty)} data-testid="pessac-header-export-btn">
+            📄 Exporter Dossier BDK PDF
           </button>
-        )}
+          {onClose && (
+            <button type="button" className="btn-ghost is-s" onClick={onClose} data-testid="pessac-close-btn">
+              Fermer
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Specialty Tabs */}
@@ -81,14 +88,14 @@ export default function PessacClinicSpecialtyHub({
 
       {/* Specialty Content Card */}
       <div className="kn-pessac-content">
-        {activeSpecialty === 'shoulder' && <ShoulderClinicalPanel onExportPdf={onExportPdf} />}
-        {activeSpecialty === 'knee' && <KneeClinicalPanel onExportPdf={onExportPdf} />}
-        {activeSpecialty === 'lumbar' && <LumbarClinicalPanel onExportPdf={onExportPdf} />}
-        {activeSpecialty === 'hip' && <HipClinicalPanel onExportPdf={onExportPdf} />}
-        {activeSpecialty === 'ankle' && <AnkleClinicalPanel onExportPdf={onExportPdf} />}
-        {activeSpecialty === 'cervical' && <CervicalClinicalPanel onExportPdf={onExportPdf} />}
-        {activeSpecialty === 'hand' && <HandClinicalPanel onExportPdf={onExportPdf} />}
-        {activeSpecialty === 'foot' && <FootClinicalPanel onExportPdf={onExportPdf} />}
+        {activeSpecialty === 'shoulder' && <ShoulderClinicalPanel onExportPdf={handleExport} />}
+        {activeSpecialty === 'knee' && <KneeClinicalPanel onExportPdf={handleExport} />}
+        {activeSpecialty === 'lumbar' && <LumbarClinicalPanel onExportPdf={handleExport} />}
+        {activeSpecialty === 'hip' && <HipClinicalPanel onExportPdf={handleExport} />}
+        {activeSpecialty === 'ankle' && <AnkleClinicalPanel onExportPdf={handleExport} />}
+        {activeSpecialty === 'cervical' && <CervicalClinicalPanel onExportPdf={handleExport} />}
+        {activeSpecialty === 'hand' && <HandClinicalPanel onExportPdf={handleExport} />}
+        {activeSpecialty === 'foot' && <FootClinicalPanel onExportPdf={handleExport} />}
       </div>
     </div>
   );
