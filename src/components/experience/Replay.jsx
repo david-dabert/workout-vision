@@ -17,6 +17,7 @@ import { replayClock } from './replay-clock';
 import { keepsMeasures } from './saved-set';
 import { jointName } from './lift-meta';
 import { RESULT } from './result-copy';
+import { detectSetStickingPoints } from '../../lib/biomechanics/stickingPoint';
 import MocapViewer from './MocapViewer';
 
 // The set replayed with the skeleton the pose model tracked on it: what the app saw,
@@ -263,6 +264,17 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   const phase = measured && current >= 0 ? phaseAt(reps[current], now, def?.first) : null;
   const isTransition = measured && current >= 0 && !phase && !reps[current]?.clipped;
   const curAngle = angleAt ? angleAt(smoothedAngles, times, now) : null;
+
+  const stickingPoints = useMemo(() => {
+    if (!measured || !reps.length) return [];
+    const continuousAngles = result.smoothedAngles || result.angles || [];
+    if (!continuousAngles.length) return [];
+    try {
+      return detectSetStickingPoints(reps, continuousAngles, times, lift);
+    } catch {
+      return [];
+    }
+  }, [result, reps, times, lift, measured]);
   let head = '', detail;
   if (current >= 0) {
     const r = reps[current];
@@ -434,6 +446,19 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
         {reps.map((r, i) => {
           const from = Math.min(100, (r.startTime / length) * 100), to = Math.min(100, (r.endTime / length) * 100);
           return <span key={r.index ?? i} className={`rp-rep${i === current ? ' is-on' : ''}`} style={{ left: `${Math.min(from, 99.2)}%`, width: `${Math.max(0.8, to - from)}%` }} />;
+        })}
+        {stickingPoints.map((pin, idx) => {
+          const pos = Math.min(99.5, Math.max(0.5, (pin.timestamp / length) * 100));
+          const isActive = Math.abs(now - pin.timestamp) <= 0.35;
+          return (
+            <span
+              key={`sp-${pin.repIndex}-${idx}`}
+              className={`rp-inflection-pin rp-stickingpin${isActive ? ' is-active' : ''}`}
+              data-testid="rp-stickingpin"
+              style={{ left: `${pos}%` }}
+              title={fr ? `Point d'inflexion rép ${pin.repIndex}\u00A0: ${Math.round(pin.angleDeg)}°` : `Concentric inflection rep ${pin.repIndex}: ${Math.round(pin.angleDeg)}°`}
+            />
+          );
         })}
         <i className="rp-now" style={{ left: `${Math.min(100, (now / length) * 100)}%` }} />
       </div>
