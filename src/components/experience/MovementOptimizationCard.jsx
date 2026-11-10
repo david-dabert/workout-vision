@@ -5,6 +5,7 @@ import { analyzeBilateralKinematicSymmetry } from '../../lib/biomechanics/bilate
 import { analyzeDynamicKneeValgus } from '../../lib/biomechanics/dynamicValgus';
 import { analyzeKineticChainSequencing } from '../../lib/biomechanics/kineticChainSequencing';
 import { analyzeLumbopelvicRhythm } from '../../lib/biomechanics/lumbopelvicRhythm';
+import { analyzeBarbellTilt } from '../../lib/biomechanics/barbellTilt';
 import { computeBarPathMetrics } from './BarPathTracer';
 import { getExercise } from '../../lib/exercises/index';
 import './MovementOptimization.css';
@@ -181,6 +182,18 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
       return null;
     }
   }, [result, lift, reps]);
+
+  const barbellTilt = useMemo(() => {
+    if (!result) return null;
+    const landmarks = result.landmarks || result.imageLandmarks || result.worldLandmarks;
+    if (!landmarks || !landmarks.length) return null;
+    const timestamps = result.timestamps || null;
+    try {
+      return analyzeBarbellTilt(landmarks, timestamps, { lift });
+    } catch {
+      return null;
+    }
+  }, [result, lift]);
 
   const badgeText = fr ? analysis.formBadge.labelFr : analysis.formBadge.label;
 
@@ -496,6 +509,31 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
               {fr
                 ? 'Maintien du rachis lombaire neutre et absence de rétroversion pelvienne au point bas.'
                 : 'Maintenance of neutral lumbar spine and absence of posterior pelvic tilt at turnaround.'}
+            </span>
+          </div>
+        )}
+
+        {barbellTilt && (
+          <div className="res-opt-metric" data-testid="barbell-tilt-metric">
+            <div className="res-opt-metric-head">
+              <span className="res-opt-label">
+                {fr ? 'Stabilité de la barre' : 'Barbell Planar Stability'}
+              </span>
+              <span className="res-opt-val">{barbellTilt.planarStabilityIndex}%</span>
+            </div>
+            <div className="res-opt-bar-track">
+              <div
+                className={`res-opt-bar-fill ${barbellTilt.verdict === 'optimal' ? 'is-good' : barbellTilt.verdict === 'mild_tilt' ? 'is-mid' : 'is-warn'}`}
+                style={{ width: `${Math.min(100, Math.max(10, barbellTilt.planarStabilityIndex))}%` }}
+              />
+            </div>
+            <span className="res-opt-sub">
+              {fr ? barbellTilt.cueFr : barbellTilt.cueEn}
+            </span>
+            <span className="res-opt-explain">
+              {fr
+                ? 'Maintien de l’horizontalité de la barre dans le plan frontal.'
+                : 'Maintenance of horizontal bar orientation in the frontal plane.'}
             </span>
           </div>
         )}

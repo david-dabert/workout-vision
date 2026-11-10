@@ -9,10 +9,13 @@ describe('Lumbopelvic rhythm in Pessac Clinic dossier & replay integration', () 
       dynamicTelemetry: {
         lumbopelvicStabilityIndex: 58,
         buttWinkFault: true,
+        barbellTiltDeg: 5.4,
+        barbellTiltFault: true,
       },
     });
 
     expect(htmlWithFault).toContain('58\u00A0% LSI (Rétroversion/Butt Wink)');
+    expect(htmlWithFault).toContain('5.4\u00A0° (Asymétrie/Couple)');
     expect(htmlWithFault).not.toContain('\u2014');
 
     const htmlNeutral = generatePessacDossierHtml('lumbar', {
