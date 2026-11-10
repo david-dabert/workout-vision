@@ -4,6 +4,7 @@ import { calculateIntraSetVelocityLoss } from '../../lib/biomechanics/stickingPo
 import { analyzeBilateralKinematicSymmetry } from '../../lib/biomechanics/bilateralSymmetry';
 import { analyzeDynamicKneeValgus } from '../../lib/biomechanics/dynamicValgus';
 import { analyzeKineticChainSequencing } from '../../lib/biomechanics/kineticChainSequencing';
+import { analyzeLumbopelvicRhythm } from '../../lib/biomechanics/lumbopelvicRhythm';
 import { computeBarPathMetrics } from './BarPathTracer';
 import { getExercise } from '../../lib/exercises/index';
 import './MovementOptimization.css';
@@ -164,6 +165,18 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
     const timestamps = result.timestamps || null;
     try {
       return analyzeKineticChainSequencing(landmarks, timestamps, lift, reps);
+    } catch {
+      return null;
+    }
+  }, [result, lift, reps]);
+
+  const lumbopelvic = useMemo(() => {
+    if (!result) return null;
+    const landmarks = result.worldLandmarks || result.landmarks || result.imageLandmarks;
+    if (!landmarks || !landmarks.length) return null;
+    const timestamps = result.timestamps || null;
+    try {
+      return analyzeLumbopelvicRhythm(landmarks, timestamps, lift, reps);
     } catch {
       return null;
     }
@@ -458,6 +471,31 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
               {fr
                 ? 'Coordination temporelle entre l’extension des hanches et celle des genoux en phase de propulsion.'
                 : 'Temporal coordination between hip and knee extension during concentric ascent.'}
+            </span>
+          </div>
+        )}
+
+        {lumbopelvic && (
+          <div className="res-opt-metric" data-testid="lumbopelvic-stability-metric">
+            <div className="res-opt-metric-head">
+              <span className="res-opt-label">
+                {fr ? 'Stabilité lombo-pelvienne' : 'Lumbopelvic Stability'}
+              </span>
+              <span className="res-opt-val">{lumbopelvic.lsiPercent}%</span>
+            </div>
+            <div className="res-opt-bar-track">
+              <div
+                className={`res-opt-bar-fill ${lumbopelvic.tier === 'neutral' ? 'is-good' : lumbopelvic.tier === 'moderate_flexion' ? 'is-mid' : 'is-warn'}`}
+                style={{ width: `${Math.min(100, Math.max(10, lumbopelvic.lsiPercent))}%` }}
+              />
+            </div>
+            <span className="res-opt-sub">
+              {fr ? lumbopelvic.cueFr : lumbopelvic.cueEn}
+            </span>
+            <span className="res-opt-explain">
+              {fr
+                ? 'Maintien du rachis lombaire neutre et absence de rétroversion pelvienne au point bas.'
+                : 'Maintenance of neutral lumbar spine and absence of posterior pelvic tilt at turnaround.'}
             </span>
           </div>
         )}

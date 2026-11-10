@@ -158,6 +158,10 @@ describe('MovementOptimizationCard component', () => {
       timestamps.push(i / 20);
       const frame = Array(33).fill(null).map(() => ({ x: 0.5, y: 0.5, z: 0, visibility: 0.95 }));
 
+      // Shoulders (11, 12)
+      frame[11] = { x: 0.45, y: 0.2, z: 0, visibility: 0.95 };
+      frame[12] = { x: 0.55, y: 0.2, z: 0, visibility: 0.95 };
+
       // Left leg (23, 25, 27)
       frame[23] = { x: 0.4, y: 0.4, z: 0, visibility: 0.95 };
       frame[25] = { x: 0.4, y: 0.6, z: 0, visibility: 0.95 };
@@ -198,6 +202,8 @@ describe('MovementOptimizationCard component', () => {
     expect(html).toContain('Axial Bar Path Efficiency');
     expect(html).toContain('data-testid="kinetic-sequencing-metric"');
     expect(html).toContain('Kinetic Chain Sequencing');
+    expect(html).toContain('data-testid="lumbopelvic-stability-metric"');
+    expect(html).toContain('Lumbopelvic Stability');
   });
 });
 
