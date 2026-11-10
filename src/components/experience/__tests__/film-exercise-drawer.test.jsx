@@ -65,6 +65,24 @@ describe('FilmExerciseDrawer', () => {
     expect(html).toContain('data-testid="filter-chip-push"');
     expect(html).toContain('data-testid="filter-chip-pull"');
     expect(html).toContain('data-testid="filter-chip-isolation"');
+    expect(html).toContain('data-testid="filter-chip-recents"');
+    expect(html).toContain('data-testid="zone-chip-chest"');
+    expect(html).toContain('data-testid="zone-chip-legs"');
+  });
+
+  it('renders body map shortcut when onGuide is provided', () => {
+    const html = renderDrawer({ onGuide: () => {} }, 'fr');
+    expect(html).toContain('data-testid="drawer-open-guide"');
+    expect(html).toContain('Carte corporelle');
+  });
+
+  it('filters exercises by recents when initialArchetype is recents', () => {
+    const html = renderDrawer({
+      initialArchetype: 'recents',
+      recents: [{ key: 'squat', name: 'Squat' }],
+    }, 'fr');
+    expect(html).toContain('data-testid="drawer-exercise-list"');
+    expect(html).toContain('data-testid="filter-chip-recents"');
   });
 
   it('renders drawer header and search input in English', () => {
