@@ -18,6 +18,7 @@ import { keepsMeasures } from './saved-set';
 import { jointName } from './lift-meta';
 import { RESULT } from './result-copy';
 import { detectSetStickingPoints } from '../../lib/biomechanics/stickingPoint';
+import { analyzeKineticChainSequencing } from '../../lib/biomechanics/kineticChainSequencing';
 import MocapViewer from './MocapViewer';
 import BarPathTracer from './BarPathTracer';
 
@@ -277,6 +278,17 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       return [];
     }
   }, [result, reps, times, lift, measured]);
+
+  const kineticSequencing = useMemo(() => {
+    if (!measured || !reps.length) return null;
+    const landmarks = result.worldLandmarks || result.landmarks || result.imageLandmarks;
+    if (!landmarks || !landmarks.length) return null;
+    try {
+      return analyzeKineticChainSequencing(landmarks, times, lift, reps);
+    } catch {
+      return null;
+    }
+  }, [result, reps, times, lift, measured]);
   let head = '', detail;
   if (current >= 0) {
     const r = reps[current];
@@ -356,6 +368,12 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
                 active={showBarPath}
                 lang={lang}
               />
+            )}
+            {kineticSequencing?.hipShootDetected && (
+              <div className="rp-fault-banner" data-testid="rp-kinetic-fault-banner">
+                <span className="rp-fault-dot" aria-hidden="true" />
+                <span>{fr ? kineticSequencing.cueFr : kineticSequencing.cueEn}</span>
+              </div>
             )}
             {reps.length > 0 && <div className={`rp-chip${phaseWord === NB ? ' is-idle' : ''}`} aria-hidden="true">
               <span className="rp-count"><span className="rp-n">{begun}</span><span className="rp-of">/{NB}{reps.length}</span></span>

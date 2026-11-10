@@ -169,3 +169,30 @@
 .wv-experience .rp-export .btn-line { width: 100%; justify-content: center; text-decoration: none; }
 .wv-experience .rp-export .btn-line:disabled { opacity: 0.7; cursor: default; }
 .wv-experience .rp-export-note { margin: var(--s-2) 0 0; font-size: var(--fs-caption); line-height: 1.4; color: var(--c-fg-muted); text-align: center; }
+
+.wv-experience .rp-fault-banner {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: var(--well);
+  border: 1px solid var(--hair-2);
+  color: var(--lamp-hi);
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+  letter-spacing: var(--track-label);
+  z-index: 3;
+}
+.wv-experience .rp-fault-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-accent);
+  flex-shrink: 0;
+}
+
