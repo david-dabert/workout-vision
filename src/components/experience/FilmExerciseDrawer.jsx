@@ -15,6 +15,7 @@ const ARCHETYPE_FILTERS = [
 
 const ZONE_FILTERS = [
   { id: 'all', labelEn: 'All Zones', labelFr: 'Toutes zones', muscles: [] },
+  { id: 'glutes', labelEn: 'Glutes & Curves', labelFr: 'Fessiers & Galbe', muscles: ['glutes', 'hamstrings'] },
   { id: 'chest', labelEn: 'Chest', labelFr: 'Pectoraux', muscles: ['pectoralis_major'] },
   { id: 'back', labelEn: 'Back', labelFr: 'Dos', muscles: ['latissimus_dorsi', 'erector_spinae'] },
   { id: 'shoulders', labelEn: 'Shoulders', labelFr: 'Épaules', muscles: ['anterior_deltoid', 'lateral_deltoid', 'rear_deltoid'] },
@@ -117,6 +118,7 @@ export default function FilmExerciseDrawer({
   onSelect,
   onClose,
   initialArchetype = 'all',
+  initialZone = 'all',
   initialQuery = '',
   recents = [],
   onGuide = null,
@@ -125,7 +127,7 @@ export default function FilmExerciseDrawer({
   const fr = lang === 'fr';
   const [query, setQuery] = useState(initialQuery);
   const [archetype, setArchetype] = useState(initialArchetype);
-  const [zone, setZone] = useState('all');
+  const [zone, setZone] = useState(initialZone);
   const [equipment, setEquipment] = useState('all');
   const [expandedId, setExpandedId] = useState(null);
   const inputRef = useRef(null);

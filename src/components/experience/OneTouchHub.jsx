@@ -19,6 +19,7 @@ export default function OneTouchHub({ fr = false, onStartLift, onMobility, onPro
 
   const categories = [
     { key: 'all', label: copy.categories.all },
+    { key: 'glutes', label: copy.categories.glutes },
     { key: 'chest_arms', label: copy.categories.chest_arms },
     { key: 'back_shoulders', label: copy.categories.back_shoulders },
     { key: 'legs', label: copy.categories.legs },

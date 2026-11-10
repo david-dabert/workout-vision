@@ -150,5 +150,19 @@ describe('the exported overlay after a correction', () => {
     expect(drawn(7)).toEqual(['Skeleton estimated by the app', '7 / 7']);
     expect(drawn(null)).toEqual(['Skeleton estimated by the app', '7 / 7']);
   });
+  it('draws zero text or caption when clean is true for organic social export', () => {
+    const text = [];
+    const ctx = new Proxy({}, { get: (_, k) => (k === 'measureText' ? () => ({ width: 10 }) : k === 'fillText' ? t => text.push(t) : () => {}) });
+    document.createElement = tag => (tag === 'video' ? (video = new FakeVideo()) : { width: 390, height: 693, getContext: () => ctx, captureStream: () => ({ getTracks: () => [track] }) });
+    const reps = Array.from({ length: 7 }, (_, i) => ({ index: i + 1, startTime: i, endTime: i + 0.8 }));
+    exportSetVideo({ file: new Blob(['x']), result: { arm: 'left', count: 7, reps }, lift: 'bicep_curl', fr: false, clean: true }).catch(() => {});
+    let n = 0;
+    globalThis.requestAnimationFrame = cb => { if (n++ < 60) { video.currentTime = Math.min(10, n / 6); cb(); } return 1; };
+    video.dispatchEvent(new Event('playing'));
+    text.length = 0;
+    video.dispatchEvent(new Event('ended'));
+    expect(text).toEqual([]);
+    expect(exportFileName('squat', 'video/mp4', 10, true)).toBe('workoutvision-squat-raw.mp4');
+  });
 });
 

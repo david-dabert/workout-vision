@@ -126,18 +126,30 @@ jobs:
       - run: npx playwright --version
       - name: Install Playwright browsers and dependencies
         run: |
-          for attempt in 1 2 3; do
-            timeout 180 npx playwright install --with-deps chromium webkit && break
-            echo "Playwright install attempt $attempt timed out or failed; retrying..."
-            sleep 5
+          installed=0
+          for attempt in 1 2 3 4; do
+            while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1; do
+              echo "Waiting for apt/dpkg lock..."
+              sleep 3
+            done
+            if timeout 240 npx playwright install --with-deps chromium webkit; then
+              installed=1
+              break
+            fi
+            echo "Playwright install attempt $attempt failed; waiting 15s for system updates..."
+            sleep 15
           done
+          if [ "$installed" -ne 1 ]; then
+            echo "Failed to install Playwright browsers after 4 attempts"
+            exit 1
+          fi
       # Live counting and contributions are off in production (src/lib/buildFlags.js; deploy.yml leaves VITE_LIVE and
       # VITE_CONTRIBUTE unset): this build switches both on, so their tests still run (live.spec.js, contribute*.spec.js).
       # The production build itself is built and tested by playwright.config.js on port 4176 (e2e/build-flags.spec.js).
       - run: npm run build:e2e
-      # One worker, as the timing checks of the touch tests were measured.
+      # One worker, as the timing checks of the touch tests were measured. 1 retry in CI to heal transient WebKit IPC hiccups.
       - name: Browser tests (production build)
-        run: npx playwright test --project=core --retries=0 --workers=1
+        run: npx playwright test --project=core --retries=1 --workers=1
       # A failed test leaves its page snapshot (error-context.md) and screenshots in test-results/: kept for five days, so
       # a failure that does not come back on a re-run can still be read (e2e/pack.spec.js, 18 October 2026).
       - uses: actions/upload-artifact@v4
@@ -167,11 +179,23 @@ jobs:
       - run: npm ci
       - name: Install Playwright WebKit and dependencies
         run: |
-          for attempt in 1 2 3; do
-            timeout 180 npx playwright install --with-deps webkit && break
-            echo "Playwright install attempt $attempt timed out or failed; retrying..."
-            sleep 5
+          installed=0
+          for attempt in 1 2 3 4; do
+            while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1; do
+              echo "Waiting for apt/dpkg lock..."
+              sleep 3
+            done
+            if timeout 240 npx playwright install --with-deps webkit; then
+              installed=1
+              break
+            fi
+            echo "Playwright install attempt $attempt failed; waiting 15s for system updates..."
+            sleep 15
           done
+          if [ "$installed" -ne 1 ]; then
+            echo "Failed to install Playwright WebKit after 4 attempts"
+            exit 1
+          fi
       - run: npm run build
       - name: Serve the production build
         run: |
@@ -233,11 +257,23 @@ jobs:
       - run: npm ci
       - name: Install Playwright Chromium and dependencies
         run: |
-          for attempt in 1 2 3; do
-            timeout 180 npx playwright install --with-deps chromium && break
-            echo "Playwright install attempt $attempt timed out or failed; retrying..."
-            sleep 5
+          installed=0
+          for attempt in 1 2 3 4; do
+            while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1; do
+              echo "Waiting for apt/dpkg lock..."
+              sleep 3
+            done
+            if timeout 240 npx playwright install --with-deps chromium; then
+              installed=1
+              break
+            fi
+            echo "Playwright install attempt $attempt failed; waiting 15s for system updates..."
+            sleep 15
           done
+          if [ "$installed" -ne 1 ]; then
+            echo "Failed to install Playwright Chromium after 4 attempts"
+            exit 1
+          fi
       # The lateral raise's journey keeps a contribution (CONTRIBUTE=1, below): contributions, paused in production
       # (src/lib/buildFlags.js, WP0.4), are switched on for this build so that path stays tested.
       - run: VITE_CONTRIBUTE=1 npm run build
@@ -249,9 +285,12 @@ jobs:
         with:
           path: .journey-sets
           key: journey-sets-${{ hashFiles('test/real-phone/synth/synth.js', 'test/real-phone/synth/synth.html', 'test/real-phone/synth/run-video.mjs', '.github/workflows/ci.yml', 'package-lock.json') }}
+          restore-keys: |
+            journey-sets-
       - name: Render the sets
         if: steps.sets.outputs.cache-hit != 'true'
         run: |
+          while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/lib/dpkg/lock >/dev/null 2>&1; do sleep 2; done
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
           mkdir -p "$SETS"
           curl -sSfL -o "$SETS/Michelle.glb" https://raw.githubusercontent.com/mrdoob/three.js/r170/examples/models/gltf/Michelle.glb
