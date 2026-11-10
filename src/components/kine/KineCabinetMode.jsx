@@ -292,7 +292,7 @@ export default function KineCabinetMode({ onBack }) {
             {generatedReport.measurements.map((m, idx) => (
               <div key={idx} style={{ background: 'var(--depth-1)', padding: '10px', borderRadius: '6px' }}>
                 <span style={{ fontSize: '11px', color: 'var(--c-fg-muted)', display: 'block' }}>{m.movementNameFr}</span>
-                <strong style={{ fontSize: '18px', color: m.isDeficit ? 'var(--c-alert)' : 'var(--c-fg)' }}>
+                <strong style={{ fontSize: '18px', color: m.isDeficit ? 'var(--c-accent)' : 'var(--c-fg)' }}>
                   {m.activeRomDegrees}&deg;
                 </strong>
                 <span style={{ fontSize: '11px', display: 'block', color: 'var(--c-fg-muted)' }}>
