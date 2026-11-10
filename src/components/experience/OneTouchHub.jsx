@@ -117,6 +117,20 @@ export default function OneTouchHub({ fr = false, onStartLift, onMobility, onPro
         </button>
       </div>
 
+      <button
+        type="button"
+        className="wv-onetouch-search-launcher tactile"
+        data-testid="onetouch-search-launcher"
+        onClick={() => handleTouch(onStartLift)}
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
+        </svg>
+        <span className="wv-onetouch-search-ph">{copy.searchPlaceholder}</span>
+        <span className="wv-onetouch-search-badge">183</span>
+      </button>
+
       <div className="wv-onetouch-chips-wrap">
         <span className="wv-onetouch-chips-label" id="onetouch-chips-label">
           {copy.quickCategoriesLabel}
