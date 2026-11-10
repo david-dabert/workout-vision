@@ -6,8 +6,20 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { gunzipSync } from 'node:zlib';
 
-const CACHE_FILE = resolve(process.cwd(), 'benchmark/landmark-cache/landmark-cache-2026-09-22T2350.json');
+const CACHE_JSON = resolve(process.cwd(), 'benchmark/landmark-cache/landmark-cache-2026-09-22T2350.json');
+const CACHE_GZ = resolve(process.cwd(), 'benchmark/landmark-cache/landmark-cache-2026-09-22T2350.json.gz');
+
+function loadCache() {
+  if (existsSync(CACHE_JSON)) {
+    return JSON.parse(readFileSync(CACHE_JSON, 'utf-8'));
+  }
+  if (existsSync(CACHE_GZ)) {
+    return JSON.parse(gunzipSync(readFileSync(CACHE_GZ)).toString('utf-8'));
+  }
+  throw new Error('Landmark cache not found on disk');
+}
 
 const LM = {
   NOSE: 0,
@@ -21,9 +33,8 @@ const LM = {
 
 describe('Offline Landmark Replay Cache (107 Real Sets)', () => {
   it('loads real-phone landmark cache without network dependencies', () => {
-    expect(existsSync(CACHE_FILE)).toBe(true);
-    const raw = readFileSync(CACHE_FILE, 'utf-8');
-    const cache = JSON.parse(raw);
+    expect(existsSync(CACHE_JSON) || existsSync(CACHE_GZ)).toBe(true);
+    const cache = loadCache();
 
     // Bounded video count (107 scored real sets, 109 total recorded)
     expect(cache.length).toBeGreaterThanOrEqual(107);
@@ -47,8 +58,7 @@ describe('Offline Landmark Replay Cache (107 Real Sets)', () => {
   });
 
   it('covers launch lifts and compound movement patterns with non-zero durations', () => {
-    const raw = readFileSync(CACHE_FILE, 'utf-8');
-    const cache = JSON.parse(raw);
+    const cache = loadCache();
 
     const videoNames = cache.map(c => c.video);
     const hasBench = videoNames.some(v => v.includes('bench_press'));

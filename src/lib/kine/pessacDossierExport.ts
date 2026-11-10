@@ -57,7 +57,7 @@ const SPECIALTY_META: Record<string, { title: string; protocol: string; evidence
       { label: 'Ratio Lombo-Pelvien', value: '1.34', norm: '1.0 - 1.5 physiologique' },
       { label: 'Chute Pelvienne (Trendelenburg)', value: '2.1°', norm: '< 4.0° (McGill 2007)' },
       { label: 'Inversion Précoce du Rythme', value: 'Négative (Verrouillée)', norm: 'Contrôle actif préservé' },
-      { label: 'Angle de Cisaillement L5/S1', value: '28° flexion max', norm: '< 35° en charge' },
+      { label: 'Angle d\'Inclinaison Lombaire', value: '28° flexion max', norm: '< 35° en charge' },
     ],
   },
   hip: {
