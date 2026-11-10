@@ -132,6 +132,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
   const railRef = useRef(null), dotsRef = useRef(null), cards = useRef([]);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [catalogArchetype, setCatalogArchetype] = useState('all');
+  const [catalogZone, setCatalogZone] = useState('all');
   const [profileQuizOpen, setProfileQuizOpen] = useState(false);
   // The guide's names load after the choice; until then a set of an exercise without a card is not
   // named, so the welcome never shows an internal key (review of 29 September).
@@ -212,21 +213,28 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           fr={fr}
           onStartLift={() => {
             setCatalogArchetype('all');
+            setCatalogZone('all');
             setCatalogOpen(true);
           }}
           onMobility={onReference}
           onPro={onPro}
           onHistory={onHistory}
           onSelectCategory={catKey => {
-            const archMap = {
-              all: 'all',
-              chest_arms: 'push',
-              back_shoulders: 'pull',
-              legs: 'squat',
-              core: 'isolation',
-              beta: 'all',
-            };
-            setCatalogArchetype(archMap[catKey] || 'all');
+            if (catKey === 'glutes') {
+              setCatalogArchetype('all');
+              setCatalogZone('glutes');
+            } else {
+              const archMap = {
+                all: 'all',
+                chest_arms: 'push',
+                back_shoulders: 'pull',
+                legs: 'squat',
+                core: 'isolation',
+                beta: 'all',
+              };
+              setCatalogArchetype(archMap[catKey] || 'all');
+              setCatalogZone('all');
+            }
             setCatalogOpen(true);
           }}
         />
@@ -344,6 +352,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <FilmExerciseDrawer
             currentLift={null}
             initialArchetype={catalogArchetype}
+            initialZone={catalogZone}
             recents={recents}
             onGuide={onGuide}
             onSelect={key => {

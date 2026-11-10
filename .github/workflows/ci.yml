@@ -257,6 +257,7 @@ jobs:
       - run: npm ci
       - name: Install Playwright Chromium and dependencies
         run: |
+          while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/lib/dpkg/lock >/dev/null 2>&1; do sleep 2; done
           for attempt in 1 2 3; do
             timeout 180 npx playwright install --with-deps chromium && break
             echo "Playwright install attempt $attempt timed out or failed; retrying..."
@@ -273,9 +274,12 @@ jobs:
         with:
           path: .journey-sets
           key: journey-sets-${{ hashFiles('test/real-phone/synth/synth.js', 'test/real-phone/synth/synth.html', 'test/real-phone/synth/run-video.mjs', '.github/workflows/ci.yml', 'package-lock.json') }}
+          restore-keys: |
+            journey-sets-
       - name: Render the sets
         if: steps.sets.outputs.cache-hit != 'true'
         run: |
+          while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/lib/dpkg/lock >/dev/null 2>&1; do sleep 2; done
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
           mkdir -p "$SETS"
           curl -sSfL -o "$SETS/Michelle.glb" https://raw.githubusercontent.com/mrdoob/three.js/r170/examples/models/gltf/Michelle.glb

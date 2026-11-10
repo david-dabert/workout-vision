@@ -59,20 +59,20 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
 
   // Step 4: the video with its overlay, prepared on a first tap and shared on a second, since the share
   // sheet opens only inside a tap and the recording takes as long as the set.
-  const [made, setMade] = useState({ state: 'idle', progress: 0, file: null, link: null });
+  const [made, setMade] = useState({ state: 'idle', progress: 0, file: null, link: null, isClean: false });
   const abort = useRef(null);
   useEffect(() => () => { abort.current?.abort(); }, []);
   useEffect(() => () => { if (made.link) URL.revokeObjectURL(made.link); }, [made.link]);
   const exportable = !!file && !broken && !result.refused && canExport();
-  function prepare() {
+  function prepare(clean = false) {
     videoRef.current?.pause();
     abort.current = new AbortController();
-    setMade({ state: 'making', progress: 0, file: null, link: null });
+    setMade({ state: 'making', progress: 0, file: null, link: null, isClean: clean });
     // Made from the video on screen, played from its start: the person watches the set as it is prepared.
     setSlow(false);
-    exportSetVideo({ file, result, lift, fr, saved, screen: videoRef.current, signal: abort.current.signal, onProgress: p => setMade(m => (m.state === 'making' ? { ...m, progress: p } : m)) })
-      .then(out => setMade({ state: 'ready', progress: 1, file: out, link: URL.createObjectURL(out) }))
-      .catch(e => { if (e?.name !== 'AbortError') setMade({ state: 'failed', why: e?.message, progress: 0, file: null, link: null }); });
+    exportSetVideo({ file, result, lift, fr, saved, clean, screen: videoRef.current, signal: abort.current.signal, onProgress: p => setMade(m => (m.state === 'making' ? { ...m, progress: p } : m)) })
+      .then(out => setMade({ state: 'ready', progress: 1, file: out, link: URL.createObjectURL(out), isClean: clean }))
+      .catch(e => { if (e?.name !== 'AbortError') setMade({ state: 'failed', why: e?.message, progress: 0, file: null, link: null, isClean: clean }); });
   }
   // A share that fails offers the video to save instead, and says so; one sheet at a time.
   const [shareBroke, setShareBroke] = useState(false);
@@ -360,11 +360,16 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
         <button className={`btn-ghost press rp-slow${slow ? ' is-on' : ''}`} aria-pressed={slow} disabled={broken || made.state === 'making'} onClick={() => setSlow(s => !s)}>{fr ? 'Ralenti' : 'Slow motion'}</button>
       </div>
       {exportable && <div className="rp-export">
-        {(made.state === 'idle' || made.state === 'failed') && <button className="btn-line press" onClick={prepare}>{fr ? 'Préparer la vidéo à partager' : 'Prepare the video to share'}</button>}
+        {(made.state === 'idle' || made.state === 'failed') && <div className="rp-export-actions">
+          <button className="btn-line press" onClick={() => prepare(false)}>{fr ? 'Préparer la vidéo à partager' : 'Prepare the video to share'}</button>
+          <button className="btn-line press rp-clean-btn" data-testid="rp-export-clean" onClick={() => prepare(true)}>
+            {fr ? 'Vidéo brute sans texte (Story / TikTok)' : 'Clean video without text (Story / TikTok)'}
+          </button>
+        </div>}
         {made.state === 'making' && <button className="btn-line" disabled>{fr ? `Préparation de la vidéo… ${Math.round(made.progress * 100)} %` : `Preparing the video… ${Math.round(made.progress * 100)}%`}</button>}
         {made.state === 'ready' && (sharable
-          ? <button className="btn-line press" onClick={share}>{fr ? 'Partager la vidéo' : 'Share the video'}</button>
-          : <a className="btn-line press" href={made.link} download={made.file.name}>{fr ? 'Enregistrer la vidéo' : 'Save the video'}</a>)}
+          ? <button className="btn-line press" onClick={share}>{fr ? (made.isClean ? 'Partager la vidéo brute' : 'Partager la vidéo') : (made.isClean ? 'Share clean video' : 'Share the video')}</button>
+          : <a className="btn-line press" href={made.link} download={made.file.name}>{fr ? (made.isClean ? 'Enregistrer la vidéo brute' : 'Enregistrer la vidéo') : (made.isClean ? 'Save clean video' : 'Save the video')}</a>)}
         {made.state === 'ready' && shareBroke && <p className="rp-export-note" role="status">{fr ? 'Le partage n’a pas abouti. Enregistrez la vidéo, puis partagez-la depuis vos fichiers.' : 'The share did not go through. Save the video, then share it from your files.'}</p>}
         {made.state === 'failed' && <p className="rp-export-note" role="alert">{made.why === 'interrupted' || made.why === 'stalled' || made.why === 'incomplete'
           ? (fr ? 'La préparation s’est arrêtée. Gardez l’écran allumé et l’appli ouverte, puis réessayez.' : 'The preparation stopped. Keep the screen on and the app open, then try again.')

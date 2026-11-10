@@ -30,6 +30,7 @@ export const ONE_TOUCH = {
     searchPlaceholder: 'Rechercher un exercice (ex.\u00A0: squat, pecs, dos)…',
     categories: {
       all: 'Tous',
+      glutes: 'Fessiers & Galbe',
       chest_arms: 'Pecs & Bras',
       back_shoulders: 'Dos & Épaules',
       legs: 'Cuisses & Fessiers',
@@ -69,6 +70,7 @@ export const ONE_TOUCH = {
     searchPlaceholder: 'Search any exercise (e.g. squat, chest, back)…',
     categories: {
       all: 'All',
+      glutes: 'Glutes & Curves',
       chest_arms: 'Chest & Arms',
       back_shoulders: 'Back & Shoulders',
       legs: 'Legs & Glutes',

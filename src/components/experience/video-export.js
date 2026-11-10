@@ -19,7 +19,8 @@ export function pickMime(supported) {
 
 
 // The count kept for the set, when known, ends the name (David, 6 October: the files he shares carry their count).
-export const exportFileName = (lift, mime, count) => `workoutvision-${String(lift).replace(/_/g, '-')}${Number.isInteger(count) ? `-${count}` : ''}.${mime.startsWith('video/mp4') ? 'mp4' : 'webm'}`;
+// When clean is true, the file is unbranded without text for organic Story/TikTok sharing.
+export const exportFileName = (lift, mime, count, clean = false) => `workoutvision-${String(lift).replace(/_/g, '-')}${clean ? '-raw' : (Number.isInteger(count) ? `-${count}` : '')}.${mime.startsWith('video/mp4') ? 'mp4' : 'webm'}`;
 
 // 2 Mbit/s at most 1280 px: a 60 s set is about 15 MB, under the 25 MB a file may weigh on GitHub's upload page
 // (David's exports of 6 October at 4 Mbit/s were refused there). Status: convention.
@@ -47,12 +48,12 @@ export const canExport = () => typeof MediaRecorder !== 'undefined'
  * set (David's iPhone, 4 October). A visible one is drawn to its end, and the person watches the set as it is made.
  * The recording is refused ('incomplete') when its frames stop short of the video's end, never handed over cut.
  */
-export function exportSetVideo({ file, result, lift, fr = false, saved = null, onProgress, signal, screen = null }) {
+export function exportSetVideo({ file, result, lift, fr = false, saved = null, clean = false, onProgress, signal, screen = null }) {
   // A setup that throws rejects, as it did inside the recording's promise: the caller's catch takes it (Replay.jsx).
-  try { return setVideo({ file, result, lift, fr, saved, onProgress, signal, screen }); } catch (e) { return Promise.reject(e); }
+  try { return setVideo({ file, result, lift, fr, saved, clean, onProgress, signal, screen }); } catch (e) { return Promise.reject(e); }
 }
 
-function setVideo({ file, result, lift, fr, saved, onProgress, signal, screen }) {
+function setVideo({ file, result, lift, fr, saved, clean = false, onProgress, signal, screen }) {
   // As on the replay (Replay.jsx): nothing lit for an exercise the core does not offer, read by the universal engine,
   // even one the core defines (walking lunge), whose lit joint would claim a count the app did not make.
   const def = result.universal ? null : liftDefinition(lift), sides = litSides(def, result.arm);
@@ -60,6 +61,7 @@ function setVideo({ file, result, lift, fr, saved, onProgress, signal, screen })
   const reps = (!result.refused && result.reps) || [];
   // What the drawing is, at the foot of every frame (skeletonCaption), so the video says it away from the app.
   const drawCaption = (ctx, W, H, u) => {
+    if (clean) return;
     const caption = skeletonCaption(fr), pad = 16 * u;
     ctx.font = `${Math.round(13 * u)}px system-ui, sans-serif`;
     ctx.textBaseline = 'bottom';
@@ -75,30 +77,32 @@ function setVideo({ file, result, lift, fr, saved, onProgress, signal, screen })
       const trails = trailPoints(def, sides).map(k => trailAt(frames, times, t, k, lm[k]));
       drawSkeleton(ctx, lm, { ox: 0, oy: 0, w: W, h: H }, sides, def, u, trails);
     }
-    drawCaption(ctx, W, H, u);
-    if (reps.length) {
-      // The reps begun so far, as the replay's chip shows them: "3 / 8"; after a correction, a second
-      // line says both counts, so the video explains itself away from the app (replay-labels.js).
-      const begun = reps.filter(r => r.startTime <= t).length, pad = 16 * u;
-      const [label, note] = overlayLines({ begun, total: reps.length, detected: result.count, saved, fr });
-      ctx.font = `${Math.round(30 * u)}px Georgia, serif`;
-      ctx.textBaseline = 'top';
-      ctx.fillStyle = rgba(RGB.void, 0.55);
-      const w = ctx.measureText(label).width;
-      ctx.fillRect(pad - 10 * u, pad - 8 * u, w + 20 * u, 46 * u);
-      ctx.fillStyle = LAMP;
-      ctx.fillText(label, pad, pad);
-      if (note) {
-        ctx.font = `${Math.round(13 * u)}px system-ui, sans-serif`;
-        const nw = Math.min(ctx.measureText(note).width, W - 2 * pad);
+    if (!clean) {
+      drawCaption(ctx, W, H, u);
+      if (reps.length) {
+        // The reps begun so far, as the replay's chip shows them: "3 / 8"; after a correction, a second
+        // line says both counts, so the video explains itself away from the app (replay-labels.js).
+        const begun = reps.filter(r => r.startTime <= t).length, pad = 16 * u;
+        const [label, note] = overlayLines({ begun, total: reps.length, detected: result.count, saved, fr });
+        ctx.font = `${Math.round(30 * u)}px Georgia, serif`;
+        ctx.textBaseline = 'top';
         ctx.fillStyle = rgba(RGB.void, 0.55);
-        ctx.fillRect(pad - 10 * u, pad + 46 * u, nw + 20 * u, 26 * u);
+        const w = ctx.measureText(label).width;
+        ctx.fillRect(pad - 10 * u, pad - 8 * u, w + 20 * u, 46 * u);
         ctx.fillStyle = LAMP;
-        ctx.fillText(note, pad, pad + 52 * u, W - 2 * pad);
+        ctx.fillText(label, pad, pad);
+        if (note) {
+          ctx.font = `${Math.round(13 * u)}px system-ui, sans-serif`;
+          const nw = Math.min(ctx.measureText(note).width, W - 2 * pad);
+          ctx.fillStyle = rgba(RGB.void, 0.55);
+          ctx.fillRect(pad - 10 * u, pad + 46 * u, nw + 20 * u, 26 * u);
+          ctx.fillStyle = LAMP;
+          ctx.fillText(note, pad, pad + 52 * u, W - 2 * pad);
+        }
       }
     }
   };
-  return recordVideo({ file, screen, draw, onProgress, signal, name: mime => exportFileName(lift, mime, Number.isInteger(saved) ? saved : result?.count) });
+  return recordVideo({ file, screen, draw, onProgress, signal, name: mime => exportFileName(lift, mime, Number.isInteger(saved) ? saved : result?.count, clean) });
 }
 
 /**

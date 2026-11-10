@@ -41,11 +41,13 @@ describe('OneTouchHub component', () => {
 
     expect(html).toContain('data-testid="onetouch-chips"');
     expect(html).toContain('data-testid="onetouch-chip-all"');
+    expect(html).toContain('data-testid="onetouch-chip-glutes"');
     expect(html).toContain('data-testid="onetouch-chip-chest_arms"');
     expect(html).toContain('data-testid="onetouch-chip-back_shoulders"');
     expect(html).toContain('data-testid="onetouch-chip-legs"');
     expect(html).toContain('data-testid="onetouch-chip-core"');
     expect(html).toContain('data-testid="onetouch-chip-beta"');
+    expect(html).toContain('Fessiers &amp; Galbe');
     expect(html).toContain('Pecs &amp; Bras');
     expect(html).toContain('Cuisses &amp; Fessiers');
   });
