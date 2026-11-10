@@ -40,6 +40,7 @@ describe('OneTouchHub component', () => {
     );
 
     expect(html).toContain('data-testid="onetouch-chips"');
+    expect(html).toContain('data-testid="onetouch-chip-recents"');
     expect(html).toContain('data-testid="onetouch-chip-all"');
     expect(html).toContain('data-testid="onetouch-chip-glutes"');
     expect(html).toContain('data-testid="onetouch-chip-chest_arms"');
