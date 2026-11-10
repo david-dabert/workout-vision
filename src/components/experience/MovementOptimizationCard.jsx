@@ -3,6 +3,7 @@ import { analyzeMovementOptimization, analyzeContinuousBiomechanics } from '../.
 import { calculateIntraSetVelocityLoss } from '../../lib/biomechanics/stickingPoint';
 import { analyzeBilateralKinematicSymmetry } from '../../lib/biomechanics/bilateralSymmetry';
 import { analyzeDynamicKneeValgus } from '../../lib/biomechanics/dynamicValgus';
+import { analyzeKineticChainSequencing } from '../../lib/biomechanics/kineticChainSequencing';
 import { computeBarPathMetrics } from './BarPathTracer';
 import { getExercise } from '../../lib/exercises/index';
 import './MovementOptimization.css';
@@ -155,6 +156,18 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
       return null;
     }
   }, [result]);
+
+  const kineticSequencing = useMemo(() => {
+    if (!result) return null;
+    const landmarks = result.worldLandmarks || result.landmarks || result.imageLandmarks;
+    if (!landmarks || !landmarks.length) return null;
+    const timestamps = result.timestamps || null;
+    try {
+      return analyzeKineticChainSequencing(landmarks, timestamps, lift, reps);
+    } catch {
+      return null;
+    }
+  }, [result, lift, reps]);
 
   const badgeText = fr ? analysis.formBadge.labelFr : analysis.formBadge.label;
 
@@ -420,6 +433,31 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
               {fr
                 ? 'Déviation médiale du genou mesurée dans le plan frontal.'
                 : 'Frontal plane medial knee deviation.'}
+            </span>
+          </div>
+        )}
+
+        {kineticSequencing && (
+          <div className="res-opt-metric" data-testid="kinetic-sequencing-metric">
+            <div className="res-opt-metric-head">
+              <span className="res-opt-label">
+                {fr ? 'Coordination proximodistale' : 'Kinetic Chain Sequencing'}
+              </span>
+              <span className="res-opt-val">{kineticSequencing.kseiPercent}%</span>
+            </div>
+            <div className="res-opt-bar-track">
+              <div
+                className={`res-opt-bar-fill ${kineticSequencing.tier === 'optimal' ? 'is-good' : kineticSequencing.tier === 'moderate' ? 'is-mid' : 'is-warn'}`}
+                style={{ width: `${Math.min(100, Math.max(10, kineticSequencing.kseiPercent))}%` }}
+              />
+            </div>
+            <span className="res-opt-sub">
+              {fr ? kineticSequencing.cueFr : kineticSequencing.cueEn}
+            </span>
+            <span className="res-opt-explain">
+              {fr
+                ? 'Coordination temporelle entre l’extension des hanches et celle des genoux en phase de propulsion.'
+                : 'Temporal coordination between hip and knee extension during concentric ascent.'}
             </span>
           </div>
         )}

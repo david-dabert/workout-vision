@@ -196,6 +196,8 @@ describe('MovementOptimizationCard component', () => {
     expect(html).toContain('Knee Valgus Stability');
     expect(html).toContain('data-testid="bar-path-metric"');
     expect(html).toContain('Axial Bar Path Efficiency');
+    expect(html).toContain('data-testid="kinetic-sequencing-metric"');
+    expect(html).toContain('Kinetic Chain Sequencing');
   });
 });
 

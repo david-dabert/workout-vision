@@ -28,6 +28,8 @@ export interface PatientInfo {
     valgusDeg?: number;
     symmetryIndex?: number;
     flessumDeg?: number;
+    kineticSequencingIndex?: number;
+    hipShootFault?: boolean;
   };
 }
 
@@ -147,7 +149,7 @@ export function generatePessacDossierHtml(specialtyId: string, patient: PatientI
   const dossierId = patient.numDossier || `PES-${Date.now().toString().slice(-6)}`;
 
   const rawMetrics = meta.metrics.map(m => ({ ...m }));
-  if (specialtyId === 'knee' && patient.dynamicTelemetry) {
+  if (patient.dynamicTelemetry) {
     const dt = patient.dynamicTelemetry;
     for (const m of rawMetrics) {
       if (m.label === 'Valgus Dynamique Max' && dt.valgusDeg !== undefined) {
@@ -156,6 +158,10 @@ export function generatePessacDossierHtml(specialtyId: string, patient: PatientI
         m.value = `${dt.symmetryIndex}\u00A0%`;
       } else if (m.label === "Déficit d'Extension (Flessum)" && dt.flessumDeg !== undefined) {
         m.value = `${dt.flessumDeg}°`;
+      } else if (m.label === 'Ratio Lombo-Pelvien' && dt.kineticSequencingIndex !== undefined) {
+        m.value = `${dt.kineticSequencingIndex}\u00A0% KSEI`;
+      } else if (m.label === 'Inversion Précoce du Rythme' && dt.hipShootFault !== undefined) {
+        m.value = dt.hipShootFault ? 'Décrochage pelvien (Positif)' : 'Négative (Verrouillée)';
       }
     }
   }
