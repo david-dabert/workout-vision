@@ -169,6 +169,45 @@
   background: var(--bio-glow);
 }
 
+.wv-onetouch-search-launcher {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--r-l);
+  border: 1px solid var(--hair-2);
+  background: var(--card-top);
+  color: var(--bone-2);
+  font-size: var(--fs-caption);
+  cursor: pointer;
+  transition: all var(--d-fast) var(--ease);
+  text-align: left;
+}
+
+.wv-onetouch-search-launcher:hover {
+  border-color: var(--lamp-line);
+  color: var(--bone);
+  background: var(--basalt);
+}
+
+.wv-onetouch-search-ph {
+  flex: 1;
+  color: var(--ash);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wv-onetouch-search-badge {
+  font-size: var(--fs-label);
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--r-pill);
+  background: var(--hair-2);
+  color: var(--bone);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .wv-onetouch-btn,
   .wv-onetouch-ico,

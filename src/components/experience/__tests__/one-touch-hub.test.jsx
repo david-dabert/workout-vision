@@ -15,6 +15,9 @@ describe('OneTouchHub component', () => {
     expect(html).toContain('data-testid="onetouch-mobility"');
     expect(html).toContain('data-testid="onetouch-pro"');
     expect(html).toContain('data-testid="onetouch-history"');
+    expect(html).toContain('data-testid="onetouch-search-launcher"');
+    expect(html).toContain('Rechercher un exercice (ex.\u00A0: squat, pecs, dos)…');
+    expect(html).toContain('183');
     expect(html).toContain('S’entraîner');
     expect(html).toContain('Mobilité &amp; Santé');
     expect(html).toContain('Espace Pro');
@@ -31,6 +34,8 @@ describe('OneTouchHub component', () => {
     expect(html).toContain('Start Lift');
     expect(html).toContain('Mobility &amp; Health');
     expect(html).toContain('My Progress');
+    expect(html).toContain('data-testid="onetouch-search-launcher"');
+    expect(html).toContain('Search any exercise (e.g. squat, chest, back)…');
     expect(html).toContain('Browse by muscle group:');
   });
 
