@@ -45,6 +45,61 @@
   padding: 5px 10px 6px; border-radius: var(--r-s); background: rgba(8, 7, 6, 0.55);
   -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
 }
+
+/* Responsive HUD overlay on replay video stage, aligned top-right to prevent collision with rp-chip */
+.wv-experience .rp-frame .rc-stage-hud {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  max-width: calc(62% - 16px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  z-index: 4;
+  pointer-events: none;
+}
+.wv-experience .rp-frame .rc-hud-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--r-s);
+  background: color-mix(in srgb, var(--void) 84%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--hair-2);
+  font: 500 var(--fs-label)/1.2 var(--sans);
+  color: var(--bone);
+  white-space: nowrap;
+}
+.wv-experience .rp-frame .rc-hud-item.is-off {
+  border-color: color-mix(in srgb, var(--lamp) 70%, transparent);
+  background: color-mix(in srgb, var(--void) 85%, var(--lamp) 15%);
+}
+.wv-experience .rp-frame .rc-hud-item.is-off .rc-hud-delta {
+  color: var(--lamp);
+  font-weight: 700;
+}
+.wv-experience .rp-frame .rc-hud-item.is-ok .rc-hud-delta {
+  color: var(--bone-2);
+}
+.wv-experience .rp-frame .rc-hud-name {
+  font-weight: 600;
+  color: var(--bone);
+}
+.wv-experience .rp-frame .rc-hud-angles {
+  font-variant-numeric: tabular-nums;
+  color: var(--ash);
+}
+.wv-experience .rp-frame .rc-hud-delta {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--mono);
+}
+.wv-experience .rp-frame .rc-hud-unseen {
+  color: var(--ash);
+  font-style: italic;
+}
 .wv-experience .rp-count { display: flex; align-items: baseline; gap: 4px; }
 .wv-experience .rp-n {
   font-family: var(--numeral-face); font-weight: var(--numeral-weight); font-size: var(--fs-rp-n); line-height: 0.95; font-variant-numeric: lining-nums tabular-nums;
