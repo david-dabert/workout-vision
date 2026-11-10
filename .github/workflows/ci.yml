@@ -126,21 +126,21 @@ jobs:
       - run: npx playwright --version
       - name: Install Playwright browsers and dependencies
         run: |
-          while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1; do
-            echo "Waiting for apt/dpkg lock..."
-            sleep 2
-          done
           installed=0
-          for attempt in 1 2 3; do
-            if timeout 180 npx playwright install --with-deps chromium webkit; then
+          for attempt in 1 2 3 4; do
+            while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1; do
+              echo "Waiting for apt/dpkg lock..."
+              sleep 3
+            done
+            if timeout 240 npx playwright install --with-deps chromium webkit; then
               installed=1
               break
             fi
-            echo "Playwright install attempt $attempt timed out or failed; retrying..."
-            sleep 5
+            echo "Playwright install attempt $attempt failed; waiting 15s for system updates..."
+            sleep 15
           done
           if [ "$installed" -ne 1 ]; then
-            echo "Failed to install Playwright browsers after 3 attempts"
+            echo "Failed to install Playwright browsers after 4 attempts"
             exit 1
           fi
       # Live counting and contributions are off in production (src/lib/buildFlags.js; deploy.yml leaves VITE_LIVE and
@@ -179,21 +179,21 @@ jobs:
       - run: npm ci
       - name: Install Playwright WebKit and dependencies
         run: |
-          while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1; do
-            echo "Waiting for apt/dpkg lock..."
-            sleep 2
-          done
           installed=0
-          for attempt in 1 2 3; do
-            if timeout 180 npx playwright install --with-deps webkit; then
+          for attempt in 1 2 3 4; do
+            while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1; do
+              echo "Waiting for apt/dpkg lock..."
+              sleep 3
+            done
+            if timeout 240 npx playwright install --with-deps webkit; then
               installed=1
               break
             fi
-            echo "Playwright install attempt $attempt timed out or failed; retrying..."
-            sleep 5
+            echo "Playwright install attempt $attempt failed; waiting 15s for system updates..."
+            sleep 15
           done
           if [ "$installed" -ne 1 ]; then
-            echo "Failed to install Playwright WebKit after 3 attempts"
+            echo "Failed to install Playwright WebKit after 4 attempts"
             exit 1
           fi
       - run: npm run build
@@ -257,12 +257,23 @@ jobs:
       - run: npm ci
       - name: Install Playwright Chromium and dependencies
         run: |
-          while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/lib/dpkg/lock >/dev/null 2>&1; do sleep 2; done
-          for attempt in 1 2 3; do
-            timeout 180 npx playwright install --with-deps chromium && break
-            echo "Playwright install attempt $attempt timed out or failed; retrying..."
-            sleep 5
+          installed=0
+          for attempt in 1 2 3 4; do
+            while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1; do
+              echo "Waiting for apt/dpkg lock..."
+              sleep 3
+            done
+            if timeout 240 npx playwright install --with-deps chromium; then
+              installed=1
+              break
+            fi
+            echo "Playwright install attempt $attempt failed; waiting 15s for system updates..."
+            sleep 15
           done
+          if [ "$installed" -ne 1 ]; then
+            echo "Failed to install Playwright Chromium after 4 attempts"
+            exit 1
+          fi
       # The lateral raise's journey keeps a contribution (CONTRIBUTE=1, below): contributions, paused in production
       # (src/lib/buildFlags.js, WP0.4), are switched on for this build so that path stays tested.
       - run: VITE_CONTRIBUTE=1 npm run build

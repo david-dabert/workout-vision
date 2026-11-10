@@ -2,7 +2,7 @@ import React from 'react';
 import './Kine.css';
 
 /**
- * ShoulderDyskinesisCard.jsx — Clinical card presenting scapular dyskinesis & bilateral asymmetry.
+ * ShoulderDyskinesisCard.jsx - Clinical card presenting scapular dyskinesis & bilateral asymmetry.
  * Designed for Monsieur Lamine (shoulder physiotherapist & university teacher).
  */
 export default function ShoulderDyskinesisCard({ report, onExportPdf, onClose }) {
