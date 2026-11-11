@@ -13,6 +13,7 @@ import FollowUp from './FollowUp';
 import Calibration from './Calibration';
 import PessacClinicSpecialtyHub from './PessacClinicSpecialtyHub';
 import { exportPessacDossier } from '../../lib/kine/pessacDossierExport';
+import { showUnmeasuredRoutes } from '../../lib/buildFlags';
 import { KINE } from './kine-copy';
 import '../reference/ReferenceCompare.css';
 import './Kine.css';
@@ -21,6 +22,13 @@ import './Kine.css';
 // own words, a programme composed for one patient and sent as a link (and a PDF sheet with its QR code), the note
 // d'honoraires, the follow-up of the results patients send back (FollowUp.jsx), and a free comparison of two videos. Everything stays on the phone; the programme travels in its link
 // (lib/kine/links.js). Exercises with no comparison say so (R8).
+//
+// Four tabs since 11 November 2026 (David): Programme, Suivi, Comparer, Mon cabinet. The exercise library is the lower
+// half of Programme; the note d'honoraires and the calibration are sections of Mon cabinet. The Pessac assessment
+// mock-up and its printed dossier display typed values, not measured ones, so they are offered only by a build with
+// VITE_EXTENDED_ROUTES=1 (lib/buildFlags.js), never in production (R8).
+const MAIN_TABS = ['programme', 'followup', 'compare', 'profile'];
+const CABINET_SECTIONS = ['profile', 'invoice', 'calibration'];
 
 const today = () => new Date().toISOString().slice(0, 10);
 const fnv = s => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); };
@@ -155,7 +163,7 @@ function ProgrammeTab({ fr, k, profile }) {
       </div>}
     </section>
 
-    <section className="sc-section">
+    <section className="sc-section" data-testid="kn-library">
       <GroupHead title={k.tabs.library} />
       <div className="kn-cards">
         {LIBRARY.map(ex => <ExerciseCard key={ex.id} ex={ex} fr={fr} k={k}
@@ -187,7 +195,7 @@ function InvoiceTab({ fr, k, profile, onProfile }) {
     const number = nextInvoiceNumber();
     invoicePdf({ number, practitioner: profile, patient, date, lines, paid, method }, { lang: fr ? 'fr' : 'en' }).save(`note-honoraires-${number}.pdf`);
   };
-  if (!ready) return <section className="sc-section"><p className="sc-frame-note">{k.needProfile}</p><button type="button" className="rc-btn is-primary press" onClick={onProfile}>{k.tabs.profile}</button></section>;
+  if (!ready) return <section className="sc-section"><p className="sc-frame-note">{k.needProfile}</p><button type="button" className="rc-btn is-primary press" onClick={onProfile}>{k.cabinetDetails}</button></section>;
   return <section className="sc-section">
     <GroupHead title={k.invoiceTitle} />
     <div className="kn-fields">
@@ -230,6 +238,9 @@ export default function KineWorkspace({ onClose }) {
   // A result opened on this phone (KineResult.jsx) can ask for its patient's follow-up.
   const [followUpOf, setFollowUpOf] = useState(takeFollowUpRequest);
   const [tab, setTab] = useState(followUpOf != null ? 'followup' : 'programme');
+  const [section, setSection] = useState('profile');
+  const extended = showUnmeasuredRoutes();
+  const tabs = extended ? [...MAIN_TABS, 'specialties'] : MAIN_TABS;
   const [profile, setProfile] = useState(readProfile);
   const save = p => { saveProfile(p); setProfile(p); };
 
@@ -241,7 +252,7 @@ export default function KineWorkspace({ onClose }) {
           <p className="eyebrow">{k.eyebrow}</p>
           <div className="kn-head-row">
             <h1 className="title">{k.title}</h1>
-            <button
+            {extended && <button
               type="button"
               className="rc-btn is-line press kn-dossier-quick-btn"
               onClick={() => {
@@ -255,23 +266,29 @@ export default function KineWorkspace({ onClose }) {
               title={fr ? 'Imprimer le Dossier Clinique Pessac (BDK 8 Pôles)' : 'Print Pessac Clinical Dossier (8-Pole BDK)'}
             >
               {fr ? 'Dossier Clinique BDK' : 'Clinical Dossier BDK'}
-            </button>
+            </button>}
           </div>
           <p className="sub">{k.sub}</p>
           {!hasMedia() && <p className="sc-frame-note" data-testid="kn-no-media">{k.noMedia}</p>}
           <div className="sc-section">
             <div className="sc-rail" role="tablist">
-              {Object.entries(k.tabs).map(([id, label]) => <button key={id} type="button" role="tab" className="sc-chip press" aria-pressed={tab === id} aria-selected={tab === id} onClick={() => { hapticLight(); setTab(id); setFollowUpOf(null); }} data-testid={`kn-tab-${id}`}>{label}</button>)}
+              {tabs.map(id => <button key={id} type="button" role="tab" className="sc-chip press" aria-pressed={tab === id} aria-selected={tab === id} onClick={() => { hapticLight(); setTab(id); setFollowUpOf(null); }} data-testid={`kn-tab-${id}`}>{k.tabs[id]}</button>)}
             </div>
           </div>
           {tab === 'programme' && <ProgrammeTab fr={fr} k={k} profile={profile} />}
-          {tab === 'specialties' && <PessacClinicSpecialtyHub />}
           {tab === 'followup' && <FollowUp fr={fr} k={k} profile={profile} initial={followUpOf} />}
-          {tab === 'calibration' && <Calibration fr={fr} k={k} />}
-          {tab === 'library' && <section className="sc-section"><div className="kn-cards">{LIBRARY.map(ex => <ExerciseCard key={ex.id} ex={ex} fr={fr} k={k} open />)}</div></section>}
-          {tab === 'invoice' && <InvoiceTab fr={fr} k={k} profile={profile} onProfile={() => setTab('profile')} />}
           {tab === 'compare' && <section className="sc-section"><p className="sc-caption">{k.compareHint}</p><ReferenceCompare embedded /></section>}
-          {tab === 'profile' && <ProfileTab k={k} profile={profile} onSave={save} />}
+          {tab === 'profile' && <>
+            <div className="sc-section">
+              <div className="sc-rail" role="tablist" aria-label={k.tabs.profile} data-testid="kn-cabinet-sections">
+                {CABINET_SECTIONS.map(id => <button key={id} type="button" role="tab" className="sc-chip press" aria-pressed={section === id} aria-selected={section === id} onClick={() => { hapticLight(); setSection(id); }} data-testid={id === 'profile' ? 'kn-section-profile' : `kn-tab-${id}`}>{id === 'profile' ? k.cabinetDetails : k.tabs[id]}</button>)}
+              </div>
+            </div>
+            {section === 'profile' && <ProfileTab k={k} profile={profile} onSave={save} />}
+            {section === 'invoice' && <InvoiceTab fr={fr} k={k} profile={profile} onProfile={() => setSection('profile')} />}
+            {section === 'calibration' && <Calibration fr={fr} k={k} />}
+          </>}
+          {extended && tab === 'specialties' && <PessacClinicSpecialtyHub />}
         </div>
       </section>
     </div>

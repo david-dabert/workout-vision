@@ -17,7 +17,8 @@ afterEach(() => {
 });
 
 describe('KineWorkspace specialties integration', () => {
-  it('renders the Bilan Pessac tab and mounts PessacClinicSpecialtyHub in French and English', async () => {
+  it('renders the Bilan Pessac tab only in a build with the extended routes', async () => {
+    vi.stubEnv('VITE_EXTENDED_ROUTES', '1');
     vi.stubGlobal('sessionStorage', { getItem: () => null, setItem: () => {}, removeItem: () => {} });
     vi.stubGlobal('localStorage', { getItem: (k) => (k === 'wv_lang' ? 'fr' : null), setItem: () => {}, removeItem: () => {} });
     vi.stubGlobal('window', { location: { hash: '', origin: 'https://example.org', pathname: '/app/' } });

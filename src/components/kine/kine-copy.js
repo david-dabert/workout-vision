@@ -7,6 +7,7 @@ export const KINE = {
     title: 'Vos patients, suivis entre deux séances',
     sub: 'Composez un programme et envoyez-le par lien. Votre patient regarde vos vidéos, se filme, et l’appli compare chaque essai à votre geste. Aucune donnée ne passe par un serveur.',
     tabs: { programme: 'Programme', specialties: 'Bilan Pessac', followup: 'Suivi', calibration: 'Étalonnage', library: 'Exercices', invoice: 'Honoraires', compare: 'Comparer', profile: 'Mon cabinet' },
+    cabinetDetails: 'Coordonnées',
     workflowSteps: [
       '1. Choisissez les exercices et dosages',
       '2. Envoyez le lien, QR code ou fiche PDF',
@@ -220,6 +221,7 @@ export const KINE = {
     title: 'Your exercises, followed between sessions',
     sub: 'Build the programme and send it as one link. Your patient sees your videos, films their attempts, and the app compares each one with your movement. Nothing goes through a server.',
     tabs: { programme: 'Programme', specialties: 'Pessac Clinics', followup: 'Follow-up', calibration: 'Calibration', library: 'Exercises', invoice: 'Invoice', compare: 'Compare', profile: 'My practice' },
+    cabinetDetails: 'Details',
     workflowSteps: [
       '1. Pick exercises & dosages',
       '2. Send link, QR code or PDF sheet',
