@@ -36,7 +36,7 @@ Scoreboards on 11 November: unchanged, CI passed them against the baselines of 7
 
 Open on 11 November:
 - None of PRs #366 to #370 has been confirmed by David on his iPhone (R3).
-- The tour step "Keep Filmer ma série in view for every exercise" failed once on #369 and passed on one re-run with no code change; not root-caused.
+- The tour step "Keep Filmer ma série in view for every exercise" timed out twice on CI's WebKit (#369, then main at `44e47a35`), on the click that opens the 35th filming screen of one page. The sweep now takes a fresh page every 20 screens. The cause, a page that slows as filming screens are opened and closed, is not found: it may be a leak in the filming screen, and no WebKit was available to measure it.
 - Unreachable code in main: `mirrorReference.ts`, `KineCabinetMode.jsx`, `stateMachines.ts`, `pessacClinicalSpecialties.ts`.
 - `src/components/experience/__tests__/no-unmeasured-metrics.test.jsx` checks a word list, not what a screen measures.
 - Committed at the repository root in #351, purpose not confirmed by David: `workoutvision-standing-deltoids` (8.5 MB), `IMG_3198.jpg`, `IMG_3209.jpg`.

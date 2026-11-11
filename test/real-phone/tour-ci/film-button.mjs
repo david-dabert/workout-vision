@@ -29,7 +29,10 @@ async function sweep([W, H]) {
     const lines = [];
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
-      if (i > 0 && i % 35 === 0) {
+      // A fresh page every 20 screens (35 until 11 November 2026): on CI's WebKit the click on the 35th screen of a
+      // page (sissy_squat, index 139) timed out twice that day, at "performing click action" (runs 43023858079 and
+      // 43065810398). The page slows as filming screens are opened and closed; why is not yet known (STATE.md).
+      if (i > 0 && i % 20 === 0) {
         await context.close();
         context = await browser.newContext({ ...iphone, viewport: { width: W, height: H }, locale: 'fr-FR', serviceWorkers: 'block', reducedMotion: 'reduce' });
         page = await context.newPage();
