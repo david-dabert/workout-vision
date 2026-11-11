@@ -1,5 +1,5 @@
 /**
- * shoulderDyskinesis.ts — Clinical shoulder and scapular dyskinesis evaluation engine.
+ * shoulderDyskinesis.ts: Clinical shoulder and scapular dyskinesis evaluation engine.
  *
  * Implements optical kinematic deduction of scapulothoracic rhythm alterations,
  * McClure Scapular Dyskinesis Test (SDT 2009), bilateral asymmetry analysis (Bishop 2018),
@@ -408,5 +408,101 @@ export function evaluateScapularDyskinesis(
     trunkCompensation,
     hypotheses,
     angleTimeSeries: timeSeries,
+  };
+}
+
+export interface ScapularPlaneAnalysis {
+  scapularStabilityIndex: number;
+  verdict: 'optimal' | 'mild_dyskinesis' | 'critical_dyskinesis';
+  classification: DyskinesisSeverity;
+  shrugDetected: boolean;
+  eccentricDropDetected: boolean;
+  asymmetryPercent: number;
+  dominantDeficitSide: 'left' | 'right' | 'symmetric';
+  cueFr: string;
+  cueEn: string;
+  report: ScapularEvaluationReport;
+}
+
+export function isScapularRelevantLift(lift?: string): boolean {
+  if (!lift) return false;
+  const l = lift.toLowerCase();
+  return (
+    l.includes('press') ||
+    l.includes('overhead') ||
+    l.includes('shoulder') ||
+    l.includes('raise') ||
+    l.includes('pull_up') ||
+    l.includes('chin_up') ||
+    l.includes('scaption') ||
+    l.includes('arnold') ||
+    l.includes('push_up') ||
+    l.includes('row') ||
+    l.includes('pulldown') ||
+    l.includes('kine') ||
+    l.includes('bilan')
+  );
+}
+
+export function analyzeScapularPlane(
+  landmarks: FrameLandmarks[],
+  timestamps?: number[] | null,
+  options?: { lift?: string; sampleRateFps?: number }
+): ScapularPlaneAnalysis | null {
+  if (!landmarks || landmarks.length < 15) return null;
+  const ts =
+    timestamps && timestamps.length === landmarks.length
+      ? timestamps
+      : landmarks.map((_, i) => i * (1 / (options?.sampleRateFps || 30)));
+
+  const report = evaluateScapularDyskinesis(landmarks, ts);
+  if (!report) return null;
+
+  const penalty =
+    (report.shrugSign.detected ? 25 : 0) +
+    (report.eccentricControl.leftDropDetected || report.eccentricControl.rightDropDetected ? 30 : 0) +
+    (report.asymmetry.isClinicallySignificant ? 20 : 0) +
+    (report.trunkCompensation.isCompensating ? 15 : 0);
+  const scapularStabilityIndex = Math.max(15, Math.min(100, 100 - penalty));
+
+  let verdict: 'optimal' | 'mild_dyskinesis' | 'critical_dyskinesis' = 'optimal';
+  if (scapularStabilityIndex < 70 || report.classification === 'OBVIOUS') {
+    verdict = 'critical_dyskinesis';
+  } else if (scapularStabilityIndex < 85 || report.classification === 'SUBTLE') {
+    verdict = 'mild_dyskinesis';
+  }
+
+  let cueFr = 'Rythme scapulo-thoracique fluide\u00A0: élévation stable dans le plan scapulaire.';
+  let cueEn = 'Fluid scapulothoracic rhythm: stable elevation in the scapular plane.';
+
+  if (report.shrugSign.detected) {
+    const side = report.shrugSign.leftHikeRatio > report.shrugSign.rightHikeRatio ? 'gauche' : 'droit';
+    cueFr = `Haussement prématuré du trapèze (${side})\u00A0: abaissez les épaules au démarrage.`;
+    cueEn = `Premature trapezius shrug (${side === 'gauche' ? 'left' : 'right'}): depress shoulders at drive start.`;
+  } else if (report.eccentricControl.leftDropDetected || report.eccentricControl.rightDropDetected) {
+    cueFr = 'Décrochage excentrique détecté\u00A0: freinez la descente sans rupture de tension.';
+    cueEn = 'Eccentric drop detected: control lowering phase smoothly without tension loss.';
+  } else if (report.asymmetry.isClinicallySignificant) {
+    const sideFr = report.asymmetry.dominantDeficitSide === 'left' ? 'gauche' : 'droit';
+    const sideEn = report.asymmetry.dominantDeficitSide === 'left' ? 'left' : 'right';
+    cueFr = `Asymétrie scapulaire (${report.asymmetry.asiPercent}\u00A0%)\u00A0: déficit d’amplitude côté ${sideFr}.`;
+    cueEn = `Scapular asymmetry (${report.asymmetry.asiPercent}%): elevation amplitude deficit on ${sideEn} side.`;
+  } else if (report.trunkCompensation.isCompensating) {
+    cueFr = 'Compensation axiale du tronc\u00A0: maintenez le buste vertical sans inclinaison.';
+    cueEn = 'Axial trunk compensation: maintain vertical torso without lateral tilt.';
+  }
+
+  return {
+    scapularStabilityIndex,
+    verdict,
+    classification: report.classification,
+    shrugDetected: report.shrugSign.detected,
+    eccentricDropDetected:
+      report.eccentricControl.leftDropDetected || report.eccentricControl.rightDropDetected,
+    asymmetryPercent: report.asymmetry.asiPercent,
+    dominantDeficitSide: report.asymmetry.dominantDeficitSide,
+    cueFr,
+    cueEn,
+    report,
   };
 }

@@ -158,9 +158,17 @@ describe('MovementOptimizationCard component', () => {
       timestamps.push(i / 20);
       const frame = Array(33).fill(null).map(() => ({ x: 0.5, y: 0.5, z: 0, visibility: 0.95 }));
 
+      // Ears (7, 8)
+      frame[7] = { x: 0.45, y: 0.1, z: 0, visibility: 0.95 };
+      frame[8] = { x: 0.55, y: 0.1, z: 0, visibility: 0.95 };
+
       // Shoulders (11, 12)
-      frame[11] = { x: 0.45, y: 0.2, z: 0, visibility: 0.95 };
-      frame[12] = { x: 0.55, y: 0.2, z: 0, visibility: 0.95 };
+      frame[11] = { x: 0.45, y: 0.25, z: 0, visibility: 0.95 };
+      frame[12] = { x: 0.55, y: 0.25, z: 0, visibility: 0.95 };
+
+      // Elbows (13, 14)
+      frame[13] = { x: 0.35, y: 0.35, z: 0, visibility: 0.95 };
+      frame[14] = { x: 0.65, y: 0.35, z: 0, visibility: 0.95 };
 
       // Left leg (23, 25, 27)
       frame[23] = { x: 0.4, y: 0.4, z: 0, visibility: 0.95 };
@@ -206,6 +214,8 @@ describe('MovementOptimizationCard component', () => {
     expect(html).toContain('Lumbopelvic Stability');
     expect(html).toContain('data-testid="barbell-tilt-metric"');
     expect(html).toContain('Barbell Planar Stability');
+    expect(html).toContain('data-testid="scapular-stability-metric"');
+    expect(html).toContain('Scapular Plane Stability');
   });
 });
 

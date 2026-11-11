@@ -21,6 +21,7 @@ import { detectSetStickingPoints } from '../../lib/biomechanics/stickingPoint';
 import { analyzeKineticChainSequencing } from '../../lib/biomechanics/kineticChainSequencing';
 import { analyzeLumbopelvicRhythm } from '../../lib/biomechanics/lumbopelvicRhythm';
 import { analyzeBarbellTilt } from '../../lib/biomechanics/barbellTilt';
+import { analyzeScapularPlane } from '../../lib/kine/shoulderDyskinesis';
 import MocapViewer from './MocapViewer';
 import BarPathTracer from './BarPathTracer';
 
@@ -313,6 +314,17 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       return null;
     }
   }, [result, reps, times, lift, measured]);
+
+  const scapularPlane = useMemo(() => {
+    if (!measured || !reps.length) return null;
+    const landmarks = result.landmarks || result.imageLandmarks || result.worldLandmarks;
+    if (!landmarks || !landmarks.length) return null;
+    try {
+      return analyzeScapularPlane(landmarks, times, { lift });
+    } catch {
+      return null;
+    }
+  }, [result, reps, times, lift, measured]);
   let head = '', detail;
   if (current >= 0) {
     const r = reps[current];
@@ -409,6 +421,12 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
               <div className="rp-fault-banner rp-tilt-fault" data-testid="rp-barbell-tilt-fault-banner">
                 <span className="rp-fault-dot" aria-hidden="true" />
                 <span>{fr ? barbellTilt.cueFr : barbellTilt.cueEn}</span>
+              </div>
+            )}
+            {(scapularPlane?.shrugDetected || scapularPlane?.eccentricDropDetected) && (
+              <div className="rp-fault-banner rp-scapular-fault" data-testid="rp-scapular-fault-banner">
+                <span className="rp-fault-dot" aria-hidden="true" />
+                <span>{fr ? scapularPlane.cueFr : scapularPlane.cueEn}</span>
               </div>
             )}
             {reps.length > 0 && <div className={`rp-chip${phaseWord === NB ? ' is-idle' : ''}`} aria-hidden="true">
@@ -521,6 +539,17 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
                             <span className="rc-hud-name">{fr ? 'Barre' : 'Bar'}</span>
                             <span className="rc-hud-angles">{barbellTilt.planarStabilityIndex}% PSI</span>
                             <span className="rc-hud-delta">{barbellTilt.maxTiltDeg}°</span>
+                          </div>
+                        )}
+                        {scapularPlane && (
+                          <div
+                            key="scapularPlane"
+                            className={`rc-hud-item ${scapularPlane.verdict === 'optimal' ? 'is-ok' : 'is-off'}`}
+                            data-testid="rc-hud-scapular-plane"
+                          >
+                            <span className="rc-hud-name">{fr ? 'Scapula' : 'Scapula'}</span>
+                            <span className="rc-hud-angles">{scapularPlane.scapularStabilityIndex}% SPSI</span>
+                            <span className="rc-hud-delta">{scapularPlane.classification}</span>
                           </div>
                         )}
                       </>

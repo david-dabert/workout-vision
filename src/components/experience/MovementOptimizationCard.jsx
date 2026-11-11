@@ -6,6 +6,7 @@ import { analyzeDynamicKneeValgus } from '../../lib/biomechanics/dynamicValgus';
 import { analyzeKineticChainSequencing } from '../../lib/biomechanics/kineticChainSequencing';
 import { analyzeLumbopelvicRhythm } from '../../lib/biomechanics/lumbopelvicRhythm';
 import { analyzeBarbellTilt } from '../../lib/biomechanics/barbellTilt';
+import { analyzeScapularPlane } from '../../lib/kine/shoulderDyskinesis';
 import { computeBarPathMetrics } from './BarPathTracer';
 import { getExercise } from '../../lib/exercises/index';
 import './MovementOptimization.css';
@@ -195,6 +196,18 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
     }
   }, [result, lift]);
 
+  const scapularAnalysis = useMemo(() => {
+    if (!result) return null;
+    const landmarks = result.landmarks || result.imageLandmarks || result.worldLandmarks;
+    if (!landmarks || !landmarks.length) return null;
+    const timestamps = result.timestamps || null;
+    try {
+      return analyzeScapularPlane(landmarks, timestamps, { lift });
+    } catch {
+      return null;
+    }
+  }, [result, lift]);
+
   const badgeText = fr ? analysis.formBadge.labelFr : analysis.formBadge.label;
 
   return (
@@ -338,7 +351,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           <span className="res-opt-sub">
             {fr ? `Moyenne\u00A0: ${analysis.averageRomDeg}°` : `Average: ${analysis.averageRomDeg}°`}
           </span>
-          {/* R9 — Source: rep excursion `r.romDegrees` from `src/lib/counting/core.ts` (`summarizeCount` peak-to-trough joint angle on the user's video), compared against `ARCHETYPE_ROM_TARGETS` written in `src/lib/coaching/movementOptimization.ts` (and `REFERENCE_RANGES` in `src/lib/reference-ranges.js`). Status: convention (reference range written in the app). */}
+          {/* R9: Source: rep excursion `r.romDegrees` from `src/lib/counting/core.ts` (`summarizeCount` peak-to-trough joint angle on the user's video), compared against `ARCHETYPE_ROM_TARGETS` written in `src/lib/coaching/movementOptimization.ts` (and `REFERENCE_RANGES` in `src/lib/reference-ranges.js`). Status: convention (reference range written in the app). */}
           <span className="res-opt-explain">
             {fr ? 'Amplitude mesurée sur votre vidéo, comparée à une plage de référence écrite dans l’application.' : 'Range of motion measured on your video, compared with a reference range written in the app.'}
           </span>
@@ -360,7 +373,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           <span className="res-opt-sub">
             {fr ? `Excentrique\u00A0: ${analysis.averageEccentricSec}\u00A0s` : `Eccentric: ${analysis.averageEccentricSec}\u00A0s`}
           </span>
-          {/* R9 — Source: `r.eccentricSec` per-rep lowering duration measured from turnaround timestamps in `src/lib/counting/core.ts` (`summarizeCount`) and scored against `TARGET_ECCENTRIC_SEC = 2.0` in `src/lib/coaching/movementOptimization.ts`. Status: experimental. */}
+          {/* R9: Source: `r.eccentricSec` per-rep lowering duration measured from turnaround timestamps in `src/lib/counting/core.ts` (`summarizeCount`) and scored against `TARGET_ECCENTRIC_SEC = 2.0` in `src/lib/coaching/movementOptimization.ts`. Status: experimental. */}
           <span className="res-opt-explain">
             {fr ? 'Durée moyenne de la phase de descente mesurée sur votre vidéo.' : 'Average duration of the lowering phase measured on your video.'}
           </span>
@@ -382,7 +395,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           <span className="res-opt-sub">
             {fr ? `Cadence\u00A0: ${analysis.tempoCadence}` : `Tempo: ${analysis.tempoCadence}`}
           </span>
-          {/* R9 — Source: sum of `(r.endTime - r.startTime)` across counted whole repetitions in `src/lib/counting/core.ts` (`summarizeCount`) and `src/lib/coaching/movementOptimization.ts`. Status: convention. */}
+          {/* R9: Source: sum of `(r.endTime - r.startTime)` across counted whole repetitions in `src/lib/counting/core.ts` (`summarizeCount`) and `src/lib/coaching/movementOptimization.ts`. Status: convention. */}
           <span className="res-opt-explain">
             {fr ? 'Durée cumulée des répétitions comptées sur votre vidéo.' : 'Cumulative duration of the repetitions counted on your video.'}
           </span>
@@ -538,6 +551,31 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
           </div>
         )}
 
+        {scapularAnalysis && (
+          <div className="res-opt-metric" data-testid="scapular-stability-metric">
+            <div className="res-opt-metric-head">
+              <span className="res-opt-label">
+                {fr ? 'Stabilité scapulaire' : 'Scapular Plane Stability'}
+              </span>
+              <span className="res-opt-val">{scapularAnalysis.scapularStabilityIndex}%</span>
+            </div>
+            <div className="res-opt-bar-track">
+              <div
+                className={`res-opt-bar-fill ${scapularAnalysis.verdict === 'optimal' ? 'is-good' : scapularAnalysis.verdict === 'mild_dyskinesis' ? 'is-mid' : 'is-warn'}`}
+                style={{ width: `${Math.min(100, Math.max(10, scapularAnalysis.scapularStabilityIndex))}%` }}
+              />
+            </div>
+            <span className="res-opt-sub">
+              {fr ? scapularAnalysis.cueFr : scapularAnalysis.cueEn}
+            </span>
+            <span className="res-opt-explain">
+              {fr
+                ? 'Rythme scapulo-thoracique et coordination de la ceinture scapulaire en élévation.'
+                : 'Scapulothoracic rhythm and shoulder girdle coordination during arm elevation.'}
+            </span>
+          </div>
+        )}
+
         {barPath && (
           <div className="res-opt-metric" data-testid="bar-path-metric">
             <div className="res-opt-metric-head">
@@ -584,7 +622,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
                 ? (fr ? `Efficacité axiale\u00A0: ${analysis.pathEfficiencyPercent}%` : `Axial efficiency: ${analysis.pathEfficiencyPercent}%`)
                 : (fr ? 'Modèle cinématique' : 'Kinematic template')}
             </span>
-            {/* R9 — Source: `alignKineticTrajectory` DTW distance between each rep's angle slice (`result.angles` on the user's video) and `getCanonicalTemplate(lift)` in `src/lib/counting/KineticForcedAligner.ts` (hand-written template, UNSOURCED). Status: experimental. */}
+            {/* R9: Source: `alignKineticTrajectory` DTW distance between each rep's angle slice (`result.angles` on the user's video) and `getCanonicalTemplate(lift)` in `src/lib/counting/KineticForcedAligner.ts` (hand-written template, UNSOURCED). Status: experimental. */}
             <span className="res-opt-explain">
               {fr ? 'Écart moyen de la courbe d’angle mesurée sur votre vidéo par rapport au profil type de l’exercice.' : 'Mean distance between the angle curve measured on your video and the exercise template.'}
             </span>
