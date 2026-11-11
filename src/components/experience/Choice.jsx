@@ -171,9 +171,9 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
       <div className="wrap">
         <div className="topbar">
           <span className="brand-sm">WorkoutVision</span>
-          <span className="offline-badge" aria-label={fr ? '100\u00A0% local' : '100% On-Device'}>
+          <span className="offline-badge" aria-label={fr ? 'La vidéo reste sur votre téléphone' : 'The video stays on your phone'}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-            <span>{fr ? '100\u00A0% local · La vidéo reste sur votre téléphone' : '100% On-Device · Video stays on your phone'}</span>
+            <span>{fr ? 'Vidéo sur votre téléphone' : 'Video stays on your phone'}</span>
           </span>
           <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
         </div>
