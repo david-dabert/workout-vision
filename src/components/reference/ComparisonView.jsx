@@ -114,7 +114,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
         const ctx = cv.getContext('2d');
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, w, h);
-        const { tr, ri } = drawComparison(ctx, { t, w, h, result, attPose: attShown, refPose: refShown, maps, measures, names, refShort: c.refShort, colors: { lamp, bone, ash }, ghost, anchor });
+        const { tr, ri } = drawComparison(ctx, { t, w, h, result, attPose: attShown, refPose: refShown, maps, measures, names, refShort: c.refShort, colors: { lamp, bone, ash }, ghost, anchor, labels: false });
         setNow(Math.round(t * 10) / 10); setRefNow(ri);
         const rv = refVideo.current;
         if (rv && !rv.seeking && Math.abs(rv.currentTime - tr) > 0.12) rv.currentTime = tr;
@@ -175,6 +175,16 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
                 <div className="rc-stage" style={{ aspectRatio: `${attPose.width} / ${attPose.height}` }}>
                   <video ref={attVideo} src={attUrl} playsInline muted preload="auto" onLoadedMetadata={e => setDuration(e.currentTarget.duration)} onEnded={() => setPlaying(false)} data-testid="rc-att-video" />
                   <canvas ref={attCanvas} className="rc-canvas" />
+                </div>
+                {/* The reference and the angles sit under the patient's video, not over it (David's screenshots of 11 November
+                    2026: the panel and the pills covered the body, and each angle was written twice). The angles are
+                    written once, here; the skeleton keeps its colours and carries no text. */}
+                <div className="rc-under">
+                  <div className="rc-inset" style={{ aspectRatio: `${refPose.width} / ${refPose.height}` }}>
+                    <video ref={refVideo} src={refUrl} playsInline muted preload="auto" data-testid="rc-ref-video" />
+                    <canvas ref={refCanvas} className="rc-canvas" />
+                    <span className="rc-inset-tag">{c.refLabel}</span>
+                  </div>
                   <div className="rc-stage-hud" data-testid="rc-stage-hud">
                     {result.joints.map((j, k) => {
                       const seenAtNow = result.seen?.[k]?.[refNow];
@@ -197,11 +207,6 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
                         </div>
                       );
                     })}
-                  </div>
-                  <div className="rc-inset" style={{ aspectRatio: `${refPose.width} / ${refPose.height}` }}>
-                    <video ref={refVideo} src={refUrl} playsInline muted preload="auto" data-testid="rc-ref-video" />
-                    <canvas ref={refCanvas} className="rc-canvas" />
-                    <span className="rc-inset-tag">{c.refLabel}</span>
                   </div>
                 </div>
                 <div className="rc-controls">
