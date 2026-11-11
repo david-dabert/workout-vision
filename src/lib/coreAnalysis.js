@@ -154,6 +154,20 @@ export function withBodyCheck(result, lift) {
 export const SENSITIVITY_GRID = Object.freeze([0.9, 1, 1.1].flatMap(marginScale => [7, 9].map(outlierWindow => Object.freeze({ marginScale, outlierWindow }))));
 
 /**
+ * Whether the sensitivity check's recounts ask the person to confirm the count (Result.jsx; sure.ts models it).
+ * Asks when a recount is refused or differs from the count by 2 or more (David's ruling of 9 November 2026: one recount
+ * off by one is accepted), or when 2 or more of the recounts differ from it (11 November 2026).
+ * Source: measured on 11 November 2026 on the 744 public build sets that pass the body check (issue #190): asking on
+ * any moved recount showed 670 as sure, 408 exact (60.9 %), 6 off by 3 or more; the ruling of 9 November alone 731,
+ * 428 (58.5 %), 10; this rule 678, 409 (60.3 %), 6. The 61 sets the ruling alone added were exact 20 times.
+ * Status: experimental. counts: the recounts, null for a refusal.
+ */
+export function sensitivityAsks(count, counts) {
+  if (!Array.isArray(counts)) return true;
+  return counts.some(c => c === null || Math.abs(c - count) >= 2) || counts.filter(c => c !== count).length >= 2;
+}
+
+/**
  * A counted set with its sensitivity check (stability study, 10 October 2026): the set is recounted with each setting of
  * SENSITIVITY_GRID; `sensitivity` is { moved, counts, ms }, `moved` true when any recount differs from the count (another
  * number, or a refusal). Such a count sits on a knife edge of the counter's own settings: on David's 14 videos read from

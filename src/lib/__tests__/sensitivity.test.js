@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
-import { summarizeCount, withProposal, withBodyCheck, withSensitivity, SENSITIVITY_GRID } from '../coreAnalysis';
+import { summarizeCount, withProposal, withBodyCheck, withSensitivity, sensitivityAsks, SENSITIVITY_GRID } from '../coreAnalysis';
 import { countReps } from '../counting/core';
 
 // The sensitivity check (coreAnalysis.js withSensitivity; stability study of 10 October 2026) on David's real videos as
@@ -48,5 +48,21 @@ describe('withSensitivity', () => {
     expect(withSensitivity(refused, 'barbell_curl')).toBe(refused);
     const none = { refused: false, count: 0, timestamps: [0] };
     expect(withSensitivity(none, 'squat')).toBe(none);
+  });
+});
+
+describe('sensitivityAsks: when the recounts ask to confirm (11 November 2026)', () => {
+  it('accepts recounts that agree, and one recount off by one', () => {
+    expect(sensitivityAsks(10, [10, 10, 10, 10, 10, 10])).toBe(false);
+    expect(sensitivityAsks(10, [10, 11, 10, 10, 10, 10])).toBe(false);
+  });
+  it('asks on a refusal, on a move of two, and on two recounts off by one', () => {
+    expect(sensitivityAsks(10, [10, null, 10, 10, 10, 10])).toBe(true);
+    expect(sensitivityAsks(10, [10, 12, 10, 10, 10, 10])).toBe(true);
+    expect(sensitivityAsks(10, [9, 11, 10, 10, 10, 10])).toBe(true);
+    expect(sensitivityAsks(10, [11, 11, 10, 10, 10, 10])).toBe(true);
+  });
+  it('asks when the recounts are missing', () => {
+    expect(sensitivityAsks(10, undefined)).toBe(true);
   });
 });

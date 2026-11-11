@@ -4,7 +4,7 @@
 // above 0, flagged by neither the body check nor the sensitivity check, on every phone since 19 October 2026); a first
 // reading counts the body check alone, as the app shipped before that day, so the line shows what the second check adds.
 // Measured, decides nothing.
-import { SENSITIVITY_GRID, summarizeCount } from '../../../src/lib/coreAnalysis';
+import { SENSITIVITY_GRID, sensitivityAsks, summarizeCount } from '../../../src/lib/coreAnalysis';
 
 /** One set as the result screen would show it: err is |count - label| (null when no count is shown). */
 export type SureRow = { err: number | null; flagged: boolean; moved: boolean };
@@ -18,10 +18,11 @@ export type SureRow = { err: number | null; flagged: boolean; moved: boolean };
 export function sureRow(result: any, lift: string, label: number, countOf: (r: any) => number = r => r.count): SureRow {
   const shown = result && !result.refused ? countOf(result) : 0;
   if (!(shown > 0)) return { err: null, flagged: false, moved: false };
-  const moved = SENSITIVITY_GRID.some(tuning => {
+  // The rule the result screen applies (coreAnalysis.js sensitivityAsks, 11 November 2026), on the number scored.
+  const moved = sensitivityAsks(shown, SENSITIVITY_GRID.map(tuning => {
     const r: any = summarizeCount(result.worldLandmarks, result.timestamps, lift, tuning);
-    return r.refused || countOf(r) !== shown;
-  });
+    return r.refused ? null : countOf(r);
+  }));
   // Since 19 October 2026 the result screen also asks on a refused head rep (Result.jsx): read with the shipped checks.
   return { err: Math.abs(shown - label), flagged: result.bodyCheck?.flagged === true, moved: moved || result.headRefused === true };
 }
