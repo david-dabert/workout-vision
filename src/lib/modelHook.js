@@ -1,5 +1,5 @@
 /**
- * TF.js model hook — no-op when no model is present.
+ * TF.js model hook : no-op when no model is present.
  *
  * This module provides the seam for a future trained classifier.
  * When a model file exists in IndexedDB (saved after offline training),

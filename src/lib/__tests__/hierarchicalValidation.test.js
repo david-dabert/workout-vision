@@ -61,7 +61,7 @@ function makeFeatures(overrides = {}) {
 const SCENARIOS = [
   // ── Seated machines (P0) ──
   {
-    name: 'Leg press — full ROM, side view',
+    name: 'Leg press : full ROM, side view',
     expected: { context: 'seated', movementClass: 'lower_push', top1: 'leg_press', top3: ['leg_press', 'single_leg_press'] },
     features: makeFeatures({
       knee: { range: 55, mean: 115, dwellHigh: 0.18 },
@@ -73,7 +73,7 @@ const SCENARIOS = [
     }),
   },
   {
-    name: 'Leg extension — knee only, hip static',
+    name: 'Leg extension : knee only, hip static',
     expected: { context: 'seated', movementClass: 'lower_push', top1: 'leg_extension', top3: ['leg_extension'] },
     features: makeFeatures({
       knee: { range: 50, mean: 120, dwellHigh: 0.22 },
@@ -85,7 +85,7 @@ const SCENARIOS = [
     }),
   },
   {
-    name: 'Leg curl — knee flexion, hip static',
+    name: 'Leg curl : knee flexion, hip static',
     expected: { context: 'seated', movementClass: 'lower_pull', top1: 'leg_curl', top3: ['leg_curl', 'lying_leg_curl'] },
     features: makeFeatures({
       knee: { range: 35, mean: 95, dwellLow: 0.2, min: 70, max: 105 },
@@ -97,7 +97,7 @@ const SCENARIOS = [
     }),
   },
   {
-    name: 'Lat pulldown — shoulder sweeps, elbows flex',
+    name: 'Lat pulldown : shoulder sweeps, elbows flex',
     expected: { context: 'seated', movementClass: 'upper_vertical', top1: 'lat_pulldown', top3: ['lat_pulldown'] },
     features: makeFeatures({
       knee: { range: 2, mean: 100 },
@@ -109,7 +109,7 @@ const SCENARIOS = [
     }),
   },
   {
-    name: 'Machine shoulder press — pushes overhead',
+    name: 'Machine shoulder press : pushes overhead',
     expected: { context: 'seated', movementClass: 'upper_vertical', top1: 'machine_shoulder_press', top3: ['machine_shoulder_press', 'seated_dumbbell_press'] },
     features: makeFeatures({
       knee: { range: 2, mean: 100 },
@@ -121,7 +121,7 @@ const SCENARIOS = [
     }),
   },
   {
-    name: 'Straight-arm pulldown — arms stay straight',
+    name: 'Straight-arm pulldown : arms stay straight',
     expected: { context: 'seated', movementClass: 'upper_vertical', top1: 'straight_arm_pulldown', top3: ['straight_arm_pulldown'] },
     features: makeFeatures({
       knee: { range: 2, mean: 100 },
@@ -132,7 +132,7 @@ const SCENARIOS = [
     }),
   },
   {
-    name: 'Seated row — elbow dwells at contracted',
+    name: 'Seated row : elbow dwells at contracted',
     expected: { context: 'seated', movementClass: 'upper_horizontal', top3AnyOf: ['seated_row', 'machine_row', 'cable_row_single', 'chest_supported_row'] },
     features: makeFeatures({
       knee: { range: 2, mean: 100 },
@@ -146,7 +146,7 @@ const SCENARIOS = [
 
   // ── Standing exercises (P1) ──
   {
-    name: 'Squat — deep knee bend, hip hinge',
+    name: 'Squat : deep knee bend, hip hinge',
     expected: { context: 'standing', movementClass: 'lower_push', top3AnyOf: ['squat', 'front_squat', 'goblet_squat', 'box_squat'] },
     features: makeFeatures({
       knee: { range: 55, mean: 135 },
@@ -158,7 +158,7 @@ const SCENARIOS = [
     }),
   },
   {
-    name: 'Deadlift — knee + hip flex, trunk forward',
+    name: 'Deadlift : knee + hip flex, trunk forward',
     expected: { context: 'standing', movementClass: 'lower_pull', top3AnyOf: ['deadlift', 'sumo_deadlift', 'romanian_deadlift'] },
     features: makeFeatures({
       knee: { range: 20, mean: 150 },
@@ -170,7 +170,7 @@ const SCENARIOS = [
     }),
   },
   {
-    name: 'Good morning — knees locked, pure hip hinge',
+    name: 'Good morning : knees locked, pure hip hinge',
     expected: { context: 'standing', movementClass: 'lower_pull', top1: 'good_morning', top3: ['good_morning'] },
     features: makeFeatures({
       knee: { range: 5, mean: 168 },
@@ -182,7 +182,7 @@ const SCENARIOS = [
     }),
   },
   {
-    name: 'Bicep curl — elbow flexion, shoulder static',
+    name: 'Bicep curl : elbow flexion, shoulder static',
     expected: { context: 'standing', movementClass: 'upper_isolation', top3AnyOf: ['bicep_curl', 'hammer_curl', 'barbell_curl', 'ez_bar_curl'] },
     features: makeFeatures({
       knee: { range: 2, mean: 170 },
@@ -195,7 +195,7 @@ const SCENARIOS = [
 
   // ── Occlusion scenarios (visibility gating) ──
   {
-    name: 'Leg press — feet occluded behind sled (low knee visibility)',
+    name: 'Leg press : feet occluded behind sled (low knee visibility)',
     expected: { context: 'seated', movementClass: 'lower_push' },
     features: makeFeatures({
       knee: { range: 55, mean: 115, dwellHigh: 0.18, visibility: 0.25 },

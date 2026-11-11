@@ -118,7 +118,7 @@
   border: none;
 }
 .replay-play-btn:active { transform: translate(-50%, -50%) scale(0.92); }
-.replay-play-btn span { font-size: 28px; color: #0a0a0e; margin-left: 4px; }
+.replay-play-btn span { font-size: 28px; color: var(--void); margin-left: 4px; }
 
 .replay-progress { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: rgba(255, 255, 255, 0.06); }
 .replay-progress-fill { height: 100%; background: var(--accent-gradient); transition: width 0.1s linear; }
@@ -217,7 +217,7 @@
 
 
 /* ══════════════════════════════════════════
-   HOME PAGE — Premium Dashboard
+   HOME PAGE : Premium Dashboard
    ══════════════════════════════════════════ */
 
 .home {
@@ -420,7 +420,7 @@
   pointer-events: none;
 }
 
-/* The score earns its entrance — it doesn't just appear, it arrives */
+/* The score earns its entrance : it doesn't just appear, it arrives */
 .vision-score-number {
   font-family: var(--font-display);
   font-size: 56px;
@@ -433,7 +433,7 @@
   animation-delay: 0.2s;
 }
 
-/* Grade letter — the verdict. It carries weight. */
+/* Grade letter : the verdict. It carries weight. */
 .vision-score-grade {
   font-size: 16px;
   font-weight: 700;
@@ -746,7 +746,7 @@
   gap: 1px;
 }
 
-/* Each workout is a moment in your story — it has presence */
+/* Each workout is a moment in your story : it has presence */
 .workout-row {
   display: flex;
   align-items: center;
@@ -782,7 +782,7 @@
   border-radius: 14px;
 }
 
-/* Grade badge — not just a letter, a verdict that glows with meaning */
+/* Grade badge : not just a letter, a verdict that glows with meaning */
 .workout-grade {
   width: 40px;
   height: 40px;

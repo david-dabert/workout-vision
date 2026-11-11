@@ -1,5 +1,5 @@
 /**
- * WorkoutVision Universal Kinematic Manifold — Psychoacoustic Audio Coach
+ * WorkoutVision Universal Kinematic Manifold : Psychoacoustic Audio Coach
  * 
  * High-precision, zero-latency Web Audio API acoustic and micro-haptic cueing service.
  * Delivers subconscious real-time pacing, concentric/eccentric phase transitions,

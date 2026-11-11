@@ -214,11 +214,11 @@
 .wv-experience .coach-suite-container .prod-sub { font-size: var(--fs-caption); color: var(--c-fg-muted); font-variant-numeric: tabular-nums; }
 /* The Nutri-Score letter keeps the scheme's own colours: it is the label of the scheme, not a colour of the app. */
 .wv-experience .coach-suite-container .nutriscore-badge { flex: none; padding: 5px 10px 4px; border-radius: var(--r-pill); font-family: var(--mono); font-size: var(--fs-label); font-weight: 700; letter-spacing: 0.06em; }
-.wv-experience .coach-suite-container .nutriscore-badge.ns-a { background: #038141; color: #fff; }
-.wv-experience .coach-suite-container .nutriscore-badge.ns-b { background: #85bb2f; color: #fff; }
-.wv-experience .coach-suite-container .nutriscore-badge.ns-c { background: #fecb02; color: #000; }
-.wv-experience .coach-suite-container .nutriscore-badge.ns-d { background: #ee8100; color: #fff; }
-.wv-experience .coach-suite-container .nutriscore-badge.ns-e { background: #e63e11; color: #fff; }
+.wv-experience .coach-suite-container .nutriscore-badge.ns-a { background: var(--ns-green-dark); color: var(--c-fg); }
+.wv-experience .coach-suite-container .nutriscore-badge.ns-b { background: var(--ns-green-light); color: var(--c-fg); }
+.wv-experience .coach-suite-container .nutriscore-badge.ns-c { background: var(--ns-yellow); color: var(--void); }
+.wv-experience .coach-suite-container .nutriscore-badge.ns-d { background: var(--ns-orange); color: var(--c-fg); }
+.wv-experience .coach-suite-container .nutriscore-badge.ns-e { background: var(--ns-red); color: var(--c-fg); }
 .wv-experience .coach-suite-container .prod-macros-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .wv-experience .coach-suite-container .prod-m-box { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px; text-align: center; }
 .wv-experience .coach-suite-container .prod-m-box b { font-size: var(--fs-body); font-weight: 600; color: var(--c-fg); font-variant-numeric: tabular-nums; }

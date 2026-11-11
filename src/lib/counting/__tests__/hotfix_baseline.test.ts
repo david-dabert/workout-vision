@@ -1,5 +1,5 @@
 /**
- * Hotfix-ios baseline — runs the OLD RepCounter on the committed landmark files
+ * Hotfix-ios baseline : runs the OLD RepCounter on the committed landmark files
  * to get real measured numbers, not hand-typed ones.
  */
 

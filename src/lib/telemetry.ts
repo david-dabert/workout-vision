@@ -25,7 +25,7 @@ function persistEvents(events: TelemetryEvent[]): void {
     // Keep only most recent events
     const trimmed = events.slice(-MAX_EVENTS);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
-  } catch { /* quota exceeded — silently drop */ }
+  } catch { /* quota exceeded : silently drop */ }
 }
 
 /**

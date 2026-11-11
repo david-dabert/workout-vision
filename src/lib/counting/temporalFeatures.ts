@@ -1,5 +1,5 @@
 /**
- * WorkoutVision Universal Kinematic Manifold — Temporal Kinematic Feature Extractor
+ * WorkoutVision Universal Kinematic Manifold : Temporal Kinematic Feature Extractor
  * 
  * Extracts sliding-window normalized kinematic feature matrices from continuous joint
  * streams and 3D skeletal landmark trajectories.

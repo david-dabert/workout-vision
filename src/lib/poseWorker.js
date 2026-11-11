@@ -1,5 +1,5 @@
 /**
- * poseWorker.js — Web Worker for offloading MediaPipe pose detection.
+ * poseWorker.js : Web Worker for offloading MediaPipe pose detection.
  *
  * Runs the full inference pipeline off the main thread:
  *   1. MediaPipe PoseLandmarker WASM inference
@@ -31,7 +31,7 @@ import {
   kalmanFilter,
 } from './poseGeometry';
 
-// Import from the installed package (0.10.35) — same version as the WASM in public/mediapipe.
+// Import from the installed package (0.10.35) : same version as the WASM in public/mediapipe.
 // Previous CDN import loaded 0.10.8 which returned landmarks without visibility scores.
 import * as mp from '@mediapipe/tasks-vision';
 
@@ -270,7 +270,7 @@ function processDetection(source, timestamp, frameIndex) {
   }
 }
 
-// ImageBitmap path (preferred — zero-copy transfer)
+// ImageBitmap path (preferred : zero-copy transfer)
 function handleDetectBitmap({ bitmap, timestamp, frameIndex }) {
   try {
     ensureCanvas(bitmap.width, bitmap.height);

@@ -171,7 +171,7 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
 
           {/* Exercise list */}
           <div style={{ overflowY: 'auto', flex: 1 }} role="listbox">
-            {/* Launch lifts — validated exercises shown first */}
+            {/* Launch lifts : validated exercises shown first */}
             {!activeRegion && (
               <>
                 <div style={{ padding: '8px 12px 4px', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--accent, #D4A76A)' }}>
@@ -210,7 +210,7 @@ export default function ExerciseSelector({ value, onChange, showAuto = true, cla
                 </div>
               </>
             )}
-            {/* Automatic option — under experimental */}
+            {/* Automatic option : under experimental */}
             {showAuto && !activeRegion && (
               <button
                 type="button"

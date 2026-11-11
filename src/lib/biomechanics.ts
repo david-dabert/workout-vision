@@ -107,7 +107,7 @@ export function analyzeSet(
   );
 
   // Rep boundaries come from RepCounter (single source of truth).
-  // If RepCounter found 0 reps, biomechanics returns empty — no rescue algo.
+  // If RepCounter found 0 reps, biomechanics returns empty : no rescue algo.
   if (!externalReps || externalReps.length === 0) return emptyResult();
   const reps: NormalizedRep[] = externalReps.map(r => ({
     start: Math.min(r.startFrame, rawFrames.length - 1),

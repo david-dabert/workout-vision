@@ -16,7 +16,7 @@ const getRepCounter = async () => {
   return _RepCounter;
 };
 
-const CAPTURE_FPS = 15; // inference budget — balance accuracy vs battery
+const CAPTURE_FPS = 15; // inference budget : balance accuracy vs battery
 const FRAME_INTERVAL = 1000 / CAPTURE_FPS;
 // Re-detect viewpoint every N frames (cheap but no need every frame)
 const VIEWPOINT_INTERVAL = 30;
@@ -113,7 +113,7 @@ export default function LiveCapture({ onClose, profile }) {
   const startSession = useCallback(async () => {
     if (status !== 'ready' || !isReady) return;
 
-    // Don't create RepCounter yet — wait for the detector to identify
+    // Don't create RepCounter yet : wait for the detector to identify
     // the exercise first. This prevents wrong form checks from firing
     // against a hardcoded default exercise.
     repCounterRef.current = null;
@@ -176,7 +176,7 @@ export default function LiveCapture({ onClose, profile }) {
       detector.reset();
       setDetectorState({ ...detector.state });
     }
-    // Keep current counter running — detector will re-identify
+    // Keep current counter running : detector will re-identify
   }, []);
 
   const processFrame = useCallback(() => {
@@ -207,7 +207,7 @@ export default function LiveCapture({ onClose, profile }) {
     detectFrame(canvas, timestamp, frameIndex).then(result => {
       if (!activeRef.current || !result?.landmarks) return;
 
-      // Periodic viewpoint detection — updates form check filtering
+      // Periodic viewpoint detection : updates form check filtering
       if (frameIndex % VIEWPOINT_INTERVAL === 0) {
         const vp = detectViewpoint(result.landmarks);
         viewpointRef.current = vp.angle;
@@ -231,12 +231,12 @@ export default function LiveCapture({ onClose, profile }) {
         }
       }
 
-      // Update rep counter (only if one exists — before detection, it's null)
+      // Update rep counter (only if one exists : before detection, it's null)
       const counter = repCounterRef.current;
       if (counter) {
         const repResult = counter.update(result.landmarks, timestamp);
         if (repResult) {
-          // Trigger rep burst when count increases — the number doesn't just change, it HITS
+          // Trigger rep burst when count increases : the number doesn't just change, it HITS
           if (repResult.reps > prevRepsRef.current) {
             prevRepsRef.current = repResult.reps;
             setRepBurst(true);
@@ -245,7 +245,7 @@ export default function LiveCapture({ onClose, profile }) {
           setReps(repResult.reps);
           setPhase(repResult.phase || 'setup');
           if (repResult.formFeedback?.length) {
-            // Only show failed checks — passed checks are noise in the overlay
+            // Only show failed checks : passed checks are noise in the overlay
             const failed = repResult.formFeedback.filter(fb => !fb.passed);
             setFormFeedback(failed.slice(0, 3));
           } else {
@@ -342,11 +342,12 @@ export default function LiveCapture({ onClose, profile }) {
   return (
     <div className="page page-full" style={{ background: 'var(--void)', position: 'relative', overflow: 'hidden' }}>
       {/* Video + overlay stack */}
-      <div style={{ position: 'relative', width: '100%', aspectRatio: '4/3', background: '#000' }}>
+      <div style={{ position: 'relative', width: '100%', aspectRatio: '4/3', background: 'var(--void)' }}>
         <video
           ref={videoRef}
           playsInline
           muted
+          onError={() => {}}
           style={{
             width: '100%', height: '100%', objectFit: 'cover',
             transform: facingMode === 'user' ? 'scaleX(-1)' : 'none',
@@ -404,7 +405,7 @@ export default function LiveCapture({ onClose, profile }) {
           </button>
         </div>
 
-        {/* Phase environment glow — the whole frame responds to movement phase */}
+        {/* Phase environment glow : the whole frame responds to movement phase */}
         {status === 'running' && (
           <div style={{
             position: 'absolute', inset: 0,
@@ -415,7 +416,7 @@ export default function LiveCapture({ onClose, profile }) {
           }} />
         )}
 
-        {/* Exercise detection chips — same UX as video mode */}
+        {/* Exercise detection chips : same UX as video mode */}
         {status === 'running' && detectorState && !detectorState.locked && detectorState.candidates?.length > 0 && (
           <div style={{
             position: 'absolute', top: 60, left: 0, right: 0,
@@ -431,7 +432,7 @@ export default function LiveCapture({ onClose, profile }) {
           </div>
         )}
 
-        {/* Auto-lock badge — shows locked exercise with unlock option */}
+        {/* Auto-lock badge : shows locked exercise with unlock option */}
         {status === 'running' && detectorState?.locked && detectorState.exercise && (
           <div style={{
             position: 'absolute', top: 60, left: 0, right: 0,
@@ -455,7 +456,7 @@ export default function LiveCapture({ onClose, profile }) {
             paddingBottom: 'max(20px, env(safe-area-inset-bottom))',
             display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
           }}>
-            {/* Rep count — the number doesn't just change, it HITS */}
+            {/* Rep count : the number doesn't just change, it HITS */}
             <div style={{ textAlign: 'center' }}>
               <div aria-live="polite" style={{
                 fontSize: '3.5rem', fontWeight: 900, color: '#fff',

@@ -61,7 +61,7 @@ function parseRepCountCSV(text) {
 }
 
 /**
- * Validation harness — hidden dev page for engine accuracy testing.
+ * Validation harness : hidden dev page for engine accuracy testing.
  *
  * Upload a video, enter ground truth (exercise + rep count),
  * run the analysis, get precision/recall/F1 report.
@@ -610,7 +610,7 @@ export default function Validate({ onClose }) {
       )}
 
       {/* Hidden video element for analysis */}
-      <video ref={videoRef} muted playsInline preload="auto" className={s.hiddenVideo} />
+      <video ref={videoRef} muted playsInline preload="auto" className={s.hiddenVideo} onError={() => {}} />
 
       {/* Results */}
       {results.length > 0 && (

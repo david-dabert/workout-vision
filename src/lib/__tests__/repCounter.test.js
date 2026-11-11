@@ -1,5 +1,5 @@
 /**
- * Tests for the RepCounter engine — valley counting algorithm.
+ * Tests for the RepCounter engine : valley counting algorithm.
  *
  * The RepCounter detects exercise repetitions by finding valleys (local minima)
  * in joint angle signals. For squats, each valley corresponds to the bottom
@@ -58,7 +58,7 @@ describe('AngleBuffer', () => {
 });
 
 // ---------------------------------------------------------------------------
-// RepCounter — core rep detection
+// RepCounter : core rep detection
 // ---------------------------------------------------------------------------
 
 describe('RepCounter', () => {

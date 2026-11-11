@@ -1,5 +1,5 @@
 /**
- * WorkoutVision — Biomechanical Share Card & Summary Generator
+ * WorkoutVision : Biomechanical Share Card & Summary Generator
  *
  * Generates Strava/Whoop-style high-impact biomechanical summary cards
  * and text payloads for investor demos, social sharing, and client delivery.

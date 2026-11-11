@@ -56,7 +56,7 @@ if ('serviceWorker' in navigator) {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') reg?.update().catch(() => {});
       });
-    } catch (_) { /* SW registration failed — app works fine without it */ }
+    } catch (_) { /* SW registration failed : app works fine without it */ }
   });
 }
 

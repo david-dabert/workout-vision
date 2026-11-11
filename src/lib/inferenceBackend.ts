@@ -1,5 +1,5 @@
 /**
- * WorkoutVision Universal Kinematic Manifold — Inference Backend Abstraction
+ * WorkoutVision Universal Kinematic Manifold : Inference Backend Abstraction
  * 
  * Provides a pluggable, zero-server execution interface across WebAssembly,
  * WebGPU compute shaders, WebNN, and WebGL/CPU fallbacks.

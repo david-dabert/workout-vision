@@ -166,7 +166,7 @@
   border: none;
   border-radius: var(--radius);
   background: var(--accent);
-  color: #0f0f13;
+  color: var(--void);
   font-family: var(--font-display);
   font-size: 1.05rem;
   font-weight: 700;
@@ -219,7 +219,7 @@
   }
 
   .cta {
-    color: #fff;
+    color: var(--c-surface);
   }
 }
 

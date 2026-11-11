@@ -1,5 +1,5 @@
 /**
- * VideoSuitabilityDetector — pre-analysis video quality check.
+ * VideoSuitabilityDetector : pre-analysis video quality check.
  *
  * Runs on the first ~30 frames before full analysis begins. Evaluates
  * whether the video is likely to produce a reliable rep count by checking

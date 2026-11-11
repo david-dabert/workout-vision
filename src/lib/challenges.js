@@ -1,6 +1,6 @@
 /**
  * Challenge link system for viral workout challenges.
- * All challenge data lives in the URL hash — no backend needed.
+ * All challenge data lives in the URL hash : no backend needed.
  *
  * Challenge URL format:
  * https://david-dabert.github.io/workout-vision/#challenge?ex=bench_press&reps=10&score=85&by=David&date=2026-09-04

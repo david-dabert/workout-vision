@@ -3,7 +3,7 @@
  * Detects shareable achievements earned during a single workout analysis.
  * Returns an array of badge objects for display on the ResultCard and share card.
  *
- * Badges are purely computed — no persistence needed. They're derived from
+ * Badges are purely computed : no persistence needed. They're derived from
  * the current result + workout history on every render.
  */
 

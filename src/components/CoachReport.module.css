@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════
-   CoachReport — Coach report generation page
+   CoachReport: Coach report generation page
    ══════════════════════════════════════════════════════════════ */
 
 .page {
@@ -168,8 +168,8 @@
   padding: 12px 16px;
   border-radius: 12px;
   border: none;
-  background: var(--accent, #D4A76A);
-  color: #1a1a1e;
+  background: var(--c-accent);
+  color: var(--void);
   font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
@@ -259,22 +259,22 @@
   }
 
   .input {
-    background: #fff;
+    background: var(--c-surface);
     border-color: rgba(0, 0, 0, 0.1);
-    color: #1a1a1e;
+    color: var(--c-text);
   }
 
   .workoutItem {
     border-color: rgba(0, 0, 0, 0.08);
-    color: #1a1a1e;
+    color: var(--c-text);
   }
 
   .workoutMeta {
-    color: rgba(26, 26, 30, 0.4);
+    color: var(--c-text-muted);
   }
 
   .btnSecondary {
     border-color: rgba(0, 0, 0, 0.1);
-    color: #1a1a1e;
+    color: var(--c-text);
   }
 }

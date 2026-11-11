@@ -64,7 +64,7 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
   const [liveReps, setLiveReps] = useState(0);
   const [userInjuries, setUserInjuries] = useState([]);
 
-  // loadInjuries is async — resolve it into state after mount
+  // loadInjuries is async : resolve it into state after mount
   useEffect(() => {
     loadInjuries().then(injuries => setUserInjuries(injuries || []));
   }, []);
@@ -721,7 +721,7 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
       {/* Analysis display: VISIBLE video + transparent overlay canvas.
           Video element MUST be visible for iOS Safari to decode frames.
           Canvas sits on top, draws only the green skeleton + rep counter.
-          This is how AR filters work — video is the background, canvas is the overlay. */}
+          This is how AR filters work : video is the background, canvas is the overlay. */}
       <div
         className="analysis-card"
         style={analyzing
@@ -731,7 +731,7 @@ export default function VideoUpload({ onClose, onLiveMode, preSelectedExercise }
       >
         <div className={s.analysisVideoWrapper}>
           {/* Video element: must stay in DOM for iOS Safari to decode frames via seeking.
-              Hidden visually — the canvas draws video frame + skeleton as a single composited image,
+              Hidden visually : the canvas draws video frame + skeleton as a single composited image,
               bypassing the iOS Safari hardware compositor that renders <video> above <canvas>. */}
           <video ref={videoRef} className={`analysis-video ${s.analysisVideoElement}`} muted playsInline preload="auto" />
 

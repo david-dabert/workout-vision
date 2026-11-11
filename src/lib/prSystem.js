@@ -4,12 +4,12 @@
  * and returns an array of PR types achieved.
  *
  * Categories:
- *   1. Heaviest   — max weight lifted for an exercise
- *   2. Most Reps  — most reps in a single set for an exercise
- *   3. Best Form  — highest form score for an exercise
- *   4. Longest Set — longest duration set for an exercise
- *   5. Max Volume — highest single-set volume (weight x reps) for an exercise
- *   6. Streak     — longest consecutive scheduled days trained
+ *   1. Heaviest   : max weight lifted for an exercise
+ *   2. Most Reps  : most reps in a single set for an exercise
+ *   3. Best Form  : highest form score for an exercise
+ *   4. Longest Set : longest duration set for an exercise
+ *   5. Max Volume : highest single-set volume (weight x reps) for an exercise
+ *   6. Streak     : longest consecutive scheduled days trained
  */
 
 import localforage from 'localforage';

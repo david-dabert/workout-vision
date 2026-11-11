@@ -1,5 +1,5 @@
 /**
- * oneEuroFilter.js — One Euro Filter for landmark smoothing.
+ * oneEuroFilter.js : One Euro Filter for landmark smoothing.
  *
  * Adaptive low-pass filter designed for interactive human motion tracking.
  * Unlike a fixed-cutoff Kalman filter, the One Euro Filter dynamically adjusts

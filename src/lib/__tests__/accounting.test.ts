@@ -123,7 +123,7 @@ describe('the credit note (avoir)', () => {
     expect(text).toContain('Annule la facture n° F-2026-0003 du 14/10/2026');
     expect(text).toContain('EI Camille Martin');
     expect(text).toContain('TVA non applicable, art. 293 B du CGI');
-    expect(text).not.toContain('—');
+    expect(text).not.toContain('\u2014');
   });
   it('writes the rates from the table', async () => {
     const { ratePct, RATES } = await import('../accounting');

@@ -1,5 +1,5 @@
 /**
- * WorkoutVision — 1-Tap Boardroom Investor Showcase Engine
+ * WorkoutVision : 1-Tap Boardroom Investor Showcase Engine
  *
  * Provides a zero-friction, boardroom-ready live simulation of the full
  * computer vision pipeline. Executes at 30 fps with realistic biomechanical

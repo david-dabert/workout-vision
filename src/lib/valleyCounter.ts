@@ -1,5 +1,5 @@
 /**
- * Valley counting — pure signal processing extracted from RepCounter.
+ * Valley counting : pure signal processing extracted from RepCounter.
  *
  * A rep is a valley (local minimum) in the tracking signal. This module
  * provides all the signal-level operations: valley detection, bilateral
@@ -7,7 +7,7 @@
  * correction, and signal smoothing/interpolation.
  *
  * Every function is stateless: takes a signal array + config, returns results.
- * No MediaPipe, no exercise definitions, no React — just math on arrays.
+ * No MediaPipe, no exercise definitions, no React : just math on arrays.
  */
 
 import type { ValleyResult } from './repCounter/types';
@@ -320,7 +320,7 @@ export function autocorrelationEdgeCorrect(signal: number[], valleyResult: Valle
 }
 
 // ---------------------------------------------------------------------------
-// Autocorrelation quality — how periodic is the signal at a given period?
+// Autocorrelation quality : how periodic is the signal at a given period?
 // ---------------------------------------------------------------------------
 
 export function autocorrelationQuality(signal: number[], periodFrames: number): number {
@@ -451,6 +451,6 @@ export function templateEdgeCorrect(signal: number[], valleyResult: ValleyResult
 }
 
 // ---------------------------------------------------------------------------
-// Autocorrelation quality — measures how periodic a signal is at a given period
+// Autocorrelation quality : measures how periodic a signal is at a given period
 //
 // Real human repetitions produce a strongly periodic signal: the autocorrelation

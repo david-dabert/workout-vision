@@ -1,5 +1,5 @@
 /**
- * Pose analysis engine — MediaPipe Pose Landmarker (unified single instance).
+ * Pose analysis engine : MediaPipe Pose Landmarker (unified single instance).
  * Runs on-device (WASM + GPU with CPU fallback).
  *
  * Architecture:
@@ -18,7 +18,7 @@ import {
   GHOST_DECAY_RATE,
   GHOST_MAX_FRAMES,
 } from './analysisConfig';
-// Shared geometry — single source of truth for both main thread and Worker
+// Shared geometry : single source of truth for both main thread and Worker
 import {
   LANDMARKS as _LANDMARKS,
   calculateAngle as _calculateAngle,
@@ -28,7 +28,7 @@ import {
   selectSubjectPose as _selectSubjectPose,
 } from './poseGeometry';
 
-// Import from the installed package (0.10.35) — same version as the WASM in public/mediapipe.
+// Import from the installed package (0.10.35) : same version as the WASM in public/mediapipe.
 // Previous CDN import loaded 0.10.8 which returned landmarks without visibility scores.
 import * as mpVision from '@mediapipe/tasks-vision';
 import { isTheHeavyModel, isTheModel, MODEL_SHA256 } from './model-hash';
@@ -93,7 +93,7 @@ async function fetchHeavyModelBuffer() {
   return buffer;
 }
 // Local WASM files copied by vite build plugin (scripts/copy-models.js) from the installed
-// @mediapipe/tasks-vision@0.10.35. No CDN fallback — one version, served by the app.
+// @mediapipe/tasks-vision@0.10.35. No CDN fallback : one version, served by the app.
 const VISION_WASM_LOCAL = `${import.meta.env.BASE_URL}mediapipe`;
 const VIS = 0.3; // minimum landmark visibility to draw/use (below 0.3 landmarks are hallucinated)
 
@@ -403,7 +403,7 @@ export function disposeAllLandmarkers() {
   _gatedFrames = 0;
 }
 
-// isAnatomicallyImplausible — delegated to poseGeometry.js
+// isAnatomicallyImplausible : delegated to poseGeometry.js
 
 /**
  * Filter anatomically implausible landmarks, returning previous valid ones if current fail.
@@ -672,7 +672,7 @@ export function detectPoseVideo(landmarker, videoElement, timestamp) {
       _ghostFrameCount = 0;
       return result;
     }
-    // Detection failed — enter ghost mode
+    // Detection failed : enter ghost mode
     _ghostFrameCount++;
     _totalGhostFrames++;
     return _getGhostResult();
@@ -744,7 +744,7 @@ export function resetKalmanFilters() {
 
 // ─── Person lock: select the subject (largest + most centered) ───
 
-// selectSubjectPose — delegated to poseGeometry.js (re-exported above)
+// selectSubjectPose : delegated to poseGeometry.js (re-exported above)
 
 // ─── Mirror detection ───
 
@@ -898,7 +898,7 @@ export function interpolateOccludedLandmarks(landmarksArray, visThreshold = VIS_
 }
 
 // ─── Geometry ───
-// calculateAngle, extractJointAngles, calculateTrunkAngle — delegated to poseGeometry.js (re-exported above)
+// calculateAngle, extractJointAngles, calculateTrunkAngle : delegated to poseGeometry.js (re-exported above)
 
 // ─── Drawing ───
 
@@ -1068,7 +1068,7 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
     }
   }
 
-  // Joint dots — body landmarks only (11-32), skip face (0-10)
+  // Joint dots : body landmarks only (11-32), skip face (0-10)
   // Color-coded by quality: cyan (perfect) → yellow → red (failing)
   const dotR = Math.max(4, Math.round(width / 80));
   for (let k = 11; k < Math.min(landmarks.length, 33); k++) {

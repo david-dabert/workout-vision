@@ -1,5 +1,5 @@
 /**
- * Personalized Form Baselines — Cross-Session Learning
+ * Personalized Form Baselines : Cross-Session Learning
  *
  * Learns each user's form patterns across sessions. Instead of comparing
  * against generic thresholds, the system builds a personal baseline per

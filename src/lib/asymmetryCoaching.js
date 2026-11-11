@@ -1,5 +1,5 @@
 /**
- * asymmetryCoaching.js — Biomechanical asymmetry analysis & actionable coaching intelligence.
+ * asymmetryCoaching.js : Biomechanical asymmetry analysis & actionable coaching intelligence.
  *
  * WITHDRAWN from the app on 14 October 2026 (honesty audit, CORE-06, CORE-07): run by no screen, kept for research.
  * The visibility floor cannot exclude the hidden far limb (counting/symmetry.ts), equal-sided synthetic sets scored

@@ -1,5 +1,5 @@
 /**
- * WorkoutVision Universal Kinematic Manifold — Psychoacoustic Haptic Resonance Audio Engine
+ * WorkoutVision Universal Kinematic Manifold : Psychoacoustic Haptic Resonance Audio Engine
  *
  * Solves Vulnerability 3 & 6 (Acoustic Masking in 85-92 dBA Gyms & Driver Frequency Limits).
  *

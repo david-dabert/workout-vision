@@ -1,5 +1,5 @@
 /**
- * AudioCueEngine — Tactile Acoustic & Micro-Haptic Kinematic Feedback
+ * AudioCueEngine : Tactile Acoustic & Micro-Haptic Kinematic Feedback
  *
  * Provides real-time acoustic feedback at exact kinematic turnaround points,
  * lockouts, stretch depth, and fatigue/velocity thresholds without looking at the screen.

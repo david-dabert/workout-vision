@@ -9,7 +9,7 @@
  */
 
 // ---------------------------------------------------------------------------
-// repCounter.js — YIN autocorrelation
+// repCounter.js : YIN autocorrelation
 // ---------------------------------------------------------------------------
 
 /** CMNDF threshold for YIN period detection (lower = stricter) */
@@ -47,14 +47,14 @@ export const ROM_CONFIDENCE_PENALTIES = [
 ];
 
 // ---------------------------------------------------------------------------
-// repCounter.js — live mode hysteresis
+// repCounter.js : live mode hysteresis
 // ---------------------------------------------------------------------------
 
 /** Minimum milliseconds between live-mode reps */
 export const LIVE_DEBOUNCE_MS = 600;
 
 // ---------------------------------------------------------------------------
-// repCounter.js — consensus voting
+// repCounter.js : consensus voting
 // ---------------------------------------------------------------------------
 
 /** Shoulder instability penalty applied to wristShoulderDist signals */
@@ -66,7 +66,7 @@ export const SHOULDER_PINNED_EXERCISES = [
 ];
 
 // ---------------------------------------------------------------------------
-// repCounter.js — candidate scoring weights
+// repCounter.js : candidate scoring weights
 // ---------------------------------------------------------------------------
 
 export const CANDIDATE_SCORE_WEIGHTS = {
@@ -79,7 +79,7 @@ export const CANDIDATE_SCORE_WEIGHTS = {
 };
 
 // ---------------------------------------------------------------------------
-// repCounter.js — uncertain rep thresholds
+// repCounter.js : uncertain rep thresholds
 // ---------------------------------------------------------------------------
 
 /** Composite confidence above which all reps are confirmed */
@@ -89,7 +89,7 @@ export const REP_CONFIDENCE_HIGH = 0.85;
 export const REP_CONFIDENCE_MEDIUM = 0.65;
 
 // ---------------------------------------------------------------------------
-// exercises.js — visibility
+// exercises.js : visibility
 // ---------------------------------------------------------------------------
 
 /** Unified visibility threshold for landmark quality gates */
@@ -106,7 +106,7 @@ export const NORM_TO_METERS_DEFAULT = 1.7;
 export const ASYMMETRY_VIS_MIN = 0.5;
 
 // ---------------------------------------------------------------------------
-// biomechanics.js — peak-valley detection
+// biomechanics.js : peak-valley detection
 // ---------------------------------------------------------------------------
 
 /** Minimum prominence as fraction of global range */
@@ -119,7 +119,7 @@ export const PEAK_MIN_PROMINENCE_DEG = 12;
 export const PEAK_MIN_FRAME_GAP = 3;
 
 // ---------------------------------------------------------------------------
-// poseAnalysis.js — ghost pose decay
+// poseAnalysis.js : ghost pose decay
 // ---------------------------------------------------------------------------
 
 /** Consecutive ghost frames before visibility starts decaying */
@@ -175,7 +175,7 @@ export const DETECTOR_UNKNOWN_THRESHOLD = 0.40;
 // SignalExtractor3D.js
 // ---------------------------------------------------------------------------
 
-/** (no standalone thresholds — signals are pure extraction) */
+/** (no standalone thresholds : signals are pure extraction) */
 
 // ---------------------------------------------------------------------------
 // Production vs benchmark FPS / frame limits
@@ -192,7 +192,7 @@ export const BENCHMARK = {
 };
 
 // ---------------------------------------------------------------------------
-// Exercise period bounds (seconds) — calibrated per exercise
+// Exercise period bounds (seconds) : calibrated per exercise
 // Moved from repCounter.js static method for central tuning
 // ---------------------------------------------------------------------------
 

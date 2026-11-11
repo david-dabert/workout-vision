@@ -1,5 +1,5 @@
 /**
- * ExercisePicker — chip-based exercise selection UI.
+ * ExercisePicker : chip-based exercise selection UI.
  *
  * Default live path: shows candidate chips from the HierarchicalDetector.
  * User taps a chip to lock the exercise. Auto-locks when confidence

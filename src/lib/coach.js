@@ -15,7 +15,7 @@
 import { EXERCISES } from './exercises';
 
 // ---------------------------------------------------------------------------
-// Muscle name aliases — normalize variants to canonical names so volume
+// Muscle name aliases : normalize variants to canonical names so volume
 // tracking counts them together (e.g. 'Biceps Brachii' -> 'Biceps').
 // ---------------------------------------------------------------------------
 
@@ -221,7 +221,7 @@ export function generateWorkoutReport(profile, exerciseResults) {
       }
       // Only emit positive quality highlight if per-rep form scores agree.
       // movementQuality (biomechanics: TUT, ROM, asymmetry) can be high even
-      // when form checks fail — avoid contradicting a low hero grade.
+      // when form checks fail : avoid contradicting a low hero grade.
       const repFormAvg = result.repHistory && result.repHistory.length > 0
         ? (() => {
             const scored = result.repHistory.filter(r => r.score != null);

@@ -1,5 +1,5 @@
 /**
- * Shared extraction settings — single source of truth.
+ * Shared extraction settings : single source of truth.
  *
  * Both the app (analyzeVideo.js) and the test harness use these values.
  * No platform-specific overrides; every device runs the same path.

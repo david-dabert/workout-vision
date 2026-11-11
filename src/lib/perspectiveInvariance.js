@@ -1,5 +1,5 @@
 /**
- * PerspectiveInvariance — Self-Calibrating 3D Camera Raymarching & Rotation Invariance
+ * PerspectiveInvariance : Self-Calibrating 3D Camera Raymarching & Rotation Invariance
  *
  * Estimates camera extrinsics (pitch, roll, ground plane normal) directly from
  * anatomical support contact points and spinal axes in real time.

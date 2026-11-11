@@ -1,4 +1,4 @@
-/* VideoUpload.module.css — extracted from inline styles */
+/* VideoUpload.module.css : extracted from inline styles */
 
 /* Page header controls */
 .headerControls {
@@ -195,7 +195,7 @@
   color: var(--text-primary);
 }
 
-/* Phase step items — static layout */
+/* Phase step items : static layout */
 .phaseStep {
   display: flex;
   align-items: center;
@@ -314,7 +314,7 @@
   color: var(--text-secondary);
 }
 
-/* Analysis card (video + overlay) — hidden state is dynamic */
+/* Analysis card (video + overlay) : hidden state is dynamic */
 .analysisVideoWrapper {
   position: relative;
   border-radius: 8px;

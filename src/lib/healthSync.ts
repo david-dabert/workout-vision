@@ -1,5 +1,5 @@
 /**
- * Sovereign Health Sync — Zero-Server Client-Side Health Data Parser.
+ * Sovereign Health Sync : Zero-Server Client-Side Health Data Parser.
  *
  * Replaces expensive SaaS wearable cloud integrations (Apple HealthKit / Google Fit API)
  * by parsing local Apple Health XML exports and Google Takeout data directly in the browser.

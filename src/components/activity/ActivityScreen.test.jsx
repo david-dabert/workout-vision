@@ -56,7 +56,7 @@ describe('the activity screen', () => {
       expect(tile(html, 'landing')).not.toMatch(/\d,\d|\d\.\d\d/);
       expect(html).toContain('data-testid="activity-events"');
       // R10: no em dash in the copy. The status keeps to its dot (never alone on the formula's last line).
-      expect(html).not.toContain('—');
+      expect(html).not.toContain('\u2014');
       expect(html).toContain(lang === 'fr' ? '·\u00A0Expérimental' : '·\u00A0Experimental');
       // What the count's note and the demo's noise say is what was measured.
       expect(tile(html, 'jumps')).toContain(lang === 'fr' ? 'les plus petits peuvent être manqués' : 'smaller ones may be missed');

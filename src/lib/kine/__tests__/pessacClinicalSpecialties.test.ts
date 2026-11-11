@@ -40,7 +40,7 @@ describe('Pessac Multi-Specialty Kinematics Engine', () => {
     const valgusRes = evaluateKneeDynamicValgus(valgusFrames, [0]);
     expect(valgusRes.valgusRiskFlag).toBe(true);
     expect(valgusRes.clinicalSummaryFr).toContain('Valgus dynamique');
-    expect(valgusRes.clinicalSummaryFr).not.toContain('—');
+    expect(valgusRes.clinicalSummaryFr).not.toContain('\u2014');
   });
 
   it('evaluates Lumbar Spine & Pelvis kinematics and flags lumbopelvic rhythm inversion', () => {
@@ -59,7 +59,7 @@ describe('Pessac Multi-Specialty Kinematics Engine', () => {
     expect(res.lumbopelvicRatio).toBeGreaterThan(1.8);
     expect(res.invertedRhythmFlag).toBe(true);
     expect(res.clinicalSummaryFr).toContain('Inversion du rythme lombo-pelvien');
-    expect(res.clinicalSummaryFr).not.toContain('—');
+    expect(res.clinicalSummaryFr).not.toContain('\u2014');
   });
 
   it('evaluates Hip Impingement and detects FADIR internal rotation deficit', () => {
@@ -80,7 +80,7 @@ describe('Pessac Multi-Specialty Kinematics Engine', () => {
     expect(res.internalRotationAsymmetryDeg).toBeGreaterThan(12);
     expect(res.fadirDeficitFlag).toBe(true);
     expect(res.clinicalSummaryFr).toContain('Déficit de rotation interne');
-    expect(res.clinicalSummaryFr).not.toContain('—');
+    expect(res.clinicalSummaryFr).not.toContain('\u2014');
   });
 
   it('evaluates Ankle & Achilles kinematics and assesses WBLT dorsiflexion', () => {
@@ -99,7 +99,7 @@ describe('Pessac Multi-Specialty Kinematics Engine', () => {
     const res = evaluateAnkleDorsiflexionLunge(ankleFrames, [0]);
     expect(res.specialty).toBe('ankle');
     expect(res.leftDorsiflexionLungeDeg).toBeGreaterThanOrEqual(20);
-    expect(res.clinicalSummaryFr).not.toContain('—');
+    expect(res.clinicalSummaryFr).not.toContain('\u2014');
   });
 
   it('evaluates Cervical Spine and flags forward head posture when CVA is low', () => {
@@ -117,7 +117,7 @@ describe('Pessac Multi-Specialty Kinematics Engine', () => {
     expect(res.cranioVertebralAngleDeg).toBeLessThan(50);
     expect(res.forwardHeadPostureFlag).toBe(true);
     expect(res.clinicalSummaryFr).toContain('Projection antérieure de la tête');
-    expect(res.clinicalSummaryFr).not.toContain('—');
+    expect(res.clinicalSummaryFr).not.toContain('\u2014');
   });
 
   it('routes correctly via evaluatePessacBattery', () => {

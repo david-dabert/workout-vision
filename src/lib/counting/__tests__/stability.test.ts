@@ -50,7 +50,7 @@ function restNearThreshold(c: Case): number {
   return rest;
 }
 
-describe('Counting core — step 3c, rep details', () => {
+describe('Counting core : step 3c, rep details', () => {
   for (const c of CASES) {
     it(`${c.lift}: rests within 2° of the ${c.threshold} threshold, ten noise seeds, starts within 0.2 s and ranges within 5°`, () => {
       const rest = restNearThreshold(c);

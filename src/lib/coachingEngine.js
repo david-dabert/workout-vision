@@ -1,5 +1,5 @@
 /**
- * coachingEngine.js — Biomechanical coaching intelligence.
+ * coachingEngine.js : Biomechanical coaching intelligence.
  *
  * Takes raw landmark frames and rep boundaries from the analysis pipeline,
  * computes metrics that no browser-based tool currently ships together:

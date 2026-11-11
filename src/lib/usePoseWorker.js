@@ -223,7 +223,7 @@ export default function usePoseWorker() {
   /**
    * Reinitialize the worker's MediaPipe landmarker (between videos on iOS).
    * Disposes the old landmarker (freeing WebGL context/GPU memory) and creates
-   * a fresh one from the cached model buffer — no network fetches needed.
+   * a fresh one from the cached model buffer : no network fetches needed.
    * @param {Object} [opts]
    * @param {boolean} [opts.forceCPU] - Force CPU delegate for deterministic results
    * @param {boolean} [opts.useImageMode] - Use IMAGE running mode for deterministic per-frame detection

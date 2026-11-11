@@ -76,8 +76,8 @@ describe('the programme link', () => {
   });
 
   it('keeps accents and typographic marks whole', async () => {
-    const p = { ...sample, title: 'Séance « été » — jambes', who: 'Zoé Lefèvre' };
-    expect((await decodeProgramme(await encodeProgramme(p))).programme.title).toBe('Séance « été » — jambes');
+    const p = { ...sample, title: 'Séance « été » : jambes', who: 'Zoé Lefèvre' };
+    expect((await decodeProgramme(await encodeProgramme(p))).programme.title).toBe('Séance « été » : jambes');
   });
 
   it('refuses every bad payload, never throwing', async () => {
@@ -824,7 +824,7 @@ describe('the exercise sheet’s model', () => {
     expect(PRO.en.pdfCredit()).toBe('Drawings: Bryl Lim, workout-guide, CC BY-SA 4.0. Adapted for print.');
     expect(PRO.en.pdfCredit(['Everkinetic'])).toBe('Drawings: Bryl Lim, workout-guide, CC BY-SA 4.0. Some after Everkinetic, all adapted for print.');
     // David's file holds every sample written out: no NaN, no undefined, no em dash.
-    for (const lang of ['fr', 'en']) for (const s of allStrings(lang)) expect(s, s).not.toMatch(/NaN|undefined|—/);
+    for (const lang of ['fr', 'en']) for (const s of allStrings(lang)) expect(s, s).not.toMatch(/NaN|undefined|\u2014/);
   });
 });
 

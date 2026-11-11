@@ -1,19 +1,19 @@
 /**
- * Input Quality Gate — decides whether analysis output is trustworthy.
+ * Input Quality Gate : decides whether analysis output is trustworthy.
  *
  * Runs AFTER detection + rep counting, BEFORE form scoring is shown to user.
  * Four checks:
- *   1. Frame continuity — detects temporal jumps in landmark data
- *   2. Detection confidence — hard gate on low-confidence exercise ID
- *   3. Plausibility — per-exercise bounds on rep count, set duration, tempo
- *   4. Signal amplitude — observed joint angle range vs expected range
+ *   1. Frame continuity : detects temporal jumps in landmark data
+ *   2. Detection confidence : hard gate on low-confidence exercise ID
+ *   3. Plausibility : per-exercise bounds on rep count, set duration, tempo
+ *   4. Signal amplitude : observed joint angle range vs expected range
  *
  * Returns { pass, reasons[], insufficientFootage } so the caller can
  * decide whether to show full results or a degraded "insufficient footage" UI.
  */
 
 // ---------------------------------------------------------------------------
-// 1. Frame continuity — detect landmark gaps / jumps
+// 1. Frame continuity : detect landmark gaps / jumps
 // ---------------------------------------------------------------------------
 
 /**
@@ -49,7 +49,7 @@ function assessFrameContinuity(timestamps, fps) {
 // ---------------------------------------------------------------------------
 
 // Bounds: [minReps, maxReps, minDurationSec, maxDurationSec]
-// These are generous — they catch obvious misfires, not edge cases.
+// These are generous : they catch obvious misfires, not edge cases.
 const PLAUSIBILITY_BOUNDS = {
   // Compound lifts
   squat:          [1, 30, 3, 180],
@@ -130,7 +130,7 @@ function checkPlausibility(exercise, reps, durationSec) {
 // Minimum observed signal range (degrees) for the primary joint angle.
 // Derived from each exercise's downThreshold/upThreshold: the expected
 // amplitude is |up - down|, and we require at least 40% of that to pass.
-// Generic default: 20° — any movement producing <20° of joint angle
+// Generic default: 20° : any movement producing <20° of joint angle
 // change is almost certainly noise or a stationary camera.
 const MIN_AMPLITUDE = {
   // Compound lifts (knee: 120→155 = 35°, min 14°... too tight. Use absolute minimums)

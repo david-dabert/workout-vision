@@ -112,7 +112,7 @@ export function adaptiveSignalSelect(
   const altResults: { name: string; reps: number; score: number; consistency: number; result: ValleyResult; cand: typeof bestCand }[] = [];
 
   for (const cand of candidates) {
-    // Skip the two primary entries — we already computed the baseline
+    // Skip the two primary entries : we already computed the baseline
     if (cand.name === 'primary' || cand.name === 'primary_inv') continue;
 
     const result: ValleyResult = findValleys(cand.countSignal, fps, exercise);

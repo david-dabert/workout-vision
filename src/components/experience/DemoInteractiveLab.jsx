@@ -257,6 +257,7 @@ export default function DemoInteractiveLab({ clip = LEAD_LAB_CLIP, onClose, onSt
                 onPlay={() => setPlaying(true)}
                 onPause={() => setPlaying(false)}
                 onEnded={() => setPlaying(false)}
+                onError={() => setFailed(true)}
                 onClick={toggle}
               />
               <canvas ref={canvasRef} className="rp-canvas" aria-hidden="true" />

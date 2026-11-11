@@ -1,5 +1,5 @@
 /**
- * Hysteresis FSM rep counter — the established, physics-based approach.
+ * Hysteresis FSM rep counter : the established, physics-based approach.
  *
  * Instead of finding local minima (valleys) and filtering by prominence,
  * this tracks phase transitions of the kinematic cycle using a finite
@@ -34,7 +34,7 @@ interface ExerciseConfig {
   upThreshold?: number;
 }
 
-// FSM states — unidirectional transitions only
+// FSM states : unidirectional transitions only
 const TOP = 0;
 const DESCENDING = 1;
 const BOTTOM = 2;
@@ -42,7 +42,7 @@ const ASCENDING = 3;
 
 /**
  * Auto-calibrate hysteresis thresholds from the signal's actual
- * rep motion — not from time-domain percentiles.
+ * rep motion : not from time-domain percentiles.
  *
  * 1. Find all local maxima and minima in the signal.
  * 2. Compute the median peak value and median valley value.
@@ -129,7 +129,7 @@ export function hysteresisCount(signal: number[], fps: number, exercise: Exercis
   } else if (signal[0] >= high) {
     phase = TOP;
   } else {
-    // In the middle — look at signal trend to decide
+    // In the middle : look at signal trend to decide
     // Default to TOP (waiting for first descent)
     phase = TOP;
   }
@@ -150,7 +150,7 @@ export function hysteresisCount(signal: number[], fps: number, exercise: Exercis
           currentValleyFrame = i;
           currentValleyVal = v;
         } else if (v < high) {
-          // Entered transition zone — now descending
+          // Entered transition zone : now descending
           phase = DESCENDING;
         }
         break;
@@ -162,7 +162,7 @@ export function hysteresisCount(signal: number[], fps: number, exercise: Exercis
           currentValleyFrame = i;
           currentValleyVal = v;
         } else if (v >= high) {
-          // Went back up without reaching bottom — false start
+          // Went back up without reaching bottom : false start
           phase = TOP;
         }
         break;
@@ -190,7 +190,7 @@ export function hysteresisCount(signal: number[], fps: number, exercise: Exercis
 
       case ASCENDING:
         if (v >= high) {
-          // Reached top — count the rep
+          // Reached top : count the rep
           if (i - lastRepFrame >= minGap && currentValleyFrame >= 0) {
             valleyFrames.push(currentValleyFrame);
             lastRepFrame = i;
@@ -199,7 +199,7 @@ export function hysteresisCount(signal: number[], fps: number, exercise: Exercis
           currentValleyFrame = -1;
           currentValleyVal = Infinity;
         } else if (v <= low) {
-          // Went back down — new bottom, don't count yet
+          // Went back down : new bottom, don't count yet
           phase = BOTTOM;
           if (v < currentValleyVal) {
             currentValleyVal = v;

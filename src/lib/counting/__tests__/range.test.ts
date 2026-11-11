@@ -32,7 +32,7 @@ function measure(c: (typeof CASES)[number], seed: number) {
   return countReps(angles.map(a => jointFrame(c.joint, { left: a })), timestamps(angles.length, SPS), c.lift);
 }
 
-describe('Counting core — a rep\'s range, measured twice', () => {
+describe('Counting core : a rep\'s range, measured twice', () => {
   for (const c of CASES) {
     it(`${c.lift}: two measurements with ${NOISE}° of noise agree on every rep's range within 5°`, () => {
       let worst = 0;

@@ -1,5 +1,5 @@
 /**
- * Gaussian Splat Kinematics — Continuous 3D Volumetric Uncertainty Modeling
+ * Gaussian Splat Kinematics : Continuous 3D Volumetric Uncertainty Modeling
  *
  * Groundbreaking formulation: replaces infinitesimal 0D landmark points with
  * continuous 3D anisotropic Gaussian Splats G(mu, Sigma) across the human skeletal chain.

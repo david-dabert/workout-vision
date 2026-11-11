@@ -1,9 +1,9 @@
 /**
- * SignalExtractor3D — The Root Cause Fix
+ * SignalExtractor3D : The Root Cause Fix
  *
  * MediaPipe outputs landmark.z for every joint. The previous pipeline
  * only used x,y positions and 2D distances, discarding the depth axis.
- * Bench press from front, pull-ups from front — the bar/body moves in Z,
+ * Bench press from front, pull-ups from front : the bar/body moves in Z,
  * not X or Y. This module extracts 3D signals that capture that motion.
  *
  * Convergence item #1: 3D pose lifting from existing MediaPipe data.
@@ -45,7 +45,7 @@ function dist3D(a: Landmark, b: Landmark): number {
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 // Extract 3D signals from collected landmarks
-// Returns array of { name, values } — same format as RepCounter._extractSignals
+// Returns array of { name, values } : same format as RepCounter._extractSignals
 // ---------------------------------------------------------------------------
 
 export function extractSignals3D(collectedLandmarks: LandmarkFrame[]): Signal3D[] {
@@ -114,7 +114,7 @@ export function extractSignals3D(collectedLandmarks: LandmarkFrame[]): Signal3D[
   signals.push(ySignal('shoulder_Y', LANDMARKS.LEFT_SHOULDER, LANDMARKS.RIGHT_SHOULDER));
   signals.push(ySignal('ankle_Y', LANDMARKS.LEFT_ANKLE, LANDMARKS.RIGHT_ANKLE));
 
-  // ── Z-position signals (5) — THE NEW DEPTH SIGNALS ──
+  // ── Z-position signals (5) : THE NEW DEPTH SIGNALS ──
   // These capture motion along the camera's depth axis.
   // Bench press from front: wrist_Z oscillates. Pull-up from front: nose_Z oscillates.
   // Scale to 0-100 range for compatibility with valley counting thresholds.
@@ -229,7 +229,7 @@ export function computeZReliability(collectedLandmarks: LandmarkFrame[]): number
   // If Z has no variance relative to Y, it is flat/uninformative
   if (totalXYVariance > 1e-10 && totalZVariance / totalXYVariance < 0.01) return 0.1;
 
-  // Z has some signal — check consistency via autocorrelation of wrist Z
+  // Z has some signal : check consistency via autocorrelation of wrist Z
   // A reliable Z signal for rep counting should be periodic
   const wristZvals = [];
   for (let i = 0; i < N; i++) {
@@ -242,7 +242,7 @@ export function computeZReliability(collectedLandmarks: LandmarkFrame[]): number
   const nonNull = wristZvals.filter(v => v !== null);
   if (nonNull.length < N * 0.5) return 0.2; // Too many Z dropouts
 
-  // Z appears present and has variance — moderate confidence
+  // Z appears present and has variance : moderate confidence
   const ratio = totalXYVariance > 1e-10 ? totalZVariance / totalXYVariance : 0;
   return Math.min(1, 0.3 + ratio * 2);
 }
@@ -311,11 +311,11 @@ export const SIGNAL_PRIORITY_3D: Record<string, string[]> = {
   calf_raise:    ['ankle_Y'],
   lying_bicep_curl: ['elbow_L', 'elbow_R', 'wristShoulderDist3D_L', 'wristShoulderDist3D_R'],
   lying_tricep_extension: ['elbow_L', 'elbow_R', 'wristShoulderDist3D_L', 'wristShoulderDist3D_R'],
-  // Bench press variants — same Z-signal priority as flat bench
+  // Bench press variants : same Z-signal priority as flat bench
   incline_bench_press: ['wrist_Z_L', 'wrist_Z_R', 'wristShoulderDist3D_L', 'wristShoulderDist3D_R', 'wrist_Y_L', 'wrist_Y_R'],
   decline_bench_press: ['wrist_Z_L', 'wrist_Z_R', 'wristShoulderDist3D_L', 'wristShoulderDist3D_R', 'wrist_Y_L', 'wrist_Y_R'],
   close_grip_bench:    ['wrist_Z_L', 'wrist_Z_R', 'wristShoulderDist3D_L', 'wristShoulderDist3D_R', 'wrist_Y_L', 'wrist_Y_R'],
-  // Push-up variants — nose_Y/shoulder_Y resist bilateral flicker from BS_ELBOW
+  // Push-up variants : nose_Y/shoulder_Y resist bilateral flicker from BS_ELBOW
   diamond_push_up:  ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
   wide_push_up:     ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
   incline_push_up:  ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
@@ -330,18 +330,18 @@ export const SIGNAL_PRIORITY_3D: Record<string, string[]> = {
   handstand_push_up: ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
   ring_push_up:     ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
   one_arm_push_up:  ['nose_Y', 'nose_Z', 'shoulder_Y', 'shoulder_Z'],
-  // Sissy squat — knee angle flickers bilaterally; hip_Y tracks body position
+  // Sissy squat : knee angle flickers bilaterally; hip_Y tracks body position
   sissy_squat:      ['knee_L', 'knee_R', 'hip_Y', 'hip_Z'],
-  // Dips — elbow angle primary, shoulder_Y for depth
+  // Dips : elbow angle primary, shoulder_Y for depth
   dip:              ['elbow_L', 'elbow_R', 'shoulder_Y', 'wristShoulderDist3D_L'],
   chest_dip:        ['elbow_L', 'elbow_R', 'shoulder_Y', 'wristShoulderDist3D_L'],
   bench_dip:        ['elbow_L', 'elbow_R', 'shoulder_Y'],
-  // Hip/glute — hip angle + Y position
+  // Hip/glute : hip angle + Y position
   hip_thrust:       ['hip_L', 'hip_R', 'hip_Y'],
   glute_bridge:     ['hip_L', 'hip_R', 'hip_Y'],
-  // Kettlebell swing — hip hinge driven
+  // Kettlebell swing : hip hinge driven
   kettlebell_swing: ['hip_L', 'hip_R', 'hip_Y', 'wrist_Y_L', 'wrist_Y_R'],
-  // Shrug — shoulder Y-position is the primary signal (shoulder angle barely moves)
+  // Shrug : shoulder Y-position is the primary signal (shoulder angle barely moves)
   shrug:            ['shoulder_Y', 'wrist_Y_L', 'wrist_Y_R'],
   dumbbell_shrug:   ['shoulder_Y', 'wrist_Y_L', 'wrist_Y_R'],
   cable_shrug:      ['shoulder_Y', 'wrist_Y_L', 'wrist_Y_R'],

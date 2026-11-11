@@ -57,6 +57,6 @@ describe('PessacClinicSpecialtyHub component', () => {
     const html = renderToStaticMarkup(
       <PessacClinicSpecialtyHub initialSpecialty="knee" />
     );
-    expect(html).not.toContain('—');
+    expect(html).not.toContain('\u2014');
   });
 });

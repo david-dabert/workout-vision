@@ -1,5 +1,5 @@
 /**
- * AnthropometricNormalizer — Your Body, Your Thresholds
+ * AnthropometricNormalizer : Your Body, Your Thresholds
  *
  * Measures limb proportions from the first few frames of a session.
  * Normalizes form thresholds so a 6'5" user and a 5'2" user
