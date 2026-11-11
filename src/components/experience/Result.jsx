@@ -36,7 +36,7 @@ import { TARGET_FPS } from '../../lib/extractionConfig';
 import './Result.css';
 import { isCorrected, markLabel, marksLabel } from './replay-labels';
 import { compareSides } from '../../lib/counting/symmetry';
-import { recountTo } from '../../lib/coreAnalysis';
+import { recountTo, sensitivityAsks } from '../../lib/coreAnalysis';
 import { sidesLines, sidesRecord } from './sides-line';
 import RepStrips, { hasStrips } from './RepStrips';
 import { track } from '../../lib/events';
@@ -203,8 +203,9 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // A counted set whose count the sensitivity check moved by 2 or more reps, or to a refusal (David's ruling of 9 November
   // 2026: minor +-1 quantization across extreme margin shifts is accepted as confident with full analysis):
   // recounted with nearby settings, it gives a materially different number, so the app cannot stand behind it (R8).
+  // Since 11 November 2026 two recounts off by one ask too (coreAnalysis.js sensitivityAsks, with the measurement).
   const sensitive = !result.refused && result.count > 0 && !flagged && result.sensitivity?.moved === true
-    && (result.sensitivity?.counts?.some(c => c === null || Math.abs(c - result.count) >= 2) ?? true);
+    && sensitivityAsks(result.count, result.sensitivity?.counts);
   // The video opened inside a rep the counter did not count (core.ts headRefused, 19 October 2026): such a count is
   // wrong 14 times in 17 on the suites (TRIED.md, 18 October), so it is asked, never shown as sure (R8, R16).
   const openedMidRep = !result.refused && result.count > 0 && !flagged && result.headRefused === true;

@@ -95,7 +95,8 @@ describe('a count the sensitivity check moved', () => {
     return renderToStaticMarkup(<LanguageProvider><Result lift="bicep_curl" result={result} onClose={() => {}} onReplay={() => {}} /></LanguageProvider>);
   }
   const moved = { ...nine, sensitivity: { moved: true, counts: [9, 7, 9, 9, 11, 9] } };
-  const minorMoved = { ...nine, sensitivity: { moved: true, counts: [9, 8, 9, 9, 10, 9] } };
+  const minorMoved = { ...nine, sensitivity: { moved: true, counts: [9, 8, 9, 9, 9, 9] } };
+  const twiceMoved = { ...nine, sensitivity: { moved: true, counts: [9, 8, 9, 9, 10, 9] } };
   it('on any phone: the low-confidence screen when count swings by 2+ reps or refuses', async () => {
     const html = await renderOn(moved, false);
     expect(html).toContain('L’appli n’a pas pu compter cette série avec certitude.');
@@ -104,10 +105,15 @@ describe('a count the sensitivity check moved', () => {
     expect(html).toMatch(/data-testid="res-save"[^>]*>Confirmer 9 répétitions<\/button>/);
     for (const id of ['res-yes', 'res-alts', 'res-exp']) expect(html).not.toContain(`data-testid="${id}"`);
   });
-  it('minor +-1 recount variation is accepted as confident with normal confirmation', async () => {
+  it('one recount off by one is accepted as confident with normal confirmation', async () => {
     const html = await renderOn(minorMoved, false);
     expect(html).toContain('data-testid="res-yes"');
     expect(html).not.toContain('Comptage incertain sur cette série');
+  });
+  it('two recounts off by one ask to confirm (11 November 2026, coreAnalysis.js sensitivityAsks)', async () => {
+    const html = await renderOn(twiceMoved, false);
+    expect(html).not.toContain('data-testid="res-yes"');
+    expect(html).toMatch(/data-testid="res-save"[^>]*>Confirmer 9 répétitions<\/button>/);
   });
   it('a video opened mid-rep: the count to confirm, with its own cause', async () => {
     const html = await renderOn({ ...nine, headRefused: true }, false);
