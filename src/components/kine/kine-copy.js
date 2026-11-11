@@ -69,7 +69,7 @@ export const KINE = {
     makeInvoice: 'Éditer la note d’honoraires (PDF)',
     needProfile: 'Renseignez d’abord votre cabinet (nom, RPPS ou ADELI) dans «\u00A0Mon cabinet\u00A0».',
     vat: 'TVA non applicable, article 261-4-1° du CGI.',
-    compareHint: 'Pour un exercice hors bibliothèque\u00A0: choisissez votre vidéo et celle du patient.',
+    compareHint: 'Pour un exercice hors bibliothèque\u00A0: votre vidéo et celle du patient, ou le côté sain du patient comme référence.',
     // Patient
     pEyebrow: 'Votre programme',
     pTitle: who => (who ? `${who}, vos exercices` : 'Vos exercices'),
@@ -282,7 +282,7 @@ export const KINE = {
     makeInvoice: 'Create the invoice (PDF)',
     needProfile: 'First fill in your practice (name, RPPS or ADELI) in “My practice”.',
     vat: 'VAT not applicable (French tax code, art. 261-4-1°).',
-    compareHint: 'For an exercise outside the library: choose your video and the patient’s.',
+    compareHint: 'For an exercise outside the library: your video and the patient’s, or the patient’s healthy side as the reference.',
     pEyebrow: 'Your programme',
     pTitle: who => (who ? `${who}, your exercises` : 'Your exercises'),
     pFrom: kine => `Prepared by ${kine}`,

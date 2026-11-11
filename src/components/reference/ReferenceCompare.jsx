@@ -27,6 +27,13 @@ export default function ReferenceCompare({ onClose, embedded = false }) {
   const [phase, setPhase] = useState('pick');
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
+  // The patient's own healthy side as the reference (David and the physiotherapist, meeting of 9 November 2026): the
+  // healthy side filmed first, the side in rehabilitation second, read as in a mirror (compare.js compareAttempt,
+  // `mirror`). The share "reached" of each joint is then the treated side's range over the healthy side's, the limb
+  // symmetry index. Same engine and same provisional tolerance as the physiotherapist's reference. Status: experimental.
+  const [mode, setMode] = useState('kine');
+  const healthy = mode === 'healthy';
+  const pickMode = m => { hapticLight(); setMode(m); setAttPose(null); setPhase('pick'); };
   const abortRef = useRef(null);
   const refUrl = useObjectUrl(refFile);
   const attUrl = useObjectUrl(attFile);
@@ -60,8 +67,13 @@ export default function ReferenceCompare({ onClose, embedded = false }) {
 
   const content = <>
     <div className="sc-section rc-picks">
-      <FilePick label={c.refLabel} hint={c.refHint} file={refFile} onFile={pickRef} c={c} testId="rc-ref" />
-      <FilePick label={c.attLabel} hint={c.attHint} file={attFile} onFile={pickAtt} c={c} testId="rc-att" />
+      <div className="sc-chips" role="group" aria-label={c.modeLabel}>
+        <button type="button" className="sc-chip press" aria-pressed={!healthy} onClick={() => pickMode('kine')} data-testid="rc-mode-kine">{c.modeKine}</button>
+        <button type="button" className="sc-chip press" aria-pressed={healthy} onClick={() => pickMode('healthy')} data-testid="rc-mode-healthy">{c.modeHealthy}</button>
+      </div>
+      {healthy && <p className="sc-caption" data-testid="rc-healthy-note">{c.healthyNote}</p>}
+      <FilePick label={healthy ? c.healthyRefLabel : c.refLabel} hint={healthy ? c.healthyRefHint : c.refHint} file={refFile} onFile={pickRef} c={c} testId="rc-ref" />
+      <FilePick label={healthy ? c.healthyAttLabel : c.attLabel} hint={healthy ? c.healthyAttHint : c.attHint} file={attFile} onFile={pickAtt} c={c} testId="rc-att" />
       {!reading && phase !== 'done' && <button type="button" className="rc-btn is-primary is-wide press" disabled={!refFile || !attFile} onClick={run} data-testid="rc-compare">{c.compare}</button>}
       {reading && <div className="rc-progress" role="status" data-testid="rc-progress">
         <span>{phase === 'reading-ref' ? c.readingRef : c.readingAtt}</span>
@@ -71,7 +83,8 @@ export default function ReferenceCompare({ onClose, embedded = false }) {
       {phase === 'error' && <p className="rc-error" role="alert" data-testid="rc-error">{c.failed} <small>{error}</small> <button type="button" className="rc-link press" onClick={run}>{c.retry}</button></p>}
     </div>
     {phase === 'done' && <>
-      <ComparisonView refPose={refPose} attPose={attPose} refUrl={refUrl} attUrl={attUrl} />
+      {healthy && <p className="sc-caption" data-testid="rc-healthy-read">{c.healthyRead}</p>}
+      <ComparisonView refPose={refPose} attPose={attPose} refUrl={refUrl} attUrl={attUrl} mirror={healthy} />
       <button type="button" className="rc-btn is-wide press" onClick={() => { hapticLight(); setAttFile(null); setAttPose(null); setPhase('pick'); }} data-testid="rc-new">{c.newAttempt}</button>
     </>}
   </>;
