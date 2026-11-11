@@ -16,7 +16,6 @@ import { decimal, measureGuide, repTable, speedChangeLine } from './report-sheet
 import { MeasureGuide } from './measure-guide';
 import { partialIn, setAverages } from './tempo';
 import RepWave from './RepWave';
-import MovementOptimizationCard from './MovementOptimizationCard';
 import BiomechanicalRetentionQuiz from './BiomechanicalRetentionQuiz';
 import { predictFatigueHorizon } from '../../lib/coaching/fatigueHorizon';
 import { referenceBand } from '../../lib/reference-ranges';
@@ -889,7 +888,8 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       {step === 'saved' && flagged && MEASURES_SHOWN && <p className="res-exp" data-testid="res-doubted">{c.bodyDoubt(jointName(liftDefinition(lift)?.joint, fr))}</p>}
       {/* Under the cells: every measure on this screen (cells, account, table) is experimental (measures.js). */}
       {MEASURES_SHOWN && <p className="res-exp" data-testid="res-exp">{experimentalLabel(fr)}</p>}
-      {step === 'saved' && MEASURES_SHOWN && <MovementOptimizationCard reps={reps} lift={lift} fr={fr} result={result} />}
+      {/* The detailed analysis lives in the report (Report.jsx, report-sheet.js buildOptimizationMetrics), one tap away:
+          this screen keeps the count and its few measures (David, 11 November 2026: the numbers belong in the report). */}
     </div>,
     // The day's table, for a set filmed from a programme: each set with a mark, a weight and a word. Confirmed sets in
     // the measured colour at weight 700; the set on screen "à confirmer"; a typed or corrected set at weight 400 with
@@ -985,8 +985,8 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
               ? (fr ? 'Votre niveau n’a pas pu être enregistré sur ce téléphone.' : 'Your level could not be saved on this phone.')
               : (fr ? 'C’est noté. L’écran s’adapte dès la prochaine série. Vous pouvez le changer dans Vos séries.' : 'Noted. The screen adapts from your next set. You can change it in Your sets.')}</p>}
           </div>}
-          {/* Psychological retention hook: get more out of your video analysis */}
-          <div className="res-retention-hook appear" data-testid="retention-quiz-hook">
+          {/* The profile quiz is offered once three sets are saved, not on the first result (11 November 2026). */}
+          {(knownSets()?.length ?? 0) >= 3 && <div className="res-retention-hook appear" data-testid="retention-quiz-hook">
             <span className="res-hook-badge">⚡ {fr ? 'Analyse sur mesure' : 'Custom analysis'}</span>
             <p className="res-hook-title"><b>{fr ? 'Tirez le maximum de votre vidéo' : 'Get more out of your video'}</b></p>
             <p className="res-hook-desc">{athleteProfile
@@ -995,7 +995,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
             <button type="button" className="res-hook-btn press" onClick={() => setShowQuiz(true)} data-testid="open-retention-quiz-btn">
               {athleteProfile ? (fr ? 'Modifier mon profil athlète' : 'Update athlete profile') : (fr ? 'Personnaliser mon profil athlète' : 'Personalize my athlete profile')}
             </button>
-          </div>
+          </div>}
         </div>
       )}
 
