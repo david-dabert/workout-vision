@@ -146,7 +146,7 @@
 .wv-experience .rp-detail { flex: none; min-height: 19px; margin: 2px 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; font-variant-numeric: tabular-nums; color: var(--c-fg-muted); text-wrap: balance; }
 .wv-experience .rp-prov { flex: none; margin: 4px 0 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: inherit; text-wrap: balance; }
 
-.wv-experience .rp-controls { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-top: var(--s-3); }
+.wv-experience .rp-controls { flex: none; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-top: var(--s-3); }
 .wv-experience .rp-controls .btn-primary, .wv-experience .rp-controls .btn-ghost { height: 52px; }
 .wv-experience .rp-slow.is-on { border-color: var(--lamp-line-strong); color: var(--lamp-hi); background: rgba(232, 189, 126, 0.08); }
 .wv-experience .rp-controls :disabled { opacity: 0.4; cursor: default; }
