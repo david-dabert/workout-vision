@@ -141,6 +141,8 @@ export default function SportsBiomechanics({ sport, onClose, onOpenEquine, onOpe
   const [activeSport, setActiveSport] = useState(SPORTS.includes(sport) ? sport : 'golf');
   // The preview first, so the screen shows at once what the app aims to do; the plain clip one tap away.
   const [view, setView] = useState('preview');
+  const [videoErrors, setVideoErrors] = useState({});
+  const markVideoError = key => setVideoErrors(prev => ({ ...prev, [key]: true }));
   const sp = c.sports[activeSport];
 
   // The visitor's video: an object URL, released when another replaces it, when it is closed and when the screen goes.
@@ -236,7 +238,29 @@ export default function SportsBiomechanics({ sport, onClose, onOpenEquine, onOpe
               <button type="button" className="sc-chip press" aria-pressed={view === 'raw'} onClick={() => { hapticLight(); setView('raw'); }} data-testid="sports-view-raw">{c.viewRaw}</button>
             </div>
             <div className="sc-frame">
-              <video key={`${activeSport}-${view}`} ref={muteVideo} src={view === 'preview' ? previewUrl(activeSport) : clipUrl(activeSport)} controls playsInline muted loop autoPlay={!reduced} preload="metadata" className="sports-demo-video" data-testid="sports-demo-player" />
+              {videoErrors[`${activeSport}-${view}`] ? (
+                <div className="sp-video-placeholder" data-testid="sports-video-fallback">
+                  <span className="sp-placeholder-icon" aria-hidden="true">🎬</span>
+                  <p className="sp-placeholder-text">
+                    {fr ? 'Vidéo de démonstration non disponible hors-ligne.' : 'Demonstration clip unavailable offline.'}
+                  </p>
+                </div>
+              ) : (
+                <video
+                  key={`${activeSport}-${view}`}
+                  ref={muteVideo}
+                  src={view === 'preview' ? previewUrl(activeSport) : clipUrl(activeSport)}
+                  controls
+                  playsInline
+                  muted
+                  loop
+                  autoPlay={!reduced}
+                  preload="metadata"
+                  className="sports-demo-video"
+                  data-testid="sports-demo-player"
+                  onError={() => markVideoError(`${activeSport}-${view}`)}
+                />
+              )}
             </div>
             <p className="sc-frame-note is-quiet" data-testid="sports-demo-note">{view === 'preview' ? c.previewNote : `${sp.clip} ${c.demoNote}`}</p>
           </section>
@@ -250,7 +274,27 @@ export default function SportsBiomechanics({ sport, onClose, onOpenEquine, onOpe
                 <span className="sc-head-tags"><DemoTag fr={fr} /></span>
               </div>
               <div className="sc-frame">
-                <video ref={muteVideo} src={PUTT_URL} poster={PUTT_POSTER_URL} controls playsInline muted preload="metadata" className="sports-demo-video" data-testid="sports-putt-video" />
+                {videoErrors.putt ? (
+                  <div className="sp-video-placeholder" data-testid="sports-putt-fallback">
+                    <span className="sp-placeholder-icon" aria-hidden="true">⛳</span>
+                    <p className="sp-placeholder-text">
+                      {fr ? 'Séquence de putt non disponible hors-ligne.' : 'Putt demonstration unavailable offline.'}
+                    </p>
+                  </div>
+                ) : (
+                  <video
+                    ref={muteVideo}
+                    src={PUTT_URL}
+                    poster={PUTT_POSTER_URL}
+                    controls
+                    playsInline
+                    muted
+                    preload="metadata"
+                    className="sports-demo-video"
+                    data-testid="sports-putt-video"
+                    onError={() => markVideoError('putt')}
+                  />
+                )}
               </div>
               <p className="sc-frame-note is-quiet" data-testid="sports-putt-note">{c.puttClip} {c.demoNote}</p>
               <p className="sc-caption sports-credit" data-testid="sports-putt-credit">

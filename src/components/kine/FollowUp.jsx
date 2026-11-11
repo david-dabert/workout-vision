@@ -7,6 +7,7 @@ import { followUp, forgetPatient, keepResult, sessionWithin } from '../../lib/ki
 import { TOLERANCE_DEG, TOLERANCE_SHARE } from '../../lib/reference/compare';
 import { COPY, JOINT_NAMES, deg, pct, sec } from '../reference/reference-copy';
 import { exportPessacDossier, PESSAC_SPECIALTIES } from '../../lib/kine/pessacDossierExport';
+import { computeClinicalTrend } from '../../lib/kine/clinicalTrendAnalysis';
 import Backup from './Backup';
 
 // The physiotherapist's follow-up (#kine, tab "Suivi"): the results patients sent back, kept on this phone when opened
@@ -49,9 +50,23 @@ function Exercise({ id, sessions, fr, k, c, names }) {
   // Progress from the first dated attempt to the last.
   const dated = sessions.filter(s => s.date);
   const first = dated.length > 1 ? sessionWithin(dated[0]) : null, last = dated.length > 1 ? sessionWithin(dated.at(-1)) : null;
+  const trend = computeClinicalTrend(sessions);
   return <section className="sc-section" data-testid={`kn-follow-ex-${id}`}>
     <GroupHead title={`${title} · ${k.fCount(sessions.length)}`} />
     {first != null && last != null && <p className="sc-caption" data-testid={`kn-follow-progress-${id}`}>{k.fFromTo(pct(first, fr), pct(last, fr))}</p>}
+    {trend && (
+      <div className="kn-trajectory-card" data-testid={`kn-follow-trajectory-${id}`}>
+        <div className="kn-trajectory-head">
+          <span className={`kn-trajectory-badge is-${trend.trajectory.toLowerCase()}`}>
+            {trend.trajectory}
+          </span>
+          <span className="kn-trajectory-delta">
+            {trend.deltaPercent >= 0 ? `+${trend.deltaPercent}%` : `${trend.deltaPercent}%`}
+          </span>
+        </div>
+        <p className="kn-trajectory-cue">{fr ? trend.cueFr : trend.cueEn}</p>
+      </div>
+    )}
     <Trend sessions={sessions} names={names} k={k} fr={fr} />
     <ul className="kn-sessions">
       {[...sessions].reverse().map((s, i) => {

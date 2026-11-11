@@ -45,3 +45,25 @@
 /* Golf: the putt below the swing, as filmed, with its credit line (as the volleyball clip's, ActivityScreen.css). */
 .wv-experience .sports-credit { margin: 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); text-wrap: pretty; }
 .wv-experience .sports-credit a { color: var(--c-accent); text-decoration: underline; text-underline-offset: 2px; }
+
+/* Honest fallback placeholder when sports video is unavailable offline (R8) */
+.wv-experience .sp-video-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  padding: var(--s-6) var(--s-4);
+  background: var(--well);
+  border-radius: var(--r-m);
+  text-align: center;
+}
+.wv-experience .sp-placeholder-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+.wv-experience .sp-placeholder-text {
+  margin: 0;
+  font-size: var(--fs-caption);
+  color: var(--c-fg-muted);
+}

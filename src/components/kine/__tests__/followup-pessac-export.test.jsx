@@ -18,6 +18,12 @@ vi.mock('../../../lib/kine/store', async () => {
             id: 'mains-jointes',
             sessions: [
               {
+                date: '2026-10-10T10:00:00Z',
+                verdict: 'match',
+                joints: [{ name: 'knee', within: 0.70, gap: 8, range: 0.75 }],
+                holds: [],
+              },
+              {
                 date: '2026-10-15T10:00:00Z',
                 verdict: 'match',
                 joints: [{ name: 'knee', within: 0.85, gap: 4, range: 0.9 }],
@@ -69,6 +75,8 @@ describe('FollowUp and KineWorkspace Pessac Clinic Dossier Export', () => {
     expect(html).toContain('data-testid="kn-follow-pessac-section"');
     expect(html).toContain('data-testid="kn-follow-pessac-select"');
     expect(html).toContain('data-testid="kn-follow-pessac-export"');
+    expect(html).toContain('data-testid="kn-follow-trajectory-mains-jointes"');
+    expect(html).toContain('ACCELERATED');
     expect(html).toContain('Dossier Clinique Pessac (8 Pôles BDK)');
     expect(html).toContain('Épaule &amp; Scapula');
     expect(html).toContain('Genou &amp; LCA');
