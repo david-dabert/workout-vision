@@ -24,10 +24,15 @@ async function render(name, hash = '', lang = 'fr', extra = {}, media = '') {
 }
 
 describe('the physiotherapist workspace', () => {
-  it('opens on the programme, with the five tabs and Olivier\'s four exercises to add', async () => {
+  it('opens on the programme, with the four tabs and Olivier\'s four exercises to add', async () => {
     const html = await render('KineWorkspace');
     expect(html).toContain('data-testid="kine-screen"');
-    for (const tab of ['programme', 'followup', 'calibration', 'library', 'invoice', 'compare', 'profile']) expect(html).toContain(`data-testid="kn-tab-${tab}"`);
+    for (const tab of ['programme', 'followup', 'compare', 'profile']) expect(html).toContain(`data-testid="kn-tab-${tab}"`);
+    expect(html.match(/data-testid="kn-tab-/g)).toHaveLength(4);
+    // The library is the lower half of the programme; the mock-up assessment and its dossier are not offered.
+    expect(html).toContain('data-testid="kn-library"');
+    expect(html).not.toContain('kn-tab-specialties');
+    expect(html).not.toContain('kn-workspace-pessac-export');
     for (const id of ['mains-jointes', 'rotation-externe', 'abduction-horizontale', 'elevation-paliers']) expect(html).toContain(`data-testid="kn-add-${id}"`);
     // No link to send before an exercise is chosen.
     expect(html).not.toContain('data-testid="kn-send"');

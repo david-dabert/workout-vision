@@ -40,11 +40,13 @@ vi.mock('../../../lib/kine/store', async () => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
   vi.resetModules();
 });
 
 describe('FollowUp and KineWorkspace Pessac Clinic Dossier Export', () => {
-  it('renders the Pessac BDK quick export button in KineWorkspace', async () => {
+  it('renders the Pessac BDK quick export button in KineWorkspace, in a build with the extended routes', async () => {
+    vi.stubEnv('VITE_EXTENDED_ROUTES', '1');
     vi.stubGlobal('localStorage', { getItem: k => ({ wv_lang: 'fr' })[k] ?? null, setItem() {}, removeItem() {} });
     const { LanguageProvider } = await import('../../../lib/LanguageContext');
     const { default: KineWorkspace } = await import('../KineWorkspace');
