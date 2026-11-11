@@ -367,22 +367,6 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
         <button ref={backRef} className="icon-btn press" onClick={onBack} aria-label={fr ? 'Retour' : 'Back'}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
         </button>
-        <button
-          type="button"
-          className="rp-mocap-toggle press"
-          onClick={() => setMocapMode(m => !m)}
-          data-testid="rp-mocap-toggle"
-        >
-          {mocapMode ? (fr ? 'Voir la vidéo' : 'View video') : (fr ? 'Mocap 3D' : '3D Mocap')}
-        </button>
-        <button
-          type="button"
-          className={`rp-mocap-toggle press${showBarPath ? ' is-on' : ''}`}
-          onClick={() => setShowBarPath(p => !p)}
-          data-testid="rp-barpath-toggle"
-        >
-          {showBarPath ? (fr ? 'Masquer la barre' : 'Hide Bar Path') : (fr ? 'Trajectoire barre' : 'Bar Path')}
-        </button>
         <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
       </div>
       <div className="rp-stage" data-reveal style={{ '--i': 0 }}>
@@ -600,6 +584,11 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
           <span>{playing ? 'Pause' : (fr ? 'Lire' : 'Play')}</span>
         </button>
         <button className={`btn-ghost press rp-slow${slow ? ' is-on' : ''}`} aria-pressed={slow} disabled={broken || made.state === 'making'} onClick={() => setSlow(s => !s)}>{fr ? 'Ralenti' : 'Slow motion'}</button>
+      </div>
+      {/* The two other views of the same set sit under the playback controls, not above the picture (David, 11 November 2026). */}
+      <div className="rp-views" data-reveal style={{ '--i': 2 }}>
+        <button type="button" className={`btn-ghost press rp-slow${mocapMode ? ' is-on' : ''}`} aria-pressed={mocapMode} onClick={() => setMocapMode(m => !m)} data-testid="rp-mocap-toggle">{fr ? 'Vue 3D' : '3D view'}</button>
+        <button type="button" className={`btn-ghost press rp-slow${showBarPath ? ' is-on' : ''}`} aria-pressed={showBarPath} disabled={broken || mocapMode} onClick={() => setShowBarPath(p => !p)} data-testid="rp-barpath-toggle">{fr ? 'Trajectoire de la barre' : 'Bar path'}</button>
       </div>
       {exportable && <div className="rp-export">
         {(made.state === 'idle' || made.state === 'failed') && <div className="rp-export-actions">
