@@ -191,3 +191,9 @@
 @media (prefers-reduced-motion: reduce) {
   .wv-experience .rc-bar i { transition: none; }
 }
+
+/* Under the patient's video: the reference on the left, the angles on the right (11 November 2026). */
+.wv-experience .rc-under { display: flex; align-items: flex-start; gap: 12px; margin-top: 10px; }
+.wv-experience .rc-under .rc-inset { position: relative; top: auto; right: auto; flex: none; width: 30%; box-shadow: none; }
+.wv-experience .rc-under .rc-stage-hud { position: static; flex: 1; min-width: 0; max-width: none; pointer-events: auto; }
+.wv-experience .rc-under .rc-hud-item { display: flex; justify-content: space-between; white-space: normal; backdrop-filter: none; -webkit-backdrop-filter: none; }
