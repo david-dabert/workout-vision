@@ -33,7 +33,7 @@ David's recorded words (DIRECTIVES.md Part 1, docs/VISION.md, R16), held against
 
 ## Now
 
-Main at `95d5bbd9` and live (11 November 2026, 19:49 UTC). In progress: PR #374 (this method), PR #375 (gate 7), PR #373 (home badge, blocked on a picture baseline). Next ready cards: 001, 003, 004, 005.
+Main at `a654ae15` (11 November 2026, 22:06 UTC): PRs #366 to #376 merged, except #373 (home badge, open, blocked on a picture baseline). In progress: PR #377 (report button in light mode, cards 007 to 009). Cards done: 002. Next ready, in the order of `cards/README.md`: 007, 008, 009, 006, 004, 001, 005, 003. The nightly run starts at 03:17 Paris time.
 
 ## State of main, 11 November 2026
 

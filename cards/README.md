@@ -6,6 +6,7 @@ The queue of METHOD.md. One file per task, taken in the order of "Order" below a
 
 Set by Claude on 11 November 2026 on David's order of that day ("you will have to do the hard work ... give your own instructions"). David may reorder it at any time; an agent reorders it only in a report that says why.
 
+1. 007, 008, 009: three flaws every user meets today (the walk of 11 November 2026): light mode, the home's unbuilt offers, the kiné header at 375 px.
 1. 006, the audit: what the repository already holds and hides. It feeds the queue.
 2. 004, the replay shared in one tap: the part people pass on.
 3. 001, the kiné comparison held against public data: the proof the kiné offer rests on.
