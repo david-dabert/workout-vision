@@ -154,10 +154,13 @@ export function generatePessacDossierHtml(specialtyId: string, patient: PatientI
   const now = patient.dateBilan || new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
   const nom = patient.nom || 'Patient non spécifié';
   const prenom = patient.prenom || '';
-  const prescripteur = patient.prescripteur || 'Dr. J. Martin (Chirurgien Orthopédiste / Médecin du Sport)';
+  const prescripteur = patient.prescripteur || 'Non renseigné';
   const dossierId = patient.numDossier || `PES-${Date.now().toString().slice(-6)}`;
 
-  const rawMetrics = meta.metrics.map(m => ({ ...m }));
+  // The values written in SPECIALTY_META are layout examples, never a patient's: a row prints a value only when this
+  // set's own telemetry gave one (R8). Every other row reads "Non mesuré". Status: experimental, none validated.
+  const rawMetrics: { label: string; value: string; norm: string; measured?: boolean }[] = meta.metrics.map(m => ({ ...m, value: 'Non mesuré', measured: false }));
+  const before = rawMetrics.map(m => m.value);
   if (patient.dynamicTelemetry) {
     const dt = patient.dynamicTelemetry;
     for (const m of rawMetrics) {
@@ -184,6 +187,8 @@ export function generatePessacDossierHtml(specialtyId: string, patient: PatientI
       }
     }
   }
+  rawMetrics.forEach((m, i) => { m.measured = m.value !== before[i]; });
+  const anyMeasured = rawMetrics.some(m => m.measured);
 
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -229,7 +234,7 @@ export function generatePessacDossierHtml(specialtyId: string, patient: PatientI
       <div class="bdk-meta-box">
         <div>Dossier N°${'\u00A0'}: <strong>${dossierId}</strong></div>
         <div>Date du bilan${'\u00A0'}: <strong>${now}</strong></div>
-        <div>Statut${'\u00A0'}: <strong>Conforme BDK CPAM</strong></div>
+        <div>Statut${'\u00A0'}: <strong>Document de travail, non validé</strong></div>
       </div>
     </div>
 
@@ -262,7 +267,7 @@ export function generatePessacDossierHtml(specialtyId: string, patient: PatientI
       <thead>
         <tr>
           <th>Paramètre Cinématique</th>
-          <th>Valeur Mesurée</th>
+          <th>Valeur estimée par caméra</th>
           <th>Valeur Normative / Seuil</th>
           <th>Statut</th>
         </tr>
@@ -273,29 +278,30 @@ export function generatePessacDossierHtml(specialtyId: string, patient: PatientI
             <td><strong>${m.label}</strong></td>
             <td>${m.value}</td>
             <td>${m.norm}</td>
-            <td><span style="color: #047857; font-weight: 600;">Conforme</span></td>
+            <td>${m.measured ? 'Estimation expérimentale' : 'À évaluer par le praticien'}</td>
           </tr>
         `).join('')}
       </tbody>
     </table>
 
-    <div class="bdk-section-title">Fondement Scientifique &amp; Littérature Peer-Reviewed</div>
+${evidence ? `    <div class="bdk-section-title">Fondement Scientifique &amp; Littérature Peer-Reviewed</div>
     <div class="bdk-evidence">
-      <span class="bdk-evidence-title">Validation clinique${'\u00A0'}: ${evidence ? evidence.author : 'Référence'} (${evidence ? evidence.year : ''})</span>
+      <span class="bdk-evidence-title">Référence citée, non vérifiée${'\u00A0'}: ${evidence ? evidence.author : 'Référence'} (${evidence ? evidence.year : ''})</span>
       <span class="bdk-evidence-source">${evidence ? evidence.journal : ''}</span>
       <p style="margin: 4px 0 0; color: #1f2937;">${evidence ? evidence.clinicalSignificance : ''}</p>
       <div style="margin-top: 4px; font-weight: 600; color: #166534;">Norme médicale${'\u00A0'}: ${evidence ? evidence.normativeThreshold : ''}</div>
     </div>
 
+` : ''}
     <div class="bdk-section-title">Conclusions &amp; Conduite à Tenir</div>
     <p style="margin: 6px 0; font-size: 12px; color: #374151;">
-      L'analyse cinématique confirme la restauration des amplitudes physiologiques et la maîtrise des bras de levier. Absence de compensation axiale ou de cisaillement pathologique. Poursuite du protocole de renforcement et de contrôle neuromusculaire excentrique en cabinet.
+      ${anyMeasured ? 'Les valeurs ci-dessus sont des estimations expérimentales tirées de la vidéo, non validées. ' : 'Aucune mesure n’a été réalisée pour ce bilan. '}Conclusion à rédiger par le praticien.
     </p>
 
     <div class="bdk-signatures">
       <div class="bdk-sign-box">
         <span class="bdk-sign-label">Le Praticien Kinésithérapeute</span>
-        <div style="font-size: 10px; color: #6b7280; margin-top: 24px;">Cachet &amp; Signature électronique certifiée</div>
+        <div style="font-size: 10px; color: #6b7280; margin-top: 24px;">Cachet et signature</div>
       </div>
       <div class="bdk-sign-box">
         <span class="bdk-sign-label">Visa du Médecin Prescripteur</span>
@@ -304,7 +310,7 @@ export function generatePessacDossierHtml(specialtyId: string, patient: PatientI
     </div>
 
     <div class="bdk-legal">
-      Clinique de Kinésithérapie de Pessac · Agrément CPAM / ARS Nouvelle-Aquitaine · Document certifié conforme aux exigences de traçabilité des actes de masso-kinésithérapie (Code de la santé publique).
+      Document de travail produit par WorkoutVision. Estimations expérimentales par caméra, non validées${'\u00A0'}: elles ne remplacent pas l’examen du praticien. Ce document n’est ni certifié ni agréé.
     </div>
   </div>
 </body>

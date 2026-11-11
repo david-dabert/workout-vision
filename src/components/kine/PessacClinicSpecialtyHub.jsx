@@ -54,7 +54,7 @@ export default function PessacClinicSpecialtyHub({
         <div>
           <span className="sc-tag">Clinique de Kinésithérapie de Pessac</span>
           <h2 className="kn-pessac-title">Plateforme Cinématique Multi-Spécialités</h2>
-          <p className="kn-pessac-sub">Objectivation optique haute précision pour chaque pôle clinique</p>
+          <p className="kn-pessac-sub">Maquette des bilans par pôle clinique</p>
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <button type="button" className="btn-primary is-s" onClick={() => handleExport(activeSpecialty)} data-testid="pessac-header-export-btn">
@@ -67,6 +67,9 @@ export default function PessacClinicSpecialtyHub({
           )}
         </div>
       </div>
+
+      {/* The panels below hold layout examples, typed in the code: no patient, no video (R8). Said so on the screen. */}
+      <p className="sc-frame-note" data-testid="pessac-example-note">Exemple d’affichage{'\u00A0'}: les valeurs ci-dessous sont fictives. Aucune mesure n’a été réalisée sur un patient.</p>
 
       {/* Specialty Tabs */}
       <div className="kn-pessac-tabs" role="tablist" aria-label="Pôles cliniques spécialisés">

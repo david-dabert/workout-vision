@@ -2,6 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import MovementOptimizationCard from '../MovementOptimizationCard';
 
+// These tests exercise the readings with their switch on (measures.js UNVALIDATED_BIOMECHANICS_SHOWN, off in the app since 11 November 2026).
+vi.mock('../measures', async orig => ({ ...(await orig()), UNVALIDATED_BIOMECHANICS_SHOWN: true }));
 vi.mock('../MovementOptimization.css', () => ({}));
 
 describe('MovementOptimizationCard component', () => {

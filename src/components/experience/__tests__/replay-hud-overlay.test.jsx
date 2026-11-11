@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 
+// These tests exercise the readings with their switch on (measures.js UNVALIDATED_BIOMECHANICS_SHOWN, off in the app since 11 November 2026).
+vi.mock('../measures', async orig => ({ ...(await orig()), UNVALIDATED_BIOMECHANICS_SHOWN: true }));
 vi.mock('../lift-scenes', () => ({ hasFigure: () => false, liftView: () => null, topPose: () => null }));
 vi.mock('../entry-scene', () => ({ Body: class {}, mapPose: () => null, DPR: 1, LITE: false }));
 vi.mock('../stage-loop', () => ({ addLayer: () => () => {}, presence: () => 0, holdStage: () => {} }));

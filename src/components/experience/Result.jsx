@@ -27,7 +27,7 @@ import { momentLine } from './moment';
 import { readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks } from './level';
 import LevelPick from './LevelPick';
 import { tierLabel } from '../../lib/liftTiers';
-import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN, experimentalLabel } from './measures';
+import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN, UNVALIDATED_BIOMECHANICS_SHOWN, experimentalLabel } from './measures';
 import { tierOf } from '../../lib/offer';
 import { reportEmailUrl, reportIssueUrl, challengeShare, shareChallenge, appVersion, reportFor } from '../../lib/reportLinks';
 import { limbLabel, jointName } from './lift-meta';
@@ -269,7 +269,8 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       repsCount: s.reps || s.count || 0,
       velocityLossPercent: s.velocityLoss?.lossPercent ?? 12,
     }));
-    fatigueHorizon = predictFatigueHorizon(history, result?.velocityLoss?.lossPercent ?? null, lift);
+    // Built on the velocity decline (noise, measures.js) and a default of 12 % for sets that carry none: hidden with it.
+    fatigueHorizon = UNVALIDATED_BIOMECHANICS_SHOWN ? predictFatigueHorizon(history, result?.velocityLoss?.lossPercent ?? null, lift) : null;
   } catch {
     fatigueHorizon = null;
   }
@@ -989,8 +990,8 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
             <span className="res-hook-badge">⚡ {fr ? 'Analyse sur mesure' : 'Custom analysis'}</span>
             <p className="res-hook-title"><b>{fr ? 'Tirez le maximum de votre vidéo' : 'Get more out of your video'}</b></p>
             <p className="res-hook-desc">{athleteProfile
-              ? (fr ? `Profil calibré (${athleteProfile.height}\u00A0cm, ${athleteProfile.weight}\u00A0kg)\u00A0: vos leviers et tempos sont appliqués.` : `Profile calibrated (${athleteProfile.height} cm, ${athleteProfile.weight} kg): your levers and tempos are applied.`)
-              : (fr ? 'Prenez 90 secondes pour calibrer vos leviers articulaires, votre physique cible et vos charges optimales.' : 'Take 90 seconds to calibrate your joint levers, target physique, and optimal loads.')}</p>
+              ? (fr ? `Profil enregistré sur ce téléphone (${athleteProfile.height}\u00A0cm, ${athleteProfile.weight}\u00A0kg).` : `Profile saved on this phone (${athleteProfile.height} cm, ${athleteProfile.weight} kg).`)
+              : (fr ? 'Prenez 90 secondes pour indiquer votre objectif, votre matériel et votre rythme d’entraînement.' : 'Take 90 seconds to give your goal, your equipment and your training rhythm.')}</p>
             <button type="button" className="res-hook-btn press" onClick={() => setShowQuiz(true)} data-testid="open-retention-quiz-btn">
               {athleteProfile ? (fr ? 'Modifier mon profil athlète' : 'Update athlete profile') : (fr ? 'Personnaliser mon profil athlète' : 'Personalize my athlete profile')}
             </button>

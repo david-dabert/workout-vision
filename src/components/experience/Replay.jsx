@@ -11,7 +11,7 @@ import { canExport, exportSetVideo } from './video-export';
 import { shareSheet } from '../../lib/shareSheet';
 import './Replay.css';
 import { track } from '../../lib/events';
-import { MEASURES_SHOWN, experimentalLabel } from './measures';
+import { MEASURES_SHOWN, UNVALIDATED_BIOMECHANICS_SHOWN, experimentalLabel } from './measures';
 import { isCorrected, markLabel, provenance } from './replay-labels';
 import { replayClock } from './replay-clock';
 import { keepsMeasures } from './saved-set';
@@ -271,8 +271,10 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   const isTransition = measured && current >= 0 && !phase && !reps[current]?.clipped;
   const curAngle = angleAt ? angleAt(smoothedAngles, times, now) : null;
 
+  // The unvalidated readings (measures.js UNVALIDATED_BIOMECHANICS_SHOWN): computed and drawn only when that switch is on.
+  const advanced = measured && UNVALIDATED_BIOMECHANICS_SHOWN;
   const stickingPoints = useMemo(() => {
-    if (!measured || !reps.length) return [];
+    if (!advanced || !reps.length) return [];
     const continuousAngles = result.smoothedAngles || result.angles || [];
     if (!continuousAngles.length) return [];
     try {
@@ -280,10 +282,10 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
     } catch {
       return [];
     }
-  }, [result, reps, times, lift, measured]);
+  }, [result, reps, times, lift, advanced]);
 
   const kineticSequencing = useMemo(() => {
-    if (!measured || !reps.length) return null;
+    if (!advanced || !reps.length) return null;
     const landmarks = result.worldLandmarks || result.landmarks || result.imageLandmarks;
     if (!landmarks || !landmarks.length) return null;
     try {
@@ -291,10 +293,10 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
     } catch {
       return null;
     }
-  }, [result, reps, times, lift, measured]);
+  }, [result, reps, times, lift, advanced]);
 
   const lumbopelvic = useMemo(() => {
-    if (!measured || !reps.length) return null;
+    if (!advanced || !reps.length) return null;
     const landmarks = result.worldLandmarks || result.landmarks || result.imageLandmarks;
     if (!landmarks || !landmarks.length) return null;
     try {
@@ -302,10 +304,10 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
     } catch {
       return null;
     }
-  }, [result, reps, times, lift, measured]);
+  }, [result, reps, times, lift, advanced]);
 
   const barbellTilt = useMemo(() => {
-    if (!measured || !reps.length) return null;
+    if (!advanced || !reps.length) return null;
     const landmarks = result.landmarks || result.imageLandmarks || result.worldLandmarks;
     if (!landmarks || !landmarks.length) return null;
     try {
@@ -313,10 +315,10 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
     } catch {
       return null;
     }
-  }, [result, reps, times, lift, measured]);
+  }, [result, reps, times, lift, advanced]);
 
   const scapularPlane = useMemo(() => {
-    if (!measured || !reps.length) return null;
+    if (!advanced || !reps.length) return null;
     const landmarks = result.landmarks || result.imageLandmarks || result.worldLandmarks;
     if (!landmarks || !landmarks.length) return null;
     try {
@@ -324,7 +326,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
     } catch {
       return null;
     }
-  }, [result, reps, times, lift, measured]);
+  }, [result, reps, times, lift, advanced]);
   let head = '', detail;
   if (current >= 0) {
     const r = reps[current];
@@ -434,7 +436,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
               <span className="rp-phase">{phaseWord}</span>
               {measured && curAngle !== null && jointWord && <span className="rp-angle" data-testid="rp-angle">{jointWord}{NB}{Math.round(curAngle)}°</span>}
             </div>}
-            {measured && curAngle !== null && (
+            {measured && curAngle !== null && (result.joints || advanced) && (
               <div className="rc-stage-hud" data-testid="rc-stage-hud">
                 {result.joints ? (
                   result.joints.map((j, k) => {
@@ -460,7 +462,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
                       </div>
                     );
                   })
-                ) : (
+                ) : !advanced ? null : (
                   (() => {
                     const attVal = Math.round(curAngle);
                     const TARGET_MAP = {
