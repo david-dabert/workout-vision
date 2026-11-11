@@ -64,6 +64,61 @@
 .wv-experience .kn-session-head b { color: var(--bone); font-weight: 600; }
 .wv-experience .kn-session-row { display: flex; justify-content: space-between; gap: var(--s-3); flex-wrap: wrap; }
 .wv-experience .kn-session-row small { color: var(--ash); font-variant-numeric: tabular-nums; }
+.wv-experience .kn-trajectory-card {
+  margin: var(--s-3) 0;
+  padding: var(--s-3) var(--s-4);
+  background: var(--well);
+  border: 1px solid var(--hair);
+  border-radius: var(--r-m);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.wv-experience .kn-trajectory-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wv-experience .kn-trajectory-badge {
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+}
+
+.wv-experience .kn-trajectory-badge.is-accelerated,
+.wv-experience .kn-trajectory-badge.is-progressing {
+  background: color-mix(in srgb, var(--c-accent) 15%, transparent);
+  color: var(--c-accent);
+}
+
+.wv-experience .kn-trajectory-badge.is-stabilized {
+  background: var(--hair-2);
+  color: var(--bone);
+}
+
+.wv-experience .kn-trajectory-badge.is-regressing {
+  background: color-mix(in srgb, var(--live-dot) 15%, transparent);
+  color: var(--live-dot);
+}
+
+.wv-experience .kn-trajectory-delta {
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+  color: var(--bone);
+  font-variant-numeric: tabular-nums;
+}
+
+.wv-experience .kn-trajectory-cue {
+  margin: 0;
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  color: var(--bone-2);
+}
+
 .wv-experience .kn-trend svg { width: 100%; height: 110px; display: block; }
 .wv-experience .kn-threshold { stroke: var(--ash); stroke-width: 1; stroke-dasharray: 3 4; vector-effect: non-scaling-stroke; }
 .wv-experience .kn-series path { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }

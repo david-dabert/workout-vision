@@ -649,7 +649,6 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
       rotationDecision = frameCarriesRotation
         ? `frame carries rotation=${frameRotation}, drawImage handles it`
         : `frame has no rotation (rotation=${frameRotation}), manual rotation=${rotation}° from container`;
-      console.log(`[frameExtractor] Rotation decision: ${rotationDecision}`);
       return !frameCarriesRotation;
     }
 
@@ -660,7 +659,6 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
       }
       if (needsManualRotation === null) {
         needsManualRotation = probeAutoRotation(frame);
-        console.log(`[frameExtractor] Rotation ${rotation}°, manual rotation: ${needsManualRotation}`);
       }
       if (!needsManualRotation) {
         ctx.drawImage(frame, 0, 0, frameWidth, frameHeight);

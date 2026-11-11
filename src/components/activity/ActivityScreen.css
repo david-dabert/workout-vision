@@ -35,3 +35,25 @@
 .wv-experience .activity-screen .act-credit { margin: 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); text-wrap: pretty; }
 .wv-experience .activity-screen .act-credit a { color: var(--c-accent); text-decoration: underline; text-underline-offset: 2px; }
 
+/* Honest placeholder when demonstration video is unavailable offline (R8) */
+.wv-experience .activity-screen .act-video-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  padding: var(--s-6) var(--s-4);
+  background: var(--well);
+  border-radius: var(--r-m);
+  text-align: center;
+}
+.wv-experience .activity-screen .act-placeholder-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+.wv-experience .activity-screen .act-placeholder-text {
+  margin: 0;
+  font-size: var(--fs-caption);
+  color: var(--c-fg-muted);
+}
+

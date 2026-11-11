@@ -136,6 +136,7 @@ export default function ActivityScreen({ activity = 'volleyball', onClose }) {
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [lang]);
   const [reduced] = useState(reducedMotion);
+  const [videoError, setVideoError] = useState(false);
   const demo = DEMOS[activity] ?? volleyballDemo;
   const { spec } = demo;
   const [rate, setRate] = useState(demo.rate);
@@ -157,19 +158,29 @@ export default function ActivityScreen({ activity = 'volleyball', onClose }) {
               <DemoTag fr={fr} />
             </div>
             <div className="sc-frame">
-              <video
-                ref={muteVideo}
-                src={VOLLEYBALL_RAW_URL}
-                poster={VOLLEYBALL_POSTER_URL}
-                controls
-                playsInline
-                muted
-                loop
-                autoPlay={!reduced}
-                preload="metadata"
-                className="activity-demo-video"
-                data-testid="activity-demo-video"
-              />
+              {videoError ? (
+                <div className="act-video-placeholder" data-testid="activity-video-fallback">
+                  <span className="act-placeholder-icon" aria-hidden="true">🏐</span>
+                  <p className="act-placeholder-text">
+                    {fr ? 'Séquence vidéo de démonstration non disponible hors-ligne.' : 'Demonstration video clip unavailable offline.'}
+                  </p>
+                </div>
+              ) : (
+                <video
+                  ref={muteVideo}
+                  src={VOLLEYBALL_RAW_URL}
+                  poster={VOLLEYBALL_POSTER_URL}
+                  controls
+                  playsInline
+                  muted
+                  loop
+                  autoPlay={!reduced}
+                  preload="metadata"
+                  className="activity-demo-video"
+                  data-testid="activity-demo-video"
+                  onError={() => setVideoError(true)}
+                />
+              )}
             </div>
             <p className="sc-frame-note is-quiet" data-testid="activity-demo-note">{c.demoClip} {c.demoNote}</p>
             <p className="sc-caption act-credit" data-testid="activity-video-credit">

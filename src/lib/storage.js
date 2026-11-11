@@ -58,7 +58,6 @@ export async function checkAndMigrateSchema() {
       }
 
       await metaStore.setItem('schemaVersion', SCHEMA_VERSION);
-      console.log(`[Storage] Schema migrated to version ${SCHEMA_VERSION}`);
     } catch (e) {
       console.warn('[Storage] Schema migration failed:', e);
     } finally {
