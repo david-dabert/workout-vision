@@ -204,6 +204,8 @@ describe('MovementOptimizationCard component', () => {
     expect(html).toContain('Kinetic Chain Sequencing');
     expect(html).toContain('data-testid="lumbopelvic-stability-metric"');
     expect(html).toContain('Lumbopelvic Stability');
+    expect(html).toContain('data-testid="barbell-tilt-metric"');
+    expect(html).toContain('Barbell Planar Stability');
   });
 });
 

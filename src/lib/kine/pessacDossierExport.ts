@@ -32,6 +32,8 @@ export interface PatientInfo {
     hipShootFault?: boolean;
     lumbopelvicStabilityIndex?: number;
     buttWinkFault?: boolean;
+    barbellTiltDeg?: number;
+    barbellTiltFault?: boolean;
   };
 }
 
@@ -86,6 +88,7 @@ const SPECIALTY_META: Record<string, { title: string; protocol: string; evidence
       { label: 'Chute Pelvienne (Trendelenburg)', value: '2.1°', norm: '< 4.0° (McGill 2007)' },
       { label: 'Inversion Précoce du Rythme', value: 'Négative (Verrouillée)', norm: 'Contrôle actif préservé' },
       { label: 'Angle d\'Inclinaison Lombaire', value: '28° flexion max', norm: '< 35° en charge' },
+      { label: 'Couple de Torsion Rachidien', value: '1.2° stable', norm: '< 3.5° (McGill 2015)' },
     ],
   },
   hip: {
@@ -166,6 +169,8 @@ export function generatePessacDossierHtml(specialtyId: string, patient: PatientI
         m.value = dt.hipShootFault ? 'Décrochage pelvien (Positif)' : 'Négative (Verrouillée)';
       } else if (m.label === "Angle d'Inclinaison Lombaire" && dt.lumbopelvicStabilityIndex !== undefined) {
         m.value = `${dt.lumbopelvicStabilityIndex}\u00A0% LSI${dt.buttWinkFault ? ' (Rétroversion/Butt Wink)' : ' (Neutre)'}`;
+      } else if (m.label === 'Couple de Torsion Rachidien' && dt.barbellTiltDeg !== undefined) {
+        m.value = `${dt.barbellTiltDeg}\u00A0° (${dt.barbellTiltFault ? 'Asymétrie/Couple' : 'Planarité Stable'})`;
       }
     }
   }
