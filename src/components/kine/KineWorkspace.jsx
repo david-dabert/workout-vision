@@ -251,7 +251,7 @@ export default function KineWorkspace({ onClose }) {
           <Topbar fr={fr} backTestId="kine-back-btn" onBack={onClose || (() => { window.location.hash = ''; })} />
           <p className="eyebrow">{k.eyebrow}</p>
           <div className="kn-head-row">
-            <h1 className="title">{k.title}</h1>
+            <h1 className="title" data-short={k.eyebrow}>{k.title}</h1>
             {extended && <button
               type="button"
               className="rc-btn is-line press kn-dossier-quick-btn"
@@ -271,7 +271,7 @@ export default function KineWorkspace({ onClose }) {
           <p className="sub">{k.sub}</p>
           {!hasMedia() && <p className="sc-frame-note" data-testid="kn-no-media">{k.noMedia}</p>}
           <div className="sc-section">
-            <div className="sc-rail" role="tablist">
+            <div className="sc-rail kn-tabs" role="tablist">
               {tabs.map(id => <button key={id} type="button" role="tab" className="sc-chip press" aria-pressed={tab === id} aria-selected={tab === id} onClick={() => { hapticLight(); setTab(id); setFollowUpOf(null); }} data-testid={`kn-tab-${id}`}>{k.tabs[id]}</button>)}
             </div>
           </div>

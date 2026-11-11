@@ -1,5 +1,6 @@
 # 008. The home page offers only what exists
-Status: ready
+Status: done (11 November 2026, branch craft/home-and-kine-375)
+Result: Production build at 375 px: `choice-equine` 0, `choice-sports` 0, the section heading 0, the manifesto row 1.
 Executor: fast
 Claim: a newcomer scrolling the home page meets nothing the app cannot do today.
 Reference: the walk of 11 November 2026: under "En préparation et nouvelles disciplines" the production home lists "EquiVision : biomécanique équine" and "Atelier multisport" (`Choice.jsx`), which measure nothing.

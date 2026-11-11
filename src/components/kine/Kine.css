@@ -243,3 +243,7 @@
   color: var(--lamp);
 }
 
+
+/* The four tabs fit a 375 px phone without scrolling (card 009, 11 November 2026). */
+.wv-experience .kn-tabs { gap: 6px; }
+.wv-experience .kn-tabs .sc-chip { padding: 8px 10px; }
