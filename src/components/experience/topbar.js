@@ -15,7 +15,8 @@ export function useCondensingTopbar(ref, deps = []) {
     const copy = document.createElement('span');
     copy.className = 'topbar-title';
     copy.setAttribute('aria-hidden', 'true');
-    copy.textContent = title.textContent;
+    // A long title gives the bar a short one (data-short), so the bar never truncates it (card 009, 11 November 2026).
+    copy.textContent = title.dataset.short || title.textContent;
     bar.appendChild(copy);
     // The bar condenses as soon as the title reaches its bottom edge, so no word ever runs under a clear
     // bar, Back or the pill; measured on every scroll and resize, so a rotation (a new safe area) holds

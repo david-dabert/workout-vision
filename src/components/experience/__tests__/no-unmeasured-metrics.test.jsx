@@ -199,9 +199,10 @@ describe('No unmeasured metrics or invented physics in production markup', () =>
     expect(html).toContain('data-testid="choose-head-pro"');
     expect(html).toContain('data-testid="choice-reference"');
     expect(html).toContain('data-testid="choice-pro"');
-    expect(html).toContain('data-testid="choose-head-explore"');
-    expect(html).toContain('data-testid="choice-equine"');
-    expect(html).toContain('data-testid="choice-sports"');
+    // Card 008 (11 November 2026): what measures nothing is not offered by a production build.
+    expect(html).not.toContain('data-testid="choose-head-explore"');
+    expect(html).not.toContain('data-testid="choice-equine"');
+    expect(html).not.toContain('data-testid="choice-sports"');
     expect(html).toContain('data-testid="choice-manifesto"');
     expect(html).not.toContain('data-testid="choice-coaches"');
     expect(html).not.toContain('data-testid="choice-buddies"');

@@ -1,5 +1,6 @@
 # 009. The kiné workspace fits a 375 px phone
-Status: ready
+Status: done (11 November 2026, branch craft/home-and-kine-375)
+Result: Production build at 375x667: the four tabs end at 356 px; the bar title reads "Espace kiné", not truncated.
 Executor: fast
 Claim: a physiotherapist on a small iPhone sees the four tabs and the whole title.
 Reference: David's screenshot of 11 November 2026 on his iPhone (375 px wide): the fourth tab reads "Mon cabine", cut by the edge, and the condensed header reads "Vos patients, suivis entre deux..." .
