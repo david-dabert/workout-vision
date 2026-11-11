@@ -80,8 +80,8 @@ What a machine does, so David does not carry it:
 |---|---|---|
 | Tests, scoreboards, entry budget, deploy | GitHub Actions (`ci.yml`, `deploy.yml`) | Running |
 | The queue | `cards/`, in order | This file |
-| One card per run, from a fresh session | A scheduled task that starts a session with the prompt of `cards/README.md` | Not created: waits for David's word, because it spends his quota and merges to main |
-| The report David reads | Issue #190, then one notification with the result and the screenshots | Report running; notification with the scheduled task |
+| One card per run, from a fresh session | A scheduled task, "WorkoutVision nightly card", every night at 03:17 Paris time | Created 11 November 2026 on David's order of that day; its first run, on 12 November, is the test of it |
+| The report David reads | Issue #190, then one notification on his phone with the result | Running with the scheduled task |
 | Gate 7 as a check CI enforces | Card 002 | Not built |
 
 What stays with David, about ten minutes a day:
