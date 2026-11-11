@@ -36,4 +36,21 @@ describe('Pessac 8-Pole Clinical Dossier Export', () => {
     expect(htmlDynamic).toContain('94.5\u00A0%');
     expect(htmlDynamic).toContain('0.5°');
   });
+
+  it('generates shoulder dossier HTML with scapular dyskinesis dynamic telemetry', () => {
+    const htmlShoulder = generatePessacDossierHtml('shoulder', {
+      nom: 'Martin',
+      prenom: 'Claire',
+      dynamicTelemetry: {
+        shrugDetected: true,
+        eccentricDropDetected: true,
+        scapularClassification: 'Grade II (Bord Médial)',
+      },
+    });
+
+    expect(htmlShoulder).toContain('Martin Claire');
+    expect(htmlShoulder).toContain('Positif (Haussement actif)');
+    expect(htmlShoulder).toContain('Décrochage détecté');
+    expect(htmlShoulder).toContain('Grade II (Bord Médial) (SDT)');
+  });
 });

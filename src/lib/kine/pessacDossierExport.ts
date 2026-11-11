@@ -34,6 +34,10 @@ export interface PatientInfo {
     buttWinkFault?: boolean;
     barbellTiltDeg?: number;
     barbellTiltFault?: boolean;
+    shrugDetected?: boolean;
+    eccentricDropDetected?: boolean;
+    scapularClassification?: string;
+    scapularStabilityIndex?: number;
   };
 }
 
@@ -171,6 +175,12 @@ export function generatePessacDossierHtml(specialtyId: string, patient: PatientI
         m.value = `${dt.lumbopelvicStabilityIndex}\u00A0% LSI${dt.buttWinkFault ? ' (Rétroversion/Butt Wink)' : ' (Neutre)'}`;
       } else if (m.label === 'Couple de Torsion Rachidien' && dt.barbellTiltDeg !== undefined) {
         m.value = `${dt.barbellTiltDeg}\u00A0° (${dt.barbellTiltFault ? 'Asymétrie/Couple' : 'Planarité Stable'})`;
+      } else if (m.label === 'Signe du Shrug' && dt.shrugDetected !== undefined) {
+        m.value = dt.shrugDetected ? 'Positif (Haussement actif)' : 'Négatif (Stable)';
+      } else if (m.label === 'Dysrythmie Excentrique' && dt.eccentricDropDetected !== undefined) {
+        m.value = dt.eccentricDropDetected ? 'Décrochage détecté' : 'Descente fluide';
+      } else if (m.label === 'Classification Kibler' && dt.scapularClassification !== undefined) {
+        m.value = `${dt.scapularClassification} (SDT)`;
       }
     }
   }
