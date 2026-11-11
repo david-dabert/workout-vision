@@ -1,0 +1,8 @@
+# Gate 7 on David's 20 stored sets (gate7.test.ts; SCOREBOARD=1 rewrites this file)
+# Varying is necessary, not sufficient: no reading here has been held against a reference yet.
+calculateIntraSetVelocityLoss: varies across the sets (most frequent verdict "excessive" on 9 of 20); shown in production: no
+analyzeDynamicKneeValgus: fails (answers on 3 sets, fewer than 8); shown in production: no
+analyzeKineticChainSequencing: varies across the sets (most frequent verdict "true" on 12 of 20); shown in production: no
+analyzeLumbopelvicRhythm: varies across the sets (most frequent verdict "true" on 13 of 20); shown in production: no
+analyzeBarbellTilt: fails ("critical_tilt" on 16 of 20 sets); shown in production: no
+analyzeScapularPlane: fails ("critical_dyskinesis" on 20 of 20 sets); shown in production: no
