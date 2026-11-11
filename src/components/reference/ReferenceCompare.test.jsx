@@ -33,6 +33,15 @@ describe('the reference comparison screen', () => {
     });
   }
 
+  it('offers the two references: the physiotherapist’s movement, pressed, and the patient’s healthy side', async () => {
+    const html = await render('fr');
+    expect(html).toMatch(/aria-pressed="true"[^>]*data-testid="rc-mode-kine"/);
+    expect(html).toMatch(/aria-pressed="false"[^>]*data-testid="rc-mode-healthy"/);
+    expect(html).toContain('Côté sain du patient');
+    // The healthy-side wording appears only once that reference is chosen.
+    expect(html).not.toContain('data-testid="rc-healthy-note"');
+  });
+
   it('says that the videos stay on the phone', async () => {
     expect(await render('fr')).toContain('Tout reste sur ce téléphone');
   });
