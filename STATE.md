@@ -16,6 +16,25 @@ Current phase: Phase 7 (`docs/state-fixes`) of David's order of 6 November 2026 
 Live commit: `ec12a7ac` on `main` (deploy run 601, 11 November 2026, 13:11 UTC). `55747d0e` is main's tip; its CI and deploy had not finished when this was written.
 Preview: `https://david-dabert.github.io/workout-vision/`
 
+## The promises and where each stands (11 November 2026)
+
+David's recorded words (DIRECTIVES.md Part 1, docs/VISION.md, R16), held against what is measured.
+
+| Promise | Status | Evidence |
+|---|---|---|
+| The video never leaves the phone, no server, free to run | Kept | No upload path; GitHub Pages; anonymous usage counts only |
+| The rep count is right, or the app says it is not sure | Partly | David's sets 13 of 15 and 12 of 16; public sets 468 of 949; right when sure 60.3 % on public sets |
+| Whether the execution held up | Partly | Tempo and range per rep are measured and shown; every reading of form is off (gate 7) |
+| What to do next | Not kept | No advice rests on a validated reading |
+| The physiotherapist compares a patient to a reference | Built, unproven | Runs on a real video (David, 11 November); never tested for repeatability (card 001) |
+| A tool for every exercise | Offered, unproven | 183 exercises, 7 Beta, none has passed an exam |
+| Beautiful, one system of design | Partly | Replay and kiné workspace cleaned on 11 November; no screen approved on the iPhone since |
+| A video people share | Built, slow | The replay exports after a wait (card 004) |
+
+## Now
+
+Main at `95d5bbd9` and live (11 November 2026, 19:49 UTC). In progress: PR #374 (this method), PR #375 (gate 7), PR #373 (home badge, blocked on a picture baseline). Next ready cards: 001, 003, 004, 005.
+
 ## State of main, 11 November 2026
 
 Merged between 9 and 11 November (Antigravity, PRs #342 to #364): the confidence gate asks only when a recount is refused or differs by 2 or more (#342), and a series of biomechanical readings, kiné screens and a printed "Pessac" dossier.

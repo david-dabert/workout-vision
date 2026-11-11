@@ -49,6 +49,29 @@ A card that fails twice, or needs something only David has, becomes `blocked` wi
 No reading reaches a screen until its card's eval has run on David's labelled sets and shown that the reading separates what it claims to separate.
 A reading that fires on nearly every set, or on none, fails. Until it passes it stays behind its switch (`measures.js`).
 
+## Two lanes (speed and proof)
+
+David, 11 November 2026: "the rules cannot forbid us from trying". They do not; they decide where a trial lives.
+
+- **Lab lane.** Anything may be tried, at Antigravity's speed, with no card and no eval, provided it is behind a switch that is off in production (`measures.js`, or `VITE_EXTENDED_ROUTES`) and CI is green. It may be merged the same hour. It changes nothing a user sees.
+- **Product lane.** What a user sees changes only through a card: eval first, gate 7 for a reading, screenshots, David's yes. Turning a lab switch on is a product change and needs its card.
+
+A trial that works in the lab earns a card. A trial that does not is written in TRIED.md and left off. Nothing is deleted for having failed.
+
+## Data before David
+
+Public data comes first: the 949 public sets already on disk, and any public dataset or video a session can reach and whose licence allows it. A card asks David for a recording only when no public data can answer its eval, and says why.
+
+## Handover between agents
+
+Claude and Antigravity share one memory, the repository. A session that ends without these four lines written has not ended:
+1. The card's status and, under it, one line: what was done, the pull request, what is left.
+2. STATE.md, section "Now": the commit on main, what is live, what is in progress and on which branch.
+3. TRIED.md, when something was tried and closed.
+4. The REPORT on issue #190 (R15).
+
+Who takes what: a card carries `Executor: fast` when its eval is a command that passes or fails (Antigravity can take it), and `Executor: careful` when it changes counting, a gate or a rule (Claude takes it, or reviews it before merge). The agent that did not write a product-lane change reviews it against its card, not against its author's summary.
+
 ## Automation
 
 What a machine does, so David does not carry it:

@@ -7,6 +7,7 @@ The queue of METHOD.md. One file per task, taken in number order among those who
 ```
 # NNN. Title, as a claim
 Status: ready | blocked (on what) | done | failed
+Executor: fast | careful
 Claim: what a named user can do afterwards, in one sentence.
 Reference: what counts as truth.
 Eval: the command, the data, the threshold. Fixed before any code.

@@ -1,3 +1,17 @@
+# Start here (every agent, every session)
+
+Added 11 November 2026 (Claude, on David's order of that day: one way of working for Claude and Antigravity, so no work is done twice).
+
+Read, in this order, and nothing else until the task needs it:
+1. This file and CLAUDE.md: the rules.
+2. STATE.md: what is true on main today, and the promises with their status.
+3. METHOD.md: how work is done (cards, the two lanes, the handover).
+4. The card you take in `cards/`, and the latest comments of issue #190.
+5. TRIED.md before any counting, measurement or data idea (R14).
+
+Current files: CLAUDE.md, DIRECTIVES.md, PLAN.md, STATE.md, METHOD.md, TRIED.md, BACKLOG.md, `cards/`.
+Historical files, kept for their record and not to be acted on: HANDOFF.md, ROADMAP.md, ARCHITECTURE.md, the `*_SCORECARD.md` and `PHASE*` files, DEFENSE_ROUND.md, and the specifications under `docs/` dated before 11 November 2026. An idea found there becomes work only as a card.
+
 # Rules for every agent
 
 This repository's rules are CLAUDE.md and DIRECTIVES.md.
