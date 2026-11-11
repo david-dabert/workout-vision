@@ -26,7 +26,7 @@ describe('the coaching contract model (honesty pass of 14 October 2026, CTR-1)',
     expect(text).toContain('Médiateur exemple');
     expect(text).toContain('24 heures');
     expect(text).not.toMatch(/tribunaux|Conforme|QS-Sport|WorkoutVision™|TTC|L321-1|Basic-Fit|MACSF/);
-    expect(text).not.toContain('—');
+    expect(text).not.toContain('\u2014');
     expect(text).not.toContain('Assurance'); // not typed, not printed
   });
 

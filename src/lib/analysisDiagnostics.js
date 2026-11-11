@@ -1,5 +1,5 @@
 /**
- * AnalysisDiagnostics — structured diagnostics layer for video analysis.
+ * AnalysisDiagnostics : structured diagnostics layer for video analysis.
  *
  * Produces a single JSON-serializable object describing the quality and
  * confidence of every stage of the analysis pipeline: exercise detection,

@@ -1,5 +1,5 @@
 /**
- * vbtEngine.js — On-Device Velocity-Based Training (VBT) & Sticking Point Localization.
+ * vbtEngine.js : On-Device Velocity-Based Training (VBT) & Sticking Point Localization.
  *
  * WITHDRAWN from the app on 14 October 2026 (honesty audit, CORE-02): run by no screen, kept for research. VBT is
  * defined on bar velocity in m/s; this module divides a joint's angular range by its concentric time at 15 Hz, the

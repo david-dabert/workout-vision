@@ -8,7 +8,7 @@
  *
  * The biomechanics module delegates rep detection to RepCounter (single source
  * of truth). If RepCounter provides no rep boundaries, biomechanics returns
- * an empty result — it does not attempt its own rep detection.
+ * an empty result : it does not attempt its own rep detection.
  */
 
 import { describe, it, expect, vi } from 'vitest';
@@ -27,10 +27,10 @@ import { analyzeSet } from '../biomechanics';
 import { fakeSquatFrame, fakeLandmarks } from './helpers';
 
 // ---------------------------------------------------------------------------
-// analyzeSet — empty/invalid inputs
+// analyzeSet : empty/invalid inputs
 // ---------------------------------------------------------------------------
 
-describe('analyzeSet — edge cases', () => {
+describe('analyzeSet : edge cases', () => {
   it('returns empty result for null frames', () => {
     const result = analyzeSet(null, 30, 'squat', []);
     expect(result).toHaveProperty('timeUnderTension');
@@ -61,17 +61,17 @@ describe('analyzeSet — edge cases', () => {
     for (let i = 0; i < 60; i++) {
       frames.push(fakeSquatFrame(125 + 45 * Math.cos((i / 60) * 2 * Math.PI), i / 30));
     }
-    // No externalReps — biomechanics does not rescue
+    // No externalReps : biomechanics does not rescue
     const result = analyzeSet(frames, 30, 'squat', []);
     expect(result.movementQuality).toBe(0);
   });
 });
 
 // ---------------------------------------------------------------------------
-// analyzeSet — with valid rep boundaries
+// analyzeSet : with valid rep boundaries
 // ---------------------------------------------------------------------------
 
-describe('analyzeSet — valid analysis', () => {
+describe('analyzeSet : valid analysis', () => {
   it('produces non-zero metrics when given valid frames and rep boundaries', () => {
     const fps = 10;
     const frames = [];
@@ -126,7 +126,7 @@ describe('analyzeSet — valid analysis', () => {
     const fps = 10;
     const frames = [];
     for (let i = 0; i < 50; i++) {
-      // Symmetric standing landmarks — left/right are mirror images
+      // Symmetric standing landmarks : left/right are mirror images
       frames.push(fakeLandmarks());
     }
 
@@ -149,7 +149,7 @@ describe('analyzeSet — valid analysis', () => {
     const frames = [rawFrame, wrappedFrame];
     const repBoundaries = [{ startFrame: 0, bottomFrame: 1, endFrame: 1 }];
 
-    // Should not throw — the normalizer handles both formats
+    // Should not throw : the normalizer handles both formats
     const result = analyzeSet(frames, fps, 'squat', repBoundaries);
     expect(result).toHaveProperty('timeUnderTension');
     expect(result).toHaveProperty('rangeOfMotion');
@@ -162,7 +162,7 @@ describe('analyzeSet — valid analysis', () => {
 // Time under tension calculation
 // ---------------------------------------------------------------------------
 
-describe('analyzeSet — time under tension', () => {
+describe('analyzeSet : time under tension', () => {
   it('calculates eccentric and concentric phases separately', () => {
     const fps = 10;
     const frames = [];

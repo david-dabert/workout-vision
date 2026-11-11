@@ -2,7 +2,7 @@
  * Periodicity-first rep counting.
  *
  * Primary counting principle: "how many cycles of a periodic process
- * fit in this signal?" — NOT "how many local minima exist."
+ * fit in this signal?" : NOT "how many local minima exist."
  *
  * Algorithm:
  *   1. Compute normalized autocorrelation of the demeaned signal.
@@ -118,7 +118,7 @@ function selectFundamental(
     );
 
     if (hasHarmonic) {
-      // This lag has a harmonic at 2× — strong fundamental evidence
+      // This lag has a harmonic at 2× : strong fundamental evidence
       return candidate;
     }
 
@@ -166,13 +166,13 @@ export function estimateDominantPeriod(
   const acf = computeACF(signal, searchMinLag, maxLag);
   if (acf.length === 0) return { lagFrames: 0, peakHeight: 0 };
 
-  // Find all peaks with a low threshold — sub-harmonic checking
+  // Find all peaks with a low threshold : sub-harmonic checking
   // will filter out the weak ones that aren't fundamentals
   const peaks = findACFPeaks(acf, searchMinLag, maxLag, 0.1);
 
   const fundamental = selectFundamental(acf, peaks, searchMinLag);
   if (!fundamental || fundamental.lag < minLag) {
-    // Fundamental is below the physiological band — reject
+    // Fundamental is below the physiological band : reject
     // unless it's very close to the minimum
     if (fundamental && fundamental.lag >= minLag * 0.8 && fundamental.height >= 0.3) {
       return { lagFrames: fundamental.lag, peakHeight: fundamental.height };

@@ -1,5 +1,5 @@
 /**
- * ProgressionScore — The Number Users Tell Friends
+ * ProgressionScore : The Number Users Tell Friends
  *
  * 0-100 score integrating form quality, consistency,
  * tempo control (eccentric/concentric ratio from frame timing),
@@ -8,7 +8,7 @@
  * All exported values (score + every component) are ∈ [0, 100].
  *
  * Internal weights: form 33%, consistency 27%, tempo 20%,
- * volume 13%, improvement 7% — but the surface is always 0-100.
+ * volume 13%, improvement 7% : but the surface is always 0-100.
  *
  * No pixel-velocity or fabricated physics. Only joint angles,
  * frame timing, and user-entered weight.

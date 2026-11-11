@@ -9,7 +9,7 @@ import { describe, it, expect } from 'vitest';
 import { gradeFromScore, gradeClass, translateMuscle, MUSCLE_FR } from '../utils';
 
 // ---------------------------------------------------------------------------
-// gradeFromScore — maps a numeric score (0-100) to a letter grade
+// gradeFromScore : maps a numeric score (0-100) to a letter grade
 // ---------------------------------------------------------------------------
 
 describe('gradeFromScore', () => {
@@ -58,7 +58,7 @@ describe('gradeFromScore', () => {
 });
 
 // ---------------------------------------------------------------------------
-// gradeClass — maps a numeric score to a CSS class name
+// gradeClass : maps a numeric score to a CSS class name
 // ---------------------------------------------------------------------------
 
 describe('gradeClass', () => {
@@ -84,7 +84,7 @@ describe('gradeClass', () => {
 });
 
 // ---------------------------------------------------------------------------
-// translateMuscle — returns French muscle name when lang is 'fr'
+// translateMuscle : returns French muscle name when lang is 'fr'
 // ---------------------------------------------------------------------------
 
 describe('translateMuscle', () => {

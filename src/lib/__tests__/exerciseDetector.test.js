@@ -118,7 +118,7 @@ describe('ExerciseAutoDetector', () => {
     const detector = new ExerciseAutoDetector({ fps: 5 });
 
     let detected = null;
-    // Feed fewer frames — 30 frames at 5fps = 6 seconds
+    // Feed fewer frames : 30 frames at 5fps = 6 seconds
     for (let frame = 0; frame < 30; frame++) {
       const phase = (frame % 15) / 15;
       const elbowAngle = 105 + 65 * Math.cos(phase * 2 * Math.PI);

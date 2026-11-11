@@ -1,5 +1,5 @@
 /**
- * SVG icon library — replaces all Unicode emoji throughout the app.
+ * SVG icon library : replaces all Unicode emoji throughout the app.
  *
  * Every icon is a small inline SVG. No external dependencies.
  * Usage: <Icon name="crown" size={16} /> or ICON_MAP['crown'] for badge lookup.
@@ -81,7 +81,7 @@ export function Icon({ name, size = 16, color, className, style }) {
 }
 
 /**
- * Badge icon key mapping — used by badges.js
+ * Badge icon key mapping : used by badges.js
  */
 export const BADGE_ICON_KEY = {
   badge_perfect_form:    'crown',

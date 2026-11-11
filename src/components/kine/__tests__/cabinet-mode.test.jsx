@@ -21,6 +21,6 @@ describe('KineCabinetMode component', () => {
 
   it('has zero em-dashes in its rendered HTML', () => {
     const html = renderToStaticMarkup(<KineCabinetMode />);
-    expect(html).not.toContain('—');
+    expect(html).not.toContain('\u2014');
   });
 });

@@ -48,7 +48,7 @@ describe('Kinematic Aliasing Registry & Catalog Expansion', () => {
     }
   });
 
-  describe('Pattern 1: Lower Body — Quad Dominant (Squats & Machine Presses)', () => {
+  describe('Pattern 1: Lower Body : Quad Dominant (Squats & Machine Presses)', () => {
     const squatVariants = [
       'barbell_squat', 'safety_bar_squat', 'zercher_squat', 'box_squat', 'belt_squat', 'smith_machine_squat', 'smith_squat',
     ];
@@ -87,7 +87,7 @@ describe('Kinematic Aliasing Registry & Catalog Expansion', () => {
     });
   });
 
-  describe('Pattern 2: Lower Body — Posterior Chain (Hinges & Isolations)', () => {
+  describe('Pattern 2: Lower Body : Posterior Chain (Hinges & Isolations)', () => {
     it('deadlift and stiff-leg variations inherit hip hinge kinematics', () => {
       expect(KINEMATIC_ALIASES.stiff_legged_deadlift).toBe('romanian_deadlift');
       expect(KINEMATIC_ALIASES.good_morning).toBe('romanian_deadlift');
@@ -111,7 +111,7 @@ describe('Kinematic Aliasing Registry & Catalog Expansion', () => {
     });
   });
 
-  describe('Pattern 3: Upper Body — Horizontal & Vertical Push', () => {
+  describe('Pattern 3: Upper Body : Horizontal & Vertical Push', () => {
     it('bench press equipment variations route to bench_press archetype', () => {
       for (const key of ['wide_grip_bench_press', 'cambered_bar_bench_press']) {
         expect(KINEMATIC_ALIASES[key]).toBe('bench_press');
@@ -134,7 +134,7 @@ describe('Kinematic Aliasing Registry & Catalog Expansion', () => {
     });
   });
 
-  describe('Pattern 4: Upper Body — Horizontal & Vertical Pull', () => {
+  describe('Pattern 4: Upper Body : Horizontal & Vertical Pull', () => {
     it('lat pulldown grip variations route to lat_pulldown archetype', () => {
       for (const key of ['neutral_grip_lat_pulldown', 'reverse_grip_lat_pulldown', 'single_arm_lat_pulldown']) {
         expect(KINEMATIC_ALIASES[key]).toBe('lat_pulldown');
@@ -156,7 +156,7 @@ describe('Kinematic Aliasing Registry & Catalog Expansion', () => {
     });
   });
 
-  describe('Pattern 5: Upper Body — Shoulders & Arms Isolations', () => {
+  describe('Pattern 5: Upper Body : Shoulders & Arms Isolations', () => {
     it('lateral raise variations route to shoulder archetypes', () => {
       expect(KINEMATIC_ALIASES.dumbbell_lateral_raise).toBe('lateral_raise');
       expect(liftDefinition('dumbbell_lateral_raise')).toEqual(LIFTS.lateral_raise);

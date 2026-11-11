@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════
-   ATMOSPHERE — quiet confidence, not spectacle
+   ATMOSPHERE : quiet confidence, not spectacle
    ══════════════════════════════════════════ */
 
 /* No ambient mesh. The void IS the atmosphere. */
@@ -114,62 +114,62 @@ h5 {
    ══════════════════════════════════════════ */
 
 /* ══════════════════════════════════════════
-   MICRO-INTERACTIONS — purposeful, not theatrical
+   MICRO-INTERACTIONS : purposeful, not theatrical
    ══════════════════════════════════════════ */
 
-/* Rep count increment — a confident tick, not an explosion */
+/* Rep count increment : a confident tick, not an explosion */
 @keyframes repBurst {
   0% { transform: scale(1); }
   40% { transform: scale(1.12); }
   100% { transform: scale(1); }
 }
 
-/* Grade reveal — arrives with composure */
+/* Grade reveal : arrives with composure */
 @keyframes gradeReveal {
   0% { transform: scale(0.8); opacity: 0; }
   60% { transform: scale(1.04); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
 }
 
-/* Timer completion — a gentle warmth, not a reactor */
+/* Timer completion : a gentle warmth, not a reactor */
 @keyframes powerRestore {
   0% { box-shadow: 0 0 0 0 rgba(212, 167, 106, 0); }
   40% { box-shadow: 0 0 16px 4px rgba(212, 167, 106, 0.2); }
   100% { box-shadow: 0 0 8px 2px rgba(212, 167, 106, 0.08); }
 }
 
-/* Save — brief acknowledgment */
+/* Save : brief acknowledgment */
 @keyframes savePulse {
   0% { background: rgba(93, 184, 122, 0); }
   25% { background: rgba(93, 184, 122, 0.08); }
   100% { background: rgba(93, 184, 122, 0); }
 }
 
-/* Attention — subtle border shift */
+/* Attention : subtle border shift */
 @keyframes cardAttention {
   0%, 100% { border-color: rgba(255, 255, 255, 0.07); }
   50% { border-color: rgba(212, 167, 106, 0.20); }
 }
 
-/* Entrance — clean fade in */
+/* Entrance : clean fade in */
 @keyframes enterHeavy {
   0% { opacity: 0; transform: translateY(12px) scale(0.97); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Score glow — ambient radiance behind grade badge */
+/* Score glow : ambient radiance behind grade badge */
 @keyframes scoreGlow {
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
 }
 
-/* Phase shift — minimal */
+/* Phase shift : minimal */
 @keyframes phaseShift {
   0%, 100% { opacity: 0.85; }
   50% { opacity: 1; }
 }
 
-/* Heartbeat — removed. Static confidence. */
+/* Heartbeat : removed. Static confidence. */
 @keyframes heartbeat {
   0%, 100% { transform: scale(1); }
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { analyzeVbtAndStickingPoint } from '../vbtEngine';
 
-describe('vbtEngine — Velocity-Based Training & Sticking Point Analysis', () => {
+describe('vbtEngine : Velocity-Based Training & Sticking Point Analysis', () => {
   it('returns null for insufficient reps (< 2 valid reps)', () => {
     expect(analyzeVbtAndStickingPoint([], [], [], 'squat')).toBeNull();
     expect(analyzeVbtAndStickingPoint([{ index: 1, romDegrees: 90, concentricSec: 1.0 }], [], [], 'squat')).toBeNull();

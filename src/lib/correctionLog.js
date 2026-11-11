@@ -1,5 +1,5 @@
 /**
- * Unified correction log — records every manual adjustment (rep count or exercise)
+ * Unified correction log : records every manual adjustment (rep count or exercise)
  * so the system can learn from user feedback and surface correction patterns.
  *
  * Stored in IndexedDB via localforage. Each correction is an immutable entry.
@@ -16,11 +16,11 @@ const correctionStore = localforage.createInstance({
  * Log a correction made by the user.
  * @param {object} entry
  * @param {'rep_count' | 'exercise'} entry.type
- * @param {string} [entry.workoutId] — ID of the affected workout
- * @param {string} [entry.exerciseKey] — exercise key involved
- * @param {*} entry.original — what the AI detected
- * @param {*} entry.corrected — what the user set it to
- * @param {number} [entry.confidence] — detector confidence at time of correction
+ * @param {string} [entry.workoutId] : ID of the affected workout
+ * @param {string} [entry.exerciseKey] : exercise key involved
+ * @param {*} entry.original : what the AI detected
+ * @param {*} entry.corrected : what the user set it to
+ * @param {number} [entry.confidence] : detector confidence at time of correction
  * @returns {Promise<object>} the saved entry with id and timestamp
  */
 export async function logCorrection(entry) {

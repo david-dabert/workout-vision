@@ -1,5 +1,5 @@
 /**
- * Video analysis engine — pure function, no React dependency.
+ * Video analysis engine : pure function, no React dependency.
  *
  * Takes a video file and configuration, returns analysis results.
  * Orchestrates: hashing → cache check → frame extraction → MediaPipe inference →
@@ -81,7 +81,7 @@ export async function analyzeVideoFile({
   const analysisFps = TARGET_FPS;
   const maxWidth = MAX_LONG_SIDE;
 
-  const MAX_VIDEO_DURATION = 60; // seconds — keep short to avoid iOS memory crashes
+  const MAX_VIDEO_DURATION = 60; // seconds : keep short to avoid iOS memory crashes
   const ANALYSIS_TIMEOUT = 180_000; // milliseconds
 
   // ── Global analysis timeout ──
@@ -677,7 +677,7 @@ async function buildFullResult({
   const repHistory = enrichedRepHistory;
   const reps = repHistory.length;
 
-  // Input quality gate — runs AFTER detection + rep counting, BEFORE form scoring.
+  // Input quality gate : runs AFTER detection + rep counting, BEFORE form scoring.
   // Flags insufficient footage so the UI can show a degraded result instead of
   // misleading grades derived from bad data.
   const frameTimestamps = enrichedRepHistory.length > 0
@@ -700,14 +700,14 @@ async function buildFullResult({
     poseDetectionRate,
   });
 
-  // Halve detection confidence when plausibility fails — the primary signal
+  // Halve detection confidence when plausibility fails : the primary signal
   // is suspect, so downstream consumers (form scoring, coach) should be cautious.
   if (!qualityGate.pass && detectionConfidence > 0) {
     detectionConfidence = detectionConfidence * 0.5;
     detectionLowConfidence = true;
   }
 
-  // Biomechanical analysis — skip exercise-specific form checks when detection
+  // Biomechanical analysis : skip exercise-specific form checks when detection
   // is low-confidence to avoid unsafe coaching on a potentially wrong exercise.
   let bioAnalysis = null;
   const safeForFormChecks = !detectionLowConfidence && qualityGate.pass;
@@ -715,7 +715,7 @@ async function buildFullResult({
   catch (err) { console.error('Bio analysis error:', err); }
 
   // When detection confidence is low, strip exercise-specific form advice
-  // (compensation patterns, ROM targets) — keep only universal metrics.
+  // (compensation patterns, ROM targets) : keep only universal metrics.
   if (bioAnalysis && !safeForFormChecks) {
     bioAnalysis = {
       ...bioAnalysis,
@@ -726,7 +726,7 @@ async function buildFullResult({
     };
   }
 
-  // Coaching engine — SPARC smoothness, DTW consistency, fatigue, form detections
+  // Coaching engine : SPARC smoothness, DTW consistency, fatigue, form detections
   let coaching = null;
   try { coaching = analyzeCoaching(landmarkFrames, repHistory, detectedExercise, analysisFps); }
   catch (err) { console.error('Coaching analysis error:', err); }

@@ -1,5 +1,5 @@
 /**
- * Declarative Exercise DSL — Interpreter and Compiler
+ * Declarative Exercise DSL : Interpreter and Compiler
  *
  * Converts JSON exercise definitions into the runtime objects expected by
  * RepCounter, ExerciseAutoDetector, and the form check system.
@@ -242,7 +242,7 @@ function compileExercise(dsl) {
 
   const compiledChecks = (dsl.formChecks || [])
     .filter(fc => {
-      // Skip placeholder checks that always return true — they inflate form scores
+      // Skip placeholder checks that always return true : they inflate form scores
       // without providing real feedback. These exist as documentation of what SHOULD
       // be checked but lack a real implementation (e.g. equipment-dependent checks
       // that can't be verified via pose landmarks alone).
@@ -272,7 +272,7 @@ function compileExercise(dsl) {
     scienceNotes: dsl.scienceNotes,
   };
 
-  // Optional fields — only set if defined to avoid polluting objects
+  // Optional fields : only set if defined to avoid polluting objects
   if (dsl.amplitudeRatio != null) compiled.amplitudeRatio = dsl.amplitudeRatio;
   if (dsl.isIsometric) compiled.isIsometric = true;
   if (dsl.minIsometricDuration != null) compiled.minIsometricDuration = dsl.minIsometricDuration;
@@ -299,4 +299,4 @@ export function compileExercises(dslMap) {
   return result;
 }
 
-// DSL definitions are in exerciseDefinitions.js — imported by exercises.js
+// DSL definitions are in exerciseDefinitions.js : imported by exercises.js

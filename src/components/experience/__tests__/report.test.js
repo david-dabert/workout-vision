@@ -288,7 +288,7 @@ describe('rep details', () => {
     // Squat-like: first=eccentric → lowering=ecc(first), bottom=workingPause, lifting=conc(second), top=restGap.
     // Rep 1: ecc 1.0, conc 0.8, working pause 0.1, rest gap 1.1
     const s = reportSheet({ ...base, reps, first: 'eccentric' });
-    // Tempo: 1,0-0-0,8-1 (lowering-bottom-lifting-top) — phases one decimal, pauses whole
+    // Tempo: 1,0-0-0,8-1 (lowering-bottom-lifting-top) : phases one decimal, pauses whole
     expect(s.rows[0][1]).toBe('1,0-0-0,8-1');
   });
 

@@ -191,7 +191,7 @@ function generateSyntheticSet(
 
 // ─── Synthetic tests ───
 
-describe('Counting core — synthetic', () => {
+describe('Counting core : synthetic', () => {
   const SPS_VALUES = [15, 30, 60, 120];
 
   for (const sps of SPS_VALUES) {
@@ -395,7 +395,7 @@ function loadClipLandmarks(clipName: string) {
 // These five clips are scored for accuracy by the scoreboard, which gates CI (npm run scoreboard,
 // test/real-phone/accuracy/scoreboard.txt). Here they check what their names say: the count is its marks, in
 // time order, one after the other (audit FINDING-022: the names gave an expected count no assertion checked).
-describe('Counting core — David\'s clips', () => {
+describe('Counting core : David\'s clips', () => {
   const clips: { file: string; lift: Lift; expected: number; hotfixCount: number }[] = [
     // hotfixCount: measured from hotfix_baseline.test.ts run, not hand-typed
     { file: 'bench_press_7_angle_mufhcy60', lift: 'bench_press', expected: 7, hotfixCount: 5 },

@@ -159,7 +159,7 @@
   height: 40px;
   border-radius: 50%;
   background: var(--accent-gradient);
-  color: #000;
+  color: var(--void);
   font-weight: 900;
   font-size: 1.1rem;
   display: inline-flex;

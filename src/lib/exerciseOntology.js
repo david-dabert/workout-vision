@@ -1,5 +1,5 @@
 /**
- * Exercise ontology — hierarchical classification for the detector.
+ * Exercise ontology : hierarchical classification for the detector.
  *
  * Three levels:
  *   Level 0 (Context):    seated / standing / prone / hanging / supine

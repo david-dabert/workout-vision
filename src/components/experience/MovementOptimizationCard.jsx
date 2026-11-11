@@ -9,6 +9,7 @@ import { analyzeBarbellTilt } from '../../lib/biomechanics/barbellTilt';
 import { analyzeScapularPlane } from '../../lib/kine/shoulderDyskinesis';
 import { computeBarPathMetrics } from './BarPathTracer';
 import { getExercise } from '../../lib/exercises/index';
+import { UNVALIDATED_BIOMECHANICS_SHOWN } from './measures';
 import './MovementOptimization.css';
 
 function getAnthropometricPrescription(profile, lift, fr) {
@@ -113,10 +114,12 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
   }, []);
 
   const leveragePrescription = useMemo(() => {
-    return getAnthropometricPrescription(athleteProfile, lift, fr);
+    // A ratio derived from the declared height alone is no measure: hidden with the unvalidated readings (measures.js).
+    return UNVALIDATED_BIOMECHANICS_SHOWN ? getAnthropometricPrescription(athleteProfile, lift, fr) : null;
   }, [athleteProfile, lift, fr]);
 
   const velocityLoss = useMemo(() => {
+    if (!UNVALIDATED_BIOMECHANICS_SHOWN) return null;
     if (analysis?.velocityLoss) return analysis.velocityLoss;
     if (Array.isArray(reps) && reps.length >= 2) {
       return calculateIntraSetVelocityLoss(reps);
@@ -125,7 +128,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
   }, [analysis, reps]);
 
   const bilateralSymmetry = useMemo(() => {
-    if (!result) return null;
+    if (!result || !UNVALIDATED_BIOMECHANICS_SHOWN) return null;
     const landmarks = result.worldLandmarks || result.landmarks || result.imageLandmarks;
     if (!landmarks || !landmarks.length) return null;
     const timestamps = result.timestamps || null;
@@ -137,7 +140,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
   }, [result, lift, reps]);
 
   const dynamicValgus = useMemo(() => {
-    if (!result) return null;
+    if (!result || !UNVALIDATED_BIOMECHANICS_SHOWN) return null;
     const landmarks = result.landmarks || result.imageLandmarks || result.worldLandmarks;
     if (!landmarks || !landmarks.length) return null;
     const timestamps = result.timestamps || null;
@@ -149,7 +152,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
   }, [result, lift]);
 
   const barPath = useMemo(() => {
-    if (!result) return null;
+    if (!result || !UNVALIDATED_BIOMECHANICS_SHOWN) return null;
     const landmarks = result.landmarks || result.imageLandmarks || result.worldLandmarks;
     if (!landmarks || !landmarks.length) return null;
     const timestamps = result.timestamps || null;
@@ -161,7 +164,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
   }, [result]);
 
   const kineticSequencing = useMemo(() => {
-    if (!result) return null;
+    if (!result || !UNVALIDATED_BIOMECHANICS_SHOWN) return null;
     const landmarks = result.worldLandmarks || result.landmarks || result.imageLandmarks;
     if (!landmarks || !landmarks.length) return null;
     const timestamps = result.timestamps || null;
@@ -173,7 +176,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
   }, [result, lift, reps]);
 
   const lumbopelvic = useMemo(() => {
-    if (!result) return null;
+    if (!result || !UNVALIDATED_BIOMECHANICS_SHOWN) return null;
     const landmarks = result.worldLandmarks || result.landmarks || result.imageLandmarks;
     if (!landmarks || !landmarks.length) return null;
     const timestamps = result.timestamps || null;
@@ -185,7 +188,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
   }, [result, lift, reps]);
 
   const barbellTilt = useMemo(() => {
-    if (!result) return null;
+    if (!result || !UNVALIDATED_BIOMECHANICS_SHOWN) return null;
     const landmarks = result.landmarks || result.imageLandmarks || result.worldLandmarks;
     if (!landmarks || !landmarks.length) return null;
     const timestamps = result.timestamps || null;
@@ -197,7 +200,7 @@ export default function MovementOptimizationCard({ reps = [], lift = 'squat', fr
   }, [result, lift]);
 
   const scapularAnalysis = useMemo(() => {
-    if (!result) return null;
+    if (!result || !UNVALIDATED_BIOMECHANICS_SHOWN) return null;
     const landmarks = result.landmarks || result.imageLandmarks || result.worldLandmarks;
     if (!landmarks || !landmarks.length) return null;
     const timestamps = result.timestamps || null;

@@ -52,7 +52,7 @@ describe('BiomechanicalRetentionQuiz', () => {
   it('has zero em-dashes in static output', () => {
     const htmlFr = renderQuiz({}, 'fr');
     const htmlEn = renderQuiz({}, 'en');
-    expect(htmlFr).not.toContain('—');
-    expect(htmlEn).not.toContain('—');
+    expect(htmlFr).not.toContain('\u2014');
+    expect(htmlEn).not.toContain('\u2014');
   });
 });

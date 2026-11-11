@@ -246,7 +246,7 @@ export default function KineWorkspace({ onClose }) {
               className="rc-btn is-line press kn-dossier-quick-btn"
               onClick={() => {
                 hapticLight();
-                exportPessacDossier('epaule', {
+                exportPessacDossier('shoulder', {
                   prescripteur: profile?.name ? `Kiné ${profile.name}` : undefined,
                   dateBilan: today(),
                 });

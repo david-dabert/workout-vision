@@ -1,5 +1,5 @@
 /**
- * Temporal feature extractor — 2-second sliding window over joint angles.
+ * Temporal feature extractor : 2-second sliding window over joint angles.
  *
  * Extracts per-channel statistics that the hierarchical detector and future
  * ML classifier consume:

@@ -1,5 +1,5 @@
 /**
- * Nutrition engine — calorie tracking, food database, MET-based burn estimation.
+ * Nutrition engine : calorie tracking, food database, MET-based burn estimation.
  *
  * Calorie burn: Compendium of Physical Activities (Ainsworth et al. 2011).
  * MET = metabolic equivalent of task. Calories = MET * weight(kg) * hours.
@@ -124,7 +124,7 @@ export function estimateDailyBurn(workouts, bodyWeightKg) {
   }, 0);
 }
 
-// Common food database — ~200 items covering major food categories
+// Common food database : ~200 items covering major food categories
 // Values per 100g unless noted. Sources: USDA FoodData Central 2024.
 export const FOOD_DATABASE = [
   // Proteins

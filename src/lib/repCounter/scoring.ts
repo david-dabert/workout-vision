@@ -225,7 +225,7 @@ export function buildFormHistoryFromCycles(
 
       // Weighted quality score: major checks count 2x, minor 1x.
       // Skipped checks (injury exclusions, viewpoint mismatches) are excluded
-      // entirely — they must NOT inflate the score by contributing quality=1.
+      // entirely : they must NOT inflate the score by contributing quality=1.
       const activeResults = formResults!.filter((f: FormResultEntry) => !f.skipped);
       const totalWeight = activeResults.reduce((sum: number, f: FormResultEntry) => sum + (f.severity === 'major' ? 2 : 1), 0);
       const weightedQuality = activeResults.reduce((sum: number, f: FormResultEntry) => sum + f.quality * (f.severity === 'major' ? 2 : 1), 0);
@@ -356,7 +356,7 @@ export function evaluateFormFeedback(
 ): FormFeedbackItem[] {
   return exercise.formChecks.map((fc: Exercise) => {
     // Skip form checks whose required viewpoint doesn't match the camera angle.
-    // Same logic as evaluateLiveRep — prevents phantom "bad form" in live mode
+    // Same logic as evaluateLiveRep : prevents phantom "bad form" in live mode
     // when the camera angle can't actually see the thing being checked.
     if (viewpoint && viewpoint !== 'unknown' && fc.viewpoint && fc.viewpoint !== 'any') {
       const viewpointMatch =

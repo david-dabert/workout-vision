@@ -437,7 +437,7 @@ export function calculateBaselines(profile) {
   const heightM = heightCm / 100;
   const bmi = weightKg / (heightM * heightM);
 
-  // BMR using Mifflin-St Jeor (1990) — single source in nutrition.js
+  // BMR using Mifflin-St Jeor (1990) : single source in nutrition.js
   const bmr = calculateBMR(weightKg, heightCm, ageYears, sex);
 
   // Body fat estimation (Deurenberg 1991, BMI-based; SEE 4-5%)

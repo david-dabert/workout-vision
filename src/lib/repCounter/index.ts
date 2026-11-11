@@ -1,5 +1,5 @@
 /**
- * Rep counting engine — valley counting.
+ * Rep counting engine : valley counting.
  *
  * A rep is a valley in the tracking signal. For bicep curls,
  * every time the elbow angle hits its most flexed position
@@ -300,7 +300,7 @@ export class RepCounter {
           if (signedVel < -velThreshold) {
             this._phase = 'concentric';
           } else if (signedVel > velThreshold) {
-            // False inflection — went back to eccentric
+            // False inflection : went back to eccentric
             this._phase = 'eccentric';
           }
           break;
@@ -321,7 +321,7 @@ export class RepCounter {
             }
           } else {
             this._isometricFrames = 0;
-            // Velocity reversed — back to eccentric without reaching lockout
+            // Velocity reversed : back to eccentric without reaching lockout
             if (signedVel > velThreshold) {
               this._phase = 'eccentric';
             }
@@ -507,7 +507,7 @@ export class RepCounter {
       // and apply hysteresis cap/floor below.
     }
 
-    // Hysteresis validation — runs on ALL counting methods (valley, period,
+    // Hysteresis validation : runs on ALL counting methods (valley, period,
     // period-up, etc). Previously only ran on 'valley', which let period-up
     // results bypass sanity checking entirely.
     {

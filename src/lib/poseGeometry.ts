@@ -1,5 +1,5 @@
 /**
- * poseGeometry.ts — Shared geometry, filtering, and pose selection utilities.
+ * poseGeometry.ts : Shared geometry, filtering, and pose selection utilities.
  *
  * Single source of truth for logic used by both the main thread (poseAnalysis.js)
  * and the Web Worker (poseWorker.js). This module has zero dependencies so it can
@@ -8,7 +8,7 @@
 
 import type { Landmark, LandmarkArray, JointAngles } from './types';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore — oneEuroFilter.js has no type declarations yet
+// @ts-ignore : oneEuroFilter.js has no type declarations yet
 import { OneEuroLandmarkFilter } from './oneEuroFilter.js';
 
 // ─── Landmark indices (MediaPipe Pose Landmarker 33-point model) ───
@@ -164,7 +164,7 @@ export function selectSubjectPose(landmarksArray: LandmarkArray[]): LandmarkArra
 // ─── One Euro Filter (adaptive low-pass, zero-dependency, usable in Worker) ───
 
 export function createKalmanStates(n: number): OneEuroLandmarkFilter {
-  // Returns a OneEuroLandmarkFilter instance — drop-in replacement for the
+  // Returns a OneEuroLandmarkFilter instance : drop-in replacement for the
   // old per-coordinate Kalman state arrays. The name is kept for API compat.
   return new OneEuroLandmarkFilter({ numLandmarks: n });
 }

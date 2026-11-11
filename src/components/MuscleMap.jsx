@@ -1,5 +1,5 @@
 /**
- * MuscleMap — SVG anatomical body visualization.
+ * MuscleMap : SVG anatomical body visualization.
  * Shows front and back views with highlighted muscle groups.
  * Inspired by premium fitness apps (Hevy, Strong, etc.)
  */

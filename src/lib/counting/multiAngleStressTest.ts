@@ -1,5 +1,5 @@
 /**
- * Multi-Angle Synthetic Stress Tester — Orbital 3D Projection & Invariance Verification.
+ * Multi-Angle Synthetic Stress Tester : Orbital 3D Projection & Invariance Verification.
  *
  * Simulates arbitrary camera viewpoint rotations (azimuth 0°–360°, elevation -30°–45°)
  * on 3D kinematic landmark streams to verify perspective invariance, compute 2D projection

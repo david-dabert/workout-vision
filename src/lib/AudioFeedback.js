@@ -161,7 +161,7 @@ export class AudioFeedback {
       this._playTone(220, now, 0.1, 0.4);
       this._playTone(220, now + 0.15, 0.1, 0.4);
     } else {
-      // 'minor' or any unknown value — single low G3 tone, 150ms
+      // 'minor' or any unknown value : single low G3 tone, 150ms
       this._playTone(196, now, 0.15, 0.2);
     }
   }

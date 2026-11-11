@@ -121,8 +121,8 @@ async function auditMediaAssets() {
     }
   }
 
-  // Check all JSX files for <video> tags without onError fallback
-  const jsxFiles = walkDir(SRC_DIR, f => /\.(jsx|tsx)$/.test(f));
+  // Check all JSX files for <video> tags without onError fallback (excluding test suites)
+  const jsxFiles = walkDir(SRC_DIR, f => /\.(jsx|tsx)$/.test(f) && !f.includes('__tests__') && !f.includes('.test.'));
   for (const file of jsxFiles) {
     const rel = path.relative(ROOT_DIR, file);
     const content = fs.readFileSync(file, 'utf8');

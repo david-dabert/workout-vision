@@ -1,5 +1,5 @@
 /**
- * Sample capture — IndexedDB storage of labelled temporal feature windows.
+ * Sample capture : IndexedDB storage of labelled temporal feature windows.
  *
  * Every time the user confirms or corrects an exercise via the picker,
  * the current temporal feature window is saved as a labelled training sample.

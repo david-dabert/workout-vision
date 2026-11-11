@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 /**
- * useCountUp — Animates a number from 0 to a target value.
+ * useCountUp : Animates a number from 0 to a target value.
  *
  * Uses requestAnimationFrame for smooth 60fps animation with ease-out cubic easing.
  * Respects prefers-reduced-motion. Re-triggers when target changes.

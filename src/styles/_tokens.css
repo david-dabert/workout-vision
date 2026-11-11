@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════
-   WORKOUT VISION — Design System
+   WORKOUT VISION: Design System
    Warm black. Purposeful restraint. One accent, used sparingly.
    Inspired by Dieter Rams: less, but better.
    ══════════════════════════════════════════════════════════════════════ */
@@ -13,7 +13,7 @@
   --depth-2: #161619;
   --depth-3: #1e1e22;
 
-  /* ── Brand accent — warm amber/brass ── */
+  /* ── Brand accent: warm amber/brass ── */
   --bio-cyan: #D4A76A;
   --bio-green: #5DB87A;
   --bio-glow: rgba(212, 167, 106, 0.10);
@@ -51,6 +51,8 @@
   --text: var(--text-primary);
   --muted: var(--text-tertiary);
   --dim: var(--text-quaternary);
+  --c-text: var(--text-primary);
+  --c-text-muted: var(--text-secondary);
 
   /* ── Accent ── */
   --accent: var(--bio-cyan);
@@ -66,6 +68,14 @@
   --yellow-glow: rgba(201, 160, 74, 0.10);
   --blue: #5B8AC4;
   --blue-glow: rgba(91, 138, 196, 0.10);
+
+  /* ── Nutri-Score scheme tokens (official scale colors) ── */
+  --ns-green-dark: #038141;
+  --ns-green-light: #85bb2f;
+  --ns-yellow: #fecb02;
+  --ns-orange: #ee8100;
+  --ns-red: #e63e11;
+
   /* ── Brand gradient (monochrome warmth) ── */
   --gradient-mesh: linear-gradient(135deg, #D4A76A 0%, #C4956A 100%);
 
@@ -143,7 +153,7 @@ body {
    the coach report's paper; the experience draws its own, under the content. */
 
 /* ══════════════════════════════════════════
-   LIGHT MODE — activates via system preference
+   LIGHT MODE: activates via system preference
    ══════════════════════════════════════════ */
 @media (prefers-color-scheme: light) {
   :root {

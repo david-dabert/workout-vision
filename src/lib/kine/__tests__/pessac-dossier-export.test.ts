@@ -20,7 +20,11 @@ describe('Pessac 8-Pole Clinical Dossier Export', () => {
     expect(htmlDefault).toContain('Bilan Diagnostic Kinésithérapique');
     expect(htmlDefault).toContain('Dupont Jean');
     expect(htmlDefault).toContain('Valgus Dynamique Max');
-    expect(htmlDefault).toContain('4.8°');
+    // The example values of SPECIALTY_META are never printed as a patient's; no prescriber is invented (R8).
+    expect(htmlDefault).not.toContain('4.8°');
+    expect(htmlDefault).toContain('Non mesuré');
+    expect(htmlDefault).not.toContain('Dr. J. Martin');
+    expect(htmlDefault).toContain('Aucune mesure n’a été réalisée pour ce bilan.');
 
     const htmlDynamic = generatePessacDossierHtml('knee', {
       nom: 'Dupont',

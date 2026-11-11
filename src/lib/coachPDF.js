@@ -151,7 +151,7 @@ function _drawClientInfo(doc, client, y, margin, contentW, t) {
   const col3x = margin + (contentW * 2) / 3;
 
   doc.setFont('helvetica', 'bold');
-  doc.text(client.name || '—', col1x, y + 6);
+  doc.text(client.name || '-', col1x, y + 6);
   doc.setFont('helvetica', 'normal');
 
   const details = [];
@@ -186,14 +186,14 @@ function _drawSessionSummary(doc, workout, y, margin, contentW, t, tExercise) {
     : (workout.exerciseName || exerciseKey);
   const date = workout.date || workout.createdAt
     ? new Date(workout.date || workout.createdAt).toLocaleDateString()
-    : '—';
+    : '-';
 
   // Summary cards row
   const cardW = (contentW - 6) / 4;
   const cards = [
     { label: t('exercise') || 'Exercise', value: exerciseName },
     { label: t('reps') || 'Reps', value: String(workout.reps || 0) },
-    { label: t('form_score') || 'Form', value: workout.formScore != null ? `${workout.formScore}/100` : '—' },
+    { label: t('form_score') || 'Form', value: workout.formScore != null ? `${workout.formScore}/100` : '-' },
     { label: t('date') || 'Date', value: date },
   ];
 
@@ -280,12 +280,12 @@ function _drawRepBreakdown(doc, workout, y, margin, contentW, t) {
     }
 
     doc.text(String(i + 1), cols[0], rowY + 3);
-    doc.text(score != null ? `${Math.round(score)}` : '—', cols[1], rowY + 3);
+    doc.text(score != null ? `${Math.round(score)}` : '-', cols[1], rowY + 3);
 
     doc.setTextColor(...COLORS.text);
-    doc.text(rep.rom != null ? `${Math.round(rep.rom)}°` : '—', cols[2], rowY + 3);
-    doc.text(rep.duration != null ? `${rep.duration.toFixed(1)}s` : '—', cols[3], rowY + 3);
-    doc.text(rep.tempoLabel || '—', cols[4], rowY + 3);
+    doc.text(rep.rom != null ? `${Math.round(rep.rom)}°` : '-', cols[2], rowY + 3);
+    doc.text(rep.duration != null ? `${rep.duration.toFixed(1)}s` : '-', cols[3], rowY + 3);
+    doc.text(rep.tempoLabel || '-', cols[4], rowY + 3);
 
     // Notes (truncated)
     if (rep.notes && rep.notes.length > 0) {

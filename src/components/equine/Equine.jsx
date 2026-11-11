@@ -46,6 +46,7 @@ export function EquineVideoBand({ lang, own, reduced, onOpen, onClose }) {
   const c = EQUINE_COPY[lang] ?? EQUINE_COPY.en, fr = lang === 'fr';
   // The preview first; a visitor's own video is never shown with any marker or figure (no reading of a horse).
   const [view, setView] = useState('preview');
+  const [loadError, setLoadError] = useState(false);
   return (
     <section className="sc-section equine-hero" data-testid="equine-player" data-reveal style={{ '--i': 2 }}>
       <GroupHead title={c.videoHead}>{own ? null : view === 'preview' ? <PreviewTag fr={fr} /> : <DemoTag fr={fr} />}</GroupHead>
@@ -62,10 +63,14 @@ export function EquineVideoBand({ lang, own, reduced, onOpen, onClose }) {
         </div>
       </>}
       <div className="sc-frame">
-        {own
+        {loadError ? (
+          <div className="sc-frame-placeholder" style={{ padding: 'var(--s-3)', textAlign: 'center', color: 'var(--c-fg-muted)' }}>
+            {fr ? 'Vidéo indisponible ou format non pris en charge.' : 'Video unavailable or format not supported.'}
+          </div>
+        ) : own
           // #t=0.1 shows a clip's first frame on iOS before it plays (the visitor's video, or the demo under Reduce Motion).
-          ? <video key={own.url} src={`${own.url}#t=0.1`} controls playsInline preload="metadata" data-testid="equine-own-video" />
-          : <video key={view} ref={muteVideo} src={`${view === 'preview' ? RIDDEN_PREVIEW_URL : RIDDEN_RAW_URL}#t=0.1`} controls playsInline muted loop autoPlay={!reduced} preload="metadata" data-testid="equine-demo-video" />}
+          ? <video key={own.url} src={`${own.url}#t=0.1`} controls playsInline preload="metadata" data-testid="equine-own-video" onError={() => setLoadError(true)} />
+          : <video key={view} ref={muteVideo} src={`${view === 'preview' ? RIDDEN_PREVIEW_URL : RIDDEN_RAW_URL}#t=0.1`} controls playsInline muted loop autoPlay={!reduced} preload="metadata" data-testid="equine-demo-video" onError={() => setLoadError(true)} />}
       </div>
       {own ? (
         <div className="sc-card equine-own" role="status" data-testid="equine-own-statement">

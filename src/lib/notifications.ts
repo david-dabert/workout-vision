@@ -1,6 +1,6 @@
 /**
  * Push notification permission and weekly reminder scheduling.
- * Only shown after a user's FIRST successful analysis result — never at onboarding.
+ * Only shown after a user's FIRST successful analysis result : never at onboarding.
  */
 
 const STORAGE_KEY = 'wv-notifications';

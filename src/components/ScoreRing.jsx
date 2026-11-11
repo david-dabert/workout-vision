@@ -3,7 +3,7 @@ import useCountUp from '../lib/useCountUp';
 import s from './ScoreRing.module.css';
 
 /**
- * ScoreRing — Apple Watch-inspired 270-degree arc gauge for form scores (0-100).
+ * ScoreRing : Apple Watch-inspired 270-degree arc gauge for form scores (0-100).
  *
  * SVG-based with animated fill, count-up number, and color-coded by score.
  * Uses design tokens from _tokens.css for semantic colors.

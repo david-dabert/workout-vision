@@ -1,5 +1,5 @@
 /**
- * Injury/limitation layer — maps body areas to affected landmarks and form checks.
+ * Injury/limitation layer : maps body areas to affected landmarks and form checks.
  * When a user marks an area as limited, form checks that stress that area
  * are auto-passed instead of penalizing the score.
  */

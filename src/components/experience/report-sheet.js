@@ -402,7 +402,7 @@ export function buildOptimizationMetrics(opt, fr) {
       val: `${Math.round(Math.max(0, 1 - opt.formDistortionScore) * 100)}%`,
       sub: opt.pathEfficiencyPercent !== null && opt.pathEfficiencyPercent !== undefined
         ? (fr ? `Efficacité axiale\u00A0: ${opt.pathEfficiencyPercent}%` : `Axial efficiency: ${opt.pathEfficiencyPercent}%`)
-        : '—',
+        : '-',
       fillPct: Math.round(Math.max(10, Math.min(100, (1 - opt.formDistortionScore) * 100))),
     });
   }

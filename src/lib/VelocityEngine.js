@@ -1,8 +1,8 @@
 /**
- * VelocityEngine — Angular Kinematics from Joint Angles
+ * VelocityEngine : Angular Kinematics from Joint Angles
  *
  * WHAT THIS MEASURES:
- *   Angular velocity (deg/s) — first derivative of joint angles from MediaPipe.
+ *   Angular velocity (deg/s) : first derivative of joint angles from MediaPipe.
  *   This is NOT velocity-based training (VBT). VBT requires linear barbell
  *   velocity in m/s from a linear position transducer or accelerometer.
  *   A single phone camera cannot measure linear velocity reliably.
@@ -172,7 +172,7 @@ export class VelocityEngine {
     const power = this._computeAngularVelocityMetrics(signedVelocity);
 
     // Smoothness: dimensionless jerk metric
-    // Based on Hogan & Sternad 2009, Biol Cybern — normalized jerk cost:
+    // Based on Hogan & Sternad 2009, Biol Cybern : normalized jerk cost:
     //   NJ = sqrt(0.5 * ∫jerk² dt * T⁵ / D²)
     // where T = movement duration, D = movement amplitude.
     // Lower NJ = smoother. Minimum-jerk trajectory NJ ≈ √(720/2) ≈ 18.97.

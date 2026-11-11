@@ -141,7 +141,7 @@ export default function RestTimer({ onClose }) {
   const strokeOffset = circumference * (1 - progress);
   const isComplete = remaining === 0 && !running;
 
-  // Urgency states — the timer shifts personality as time runs out
+  // Urgency states : the timer shifts personality as time runs out
   const isUrgent = running && remaining > 0 && remaining <= Math.max(10, totalSeconds * 0.15);
   const isCritical = running && remaining > 0 && remaining <= 5;
 

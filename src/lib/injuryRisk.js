@@ -1,5 +1,5 @@
 /**
- * Training Load Monitor — Longitudinal Data Analysis
+ * Training Load Monitor : Longitudinal Data Analysis
  *
  * Analyzes workout history to detect patterns that correlate with injury risk:
  * - Form degradation trends across sessions
@@ -32,7 +32,7 @@ const RISK = {
  * @returns {Object} risk report with flags and recommendations
  */
 export async function assessInjuryRisk() {
-  // Fetch only last 28 days — enough for ACWR, form trend, and muscle overload analysis.
+  // Fetch only last 28 days : enough for ACWR, form trend, and muscle overload analysis.
   // avoids a full-store scan on large datasets.
   const dateFrom = new Date(Date.now() - 28 * 86400000);
   const dateTo = new Date();

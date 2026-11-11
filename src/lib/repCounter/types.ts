@@ -1,6 +1,6 @@
 /**
  * Internal types for the rep counting engine.
- * These are not part of the public API — use ../types.ts for shared types.
+ * These are not part of the public API : use ../types.ts for shared types.
  */
 
 import type { LandmarkArray, JointAngles, RepHistoryEntry, FormResultEntry } from '../types';

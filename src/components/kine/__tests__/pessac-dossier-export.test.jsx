@@ -25,7 +25,14 @@ describe('Pessac Clinic 8-Pole Clinical Dossier Export', () => {
 
       // Medical compliance
       expect(html).toContain('Mesures Cinématiques Objectivées');
-      expect(html).toContain('Fondement Scientifique &amp; Littérature Peer-Reviewed');
+      // No measure was made for this dossier: no example value is printed as a patient's, and nothing is claimed (R8).
+      expect(html).toContain('Non mesuré');
+      expect(html).toContain('Document de travail, non validé');
+      expect(html).not.toContain('>Conforme<');
+      expect(html).not.toContain('Conforme BDK CPAM');
+      expect(html).not.toContain('Agrément CPAM');
+      expect(html).not.toContain('certifié conforme');
+      expect(html).not.toContain('Validation clinique\u00A0: Référence ()');
       expect(html).toContain('Visa du Médecin Prescripteur');
     });
   }

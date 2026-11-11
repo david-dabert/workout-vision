@@ -1,5 +1,5 @@
 /**
- * Defense Round tests — P0 regression tests for identity contract,
+ * Defense Round tests : P0 regression tests for identity contract,
  * unsafe coaching, auto-lock policy, and cache integrity.
  *
  * Each test targets a specific P0 vulnerability. Tests are designed to
@@ -54,7 +54,7 @@ function makeFeatures(overrides = {}) {
 // P0-1: Exercise identity contract
 // ---------------------------------------------------------------------------
 
-describe('P0-1: identity contract — lock overrides post-hoc detection', () => {
+describe('P0-1: identity contract : lock overrides post-hoc detection', () => {
   it('lock() prevents update() from changing exercise', () => {
     const detector = new HierarchicalDetector({ fps: 10, mode: 'gym' });
 
@@ -83,7 +83,7 @@ describe('P0-1: identity contract — lock overrides post-hoc detection', () => 
 
 // ---------------------------------------------------------------------------
 // P0-2: No unsafe coaching under uncertainty
-// (The actual gating is in analyzeVideo.js — we test the contract here)
+// (The actual gating is in analyzeVideo.js : we test the contract here)
 // ---------------------------------------------------------------------------
 
 describe('P0-2: detection confidence propagates correctly', () => {
@@ -101,7 +101,7 @@ describe('P0-2: detection confidence propagates correctly', () => {
 });
 
 // ---------------------------------------------------------------------------
-// P0-3: Auto-lock policy — ambiguous classes must not auto-lock
+// P0-3: Auto-lock policy : ambiguous classes must not auto-lock
 // ---------------------------------------------------------------------------
 
 describe('P0-3: auto-lock blocked for ambiguous movement classes', () => {
@@ -221,7 +221,7 @@ describe('P0-3: auto-lock blocked for ambiguous movement classes', () => {
 // P0-4: Privacy boundary
 // ---------------------------------------------------------------------------
 
-describe('P0-4: privacy — telemetry is local-only', () => {
+describe('P0-4: privacy : telemetry is local-only', () => {
   it('CACHE_FORMAT_VERSION is exported and is a number', () => {
     expect(typeof CACHE_FORMAT_VERSION).toBe('number');
     expect(CACHE_FORMAT_VERSION).toBeGreaterThanOrEqual(1);
@@ -232,7 +232,7 @@ describe('P0-4: privacy — telemetry is local-only', () => {
 // P0-5: Cache/checkpoint integrity
 // ---------------------------------------------------------------------------
 
-describe('P0-5: cache integrity — validateCacheEntry', () => {
+describe('P0-5: cache integrity : validateCacheEntry', () => {
   // We test the exported functions indirectly via the module contract.
   // The validation function is internal, but we can verify the version constant
   // exists and the round-trip behavior of the cache format.
@@ -406,7 +406,7 @@ describe('Phase A: isPulling derived from ontology + key name', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Phase A: dead code removal — detectReps no longer exists in biomechanics
+// Phase A: dead code removal : detectReps no longer exists in biomechanics
 // ---------------------------------------------------------------------------
 
 describe('Phase A: dead code cleanup', () => {

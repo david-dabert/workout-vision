@@ -219,6 +219,6 @@
 
 .deleteBtn {
   background: var(--red);
-  color: #fff;
+  color: var(--c-text);
   border: none;
 }

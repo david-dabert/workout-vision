@@ -1,5 +1,5 @@
 /**
- * Universal Kinetic Recurrence Segmenter — Self-Similarity Matrix & Poincaré Phase Decomposition.
+ * Universal Kinetic Recurrence Segmenter : Self-Similarity Matrix & Poincaré Phase Decomposition.
  *
  * Decomposes arbitrary continuous multi-joint 3D kinematic landmark streams into discrete
  * repetitions and canonical phase envelopes without requiring prior exercise-specific

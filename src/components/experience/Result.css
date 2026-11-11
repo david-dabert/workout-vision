@@ -1,4 +1,4 @@
-/* Result screen — count reveal and confirmation. Sizes, spaces, radii and timings are the tokens of
+/* Result screen : count reveal and confirmation. Sizes, spaces, radii and timings are the tokens of
    Entry.css (design/SYSTEM.md). The screen pads itself (Entry.css .screen); the column adds no second gutter. */
 
 /* The topbar: Close, the replay in the centre, the test-version mark; with no replay, Close and the mark (#26).

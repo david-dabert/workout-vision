@@ -163,7 +163,7 @@ button, a, .nav-card, .card, .upload-zone { transition: all 0.2s var(--ease-smoo
 
 
 /* ══════════════════════════════════════════
-   FOCUS VISIBLE — keyboard accessibility
+   FOCUS VISIBLE : keyboard accessibility
    ══════════════════════════════════════════ */
 
 :focus-visible {
@@ -193,7 +193,7 @@ textarea:focus-visible {
 
 
 /* ══════════════════════════════════════════
-   TOUCH TARGETS — 44px minimum everywhere
+   TOUCH TARGETS : 44px minimum everywhere
    ══════════════════════════════════════════ */
 
 /* Language toggle buttons */
@@ -289,7 +289,7 @@ textarea:focus-visible {
    PAGE TRANSITIONS
    ══════════════════════════════════════════ */
 
-/* Pages don't slide in — you step into them */
+/* Pages don't slide in : you step into them */
 .page-transition-enter {
   animation: pageEnter 0.45s var(--ease-spring) both;
 }

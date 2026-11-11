@@ -107,7 +107,7 @@ describe('challengeShare', () => {
   });
 
   it('uses no em dash', () => {
-    for (const fr of [true, false]) expect(challengeShare({ liftName: 'Squat', count: 5, fr, url: 'x' }).text).not.toContain('—');
+    for (const fr of [true, false]) expect(challengeShare({ liftName: 'Squat', count: 5, fr, url: 'x' }).text).not.toContain('\u2014');
   });
 
   // Review of 29 September: a count the user corrected was not counted by the app, so the message

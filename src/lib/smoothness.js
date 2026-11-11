@@ -1,5 +1,5 @@
 /**
- * smoothness.js — Movement smoothness (SPARC) and rep consistency (DTW).
+ * smoothness.js : Movement smoothness (SPARC) and rep consistency (DTW).
  *
  * WITHDRAWN from the app on 14 October 2026 (honesty audit, CORE-08, CORE-09, CORE-10): run by no screen, kept for
  * research. The SPARC bands (-1.6 / -2.5 / -3.8) are UNSOURCED and the implementation departs from reference SPARC

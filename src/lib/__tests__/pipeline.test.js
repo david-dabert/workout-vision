@@ -34,7 +34,7 @@ import { analyzeSet } from '../biomechanics';
 import { fakeSquatFrame, fakeCurlFrame, fakeLandmarks } from './helpers';
 
 // ---------------------------------------------------------------------------
-// poseGeometry — angle extraction from landmarks
+// poseGeometry : angle extraction from landmarks
 // ---------------------------------------------------------------------------
 
 describe('poseGeometry: calculateAngle', () => {

@@ -1,5 +1,5 @@
 /**
- * symmetry.js — Bilateral symmetry and musculoskeletal balance analysis.
+ * symmetry.js : Bilateral symmetry and musculoskeletal balance analysis.
  *
  * Measures Left vs Right Range of Motion (ROM) and phase synchronization
  * from 3D world landmarks for injury prevention, post-rehab monitoring,

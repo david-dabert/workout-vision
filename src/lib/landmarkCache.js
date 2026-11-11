@@ -1,5 +1,5 @@
 /**
- * Landmark cache — IndexedDB persistence for pose landmarks.
+ * Landmark cache : IndexedDB persistence for pose landmarks.
  *
  * Keyed by SHA-256 hash of video file content + fps.
  * Same file = same hash = same landmarks. Deterministic.
@@ -93,7 +93,7 @@ function validateCacheEntry(entry) {
     if (typeof first[0]?.x !== 'number') return null;
     return entry.landmarks;
   }
-  // Legacy unversioned: raw array — accept if structurally valid
+  // Legacy unversioned: raw array : accept if structurally valid
   if (Array.isArray(entry) && entry.length > 0) {
     const first = entry[0];
     if (first && Array.isArray(first) && first.length >= 33 && typeof first[0]?.x === 'number') {

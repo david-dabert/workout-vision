@@ -123,7 +123,7 @@ export async function generateShareCard(result, videoEl) {
     }
   }
 
-  // ── Grade badge — large, centered, glowing ──────────────────────────────
+  // ── Grade badge : large, centered, glowing ──────────────────────────────
   const badgeSize = 200;
   const badgeY = thumbH + 60;
   const badgeCX = W / 2;
@@ -173,7 +173,7 @@ export async function generateShareCard(result, videoEl) {
   ctx.fillText(formatTime(result.duration), W / 2, y);
   y += 70;
 
-  // ── Stats card — big, bold ───────────────────────────────────────────────
+  // ── Stats card : big, bold ───────────────────────────────────────────────
   const weight = result.weight || 0;
   const volume = weight > 0 ? `${weight * result.reps}kg` : `${result.reps}`;
   const stats = [
@@ -350,7 +350,7 @@ export async function generateShareCard(result, videoEl) {
   ctx.textBaseline = 'top';
   ctx.fillText(tModule('share_beat_my_form'), W / 2, ctaY);
 
-  // QR code — links to the app
+  // QR code : links to the app
   try {
     const qrSize = 160;
     const qrDataUrl = await QRCode.toDataURL(`https://${APP_URL}`, {
@@ -490,7 +490,7 @@ export async function shareCard(result, videoEl) {
 
 
 /* ══════════════════════════════════════════════════════════════════════
-   ANIMATED SHARE CARD — 3.5s MP4 Reel for Instagram/TikTok virality
+   ANIMATED SHARE CARD : 3.5s MP4 Reel for Instagram/TikTok virality
    Spring-animated bars, grade badge drop, staggered reveals.
    ══════════════════════════════════════════════════════════════════════ */
 
@@ -758,7 +758,7 @@ export async function generateAnimatedShareCard(result, onProgress) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   FORM CARD — 1080x1920 Instagram Stories card with circular gauge.
+   FORM CARD : 1080x1920 Instagram Stories card with circular gauge.
    Canvas-only, no external deps. Exported as the primary Change-7 API.
    ══════════════════════════════════════════════════════════════════════ */
 

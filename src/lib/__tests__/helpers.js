@@ -1,5 +1,5 @@
 /**
- * Test helpers — synthetic landmark generators for pose analysis tests.
+ * Test helpers : synthetic landmark generators for pose analysis tests.
  *
  * MediaPipe Pose Landmarker outputs 33 landmarks, each with
  * {x, y, z, visibility} in normalized coordinates (0-1).
@@ -20,7 +20,7 @@
  * @returns {Array<{x: number, y: number, z: number, visibility: number}>}
  */
 export function fakeLandmarks(overrides = {}) {
-  // Default standing pose — approximate normalized coordinates.
+  // Default standing pose : approximate normalized coordinates.
   // y increases downward in MediaPipe's coordinate system.
   const defaults = {
     0:  { x: 0.50, y: 0.10, z: 0 },   // nose
@@ -185,7 +185,7 @@ export function fakeCurlFrame(elbowAngleDeg) {
     14: { x: elbowX + 0.16, y: elbowY },
     15: { x: wristX, y: wristY },
     16: { x: wristX + 0.16, y: wristY },
-    // Standing upright — knees and hips nearly straight
+    // Standing upright : knees and hips nearly straight
     23: { x: 0.47, y: 0.52 },
     24: { x: 0.53, y: 0.52 },
     25: { x: 0.46, y: 0.72 },

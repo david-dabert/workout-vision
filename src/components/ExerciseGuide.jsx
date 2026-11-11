@@ -5,7 +5,7 @@ import { EXERCISES } from '../lib/exercises';
 import css from './ExerciseGuide.module.css';
 
 /**
- * Animated exercise illustration — cycles 3 SVG frames.
+ * Animated exercise illustration : cycles 3 SVG frames.
  * Fetches frames from jsDelivr CDN on demand.
  *
  * @param {Object} props

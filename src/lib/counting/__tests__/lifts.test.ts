@@ -36,7 +36,7 @@ function median(values: number[]) {
   return s[Math.floor(s.length / 2)];
 }
 
-describe('Counting core — lifts by joint', () => {
+describe('Counting core : lifts by joint', () => {
   for (const { lift, joint, rest, work, first } of LIFTS) {
     for (const sps of SPS) {
       it(`${lift}: 10 cycles at ${sps} sps with 10% wobble`, () => {
@@ -119,7 +119,7 @@ function countBoth(left: (number | null)[], right: (number | null)[], sps: numbe
   return countReps(frames, timestamps(left.length, sps), 'bicep_curl_alternating');
 }
 
-describe('Counting core — alternating curl', () => {
+describe('Counting core : alternating curl', () => {
   for (const sps of SPS) {
     it(`strict alternation, 5 reps per arm, counts 10 at ${sps} sps`, () => {
       const reps = Array.from({ length: 10 }, (_, k) => ({ side: (k % 2 ? 'right' : 'left') as Side, at: 0.5 + k * 2.2 }));

@@ -18,3 +18,15 @@ export const experimentalLabel = fr => (fr
 // change from that noise, so a sentence such as "6 % faster" stated noise as a finding (R8).
 // Back on once a set's change can be told from that noise. Status: not validated.
 export const SPEED_CHANGE_SHOWN = false;
+
+// Whether the screens show the biomechanical readings added from 10 to 11 November 2026 (PR #354 to #363): the replay's
+// fault banners, target-angle HUD and inflection pins; on the result card the velocity decline, bilateral symmetry,
+// knee valgus, kinetic chain, lumbopelvic, bar and scapular indices, the bar path efficiency and the height-derived
+// "morpho" banner; the fatigue horizon badge. Off since 11 November 2026 (David: "fix this garbage", his iPhone
+// screenshots of the replay). Measured that day on David's 20 stored sets with the screens' own calls: scapular
+// stability reads "critical" on 20 of 20 (hip thrusts and leg press included), the bar index "critical tilt" on 16
+// (curls and machines with no bar), "butt wink" on 13, "hip shoot" on 12, knee valgus 140.3 and 128.8 degrees on
+// side views, velocity decline 0 to 82 % (median 40 %), the signal SPEED_CHANGE_SHOWN above records as noise.
+// The engines and their tests stay in the repository, unchanged. Back on, reading by reading, once each one is
+// held against a labelled reference (R8, R16). Status: none validated.
+export const UNVALIDATED_BIOMECHANICS_SHOWN = false;

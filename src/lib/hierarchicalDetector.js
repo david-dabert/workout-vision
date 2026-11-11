@@ -1,5 +1,5 @@
 /**
- * Hierarchical exercise detector — three-level classification.
+ * Hierarchical exercise detector : three-level classification.
  *
  * Level 0 (Context):    seated / standing / prone / supine / hanging / supported
  * Level 1 (Movement):   upper_push / upper_pull / lower_push / lower_pull / etc.
@@ -33,10 +33,10 @@ const AUTOLOCK_MARGIN = 0.15;
 const AUTOLOCK_STABILITY_MS = 1000;
 
 // Movement classes where monocular pose cannot reliably disambiguate exercises.
-// Auto-lock is suppressed for these — user must confirm via chip selection.
+// Auto-lock is suppressed for these : user must confirm via chip selection.
 const AUTOLOCK_BLOCKED_CLASSES = new Set([
-  'upper_horizontal',    // seated row vs chest press — load direction invisible
-  'lower_isolation',     // adductor vs abductor — identical joint trajectories
+  'upper_horizontal',    // seated row vs chest press : load direction invisible
+  'lower_isolation',     // adductor vs abductor : identical joint trajectories
 ]);
 
 // ---------------------------------------------------------------------------
@@ -267,7 +267,7 @@ export class HierarchicalDetector {
     const hip = f.hip, knee = f.knee, trunk = f.trunk, shoulder = f.shoulder, elbow = f.elbow;
 
     // Hanging: shoulders very elevated, knees above hips range
-    // Check first — distinctive signature, no other context has shoulder mean > 140
+    // Check first : distinctive signature, no other context has shoulder mean > 140
     if (shoulder.mean > 140 && knee.mean > 100) return 'hanging';
 
     // Seated: hips flexed (<130 mean), trunk upright (<35), knees not fully extended.
@@ -276,12 +276,12 @@ export class HierarchicalDetector {
     if (hip.mean < 130 && trunk.mean < 35 && knee.mean < 150) return 'seated';
 
     // Standing: knees and hips extended (>130), trunk upright to moderately forward.
-    // Must check before prone — a standing person with low trunk lean and extended
+    // Must check before prone : a standing person with low trunk lean and extended
     // hips would otherwise match the prone rule.
     if (knee.mean > 130 && hip.mean > 130) return 'standing';
 
     // Prone: trunk near horizontal, hips extended, knees NOT fully extended
-    // (face-down on a bench — knees typically bent or dangling, mean < 130)
+    // (face-down on a bench : knees typically bent or dangling, mean < 130)
     if (trunk.mean < 20 && hip.mean > 140 && knee.mean <= 130) return 'prone';
 
     // Supine: trunk near horizontal + elbows active (bench press family)

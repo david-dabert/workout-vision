@@ -1,5 +1,5 @@
 /**
- * JointTorqueEngine — Edge Biomechanical Inverse Dynamics & Joint Shear Estimator
+ * JointTorqueEngine : Edge Biomechanical Inverse Dynamics & Joint Shear Estimator
  *
  * WITHDRAWN from the app on 14 October 2026 (honesty audit, CORE-04): run by no screen, kept for research. Every value
  * comes from a fixed 75 kg body with no external load, so the lumbar "shear" tops out at 433.4 N and the patellar one

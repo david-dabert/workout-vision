@@ -1,4 +1,4 @@
-/* Film screen — camera framing instructions before recording.
+/* Film screen : camera framing instructions before recording.
    Same position override as Guide: WebKit collapses position:fixed
    inside isolation:isolate, so the film screen uses position:relative. */
 .wv-experience:has(.film-screen) { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100dvh; }

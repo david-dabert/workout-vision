@@ -1,5 +1,5 @@
 /**
- * mirrorReference.ts — Healthy-side self-reference mirror generator & Limb Symmetry Index (LSI).
+ * mirrorReference.ts : Healthy-side self-reference mirror generator & Limb Symmetry Index (LSI).
  *
  * Implements David Dabert's clinical concept discussed with Monsieur Lamine:
  * Using the patient's own unaffected limb as their personalized biomechanical reference avatar.

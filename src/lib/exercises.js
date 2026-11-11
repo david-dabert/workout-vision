@@ -136,7 +136,7 @@ export function bestSideStable(angles, leftKey, rightKey, visLeftKey, visRightKe
 }
 
 // ---------------------------------------------------------------------------
-// Exercise database — compiled from declarative DSL definitions
+// Exercise database : compiled from declarative DSL definitions
 // ---------------------------------------------------------------------------
 // The DSL definitions live in exerciseDefinitions.js and are compiled at
 // module init by exerciseDSL.js. This replaces the previous 5000+ lines of
@@ -146,7 +146,7 @@ export function bestSideStable(angles, leftKey, rightKey, visLeftKey, visRightKe
 import { compileExercises } from './exerciseDSL';
 import { EXERCISE_DEFINITIONS } from './exerciseDefinitions';
 
-// Compile DSL definitions into runtime objects — single source of truth
+// Compile DSL definitions into runtime objects : single source of truth
 export const EXERCISES = compileExercises(EXERCISE_DEFINITIONS);
 
 // Build a map from exercise key to its DSL value type string (e.g. 'bestSide', 'bestSideMax', 'direct')
@@ -160,7 +160,7 @@ for (const [key, dsl] of Object.entries(EXERCISE_DEFINITIONS)) {
 // Re-exports removed to break circular dependency (exercises <-> repCounter/exerciseDetector).
 
 // ---------------------------------------------------------------------------
-// Default limitations for pose estimation — applied to exercises that don't
+// Default limitations for pose estimation : applied to exercises that don't
 // specify their own. Honest disclosure of what the AI cannot assess.
 // ---------------------------------------------------------------------------
 const DEFAULT_LIMITATIONS = ['breathing technique'];
@@ -185,7 +185,7 @@ export function getExerciseLimitations(key) {
 }
 
 // ---------------------------------------------------------------------------
-// Exercise validation tiers — honest disclosure of what has been tested
+// Exercise validation tiers : honest disclosure of what has been tested
 // ---------------------------------------------------------------------------
 // Tier 1 "validated": benchmark videos exist, accuracy measured.
 // Tier 2 "supported": shares signal pattern with a validated exercise,

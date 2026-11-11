@@ -1,5 +1,5 @@
 /**
- * Workout of the Week — deterministic weekly exercise challenge.
+ * Workout of the Week : deterministic weekly exercise challenge.
  *
  * Each week, one exercise is selected for everyone to attempt.
  * Creates a shared ritual: all users working on the same exercise that week,

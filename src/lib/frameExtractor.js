@@ -2,10 +2,10 @@
  * Frame extraction and hashing utilities for video analysis.
  *
  * Two extraction methods (tried in order):
- * 1. extractFramesWebCodecs — WebCodecs VideoDecoder with web-demuxer.
+ * 1. extractFramesWebCodecs : WebCodecs VideoDecoder with web-demuxer.
  *    Decodes video frames directly via hardware decoder, bypassing <video> + canvas.
  *    Sequential, deterministic, handles rotation metadata. Safari 16.4+, Chrome 94+.
- * 2. extractFramesRVFC — requestVideoFrameCallback with accelerated playback (fallback).
+ * 2. extractFramesRVFC : requestVideoFrameCallback with accelerated playback (fallback).
  *    Plays video at 2-4x speed and captures frames via rVFC. Chrome 83+, Safari 15.4+.
  *
  * No seek path. If both fail, extraction refuses with a reason.
@@ -229,7 +229,7 @@ export async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, on
                 fps: targetFps, duration, frameCount: extractedCount,
               });
             } else {
-              reject(new Error('Video playback stalled — no frames received'));
+              reject(new Error('Video playback stalled : no frames received'));
             }
           }
         }, STALL_MS);
@@ -306,7 +306,7 @@ export async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, on
                   }
                   if (nonZero < 3) {
                     // HEVC canvas taint: drawImage renders black pixels.
-                    // Stop immediately — processing hundreds of blank frames is pointless.
+                    // Stop immediately : processing hundreds of blank frames is pointless.
                     if (!resolved) {
                       resolved = true;
                       cleanup();
@@ -316,7 +316,7 @@ export async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, on
                     return;
                   }
                 } catch (e) {
-                  // getImageData threw — canvas IS tainted (CORS or codec security)
+                  // getImageData threw : canvas IS tainted (CORS or codec security)
                   console.error('[frameExtractor] Canvas tainted:', e.message);
                   if (!resolved) {
                     resolved = true;
@@ -431,7 +431,7 @@ export async function extractFramesRVFC(file, targetFps, maxFrames, maxWidth, on
  *
  * Decodes video frames directly via the browser's hardware VideoDecoder,
  * completely bypassing the <video> element and canvas.drawImage() pipeline.
- * This eliminates HEVC canvas taint on iOS Safari — the root cause of
+ * This eliminates HEVC canvas taint on iOS Safari : the root cause of
  * all-black frames when drawing HEVC video to canvas.
  *
  * Pipeline: File → web-demuxer (WASM) → VideoDecoder (hardware) → VideoFrame → canvas
@@ -802,7 +802,7 @@ export async function withRestarts(run, options = {}, max = 3) {
 }
 
 /**
- * Streaming frame extractor — inspect first, then use the right decoder.
+ * Streaming frame extractor : inspect first, then use the right decoder.
  *
  * Approach: read the file's codec from container metadata, then route
  * to the correct extraction method. No cascading try/catch fallbacks.

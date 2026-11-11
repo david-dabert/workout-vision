@@ -2,7 +2,7 @@
  * Benchmark test suite for rep counting accuracy.
  *
  * Tests the full valley counting pipeline against synthetic signals with
- * known rep counts. This is the first layer of validation — synthetic signals
+ * known rep counts. This is the first layer of validation : synthetic signals
  * with perfect periodicity, controlled noise, and known edge conditions.
  *
  * Real video benchmarks require labelled video files (future work).
@@ -111,7 +111,7 @@ const crunchExercise = {
 // Core valley counting accuracy
 // ---------------------------------------------------------------------------
 
-describe('Rep counting accuracy — synthetic signals', () => {
+describe('Rep counting accuracy : synthetic signals', () => {
 
   describe('Clean signals (zero noise)', () => {
     const fps = 30;
@@ -201,7 +201,7 @@ describe('Rep counting accuracy — synthetic signals', () => {
     it('returns 0 reps for random noise without periodicity', () => {
       const signal = Array.from({ length: 300 }, () => 90 + Math.random() * 10);
       const result = findValleys(signal, fps, defaultExercise);
-      // Should find 0 or very few reps — noise should not produce false reps
+      // Should find 0 or very few reps : noise should not produce false reps
       expect(result.reps).toBeLessThanOrEqual(2);
     });
   });

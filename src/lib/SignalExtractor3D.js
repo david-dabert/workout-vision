@@ -1,9 +1,9 @@
 /**
- * SignalExtractor3D — The Root Cause Fix
+ * SignalExtractor3D : The Root Cause Fix
  *
  * MediaPipe outputs landmark.z for every joint. The previous pipeline
  * only used x,y positions and 2D distances, discarding the depth axis.
- * Bench press from front, pull-ups from front — the bar/body moves in Z,
+ * Bench press from front, pull-ups from front : the bar/body moves in Z,
  * not X or Y. This module extracts 3D signals that capture that motion.
  *
  * Convergence item #1: 3D pose lifting from existing MediaPipe data.
@@ -62,7 +62,7 @@ function computeDepthDominance(frames, landmarkIdx) {
 
 // ---------------------------------------------------------------------------
 // Extract 3D signals from collected landmarks
-// Returns array of { name, values } — same format as RepCounter._extractSignals
+// Returns array of { name, values } : same format as RepCounter._extractSignals
 // ---------------------------------------------------------------------------
 
 export function extractSignals3D(collectedLandmarks) {
@@ -131,7 +131,7 @@ export function extractSignals3D(collectedLandmarks) {
   signals.push(ySignal('shoulder_Y', LANDMARKS.LEFT_SHOULDER, LANDMARKS.RIGHT_SHOULDER));
   signals.push(ySignal('ankle_Y', LANDMARKS.LEFT_ANKLE, LANDMARKS.RIGHT_ANKLE));
 
-  // ── Z-position signals (5) — THE NEW DEPTH SIGNALS ──
+  // ── Z-position signals (5) : THE NEW DEPTH SIGNALS ──
   // These capture motion along the camera's depth axis.
   // Bench press from front: wrist_Z oscillates. Pull-up from front: nose_Z oscillates.
   // Scale to 0-100 range for compatibility with valley counting thresholds.

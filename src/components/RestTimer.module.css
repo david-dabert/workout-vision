@@ -3,7 +3,7 @@
   padding: 20px; padding-bottom: calc(20px + env(safe-area-inset-bottom));
   position: relative; overflow: hidden;
 }
-/* Ambient glow behind the timer — shifts color with urgency */
+/* Ambient glow behind the timer : shifts color with urgency */
 .page::before {
   content: '';
   position: absolute;
@@ -25,7 +25,7 @@
   z-index: 1;
 }
 .svg { width: 100%; height: 100%; }
-/* The ring responds — its glow intensifies as time runs out */
+/* The ring responds : its glow intensifies as time runs out */
 .progressRing {
   transition: stroke-dashoffset 0.3s var(--ease-smooth), stroke 0.5s ease, filter 0.5s ease;
   filter: drop-shadow(0 0 6px var(--ring-glow, rgba(212, 167, 106, 0.4)));
@@ -46,7 +46,7 @@
   text-shadow: 0 0 30px rgba(255, 59, 92, 0.4);
   animation: heartbeat 1s ease-in-out infinite;
 }
-/* Done: power restored — the reactor is online */
+/* Done: power restored : the reactor is online */
 .digitsDone {
   color: var(--bio-cyan);
   text-shadow: 0 0 40px rgba(212, 167, 106, 0.5), 0 0 80px rgba(139, 129, 152, 0.2);
@@ -60,7 +60,7 @@
   font-size: 0.65rem; color: var(--text-tertiary); text-transform: uppercase;
   letter-spacing: 0.12em; font-weight: 700; margin-top: 4px;
 }
-/* Completion burst — the whole timer ring explodes with energy */
+/* Completion burst : the whole timer ring explodes with energy */
 .circleWrapDone {
   animation: powerRestore 1s var(--ease-power) 1;
 }

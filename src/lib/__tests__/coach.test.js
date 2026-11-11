@@ -154,7 +154,7 @@ describe('_scoreToGrade (via generateWorkoutReport)', () => {
 });
 
 // ---------------------------------------------------------------------------
-// calculateWorkloadRatio — acute:chronic workload ratio (Gabbett 2016)
+// calculateWorkloadRatio : acute:chronic workload ratio (Gabbett 2016)
 // ---------------------------------------------------------------------------
 
 describe('calculateWorkloadRatio', () => {
@@ -246,7 +246,7 @@ describe('calculateWorkloadRatio', () => {
 });
 
 // ---------------------------------------------------------------------------
-// estimateOneRepMax — Brzycki (<=10 reps) and Epley (>10 reps)
+// estimateOneRepMax : Brzycki (<=10 reps) and Epley (>10 reps)
 // ---------------------------------------------------------------------------
 
 describe('estimateOneRepMax', () => {
@@ -284,7 +284,7 @@ describe('estimateOneRepMax', () => {
 });
 
 // ---------------------------------------------------------------------------
-// getStrengthLevel — population-relative strength classification
+// getStrengthLevel : population-relative strength classification
 // ---------------------------------------------------------------------------
 
 describe('getStrengthLevel', () => {

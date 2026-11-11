@@ -118,7 +118,7 @@
 
 
 /* ══════════════════════════════════════════
-   DASHBOARD SECTIONS — consistent spacing
+   DASHBOARD SECTIONS : consistent spacing
    ══════════════════════════════════════════ */
 
 .dashboard-section {
@@ -222,7 +222,7 @@
 
 
 /* ══════════════════════════════════════════
-   ANALYZE ANOTHER — post-result CTA
+   ANALYZE ANOTHER : post-result CTA
    ══════════════════════════════════════════ */
 
 .analyze-another {
@@ -255,7 +255,7 @@
 
 
 /* ══════════════════════════════════════════
-   SECTION DIVIDER — subtle breathing room
+   SECTION DIVIDER : subtle breathing room
    ══════════════════════════════════════════ */
 
 .section-divider {
@@ -266,10 +266,10 @@
 
 
 /* ══════════════════════════════════════════
-   GREETING TEXT — migrated from inline
+   GREETING TEXT : migrated from inline
    ══════════════════════════════════════════ */
 
-/* The greeting isn't a label — it's recognition. You showed up. */
+/* The greeting isn't a label : it's recognition. You showed up. */
 .greeting-text {
   font-size: 1.4rem;
   font-weight: 800;
@@ -282,7 +282,7 @@
 
 
 /* ══════════════════════════════════════════
-   HERO STATUS ROW — engine status + streak
+   HERO STATUS ROW : engine status + streak
    ══════════════════════════════════════════ */
 
 .hero-status-row {
@@ -295,7 +295,7 @@
 
 
 /* ══════════════════════════════════════════
-   STREAK BADGE — migrated from inline
+   STREAK BADGE : migrated from inline
    ══════════════════════════════════════════ */
 
 .streak-badge {
@@ -319,7 +319,7 @@
 
 
 /* ══════════════════════════════════════════
-   WEEKLY DOTS — 7-day activity strip
+   WEEKLY DOTS : 7-day activity strip
    ══════════════════════════════════════════ */
 
 .weekly-dots {
@@ -453,7 +453,7 @@
 
 
 /* ══════════════════════════════════════════
-   POLISH — micro-interactions & entrance animations
+   POLISH : micro-interactions & entrance animations
    ══════════════════════════════════════════ */
 
 /* Card entrance animation */
@@ -540,7 +540,7 @@
 }
 
 /* ══════════════════════════════════════════
-   PREMIUM POLISH — Micro-interactions & Depth
+   PREMIUM POLISH : Micro-interactions & Depth
    ══════════════════════════════════════════ */
 
 /* Smooth page transitions between views */
@@ -559,7 +559,7 @@
   z-index: 1;
 }
 
-/* Active today dot — no pulse, just presence */
+/* Active today dot : no pulse, just presence */
 .weekly-dot.active.today {
   /* Static. The dot is there. You trained. That's enough. */
 }
@@ -644,7 +644,7 @@
 }
 
 /* ══════════════════════════════════════════
-   EXERCISE PICKER — chip press/hover states
+   EXERCISE PICKER : chip press/hover states
    ══════════════════════════════════════════ */
 
 .exercise-chip {

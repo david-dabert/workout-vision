@@ -1,5 +1,5 @@
 /**
- * Counting core — pure function, no DOM, no detection.
+ * Counting core : pure function, no DOM, no detection.
  *
  * In:  timestamped world landmarks (from MediaPipe PoseLandmarker) and a lift name.
  * Out: rep count, per-rep detail (start/end time, ROM, durations), side used, confidence.
@@ -301,7 +301,7 @@ export const COUNT_AS: Readonly<Record<string, string>> = Object.freeze({
  * Source: UNSOURCED. Status: experimental.
  */
 export const KINEMATIC_ALIASES: Readonly<Record<string, string>> = Object.freeze({
-  // Lower Body — Quad Dominant (Squats & Presses)
+  // Lower Body : Quad Dominant (Squats & Presses)
   barbell_squat: 'squat',
   safety_bar_squat: 'squat',
   zercher_squat: 'squat',
@@ -316,7 +316,7 @@ export const KINEMATIC_ALIASES: Readonly<Record<string, string>> = Object.freeze
   single_leg_press: 'leg_press',
   hack_squat_machine: 'hack_squat',
 
-  // Lower Body — Posterior Chain (Hinges & Isolations)
+  // Lower Body : Posterior Chain (Hinges & Isolations)
   stiff_legged_deadlift: 'romanian_deadlift',
   stiff_leg_deadlift: 'romanian_deadlift',
   deficit_deadlift: 'deadlift',
@@ -325,7 +325,7 @@ export const KINEMATIC_ALIASES: Readonly<Record<string, string>> = Object.freeze
   standing_leg_curl: 'leg_curl',
   good_morning: 'romanian_deadlift',
 
-  // Upper Body — Horizontal & Vertical Push
+  // Upper Body : Horizontal & Vertical Push
   wide_grip_bench_press: 'bench_press',
   cambered_bar_bench_press: 'bench_press',
   chest_press_machine: 'machine_chest_press',
@@ -334,7 +334,7 @@ export const KINEMATIC_ALIASES: Readonly<Record<string, string>> = Object.freeze
   seated_barbell_press: 'overhead_press',
   dumbbell_shoulder_press: 'overhead_press',
 
-  // Upper Body — Horizontal & Vertical Pull
+  // Upper Body : Horizontal & Vertical Pull
   wide_grip_pull_up: 'pull_up',
   neutral_grip_lat_pulldown: 'lat_pulldown',
   reverse_grip_lat_pulldown: 'lat_pulldown',
@@ -343,7 +343,7 @@ export const KINEMATIC_ALIASES: Readonly<Record<string, string>> = Object.freeze
   dumbbell_row: 'dumbbell_row',
   seated_cable_row: 'seated_row',
 
-  // Upper Body — Shoulders & Arms Isolations
+  // Upper Body : Shoulders & Arms Isolations
   dumbbell_lateral_raise: 'lateral_raise',
   dumbbell_curl: 'bicep_curl',
   triceps_pushdown: 'triceps_pushdown',
@@ -425,7 +425,7 @@ export function sgKernel(windowSize: number): number[] {
   return kernel;
 }
 
-// Unvalidated starting values — recorded per PLAN.md rule
+// Unvalidated starting values : recorded per PLAN.md rule
 const BRIDGE_GAP_SEC = 0.5;       // max dropout to bridge
 const OUTLIER_WINDOW_SEC = 0.5;   // window for local median in outlier removal
 const OUTLIER_DEVIATION_DEG = 40; // max deviation from local median before nulling
