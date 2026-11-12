@@ -33,7 +33,11 @@ David's recorded words (DIRECTIVES.md Part 1, docs/VISION.md, R16), held against
 
 ## Now
 
-Main at `2f5a5425` and live (12 November 2026, 00:09 UTC): PRs #366 to #378 merged, except #373 (home badge, open, blocked on a picture baseline). In progress: card 007 (light mode), branch `fix/light-mode-every-screen`. Cards done: 002, 007 (when its pull request merges), 008, 009. Next ready, in the order of `cards/README.md`: 006, 004, 001, 005, 003. The nightly run starts at 03:17 Paris time.
+Main at `63b113ee` (12 November 2026): PRs #366 to #380 merged, except #373 (home badge, open). In progress: PR #381, the first screen (headline, and under it why, what works today, one repeated action), branch `feat/first-screen`. Cards done: 002, 007, 008, 009. Next ready, in the order of `cards/README.md`: 006, 004, 001, 005, 003.
+
+The nightly run (03:17 Paris time) did not start on 12 November: its session had no access to the repository. Since 12 November it fires into a session that holds the repository and can push (checked that day by a dry run).
+
+A wanted change of a screen that has a picture test gets its new picture from CI: run the workflow "Update visual snapshots" on the branch (`.github/workflows/snapshots.yml`), then read which pictures its commit changed.
 
 ## State of main, 11 November 2026
 
