@@ -177,6 +177,8 @@
   display: flex; flex-direction: column; text-align: left;
   padding: env(safe-area-inset-top, 0px) var(--gut) calc(env(safe-area-inset-bottom, 0px) + 18px);
 }
+/* The first screen's own height, whatever follows it (EntryMore.jsx, 12 November 2026). */
+.wv-experience .entry-fold { flex: none; display: flex; flex-direction: column; min-height: calc(100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 18px); }
 .wv-experience .entry-skip { position: absolute; inset: 0; width: 100%; height: 100%; cursor: default; z-index: 0; }
 .wv-experience .entry-mast {
   position: relative; z-index: 1; pointer-events: none; flex: none; height: 44px; margin-top: 6px;

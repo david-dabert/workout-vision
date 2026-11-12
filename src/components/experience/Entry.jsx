@@ -18,13 +18,15 @@ import './Entry.css';
 // approved by David on 9 October 2026: test/real-phone/swarm/copy-entry.md. U+202F is not needed (no ? ! ; or « »).
 const COPY = {
   fr: {
-    title: 'Filmez votre série.', line: 'Comptage de répétitions et analyse du mouvement sur votre téléphone.',
+    // 12 November 2026 (David: "get this sorted and implemented"): the product named by what it stands in for, then
+    // what it does in one sentence. The words of 9 October described a feature.
+    title: 'L’œil d’un coach, dans votre poche.', line: 'Filmez une série. L’appli compte vos répétitions et vous montre votre geste, répétition par répétition.',
     privacy: 'La vidéo reste sur votre téléphone.', start: 'Commencer',
     test: 'Version de test', demo: 'Voir un exemple', interactiveDemo: 'Démo biomécanique (1 clic)',
     credit: 'Conçue à Bordeaux par David Dabert',
   },
   en: {
-    title: 'Film your set.', line: 'Repetition counting and movement analysis on your phone.',
+    title: 'A coach’s eye, in your pocket.', line: 'Film a set. The app counts your reps and shows you your movement, rep by rep.',
     privacy: 'The video stays on your phone.', start: 'Start',
     test: 'Test version', demo: 'See an example', interactiveDemo: 'Interactive Biomechanics Demo (1-click)',
     credit: 'Made in Bordeaux by David Dabert',
@@ -55,6 +57,9 @@ export default function Entry({ onEnter }) {
   const demoBtn = useRef(null), demoLoading = useRef(false);
   // The interactive biomechanics lab demo, loaded on-demand for immediate 1-click exploration.
   const [Lab, setLab] = useState(null);
+  // What lies under the first screen, in its own chunk, fetched once the entry is up (EntryMore.jsx).
+  const [More, setMore] = useState(null);
+  useEffect(() => { let on = true; import('./EntryMore').then(m => { if (on) setMore(() => m.default); }, () => {}); return () => { on = false; }; }, []);
   const labLoading = useRef(false);
   const reduced = useRef(matchMedia('(prefers-reduced-motion: reduce)').matches);
 
@@ -135,32 +140,36 @@ export default function Entry({ onEnter }) {
       {/* A tap anywhere shows the entry at once: for the eye only. VoiceOver and the keyboard read the words as they
           are, and the layer goes once used, so it no longer lies over the screen (second audit, 3 October). */}
       {!skipped && <button className="entry-skip" type="button" tabIndex={-1} aria-hidden="true" onClick={() => { scene.current?.skip(); setSkipped(true); }} />}
-      {/* The status line: the serif wordmark over a 2 px rule, and the test status as words. */}
-      <header className="entry-mast">
-        <p className="brand">WorkoutVision</p>
-        <p className="entry-test">{text.test}</p>
-      </header>
-      {/* The viewfinder: four corners, and in it the figure of light (entry-scene.js), drawn on the stage behind. */}
-      <div className="entry-view" ref={view} aria-hidden="true"><i /><i /><i /><i /></div>
-      <div className="entry-copy">
-        <h1 className="entry-l1"><span className="mask"><span>{text.title}</span></span></h1>
-        <p className="entry-l2">{text.line}</p>
-        <p className="entry-l3">
-          <svg viewBox="0 0 16 20" width="16" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><rect x="1.5" y="8.5" width="13" height="10" rx="1.5" /><path d="M4.5 8.5V5.5a3.5 3.5 0 0 1 7 0v3" /></svg>
-          <span>{eventsActive() ? COUNTED[lang === 'en' ? 'en' : 'fr'] : text.privacy}</span>
-        </p>
-        <div className="entry-keys">
-          <button type="button" className="enter tactile" onClick={() => enter()}><span>{text.start}</span></button>
-          {showUnmeasuredRoutes() && (
-            <button type="button" className="entry-interactive press" onClick={openLab}>
-              <span className="entry-interactive-pill">{lang === 'en' ? 'LAB' : 'DÉMO'}</span>
-              <span>{text.interactiveDemo}</span>
-            </button>
-          )}
-          <button type="button" className="entry-demo press" ref={demoBtn} onClick={openDemo}>{text.demo}</button>
+      {/* The first screen keeps one full height; what follows scrolls under it. */}
+      <div className="entry-fold">
+        {/* The status line: the serif wordmark over a 2 px rule, and the test status as words. */}
+        <header className="entry-mast">
+          <p className="brand">WorkoutVision</p>
+          <p className="entry-test">{text.test}</p>
+        </header>
+        {/* The viewfinder: four corners, and in it the figure of light (entry-scene.js), drawn on the stage behind. */}
+        <div className="entry-view" ref={view} aria-hidden="true"><i /><i /><i /><i /></div>
+        <div className="entry-copy">
+          <h1 className="entry-l1"><span className="mask"><span>{text.title}</span></span></h1>
+          <p className="entry-l2">{text.line}</p>
+          <p className="entry-l3">
+            <svg viewBox="0 0 16 20" width="16" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true"><rect x="1.5" y="8.5" width="13" height="10" rx="1.5" /><path d="M4.5 8.5V5.5a3.5 3.5 0 0 1 7 0v3" /></svg>
+            <span>{eventsActive() ? COUNTED[lang === 'en' ? 'en' : 'fr'] : text.privacy}</span>
+          </p>
+          <div className="entry-keys">
+            <button type="button" className="enter tactile" onClick={() => enter()}><span>{text.start}</span></button>
+            {showUnmeasuredRoutes() && (
+              <button type="button" className="entry-interactive press" onClick={openLab}>
+                <span className="entry-interactive-pill">{lang === 'en' ? 'LAB' : 'DÉMO'}</span>
+                <span>{text.interactiveDemo}</span>
+              </button>
+            )}
+            <button type="button" className="entry-demo press" ref={demoBtn} onClick={openDemo}>{text.demo}</button>
+          </div>
+          <a className="entry-credit" href="#about" onClick={e => { e.preventDefault(); enter('about'); }}>{text.credit}{'\u00A0'}<span aria-hidden="true">›</span></a>
         </div>
-        <a className="entry-credit" href="#about" onClick={e => { e.preventDefault(); enter('about'); }}>{text.credit}{'\u00A0'}<span aria-hidden="true">›</span></a>
       </div>
+      {More && <More lang={lang} onStart={() => enter()} />}
     </section>
     {showUnmeasuredRoutes() && Lab && <Lab onClose={closeLab} onStart={() => { closeLab(); enter(); }} />}
     {Demo && <Demo onClose={closeDemo} onStart={enter} onOpenLab={showUnmeasuredRoutes() ? openLab : undefined} />}
