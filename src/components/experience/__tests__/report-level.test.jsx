@@ -18,7 +18,9 @@ describe('the coach report and the stored level', () => {
     expect(sheet).not.toMatch(/Niveau|Level/); // the field's label above may say it; the sheet does not
   });
 
-  it('renders Coach Verdict and Biomechanics sections on the preview sheet when reps are present', async () => {
+  // Inverted by card 013: the verdict, the metrics and the hypertrophy cues rest on the readings that are off in
+  // production (measures.js, UNVALIDATED_BIOMECHANICS_SHOWN), so the report rendered as production renders it has none.
+  it('renders no Coach Verdict, Biomechanics or coaching section on the preview sheet, reps present', async () => {
     const store = { wv_lang: 'fr' };
     vi.stubGlobal('localStorage', { getItem: k => store[k] ?? null, setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } });
     const { LanguageProvider } = await import('../../../lib/LanguageContext');
@@ -36,13 +38,11 @@ describe('the coach report and the stored level', () => {
         <Report lift="lateral_raise" count={6} counted={6} arm="left" reps={reps} onBack={() => {}} />
       </LanguageProvider>
     );
-    expect(html).toContain('sh-coach-prescription');
-    expect(html).toContain('Le Verdict du Coach');
-    expect(html).not.toContain('Standard d’élite');
-    expect(html).toContain('sh-biomechanics-section');
-    expect(html).toContain('Biomécanique détaillée &amp; Cinématique');
-    expect(html).not.toContain('sh-vbt-section');
-    expect(html).toContain('sh-coaching-section');
-    expect(html).toContain('Recommandations hypertrophie');
+    expect(html).not.toContain('sh-coach-prescription');
+    expect(html).not.toContain('Le Verdict du Coach');
+    expect(html).not.toContain('sh-biomechanics-section');
+    expect(html).not.toContain('sh-coaching-section');
+    expect(html).not.toContain('Recommandations hypertrophie');
+    expect(html).not.toContain('report-export-bvh-btn');
   });
 });

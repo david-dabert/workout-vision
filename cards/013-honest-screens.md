@@ -1,5 +1,6 @@
 # 013. The production build shows nothing built on the readings that were switched off
-Status: ready
+Status: in review
+Built 12 November 2026 (Claude), branch `card/013-honest-screens`: the eval passes (12 of 12 browser tests on the production build, the report test); left: CI, its picture test, and David on his iPhone.
 Executor: careful
 Claim: a person who films a set and opens its report, or the home, sees no prescription, no score and no body reading that the app has not measured (R8, gate 7).
 Reference: `src/components/experience/measures.js`, `UNVALIDATED_BIOMECHANICS_SHOWN = false` (David, 11 November 2026), and the three findings of `docs/AUDIT-2026-11.md`.

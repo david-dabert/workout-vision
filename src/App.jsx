@@ -76,22 +76,24 @@ const LAZY = {
   resultats: Results,
   manifesto: Manifesto,
   science: Manifesto,
-  equine: Equine,
-  veterinary: Equine,
-  sports: SportsBiomechanics,
-  golf: SportsBiomechanics,
-  tennis: SportsBiomechanics,
-  padel: SportsBiomechanics,
-  cycling: SportsBiomechanics,
-  baseball: SportsBiomechanics,
-  rowing: SportsBiomechanics,
-  skiing: SportsBiomechanics,
-  swimming: SportsBiomechanics,
   kine: KineWorkspace,
   reeducation: KineWorkspace,
   kinep: KinePatient,
   kiner: KineResult,
   ...(showUnmeasuredRoutes() ? {
+    // Card 013: the horse and the eight sports run on simulations or on no reference; card 008 took them off the home,
+    // and their addresses now open only in the extended build too.
+    equine: Equine,
+    veterinary: Equine,
+    sports: SportsBiomechanics,
+    golf: SportsBiomechanics,
+    tennis: SportsBiomechanics,
+    padel: SportsBiomechanics,
+    cycling: SportsBiomechanics,
+    baseball: SportsBiomechanics,
+    rowing: SportsBiomechanics,
+    skiing: SportsBiomechanics,
+    swimming: SportsBiomechanics,
     volleyball: Activity,
     coaches: CoachFinder,
     coach: CoachFinder,
@@ -284,10 +286,10 @@ function AppInner() {
   } else if (page === 'about') {
     key = 'about';
     screen = <About onClose={() => go('dashboard')} onManifesto={() => go('manifesto')} />;
-  } else if (page === 'equine' || page === 'veterinary') {
+  } else if (showUnmeasuredRoutes() && (page === 'equine' || page === 'veterinary')) {
     key = 'equine';
     screen = <Equine onClose={() => go('dashboard')} />;
-  } else if (page === 'sports' || page === 'golf' || page === 'tennis' || page === 'padel' || page === 'cycling' || page === 'baseball' || page === 'rowing' || page === 'skiing' || page === 'swimming') {
+  } else if (showUnmeasuredRoutes() && (page === 'sports' || page === 'golf' || page === 'tennis' || page === 'padel' || page === 'cycling' || page === 'baseball' || page === 'rowing' || page === 'skiing' || page === 'swimming')) {
     // A sport's own address opens on that sport (#rowing opens rowing); a new address is a new screen.
     key = page === 'sports' ? 'sports' : `sports:${page}`;
     screen = <SportsBiomechanics sport={page} onClose={() => go('dashboard')} onOpenEquine={() => go('equine')} onOpenVolleyball={showUnmeasuredRoutes() ? () => go('volleyball') : undefined} />;
