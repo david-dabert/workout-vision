@@ -28,7 +28,7 @@ const COPY = {
     today: 'Ce qui marche aujourd’hui',
     rows: (beta, rest) => [['Compté, en bêta', beta], ['Expérimental', `${rest} autres exercices : l’appli compte, et vous dit quand elle doute.`], ['Pas encore', 'Les conseils sur votre technique. Nous ne montrons que ce que nous savons mesurer.']],
     real: 'Un vrai produit ou une démo ?', realText: 'Une version de test, gratuite, qui compte déjà vos séries.',
-    write: 'Un compte faux, une question ? Écrivez à David :', start: 'Commencer',
+    write: 'Un compte faux, une question ? Écrivez à David :', start: 'Filmer ma première série',
   },
   en: {
     why: 'Why film yourself?',
@@ -41,7 +41,7 @@ const COPY = {
     today: 'What works today',
     rows: (beta, rest) => [['Counted, in beta', beta], ['Experimental', `${rest} other exercises: the app counts, and says when it is not sure.`], ['Not yet', 'Advice on your technique. We show only what we know how to measure.']],
     real: 'A real product or a demo?', realText: 'A test version, free, that already counts your sets.',
-    write: 'A wrong count, a question? Write to David:', start: 'Start',
+    write: 'A wrong count, a question? Write to David:', start: 'Film my first set',
   },
 };
 
