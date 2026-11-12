@@ -33,7 +33,7 @@ David's recorded words (DIRECTIVES.md Part 1, docs/VISION.md, R16), held against
 
 ## Now
 
-Main at `a654ae15` (11 November 2026, 22:06 UTC): PRs #366 to #376 merged, except #373 (home badge, open, blocked on a picture baseline). In progress: PR #377 (report button in light mode, cards 007 to 009). Cards done: 002. Next ready, in the order of `cards/README.md`: 007, 008, 009, 006, 004, 001, 005, 003. The nightly run starts at 03:17 Paris time.
+Main at `2f5a5425` and live (12 November 2026, 00:09 UTC): PRs #366 to #378 merged, except #373 (home badge, open, blocked on a picture baseline). In progress: card 007 (light mode), branch `fix/light-mode-every-screen`. Cards done: 002, 007 (when its pull request merges), 008, 009. Next ready, in the order of `cards/README.md`: 006, 004, 001, 005, 003. The nightly run starts at 03:17 Paris time.
 
 ## State of main, 11 November 2026
 
