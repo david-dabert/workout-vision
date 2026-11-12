@@ -16,6 +16,57 @@ Current phase: Phase 7 (`docs/state-fixes`) of David's order of 6 November 2026 
 Live commit: `ec12a7ac` on `main` (deploy run 601, 11 November 2026, 13:11 UTC). `55747d0e` is main's tip; its CI and deploy had not finished when this was written.
 Preview: `https://david-dabert.github.io/workout-vision/`
 
+## Handover: the vision, what was tried, the bottlenecks (12 November 2026)
+
+Written by Claude on David's order of 12 November 2026, so that whichever agent works next, Antigravity included, starts from here and not from zero. Everything below is from David's own messages of 11 and 12 November, from the repository, or from measurements recorded on issue #190.
+
+### The vision, in David's words
+
+- "A server-free, very, very cheap to run, if not free to run, tool": the video never leaves the phone, and that is the proof of the idea, not a limit of it.
+- "Free doesn't have to be mediocre, free can be excellent, innovative, groundbreaking, beautiful, captivating and useful and reliable."
+- "It has to have the feel, the touch, the tactility, the usability, the adaptability."
+- The replay, the person's own video with the skeleton, the count and the tempo: "the part of the app that is the most viral, that people like the most. So I must keep it, but it need to be presented better."
+- The moment that must exist: "when people entered in the app, after their first try, they have to ask a few questions and feel like the app understands them, that the app is giving them something of value, something that they cannot get anywhere else unless they hire a coach or a physio."
+- "How can we make it impossible not to adopt for any user who tried it", "impossible not to share it with other friends".
+- On rules: "the rules cannot forbid us from trying"; "we will make mistakes"; "if they don't work, we remove them".
+- On data: "To ask me for more videos is just lazy"; public videos and datasets come first.
+- On the two agents: Antigravity for speed, Claude for depth, "without us having to do things and then redo them".
+
+What this adds up to: a person films one set and gets, on the phone and for nothing, what only a coach or a physiotherapist gives today: a count they trust, their own movement shown back to them, and a word about it that is true. They pass it on because the video is theirs and looks like nothing else.
+
+### What was tried from 6 to 12 November, and what came of it
+
+| Tried | By | Outcome |
+|---|---|---|
+| Seven phases: honesty, counting gates, first paint under 150 kB, blind-count loop, honest documents (#324 to #340) | Antigravity | Held. The blind-count loop exists and has zero sets from testers. |
+| A looser confidence gate (#342) | Antigravity, David's ruling of 9 November | More sets shown as sure, less often right (60.9 to 58.5 % on public sets). Tightened on 11 November (#372): 60.3 %. |
+| 23 features in about 40 hours: sticking point, velocity loss, hip shoot, butt wink, bar tilt, scapular plane, live clinical overlay, Pessac dossier, kiosk mode, trend engine, retention quiz (#343 to #364) | Antigravity | All passed CI. On David's 20 stored sets the readings did not separate anything (scapular "critical" on 20 of 20). They covered the athlete in the replay. Hidden behind one switch on 11 November (#366), nothing deleted. |
+| Removing what covered the video; four kiné tabs; the comparison's reference and angles under the video; the home without unbuilt offers; light mode on every screen (#366 to #379) | Claude | Merged and live. Not yet confirmed by David on his iPhone. |
+| Gate 7 in CI: a reading must vary across the labelled sets before it is shown (#375) | Claude | Running. Three of six readings fail it today. Passing it is necessary, not sufficient. |
+| A first screen that says what the app stands in for, with what works today said plainly (#381) | Claude | In review on 12 November. |
+| One run per night without David | Claude | Failed on 12 November (no access to the repository). Fires since into a session that holds it. |
+
+The lesson both agents must keep: a green CI proves that code runs, not that what the screen says is true. Speed without that proof produced three days of work that had to be hidden.
+
+### The bottlenecks, and where each solution is
+
+| Bottleneck | Where the solution is |
+|---|---|
+| The count on public video is exact 49 % of the time. | One documented cause: reps done without a return to rest are merged (`test/real-phone/midset-misses/midset-misses.txt`). Card 003. Read TRIED.md first: much is already closed. |
+| No reading of form is proven, so the app cannot yet say "what only a coach says". | Start from what is already measured and true: tempo and range per rep, and how they change across the set. Card 010 builds the first honest word on those. Each other reading returns through its own card, with a reference (gate 7). |
+| Nobody outside David has counted blind. | Public datasets with human labels are already on disk (949 sets) and decide the scoreboards. Testers' counts add to them; three would be a start. |
+| The kiné comparison runs and is unproven. | Card 001: same exercise by the same person must score closer than different exercises, on the public sets; then David's four videos. |
+| The replay is loved and slow to share. | Card 004: one tap, the wait cut, the app's name on the video. |
+| Nothing brings a person back on the second day. | Card 011: today's set against the person's own best set, with the comparison engine that already exists (`src/lib/reference/compare.js`). |
+| The first minute offers 183 exercises when 7 are solid. | Card 005. |
+| Two agents, one memory. | AGENTS.md "Start here", this file, METHOD.md, `cards/`. An agent that follows them needs nothing else. `ANTIGRAVITY.md` is the prompt to paste into Antigravity. |
+
+### Where to look for a solution that does not exist yet
+
+- First in the repository: `src/lib/` holds more than the screens use (the audit, card 006, lists it), and TRIED.md says what failed and why.
+- Then in public data and published work: datasets with human labels (Countix, MM-Fit, RepCount are already used), papers on repetition counting and on pose from one camera. A method enters only with a way to check it on the labelled sets.
+- A new idea is tried in the lab lane (METHOD.md), behind a switch, at full speed. It reaches a user through a card.
+
 ## The promises and where each stands (11 November 2026)
 
 David's recorded words (DIRECTIVES.md Part 1, docs/VISION.md, R16), held against what is measured.

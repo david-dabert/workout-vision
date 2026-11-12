@@ -1,0 +1,10 @@
+# 010. After the first set, three questions and one true word
+Status: ready
+Executor: careful
+Claim: a person who has just filmed a first set answers three short questions and reads one thing about their set that is true, theirs alone, and that they would otherwise get only from a coach.
+Reference: David, 12 November 2026: "after their first try, they have to ask a few questions and feel like the app understands them, that the app is giving them something of value, something that they cannot get anywhere else unless they hire a coach or a physio". What is measured today and passes its gates: the count, the tempo of each rep (aller, retour, pauses) and the range of each rep (`tempo.js`, `report-sheet.js`). Nothing else may be said (R8, gate 7).
+Eval: (1) a unit test over David's labelled sets: for each, the word shown is one of a closed list, each built only from tempo and range per rep (for instance: the range of the last reps against the first; the lowering faster than the lifting; one rep shorter than the others), and each sentence is true of that set by a rule the test recomputes. No set gets a word about posture, risk or load. (2) a browser test: after the first saved set the three questions show, each answerable in one tap, skippable, and the word appears with the person's goal named in it. (3) screenshots at 390x844.
+Baseline: `BiomechanicalRetentionQuiz.jsx` asks for a profile; since 11 November it waits for the third saved set, and what it says back rests on height and on unvalidated readings.
+Scope: the saved state of the result screen and the quiz. The questions: the goal (strength, muscle, coming back from an injury, technique), the experience, what bothers them most in this exercise. The answers stay on the phone. The existing quiz is reworked or replaced, not deleted.
+Stop: if no sentence in the closed list is true for a set, the app says what it measured and nothing more.
+Needs from David: nothing to start. He reads the sentences in French before they ship if he wishes (R10 lets the agent write them).

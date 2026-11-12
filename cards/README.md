@@ -6,12 +6,16 @@ The queue of METHOD.md. One file per task, taken in the order of "Order" below a
 
 Set by Claude on 11 November 2026 on David's order of that day ("you will have to do the hard work ... give your own instructions"). David may reorder it at any time; an agent reorders it only in a report that says why.
 
-1. 007, 008, 009: three flaws every user meets today (the walk of 11 November 2026): light mode, the home's unbuilt offers, the kiné header at 375 px.
+Reordered by Claude on 12 November 2026, on David's message of that day (the moment after the first set, and real progress each morning). Done: 002, 007, 008, 009.
+
 1. 006, the audit: what the repository already holds and hides. It feeds the queue.
-2. 004, the replay shared in one tap: the part people pass on.
-3. 001, the kiné comparison held against public data: the proof the kiné offer rests on.
-4. 005, the first minute leads with what is proven.
-5. 003, the counter on reps done without a return to rest: the hardest, and the one the 49 % depends on.
+2. 010, after the first set, three questions and one true word: the moment David asks for.
+3. 004, the replay shared in one tap: the part people pass on.
+4. 001, the kiné comparison held against public data: the proof the kiné offer rests on.
+5. 011, today's set against your own best set, in the lab lane: the reason to come back.
+6. 005, the first minute leads with what is proven.
+7. 003, the counter on reps done without a return to rest: the hardest, and the one the 49 % depends on.
+8. 012, a real replay on the first screen: blocked on a video David chooses.
 
 A run that finishes the queue writes the next cards from the audit and from STATE.md's table of promises, worst-kept promise first.
 
