@@ -6,9 +6,11 @@ The queue of METHOD.md. One file per task, taken in the order of "Order" below a
 
 Set by Claude on 11 November 2026 on David's order of that day ("you will have to do the hard work ... give your own instructions"). David may reorder it at any time; an agent reorders it only in a report that says why.
 
-Reordered by Claude on 12 November 2026, on David's message of that day (the moment after the first set, and real progress each morning). Done: 002, 007, 008, 009.
+Reordered by Claude on 12 November 2026, on David's message of that day (the moment after the first set, and real progress each morning). Done: 002, 006, 007, 008, 009.
 
-1. 006, the audit: what the repository already holds and hides. It feeds the queue.
+Reordered by Claude on 12 November 2026, from the audit (card 006): card 013 first, because the report, the home and three addresses show in production what the switch of 11 November turned off (R8).
+
+1. 013, the production build shows nothing built on the readings that were switched off.
 2. 010, after the first set, three questions and one true word: the moment David asks for.
 3. 004, the replay shared in one tap: the part people pass on.
 4. 001, the kiné comparison held against public data: the proof the kiné offer rests on.

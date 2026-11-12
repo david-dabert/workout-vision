@@ -1,5 +1,6 @@
 # 006. The audit: what the repository already holds and hides
-Status: ready
+Status: done
+Done 12 November 2026 (Claude): `docs/AUDIT-2026-11.md` and `scripts/audit-reach.mjs`; 126 of 427 files not reached by the build; three live findings carried by card 013. Pull request on branch `card/006-audit-hidden-features`.
 Executor: careful
 Claim: David and every agent know which features exist in the code, which a user can reach, and which are worth a card.
 Reference: the code on main, not the documents: a feature exists when a file implements it, and is reachable when a screen of the production build leads to it.
