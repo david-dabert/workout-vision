@@ -1,5 +1,6 @@
 # 010. After the first set, three questions and one true word
-Status: in review (parts 1 and 2 done)
+Status: done (awaiting David on his iPhone, R3)
+Merged 12 November 2026: PR #386 (cb32af66) on green CI; the snapshot workflow changed no picture.
 Part 1, 12 November 2026 (Claude), branch `card/010-first-word`: `src/components/experience/first-word.js`, a closed list of six words from range and tempo per rep; eval `test/real-phone/accuracy/first-word.test.ts` 5 of 5 on David's 20 sets, six words used, the most frequent on 7 of 20.
 Part 2, same day: `FirstWord.jsx` on the saved result, after the level question: the goal and what bothers the person, one tap each, « Passer »; then the word under « Votre objectif : … ». Answers in localStorage only. The experience question is the level question already asked once (not asked twice). Eval `e2e/first-word.spec.js` on the production build: 0 of 2 before, 2 of 2 after; screenshot at 390x844 in the pull request.
 Left: the word sits under the action buttons, below the fold at 390x844; whether it should lead is David's call on his iPhone. The old profile quiz on the result (third saved set) is not yet reworked.
