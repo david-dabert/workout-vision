@@ -84,7 +84,7 @@ David's recorded words (DIRECTIVES.md Part 1, docs/VISION.md, R16), held against
 
 ## Now
 
-Main at `3b93608d` (12 November 2026, 18:40 UTC): PRs #383 (card 006, the audit, `docs/AUDIT-2026-11.md`) and #384 (card 013) merged. Since #384 the production build shows no coach prescription in the report or its PDF, no athlete profile row on the home, and `#equine`, `#sports` and the sport addresses return to the home; all three stay in the extended build. Not yet seen by David on his iPhone. Next card: 010.
+Main at `cb32af66` (12 November 2026, evening): cards 006, 013 and 010 merged (#383, #384, #386). Live since #384: no coach prescription in the report or its PDF, no athlete profile row on the home, `#equine` and the sport addresses return to the home. Since #386: after a saved set, two questions (the goal, what bothers the person), one tap each and skippable, then one sentence read from range and tempo per rep under « Votre objectif : … » (`first-word.js`, checked on David's 20 sets). None seen by David on his iPhone yet. Next card: 004.
 
 Main at `63b113ee` (12 November 2026): PRs #366 to #380 merged, except #373 (home badge, open). In progress: PR #381, the first screen (headline, and under it why, what works today, one repeated action), branch `feat/first-screen`. Cards done: 002, 007, 008, 009. Next ready, in the order of `cards/README.md`: 006, 004, 001, 005, 003.
 
