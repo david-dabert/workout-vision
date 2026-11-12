@@ -71,16 +71,29 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   useEffect(() => () => { abort.current?.abort(); }, []);
   useEffect(() => () => { if (made.link) URL.revokeObjectURL(made.link); }, [made.link]);
   const exportable = !!file && !broken && !result.refused && canExport();
-  function prepare(clean = false) {
+  // Card 004: the video to share is prepared from the moment the replay opens, as the person watches the set once, so
+  // it is ready when they ask for it (baseline 3 taps and 12.6 s of wait, e2e/share-in-one-tap.spec.js). A tap on the
+  // picture during that first viewing stops the preparation and gives the person the controls; an interruption made
+  // that way, or by the phone, brings back « Préparer la vidéo à partager » without an error. Muted and inline, as the
+  // recording plays it; not yet seen on David's iPhone, whose Safari may refuse to play outside a tap (video-export.js).
+  const auto = useRef(false);
+  function prepare(clean = false, byItself = false) {
     videoRef.current?.pause();
+    auto.current = byItself;
     abort.current = new AbortController();
     setMade({ state: 'making', progress: 0, file: null, link: null, isClean: clean });
     // Made from the video on screen, played from its start: the person watches the set as it is prepared.
     setSlow(false);
     exportSetVideo({ file, result, lift, fr, saved, clean, screen: videoRef.current, signal: abort.current.signal, onProgress: p => setMade(m => (m.state === 'making' ? { ...m, progress: p } : m)) })
       .then(out => setMade({ state: 'ready', progress: 1, file: out, link: URL.createObjectURL(out), isClean: clean }))
-      .catch(e => { if (e?.name !== 'AbortError') setMade({ state: 'failed', why: e?.message, progress: 0, file: null, link: null, isClean: clean }); });
+      .catch(e => {
+        if (e?.name === 'AbortError' || (byItself && auto.current)) { if (byItself) setMade({ state: 'idle', progress: 0, file: null, link: null, isClean: false }); return; }
+        setMade({ state: 'failed', why: e?.message, progress: 0, file: null, link: null, isClean: clean });
+      });
   }
+  // Once the video has its address (the effect on `file` below), and once only.
+  const autoStarted = useRef(false);
+  useEffect(() => { if (exportable && url && !autoStarted.current) { autoStarted.current = true; prepare(false, true); } }, [url]); // eslint-disable-line react-hooks/exhaustive-deps
   // A share that fails offers the video to save instead, and says so; one sheet at a time.
   const [shareBroke, setShareBroke] = useState(false);
   const shares = useRef(null);
@@ -199,8 +212,15 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   }
   function toggle() {
     const video = videoRef.current;
-    // While the video is being prepared it plays for the recording: a tap would stop it.
-    if (!video || made.state === 'making') return;
+    // While the video is being prepared it plays for the recording: a tap would stop it. A preparation started by
+    // itself gives way: the tap stops it, and the controls are the person's again.
+    if (!video) return;
+    if (made.state === 'making') {
+      if (!auto.current) return;
+      abort.current?.abort();
+      setMade({ state: 'idle', progress: 0, file: null, link: null, isClean: false });
+      return;
+    }
     if (video.paused || video.ended) play(); else video.pause();
   }
   function seekTo(t) {
