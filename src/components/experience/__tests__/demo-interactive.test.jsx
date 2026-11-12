@@ -23,7 +23,9 @@ describe('Front Door Reframing & Interactive Biomechanics Lab Demo', () => {
       </LanguageProvider>
     );
 
-    expect(html).toContain('Comptage de répétitions et analyse du mouvement sur votre téléphone.');
+    // The words of 12 November 2026 (Entry.jsx): what the product stands in for, then what it does.
+    expect(html).toContain('L’œil d’un coach, dans votre poche.');
+    expect(html).toContain('L’appli compte vos répétitions et vous montre votre geste, répétition par répétition.');
     expect(html).not.toContain('entry-interactive');
   });
 
@@ -35,7 +37,8 @@ describe('Front Door Reframing & Interactive Biomechanics Lab Demo', () => {
       </LanguageProvider>
     );
 
-    expect(html).toContain('Repetition counting and movement analysis on your phone.');
+    expect(html).toContain('A coach’s eye, in your pocket.');
+    expect(html).toContain('The app counts your reps and shows you your movement, rep by rep.');
     expect(html).not.toContain('entry-interactive');
   });
 

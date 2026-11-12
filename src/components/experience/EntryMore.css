@@ -1,0 +1,16 @@
+/* Under the first screen (EntryMore.jsx): a solid ground over the stage, one promise per block, three proofs each. */
+.wv-experience .entry-more { position: relative; z-index: 2; margin: 28px calc(var(--gut) * -1) 0; padding: 8px var(--gut) 24px; background: var(--void); display: flex; flex-direction: column; gap: 36px; pointer-events: auto; text-align: left; }
+.wv-experience .em-block { width: 100%; max-width: 440px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+.wv-experience .em-head { margin: 0; font-family: var(--serif); font-weight: 400; font-size: calc(var(--fs-title) * 0.62); line-height: 1.12; color: var(--c-fg); text-wrap: balance; }
+.wv-experience .em-text { margin: 0; font-size: var(--fs-body); line-height: 1.5; color: var(--bone-2); }
+.wv-experience .em-text b { font-weight: 600; color: var(--c-fg); }
+.wv-experience .em-proofs { margin: 4px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; border-top: 1px solid var(--hair-2); }
+.wv-experience .em-proofs li { padding: 11px 0; border-bottom: 1px solid var(--hair-2); font-size: var(--fs-body); line-height: 1.4; color: var(--c-fg); }
+.wv-experience .em-table { margin: 4px 0 6px; display: flex; flex-direction: column; border-top: 1px solid var(--hair-2); }
+.wv-experience .em-row { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--hair-2); }
+.wv-experience .em-row dt { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.06em; text-transform: uppercase; color: var(--lamp); line-height: 1.5; }
+.wv-experience .em-row dd { margin: 0; font-size: var(--fs-body); line-height: 1.45; color: var(--c-fg); }
+.wv-experience .em-end { align-items: stretch; gap: 14px; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); }
+.wv-experience .em-start { display: flex; align-items: center; justify-content: center; min-height: 56px; border: 0; border-radius: var(--r-s); background: var(--c-fg); color: var(--void); font: inherit; font-weight: 600; font-size: var(--fs-body); }
+.wv-experience .em-write { margin: 0; text-align: center; font-size: var(--fs-caption); line-height: 1.5; color: var(--bone-2); }
+.wv-experience .em-write a { color: var(--c-fg); text-underline-offset: 3px; user-select: all; }
