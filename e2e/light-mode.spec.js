@@ -49,6 +49,8 @@ test('every screen reads in light mode', async ({ page }) => {
   const found = {};
   const judge = async name => {
     await page.waitForTimeout(600);
+    // WV_SHOTS=<folder> keeps a picture of each screen as judged, for a report (METHOD.md, gate 7).
+    if (process.env.WV_SHOTS) await page.screenshot({ path: `${process.env.WV_SHOTS}/${name}.png` });
     const scroller = () => page.evaluate(() => { const s = [...document.querySelectorAll('*')].find(e => e.scrollHeight > e.clientHeight + 200 && /auto|scroll/.test(getComputedStyle(e).overflowY)) || document.scrollingElement; s.scrollBy(0, 760); });
     let list = await page.evaluate(unreadable);
     for (let i = 0; i < 4; i++) { await scroller(); await page.waitForTimeout(250); list = list.concat(await page.evaluate(unreadable)); }
@@ -85,21 +87,17 @@ test('every screen reads in light mode', async ({ page }) => {
   await page.getByRole('button', { name: /^Oui, \d+ répétitions?$/ }).click();
   await expect(page.getByTestId('saved-card')).toBeVisible();
   await judge('saved');
-  // The session report, then back to the saved set.
-  await page.getByTestId('res-report-btn').click();
-  await page.waitForTimeout(1500);
-  await judge('report');
-  await page.goBack().catch(() => {});
-  await page.waitForTimeout(600);
-  if (!(await page.getByTestId('saved-card').isVisible().catch(() => false))) {
-    const back = page.locator('button[aria-label="Retour"], .icon-btn').first();
-    if (await back.count()) await back.click();
-  }
   const replay = page.locator('button, a').filter({ hasText: /Revoir/ }).first();
   await replay.scrollIntoViewIfNeeded();
   await replay.click();
   await expect(page.locator('.replay-screen')).toBeVisible({ timeout: 20000 });
   await judge('replay');
+  // Back to the saved set, then its session report: the last screen of this flow.
+  await page.locator('.replay-screen .icon-btn').first().click();
+  await expect(page.getByTestId('res-report-btn')).toBeVisible({ timeout: 20000 });
+  await page.getByTestId('res-report-btn').click();
+  await page.waitForTimeout(1500);
+  await judge('report');
 
   // The history, then the physiotherapist's workspace.
   await page.goto(BASE);

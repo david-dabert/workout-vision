@@ -1,5 +1,6 @@
 # 007. Every screen reads on a phone in light mode
-Status: ready
+Status: done (12 November 2026, branch fix/light-mode-every-screen)
+Result: `e2e/light-mode.spec.js` walks 14 screens in the light scheme. Before: 1 unreadable text, the badge "120 variantes" of the exercise drawer at 2.26 (and, before PR #377, "Rapport de séance" at 1.00). After: 0. Four ground tokens are pinned to their dark values in `.wv-experience` (`Entry.css`).
 Executor: fast
 Claim: a person whose phone is in light mode reads every label of the app.
 Reference: the walk of 11 November 2026 (issue #190): after a set is saved, "Rapport de séance" showed no label, light text on a light button, because `--depth-1` turns light under the system's light scheme (`src/styles/_tokens.css`) while the experience stays dark (fixed in PR #377 for that one button).
