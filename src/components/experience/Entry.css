@@ -1,6 +1,13 @@
 /* Ported from design/experience-prototype.html, scoped to the entry. */
 .wv-experience {
   color-scheme: dark;
+  /* The experience is dark whatever the system's theme. _tokens.css turns these four light under
+     prefers-color-scheme: light, and rules of the experience use them as grounds: pinned here to their dark values,
+     once (card 007, 12 November 2026; e2e/light-mode.spec.js holds it). */
+  --depth-1: #0f0f13;
+  --depth-2: #161619;
+  --surface-glass: rgba(255, 255, 255, 0.025);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
   --void: #080706;
   --basalt: #110F0C;
   --hair: rgba(239, 232, 220, 0.10);

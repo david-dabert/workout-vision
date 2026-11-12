@@ -1,0 +1,40 @@
+name: Update visual snapshots
+
+# The pictures of e2e/visual.spec.js are compared at zero pixels and depend on CI's own browser build: a picture made
+# on another machine does not match (PR #373, 11 November 2026). When a screen changes on purpose, this workflow, run
+# by hand on the branch of the change, takes the pictures again in CI's browser and commits them to that branch.
+# The change of each picture is then read in the pull request, as any other change. It never runs on main.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    if: github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install Playwright Chromium and dependencies
+        run: timeout 300 npx playwright install --with-deps chromium
+      - run: npm run build:e2e
+      - name: Take the pictures again
+        run: npx playwright test e2e/visual.spec.js --project=core --update-snapshots --workers=1
+      - name: Commit the pictures that changed
+        run: |
+          if git diff --quiet -- e2e/visual.spec.js-snapshots; then
+            echo "No picture changed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add e2e/visual.spec.js-snapshots
+          git commit -m "test(e2e): visual snapshots taken again in CI's browser"
+          git push
