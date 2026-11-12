@@ -1,6 +1,6 @@
 # 013. The production build shows nothing built on the readings that were switched off
-Status: in review
-Built 12 November 2026 (Claude), branch `card/013-honest-screens`: the eval passes (12 of 12 browser tests on the production build, the report test); left: CI, its picture test, and David on his iPhone.
+Status: done (awaiting David on his iPhone, R3)
+Done 12 November 2026 (Claude): PR #384 merged (3b93608d) on green CI, picture tests included; the snapshot workflow (run 43276914817) changed no picture. Eval `e2e/honest-screens.spec.js` 0 of 12 before, 12 of 12 after. Left: the result screen may still open the profile quiz after the third saved set (`Result.jsx`).
 Executor: careful
 Claim: a person who films a set and opens its report, or the home, sees no prescription, no score and no body reading that the app has not measured (R8, gate 7).
 Reference: `src/components/experience/measures.js`, `UNVALIDATED_BIOMECHANICS_SHOWN = false` (David, 11 November 2026), and the three findings of `docs/AUDIT-2026-11.md`.
