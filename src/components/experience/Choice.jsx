@@ -252,11 +252,12 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{fr ? 'Vos séries' : 'Your sets'}</b><small>{n === 0 ? (fr ? 'Restaurer une sauvegarde' : 'Restore a backup') : fr ? `${n} ${n > 1 ? 'séries' : 'série'} sur ce téléphone` : `${n} ${n === 1 ? 'set' : 'sets'} on this phone`}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        <button className="row-link press" onClick={() => setProfileQuizOpen(true)} data-testid="choice-athlete-profile">
+        {/* Off in production (card 013): its femur ratio and its calorie promise rest on a typed height, nothing measured. */}
+        {showUnmeasuredRoutes() && <button className="row-link press" onClick={() => setProfileQuizOpen(true)} data-testid="choice-athlete-profile">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></span>
           <span className="row-txt"><b>{fr ? 'Profil athlète & Calibration' : 'Athlete Profile & Calibration'}</b><small>{fr ? 'Vos leviers articulaires, silhouette cible et dépense réelle' : 'Your joint levers, target physique, and real calorie burn'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
-        </button>
+        </button>}
         {(onReference || onPro) && <h2 className="section-head choose-head" data-testid="choose-head-pro">{fr ? 'Pour les professionnels' : 'For professionals'}</h2>}
         {/* The physiotherapist's workspace (15 October 2026, components/kine/): programmes sent as links, the patient's
             video compared with the physiotherapist's, measured on the person's own videos, above the demos. */}

@@ -84,6 +84,8 @@ David's recorded words (DIRECTIVES.md Part 1, docs/VISION.md, R16), held against
 
 ## Now
 
+12 November 2026, hourly run: card 006 done on branch `card/006-audit-hidden-features` (`docs/AUDIT-2026-11.md`). 126 of 427 files under `src/components` and `src/lib` are not reached by the build. Three live breaches of R8 found and carried by card 013, now first in the order: the report prints the optimisation engine's prescription, the home offers the athlete profile quiz, and `#equine`, `#sports` and the sport addresses open in production.
+
 Main at `63b113ee` (12 November 2026): PRs #366 to #380 merged, except #373 (home badge, open). In progress: PR #381, the first screen (headline, and under it why, what works today, one repeated action), branch `feat/first-screen`. Cards done: 002, 007, 008, 009. Next ready, in the order of `cards/README.md`: 006, 004, 001, 005, 003.
 
 The nightly run (03:17 Paris time) did not start on 12 November: its session had no access to the repository. Since 12 November it fires into a session that holds the repository and can push (checked that day by a dry run).

@@ -3,7 +3,7 @@
 import { setOpener } from './set-opener';
 import { isShortIn, speedChange } from './set-account';
 import { decimal, partialIn, repTempo, setAverages, setTempo, timedReps } from './tempo';
-import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN, experimentalLabel } from './measures';
+import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN, UNVALIDATED_BIOMECHANICS_SHOWN, experimentalLabel } from './measures';
 import { sidesLines } from './sides-line';
 import { liftDefinition } from '../../lib/counting/core';
 import { jointName } from './lift-meta';
@@ -144,7 +144,7 @@ export const speedChangeLine = (reps, fr) => speedLine(setMeasures(reps)?.speedC
  * @param {boolean} [o.doubted]  the body check flagged the joint the measures are read on (saved-set.js keepsMeasures)
  */
 
-export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, proposedBy = null, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, rpe = null, pain = null, recounted = false, doubted = false, optimization = null, result = null }) {
+export function reportSheet({ lang, date, name, context, partner, level, notes, liftName, count, counted, arm, joint = 'elbow', source, afterRefusal = false, proposed = false, proposedBy = null, reps, first, previousSet, sides = null, lift = '', wave = null, measures: shown = MEASURES_SHOWN, planned = null, rpe = null, pain = null, recounted = false, doubted = false, optimization = null, result = null, biomechanics = UNVALIDATED_BIOMECHANICS_SHOWN }) {
   const fr = lang === 'fr';
   const colon = fr ? `${NBSP}: ` : ': ';
   const sec = x => `${decimal(x, fr)}${NBSP}s`;
@@ -263,9 +263,11 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
   if (outOf10(pain)) own.push([fr ? 'Douleur, selon la personne' : 'Pain, as the person rated it', outOf10(pain)]);
   if (outOf10(rpe)) own.push([fr ? 'Effort perçu (RPE), selon la personne' : 'Perceived exertion (RPE), as the person rated it', outOf10(rpe)]);
 
-  // Optimization & Coach's Prescription (PR #296 / Coach Prescription Engine)
-  let opt = optimization;
-  if (!opt && shown && lift && ((allReps.length > 0) || (wave?.a?.length > 0 && wave?.t?.length > 0) || (result?.angles?.length > 0) || count > 0)) {
+  // Optimization & Coach's Prescription (PR #296 / Coach Prescription Engine). It rests on the readings that are off
+  // in production (measures.js, UNVALIDATED_BIOMECHANICS_SHOWN): without them the sheet carries none of it, and the
+  // report and its PDF print no prescription, metric, cue or .bvh file (card 013). Status: not validated.
+  let opt = biomechanics ? optimization : null;
+  if (!opt && biomechanics && shown && lift && ((allReps.length > 0) || (wave?.a?.length > 0 && wave?.t?.length > 0) || (result?.angles?.length > 0) || count > 0)) {
     try {
       if (result && Array.isArray(result.angles) && result.angles.length > 0) {
         const fps = 30;
