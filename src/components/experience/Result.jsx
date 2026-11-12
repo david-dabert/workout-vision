@@ -22,6 +22,7 @@ import { referenceBand } from '../../lib/reference-ranges';
 import { waveAngles } from './wave';
 import { savedSet } from './saved-set';
 import { InstallSuggest } from './Install';
+import FirstWord from './FirstWord';
 import { momentLine } from './moment';
 import { readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks } from './level';
 import LevelPick from './LevelPick';
@@ -986,6 +987,8 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
               ? (fr ? 'Votre niveau n’a pas pu être enregistré sur ce téléphone.' : 'Your level could not be saved on this phone.')
               : (fr ? 'C’est noté. L’écran s’adapte dès la prochaine série. Vous pouvez le changer dans Vos séries.' : 'Noted. The screen adapts from your next set. You can change it in Your sets.')}</p>}
           </div>}
+          {/* Card 010: after a saved set, the goal and what bothers the person, then one true word about the set. */}
+          {!result.refused && count > 0 && <FirstWord reps={reps} fr={fr} />}
           {/* The profile quiz is offered once three sets are saved, not on the first result (11 November 2026). */}
           {(knownSets()?.length ?? 0) >= 3 && <div className="res-retention-hook appear" data-testid="retention-quiz-hook">
             <span className="res-hook-badge">⚡ {fr ? 'Analyse sur mesure' : 'Custom analysis'}</span>
