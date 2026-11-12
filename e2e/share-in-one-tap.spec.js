@@ -32,3 +32,17 @@ test('the video is reached in two taps and is ready when the person has watched 
   expect(taps, 'taps from the saved result to the video').toBeLessThanOrEqual(2);
   expect(wait, 'wait once the set was watched').toBeLessThanOrEqual(BASELINE_WAIT_MS / 2);
 });
+
+test('one action to share, with the video without text as a choice beside it', async ({ page }) => {
+  test.setTimeout(150_000);
+  await start(page);
+  await saveSet(page, PROD);
+  await page.getByRole('button', { name: 'Revoir la série avec le squelette', exact: true }).click();
+  await expect(page.locator('.rp-export')).toBeVisible();
+  // A tap on the picture stops the preparation begun by itself: the actions are back.
+  await page.locator('.rp-stage, .rp-video').first().click();
+  const actions = page.locator('.rp-export .btn-line');
+  await expect(page.getByRole('button', { name: /^Préparer la vidéo à partager$/ })).toBeVisible();
+  await expect(actions).toHaveCount(1);
+  await expect(page.getByRole('button', { name: /sans texte/i })).toBeVisible();
+});

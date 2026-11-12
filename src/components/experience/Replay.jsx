@@ -81,7 +81,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
     videoRef.current?.pause();
     auto.current = byItself;
     abort.current = new AbortController();
-    setMade({ state: 'making', progress: 0, file: null, link: null, isClean: clean });
+    setMade({ state: 'making', progress: 0, file: null, link: null, isClean: clean, auto: byItself });
     // Made from the video on screen, played from its start: the person watches the set as it is prepared.
     setSlow(false);
     exportSetVideo({ file, result, lift, fr, saved, clean, screen: videoRef.current, signal: abort.current.signal, onProgress: p => setMade(m => (m.state === 'making' ? { ...m, progress: p } : m)) })
@@ -216,7 +216,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
     // itself gives way: the tap stops it, and the controls are the person's again.
     if (!video) return;
     if (made.state === 'making') {
-      if (!auto.current) return;
+      if (!made.auto) return;
       abort.current?.abort();
       setMade({ state: 'idle', progress: 0, file: null, link: null, isClean: false });
       return;
@@ -597,7 +597,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       {doubted && reps.length > 0 && <p className="rp-prov" data-testid="rp-doubted">{RESULT[fr ? 'fr' : 'en'].bodyDoubt(jointName(def?.joint, fr))}</p>}
       {measured && reps.length > 0 && <p className="rp-prov" data-testid="rp-exp">{experimentalLabel(fr)}</p>}
       <div className="rp-controls" data-reveal style={{ '--i': 2 }}>
-        <button className="btn-primary press rp-play" onClick={toggle} disabled={broken || made.state === 'making'}>
+        <button className="btn-primary press rp-play" onClick={toggle} disabled={broken || (made.state === 'making' && !made.auto)}>
           {playing
             ? <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
             : <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5z" /></svg>}
@@ -611,16 +611,19 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
         <button type="button" className={`btn-ghost press rp-slow${showBarPath ? ' is-on' : ''}`} aria-pressed={showBarPath} disabled={broken || mocapMode} onClick={() => setShowBarPath(p => !p)} data-testid="rp-barpath-toggle">{fr ? 'Trajectoire de la barre' : 'Bar path'}</button>
       </div>
       {exportable && <div className="rp-export">
+        {/* One action to share (card 004, walk of 11 November 2026); the video without text is a choice beside it. */}
         {(made.state === 'idle' || made.state === 'failed') && <div className="rp-export-actions">
           <button className="btn-line press" onClick={() => prepare(false)}>{fr ? 'Préparer la vidéo à partager' : 'Prepare the video to share'}</button>
-          <button className="btn-line press rp-clean-btn" data-testid="rp-export-clean" onClick={() => prepare(true)}>
-            {fr ? 'Vidéo brute sans texte (Story / TikTok)' : 'Clean video without text (Story / TikTok)'}
-          </button>
         </div>}
         {made.state === 'making' && <button className="btn-line" disabled>{fr ? `Préparation de la vidéo… ${Math.round(made.progress * 100)} %` : `Preparing the video… ${Math.round(made.progress * 100)}%`}</button>}
         {made.state === 'ready' && (sharable
           ? <button className="btn-line press" onClick={share}>{fr ? (made.isClean ? 'Partager la vidéo brute' : 'Partager la vidéo') : (made.isClean ? 'Share clean video' : 'Share the video')}</button>
           : <a className="btn-line press" href={made.link} download={made.file.name}>{fr ? (made.isClean ? 'Enregistrer la vidéo brute' : 'Enregistrer la vidéo') : (made.isClean ? 'Save clean video' : 'Save the video')}</a>)}
+        {made.state !== 'making' && <button type="button" className="text-btn press rp-clean-btn" data-testid="rp-export-clean" onClick={() => prepare(!made.isClean || made.state !== 'ready')}>
+          {made.state === 'ready' && made.isClean
+            ? (fr ? 'Revenir à la vidéo avec le compte' : 'Back to the video with the count')
+            : (fr ? 'Ou la vidéo sans texte, pour une story' : 'Or the video without text, for a story')}
+        </button>}
         {made.state === 'ready' && shareBroke && <p className="rp-export-note" role="status">{fr ? 'Le partage n’a pas abouti. Enregistrez la vidéo, puis partagez-la depuis vos fichiers.' : 'The share did not go through. Save the video, then share it from your files.'}</p>}
         {made.state === 'failed' && <p className="rp-export-note" role="alert">{made.why === 'interrupted' || made.why === 'stalled' || made.why === 'incomplete'
           ? (fr ? 'La préparation s’est arrêtée. Gardez l’écran allumé et l’appli ouverte, puis réessayez.' : 'The preparation stopped. Keep the screen on and the app open, then try again.')
