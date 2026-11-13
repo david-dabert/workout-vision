@@ -74,7 +74,7 @@ David's recorded words (DIRECTIVES.md Part 1, docs/VISION.md, R16), held against
 | Promise | Status | Evidence |
 |---|---|---|
 | The video never leaves the phone, no server, free to run | Kept | No upload path; GitHub Pages; anonymous usage counts only |
-| The rep count is right, or the app says it is not sure | Partly | David's sets 13 of 15 and 12 of 16; public sets 468 of 949; right when sure 60.3 % on public sets |
+| The rep count is right, or the app says it is not sure | Partly | David's sets 13 of 15 and 12 of 16; public sets 468 of 949; right when sure 60.2 % on public sets (408 of 678, 7 off by 3 or more), measured on the gate that ships, set by set (card 016, 13 November 2026) |
 | Whether the execution held up | Partly | Tempo and range per rep are measured and shown; every reading of form is off (gate 7) |
 | What to do next | Not kept | No advice rests on a validated reading |
 | The physiotherapist compares a patient to a reference | Built, unproven | Runs on a real video (David, 11 November); never tested for repeatability (card 001) |
@@ -96,7 +96,7 @@ A wanted change of a screen that has a picture test gets its new picture from CI
 
 Merged between 9 and 11 November (Antigravity, PRs #342 to #364): the confidence gate asks only when a recount is refused or differs by 2 or more (#342), and a series of biomechanical readings, kiné screens and a printed "Pessac" dossier.
 Measured on 11 November (issue `#190`):
-- **Gate of #342**: on the public build sets, shown as sure 731 (was 670), exact among them 428, that is 58.5 % (was 408, 60.9 %); errors of 3 or more shown as sure 10 (was 6). On David's sets: 13 sure with 11 exact, and 8 of 8. `test/real-phone/accuracy/sure.ts` still models the gate of before #342.
+- **Gate of #342**: on the public build sets, shown as sure 731 (was 670), exact among them 428, that is 58.5 % (was 408, 60.9 %); errors of 3 or more shown as sure 10 (was 6). On David's sets: 13 sure with 11 exact, and 8 of 8. `test/real-phone/accuracy/sure.ts` models the gate that ships: checked set by set against the result screen's rule on 13 November 2026 (card 016, `sure-parity.test.ts`, 0 differences on David's 15 sets and the 949 public sets).
 - **Biomechanical readings on David's 20 stored sets**: scapular index "critical" on 20 of 20, bar index "critical tilt" on 16, "butt wink" on 13, "hip shoot" on 12, velocity decline 0 to 82 %. They do not discriminate.
 
 Decisions applied on 11 November (David's orders of that day, PRs #366 to #370):

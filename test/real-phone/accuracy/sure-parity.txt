@@ -1,0 +1,3 @@
+# Card 016: sure.ts against the result screen's rule, set by set (sure-parity.test.ts; SCOREBOARD=1 rewrites this file)
+David's labelled sets: sure for both 12, for neither 3, figure only 0, screen only 0
+Public build sets: sure for both 678, for neither 271, figure only 0, screen only 0

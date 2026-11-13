@@ -16,15 +16,22 @@ export type SureRow = { err: number | null; flagged: boolean; moved: boolean };
  * "moved" describes the number scored.
  */
 export function sureRow(result: any, lift: string, label: number, countOf: (r: any) => number = r => r.count): SureRow {
-  const shown = result && !result.refused ? countOf(result) : 0;
-  if (!(shown > 0)) return { err: null, flagged: false, moved: false };
-  // The rule the result screen applies (coreAnalysis.js sensitivityAsks, 11 November 2026), on the number scored.
-  const moved = sensitivityAsks(shown, SENSITIVITY_GRID.map(tuning => {
-    const r: any = summarizeCount(result.worldLandmarks, result.timestamps, lift, tuning);
-    return r.refused ? null : countOf(r);
-  }));
+  // A count is shown when the result screen shows one (Result.jsx: not refused, a count above 0). Until 13 November 2026
+  // a whole clip whose labelled window held none of the app's reps was left out, though the screen showed its count as
+  // sure: such a set is now scored, its error against the label (card 016, sure-parity.test.ts).
+  if (!result || result.refused || !(result.count > 0)) return { err: null, flagged: false, moved: false };
+  const scored = countOf(result);
+  // The rule the result screen applies (coreAnalysis.js sensitivityAsks, 11 November 2026), on the count the screen shows:
+  // the whole clip's (result.count), never the number scored inside a labelled window. Until 13 November 2026 the
+  // recounts were read through countOf, so on whole clips the figure judged a different number from the screen's. A
+  // result the app did not check (no sensitivity field and no landmarks to recount) is not asked, as on the screen.
+  const recounts: (number | null)[] | null = result.sensitivity?.counts ?? (Array.isArray(result.worldLandmarks) ? SENSITIVITY_GRID.map(tuning => {
+    const r: any = summarizeCount(result.worldLandmarks, result.timestamps, lift, tuning, result.imageLandmarks ?? undefined);
+    return r.refused ? null : r.count;
+  }) : null);
+  const moved = Array.isArray(recounts) && recounts.some(c => c !== result.count) && sensitivityAsks(result.count, recounts);
   // Since 19 October 2026 the result screen also asks on a refused head rep (Result.jsx): read with the shipped checks.
-  return { err: Math.abs(shown - label), flagged: result.bodyCheck?.flagged === true, moved: moved || result.headRefused === true };
+  return { err: Math.abs((Number.isFinite(scored) ? scored : 0) - label), flagged: result.bodyCheck?.flagged === true, moved: moved || result.headRefused === true };
 }
 
 const pct = (k: number, n: number) => (n ? Math.round((100 * k) / n) : 0);
