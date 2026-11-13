@@ -11,7 +11,7 @@ describe('MocapViewer 3D Kinematic Component', () => {
     );
 
     expect(html).toContain('data-testid="mocap-3d-viewer"');
-    expect(html).toContain('Interactive 3D Mocap');
+    expect(html).toContain('Estimated 3D view');
     expect(html).toContain('360° Spatial Kinematics');
     expect(html).toContain('Drag to spin');
     expect(html).toContain('class="mocap-canvas"');
@@ -25,7 +25,7 @@ describe('MocapViewer 3D Kinematic Component', () => {
     );
 
     expect(html).toContain('data-testid="mocap-3d-viewer"');
-    expect(html).toContain('Mocap 3D Interactif');
+    expect(html).toContain('Vue 3D estimée');
     expect(html).toContain('Cinématique spatiale 360°');
     expect(html).toContain('Faites glisser');
     expect(html).toContain('Position temporelle');
