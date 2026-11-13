@@ -61,7 +61,6 @@ export function detectViewpoint(landmarks) {
   const widthToHeight = shoulderWidth / torsoHeight;
 
   // Hip x-spread (should be similar to shoulders for front/rear)
-  const hipWidth = Math.abs(lh.x - rh.x);
 
   // Nose visibility for front vs rear
   const noseVis = nose ? (nose.visibility || 0) : 0;

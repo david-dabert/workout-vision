@@ -1,5 +1,6 @@
 # 017. The debt a reviewer meets first
-Status: ready
+Status: in review (three of four parts; the tour's leak left)
+13 November 2026 (Claude), on David's order "Fix the remaining problems and issues". Em-dashes in `src`, `e2e`, `scripts`: 21 lines in 13 files before, 0 after (prose rewritten; where the dash is data, a UI check, a published title or a table placeholder, it is written `\u2014`, so output is unchanged). `eval(`: 2 before, 0 after (`e2e/shared/report.tests.js` passes `layoutFaults` to `page.evaluate`; `test/real-phone/synth/smoke.mjs` hands axe's source to Playwright; an inline script was refused by the page's Content-Security-Policy). Lint on the 304 reached files: 128 warnings before, 64 after; no-unused-vars 64 to 0 and 20 catch bindings among them; dead functions removed: 7, none called. Left under the stop rule, because their fix changes behaviour: refs read during render 29, components and constants exported from one file 14, effect dependencies 11, state set in an effect 8, impure render 1, a module variable reassigned in Choice.jsx 1. Scoreboards before and after: no output changed. Left: the tour's suspected leak (#18), heap over 40 openings of the filming screen.
 Executor: fast
 Claim: an agent or a reviewer opening a reachable file meets no lint warning, no banned character and no `eval`, and the tour's suspected leak is measured.
 Reference: `docs/FLAWS-2026-11.md` #18, #20, #22, #23.

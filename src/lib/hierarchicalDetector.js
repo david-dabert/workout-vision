@@ -19,7 +19,6 @@
  */
 
 import { extractJointAngles } from './poseAnalysis';
-import { bestSide } from './exercises';
 import { TemporalFeatureExtractor } from './temporalFeatures';
 import { lookupExercise, exercisesInClass, filterByMode, ONTOLOGY } from './exerciseOntology';
 import { AngleBuffer } from './repCounter';
@@ -399,7 +398,7 @@ export class HierarchicalDetector {
   }
 
   _classifyProneMovement(f) {
-    const { elbow, knee, hip, trunk, shoulder } = f;
+    const { elbow, knee, hip, trunk } = f;
 
     if (trunk.range < 8 && knee.range < 10 && elbow.range < 15) return 'core_prone';
     if (hip.range > 10 && elbow.range < 10) return 'back_extension';
@@ -691,8 +690,6 @@ export class HierarchicalDetector {
   _scoreStandingLeaf(id, f, mc) {
     const { knee, hip, elbow, shoulder, trunk } = f;
     const corrKH = f.corr_knee_hip;
-    const corrES = f.corr_elbow_shoulder;
-    const corrEK = f.corr_elbow_knee;
 
     // ── standing.lower_push ────────────────────────────────────────────
     if (mc === 'lower_push') {
@@ -906,7 +903,7 @@ export class HierarchicalDetector {
   }
 
   _scoreHangingLeaf(id, f) {
-    const { elbow, hip, knee } = f;
+    const { elbow, hip } = f;
     if (id === 'dead_hang') return elbow.range < 10 ? 2.0 : 0.3;
     if (id === 'l_sit') return hip.mean < 100 && hip.range < 10 ? 1.5 : 0.5;
     if (id === 'toes_to_bar') return hip.range > 25 ? 1.3 : 0.7;
@@ -929,7 +926,7 @@ export class HierarchicalDetector {
   }
 
   _scoreSupineLeaf(id, f) {
-    const { elbow, shoulder, hip, knee, trunk } = f;
+    const { elbow, shoulder, hip, trunk } = f;
     if (id === 'hip_thrust' || id === 'single_leg_hip_thrust') return hip.range > 20 ? 1.3 : 0.7;
     if (id === 'glute_bridge') return hip.range > 15 && hip.mean > 130 ? 1.3 : 0.7;
     if (id === 'skull_crusher') return shoulder.mean > 70 ? 1.3 : 0.7;

@@ -3,7 +3,6 @@
  * These are not part of the public API : use ../types.ts for shared types.
  */
 
-import type { LandmarkArray, JointAngles, RepHistoryEntry, FormResultEntry } from '../types';
 
 /** Exercise definition with compiled getValue/formChecks (from untyped exercises.js) */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

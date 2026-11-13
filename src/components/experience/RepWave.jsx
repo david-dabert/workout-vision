@@ -17,7 +17,6 @@ export default function RepWave({ angles, timestamps, reps, rest, first, sel, sh
   const geo = useMemo(() => waveGeometry({ angles, timestamps, rest, width: W, height: H, include: refLo != null ? [refLo, refHi] : null }), [angles, timestamps, rest, refLo, refHi]);
   const strokes = useMemo(() => repStrokes(geo, reps, { first, isPartial: partialIn(reps) }), [geo, reps, first]);
   if (!geo || !reps?.length) return null;
-  const NB = ' ';
   const tap = e => {
     const box = e.currentTarget.getBoundingClientRect();
     const i = repAt(geo, reps, ((e.clientX - box.left) / box.width) * W);

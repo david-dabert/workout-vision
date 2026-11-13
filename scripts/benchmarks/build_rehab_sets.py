@@ -285,7 +285,7 @@ def main():
         manifest = {
             "dataset": "IntelliRehabDS",
             "doi": "10.5281/zenodo.4610859",
-            "citation": "Miron, A., et al. (2021). IntelliRehabDS (IRDS)—A Dataset of Physical Rehabilitation Movements. Data, 6(5), 46.",
+            "citation": "Miron, A., et al. (2021). IntelliRehabDS (IRDS)\u2014A Dataset of Physical Rehabilitation Movements. Data, 6(5), 46.",
             "license": "CC BY 4.0",
             "generatedAt": datetime.now(timezone.utc).isoformat(),
             "totalSessions": len(manifest_sessions),

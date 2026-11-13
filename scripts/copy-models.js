@@ -1,5 +1,5 @@
 /**
- * copy-models.js — Copy MediaPipe WASM files from node_modules to public/
+ * copy-models.js: Copy MediaPipe WASM files from node_modules to public/
  * so they can be served locally instead of fetched from CDN at runtime.
  *
  * Run: node scripts/copy-models.js

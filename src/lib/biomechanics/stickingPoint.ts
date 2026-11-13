@@ -13,7 +13,7 @@
  *   Med Sci Sports Exerc. 2011;43(9):1725-1734.
  */
 
-import { RepDetail, liftDefinition } from '../counting/core';
+import { liftDefinition } from '../counting/core';
 
 export interface StickingPointInflection {
   repIndex: number;

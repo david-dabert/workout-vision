@@ -48,7 +48,7 @@ const visible = p => p && p.visibility >= 0.5 && p.x >= 0 && p.x <= 1 && p.y >= 
 function save() {
   results.rows.sort((a, b) => sets.findIndex(s => s.id === a.id) - sets.findIndex(s => s.id === b.id));
   fs.writeFileSync(path.join(evidence, 'results.json'), JSON.stringify(results, null, 2));
-  const table = ['| Set | Label | Count | Result | Visible / samples | % | Build use |', '|---|---:|---:|---|---:|---:|---|', ...results.rows.map(r => `| ${r.id} | ${r.expected} | ${r.count ?? '—'} | ${r.score} | ${r.visibleSamples ?? '—'}/${r.sampleCount ?? '—'} | ${r.visibleShare == null ? '—' : (r.visibleShare * 100).toFixed(2)} | ${r.admitted ? 'Admitted' : 'Excluded'} |`)];
+  const table = ['| Set | Label | Count | Result | Visible / samples | % | Build use |', '|---|---:|---:|---|---:|---:|---|', ...results.rows.map(r => `| ${r.id} | ${r.expected} | ${r.count ?? '\u2014'} | ${r.score} | ${r.visibleSamples ?? '\u2014'}/${r.sampleCount ?? '\u2014'} | ${r.visibleShare == null ? '\u2014' : (r.visibleShare * 100).toFixed(2)} | ${r.admitted ? 'Admitted' : 'Excluded'} |`)];
   fs.writeFileSync(path.join(evidence, 'table.md'), table.join('\n') + '\n');
 }
 let next = 0;

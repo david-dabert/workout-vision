@@ -9,7 +9,7 @@ function detectLang() {
   try {
     const saved = localStorage.getItem('wv_lang');
     if (saved === 'en' || saved === 'fr') return saved;
-  } catch (_) {}
+  } catch {}
   if (typeof navigator !== 'undefined') {
     const bl = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
     if (bl.startsWith('fr')) return 'fr';
@@ -49,7 +49,7 @@ const LanguageContext = createContext(null);
 export function LanguageProvider({ children }) {
   const [lang, setLangState] = useState(detectLang);
   // The page declares its language, so VoiceOver reads French in a French voice.
-  useEffect(() => { try { document.documentElement.lang = lang; } catch (_) { /* no document */ } }, [lang]);
+  useEffect(() => { try { document.documentElement.lang = lang; } catch { /* no document */ } }, [lang]);
   const [strings, setStrings] = useState(() => locales[lang] || enData);
   const formChecksRef = useRef(enData._formChecks || {});
 
@@ -71,8 +71,8 @@ export function LanguageProvider({ children }) {
   const setLang = useCallback((newLang) => {
     if (newLang !== 'en' && newLang !== 'fr') return;
     setLangState(newLang);
-    try { localStorage.setItem('wv_lang', newLang); } catch (_) {}
-    try { document.documentElement.lang = newLang; } catch (_) {}
+    try { localStorage.setItem('wv_lang', newLang); } catch {}
+    try { document.documentElement.lang = newLang; } catch {}
   }, []);
 
   const t = useCallback((key, params) => {

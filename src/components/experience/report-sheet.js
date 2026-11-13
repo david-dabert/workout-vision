@@ -289,7 +289,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
             if (cont.bvhData && !opt.bvhData) {
               opt.bvhData = cont.bvhData;
             }
-          } catch (_) {}
+          } catch {}
         }
       } else if (wave?.a?.length > 0 && wave?.t?.length > 0) {
         opt = analyzeContinuousBiomechanics(wave.a, wave.t, lift, fr);
@@ -303,7 +303,7 @@ export function reportSheet({ lang, date, name, context, partner, level, notes, 
           opt.targetMuscles = ex.primary_muscles.map(m => m.replace(/_/g, ' '));
         }
       }
-    } catch (_) {
+    } catch {
       opt = null;
     }
   }

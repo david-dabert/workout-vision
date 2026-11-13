@@ -207,9 +207,6 @@ export function analyzeLumbopelvicRhythm(
     const setupAvgAngle = setupAngles.length > 0
       ? setupAngles.reduce((s, a) => s + a, 0) / setupAngles.length
       : 165;
-    const setupAvgTorso = setupTorsoIncls.length > 0
-      ? setupTorsoIncls.reduce((s, a) => s + a, 0) / setupTorsoIncls.length
-      : 10;
 
     let repMaxExcursion = 0;
     let minInflectionAngle = setupAvgAngle;
@@ -227,11 +224,9 @@ export function analyzeLumbopelvicRhythm(
       // neutralAngle = setupAvgAngle - (neutral hip flexion).
       // If pelvic retroversion occurs, the lumbar angle flexes by Delta theta.
       // We also check acute torso inclination excursion beyond setup baseline:
-      const torsoExcursion = Math.max(0, tf.torsoIncl - setupAvgTorso);
 
       // Pelvic retroversion displacement:
       // If hip x shifts forward relative to knee-shoulder sagittal line:
-      const sagittalHipDisplacement = (tf.hipMid.x - tf.kneeMid.x) * 100;
 
       // Compute composite lumbar flexion excursion (in degrees):
       // When butt wink occurs, the pelvis tucks posteriorly under the torso at turnaround.

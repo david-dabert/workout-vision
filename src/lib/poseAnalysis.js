@@ -95,11 +95,11 @@ async function fetchHeavyModelBuffer() {
 // Local WASM files copied by vite build plugin (scripts/copy-models.js) from the installed
 // @mediapipe/tasks-vision@0.10.35. No CDN fallback : one version, served by the app.
 const VISION_WASM_LOCAL = `${import.meta.env.BASE_URL}mediapipe`;
-const VIS = 0.3; // minimum landmark visibility to draw/use (below 0.3 landmarks are hallucinated)
 
 // ─── Core: single model instance with IndexedDB cache ───
 
-// Progress callback set by loadModelWithRetry, read by fetchModelBuffer
+// Progress callback read by fetchModelBuffer. Nothing sets it: its only setter, loadModelWithRetry, was never called
+// and was removed (card 017, 13 November 2026); it stays null, as it always was at run time.
 let _downloadProgressCb = null;
 
 // Minimum valid model size: pose_landmarker_full.task is ~9.4MB (float16).
@@ -141,7 +141,7 @@ export async function fetchModelBuffer() {
       console.warn('[PoseAnalysis] Cached model is not the expected file, re-downloading');
       modelCache.removeItem(MODEL_CACHE_KEY).catch(() => {});
     }
-  } catch (_) {}
+  } catch {}
 
   // Fetch from CDN with progressive download reporting
   const response = await fetch(MODEL_URL);
@@ -302,50 +302,6 @@ export function preloadModel() {
 }
 
 /**
- * Load model with retry and progress callback.
- * @param {function} onProgress - (progress: number, message: string) => void
- * @param {number} attempt - current attempt number
- */
-async function loadModelWithRetry(onProgress, attempt = 1) {
-  const MAX_ATTEMPTS = 3;
-  onProgress?.(10 + (attempt - 1) * 30, `Loading AI engine... Attempt ${attempt}/${MAX_ATTEMPTS}`);
-
-  // Wire progressive download progress into the onProgress callback
-  _downloadProgressCb = (percent) => {
-    // Map download progress (0-100%) into the 10-85 range of the overall progress bar
-    const mapped = 10 + Math.round(percent * 0.75);
-    onProgress?.(mapped, `Downloading model: ${percent}%`);
-  };
-
-  try {
-    const landmarker = await getPoseLandmarker();
-    _downloadProgressCb = null;
-    onProgress?.(100, 'AI Engine Ready');
-    return landmarker;
-  } catch (err) {
-    _downloadProgressCb = null;
-    // Reset so next attempt can try fresh
-    modelLoadPromise = null;
-    poseLandmarker = null;
-
-    if (attempt < MAX_ATTEMPTS) {
-      const delay = Math.pow(2, attempt) * 1000;
-      onProgress?.(10 + attempt * 30, `Retrying in ${delay / 1000}s... (${err.message})`);
-      await new Promise(r => setTimeout(r, delay));
-      return loadModelWithRetry(onProgress, attempt + 1);
-    }
-    throw new Error(`Failed to load AI model after ${MAX_ATTEMPTS} attempts. Check your connection.`);
-  }
-}
-
-/**
- * Get the unified landmarker instance (for live camera).
- */
-async function getVideoLandmarker() {
-  return getPoseLandmarker();
-}
-
-/**
  * Get landmarker instance for image/video upload analysis.
  * Forces CPU delegate for deterministic results: GPU floating-point
  * operations produce different landmark coordinates between runs.
@@ -385,7 +341,7 @@ export async function getVideoModeLandmarker() {
  */
 export function disposeAllLandmarkers() {
   if (poseLandmarker) {
-    try { poseLandmarker.close(); } catch (_) {}
+    try { poseLandmarker.close(); } catch {}
     poseLandmarker = null;
   }
   modelLoadPromise = null;
@@ -654,7 +610,7 @@ export function detectPoseVideo(landmarker, videoElement, timestamp) {
     const result = landmarker.detectForVideo(videoElement, timestamp);
     // Free segmentation masks to prevent GPU memory leaks on mobile
     if (result && result.segmentationMasks) {
-      result.segmentationMasks.forEach(m => { try { m.close(); } catch (_) {} });
+      result.segmentationMasks.forEach(m => { try { m.close(); } catch {} });
     }
     // Apply Kalman filter to smooth landmark coordinates
     if (result && result.landmarks) {
@@ -747,69 +703,6 @@ export function resetKalmanFilters() {
 // selectSubjectPose : delegated to poseGeometry.js (re-exported above)
 
 // ─── Mirror detection ───
-
-// Left-right landmark pairs for mirror comparison
-const MIRROR_PAIRS = [
-  [LANDMARKS.LEFT_SHOULDER, LANDMARKS.RIGHT_SHOULDER],
-  [LANDMARKS.LEFT_ELBOW, LANDMARKS.RIGHT_ELBOW],
-  [LANDMARKS.LEFT_WRIST, LANDMARKS.RIGHT_WRIST],
-  [LANDMARKS.LEFT_HIP, LANDMARKS.RIGHT_HIP],
-  [LANDMARKS.LEFT_KNEE, LANDMARKS.RIGHT_KNEE],
-  [LANDMARKS.LEFT_ANKLE, LANDMARKS.RIGHT_ANKLE],
-];
-
-/**
- * Detect if two poses are mirror images of each other (e.g. gym mirror reflection).
- * Compares pose A's left landmarks against pose B's right landmarks.
- * If they match within threshold, selects the pose closer to the camera (lower avg z).
- * @param {Array} landmarksArray - array of pose landmark arrays
- * @returns {Array} filtered landmarksArray with mirror duplicates removed
- */
-function detectMirror(landmarksArray) {
-  if (!landmarksArray || landmarksArray.length < 2) return landmarksArray;
-
-  const THRESHOLD = 0.05; // normalized distance threshold
-  const keep = new Array(landmarksArray.length).fill(true);
-
-  for (let a = 0; a < landmarksArray.length; a++) {
-    if (!keep[a]) continue;
-    for (let b = a + 1; b < landmarksArray.length; b++) {
-      if (!keep[b]) continue;
-      const poseA = landmarksArray[a];
-      const poseB = landmarksArray[b];
-      if (!poseA || !poseB || poseA.length < 33 || poseB.length < 33) continue;
-
-      // Check if A's left matches B's right (mirror)
-      let totalDist = 0;
-      let pairCount = 0;
-      for (const [leftIdx, rightIdx] of MIRROR_PAIRS) {
-        const aLeft = poseA[leftIdx];
-        const bRight = poseB[rightIdx];
-        if (!aLeft || !bRight) continue;
-        const dx = aLeft.x - (1 - bRight.x); // mirror x: bRight.x reflected = 1 - bRight.x
-        const dy = aLeft.y - bRight.y;
-        totalDist += Math.sqrt(dx * dx + dy * dy);
-        pairCount++;
-      }
-
-      if (pairCount === 0) continue;
-      const avgDist = totalDist / pairCount;
-
-      if (avgDist < THRESHOLD) {
-        // It's a mirror; keep the pose with lower average z (closer to camera)
-        const avgZA = poseA.reduce((s, lm) => s + (lm.z || 0), 0) / poseA.length;
-        const avgZB = poseB.reduce((s, lm) => s + (lm.z || 0), 0) / poseB.length;
-        if (avgZA <= avgZB) {
-          keep[b] = false;
-        } else {
-          keep[a] = false;
-        }
-      }
-    }
-  }
-
-  return landmarksArray.filter((_, i) => keep[i]);
-}
 
 // ─── Landmark interpolation for occluded frames ───
 
@@ -1163,17 +1056,3 @@ export function drawPose(ctx, landmarks, width, height, alpha = 1.0, formFeedbac
   ctx.restore();
 }
 
-/**
- * Draw overlay message when no pose detected.
- */
-function drawOverlayMessage(ctx, line1, line2) {
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  ctx.fillStyle = 'rgba(0,0,0,0.7)';
-  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  ctx.fillStyle = '#f0f0f5';
-  ctx.font = 'bold 24px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(line1, ctx.canvas.width / 2, ctx.canvas.height / 2 - 15);
-  ctx.font = '16px sans-serif';
-  ctx.fillText(line2, ctx.canvas.width / 2, ctx.canvas.height / 2 + 15);
-}

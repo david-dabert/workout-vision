@@ -5,7 +5,7 @@ const dir = 'test/real-phone/step3';
 const read = name => readFileSync(`${dir}/${name}`, 'utf8').trimEnd();
 const reports = readdirSync(dir).filter(name => /^(chrome|webkit-iphone)-(bicep_curl|lat_pulldown|lateral_raise|bench_press|overhead_press)\.json$/.test(name)).sort().map(name => ({ name, ...JSON.parse(read(name)) }));
 const lines = [
-  '# Step 3 STOP — PASSED', '',
+  '# Step 3 STOP \u2014 PASSED', '',
   'The approved lifts are wired to the unchanged core through worker-based pose inference. Both production browsers show the expected counts for the approved clips. Landmark parity passes across both browsers. Zero console errors and zero failed requests across all test runs.', '',
   '## Changes', '',
   '- PLAN.md records the git-lock stop rule, synthetic-first parameter rule, three-lift selector, parked presses and Step 3 STOP.',

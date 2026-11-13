@@ -208,7 +208,7 @@ export class VelocityEngine {
    * @param {number} weightKg
    * @returns {RepVelocityAnalysis[]}
    */
-  analyzePerRep(signal, repBoundaries, weightKg = 0) {
+  analyzePerRep(signal, repBoundaries, _weightKg = 0) {
     const results = [];
 
     for (const rep of repBoundaries) {
@@ -285,7 +285,7 @@ export class VelocityEngine {
     return sorted[Math.floor(sorted.length * 0.25)] || 0.001;
   }
 
-  _extractRepMetrics(segments, velocity, signal) {
+  _extractRepMetrics(segments, velocity, _signal) {
     // Group segments into rep cycles (eccentric → concentric pairs)
     const concentrics = segments.filter(s => s.phase === 'concentric');
     const eccentrics = segments.filter(s => s.phase === 'eccentric');
