@@ -9,6 +9,7 @@ import {
 } from './programme';
 import { MAX_DRAFTS, isEmptyDraft, loadDrafts, saveDraft, removeDraft, newDraft, newItem, createFromTemplate } from './programme-store';
 import { useCondensingTopbar } from './topbar';
+import { showUnmeasuredRoutes } from '../../lib/buildFlags';
 // The form's fields are the report's (Report.css: .field), so the two forms read alike.
 import './Report.css';
 import './Pro.css';
@@ -137,10 +138,12 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, on
         <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
       </div>
       <p className="eyebrow pro-eyebrow" data-reveal style={{ '--i': 0 }}>{c.eyebrow}</p>
-      <h1 className="title" data-reveal style={{ '--i': 0 }}>{proTab === 'business' ? c.officeTitle : c.title}</h1>
-      <p className="sub pro-sub" data-reveal style={{ '--i': 1 }}>{proTab === 'business' ? c.officeSub : c.sub}</p>
+      <h1 className="title" data-reveal style={{ '--i': 0 }}>{proTab === 'business' && showUnmeasuredRoutes() ? c.officeTitle : c.title}</h1>
+      <p className="sub pro-sub" data-reveal style={{ '--i': 1 }}>{proTab === 'business' && showUnmeasuredRoutes() ? c.officeSub : c.sub}</p>
 
-      <div className="pro-mode-nav" data-reveal style={{ '--i': 1.5 }}>
+      {/* The coach's office (clients, contracts, accounting, nutrition) only in the extended build: it widens the product
+          before the count it rests on is proven (docs/FLAWS-2026-11.md #7, R16). The programme builder stays. */}
+      {showUnmeasuredRoutes() && <div className="pro-mode-nav" data-reveal style={{ '--i': 1.5 }}>
         <button
           type="button"
           className={`pro-mode-pill press ${proTab === 'programmes' ? 'is-active' : ''}`}
@@ -159,9 +162,9 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, on
         >
           <SvgBriefcase />{c.officeTab}
         </button>
-      </div>
+      </div>}
 
-      {proTab === 'business' ? (
+      {proTab === 'business' && showUnmeasuredRoutes() ? (
         <Suspense fallback={<div aria-busy="true" />}>
           <CoachSuite onAddToProgramme={onAddPhysio} />
         </Suspense>
