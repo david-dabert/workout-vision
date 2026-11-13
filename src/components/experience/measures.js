@@ -30,3 +30,8 @@ export const SPEED_CHANGE_SHOWN = false;
 // The engines and their tests stay in the repository, unchanged. Back on, reading by reading, once each one is
 // held against a labelled reference (R8, R16). Status: none validated.
 export const UNVALIDATED_BIOMECHANICS_SHOWN = false;
+
+// Card 011, lab lane: today's set beside the person's best set of the same exercise on the saved result (BestSet.jsx).
+// Off in production until card 001 has passed (cards/README.md): it rests on the same engine and on range and tempo,
+// which are not validated. Status: experimental.
+export const BEST_SET_SHOWN = false;
