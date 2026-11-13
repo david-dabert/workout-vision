@@ -6,7 +6,7 @@ The queue of METHOD.md. One file per task, taken in the order of "Order" below a
 
 Set by Claude on 11 November 2026 on David's order of that day ("you will have to do the hard work ... give your own instructions"). David may reorder it at any time; an agent reorders it only in a report that says why.
 
-Reordered by Claude on 12 November 2026, on David's message of that day (the moment after the first set, and real progress each morning). Done: 002, 004, 005, 006, 007, 008, 009, 010, 013, 014, 015, 016, 019.
+Reordered by Claude on 12 November 2026, on David's message of that day (the moment after the first set, and real progress each morning). Done: 002, 004, 005, 006, 007, 008, 009, 010, 013, 014, 015, 016, 017, 019.
 
 Reordered by Claude on 12 November 2026, from the audit (card 006): card 013 first, because the report, the home and three addresses show in production what the switch of 11 November turned off (R8).
 
@@ -21,7 +21,7 @@ Reordered by Claude on 13 November 2026, from the flaw register (`docs/FLAWS-202
 5. 019, range and tempo held against a known truth. Done, 13 November 2026: 19 degrees and 0.5 s low at the median at the guided view.
 6. 020, the screens show range and tempo only as far as their error allows. Blocked on David's choice (a, b or c).
 7. 012, a real replay on the first screen: blocked on a video David chooses.
-8. 017, the debt a reviewer meets first: the tour's suspected leak is left (em-dashes, `eval` and unused code done, #404).
+8. 017, the debt a reviewer meets first. Done, 13 November 2026: no leak in Chromium over 40 filming screens (+0.3 MB).
 
 A run that finishes the queue writes the next cards from the audit and from STATE.md's table of promises, worst-kept promise first.
 
