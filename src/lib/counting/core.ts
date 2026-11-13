@@ -425,18 +425,30 @@ export function sgKernel(windowSize: number): number[] {
   return kernel;
 }
 
+// Bench only (the overnight lab, scripts/autoresearch.mjs, 13 November 2026): a bench process may override any numeric
+// constant below with WV_CORE_PARAMS='{"SPLIT_LONG":1.6}' in its environment, read once at load. The app runs in a
+// browser, which has no process environment, so it always gets the values written here. A value the lab keeps ships
+// only through its own commit, run through R2.
+const CORE_PARAMS: Record<string, number> = (() => {
+  try {
+    const raw = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.WV_CORE_PARAMS;
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+})();
+const param = (name: string, value: number): number => (typeof CORE_PARAMS[name] === 'number' ? CORE_PARAMS[name] : value);
+
 // Unvalidated starting values : recorded per PLAN.md rule
-const BRIDGE_GAP_SEC = 0.5;       // max dropout to bridge
-const OUTLIER_WINDOW_SEC = 0.5;   // window for local median in outlier removal
-const OUTLIER_DEVIATION_DEG = 40; // max deviation from local median before nulling
-const SG_WINDOW_SEC = 0.333;      // Savitzky–Golay window in seconds
-const MIN_REP_SEC = 0.5;          // shortest plausible rep (Schoenfeld et al. 2015)
+const BRIDGE_GAP_SEC = param('BRIDGE_GAP_SEC', 0.5);       // max dropout to bridge
+const OUTLIER_WINDOW_SEC = param('OUTLIER_WINDOW_SEC', 0.5);   // window for local median in outlier removal
+const OUTLIER_DEVIATION_DEG = param('OUTLIER_DEVIATION_DEG', 40); // max deviation from local median before nulling
+const SG_WINDOW_SEC = param('SG_WINDOW_SEC', 0.333);      // Savitzky–Golay window in seconds
+const MIN_REP_SEC = param('MIN_REP_SEC', 0.5);          // shortest plausible rep (Schoenfeld et al. 2015)
 // Longest rep, in moving time (detectReps): its duration less the time it held at the working end, that hold
 // counted up to WORK_HOLD_CAP_SEC. Source: Schoenfeld, Ogborn & Krieger, Sports Medicine 2015 (45(4):577-85)
 // found similar hypertrophy over the repetition durations of the studies they pooled, 0.5 to 8 s; it states no
 // longest possible rep, so 8 s as a bound is our reading of that range, not its finding. Status: literature (the
 // range), experimental (its use as a bound on moving time).
-const MAX_REP_SEC = 8.0;
+const MAX_REP_SEC = param('MAX_REP_SEC', 8.0);
 // A rep's time at the working end (the samples past the working threshold) is not counted against MAX_REP_SEC, up
 // to this many seconds (audit of 6 October 2026, action 5): with the bound on the whole duration, eight squats or
 // lateral raises paused 5 s at the working end read 0, and a set of six plain and two paused reps read 6 with
@@ -445,18 +457,18 @@ const MAX_REP_SEC = 8.0;
 // (a 10 s wall sit then standing up) now reads as 1 rep. A cycle whose entering sample is already at the working
 // end (video or pose opening on it) keeps the whole-duration bound (detectReps, `bounded`). work-hold.test.ts.
 // Source: UNSOURCED. Status: experimental.
-const WORK_HOLD_CAP_SEC = 10;
-const PERCENTILE_LOW = 10;        // for threshold from set's own range
-const PERCENTILE_HIGH = 90;
-const THRESHOLD_MARGIN = 0.20;    // fraction of range added as hysteresis band
-const MIN_ROM_DEGREES = 20;       // minimum ROM to accept a rep
+const WORK_HOLD_CAP_SEC = param('WORK_HOLD_CAP_SEC', 10);
+const PERCENTILE_LOW = param('PERCENTILE_LOW', 10);        // for threshold from set's own range
+const PERCENTILE_HIGH = param('PERCENTILE_HIGH', 90);
+const THRESHOLD_MARGIN = param('THRESHOLD_MARGIN', 0.20);    // fraction of range added as hysteresis band
+const MIN_ROM_DEGREES = param('MIN_ROM_DEGREES', 20);       // minimum ROM to accept a rep
 // Under this 95th minus 5th percentile spread of its smoothed angle, the better seen side of a one-side lift is still,
 // and the other side may count (countReps). About twice the near arm's rest spread on the renders of 8 October
 // (0 to 5.8 degrees, DETECTION prone_y_raise); the idle elbow of IntelliRehabDS ird_s101_g00_stand spread 3; the
 // better seen side of every set the first form of the rule moved spread 13 or more (review of 14 October).
 // Source: UNSOURCED. Status: experimental.
-const STILL_SIDE_DEG = 10;
-const VIS_THRESHOLD = 0.5;        // per-joint visibility floor
+const STILL_SIDE_DEG = param('STILL_SIDE_DEG', 10);
+const VIS_THRESHOLD = param('VIS_THRESHOLD', 0.5);        // per-joint visibility floor
 // Rest band, 2 October 2026 (David's order on tempo, PLAN.md): 10 % and 3° timed only the fast middle of each
 // phase, so a 0.15 s hold at the turn read 0.53 s (median) and phases 0.7 s short on 96 synthetic sets
 // (test/real-phone/synth/synth.txt). 5 % and 2°: hold 0.40 s, phases 0.61 s short; David's real reps lengthen
@@ -465,20 +477,20 @@ const VIS_THRESHOLD = 0.5;        // per-joint visibility floor
 // 271/894, but one countix-whole push-up (label 3) went from 2 to 1, its rep's middle leaving the labelled
 // window (count-in-window). Three of David's sets now mark their first rep as cut by the video, which they
 // are (bicep_curl_5, both overhead_press 4/10 front). Status: experimental.
-const REST_BAND_FRACTION = 0.05;  // a rep leaves its rest when the angle is this share of the set's range away from it
-const REST_BAND_MIN_DEG = 2;      // … and never less than this many degrees
-const REST_LEVEL_MIN_SEC = 0.3;   // shortest stay at rest whose median gives the rest level; below it, the extreme is used. Source: UNSOURCED. Status: experimental
-const RETURN_WINDOW_SEC = 2;     // how long after its working half a rep's fullest return is looked for (placeBoundaries); since 8ff7313 (3 October 2026) also the longest a cut last rep may take to come back and still count (detectReps). Source: UNSOURCED. Status: experimental
+const REST_BAND_FRACTION = param('REST_BAND_FRACTION', 0.05);  // a rep leaves its rest when the angle is this share of the set's range away from it
+const REST_BAND_MIN_DEG = param('REST_BAND_MIN_DEG', 2);      // … and never less than this many degrees
+const REST_LEVEL_MIN_SEC = param('REST_LEVEL_MIN_SEC', 0.3);   // shortest stay at rest whose median gives the rest level; below it, the extreme is used. Source: UNSOURCED. Status: experimental
+const RETURN_WINDOW_SEC = param('RETURN_WINDOW_SEC', 2);     // how long after its working half a rep's fullest return is looked for (placeBoundaries); since 8ff7313 (3 October 2026) also the longest a cut last rep may take to come back and still count (detectReps). Source: UNSOURCED. Status: experimental
 // A first rep whose return is all the video shows (it starts at the working end and comes back to rest in under
 // MIN_REP_SEC) counts when that return takes at least this share of the set's own extreme-to-rest time, the
 // median over its accepted reps, measured from where each one last deepened its working extreme (detectReps;
 // it needs HEAD_MIN_REPS accepted reps to compare with, and placeBoundaries marks it clipped so no measure uses it).
 // Source: UNSOURCED. Status: experimental, chosen on the public build half A (0.5 against 0.6), bounded below
 // by the pinned edges tests (edges.test.ts, window-edges.test.ts).
-const HEAD_RETURN_SHARE = 0.5;
-const HEAD_MIN_REPS = 1;          // accepted reps the head return time is read from (25 October 2026, matching TAIL_DEPTH_MIN_REPS = 1). Source: UNSOURCED. Status: experimental, chosen on half A
+const HEAD_RETURN_SHARE = param('HEAD_RETURN_SHARE', 0.5);
+const HEAD_MIN_REPS = param('HEAD_MIN_REPS', 1);          // accepted reps the head return time is read from (25 October 2026, matching TAIL_DEPTH_MIN_REPS = 1). Source: UNSOURCED. Status: experimental, chosen on half A
 const EXTREME_HOLD_SEC = 1 / 3;   // each end of a rep's range is the mean of its most extreme third of a second, not one sample. Source: UNSOURCED. Status: experimental
-const TOGETHER_OVERLAP = 0.75;    // two arms' reps overlapping by this share of the shorter one are one rep, both arms together
+const TOGETHER_OVERLAP = param('TOGETHER_OVERLAP', 0.75);    // two arms' reps overlapping by this share of the shorter one are one rep, both arms together
 // A `together` lift joins its two sides only when their smoothed angles correlate above this over the samples
 // where both are seen (Pearson). Two knees that bend together correlate. The two public lunges that doubled when
 // joined (TRIED.md, 3 October: 3 read 7, 4 read 8) read their knees in opposition, one straight while the other
@@ -486,7 +498,7 @@ const TOGETHER_OVERLAP = 0.75;    // two arms' reps overlapping by this share of
 // (0.06, 0.07) gained a false rep. 0.3 is the conventional "medium" correlation (Cohen, Statistical Power
 // Analysis for the Behavioral Sciences, 2nd ed., 1988); on the lunges of the public build half's half A every
 // value from 0.1 to 0.3 gives the same counts. Status: experimental (chosen on half A).
-const TOGETHER_MIN_CORRELATION = 0.3;
+const TOGETHER_MIN_CORRELATION = param('TOGETHER_MIN_CORRELATION', 0.3);
 // A last rep the video stops on its way back counts once its return has covered this share of the way from its
 // working extreme to the rest threshold (detectReps), and it is marked clipped, so no measure uses it. The rule
 // withdrawn on 1 October (TRIED.md) counted it from the working end on, which a movement after the set reaches
@@ -503,7 +515,7 @@ const TOGETHER_MIN_CORRELATION = 0.3;
 // off by 3. They had also been read once for 0.5, the first pick, before the full test suite showed it breaks
 // edges.test.ts (TRIED.md); the exclusion of 0.5 and 0.6 rests on that synthetic test alone. Sweep in TRIED.md. Status: experimental; UNSOURCED (no published rule for a rep cut
 // by the recording).
-const CUT_RETURN_SHARE = 0.7;
+const CUT_RETURN_SHARE = param('CUT_RETURN_SHARE', 0.7);
 // A last rep the video stops at its working end (David, 18 October 2026: a rep the video shows reaching its working
 // end counts, even when the recording cuts it; his lat pulldown of 11 counts the pull the video ends on). It counts,
 // marked cut, when every one of these holds (detectReps):
@@ -520,18 +532,18 @@ const CUT_RETURN_SHARE = 0.7;
 // 16 (chest-supported row 6; lat pulldown 11 read 9 -> 10), none newly off by 3, synthetic 74 -> 74. Depth 0.9 instead
 // of 0.85 loses the row; hold 1.0 instead of 1.5 would also read set01 hip thrust 6, by 0.1 s, a fit to one clip.
 // Source: UNSOURCED (no published rule for a rep cut by the recording). Status: experimental.
-const TAIL_AT_WORK_SEC = 0.6;
-const TAIL_HOLD_MAX_SEC = 1.5;
-const TAIL_DEPTH_SHARE = 0.85;
-const TAIL_REST_MAX_SEC = 4.0;   // a candidate cut rep must begin within 4.0 s of the previous cycle completing (post-set rest + exit is not a rep). Source: UNSOURCED. Status: experimental
+const TAIL_AT_WORK_SEC = param('TAIL_AT_WORK_SEC', 0.6);
+const TAIL_HOLD_MAX_SEC = param('TAIL_HOLD_MAX_SEC', 1.5);
+const TAIL_DEPTH_SHARE = param('TAIL_DEPTH_SHARE', 0.85);
+const TAIL_REST_MAX_SEC = param('TAIL_REST_MAX_SEC', 4.0);   // a candidate cut rep must begin within 4.0 s of the previous cycle completing (post-set rest + exit is not a rep). Source: UNSOURCED. Status: experimental
 // How many accepted reps the depth is read from (their median). Two until 20 October 2026: a clip of two or three
 // reps cut at its last working end then had no depth to compare with, and its last rep never counted (triage of the
 // public undercounts, test/real-phone/consensus/triage.test.ts: 47 of 133 such tails refused for this alone). One rep
 // is enough: chosen on the public build half A (variant-eval, 251 -> 256 exact, none lost), half B read after
 // (251 -> 258, none lost); David's sets, his videos, the synthetic, RepCount-A and occlusion sets unchanged. Of the
 // four other guards of this rule relaxed the same day, each lost sets (TRIED.md). Source: UNSOURCED. Status: experimental.
-const TAIL_DEPTH_MIN_REPS = 1;
-const OPEN_HOLD_SEC = 0.5;
+const TAIL_DEPTH_MIN_REPS = param('TAIL_DEPTH_MIN_REPS', 1);
+const OPEN_HOLD_SEC = param('OPEN_HOLD_SEC', 0.5);
 // Splitting an overlong rep at an in-set return that came most of the way back (splitOverlongReps, 3 October
 // 2026; extended 25 October 2026 to 2-cycle sets whose shorter cycle lasts at least SPLIT_TWO_MIN_SEC and to
 // cycles entered on the first valid sample): two reps whose return between them stopped short of the rest
@@ -544,28 +556,28 @@ const OPEN_HOLD_SEC = 0.5;
 // off by 3 or more 89 -> 89; David's sets, his videos, synthetic, RepCount-A and occlusion unchanged; TRIED.md):
 // SPLIT_MIN_CYCLES = 2 with SPLIT_TWO_MIN_SEC = 0.8, HEAD_MIN_REPS = 1, and splitting first-sample overlong cycles.
 // Source: UNSOURCED (no published rule). Status: experimental, chosen on half A.
-const SPLIT_MIN_CYCLES = 2;      // fewest accepted cycles for splitOverlongReps to run. Source: UNSOURCED. Status: experimental, chosen on half A
-const SPLIT_TWO_MIN_SEC = 0.8;   // in a 2-cycle set, the shorter cycle must last at least this long to anchor the tempo. Source: UNSOURCED. Status: experimental, chosen on half A
-const SPLIT_REGULAR = 0.6;       // split only when every rep of the set lasts at least this share of the median rep. Source: UNSOURCED. Status: experimental, chosen on half A
-const SPLIT_LONG = 1.7;          // a rep lasting more than this many median reps is a candidate. Source: UNSOURCED. Status: experimental, chosen on half A
-const SPLIT_LONG_FIRST = 1.8;    // a cycle entered on the first valid sample needs this many median reps to split, so pre-set adjustments stay unsplit (edges.test.ts). Source: UNSOURCED. Status: experimental
-const SPLIT_RETURN_SHARE = 0.8;  // the in-set return must cover this share of the way from the working extreme to the rest threshold. Source: UNSOURCED. Status: experimental, chosen on half A
-const SPLIT_REGULAR_DEEP = 0.45; // when a return is unequivocal (>= 85%), sets with mild tempo variation (shortest cycle >= 45% median) may split. Source: UNSOURCED. Status: experimental
-const SPLIT_DEEP_RETURN = 0.85;   // an unequivocal deep return (>= 85%) splits an overlong rep even when set tempo varies (durations[0] < SPLIT_REGULAR * md). Source: UNSOURCED. Status: experimental
-const SPLIT_PIECE = 0.6;         // each piece lasts at least this share of the median rep (and MIN_REP_SEC). Source: UNSOURCED. Status: experimental, chosen on half A
+const SPLIT_MIN_CYCLES = param('SPLIT_MIN_CYCLES', 2);      // fewest accepted cycles for splitOverlongReps to run. Source: UNSOURCED. Status: experimental, chosen on half A
+const SPLIT_TWO_MIN_SEC = param('SPLIT_TWO_MIN_SEC', 0.8);   // in a 2-cycle set, the shorter cycle must last at least this long to anchor the tempo. Source: UNSOURCED. Status: experimental, chosen on half A
+const SPLIT_REGULAR = param('SPLIT_REGULAR', 0.6);       // split only when every rep of the set lasts at least this share of the median rep. Source: UNSOURCED. Status: experimental, chosen on half A
+const SPLIT_LONG = param('SPLIT_LONG', 1.7);          // a rep lasting more than this many median reps is a candidate. Source: UNSOURCED. Status: experimental, chosen on half A
+const SPLIT_LONG_FIRST = param('SPLIT_LONG_FIRST', 1.8);    // a cycle entered on the first valid sample needs this many median reps to split, so pre-set adjustments stay unsplit (edges.test.ts). Source: UNSOURCED. Status: experimental
+const SPLIT_RETURN_SHARE = param('SPLIT_RETURN_SHARE', 0.8);  // the in-set return must cover this share of the way from the working extreme to the rest threshold. Source: UNSOURCED. Status: experimental, chosen on half A
+const SPLIT_REGULAR_DEEP = param('SPLIT_REGULAR_DEEP', 0.45); // when a return is unequivocal (>= 85%), sets with mild tempo variation (shortest cycle >= 45% median) may split. Source: UNSOURCED. Status: experimental
+const SPLIT_DEEP_RETURN = param('SPLIT_DEEP_RETURN', 0.85);   // an unequivocal deep return (>= 85%) splits an overlong rep even when set tempo varies (durations[0] < SPLIT_REGULAR * md). Source: UNSOURCED. Status: experimental
+const SPLIT_PIECE = param('SPLIT_PIECE', 0.6);         // each piece lasts at least this share of the median rep (and MIN_REP_SEC). Source: UNSOURCED. Status: experimental, chosen on half A
 // Fixed-footplate ankle sanitization constants (sanitizeFixedFeet, 25 October 2026). Source: UNSOURCED. Status: experimental.
-const FIXED_FEET_FOOTPLATE_QUANTILE = 0.75; // quantile of valid (ankle.y > knee.y) ankle y positions used to clamp inverted ankles. Source: UNSOURCED. Status: experimental
-const FIXED_FEET_MAX_SEEN_SHARE = 0.5;      // maximum visible frame share (< 50%) for stationary occluded platform ankle hold. Source: UNSOURCED. Status: experimental
-const FIXED_FEET_MIN_SEEN_SHARE = 0.05;     // minimum visible frame share (>= 5%) to seed median platform ankle coordinate. Source: UNSOURCED. Status: experimental
-const FIXED_FEET_HOLD_VISIBILITY = 0.99;    // visibility assigned to held platform ankle landmarks. Source: UNSOURCED. Status: experimental
+const FIXED_FEET_FOOTPLATE_QUANTILE = param('FIXED_FEET_FOOTPLATE_QUANTILE', 0.75); // quantile of valid (ankle.y > knee.y) ankle y positions used to clamp inverted ankles. Source: UNSOURCED. Status: experimental
+const FIXED_FEET_MAX_SEEN_SHARE = param('FIXED_FEET_MAX_SEEN_SHARE', 0.5);      // maximum visible frame share (< 50%) for stationary occluded platform ankle hold. Source: UNSOURCED. Status: experimental
+const FIXED_FEET_MIN_SEEN_SHARE = param('FIXED_FEET_MIN_SEEN_SHARE', 0.05);     // minimum visible frame share (>= 5%) to seed median platform ankle coordinate. Source: UNSOURCED. Status: experimental
+const FIXED_FEET_HOLD_VISIBILITY = param('FIXED_FEET_HOLD_VISIBILITY', 0.99);    // visibility assigned to held platform ankle landmarks. Source: UNSOURCED. Status: experimental
 // Adaptive ceiling turnaround constants for flexion-working lifts (detectReps, 3 November 2026). Source: UNSOURCED. Status: experimental.
-const TURNAROUND_RETURN_SHARE = 0.70;       // minimum return excursion share of current ROM for an adaptive ceiling turnaround. Source: UNSOURCED. Status: experimental
-const TURNAROUND_BAND_MARGIN = 0.20;        // fraction of thresholdBand below highThreshold accepted as near-lockout turnaround. Source: UNSOURCED. Status: experimental
-const TURNAROUND_MIN_DROP_DEG = 2.5;        // minimum reversal drop in degrees after the turnaround peak. Source: UNSOURCED. Status: experimental
-const TURNAROUND_MIN_DROP_ROM_SHARE = 0.20; // minimum reversal drop as a share of current ROM. Source: UNSOURCED. Status: experimental
-const TURNAROUND_MIN_PEAK_SEC = 0.25;       // minimum elapsed seconds from hiIdx to the turnaround peak. Source: UNSOURCED. Status: experimental
+const TURNAROUND_RETURN_SHARE = param('TURNAROUND_RETURN_SHARE', 0.70);       // minimum return excursion share of current ROM for an adaptive ceiling turnaround. Source: UNSOURCED. Status: experimental
+const TURNAROUND_BAND_MARGIN = param('TURNAROUND_BAND_MARGIN', 0.20);        // fraction of thresholdBand below highThreshold accepted as near-lockout turnaround. Source: UNSOURCED. Status: experimental
+const TURNAROUND_MIN_DROP_DEG = param('TURNAROUND_MIN_DROP_DEG', 2.5);        // minimum reversal drop in degrees after the turnaround peak. Source: UNSOURCED. Status: experimental
+const TURNAROUND_MIN_DROP_ROM_SHARE = param('TURNAROUND_MIN_DROP_ROM_SHARE', 0.20); // minimum reversal drop as a share of current ROM. Source: UNSOURCED. Status: experimental
+const TURNAROUND_MIN_PEAK_SEC = param('TURNAROUND_MIN_PEAK_SEC', 0.25);       // minimum elapsed seconds from hiIdx to the turnaround peak. Source: UNSOURCED. Status: experimental
 // Minimum phase duration in seconds before placeBoundaries falls back from workFrom/workTo to first/last (29 October 2026). Source: UNSOURCED. Status: experimental.
-const MIN_PHASE_BOUNDARY_SEC = 0.2;
+const MIN_PHASE_BOUNDARY_SEC = param('MIN_PHASE_BOUNDARY_SEC', 0.2);
 
 // ─── Public API ───
 
