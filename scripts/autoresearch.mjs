@@ -54,7 +54,9 @@ function evaluate(params) {
 const z = { n: 0, exact: 0, bad: 0 };
 const better = (c, b) => (c.publicA ?? z).exact > (b.publicA ?? z).exact && (c.publicA ?? z).bad <= (b.publicA ?? z).bad
   && (c.david ?? z).exact >= (b.david ?? z).exact && (c.synthetic ?? z).exact >= (b.synthetic ?? z).exact;
-const line = by => Object.entries(by).map(([k, v]) => `${k} ${v.exact}/${v.n} (3+ or refused ${v.bad})`).join('  ');
+const line = (by, suites = null) => Object.entries(by).filter(([k]) => !suites || suites.includes(k)).map(([k, v]) => `${k} ${v.exact}/${v.n} (3+ or refused ${v.bad})`).join('  ');
+// The suites the search may look at: half B and the real videos are printed only in the confirmation at the end.
+const SEARCH = ['publicA', 'david', 'synthetic'];
 // Candidate values: the written value moved by these factors; whole numbers stay whole. Status: convention of the lab.
 const FACTORS = [0.7, 0.85, 0.93, 1.07, 1.15, 1.3];
 const candidates = (name, v) => [...new Set(FACTORS.map(f => {
@@ -67,8 +69,8 @@ let best = existsSync(bestFile) ? JSON.parse(readFileSync(bestFile, 'utf8')).par
 const t0 = Date.now();
 const baseline = evaluate({});
 let bestScore = Object.keys(best).length ? evaluate(best) : baseline;
-console.log(`baseline     ${line(baseline)}`);
-if (Object.keys(best).length) console.log(`resumed best ${line(bestScore)} ${JSON.stringify(best)}`);
+console.log(`baseline     ${line(baseline, SEARCH)}`);
+if (Object.keys(best).length) console.log(`resumed best ${line(bestScore, SEARCH)} ${JSON.stringify(best)}`);
 
 if (!confirmOnly) {
   let improved = true;
@@ -84,7 +86,7 @@ if (!confirmOnly) {
         if (kept) {
           best = trial; bestScore = score; improved = true;
           writeFileSync(bestFile, JSON.stringify({ params: best, publicA: score.publicA, david: score.david, synthetic: score.synthetic, at: new Date().toISOString() }, null, 2) + '\n');
-          console.log(`KEPT ${name}=${v}  ${line(score)}`);
+          console.log(`KEPT ${name}=${v}  ${line(score, SEARCH)}`);
         }
       }
     }
