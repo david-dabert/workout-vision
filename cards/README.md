@@ -10,14 +10,18 @@ Reordered by Claude on 12 November 2026, on David's message of that day (the mom
 
 Reordered by Claude on 12 November 2026, from the audit (card 006): card 013 first, because the report, the home and three addresses show in production what the switch of 11 November turned off (R8).
 
+Reordered by Claude on 13 November 2026, on David's order of that day ("Fix the remaining problems and issues"): 018 before 003, because R16 asks the app to be right when sure before it counts more, and TRIED.md closes every threshold on recount agreement; 019 after 003.
+
 Reordered by Claude on 13 November 2026, from the flaw register (`docs/FLAWS-2026-11.md`): 014 first (live overclaims, cheap), then 016 (the accuracy figure R16 rests on), then 015.
 
 1. 001, the kiné comparison held against public data: the proof the kiné offer rests on. Blocked since 12 November 2026 on David's four videos; its public half passed (#391).
 2. 011, today's set against your own best set, in the lab lane: the reason to come back. Lab lane merged (#393), off in production.
-3. 005, the first minute leads with what is proven.
-4. 003, the counter on reps done without a return to rest: the hardest, and the one the 49 % depends on.
-5. 012, a real replay on the first screen: blocked on a video David chooses.
-6. 017, the debt a reviewer meets first.
+3. 005, the first minute leads with what is proven. In review (#402): already true, now held.
+4. 018, the app says it is sure only of a set filmed whole: the R16 figure, on a signal TRIED.md has not closed.
+5. 003, the counter on reps done without a return to rest: the hardest, and the one the 49 % depends on.
+6. 019, range and tempo held against a known truth.
+7. 012, a real replay on the first screen: blocked on a video David chooses.
+8. 017, the debt a reviewer meets first. In review (#404); the tour's leak left.
 
 A run that finishes the queue writes the next cards from the audit and from STATE.md's table of promises, worst-kept promise first.
 
