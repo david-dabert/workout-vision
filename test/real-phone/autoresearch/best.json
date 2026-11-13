@@ -1,0 +1,21 @@
+{
+  "params": {
+    "MIN_ROM_DEGREES": 14
+  },
+  "publicA": {
+    "n": 546,
+    "exact": 261,
+    "bad": 70
+  },
+  "david": {
+    "n": 20,
+    "exact": 14,
+    "bad": 1
+  },
+  "synthetic": {
+    "n": 96,
+    "exact": 78,
+    "bad": 10
+  },
+  "at": "2026-11-13T21:04:12.519Z"
+}
