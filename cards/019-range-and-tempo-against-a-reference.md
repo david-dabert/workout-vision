@@ -1,5 +1,6 @@
 # 019. Range and tempo are held against a known truth
-Status: ready
+Status: done (13 November 2026)
+Result (Claude): the eval was partly in place since 6 October (`synth.txt` prints range and phase-time error by exercise and view, checked by CI); missing were the median and 90th percentile and their place beside the switch. `test/real-phone/synth/measures-error.test.ts` reads the 96 synthetic sets (90 with a measure; the 6 the app counted 0 are none at the guided view): guided view, 24 sets, absolute error range 19 degrees at the median and 36 at the 90th percentile, lifting 0.5 and 0.8 s, lowering 0.5 and 0.7 s, all one-sided (the app reads less). It failed on main (`measures.js` stated no figure) and passes with the figures written there. Verdict: these numbers cannot stand as measurements; card 020 puts the choice to David.
 Executor: careful
 Claim: the range and tempo the app shows under « Expérimental » are measured against a known truth, with their error stated, and the label stays until the error is small enough to name.
 Reference: R8, R9, R16 (joint angles against optical motion capture); `docs/FLAWS-2026-11.md` #13; the synthetic sets, whose angles and phases are known because they are rendered (README, 6 October: ranges read 29 degrees, 30 %, below truth, phases 0.6 s short); `src/components/experience/measures.js` ("Status: none validated").

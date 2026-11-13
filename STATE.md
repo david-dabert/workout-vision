@@ -84,6 +84,8 @@ David's recorded words (DIRECTIVES.md Part 1, docs/VISION.md, R16), held against
 
 ## Now
 
+13 November 2026, 11:55 UTC: main at 44dc63dc (#409 R6 amended, #410 card 003 closed). Card 019 done: range and tempo against the synthetic truth, at the guided view 19 degrees and 0.5 s low at the median (36 degrees, 0.8 s at the 90th percentile), stated in `measures.js`. Card 020 asks David to choose: hide the numbers, relabel them as a comparison between reps, or keep them as they are.
+
 13 November 2026, 10:50 UTC: R6 amended on David's decision ("Merge automatically", #409). Card 003 failed after two attempts, both closed on half A (a split by a second signal: gain at most 3, break 15; SPLIT_LONG swept 1.4 to 2.0: flat). The core's thresholds are not the lever for merged reps; TRIED.md names the pose input. Next ready card: 019, range and tempo against a known truth.
 
 13 November 2026, 10:00 UTC: main at c6aac409. Merged: #403 (the coach's office only in the extended build), #406 (card 017 handover), #407 (card 018, failed: sure only of whole sets, 85.0 % on half B against 90 %, in TRIED.md). Card 003, attempt 1 of 2 failed at its ceiling (a split by a second signal: half A gain at most 3, break 15). Next: card 003, attempt 2.

@@ -1,0 +1,4 @@
+# Card 019: absolute error of the shown measures against the rendered truth (measures-error.test.ts, from synth.txt)
+guided view, 24 sets: range 19 degrees at the median and 36 at the 90th percentile; lifting time 0.5 s and 0.8 s; lowering time 0.5 s and 0.7 s
+all views, 90 sets with a measure (6 of 96 counted 0, none at the guided view): range 31 and 57 degrees; lifting 0.6 and 0.9 s; lowering 0.6 and 1.0 s (median and 90th percentile)
+guided view, signed medians: range -19 degrees, lifting -0.5 s, lowering -0.5 s (negative: the app reads less than the truth)
