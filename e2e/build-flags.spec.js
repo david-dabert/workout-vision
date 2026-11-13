@@ -1,7 +1,8 @@
-// The build flags (src/lib/buildFlags.js; WP0.3, WP0.4 of docs/SPEC-production.md). Production is built with
-// VITE_LIVE and VITE_CONTRIBUTE unset (deploy.yml): the Film screen offers no live counting, the saved card never
-// asks to help, nothing new is kept as a contribution, and the history offers neither "Aider" nor "Envoyer"; what
-// already waits stays on the phone and can still be stopped and erased. The production build is served on port 4176
+// The build flags (src/lib/buildFlags.js; WP0.3, WP0.4 of docs/SPEC-production.md). Production is built with VITE_LIVE
+// unset and, since 13 November 2026 (David: "Build both"), VITE_CONTRIBUTE on (deploy.yml): the Film screen offers no
+// live counting; after the first saved set the card asks once to help, nothing is kept before a yes, and a yes keeps
+// each new set on the phone, ready to send from the history. The paused path (a build without the flag) is held by
+// src/components/experience/__tests__/contribute-paused.test.jsx. The production build is served on port 4176
 // (playwright.config.js); the build the other specs test, with both flags on, on port 4173.
 //
 // A set is reached on the video path, as a person films one: a video drawn in the page (MediaRecorder, its duration
@@ -56,7 +57,7 @@ test.describe('the build with both flags on (port 4173, as ci.yml builds it for 
   });
 });
 
-test.describe('the production build (port 4176: VITE_LIVE, VITE_CONTRIBUTE and VITE_EVENTS_URL unset, as deploy.yml)', () => {
+test.describe('the production build (port 4176: VITE_LIVE and VITE_EVENTS_URL unset, VITE_CONTRIBUTE on, as deploy.yml)', () => {
   test('the Film screen offers no live counting, even to a phone that chose it before', async ({ page }) => {
     const errors = await start(page, { filmMode: 'live' });
     await openFilm(page, PROD);
@@ -70,51 +71,28 @@ test.describe('the production build (port 4176: VITE_LIVE, VITE_CONTRIBUTE and V
     expect(errors).toEqual([]);
   });
 
-  test('a first set filmed is saved with no question on helping, and nothing is kept to send', async ({ page }) => {
+  test('a first set filmed asks once to help, and nothing is kept before a yes', async ({ page }) => {
     test.setTimeout(120000);
     const errors = await start(page);
     const card = await saveSet(page, PROD);
-    await expect(card.getByTestId('contribute-ask')).toHaveCount(0);
-    await expect(page.getByText('Aider à améliorer le comptage')).toHaveCount(0);
-    expect(await page.evaluate(() => [localStorage.getItem('wv_contribute'), localStorage.getItem('wv_contribute_asked')])).toEqual([null, null]);
+    await expect(card.getByTestId('contribute-ask')).toBeVisible();
+    await expect(card.getByTestId('contribute-ask').getByRole('button')).toHaveText(['Quoi exactement ?', 'Oui, aider', 'Pas maintenant']);
+    expect(await page.evaluate(() => localStorage.getItem('wv_contribute'))).toBe(null);
     expect(await contributions(page)).toBe(0);
-    // The history: a saved set, and no section on helping, so no "Aider" and no "Envoyer".
-    await page.locator('.result-screen .icon-btn').first().click();
-    await openHistory(page);
-    await expect(page.getByTestId('contribute-history')).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Aider', exact: true })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Envoyer', exact: true })).toHaveCount(0);
     expect(errors).toEqual([]);
   });
 
-  test('a phone that said yes keeps nothing new; what waits can be stopped and erased, never sent', async ({ page }) => {
+  test('a phone that said yes keeps each new set on the phone, ready to send from the history', async ({ page }) => {
     test.setTimeout(120000);
     const errors = await start(page, { choice: 'yes' });
-    await page.goto(PROD);
-    await expect(page.locator('.altar').first()).toBeVisible({ timeout: 20000 });
-    // The app creates its stores on first use: a set saved and the history opened once, as a person would.
-    await seedSet(page);
-    await page.reload();
-    await openHistory(page);
-    // One contribution kept before the pause: it stays on the phone.
-    await putContribution(page);
-    // A set filmed now is kept as a set, not as a contribution, and the saved card asks nothing.
     const card = await saveSet(page, PROD);
     await expect(card.getByTestId('contribute-ask')).toHaveCount(0);
-    await page.waitForTimeout(500);
-    expect(await contributions(page)).toBe(1);
+    await expect.poll(() => contributions(page)).toBe(1);
     await page.locator('.result-screen .icon-btn').first().click();
     await openHistory(page);
     const box = page.getByTestId('contribute-history');
-    await expect(box.getByTestId('contribute-paused')).toHaveText('Les envois sont en pause pour l’instant : l’appli ne garde plus rien de nouveau. Les séries déjà gardées restent sur ce téléphone, et vous pouvez les effacer.');
-    await expect(box.getByRole('button')).toHaveText(['Arrêter et effacer']);
-    await expect(box).not.toContainText('prête à envoyer');
-    await box.getByRole('button', { name: 'Arrêter et effacer' }).click();
-    await expect(box.locator('[role="status"]')).toHaveText('C’est arrêté. Les séries en attente sont effacées.');
-    expect(await contributions(page)).toBe(0);
-    expect(await page.evaluate(() => localStorage.getItem('wv_contribute'))).toBe('no');
-    // Stopped, nothing is left to offer: no "Aider" to start again in this build.
-    await expect(box.getByRole('button')).toHaveCount(0);
+    await expect(box.getByTestId('contribute-paused')).toHaveCount(0);
+    await expect(box.getByRole('button')).toHaveText(['Envoyer', 'Arrêter et effacer']);
     expect(errors).toEqual([]);
   });
 
@@ -130,7 +108,7 @@ test.describe('the production build (port 4176: VITE_LIVE, VITE_CONTRIBUTE and V
     await page.getByRole('button', { name: 'Retour' }).first().click();
     await openHistory(page);
     const box = page.getByTestId('contribute-history');
-    await expect(box.getByRole('button')).toHaveText(['Arrêter et effacer']);
+    await expect(box.getByRole('button')).toHaveText(['Aider', 'Arrêter et effacer']);
     await box.getByRole('button', { name: 'Arrêter et effacer' }).click();
     await expect(box.locator('[role="status"]')).toHaveText('C’est arrêté. Les séries en attente sont effacées.');
     expect(await contributions(page)).toBe(0);

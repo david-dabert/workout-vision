@@ -4,8 +4,9 @@
 //
 // VITE_LIVE=1: the Film screen offers live counting ("En direct"). Off in production until WP6.1-WP6.3 pass on
 // David's iPhone (Phase 6; WP6.5 lifts it with D12).
-// VITE_CONTRIBUTE=1: "Aider à améliorer le comptage" asks, collects and sends. Off in production until Phase 2 gives
-// it a notice and a recorded consent (WP0.4). Off, the sets already waiting stay on the phone and can be erased.
+// VITE_CONTRIBUTE=1: "Aider à améliorer le comptage" asks, collects and sends. On in production since 13 November 2026
+// (David: "Build both"): the notice approved on 9 October 2026, the yes stored on the phone, nothing sent but by the
+// person through the share sheet. Off, the sets already waiting stay on the phone and can be erased.
 
 /** True when this build offers live counting. */
 export const liveBuild = () => import.meta.env.VITE_LIVE === '1';
