@@ -1,5 +1,6 @@
 # 003. The counter separates reps done without returning to rest
-Status: ready
+Status: ready (attempt 1 of 2 failed, 13 November 2026)
+Attempt 1 (Claude, 13 November 2026): split an overlong rep where a second signal returns. Closed at its ceiling before any change to the core (`second-signal-split.txt`): on half A it could gain at most 3 sets and would break at least 15 exact ones; on David's sets gain at most 1, break 2. Recorded in TRIED.md. One attempt left before the card's stop.
 Executor: careful
 Claim: a person who keeps tension through a set gets the right count.
 Reference: the public build sets (`npm run scoreboard:public`, 949 that decide) and David's sets (`npm run scoreboard`).

@@ -1,0 +1,6 @@
+# Card 003, attempt 1: ceiling of a split of overlong reps by a second signal (second-signal-split.test.ts; bench only)
+public half A: counted 433, exact 238, under 170, over 25; would gain at most 3, would break at least 15 exact sets
+David's labelled sets: counted 15, exact 13; would gain at most 1, would break at least 2
+gained (half A): public/countix-whole/build/0OpUaIKCDmc_000007_0.json.gz; public/countix-whole/build/CQDBpBmzYaQ_000000_7007.json.gz; public/countix-whole/build/OfiZWZVPyD8_000011_5700.json.gz
+broken (half A): public/cfrep/build/deadlift_diag_w1_9_3.json.gz; public/countix/build/0OpUaIKCDmc_000007_0.json.gz; public/countix/build/2RLoQCFdz4Y_000016_0.json.gz; public/countix/build/7zAlYPCPLPo_000016_0.json.gz; public/countix/build/GTBDPTCg68g_000045_0.json.gz; public/countix/build/YaHfRx04h4o_000171_0.json.gz; public/countix/build/d0xd8qpo51k_000008_0.json.gz; public/countix/build/hqMseeTi3Ys_000045_0.json.gz; public/countix/build/mEHI7lXMLCg_000000_0.json.gz; public/countix-whole/build/2RLoQCFdz4Y_000016_0.json.gz; public/countix-whole/build/GTBDPTCg68g_000045_0.json.gz; public/countix-whole/build/Itbz9-ghSfc_000022_0.json.gz
+broken (David): sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz; sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz
