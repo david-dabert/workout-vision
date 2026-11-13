@@ -8,7 +8,7 @@
  * Generated from exercises.js - do not edit the original, edit this file instead.
  */
 
-import { bestSide, bestSideMax, qualityBelow, qualityAbove, qualityRange, qualitySymmetry } from './exercises';
+import { bestSide, bestSideMax, qualityBelow, qualityAbove, qualityRange } from './exercises';
 
 // ─── Shorthand constants for common value specs ───
 

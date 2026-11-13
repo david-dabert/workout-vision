@@ -13,9 +13,7 @@ import { decodeBiomechanicalPhases } from '../counting/BiomechanicalDecoder';
 import { getExercise, getKinematicArchetype, KinematicArchetype } from '../exercises/index';
 import { alignKineticTrajectory, getCanonicalTemplate } from '../counting/KineticForcedAligner';
 import { synchronizeRepetitionsWithAudio } from '../counting/AudioKinematicSync';
-import { analyzeMorphology, MorphologyProfile } from '../biomechanics/morphologyRetargeting';
-import { KinematicFootLocker, Landmark3D } from '../biomechanics/kinematicFootLocking';
-import { exportToBVH } from '../biomechanics/bvhExport';
+import { MorphologyProfile } from '../biomechanics/morphologyRetargeting';
 import { resolveKinematicAlias, KinematicMachineProfile } from '../biomechanics/kinematicAliasing';
 import { analyzeSetHypertrophy, SetHypertrophyReport, TrajectorySample } from '../biomechanics/hypertrophyDiagnostics';
 import {

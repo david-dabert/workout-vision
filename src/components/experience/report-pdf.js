@@ -21,11 +21,8 @@ export function reportPdf(sheet) {
   // Every page keeps a footer for the experimental notice and the page number (drawn last, footers()).
   const FOOTER = 22;
   const room = () => PAGE_H - MARGIN - FOOTER - y;
-  // Once the measures have begun, every new page opens with the experimental label, so no page shows a measure
-  // without it (R8; audit of 3 October: a long set's table ran onto pages without it).
-  let measuresBegun = false;
-  // The experimental notice now closes every page in its footer (footers()), so a new page opens on its content
-  // (David's iPhone, 5 October: the notice heading each page read as debris). measuresBegun is kept for that rule.
+  // The experimental notice closes every page in its footer (footers()), so a new page opens on its content
+  // (David's iPhone, 5 October: the notice heading each page read as debris).
   // Each page's notice is set as the page is finished, the page number once the count of pages is known (end).
   const FOOT_Y = PAGE_H - MARGIN - 12, NUM_W = 40;
   const footer = () => {
@@ -101,7 +98,7 @@ export function reportPdf(sheet) {
     frames.forEach((f, k) => {
       try {
         doc.addImage(f.data, f.format, ax + k * (art + 6), top, art, art, f.alias, 'FAST');
-      } catch (_) {}
+      } catch {}
     });
   }
   y = Math.max(top + above - bNum + 58 * 0.9, wordsEnd) + GAP;
@@ -289,7 +286,6 @@ export function reportPdf(sheet) {
     });
     y += 13.5 + 4 + 17 + GAP;
   }
-  measuresBegun = true;
 
   // The wave (wave.js), as on the report screen: the measured angle as a hairline, each rep over it in the
   // count's colour, its return lighter, a cut or partial rep in ash.

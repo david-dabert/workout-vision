@@ -12,7 +12,6 @@ const workoutStore = localforage.createInstance({ name: 'workoutVision', storeNa
 const medicalStore = localforage.createInstance({ name: 'workoutVision', storeName: 'medical' });
 const foodStore = localforage.createInstance({ name: 'workoutVision', storeName: 'food' });
 const milestoneStore = localforage.createInstance({ name: 'workoutVision', storeName: 'milestones' });
-const prStore = localforage.createInstance({ name: 'workoutVision', storeName: 'personalRecords' });
 const metaStore = localforage.createInstance({ name: 'workoutVision', storeName: 'meta' });
 
 /** A stored record the app can read: an object, not null, not a list. */
@@ -477,7 +476,7 @@ export function calculateBaselines(profile) {
   };
 }
 
-function getStrengthBaselines(weightKg, age, sex, ethnicity) {
+function getStrengthBaselines(weightKg, age, sex, _ethnicity) {
   // Population-level strength standards (Lon Kilgore et al., Practical Programming)
   // Expressed as multipliers of bodyweight for untrained individuals
   const baselines = sex === 'male'

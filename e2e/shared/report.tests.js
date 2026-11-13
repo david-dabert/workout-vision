@@ -71,22 +71,22 @@ export default function reportTests(test, expect) {
     await expect(page.locator('label[for="fPartner"]')).toHaveText('Nom du partenaire');
     // The field that appears must never pass over the level below it (CI run 149): the layout is
     // checked with its animation held at 20 ms, when it had just begun to show, and at 150 ms.
+    // layoutFaults is handed to page.evaluate as a function, between holding and releasing the animations: no eval,
+    // no inline script, which the page's Content-Security-Policy refuses (card 017).
     for (const t of [20, 150]) {
-      const faults = await page.evaluate(async ([src, t]) => {
-        const check = eval(`(${src})`);
-        const finite = document.getAnimations().filter(a => Number.isFinite(a.effect?.getComputedTiming().endTime));
-        finite.forEach(a => { a.pause(); a.currentTime = t; });
-        const out = check().filter(f => !f.startsWith('note: '));
-        finite.forEach(a => a.play());
-        return out;
-      }, [layoutFaults.toString(), t]);
+      await page.evaluate(t => {
+        window.__wvHeld = document.getAnimations().filter(a => Number.isFinite(a.effect?.getComputedTiming().endTime));
+        window.__wvHeld.forEach(a => { a.pause(); a.currentTime = t; });
+      }, t);
+      const faults = (await page.evaluate(layoutFaults)).filter(f => !f.startsWith('note: '));
+      await page.evaluate(() => { window.__wvHeld.forEach(a => a.play()); delete window.__wvHeld; });
       expect(faults, `at ${t} ms`).toEqual([]);
     }
     await page.fill('#fPartner', 'Sam');
     await page.locator('.report-screen').getByRole('group', { name: 'Niveau' }).getByRole('button', { name: 'Confirmé' }).click();
     await expect(page.locator('.sh-people > span')).toHaveText(['EntraînementEn binôme', 'PartenaireSam', 'NiveauConfirmé']);
     const text = await page.locator('.report-screen').textContent();
-    expect(text).not.toContain('—');
+    expect(text).not.toContain('\u2014');
     // The layout once settled: the tap on "Confirmé" may scroll the form under the sticky bar, whose title fades in as the
     // test-version pill fades out (0.3 s, Entry.css); mid-fade the two overlap by design (honesty pass, 14 October 2026:
     // the 0-10 pain scale made the form one row shorter, and the tap now scrolls).

@@ -133,7 +133,7 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
       const blob = await res.blob();
       const file = new File([blob], demoFile, { type: 'video/mp4' });
       onFile(file);
-    } catch (_) {
+    } catch {
       fileRef.current?.click();
     } finally {
       setSampleLoading(false);

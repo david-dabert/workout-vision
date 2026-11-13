@@ -144,7 +144,6 @@ export class KinematicFootLocker {
 
     // 4. Clone and Apply Kinematic Foot Anchoring
     const filtered: Landmark3D[] = landmarks.map(lm => ({ ...lm }));
-    let jitterCorrectionCount = 0;
 
     if (this.leftState.isContact && this.leftState.anchorPosition) {
       const dx = this.leftState.anchorPosition.x - filtered[29].x;
@@ -171,7 +170,6 @@ export class KinematicFootLocker {
         y: filtered[27].y + dy * blend,
         z: (filtered[27].z ?? 0) + dz * blend,
       };
-      jitterCorrectionCount++;
     }
 
     if (this.rightState.isContact && this.rightState.anchorPosition) {
@@ -199,7 +197,6 @@ export class KinematicFootLocker {
         y: filtered[28].y + dy * blend,
         z: (filtered[28].z ?? 0) + dz * blend,
       };
-      jitterCorrectionCount++;
     }
 
     this.prevLandmarks = landmarks.map(lm => ({ ...lm }));

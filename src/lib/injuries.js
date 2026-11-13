@@ -85,7 +85,7 @@ export async function loadInjuries() {
   try {
     const saved = await injuryStore.getItem('wv_injuries');
     return saved || [];
-  } catch (_) {
+  } catch {
     return [];
   }
 }
@@ -96,5 +96,5 @@ export async function loadInjuries() {
 export async function saveInjuries(injuries) {
   try {
     await injuryStore.setItem('wv_injuries', injuries);
-  } catch (_) {}
+  } catch {}
 }

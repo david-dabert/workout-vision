@@ -1,5 +1,5 @@
 /**
- * inject-sw-precache.js — Post-build script that injects hashed asset paths
+ * inject-sw-precache.js: Post-build script that injects hashed asset paths
  * into the service worker's precache list.
  *
  * Phase 5 of David's order of 6 November 2026 (PLAN.md):
@@ -166,4 +166,4 @@ if (!fontFiles.length) {
 }
 
 console.log(`[inject-sw-precache] Fonts precached (latin woff2): ${fontFiles.map(f => f.split('/').pop()).join(', ')}`);
-console.log(`[inject-sw-precache] Injected ${precacheEntries.length} shell assets into SW precache, ${deferredEntries.length} deferred assets (cache: ${cacheName}) — all assertions passed`);
+console.log(`[inject-sw-precache] Injected ${precacheEntries.length} shell assets into SW precache, ${deferredEntries.length} deferred assets (cache: ${cacheName}) \u2014 all assertions passed`);

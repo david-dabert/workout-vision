@@ -46,7 +46,9 @@ try {
   const shot = async name => {
     n++; const f = `${String(n).padStart(2, '0')}-${name}.png`; await page.screenshot({ path: resolve(SHOTS, f) }); steps.push({ step: name, at: ((Date.now() - t0) / 1000).toFixed(1) });
     if (axe) {
-      const v = await page.evaluate(async src => { if (!window.axe) (0, eval)(src); const r = await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] }); return r.violations.map(x => ({ id: x.id, impact: x.impact, n: x.nodes.length, help: x.help, target: x.nodes.slice(0, 3).map(nd => nd.target.join(' ')) })); }, axe);
+      // axe's source is evaluated by Playwright through the browser's debugging protocol, not by eval in the page (card 017).
+      if (!(await page.evaluate(() => !!window.axe))) await page.evaluate(axe);
+      const v = await page.evaluate(async () => { const r = await window.axe.run(document, { runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] }); return r.violations.map(x => ({ id: x.id, impact: x.impact, n: x.nodes.length, help: x.help, target: x.nodes.slice(0, 3).map(nd => nd.target.join(' ')) })); });
       for (const x of v) audit.push({ step: name, ...x });
     }
   };

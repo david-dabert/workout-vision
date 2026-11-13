@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Clip collector — local web server for David's phone.
+ * Clip collector: local web server for David's phone.
  *
  * Open the URL on your phone (same WiFi), pick a video or image,
  * choose the exercise, type the rep count, hit Send.
@@ -440,7 +440,7 @@ const server = createServer(async (req, res) => {
 
     const sizeMB = (bytes / 1024 / 1024).toFixed(1);
     const label = fileType === 'image' ? `${exercise} image` : `${exercise} × ${reps} reps`;
-    console.log(`  ✓ ${filename} (${sizeMB} MB) — ${label}`);
+    console.log(`  ✓ ${filename} (${sizeMB} MB) \u2014 ${label}`);
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true, file: filename, role, totalClips: manifest.clips.length }));

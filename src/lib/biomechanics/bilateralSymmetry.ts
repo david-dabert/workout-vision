@@ -84,7 +84,6 @@ export function analyzeBilateralKinematicSymmetry(
     ? timestamps
     : worldLandmarks.map((_, i) => i / 30);
 
-  const isSquat = /squat|lunge|leg/i.test(lift);
   const isPress = /press|bench|push/i.test(lift);
 
   // Squat: Left Knee (23-25-27) vs Right Knee (24-26-28)

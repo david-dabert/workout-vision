@@ -39,27 +39,6 @@ function dist3D(a, b) {
 // Returns ratio of Z variance to total XYZ variance for a landmark
 // ---------------------------------------------------------------------------
 
-function computeDepthDominance(frames, landmarkIdx) {
-  const xs = [], ys = [], zs = [];
-  for (const f of frames) {
-    const p = f && f[landmarkIdx];
-    if (!p) continue;
-    xs.push(p.x);
-    ys.push(p.y);
-    zs.push(p.z || 0);
-  }
-  if (xs.length < 4) return 0;
-
-  const variance = (arr) => {
-    const m = arr.reduce((a, b) => a + b, 0) / arr.length;
-    return arr.reduce((a, v) => a + (v - m) * (v - m), 0) / arr.length;
-  };
-
-  const vx = variance(xs), vy = variance(ys), vz = variance(zs);
-  const total = vx + vy + vz;
-  return total > 1e-10 ? vz / total : 0;
-}
-
 // ---------------------------------------------------------------------------
 // Extract 3D signals from collected landmarks
 // Returns array of { name, values } : same format as RepCounter._extractSignals

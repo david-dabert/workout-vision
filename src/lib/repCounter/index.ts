@@ -49,7 +49,6 @@ import { adaptiveSignalSelect } from './valley';
 import { buildFormHistoryFromCycles, evaluateLiveRep, evaluateFormFeedback } from './scoring';
 import { periodCount, type PeriodResult } from './periodCounter';
 
-const REP_COUNTER_BUILD = 'v26-period-primary';
 
 // ---------------------------------------------------------------------------
 // Utility: moving average smoother (used by ExerciseAutoDetector)
@@ -632,7 +631,7 @@ export class RepCounter {
       this._velocityAnalysis = { fatigue: fullAnalysis.fatigue, power: fullAnalysis.power, smoothness: fullAnalysis.smoothness };
       const formScores = this._repHistory.map(r => r.score).filter((s): s is number => s !== null);
       this._progressionScore = ProgressionScore.computeSet({ formScores, repVelocities, reps: result.reps, weightKg: this._weightKg || 0 });
-    } catch (e) {
+    } catch {
       // Non-critical; swallow errors from velocity/progression analysis
     }
 

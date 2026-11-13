@@ -10,7 +10,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Generate OG Image — WorkoutVision</title>
+  <title>Generate OG Image: WorkoutVision</title>
   <style>
     body { background: #111; display: flex; flex-direction: column; align-items: center; padding: 40px; font-family: system-ui, sans-serif; color: #fff; }
     canvas { border: 1px solid #333; border-radius: 8px; max-width: 100%; }
@@ -52,7 +52,7 @@
       ctx.fillStyle = glow2;
       ctx.fillRect(0, 0, W, H);
 
-      // === Left column — branding ===
+      // === Left column: branding ===
       const lx = 80;
 
       // App name
@@ -79,7 +79,7 @@
       const features = [
         '264 exercises supported',
         '33 body landmarks tracked',
-        '100% on-device — no uploads',
+        '100% on-device: no uploads',
         'Free, no account needed',
       ];
       ctx.fillStyle = 'rgba(255,255,255,0.70)';
@@ -96,7 +96,7 @@
       ctx.font = '22px system-ui, sans-serif';
       ctx.fillText('david-dabert.github.io/workout-vision', lx, 580);
 
-      // === Right column — mock score card ===
+      // === Right column: mock score card ===
       const rx = 720, cardW = 400, cardH = 500, cardY = 65;
 
       // Card background
@@ -118,7 +118,7 @@
       ctx.font = 'bold 36px system-ui, sans-serif';
       ctx.fillText('Bench Press', rx + cardW / 2, cardY + 86);
 
-      // Circular gauge (mock — 88 score)
+      // Circular gauge (mock: 88 score)
       drawGauge(ctx, rx + cardW / 2, cardY + 220, 100, 88);
 
       // Stats row inside card

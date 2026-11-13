@@ -1,5 +1,5 @@
 /**
- * Step 1 DECODING test — extracts landmarks from David's five clips.
+ * Step 1 DECODING test: extracts landmarks from David's five clips.
  *
  * One extraction path: extractFramesStreaming → detectPoseImage.
  * Sequential decode (WebCodecs required, RVFC fallback logged as failure).
@@ -55,7 +55,7 @@ test.describe('Step 1: Decode clips', () => {
       await page.goto('/workout-vision/test/real-phone/harness.html', { waitUntil: 'networkidle' });
       await page.waitForFunction(() => window._harnessReady === true, null, { timeout: 60_000 });
 
-      // Run extraction via the harness — fetches clip from dev server
+      // Run extraction via the harness: fetches clip from dev server
       const clipUrl = `/workout-vision/test/real-phone/clips/${clip.file}`;
       const result = await page.evaluate(async (url) => {
         try {

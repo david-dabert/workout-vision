@@ -53,7 +53,7 @@ test('service worker registers successfully', async ({ page }) => {
 // First load triggers SW install; second load is intercepted by SW and cached;
 // offline reload serves from cache.
 test('app loads offline after service worker precache', async ({ page, context }) => {
-  // 1. First load — triggers SW install + precache of hashed assets
+  // 1. First load: triggers SW install + precache of hashed assets
   await page.goto('/workout-vision/');
   await reachChoice(page);
 
@@ -79,7 +79,7 @@ test('app loads offline after service worker precache', async ({ page, context }
   // 4. Go offline
   await context.setOffline(true);
 
-  // 5. Reload — should serve entirely from SW cache
+  // 5. Reload: should serve entirely from SW cache
   await page.reload({ waitUntil: 'domcontentloaded' });
 
   // 6. The full app renders, not just the shell: the nine lifts on the choice screen

@@ -34,7 +34,6 @@ const FEED_STALL_MS = 2000;
  */
 const STALL_MS = 20000;
 
-const IS_IOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 // Route the demuxer's FFmpeg log lines to console.info so they don't
 // appear as errors. The web-demuxer WASM prints container metadata
@@ -732,50 +731,6 @@ export class FrozenReadError extends Error {
     super(`frozen read: ${repeats} of ${samples} samples repeat the one before`);
     this.name = 'FrozenReadError'; this.samples = samples; this.repeats = repeats; this.decoder = decoder;
   }
-}
-
-/**
- * Inspect a video file to determine its codec without decoding.
- * Reads container metadata via web-demuxer (fast, no frame decode).
- * Returns null if inspection fails (non-video file, unsupported container).
- */
-async function inspectVideo(file) {
-  try {
-    const { WebDemuxer, AVLogLevel } = await import('web-demuxer');
-    const wasmUrl = new URL('web-demuxer.wasm', new URL(import.meta.env.BASE_URL || '/', location.origin)).href;
-    const demuxer = new WebDemuxer({ wasmFilePath: wasmUrl });
-    try {
-      await demuxer.load(file);
-      if (AVLogLevel?.AV_LOG_ERROR !== undefined) {
-        await demuxer.setLogLevel(AVLogLevel.AV_LOG_ERROR);
-      }
-      const info = await demuxer.getMediaInfo();
-      const video = info.streams.find(s => s.codec_type_string === 'video');
-      if (!video) return null;
-      return {
-        codec: video.codec_name,
-        codecString: video.codec_string,
-        width: video.width,
-        height: video.height,
-        rotation: video.rotation || 0,
-        duration: info.duration,
-      };
-    } finally {
-      demuxer.destroy();
-    }
-  } catch (e) {
-    console.error('[frameExtractor] inspectVideo failed:', e?.message || String(e));
-    return null;
-  }
-}
-
-/**
- * Is this codec HEVC? (multiple naming conventions)
- */
-function isHEVC(codec) {
-  if (!codec) return false;
-  const c = codec.toLowerCase();
-  return c === 'hevc' || c === 'h265' || c === 'hev1' || c === 'hvc1' || c.startsWith('hev1.') || c.startsWith('hvc1.');
 }
 
 /**
