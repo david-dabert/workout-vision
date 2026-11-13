@@ -64,6 +64,7 @@ git checkout -- ., git reset --hard, git clean, rm -rf, force push, deleting fil
 
 **R6. Main is production.**
 Merge to main only when CI is green, including the real-phone gate, and David has confirmed on his iPhone.
+Amended 13 November 2026 (David: "Merge automatically", his answer to `docs/FLAWS-2026-11.md` #5): a pull request merges to main as soon as the four required CI jobs are green, with no wait for David's iPhone. R3 is unchanged: a change visible to users is not called done until David has seen it on his iPhone.
 
 **R7. Scope freeze.**
 New ideas go into BACKLOG.md with a date. They are not built until the current phase is complete.
