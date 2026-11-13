@@ -25,6 +25,9 @@ import { analyzeScapularPlane } from '../../lib/kine/shoulderDyskinesis';
 import MocapViewer from './MocapViewer';
 import BarPathTracer from './BarPathTracer';
 
+/** Lifts done with a barbell, on which the replay offers the bar path (card 014). Status: convention. */
+const BAR_LIFTS = new Set(['squat', 'bench_press', 'overhead_press', 'romanian_deadlift', 'deadlift', 'hip_thrust', 'good_morning', 'front_squat', 'back_squat']);
+
 // The set replayed with the skeleton the pose model tracked on it: what the app saw,
 // frame by frame, with the joint whose angle counts the reps in the lamp's colour.
 // The video is read from the phone and sent nowhere. A set counted live has no video (file is null): the skeleton
@@ -42,6 +45,9 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
   const [broken, setBroken] = useState(false);
   const [mocapMode, setMocapMode] = useState(false);
   const [showBarPath, setShowBarPath] = useState(false);
+  // The bar path is offered only on a lift done with a bar (card 014, 13 November 2026): a curl, a machine or a body-weight
+  // set has no bar to trace. Status: convention (the lifts done with a barbell as the guide describes them).
+  const hasBar = BAR_LIFTS.has(lift) || String(lift).includes('barbell');
 
   // A refused set shows no reps here either: the result said it could not count them.
   const times = result.timestamps || [], reps = (!result.refused && result.reps) || [];
@@ -608,7 +614,7 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
       {/* The two other views of the same set sit under the playback controls, not above the picture (David, 11 November 2026). */}
       <div className="rp-views" data-reveal style={{ '--i': 2 }}>
         <button type="button" className={`btn-ghost press rp-slow${mocapMode ? ' is-on' : ''}`} aria-pressed={mocapMode} onClick={() => setMocapMode(m => !m)} data-testid="rp-mocap-toggle">{fr ? 'Vue 3D' : '3D view'}</button>
-        <button type="button" className={`btn-ghost press rp-slow${showBarPath ? ' is-on' : ''}`} aria-pressed={showBarPath} disabled={broken || mocapMode} onClick={() => setShowBarPath(p => !p)} data-testid="rp-barpath-toggle">{fr ? 'Trajectoire de la barre' : 'Bar path'}</button>
+        {hasBar && <button type="button" className={`btn-ghost press rp-slow${showBarPath ? ' is-on' : ''}`} aria-pressed={showBarPath} disabled={broken || mocapMode} onClick={() => setShowBarPath(p => !p)} data-testid="rp-barpath-toggle">{fr ? 'Trajectoire de la barre' : 'Bar path'}</button>}
       </div>
       {exportable && <div className="rp-export">
         {/* One action to share (card 004, walk of 11 November 2026); the video without text is a choice beside it. */}

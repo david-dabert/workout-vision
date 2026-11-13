@@ -393,7 +393,7 @@ export default function MocapViewer({ worldLandmarks = null, lift = 'squat', fr 
     <div className="mocap-card" ref={containerRef} data-testid="mocap-3d-viewer">
       <div className="mocap-head">
         <div className="mocap-titles">
-          <span className="mocap-kicker">{fr ? 'Mocap 3D Interactif' : 'Interactive 3D Mocap'}</span>
+          <span className="mocap-kicker">{fr ? 'Vue 3D estimée' : 'Estimated 3D view'}</span>
           <h4 className="mocap-title">{fr ? 'Cinématique spatiale 360°' : '360° Spatial Kinematics'}</h4>
         </div>
         <div className="mocap-badges">

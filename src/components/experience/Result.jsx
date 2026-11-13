@@ -5,7 +5,7 @@ import { saveWorkout } from '../../lib/storage';
 import { askToKeep } from '../../lib/keep-sets';
 import { contribution, contributeAsks, keepContribution, markContributeAsked, readChoice, shouldAskContribute } from '../../lib/contribute';
 import ContributeAsk from './ContributeAsk';
-import { contributeBuild } from '../../lib/buildFlags';
+import { contributeBuild, showUnmeasuredRoutes } from '../../lib/buildFlags';
 import { warmReportPdf } from './Report';
 import { refreshSets, loadSets, knownSets } from './sets';
 import { setAccount } from './set-account';
@@ -969,7 +969,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
           <button ref={reportRef} className="btn-ghost press res-report-btn" onClick={() => onReport(trueN, savedId.current)} data-testid="res-report-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
             <span>{fr ? 'Rapport de séance' : 'Session report'}</span>
-            <span className="res-report-badge" aria-hidden="true">3D Mocap & PDF</span>
+            <span className="res-report-badge" aria-hidden="true">{fr ? 'Vue 3D & PDF' : '3D view & PDF'}</span>
           </button>
           <button className="btn-primary press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
           <button className="text-btn press" onClick={after(onChangeLift)} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
@@ -992,8 +992,10 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
           {!result.refused && count > 0 && <FirstWord reps={reps} fr={fr} />}
           {/* Card 011, lab lane (measures.js BEST_SET_SHOWN, off in production): today beside the best set. */}
           {BEST_SET_SHOWN && !result.refused && count > 0 && <BestSet before={before} reps={reps} count={trueN} fr={fr} first={liftDefinition(lift)?.first} />}
-          {/* The profile quiz is offered once three sets are saved, not on the first result (11 November 2026). */}
-          {(knownSets()?.length ?? 0) >= 3 && <div className="res-retention-hook appear" data-testid="retention-quiz-hook">
+          {/* The profile quiz is offered once three sets are saved, not on the first result (11 November 2026), and only in
+              the extended build since 13 November 2026 (card 014): its femur ratio and its calorie promise rest on a
+              typed height, nothing measured (R8). */}
+          {showUnmeasuredRoutes() && (knownSets()?.length ?? 0) >= 3 && <div className="res-retention-hook appear" data-testid="retention-quiz-hook">
             <span className="res-hook-badge">⚡ {fr ? 'Analyse sur mesure' : 'Custom analysis'}</span>
             <p className="res-hook-title"><b>{fr ? 'Tirez le maximum de votre vidéo' : 'Get more out of your video'}</b></p>
             <p className="res-hook-desc">{athleteProfile
