@@ -10,11 +10,17 @@ Reordered by Claude on 12 November 2026, on David's message of that day (the mom
 
 Reordered by Claude on 12 November 2026, from the audit (card 006): card 013 first, because the report, the home and three addresses show in production what the switch of 11 November turned off (R8).
 
-1. 001, the kiné comparison held against public data: the proof the kiné offer rests on.
-2. 011, today's set against your own best set, in the lab lane: the reason to come back.
-3. 005, the first minute leads with what is proven.
-4. 003, the counter on reps done without a return to rest: the hardest, and the one the 49 % depends on.
-5. 012, a real replay on the first screen: blocked on a video David chooses.
+Reordered by Claude on 13 November 2026, from the flaw register (`docs/FLAWS-2026-11.md`): 014 first (live overclaims, cheap), then 016 (the accuracy figure R16 rests on), then 015.
+
+1. 014, the last three screens that claim more than the app measures.
+2. 016, the accuracy figure measured on the gate that ships.
+3. 015, the kiné follow-up shows no clinical trend until one is proven.
+4. 001, the kiné comparison held against public data: the proof the kiné offer rests on.
+5. 011, today's set against your own best set, in the lab lane: the reason to come back.
+6. 005, the first minute leads with what is proven.
+7. 003, the counter on reps done without a return to rest: the hardest, and the one the 49 % depends on.
+8. 012, a real replay on the first screen: blocked on a video David chooses.
+9. 017, the debt a reviewer meets first.
 
 A run that finishes the queue writes the next cards from the audit and from STATE.md's table of promises, worst-kept promise first.
 
