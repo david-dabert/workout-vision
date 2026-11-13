@@ -8,6 +8,7 @@ import { TOLERANCE_DEG, TOLERANCE_SHARE } from '../../lib/reference/compare';
 import { COPY, JOINT_NAMES, deg, pct, sec } from '../reference/reference-copy';
 import { exportPessacDossier, PESSAC_SPECIALTIES } from '../../lib/kine/pessacDossierExport';
 import { computeClinicalTrend } from '../../lib/kine/clinicalTrendAnalysis';
+import { CLINICAL_TREND_SHOWN } from '../experience/measures';
 import Backup from './Backup';
 
 // The physiotherapist's follow-up (#kine, tab "Suivi"): the results patients sent back, kept on this phone when opened
@@ -50,7 +51,8 @@ function Exercise({ id, sessions, fr, k, c, names }) {
   // Progress from the first dated attempt to the last.
   const dated = sessions.filter(s => s.date);
   const first = dated.length > 1 ? sessionWithin(dated[0]) : null, last = dated.length > 1 ? sessionWithin(dated.at(-1)) : null;
-  const trend = computeClinicalTrend(sessions);
+  // Card 015: the trend names a trajectory no eval supports; off in production (measures.js).
+  const trend = CLINICAL_TREND_SHOWN ? computeClinicalTrend(sessions) : null;
   return <section className="sc-section" data-testid={`kn-follow-ex-${id}`}>
     <GroupHead title={`${title} · ${k.fCount(sessions.length)}`} />
     {first != null && last != null && <p className="sc-caption" data-testid={`kn-follow-progress-${id}`}>{k.fFromTo(pct(first, fr), pct(last, fr))}</p>}

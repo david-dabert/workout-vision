@@ -35,3 +35,12 @@ export const UNVALIDATED_BIOMECHANICS_SHOWN = false;
 // Off in production until card 001 has passed (cards/README.md): it rests on the same engine and on range and tempo,
 // which are not validated. Status: experimental.
 export const BEST_SET_SHOWN = false;
+
+// Card 015 (docs/FLAWS-2026-11.md #6): whether the kiné follow-up shows the clinical trend of clinicalTrendAnalysis.ts.
+// The engine takes the mean share of each session's measures within tolerance, compares the first session with the
+// last, and names a trajectory from that one difference (10 points or more « accélérée », 3 « progression », -3 to 3
+// « plateau », below « vigilance compensation »), with a cause it does not measure (« fatigue neuromusculaire »,
+// « contrôle moteur »). Its thresholds carry no source and no eval holds it against a physiotherapist's judgment
+// (R9, R16). The follow-up keeps what is measured: each session's share within tolerance and the change from the first
+// dated session to the last. Off in production until the trend has its eval. Status: experimental.
+export const CLINICAL_TREND_SHOWN = false;

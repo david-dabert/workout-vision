@@ -77,8 +77,8 @@ describe('FollowUp and KineWorkspace Pessac Clinic Dossier Export', () => {
     expect(html).toContain('data-testid="kn-follow-pessac-section"');
     expect(html).toContain('data-testid="kn-follow-pessac-select"');
     expect(html).toContain('data-testid="kn-follow-pessac-export"');
-    expect(html).toContain('data-testid="kn-follow-trajectory-mains-jointes"');
-    expect(html).toContain('ACCELERATED');
+    // Card 015: no clinical trend in production; the lab switch's test is followup-no-trend.test.jsx.
+    expect(html).not.toContain('data-testid="kn-follow-trajectory-mains-jointes"');
     expect(html).toContain('Dossier Clinique Pessac (8 Pôles BDK)');
     expect(html).toContain('Épaule &amp; Scapula');
     expect(html).toContain('Genou &amp; LCA');
