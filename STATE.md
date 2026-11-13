@@ -84,6 +84,8 @@ David's recorded words (DIRECTIVES.md Part 1, docs/VISION.md, R16), held against
 
 ## Now
 
+13 November 2026, 10:50 UTC: R6 amended on David's decision ("Merge automatically", #409). Card 003 failed after two attempts, both closed on half A (a split by a second signal: gain at most 3, break 15; SPLIT_LONG swept 1.4 to 2.0: flat). The core's thresholds are not the lever for merged reps; TRIED.md names the pose input. Next ready card: 019, range and tempo against a known truth.
+
 13 November 2026, 10:00 UTC: main at c6aac409. Merged: #403 (the coach's office only in the extended build), #406 (card 017 handover), #407 (card 018, failed: sure only of whole sets, 85.0 % on half B against 90 %, in TRIED.md). Card 003, attempt 1 of 2 failed at its ceiling (a split by a second signal: half A gain at most 3, break 15). Next: card 003, attempt 2.
 
 13 November 2026, morning (08:45 UTC): main at c0c401b7. Merged: #404 (card 017, three of four parts: no em-dash in `src`, `e2e`, `scripts`; no `eval`; lint on reached files 128 to 64, unused code 64 to 0; scoreboards unchanged) and #405 (cards 018 and 019; card 005's handover; register #29, the CSP allows `'unsafe-eval'`). Run 1064's `lift-hero` failure did not recur in runs 1070 and 1071: recorded as a one-off. In review: #403 (the coach's office only in the extended build). Next card: 018.
