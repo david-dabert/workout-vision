@@ -16,7 +16,7 @@ Reordered by Claude on 13 November 2026, from the flaw register (`docs/FLAWS-202
 
 1. 001, the kiné comparison held against public data: the proof the kiné offer rests on. Blocked since 12 November 2026 on David's four videos; its public half passed (#391).
 2. 011, today's set against your own best set, in the lab lane: the reason to come back. Lab lane merged (#393), off in production.
-3. 018, the app says it is sure only of a set filmed whole: the R16 figure, on a signal TRIED.md has not closed.
+3. 018, the app says it is sure only of a set filmed whole. Failed, 13 November 2026 (85.0 % on half B against 90 %; TRIED.md): kept here as the lead for the next attempt.
 4. 003, the counter on reps done without a return to rest: the hardest, and the one the 49 % depends on.
 5. 019, range and tempo held against a known truth.
 6. 012, a real replay on the first screen: blocked on a video David chooses.
