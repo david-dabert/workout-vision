@@ -1,0 +1,13 @@
+# Card 001 on the MM-Fit build sets (kine-compare.test.ts; SCOREBOARD=1 rewrites this file)
+sets 323, workouts 14
+triplets judged 10562, passed 10529 (99.7 %), threshold 90 %
+references refused 4, triplets with a refused comparison 2538
+  bicep_curls: 1182 of 1182 (100.0 %)
+  dumbbell_rows: 1598 of 1598 (100.0 %)
+  dumbbell_shoulder_press: 1078 of 1078 (100.0 %)
+  lateral_shoulder_raises: 1032 of 1032 (100.0 %)
+  lunges: 1566 of 1566 (100.0 %)
+  pushups: 1645 of 1668 (98.6 %)
+  squats: 1152 of 1152 (100.0 %)
+  tricep_extensions: 1276 of 1286 (99.2 %)
+harder, not gated: same exercise, same person against another person: 3533 of 3712 (95.2 %), skipped 156
