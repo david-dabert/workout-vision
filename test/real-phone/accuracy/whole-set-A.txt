@@ -1,0 +1,3 @@
+# Card 018, WHOLE=A (whole-set.test.ts; rule fixed in 60ff04e9)
+David's labelled sets: counted 15; sure (as shipped) 12, exact 10 (83.3 %), off by 3+ 0; sure and whole 3 (20.0 % of counted), exact 2 (66.7 %), off by 3+ 0
+public build half A: counted 433; sure (as shipped) 350, exact 206 (58.9 %), off by 3+ 1; sure and whole 93 (21.5 % of counted), exact 82 (88.2 %), off by 3+ 0
