@@ -1,6 +1,6 @@
 # 016. The accuracy figure is measured on the gate that ships
-Status: in review (first part, #396)
-First part, 13 November 2026 (Claude): `sure.ts` decides sure as the result screen does; parity eval `sure-parity.test.ts` 8 public differences before, 0 after, 0 on David's 15 sets throughout; right when sure 408 of 678 (60.2 %), 7 off by 3 or more. Left: the second part, the guard test checks numbers a screen renders against `measures.js`.
+Status: done (#396, #398)
+First part, 13 November 2026 (Claude): `sure.ts` decides sure as the result screen does; parity eval `sure-parity.test.ts` 8 public differences before, 0 after, 0 on David's 15 sets throughout; right when sure 408 of 678 (60.2 %), 7 off by 3 or more. Second part, 13 November 2026 (Claude, #398): `screen-numbers.test.jsx` renders the production report in French and English and fails on any number beside a unit `measures.js` does not switch on (only ° and s under MEASURES_SHOWN, inside the experimental label). It passed on main when written: no screen it reads shows an unmeasured number today; it guards the future, it fixed nothing.
 Executor: careful
 Claim: David reads one number, "right when sure", computed on the screen users actually get, and it is the number R16 means.
 Reference: R16; `docs/FLAWS-2026-11.md` #1, #13, #14, #16; the confidence gate in `Result.jsx` and `coreAnalysis.js` as they ship.
