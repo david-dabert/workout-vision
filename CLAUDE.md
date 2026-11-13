@@ -1,7 +1,7 @@
 PLAN.md on counter-core prevails over this file.
 # WorkoutVision Standing Rules
 
-Source: DIRECTIVES.md Part 2, Version 1, 24 September 2026; amended 15 October 2026 by David (R1, R8, R11, R14, R15); R16 added 18 October 2026 by David; R10 and R15 amended 20 October 2026 by David; R1 amended 25 October 2026 by David.
+Source: DIRECTIVES.md Part 2, Version 1, 24 September 2026; amended 15 October 2026 by David (R1, R8, R11, R14, R15); R16 added 18 October 2026 by David; R10 and R15 amended 20 October 2026 by David; R1 amended 25 October 2026 by David; R6 amended 13 November 2026 by David.
 Every session starts by reading CLAUDE.md, DIRECTIVES.md and STATE.md, and the latest comments of issue #190 (R15).
 
 **R1. Ground truth is sacred.**
@@ -24,6 +24,7 @@ git checkout -- ., git reset --hard, git clean, rm -rf, force push, deleting fil
 
 **R6. Main is production.**
 Merge to main only when CI is green, including the real-phone gate, and David has confirmed on his iPhone.
+Amended 13 November 2026 (David: "Merge automatically", his answer to `docs/FLAWS-2026-11.md` #5): a pull request merges to main as soon as the four required CI jobs are green, with no wait for David's iPhone. R3 is unchanged: a change visible to users is not called done until David has seen it on his iPhone.
 Partly built (status of 2 October 2026): CI counts the stored landmarks of the real-phone clips (npm run scoreboard), and the site deploys only after CI succeeds on main (.github/workflows/deploy.yml). No CI job decodes the real-phone videos through the app on a phone; David's iPhone check stays the gate for that. Main moves as PLAN.md on counter-core states.
 
 **R7. Scope freeze.**
