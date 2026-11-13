@@ -523,42 +523,6 @@ if (import.meta.env && import.meta.env.DEV) {
 }
 
 // ---------------------------------------------------------------------------
-// Per-exercise rep timing bounds (milliseconds)
-// Based on biomechanics literature for controlled tempo lifting.
-// Compound lifts: 1.5-8s per rep (includes pause at bottom)
-// Isolation: 1-6s per rep
-// Bodyweight: 1.2-7s per rep
-// ---------------------------------------------------------------------------
-
-const REP_TIMING = {
-  squat:              { minRepPeriod: 1500, maxRepPeriod: 8000 },
-  front_squat:        { minRepPeriod: 1500, maxRepPeriod: 8000 },
-  goblet_squat:       { minRepPeriod: 1500, maxRepPeriod: 8000 },
-  bench_press:        { minRepPeriod: 1500, maxRepPeriod: 8000 },
-  deadlift:           { minRepPeriod: 1500, maxRepPeriod: 8000 },
-  romanian_deadlift:  { minRepPeriod: 1500, maxRepPeriod: 8000 },
-  overhead_press:     { minRepPeriod: 1500, maxRepPeriod: 8000 },
-  shoulder_press:     { minRepPeriod: 1500, maxRepPeriod: 8000 },
-  bent_over_row:      { minRepPeriod: 1500, maxRepPeriod: 8000 },
-  hip_thrust:         { minRepPeriod: 1500, maxRepPeriod: 8000 },
-  lunge:              { minRepPeriod: 1500, maxRepPeriod: 8000 },
-  leg_press:          { minRepPeriod: 1500, maxRepPeriod: 8000 },
-  bicep_curl:         { minRepPeriod: 1000, maxRepPeriod: 6000 },
-  hammer_curl:        { minRepPeriod: 1000, maxRepPeriod: 6000 },
-  tricep_extension:   { minRepPeriod: 1000, maxRepPeriod: 6000 },
-  tricep_pushdown:    { minRepPeriod: 1000, maxRepPeriod: 6000 },
-  cable_tricep_pushdown: { minRepPeriod: 1000, maxRepPeriod: 6000 },
-  rope_pushdown:      { minRepPeriod: 1000, maxRepPeriod: 6000 },
-  lateral_raise:      { minRepPeriod: 1000, maxRepPeriod: 6000 },
-  front_raise:        { minRepPeriod: 1000, maxRepPeriod: 6000 },
-  calf_raise:         { minRepPeriod: 1000, maxRepPeriod: 6000 },
-  push_up:            { minRepPeriod: 1200, maxRepPeriod: 7000 },
-  pull_up:            { minRepPeriod: 1200, maxRepPeriod: 7000 },
-  chin_up:            { minRepPeriod: 1200, maxRepPeriod: 7000 },
-  dip:                { minRepPeriod: 1200, maxRepPeriod: 7000 },
-};
-
-// ---------------------------------------------------------------------------
 // Extended exercise metadata for analysis pipeline
 // ---------------------------------------------------------------------------
 

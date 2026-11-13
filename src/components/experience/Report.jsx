@@ -25,7 +25,7 @@ export async function warmReportPdf(lift = null) {
       const sd = await import('./sheet-drawings');
       await sd.drawings.warm([lift]);
       drawingsWarmed.add(lift);
-    } catch (_) {}
+    } catch {}
   }
   return m;
 }

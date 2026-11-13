@@ -86,7 +86,7 @@ export default function exercisesTests(test, expect) {
     await page.locator('.all-exercises').scrollIntoViewIfNeeded();
     await page.waitForTimeout(800);
     expect((await page.evaluate(layoutFaults)).filter(f => !f.startsWith('note: '))).toEqual([]);
-    expect(await page.locator('.all-exercises').textContent()).not.toContain('—');
+    expect(await page.locator('.all-exercises').textContent()).not.toContain('\u2014');
   });
 
   // Review 02 of 29 September.

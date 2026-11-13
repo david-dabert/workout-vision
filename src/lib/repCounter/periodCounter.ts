@@ -96,7 +96,7 @@ function findACFPeaks(
 function selectFundamental(
   acf: number[],
   peaks: { lag: number; height: number }[],
-  minLag: number,
+  _minLag: number,
 ): { lag: number; height: number } | null {
   if (peaks.length === 0) return null;
   if (peaks.length === 1) return peaks[0];

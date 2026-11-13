@@ -39,8 +39,6 @@ export interface BarbellTiltResult {
 // MediaPipe BlazePose Indices
 const LEFT_WRIST = 15;
 const RIGHT_WRIST = 16;
-const LEFT_SHOULDER = 11;
-const RIGHT_SHOULDER = 12;
 
 const TILT_TOLERANCE_DEG = 3.5;
 const CRITICAL_TILT_DEG = 6.0;

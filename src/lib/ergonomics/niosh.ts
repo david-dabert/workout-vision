@@ -184,11 +184,6 @@ export function extractNioshParametersFromLandmarks(
     y: (leftWrist.y + rightWrist.y) / 2,
     z: ((leftWrist.z || 0) + (rightWrist.z || 0)) / 2,
   };
-  const midHip = {
-    x: (leftHip.x + rightHip.x) / 2,
-    y: (leftHip.y + rightHip.y) / 2,
-    z: ((leftHip.z || 0) + (rightHip.z || 0)) / 2,
-  };
   const midAnkle = {
     x: (leftAnkle.x + rightAnkle.x) / 2,
     y: (leftAnkle.y + rightAnkle.y) / 2,

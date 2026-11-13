@@ -130,8 +130,8 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
   const { lang, tExercise } = useT(), fr = lang === 'fr';
   const railRef = useRef(null), dotsRef = useRef(null), cards = useRef([]);
   const [catalogOpen, setCatalogOpen] = useState(false);
-  const [catalogArchetype, setCatalogArchetype] = useState('all');
-  const [catalogZone, setCatalogZone] = useState('all');
+  const [catalogArchetype] = useState('all');
+  const [catalogZone] = useState('all');
   const [profileQuizOpen, setProfileQuizOpen] = useState(false);
   // The guide's names load after the choice; until then a set of an exercise without a card is not
   // named, so the welcome never shows an internal key (review of 29 September).

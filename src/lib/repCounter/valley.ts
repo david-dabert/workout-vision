@@ -77,7 +77,7 @@ export function adaptiveSignalSelect(
         candidates.push({ name: sigName, countSignal: smoothed, original: smoothed, inv: false });
         candidates.push({ name: sigName + '_inv', countSignal: smoothed.map((v: number) => -v), original: smoothed, inv: true });
       }
-    } catch (_) {
+    } catch {
       // 3D extraction failed; continue with primary only
     }
   }

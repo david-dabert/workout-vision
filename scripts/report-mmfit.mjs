@@ -19,7 +19,7 @@ const lines = [
   'The throughput restart was discarded as a run, with its logs retained locally under ~/Datasets/MM-Fit/interrupted-attempt. The table below comes from the clean full run in all-sets-final; no row was selected by count or visibility.', '',
   'Independent reviewer and verifier agents were not run: this session permits delegation only when the user or an AGENTS.md/skill explicitly requests it. The repository request is in PLAN.md. Direct verification is recorded above; the independent METHOD review remains unmet.', '',
   '## Every set', '',
-  'PASS means exact dataset count, no console/request error, and no failed attempt. FAIL includes unsupported lifts (count shown as —) and recovered execution failures. Admission is a separate visibility decision, not an accuracy pass.', '',
+  'PASS means exact dataset count, no console/request error, and no failed attempt. FAIL includes unsupported lifts (count shown as \u2014) and recovered execution failures. Admission is a separate visibility decision, not an accuracy pass.', '',
   fs.readFileSync(dir + '/table.md', 'utf8'), '',
   'STOP. Counter-core only. No main change or deployment. No counting parameter or label changed.', '',
 ];

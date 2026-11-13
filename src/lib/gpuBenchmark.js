@@ -26,7 +26,7 @@ function detectWasmSimd() {
       0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123,
       3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11
     ]));
-  } catch (_) {
+  } catch {
     return false;
   }
 }
@@ -84,7 +84,7 @@ export async function detectCapabilities() {
           description: info.description || '',
         };
       }
-    } catch (_) {}
+    } catch {}
   }
 
   // WebNN detection
@@ -94,7 +94,7 @@ export async function detectCapabilities() {
       if (context) {
         caps.webnn = true;
       }
-    } catch (_) {}
+    } catch {}
   }
 
   // WebGL2 detection + renderer string for blocklist check
@@ -115,7 +115,7 @@ export async function detectCapabilities() {
       const ext = gl.getExtension('WEBGL_lose_context');
       if (ext) ext.loseContext();
     }
-  } catch (_) {}
+  } catch {}
 
   // Recommend backend
   if (caps.webgpu) caps.recommendedBackend = 'webgpu';

@@ -78,7 +78,7 @@ test('the page says it is for David\'s own sets, and where a set of anyone else 
   // Whose set it is, not who filmed it: a set of anyone else, even filmed by David, stays on the Mac.
   await expect(note).toContainText('A set of anyone else, whoever films it,');
   await expect(note).toContainText('scripts/collect-clips.mjs');
-  expect(await note.textContent()).not.toContain('—');
+  expect(await note.textContent()).not.toContain('\u2014');
 });
 
 // Step 2 (PLAN.md, GROWTH): the collector offers the same exercises as the app, so that a set of any
