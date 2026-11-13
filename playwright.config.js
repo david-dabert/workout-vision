@@ -41,9 +41,9 @@ export default defineConfig({
     reuseExistingServer: true,
     timeout: 180_000,
   }, {
-    // The build production gets (deploy.yml): no usage counts, no live counting, contributions paused, the flags left
-    // unset whatever the environment holds (e2e/build-flags.spec.js). Built fresh on every run, as the one above.
-    command: 'npm run prebuild && VITE_EVENTS_URL= VITE_LIVE= VITE_CONTRIBUTE= npx vite build --outDir dist-prod --emptyOutDir && npx vite preview --outDir dist-prod --port 4176 --strictPort',
+    // The build production gets (deploy.yml): no usage counts, no live counting, contributions on (since 13 November
+    // 2026), whatever the environment holds (e2e/build-flags.spec.js). Built fresh on every run, as the one above.
+    command: 'npm run prebuild && VITE_EVENTS_URL= VITE_LIVE= VITE_CONTRIBUTE=1 npx vite build --outDir dist-prod --emptyOutDir && npx vite preview --outDir dist-prod --port 4176 --strictPort',
     port: 4176,
     reuseExistingServer: true,
     timeout: 180_000,

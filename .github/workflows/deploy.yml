@@ -68,8 +68,11 @@ jobs:
     #   WP2.3). Unset, the app sends nothing; set, the counts go to that worker, with their notice (UsageNotice.jsx).
     #   To switch them on or off is the variable alone (feedback-worker/README.md, Deploy); the check of dist/ below
     #   then allows that origin only, and fails when the built notice does not name its host (PRIV-3).
-    # - VITE_LIVE and VITE_CONTRIBUTE (src/lib/buildFlags.js) are left unset: no live counting until Phase 6 (WP6.5),
-    #   contributions paused until Phase 2 (WP0.4). Each is switched on by VITE_LIVE: '1' or VITE_CONTRIBUTE: '1' here.
+    # - VITE_LIVE (src/lib/buildFlags.js) is left unset: no live counting until Phase 6 (WP6.5); VITE_LIVE: '1' here
+    #   switches it on.
+    # - VITE_CONTRIBUTE is on since 13 November 2026 (David: "Build both"): after a saved set the app asks once, opt-in,
+    #   to keep the set's landmarks (never the video) on the phone, sent by the person through the share sheet
+    #   (contribute.js, the notice David approved on 9 October 2026). Removing the line pauses it again.
     # - VITE_KINE_MEDIA_URL, where the physiotherapist's reference videos are served (src/lib/kine/library.js; 15 October
     #   2026), is the repository variable. Unset, the physiotherapist's workspace says the videos are not online yet;
     #   set (https), the pages may load media from that origin and no other (vite.config.js, kineMediaCspPlugin).
@@ -80,6 +83,7 @@ jobs:
     #   nor names either origin in its policy, whatever https address the variable holds.
     env:
       VITE_EVENTS_URL: ${{ vars.VITE_EVENTS_URL }}
+      VITE_CONTRIBUTE: '1'
       VITE_KINE_MEDIA_URL: ${{ vars.VITE_KINE_MEDIA_URL }}
       VITE_GLIMPSE_URL: ${{ vars.VITE_GLIMPSE_URL }}
     steps:

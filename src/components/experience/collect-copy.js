@@ -1,8 +1,8 @@
-// The words of the collection on David's phone (phoneCollect.js, CollectHistory.jsx), in one place for his approval
-// (R10; test/real-phone/swarm/copy-collect.md lists them). Register: vous.
+// The words of the collection on David's phone and his testers' (phoneCollect.js, CollectHistory.jsx; testers since
+// 13 November 2026: the switch message tells them what to film and how to send). R10 as amended 20 October 2026. Register: vous.
 export const COLLECT = {
   fr: {
-    on: 'Collecte activée sur ce téléphone : chaque série gardée garde aussi son fichier de repères.',
+    on: 'Collecte activée sur ce téléphone : chaque série gardée garde aussi son fichier de repères. Filmez une série entière, du repos au repos, le téléphone posé comme l’appli le montre. Avant d’afficher son compte, l’appli vous demande combien vous en avez fait. Envoyez vos séries depuis « Vos séries ».',
     off: 'Collecte désactivée sur ce téléphone.',
     failed: 'Ce téléphone n’a pas pu enregistrer le réglage de la collecte.',
     title: 'Séries collectées',
@@ -20,7 +20,7 @@ export const COLLECT = {
     clearFailed: 'Les séries n’ont pas pu être effacées. Réessayez.',
   },
   en: {
-    on: 'Collection is on for this phone: each set you keep also keeps its landmark file.',
+    on: 'Collection is on for this phone: each set you keep also keeps its landmark file. Film a whole set, from rest to rest, the phone placed as the app shows. Before showing its count, the app asks how many you did. Send your sets from “Your sets”.',
     off: 'Collection is off for this phone.',
     failed: 'This phone could not store the collection setting.',
     title: 'Collected sets',

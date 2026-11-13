@@ -30,7 +30,7 @@ test('opened at #collecte, a kept set keeps its file, sent from the history and 
   test.setTimeout(150000);
   const errors = await start(page, { init: shareStub });
   await page.goto(`${BASE}#collecte`);
-  await expect(page.getByTestId('collect-switched')).toHaveText('Collecte activée sur ce téléphone : chaque série gardée garde aussi son fichier de repères.');
+  await expect(page.getByTestId('collect-switched')).toHaveText('Collecte activée sur ce téléphone : chaque série gardée garde aussi son fichier de repères. Filmez une série entière, du repos au repos, le téléphone posé comme l’appli le montre. Avant d’afficher son compte, l’appli vous demande combien vous en avez fait. Envoyez vos séries depuis « Vos séries ».');
   expect(new URL(page.url()).hash).toBe('');
   expect(await page.evaluate(() => localStorage.getItem('wv_collecte'))).toBe('1');
   // The phone asks the count before the app's (blind.js): "Je ne sais pas" leaves the flow as it was.

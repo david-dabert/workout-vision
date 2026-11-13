@@ -475,3 +475,13 @@ Regulatory caution: wording stays "follows the programme, angle reached", never 
 - What it could do for the app: dense surface tracks would follow a limb where MediaPipe's 33 landmarks jump, and see a side the camera hides.
 - Why not now: the code is not released; a model that processes a whole clip in one pass is a GPU model, not one that runs in a phone's browser, and nothing about the user leaves the phone (PLAN.md). It is another estimate, not a reference: joint angles are held against optical motion capture (R16).
 - When it is released: run it offline on David's own stored videos only, and measure whether the landmark tracks it gives reduce the jitter and the misread knees of TRIED.md's stability study (10 October). A measure of the pose input, not a change to the app.
+
+## David's vision, 13 November 2026 (his words, recorded as he gave them)
+
+- Count each rep, and give an estimate of the calories burned. Note: calories cannot be measured from video (no load, no heart rate); an estimate is shown only labelled as one (R8).
+- Be innovative, groundbreaking, useful and reliable; extract every useful datum from any exercise.
+- Analyse low-quality videos from any angle. Note: no counter is reliable on every video; the app says plainly when a video is too poor and asks for a better one (R16).
+- Find thousands of exercise videos and analyse them with the app. Note: a video teaches the counter only with a human count beside it (R1); the opt-in contributions (on in production since 13 November 2026) and the testers' blind counts (#collecte) are how labelled sets of the app's own job grow.
+- Study the 50 most used apps for sport, workouts, routines and client management, and bring their essential elements and use cases into one place for practitioners, coaches, beginners, intermediates and experts.
+- Help people optimise their workouts, recovery and training.
+- Be a companion people use every time they train.
