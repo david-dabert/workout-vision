@@ -105,3 +105,8 @@
 .wv-experience .fw-skip { align-self: flex-start; }
 .wv-experience .fw-word .fw-goal { color: var(--c-fg-muted); font-size: var(--fs-caption); }
 .wv-experience .fw-word .fw-line { margin: 0; font-size: var(--fs-body); line-height: 1.45; color: var(--bone-2); text-wrap: pretty; }
+
+/* Card 011, lab lane: today's set beside the best set, two rows of the same form. */
+.wv-experience .bs .bs-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s-2); }
+.wv-experience .bs .bs-label { font-size: var(--fs-caption); color: var(--c-fg-muted); }
+.wv-experience .bs .bs-vals { display: flex; gap: var(--s-2); font-variant-numeric: tabular-nums; color: var(--bone-2); font-size: var(--fs-caption); }
