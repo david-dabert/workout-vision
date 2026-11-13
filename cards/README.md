@@ -15,8 +15,8 @@ Reordered by Claude on 13 November 2026, from the flaw register (`docs/FLAWS-202
 1. 014, the last three screens that claim more than the app measures.
 2. 016, the accuracy figure measured on the gate that ships.
 3. 015, the kiné follow-up shows no clinical trend until one is proven.
-4. 001, the kiné comparison held against public data: the proof the kiné offer rests on.
-5. 011, today's set against your own best set, in the lab lane: the reason to come back.
+4. 001, the kiné comparison held against public data: the proof the kiné offer rests on. Blocked since 12 November 2026 on David's four videos; its public half passed (#391).
+5. 011, today's set against your own best set, in the lab lane: the reason to come back. Lab lane in review (#393).
 6. 005, the first minute leads with what is proven.
 7. 003, the counter on reps done without a return to rest: the hardest, and the one the 49 % depends on.
 8. 012, a real replay on the first screen: blocked on a video David chooses.

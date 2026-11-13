@@ -23,11 +23,12 @@ import { waveAngles } from './wave';
 import { savedSet } from './saved-set';
 import { InstallSuggest } from './Install';
 import FirstWord from './FirstWord';
+import BestSet from './BestSet';
 import { momentLine } from './moment';
 import { readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks } from './level';
 import LevelPick from './LevelPick';
 import { tierLabel } from '../../lib/liftTiers';
-import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN, UNVALIDATED_BIOMECHANICS_SHOWN, experimentalLabel } from './measures';
+import { MEASURES_SHOWN, SPEED_CHANGE_SHOWN, UNVALIDATED_BIOMECHANICS_SHOWN, BEST_SET_SHOWN, experimentalLabel } from './measures';
 import { tierOf } from '../../lib/offer';
 import { reportEmailUrl, reportIssueUrl, challengeShare, shareChallenge, appVersion, reportFor } from '../../lib/reportLinks';
 import { limbLabel, jointName } from './lift-meta';
@@ -989,6 +990,8 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
           </div>}
           {/* Card 010: after a saved set, the goal and what bothers the person, then one true word about the set. */}
           {!result.refused && count > 0 && <FirstWord reps={reps} fr={fr} />}
+          {/* Card 011, lab lane (measures.js BEST_SET_SHOWN, off in production): today beside the best set. */}
+          {BEST_SET_SHOWN && !result.refused && count > 0 && <BestSet before={before} reps={reps} count={trueN} fr={fr} first={liftDefinition(lift)?.first} />}
           {/* The profile quiz is offered once three sets are saved, not on the first result (11 November 2026). */}
           {(knownSets()?.length ?? 0) >= 3 && <div className="res-retention-hook appear" data-testid="retention-quiz-hook">
             <span className="res-hook-badge">⚡ {fr ? 'Analyse sur mesure' : 'Custom analysis'}</span>
