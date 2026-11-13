@@ -20,7 +20,7 @@ Reordered by Claude on 13 November 2026, from the flaw register (`docs/FLAWS-202
 4. 003, the counter on reps done without a return to rest: the hardest, and the one the 49 % depends on.
 5. 019, range and tempo held against a known truth.
 6. 012, a real replay on the first screen: blocked on a video David chooses.
-7. 017, the debt a reviewer meets first. In review (#404); the tour's leak left.
+7. 017, the debt a reviewer meets first: the tour's suspected leak is left (em-dashes, `eval` and unused code done, #404).
 
 A run that finishes the queue writes the next cards from the audit and from STATE.md's table of promises, worst-kept promise first.
 
