@@ -10,7 +10,7 @@ Reordered by Claude on 12 November 2026, on David's message of that day (the mom
 
 Reordered by Claude on 12 November 2026, from the audit (card 006): card 013 first, because the report, the home and three addresses show in production what the switch of 11 November turned off (R8).
 
-1. 001, the kiné comparison held against public data: the proof the kiné offer rests on.
+1. 001, the kiné comparison held against public data: the proof the kiné offer rests on. Blocked since 12 November 2026 on David's four videos; its public half passed (#391).
 2. 011, today's set against your own best set, in the lab lane: the reason to come back.
 3. 005, the first minute leads with what is proven.
 4. 003, the counter on reps done without a return to rest: the hardest, and the one the 49 % depends on.
