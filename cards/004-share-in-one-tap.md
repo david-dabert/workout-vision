@@ -1,5 +1,6 @@
 # 004. The replay is shared in one tap
-Status: in review (parts 1 and 2 done; one point needs David)
+Status: done (awaiting David on his iPhone, R3); the app's name on the video blocked on David
+Merged 12 November 2026: #388 (271111f1) and #389 (b6f0f419) on green CI.
 Part 1, 12 November 2026 (Claude): PR #388 merged (271111f1). The video is prepared while the person watches; before 3 taps and 12.6 s of wait, after 2 taps and 0.01 s (`e2e/share-in-one-tap.spec.js`).
 Part 2, same night, branch `card/004-part2`: one action to share, the video without text a quiet choice beside it (2 buttons before, 1 after); the play button stays usable during the automatic preparation. The "0 beside 1 / 4" of the walk of 11 November is the frame counter drawn into the synthetic test video, not the app's: not a defect (screenshots of the replay at 6 s and 14 s, 12 November).
 Needs David: the app's name and address on the shared video. His decision of 29 September 2026, "the report names no app", is followed by the video's caption (`replay-labels.js`); this card proposed the opposite and is not the place to overrule him. One line from him decides it.
