@@ -3,11 +3,14 @@ import { sureLine, sureRow } from './sure';
 
 // The "right when sure" line (sure.ts, R16): what counts as shown as sure, and what as asking.
 describe('right when sure', () => {
-  it('shows no count for a refused set, a set counted none in, or a scored window holding no rep', () => {
+  it('shows no count for a refused set or a set counted none in', () => {
     expect(sureRow({ refused: true, count: 5 }, 'squat', 5).err).toBeNull();
     expect(sureRow({ refused: false, count: 0 }, 'squat', 5).err).toBeNull();
-    // A whole clip counted 4 whose labelled window holds none: nothing is shown for the window, so nothing is sure.
-    expect(sureRow({ refused: false, count: 4, reps: [] }, 'squat', 3, () => 0).err).toBeNull();
+  });
+
+  // Changed on 13 November 2026 (card 016): the screen shows such a count as sure, so the figure scores it.
+  it('scores a whole clip whose labelled window holds none of its reps, as the screen shows its count', () => {
+    expect(sureRow({ refused: false, count: 4, reps: [] }, 'squat', 3, () => 0).err).toBe(3);
   });
 
   it('reads the body check\'s flag as asking, and the sensitivity check\'s move only in its own reading', () => {
