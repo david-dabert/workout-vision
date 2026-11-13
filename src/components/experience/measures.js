@@ -4,6 +4,11 @@
 // video yet, so each is shown under the experimental label below, as DIRECTIVES.md Phase 3.3 allows
 // ("keep them in a section explicitly labelled experimental"); David's order of 1 October 2026 to restore
 // the analysis. Set to false to hide them all again. Status: none validated.
+// Held against a known truth on 13 November 2026 (card 019, test/real-phone/synth/measures-error.test.ts): on the 24
+// synthetic sets filmed at the view the filming guide asks for, the absolute error is range 19 degrees at the median and 36 at the 90th percentile; lifting time 0.5 s and 0.8 s; lowering time 0.5 s and 0.7 s.
+// The error is one-sided: the app reads less range and shorter phases than the truth (pose model and phase bands,
+// TRIED.md 6 October). Rendered bodies are not people: this bounds the error in clean conditions and validates nothing.
+// Whether the screens keep these numbers is David's decision (card 020; his order of 1 October restored them).
 export const MEASURES_SHOWN = true;
 
 /** The words that stand beside every measure while none is validated. Copy approved by David on 9 October 2026 (R10). */
