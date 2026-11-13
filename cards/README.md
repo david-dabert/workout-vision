@@ -22,6 +22,8 @@ Reordered by Claude on 13 November 2026, from the flaw register (`docs/FLAWS-202
 6. 020, the screens show range and tempo only as far as their error allows. Blocked on David's choice (a, b or c).
 7. 012, a real replay on the first screen: blocked on a video David chooses.
 8. 017, the debt a reviewer meets first. Done, 13 November 2026: no leak in Chromium over 40 filming screens (+0.3 MB).
+9. 022, the pages' security policy refuses code built from text. Failed, 13 November 2026: the WebCodecs path still needs `'unsafe-eval'`; its caller is not located.
+10. 021, one exercise passes its exam. Blocked on David's four curl sets.
 
 A run that finishes the queue writes the next cards from the audit and from STATE.md's table of promises, worst-kept promise first.
 

@@ -84,6 +84,8 @@ David's recorded words (DIRECTIVES.md Part 1, docs/VISION.md, R16), held against
 
 ## Now
 
+13 November 2026, 15:00 UTC: main at e484d902 (#412, card 017 done). The queue was finished; new cards 021 (one exercise passes its exam, blocked on David's four curl sets) and 022 (the security policy without `'unsafe-eval'`). Card 022 failed: the WebCodecs path is refused without it, as on 3 October; a guard test now holds that path.
+
 13 November 2026, 13:00 UTC: main at 0a1d1a6c (#411, card 019 done). Card 017 done: the tour's suspected leak is not one in Chromium (40 filming screens, heap 8.2 to 8.5 MB, nodes and listeners unchanged). Every card in the queue is now done, failed, blocked on David (001 videos, 012 video, 020 his choice a, b or c) or in its lab lane (011). The next run writes new cards from the register and STATE.md's table of promises.
 
 13 November 2026, 11:55 UTC: main at 44dc63dc (#409 R6 amended, #410 card 003 closed). Card 019 done: range and tempo against the synthetic truth, at the guided view 19 degrees and 0.5 s low at the median (36 degrees, 0.8 s at the 90th percentile), stated in `measures.js`. Card 020 asks David to choose: hide the numbers, relabel them as a comparison between reps, or keep them as they are.
