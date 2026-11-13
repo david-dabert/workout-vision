@@ -1,5 +1,6 @@
 # 014. No screen claims more than the app measures: the last three
-Status: ready
+Status: done (awaiting David on his iPhone, R3)
+Merged 13 November 2026: #395 (8193cff6) on green CI; the snapshot workflow changed no picture. Eval `e2e/three-overclaims.spec.js`, three real curls saved on the production build: fails on main before, passes after. Found: the quiz offer read `knownSets()` in render and showed only after a later redraw.
 Executor: fast
 Claim: a person sees no femur ratio or calorie promise after their third set, no "Mocap" on a one-camera estimate, and no bar path on a set without a bar.
 Reference: `docs/FLAWS-2026-11.md` #2, #3, #4; R8; R16 (joint angles are held against optical motion capture).
