@@ -45,7 +45,8 @@ const IN_PAGE = `
     const r = await window._fetchAndProcess(url);
     return { seconds: (performance.now() - t0) / 1000, metadata: r.metadata, timestamps: r.timestamps,
       worldLandmarks: r.worldLandmarks, pixelHashes: r.pixelHashes, userAgent: navigator.userAgent };
-  })().then(done, e => done({ error: String(e && e.stack || e) }));
+  // Safari's stack names no message: name and message first, then the stack (14 November 2026, run 43626543919).
+  })().then(done, e => done({ error: e ? e.name + ': ' + e.message + ' | ' + (e.stack || '') : String(e) }));
 `;
 
 async function withSafari(fn) {
@@ -77,7 +78,7 @@ await run(async read => {
   for (let k = 1; k <= RUNS; k++) {
     for (const c of CLIPS) {
       const r = await read(SET === 'iphone' ? `${BASE}demo/iphone/${c.clip}.mov` : `${BASE}demo/${c.clip}.mp4`);
-      if (r?.error) console.log(`[${BROWSER} run ${k}] ${c.clip}: ERROR ${r.error.split('\n')[0]}`);
+      if (r?.error) console.log(`[${BROWSER} run ${k}] ${c.clip}: ERROR ${r.error.split('\n').slice(0, 6).join(' | ')}`);
       else console.log(`[${BROWSER} run ${k}] ${c.clip}: ${r.timestamps.length} samples, ${r.seconds.toFixed(1)} s, ${r.metadata?.extractionMethod}`);
       const clip = SET === 'iphone' ? `${c.clip}-iphone` : c.clip;
       writeFileSync(join(OUT, `${clip}.${BROWSER}.${k}.json`), JSON.stringify({ ...c, clip, browser: BROWSER, run: k, ...r }));
