@@ -50,11 +50,11 @@ describe('push', () => {
     expect(lines).toHaveLength(1);
     expect(lines[0].text).toMatch(/^Claude · COMMIT · main @ e985a332 · "Merge pull request #426/);
   });
-  it('warns on a force push and on a direct push to main', () => {
+  it('writes a force push and a direct push to main as events, with the agent', () => {
     const forced = entries('push', { ref: 'refs/heads/claude/x', forced: true, before: '1111111111', after: '2222222222', commits: [commit('2222222222', 'Redo')], compare: 'https://x' });
-    expect(forced[0].text).toBe('WARNING · FORCE PUSH on claude/x (R5) · 11111111 to 22222222 · [compare](https://x)');
+    expect(forced[0].text).toBe('Claude · FORCE PUSH · claude/x rewritten from 11111111 to 22222222 · [compare](https://x)');
     const direct = entries('push', { ref: 'refs/heads/main', commits: [commit('3333333333', 'Quick fix', { author: { name: 'A', email: 'a@x' } })], compare: 'https://x' });
-    expect(direct[0].text).toMatch(/^WARNING · DIRECT PUSH TO MAIN/);
+    expect(direct[0].text).toMatch(/^unattributed · DIRECT PUSH TO MAIN, not through a pull request/);
     expect(direct[1].text).toMatch(/^unattributed · COMMIT · main/);
   });
   it('records a deleted branch and a pushed tag', () => {

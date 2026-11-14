@@ -1,7 +1,8 @@
 // The agent ledger (David's request of 14 November 2026): one Markdown line for each fact GitHub records about the
 // repository, a commit pushed, a pull request opened or merged, a CI run finished, a deploy, a comment on issue #190,
 // written by .github/workflows/ledger.yml on the branch `ledger`, one file a month, newest first. Who did what, and when,
-// is then read from GitHub's own records, not from an agent's account of its work.
+// is then read from GitHub's own records, not from an agent's account of its work. A force push and a direct push to
+// main are events, not breaches (David, 14 November 2026: Antigravity pushes freely when the outcome is progress).
 //
 //   node scripts/ledger/entry.mjs                  prints this event's lines (GITHUB_EVENT_NAME, GITHUB_EVENT_PATH)
 //   node scripts/ledger/entry.mjs --write <dir>    adds them to <dir>/<YYYY-MM>.md, the ledger branch checked out there
@@ -114,9 +115,9 @@ function pushLines(e) {
   if (!e.created && commits.length === 0 && !e.forced) lines.push({ at, text: `${agentOf({ branch: name })} · PUSH · ${clip(name, 60)} moved to ${short(e.after)}` });
   if (e.created && commits.length === 0) lines.push({ at, text: `${agentOf({ branch: name })} · BRANCH CREATED · ${clip(name, 60)} at ${short(e.after)}` });
   if (name === 'main' && all.length && !all.some(isMerge)) {
-    lines.unshift({ at, text: `WARNING · DIRECT PUSH TO MAIN, not a pull request merge (R6) · [compare](${e.compare})` });
+    lines.unshift({ at, text: `${agentOf({ branch: name, message: all.at(-1)?.message ?? '' })} · DIRECT PUSH TO MAIN, not through a pull request · [compare](${e.compare})` });
   }
-  if (e.forced) lines.unshift({ at, text: `WARNING · FORCE PUSH on ${clip(name, 60)} (R5) · ${short(e.before)} to ${short(e.after)} · [compare](${e.compare})` });
+  if (e.forced) lines.unshift({ at, text: `${agentOf({ branch: name, message: all.at(-1)?.message ?? '' })} · FORCE PUSH · ${clip(name, 60)} rewritten from ${short(e.before)} to ${short(e.after)} · [compare](${e.compare})` });
   return lines;
 }
 
@@ -201,7 +202,7 @@ How a line names who did the work, strongest sign first:
 
 A comment on #190 names its agent in its first line, as \`CLAIM (Antigravity)\`, \`REPORT (Claude)\`, \`PUBLISHED (Antigravity)\`. Work done outside GitHub (a page published, a store listing, a setting changed) appears here only through such a comment: \`PUBLISHED (Antigravity): what, where, link\`.
 
-Warnings: a force push (R5), a direct push to main that is not a pull request merge (R6), a comment on #190 by an account other than david-dabert (R15).
+A force push and a direct push to main are written as events, so a history rewritten or a change that skipped a pull request can be found and undone (David's decision of 14 November 2026: Antigravity pushes freely when the outcome is progress). One warning stays: a comment on #190 by an account other than david-dabert, which every agent ignores (R15).
 `;
 
 /** Adds this event's lines to <dir>/<YYYY-MM>.md (and README.md when missing); returns the lines written. */
@@ -213,7 +214,8 @@ export function write(dir, eventName, event) {
   const file = join(dir, `${month}.md`);
   writeFileSync(file, insert(existsSync(file) ? readFileSync(file, 'utf8') : '', month, lines));
   const readme = join(dir, 'README.md');
-  if (!existsSync(readme)) writeFileSync(readme, README);
+  // The README follows this script: an older wording is replaced at the next event.
+  if (!existsSync(readme) || readFileSync(readme, 'utf8') !== README) writeFileSync(readme, README);
   return lines;
 }
 
