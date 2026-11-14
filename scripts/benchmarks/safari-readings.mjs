@@ -23,6 +23,9 @@ const BASE = arg('base', 'http://localhost:5173/workout-vision/');
 // out of display order, a frame dropped in seven so the frame rate varies), 14 November 2026: David's iPhone counted a
 // hip thrust 1 for 12 after reading all 370 samples, where a computer reading a VP9 copy counts 12.
 const SET = arg('set', 'demo');
+// --readback=cpu: the extraction canvas kept in memory (frameExtractor.js options.readback), for runners that refuse
+// Safari's readback of the default canvas.
+const READBACK = arg('readback', '');
 // demo: public/demo/<clip>.mp4. iphone: the same clips as HEVC with reordered frames at a variable rate, upright.
 // iphone-rot: those stored sideways with a -90 degree display matrix, as an iPhone stores a portrait video, so WebKit's
 // hand rotation (frameExtractor.js manualRotationNeeded) is read (14 November 2026).
@@ -47,6 +50,7 @@ const IN_PAGE = `
   const url = arguments[0];
   (async () => {
     for (let i = 0; i < 300 && !window._harnessReady; i++) await new Promise(r => setTimeout(r, 200));
+    if (typeof arguments[1] === 'string' && arguments[1]) window.__WV_HARNESS_READBACK__ = arguments[1];
     const t0 = performance.now();
     const r = await window._fetchAndProcess(url);
     return { seconds: (performance.now() - t0) / 1000, metadata: r.metadata, timestamps: r.timestamps,
@@ -60,7 +64,7 @@ async function withSafari(fn) {
   const driver = await new Builder().forBrowser('safari').build();
   await driver.manage().setTimeouts({ script: 600000, pageLoad: 120000 });
   try {
-    return await fn(async url => { await driver.get(HARNESS); return driver.executeAsyncScript(IN_PAGE, url); });
+    return await fn(async url => { await driver.get(HARNESS); return driver.executeAsyncScript(IN_PAGE, url, READBACK); });
   } finally { await driver.quit(); }
 }
 
@@ -71,7 +75,7 @@ async function withChromium(fn) {
     return await fn(async url => {
       const page = await browser.newPage();
       await page.goto(HARNESS);
-      const r = await page.evaluate(([src, u]) => new Promise(done => new Function(src).call(null, u, done)), [IN_PAGE, url]);
+      const r = await page.evaluate(([src, u, rb]) => new Promise(done => new Function(src).call(null, u, rb, done)), [IN_PAGE, url, READBACK]);
       await page.close();
       return r;
     });

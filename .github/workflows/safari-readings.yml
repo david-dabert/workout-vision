@@ -43,14 +43,25 @@ jobs:
         continue-on-error: true
       # Those clips stored sideways with a display rotation, as an iPhone stores a portrait video (WebKit rotates by hand).
       - run: node scripts/benchmarks/safari-readings.mjs --browser=safari --runs=1 --set=iphone-rot --out=readings
+      # The same three sets in Safari with the extraction canvas kept in memory (--readback=cpu, the bench only): most
+      # runners refuse Safari's readback of the default canvas (InvalidStateError; 1 run in 5 read on 14 November 2026).
+      - run: node scripts/benchmarks/safari-readings.mjs --browser=safari --runs=1 --readback=cpu --out=readings-cpu
+      - run: node scripts/benchmarks/safari-readings.mjs --browser=safari --runs=1 --readback=cpu --set=iphone --out=readings-cpu
+      - run: node scripts/benchmarks/safari-readings.mjs --browser=safari --runs=1 --readback=cpu --set=iphone-rot --out=readings-cpu
       - name: Compare
         run: npx tsx scripts/benchmarks/safari-compare.ts readings | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Compare (canvas kept in memory)
+        run: |
+          echo "## Safari with the extraction canvas kept in memory (--readback=cpu)" >> "$GITHUB_STEP_SUMMARY"
+          npx tsx scripts/benchmarks/safari-compare.ts readings-cpu | tee -a "$GITHUB_STEP_SUMMARY"
       # The readings themselves (landmarks, timestamps, the middle frame), to recount them with the app's whole path.
       - if: always()
         uses: actions/upload-artifact@v4
         with:
           name: safari-readings
-          path: readings/
+          path: |
+            readings/
+            readings-cpu/
           retention-days: 14
       - if: always()
         run: tail -n 40 vite.log

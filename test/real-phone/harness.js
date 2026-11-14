@@ -135,7 +135,7 @@ async function processFile(file) {
       if (pct % 10 === 0) appendLog(`  Extraction: ${pct}%`);
     },
     // Bench hook (7 October): __WV_HARNESS_PATH__ = 'rvfc' reads the video by playback, as a phone without WebCodecs does.
-    { deterministic: true, ...(globalThis.__WV_HARNESS_PATH__ ? { path: globalThis.__WV_HARNESS_PATH__ } : {}) },
+    { deterministic: true, ...(globalThis.__WV_HARNESS_PATH__ ? { path: globalThis.__WV_HARNESS_PATH__ } : {}), ...(globalThis.__WV_HARNESS_READBACK__ ? { readback: globalThis.__WV_HARNESS_READBACK__ } : {}) },
   );
 
   const elapsed = ((performance.now() - t0) / 1000).toFixed(2);
@@ -161,7 +161,7 @@ async function processFile(file) {
         }
       },
       null,
-      { deterministic: true },
+      { deterministic: true, ...(globalThis.__WV_HARNESS_READBACK__ ? { readback: globalThis.__WV_HARNESS_READBACK__ } : {}) },
     );
   } catch (e) {
     appendLog(`Middle frame re-extraction failed: ${e.message}`);

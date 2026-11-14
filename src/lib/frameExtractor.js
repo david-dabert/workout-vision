@@ -485,7 +485,9 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
     canvas = document.createElement('canvas');
     canvas.width = frameWidth;
     canvas.height = frameHeight;
-    const ctx = canvas.getContext('2d');
+    // options.readback 'cpu' (the Safari readings bench only, 14 November 2026): a canvas kept in memory, since most
+    // macOS CI runners refuse Safari's readback of the default one ("InvalidStateError"). The app never passes it.
+    const ctx = canvas.getContext('2d', options.readback === 'cpu' ? { willReadFrequently: true } : undefined);
 
     // Get decoder config from demuxer
     const decoderConfig = await demuxer.getDecoderConfig('video');
