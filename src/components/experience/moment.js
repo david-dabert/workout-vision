@@ -1,6 +1,6 @@
 // The line said once a set is saved: earned, never invented (R8). It speaks only of a count the person confirmed or
 // corrected, and compares it only with their own earlier sets of the same lift that someone confirmed (progress.js
-// confirmed): a record beaten, a record equalled, the first set of a lift; otherwise nothing, the saved card already thanks.
+// confirmed): a record beaten, a record equalled, the first set of a lift, or under the record the record to beat.
 // Never on a refused set, never on a count left unanswered. The app measures a count, not how well a set was done:
 // no line judges the execution ("Propre", "Bien tenu jusqu'au bout" did, and were removed after Astra's review of
 // 5 October, R8). Copy approved by David on 9 October 2026 (R10).
@@ -23,5 +23,7 @@ export function momentLine({ n, before, fr = false, kept = true }) {
   if (n === best) {
     return { kind: 'equal', text: fr ? `${n}, vous égalez votre record.` : `${n}, your best equalled.` };
   }
-  return null;
+  // Card 011 (14 November 2026): under the record, the record to beat next time, a count and nothing else: the reason
+  // to film again tomorrow. Not a judgement of the set (R8). Status: convention.
+  return { kind: 'below', text: fr ? `Votre record\u00a0: ${best}. À battre à la prochaine série.` : `Your best: ${best}. One to beat next set.` };
 }
