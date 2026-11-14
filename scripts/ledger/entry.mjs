@@ -73,8 +73,10 @@ function pushLines(e) {
   const isMerge = c => /^Merge pull request #\d+/.test(c.message ?? '');
   for (const c of [...commits].reverse()) {
     const who = agentOf({ branch: name, message: c.message, authorName: c.author?.name, authorEmail: c.author?.email });
-    const files = `${(c.added ?? []).length} added, ${(c.modified ?? []).length} changed, ${(c.removed ?? []).length} removed`;
-    lines.push({ at: c.timestamp ?? at, text: `${who} · COMMIT · ${clip(name, 60)} @ ${short(c.id)} · "${clip(subject(c.message))}" · ${files} · [commit](${c.url})` });
+    // GitHub sends no file lists with the push that creates a branch: no count is then better than a false 0.
+    const [a, m, r] = [c.added, c.modified, c.removed].map(x => (Array.isArray(x) ? x.length : 0));
+    const files = a + m + r > 0 ? ` · ${a} added, ${m} changed, ${r} removed` : '';
+    lines.push({ at: c.timestamp ?? at, text: `${who} · COMMIT · ${clip(name, 60)} @ ${short(c.id)} · "${clip(subject(c.message))}"${files} · [commit](${c.url})` });
   }
   const more = Number(e.size ?? all.length) - all.length;
   if (more > 0) lines.push({ at, text: `${agentOf({ branch: name })} · ${more} more commits in this push on ${clip(name, 60)} · [compare](${e.compare})` });

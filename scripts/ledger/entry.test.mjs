@@ -41,6 +41,10 @@ describe('push', () => {
       'Claude · COMMIT · claude/collect-refused @ c572ea45 · "Collector: keep a refused set" · 1 added, 2 changed, 0 removed · [commit](https://github.com/o/r/commit/c572ea45aaaa)',
     ]);
   });
+  it('leaves the file counts out when GitHub sends none (the push that creates a branch)', () => {
+    const [l] = entries('push', { ref: 'refs/heads/claude/new', created: true, commits: [commit('65c51731dddd', 'New', { added: [], modified: [], removed: [] })] });
+    expect(l.text).toBe('Claude · COMMIT · claude/new @ 65c51731 · "New" · [commit](https://github.com/o/r/commit/65c51731dddd)');
+  });
   it('writes a merge into main once, without the branch commits already recorded', () => {
     const lines = entries('push', { ref: 'refs/heads/main', commits: [commit('c572ea45aaaa', 'Collector', { distinct: false }), commit('e985a332cccc', 'Merge pull request #426 from david-dabert/claude/collect-refused\n\nCollector', { author: { name: 'David', email: 'd@x' } })], size: 2, compare: 'https://x' });
     expect(lines).toHaveLength(1);
