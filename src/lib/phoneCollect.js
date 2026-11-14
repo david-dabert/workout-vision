@@ -131,7 +131,7 @@ export function collectSessionId() {
  * result screen does not ask it; viewSource says so. recordedAt (the day the count was kept, YYYY-MM-DD) and sessionId
  * (this page load's anonymous id, collectSessionId) are written when given (Phase 6; test/real-phone/blind/README.md).
  */
-export function collectedPayload({ result, lift, kept, view, sha256, hashOf, version, blind = null, choice = null, recordedAt = null, sessionId: session = null }) {
+export function collectedPayload({ result, lift, kept, view, sha256, hashOf, version, blind = null, choice = null, recordedAt = null, sessionId: session = null, typed = false }) {
   const m = result?.metadata || {};
   return {
     ...setPayload({
@@ -160,6 +160,9 @@ export function collectedPayload({ result, lift, kept, view, sha256, hashOf, ver
     // Whose proposal: marked only when it is the universal engine's, for an exercise the core does not offer
     // (universalProposal.js, 14 October 2026), so it is never read as the core's (PSC's).
     ...(result?.refused && result.proposal?.by === 'universal' ? { proposalBy: 'universal' } : {}),
+    // A refused set's count typed by hand without a blind count (Result.jsx, 14 November 2026): kept for its read, never
+    // a label (R1).
+    ...(typed ? { typed: true } : {}),
   };
 }
 
@@ -168,7 +171,7 @@ export function collectedPayload({ result, lift, kept, view, sha256, hashOf, ver
  * read, hashed or stored then). videoFile: the video the count was made from (its SHA-256 names the file, as the
  * collector names it); without it, or when it cannot be read, the landmarks' hash does. now: the clock (for tests).
  */
-export async function collectThisSet({ result, lift, kept, view, videoFile = null, version, blind = null, choice = null, storage = globalThis.localStorage, put, now = () => new Date() }) {
+export async function collectThisSet({ result, lift, kept, view, videoFile = null, version, blind = null, choice = null, typed = false, storage = globalThis.localStorage, put, now = () => new Date() }) {
   if (!collectOn(storage)) return null;
   if (!result || !Array.isArray(result.worldLandmarks) || !result.worldLandmarks.length || !Number.isInteger(kept)) return null;
   // The clock is read when the count is kept, before the video is read and hashed: Safari can suspend the page for as
@@ -180,7 +183,7 @@ export async function collectThisSet({ result, lift, kept, view, videoFile = nul
   let sha256 = null, hashOf = 'video';
   if (videoFile) { try { sha256 = await hashVideoContent(videoFile); } catch { sha256 = null; } }
   if (!sha256) { sha256 = await landmarksSha256(result.worldLandmarks); hashOf = 'landmarks'; }
-  const payload = collectedPayload({ result, lift, kept, view, sha256, hashOf, version, blind, choice, recordedAt: keptDay(at), sessionId: collectSessionId() });
+  const payload = collectedPayload({ result, lift, kept, view, sha256, hashOf, version, blind, choice, typed, recordedAt: keptDay(at), sessionId: collectSessionId() });
   const blob = await gzipBlob(JSON.stringify(payload));
   const name = setFileName(lift, kept, view, sha256);
   // savedAt never leaves the phone: the instant, to list the files in the order they were kept.

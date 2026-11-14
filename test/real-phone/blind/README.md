@@ -30,6 +30,7 @@ A record built apart from this file (the `createBlindRecord` of PR #334) was wri
 | `count` | the count kept after seeing the app's | whole number, 0 or more |
 | `appCount` | the app's own count then | whole number, or `null` |
 | `appRefused`, `proposal` | the app refused the set, and the count it proposed | optional; `proposal` a whole number, 1 or more |
+| `typed` | the app refused the set and the count was typed by hand with no blind count (since 14 November 2026); such a file has no `blind` and is never a label | optional; `true` when present |
 | `videoSha256` | SHA-256 of the video's bytes, or of the landmarks when the video could not be read (`hashOf`) | 64 hex digits, required |
 | `hashOf` | what `videoSha256` hashes | `video` or `landmarks`; read as `null` when absent |
 | `recordedAt` | the day the count was kept, on the phone's calendar (`YYYY-MM-DD`): no hour, since the files are kept in a public repository | written since 8 November 2026 |

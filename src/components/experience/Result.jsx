@@ -536,13 +536,15 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       if (!manual && corrected !== null && contributeBuild() && readChoice() === 'yes') keepThis(n); // a typed or unanswered count is no label of the app's read
       // On David's phone only (the flag set at #collecte, phoneCollect.js): the set's landmark file in the collector's
       // format, with the count kept here, marked after-app, and his blind count when he gave one. Video sets only: a
-      // live set has no video and is not read at the collector's settings. A refused set is kept too when he gave his
-      // count blind and the app read a body (pillar 1: the failures belong in the measure as much as the successes);
-      // a set the app could not read (notRead) has no landmarks. Never sent from here; never awaited, so a failure
-      // does not touch the save.
-      const blindKept = blindN !== null && !result.notRead;
-      if ((!manual || blindKept) && corrected !== null && videoFile && collectOn()) {
-        holdWhile(collectThisSet({ result, lift, kept: n, view: filmView(lift), videoFile, version: appVersion(), blind, choice }))
+      // live set has no video and is not read at the collector's settings. A refused set is kept too, whenever the app
+      // read a body (pillar 1: the failures belong in the measure as much as the successes); a set the app could not
+      // read (notRead) has no landmarks. Until 14 November 2026 a refused set was kept only with a blind count, so a
+      // seated cable row refused on David's iPhone that day, its count typed by hand, left no read to diagnose. Its
+      // count, typed after the refusal, is marked `typed` and is no label (R1: only a blind count is; blind/parse.mjs
+      // and accuracy/sets.ts hold every file without one). Never sent from here; never awaited, so a failure does not
+      // touch the save.
+      if ((!manual || !result.notRead) && corrected !== null && videoFile && collectOn()) {
+        holdWhile(collectThisSet({ result, lift, kept: n, view: filmView(lift), videoFile, version: appVersion(), blind, choice, typed: manual && blindN === null }))
           .catch(e => console.warn('[collecte] this set could not be kept', e));
       }
       // The sets were never read: read them now, the one just saved first, and count the others.
