@@ -1,0 +1,52 @@
+# Card 026: Dormant counting and pose-preprocessing modules against labelled sets
+# Modules (unmodified exports): recurrenceSegmenter, kinematicOcclusionInpainter, perspectiveInvariance, groundPlaneCorrection
+# Suites: david (20), video (16 counted), synthetic (96), occlusion (68), publicA (546), publicB (518); zero parameter tuning.
+
+Suite: david (20 sets)
+  baseline       exact   14/20   (   70%) | near   5 | 3+ or refused   1 (refused 1)
+  recurrence     exact    9/20   (   45%) | near   6 | 3+ or refused   5 (refused 0)
+  inpainter      exact   14/20   (   70%) | near   5 | 3+ or refused   1 (refused 1)
+  perspective    exact   14/20   (   70%) | near   5 | 3+ or refused   1 (refused 1)
+  groundPlane    exact   14/20   (   70%) | near   5 | 3+ or refused   1 (refused 1)
+
+Suite: video (16 sets)
+  baseline       exact   12/16   (   75%) | near   2 | 3+ or refused   2 (refused 1)
+  recurrence     exact    3/16   ( 18.8%) | near   6 | 3+ or refused   7 (refused 0)
+  inpainter      exact   11/16   ( 68.8%) | near   3 | 3+ or refused   2 (refused 1)
+  perspective    exact   11/16   ( 68.8%) | near   2 | 3+ or refused   3 (refused 1)
+  groundPlane    exact   10/16   ( 62.5%) | near   3 | 3+ or refused   3 (refused 1)
+
+Suite: synthetic (96 sets)
+  baseline       exact   74/96   ( 77.1%) | near   9 | 3+ or refused  13 (refused 0)
+  recurrence     exact   19/96   ( 19.8%) | near  65 | 3+ or refused  12 (refused 0)
+  inpainter      exact   73/96   (   76%) | near  10 | 3+ or refused  13 (refused 0)
+  perspective    exact   74/96   ( 77.1%) | near   9 | 3+ or refused  13 (refused 0)
+  groundPlane    exact   74/96   ( 77.1%) | near   9 | 3+ or refused  13 (refused 0)
+
+Suite: occlusion (68 sets)
+  baseline       exact   27/68   ( 39.7%) | near   5 | 3+ or refused  36 (refused 19)
+  recurrence     exact    3/68   (  4.4%) | near  44 | 3+ or refused  21 (refused 1)
+  inpainter      exact   27/68   ( 39.7%) | near   5 | 3+ or refused  36 (refused 19)
+  perspective    exact   27/68   ( 39.7%) | near   5 | 3+ or refused  36 (refused 19)
+  groundPlane    exact   27/68   ( 39.7%) | near   5 | 3+ or refused  36 (refused 19)
+
+Suite: publicA (546 sets)
+  baseline       exact  259/546  ( 47.4%) | near 214 | 3+ or refused  73 (refused 53)
+  recurrence     exact  210/546  ( 38.5%) | near 254 | 3+ or refused  82 (refused 4)
+  inpainter      exact  258/546  ( 47.3%) | near 215 | 3+ or refused  73 (refused 53)
+  perspective    exact  259/546  ( 47.4%) | near 214 | 3+ or refused  73 (refused 53)
+  groundPlane    exact  259/546  ( 47.4%) | near 214 | 3+ or refused  73 (refused 53)
+
+Suite: publicB (518 sets)
+  baseline       exact  258/518  ( 49.8%) | near 172 | 3+ or refused  88 (refused 65)
+  recurrence     exact  202/518  (   39%) | near 225 | 3+ or refused  91 (refused 5)
+  inpainter      exact  255/518  ( 49.2%) | near 175 | 3+ or refused  88 (refused 65)
+  perspective    exact  258/518  ( 49.8%) | near 172 | 3+ or refused  88 (refused 65)
+  groundPlane    exact  258/518  ( 49.8%) | near 172 | 3+ or refused  88 (refused 65)
+
+Combined public build half (1064 sets)
+  baseline       exact  517/1064 ( 48.6%) | near 386 | 3+ or refused 161 (refused 118)
+  recurrence     exact  412/1064 ( 38.7%) | near 479 | 3+ or refused 173 (refused 9)
+  inpainter      exact  513/1064 ( 48.2%) | near 390 | 3+ or refused 161 (refused 118)
+  perspective    exact  517/1064 ( 48.6%) | near 386 | 3+ or refused 161 (refused 118)
+  groundPlane    exact  517/1064 ( 48.6%) | near 386 | 3+ or refused 161 (refused 118)
