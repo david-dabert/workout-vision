@@ -9,7 +9,7 @@
 import { analyzeCoreVideo, repeatedSkeletons } from './lib/coreAnalysis';
 import { TARGET_FPS } from './lib/extractionConfig';
 import { watchInterruption, whenVisible, holdScreenAwake, isInterruption } from './lib/interruption';
-import { clipId, delegateParam, injectVerdict, landmarksPrint, pathTally, poseLine, readLines, rowVerdict } from './lib/check';
+import { clipId, delegateParam, DEMO_CLIPS, demoAssetUrl, demoVerdictText, injectVerdict, landmarksPrint, pathTally, poseLine, readLines, rowVerdict } from './lib/check';
 import baseline from './lib/check-baseline.json';
 
 const VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0';
@@ -229,3 +229,149 @@ if (INJECT) {
   });
 }
 summary(); // the top line in the page's language from the start
+
+function setupDemoSection() {
+  const host = $('demo-clips'), verdictEl = $('demo-verdict'), runAllBtn = $('run-demo'), copyBtn = $('copy-demo');
+  if (!host || !verdictEl || !runAllBtn) return;
+  const heading = $('demo-heading'), note = $('demo-note');
+  if (heading) heading.textContent = fr ? 'Vidéos intégrées (un appui, sans galerie)' : 'Bundled demo clips (one tap, no gallery picker)';
+  if (note) {
+    note.textContent = fr
+      ? 'Ces cinq clips publics sont déjà fournis avec l’application. Un appui mesure directement le décodeur, la rotation et les répétitions dans Safari.'
+      : 'These five public clips are bundled with the app. One tap benchmarks the decoder, rotation and rep count directly in Safari.';
+  }
+  runAllBtn.textContent = fr ? `Tester les ${DEMO_CLIPS.length} vidéos intégrées` : `Run all ${DEMO_CLIPS.length} bundled clips`;
+  if (copyBtn) copyBtn.textContent = fr ? 'Copier le bilan JSON' : 'Copy JSON report';
+
+  const demoResults = new Map();
+  let demoBusy = false;
+  const refreshDemo = () => {
+    verdictEl.textContent = demoVerdictText([...demoResults.values()], DEMO_CLIPS.length, fr);
+    if (copyBtn) copyBtn.hidden = demoResults.size === 0;
+  };
+  refreshDemo();
+
+  const base = (typeof import.meta !== 'undefined' && import.meta.env?.BASE_URL) || '/';
+  const rows = [];
+
+  async function runOneDemo(clip, out, box, btn) {
+    box.classList.remove('ok', 'bad');
+    out.textContent = fr ? 'Chargement de la vidéo intégrée…' : 'Fetching bundled clip...';
+    const forced = $('force-rvfc')?.checked;
+    const ac = new AbortController();
+    const unwatch = watchInterruption(() => ac.abort());
+    const release = holdScreenAwake();
+    btn.disabled = true;
+    try {
+      const resp = await fetch(demoAssetUrl(clip.file, base), { signal: ac.signal });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const blob = await resp.blob();
+      const file = new File([blob], clip.file, { type: blob.type || 'video/mp4' });
+      const model = await benchModel();
+      let source = null;
+      const r = await analyzeCoreVideo(file, clip.lift, {
+        signal: ac.signal,
+        ...(forced ? { path: 'rvfc' } : {}),
+        ...(POSE_MODE ? { poseMode: POSE_MODE } : {}),
+        ...(model ? { benchModel: model } : {}),
+        ...(DELEGATE ? { delegate: DELEGATE } : {}),
+        onSource: s => { source = s; },
+        onProgress: progress(out),
+      });
+      const fp = await landmarksPrint(r.worldLandmarks);
+      const skel = repeatedSkeletons(r.worldLandmarks);
+      const cov = r.metadata?.pose?.coverage;
+      const covPct = typeof cov === 'number' ? Math.round(cov <= 1 ? cov * 100 : cov) : null;
+      const exact = !r.refused && r.count === clip.label;
+      const entry = {
+        id: clip.id,
+        file: clip.file,
+        lift: clip.lift,
+        label: clip.label,
+        count: r.refused ? 'refused' : r.count,
+        exact,
+        refused: !!r.refused,
+        error: false,
+        samples: r.timestamps.length,
+        decoder: r.metadata?.method || null,
+        fallback: r.metadata?.fallback ?? null,
+        rotationDecision: r.metadata?.rotationDecision || null,
+        source,
+        poseCoveragePct: covPct,
+        pose: r.metadata?.pose || null,
+        fingerprint: fp,
+      };
+      demoResults.set(clip.id, entry);
+      box.classList.add(exact ? 'ok' : 'bad');
+      const verdictLabel = r.refused
+        ? (fr ? `Refusée (attendu\u00A0: ${clip.label})` : `Refused (expected ${clip.label})`)
+        : exact
+          ? (fr ? `Exact\u00A0: ${r.count} sur ${clip.label} (${r.timestamps.length} éch.${covPct !== null ? `, pose ${covPct}\u00A0%` : ''})` : `Exact: ${r.count} of ${clip.label} (${r.timestamps.length} samples${covPct !== null ? `, pose ${covPct}%` : ''})`)
+          : (fr ? `Écart\u00A0: ${r.count} au lieu de ${clip.label} (${r.timestamps.length} éch.${covPct !== null ? `, pose ${covPct}\u00A0%` : ''})` : `Diff: ${r.count} instead of ${clip.label} (${r.timestamps.length} samples${covPct !== null ? `, pose ${covPct}%` : ''})`);
+      const srcLine = source
+        ? `Source: ${source.codec || '?'} ${source.width}x${source.height} rot=${source.rotation} | Rotation: ${r.metadata?.rotationDecision || 'none'}`
+        : `Rotation: ${r.metadata?.rotationDecision || 'none'}`;
+      out.textContent = [
+        verdictLabel,
+        ...readLines({ pictures: r.metadata?.repeats, skeletons: skel, decoder: r.metadata?.method || '', fallback: r.metadata?.fallback ?? null }, fr),
+        poseLine(r.metadata?.pose, fp, fr),
+        srcLine,
+      ].join('\n');
+    } catch (e) {
+      const msg = isInterruption() ? (fr ? 'Interrompue' : 'Interrupted') : `${e?.name || 'Error'}: ${e?.message || e}`;
+      demoResults.set(clip.id, { id: clip.id, file: clip.file, label: clip.label, exact: false, refused: false, error: msg });
+      box.classList.add('bad');
+      out.textContent = msg;
+      await whenVisible();
+    } finally {
+      unwatch();
+      release();
+      btn.disabled = false;
+      refreshDemo();
+    }
+  }
+
+  for (const clip of DEMO_CLIPS) {
+    const box = document.createElement('div');
+    box.className = 'row';
+    box.dataset.testid = `demo-row-${clip.id}`;
+    const h = document.createElement('h2');
+    h.textContent = `${fr ? clip.titleFr : clip.titleEn} · ${fr ? 'attendu' : 'expected'} ${clip.label}`;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.testid = `demo-run-${clip.id}`;
+    btn.style.cssText = 'padding:6px 10px;font:inherit;cursor:pointer;';
+    btn.textContent = fr ? 'Analyser cette vidéo' : 'Run clip';
+    const out = document.createElement('div');
+    out.className = 'out';
+    out.textContent = clip.file;
+    btn.addEventListener('click', () => {
+      if (demoBusy) return;
+      runOneDemo(clip, out, box, btn);
+    });
+    box.append(h, btn, out);
+    host.appendChild(box);
+    rows.push({ clip, out, box, btn });
+  }
+
+  runAllBtn.addEventListener('click', async () => {
+    if (demoBusy) return;
+    demoBusy = true;
+    runAllBtn.disabled = true;
+    demoResults.clear();
+    refreshDemo();
+    try {
+      for (const { clip, out, box, btn } of rows) await runOneDemo(clip, out, box, btn);
+    } finally {
+      demoBusy = false;
+      runAllBtn.disabled = false;
+    }
+  });
+
+  copyBtn?.addEventListener('click', async () => {
+    const payload = JSON.stringify({ userAgent: navigator.userAgent, delegate: DELEGATE || 'CPU', poseMode: POSE_MODE || 'image', results: [...demoResults.values()] }, null, 2);
+    try { await navigator.clipboard.writeText(payload); copyBtn.textContent = fr ? 'Copié' : 'Copied'; } catch { /* clipboard unavailable */ }
+  });
+}
+
+setupDemoSection();
