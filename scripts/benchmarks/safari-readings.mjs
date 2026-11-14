@@ -83,7 +83,11 @@ const run = BROWSER === 'safari' ? withSafari : withChromium;
 await run(async read => {
   for (let k = 1; k <= RUNS; k++) {
     for (const c of CLIPS) {
-      const r = await read(SET === 'demo' ? `${BASE}demo/${c.clip}.mp4` : `${BASE}demo/iphone/${c.clip}${SUFFIX}.mov`);
+      const url = SET === 'demo' ? `${BASE}demo/${c.clip}.mp4` : `${BASE}demo/iphone/${c.clip}${SUFFIX}.mov`;
+      // Some macOS runners refuse Safari's canvas readback ("InvalidStateError" at getImageData, runs 43626543919 and
+      // 43628027656; another runner read all ten): a read refused so is tried again, twice at most, in a fresh page.
+      let r = await read(url);
+      for (let t = 0; t < 2 && /InvalidStateError/.test(r?.error ?? ''); t++) r = await read(url);
       if (r?.error) console.log(`[${BROWSER} run ${k}] ${c.clip}: ERROR ${r.error.split('\n').slice(0, 6).join(' | ')}`);
       else console.log(`[${BROWSER} run ${k}] ${c.clip}: ${r.timestamps.length} samples, ${r.seconds.toFixed(1)} s, ${r.metadata?.extractionMethod}`);
       const clip = SET === 'demo' ? c.clip : `${c.clip}-${SET}`;
