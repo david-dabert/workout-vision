@@ -1,0 +1,20 @@
+SOURCE_URL: https://static.openfoodfacts.org/data/openfoodfacts-products.jsonl.gz
+RETRIEVED_UTC: 2026-10-14T06:46:36Z
+SAMPLE_SIZE: 500
+METHOD: Streaming sequential first 500 records from daily openfoodfacts-products.jsonl.gz
+================================================================================
+
+Open Food Facts - Mesure de Couverture Nutritionnelle Réelle (Échantillon de 500 produits)
+
+1. Énergie (kcal / 100g) : 350 / 500 (70.0 %)
+2. Protéines (g / 100g) : 348 / 500 (69.6 %)
+3. Glucides (g / 100g) : 349 / 500 (69.8 %)
+4. Lipides (g / 100g) : 350 / 500 (70.0 %)
+5. Fibres alimentaires (g / 100g) : 270 / 500 (54.0 %)
+6. Sel (g / 100g) : 336 / 500 (67.2 %)
+7. Taille de portion renseignée : 384 / 500 (76.8 %)
+
+Constat d'audit :
+- Les macronutriments majeurs (protéines, glucides, lipides) sont renseignés sur ~68 % à 70 % des fiches produit.
+- Les fibres alimentaires sont absentes de 46.0 % des produits (seulement 54.0 % de couverture), confirmant le caractère facultatif de l'étiquetage selon le règlement INCO.
+- La taille de portion n'est précisée que pour 76.8 % des articles.

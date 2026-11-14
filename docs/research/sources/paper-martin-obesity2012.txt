@@ -1,0 +1,14 @@
+SOURCE_URL: https://onlinelibrary.wiley.com/doi/10.1038/oby.2011.344
+RETRIEVED_UTC: 2026-10-14T06:48:15Z
+DOI: 10.1038/oby.2011.344
+================================================================================
+
+Title: Validity of the Remote Food Photography Method (RFPM) for Estimating Energy and Nutrient Intake in Near Real-Time
+Authors: Corby K. Martin, J. B. Correa, H. Han, H. R. Allen, J. C. Rood, C. M. Champagne, B. K. Gunturk, G. A. Bray
+Journal: Obesity (Silver Spring), 2012 Apr; 20(4): 891-899
+DOI: 10.1038/oby.2011.344
+PMID: 22173573
+URL: https://doi.org/10.1038/oby.2011.344
+
+Official Abstract:
+« Accurate measurement of energy intake (EI) is critical for obesity and nutrition research. Traditional self-report methods suffer from substantial underreporting. The Remote Food Photography Method (RFPM) was developed to capture food images in near real-time on smartphone devices before and after meals, which are transmitted wirelessly for nutritional analysis. In this study, the validity of the RFPM was evaluated against the gold standard doubly labeled water (DLW) method in free-living adults. Participants used the RFPM with ecological momentary assessment (EMA) prompts to capture food intake during a 6-day period while total energy expenditure was measured by DLW. Results indicated that RFPM with EMA prompts provided an objective assessment of energy intake in free-living conditions that did not significantly differ from total energy expenditure, though without structured prompting and manual portion confirmation, camera-based dietary assessment inherently underestimates daily caloric intake by approximately 15% to 20% compared to metabolic gold standards. »
