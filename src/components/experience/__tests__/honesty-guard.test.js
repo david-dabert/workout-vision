@@ -55,12 +55,12 @@ describe('the README quotes the scoreboards, and only them', () => {
 
 // The Manifesto's promise is the one the app keeps, with the dated scoreboard (R13), and it makes no injury claim (R9).
 describe('the Manifesto', () => {
-  it('quotes the real-video figure of the scoreboard, and no injury, tendinopathy or 10 % / 15 % rule', async () => {
+  it('quotes no accuracy figure (David, 14 November 2026), and no injury, tendinopathy or 10 % / 15 % rule', async () => {
     const { MANIFESTO } = await import('../manifesto-copy');
-    const board = readFileSync(resolve(__dirname, '../../../../test/real-phone/accuracy/scoreboard.txt'), 'utf8');
-    const [, videos, exact] = board.match(/Real video, 7 October[^\n]*?of the (\d+) sets in the baseline, (\d+) exact now/);
-    expect(MANIFESTO.fr.conclusion.text1).toContain(`Sur les ${videos} vraies vidéos filmées par le créateur de l’appli, elle trouve le bon nombre sur ${exact} (tableau du`);
-    expect(MANIFESTO.en.conclusion.text1).toContain(`On the ${videos} real videos filmed by the app’s maker, it finds the right number on ${exact} (scoreboard of`);
+    // David, 14 November 2026: "Remove it from the app, nobody needs to know this": the real-video figure left the
+    // Manifesto. It stays in the README, against the scoreboard (R13); the app quotes no accuracy figure here.
+    expect(MANIFESTO.fr.conclusion.text1).not.toMatch(/vraies vidéos|tableau du/);
+    expect(MANIFESTO.en.conclusion.text1).not.toMatch(/real videos|scoreboard of/);
     // When it doubts it may propose a number to check (Result.jsx): the promise says so, never "no number".
     expect(MANIFESTO.fr.conclusion.text1).toContain('Quand elle doute, elle le dit\u00A0: tout au plus, elle vous propose un nombre à vérifier, jamais une note.');
     expect(MANIFESTO.en.conclusion.text1).toContain('When it is unsure, it says so: at most it suggests a number for you to check, never a grade.');

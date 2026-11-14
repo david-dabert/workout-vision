@@ -485,3 +485,11 @@ Regulatory caution: wording stays "follows the programme, angle reached", never 
 - Study the 50 most used apps for sport, workouts, routines and client management, and bring their essential elements and use cases into one place for practitioners, coaches, beginners, intermediates and experts.
 - Help people optimise their workouts, recovery and training.
 - Be a companion people use every time they train.
+
+## Reactive single-leg balance drill, 14 November 2026 (David)
+
+- David's words: pro athletes do this drill or variations of it; the app should propose it to athletes working on stability, recovery and balance. His clip (a social-media screen recording, not his and not licensed: not stored, not test data): an athlete stands on one leg on a wobble board while staff throw objects for him to catch and throw back.
+- What it is: a single-leg stance on an unstable surface with reactive catches, a perturbation drill, usually progressed from two feet to one, firm to unstable floor, eyes on target to dual task.
+- What the app could measure honestly, none of it built or measured yet: time on one leg before the free foot touches down; the number of touchdowns in a set time; the sway of the hips about the standing foot. These are holds and events, not reps: the counter does not read them, and a measure needs its own labelled sets and eval (gate 7, R8, R16), filmed by David or testers with their own counts of touchdowns.
+- Proposing it: a drill shown to athletes is a coaching statement and carries a source (R9). Balance and proprioceptive training is studied for ankle sprain prevention; the citations are to be checked before any copy is written (UNSOURCED until then).
+- Why not now: R7 and R16 hold a new area until the counting it depends on passes its gates. David may open it; the smallest first card would be the drill shown as a guided hold (« Équilibre sur une jambe ») with a timer and no measured number.
