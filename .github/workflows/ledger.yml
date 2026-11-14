@@ -1,0 +1,48 @@
+# The agent ledger (David's request of 14 November 2026): every commit pushed, pull request opened, merged or closed,
+# CI run finished, deploy, and comment on issue #190 becomes one dated Markdown line on the branch `ledger`
+# (https://github.com/david-dabert/workout-vision/tree/ledger), one file a month, newest first, with the agent named
+# (scripts/ledger/entry.mjs). Written from GitHub's own records, so it shows what happened, not what an agent says
+# happened. Writes nothing on main. The workflow_run and issue_comment triggers act once this file is on main.
+name: Agent ledger
+
+on:
+  push:
+    branches-ignore: [ledger]
+    tags: ['**']
+  pull_request:
+    types: [opened, reopened, closed, ready_for_review, converted_to_draft]
+  workflow_run:
+    workflows:
+      - CI
+      - Deploy to GitHub Pages
+      - Safari readings
+      - Motion library
+      - RepCount train landmarks
+      - Footage from Commons
+      - Footage from Commons, by category
+      - Update visual snapshots
+      - WebKit probe
+    types: [completed]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    name: Record in the ledger
+    if: github.event_name != 'issue_comment' || github.event.issue.number == 190
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts/ledger
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Write the entry
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/ledger/append.sh
