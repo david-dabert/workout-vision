@@ -614,6 +614,14 @@ export function countReps(
   const mine = countSide(worldLandmarks, timestamps, def, seen, tuning);
   const countable = (r: CountResult) => r.angles.filter(a => a !== null).length >= worldLandmarks.length / 2;
   if (!def.eitherSide && !def.together) {
+    // Summed visibility (selectSide) can pick a side whose individual landmarks fail VIS_THRESHOLD on over half the
+    // frames (countable < 50%), turning a countable opposite side into a refusal (seated_cable_row / side-on sets).
+    // Check countability on the picked side before any still-limb or lift early return.
+    if (!countable(mine)) {
+      const other = countSide(worldLandmarks, timestamps, def, seen === 'left' ? 'right' : 'left', tuning);
+      if (countable(other)) return other;
+      return mine;
+    }
     // A still limb counts nothing. When the better seen side counts no rep and stays still (STILL_SIDE_DEG), the
     // other side counts if it is seen on at least half the samples, moves at least MIN_ROM_DEGREES and counts one or
     // more: a one-arm curl or raise filmed from the front sees both arms alike, and the idle one, held still, read 0
