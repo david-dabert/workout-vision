@@ -112,10 +112,14 @@ jobs:
       - run: npm run build
       - run: npm run check:entry-budget
 
-  e2e:
-    name: Browser tests (Chromium and WebKit)
+  e2e-shard:
+    name: Browser tests (${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -147,19 +151,33 @@ jobs:
       # VITE_CONTRIBUTE unset): this build switches both on, so their tests still run (live.spec.js, contribute*.spec.js).
       # The production build itself is built and tested by playwright.config.js on port 4176 (e2e/build-flags.spec.js).
       - run: npm run build:e2e
-      # One worker, as the timing checks of the touch tests were measured. 1 retry in CI to heal transient WebKit IPC hiccups.
-      - name: Browser tests (production build)
-        run: npx playwright test --project=core --retries=1 --workers=1
+      # One worker per shard, as the timing checks of the touch tests were measured. 1 retry in CI to heal transient WebKit IPC hiccups.
+      - name: Browser tests (production build, shard ${{ matrix.shard }}/4)
+        run: npx playwright test --project=core --retries=1 --workers=1 --shard=${{ matrix.shard }}/4
       # A failed test leaves its page snapshot (error-context.md) and screenshots in test-results/: kept for five days, so
       # a failure that does not come back on a re-run can still be read (e2e/pack.spec.js, 18 October 2026).
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: browser-test-results-${{ github.sha }}
+          name: browser-test-results-${{ github.sha }}-shard-${{ matrix.shard }}
           path: |
             test-results/
             test-results-extended/
           retention-days: 5
+
+  # Keeps the exact required check context name ("Browser tests (Chromium and WebKit)") for main branch protection.
+  e2e:
+    name: Browser tests (Chromium and WebKit)
+    needs: [e2e-shard]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify all browser test shards succeeded
+        run: |
+          if [ "${{ needs.e2e-shard.result }}" != "success" ]; then
+            echo "Browser test shards failed (result=${{ needs.e2e-shard.result }})."
+            exit 1
+          fi
 
   # The tour (PLAN.md, GROWTH, after step 1): every screen reached without a video, on the production
   # build, in WebKit with the iPhone profile, at 390x664, 390x745 and 375x548, and at 390x664 with
