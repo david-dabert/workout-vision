@@ -1,1 +1,1 @@
-8 October 2026, 08:10 UTC: first full run: 309 specs after the engine upgrade (mid pose, pins, twist, hip rotation, shrug, wrist, framing); the learned counter without the library, with it, and with it plus the spec progress input, three seeds each.
+14 November 2026: retrain on the 758 RepCount-A train sets now on disk (the run of 8 October had 111), three seeds, for a seed ensemble (review board, item 3).
