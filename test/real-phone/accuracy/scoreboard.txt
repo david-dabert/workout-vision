@@ -24,8 +24,8 @@ Right when sure (R16, sure.ts; measured, decides nothing): of 15 sets that decid
    landmarks/lateral_raise_10_front_mufhhbun.json.gz  label 10  before 10 (exact)  now 10 (exact)
    landmarks/overhead_press_10_front_mufhjkku.json.gz  label 10  before 9 (off -1)  now 9 (off -1)  (press: measured, decides nothing, PLAN.md)
 
-Real video, 7 October (label: David's count, R1; the built app's own read of each whole video): of the 16 sets in the baseline, 12 exact now, 12 before; 0 newly catastrophic, 1 known catastrophic (shown, gated on growth), 0 newly refused; 1 set new since; 2 refused of 17.
-Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 16 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
+Real video, 7 October (label: David's count, R1; the built app's own read of each whole video): of the 17 sets in the baseline, 12 exact now, 12 before; 0 newly catastrophic, 1 known catastrophic (shown, gated on growth), 0 newly refused; 2 refused of 17.
+Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 17 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
 In the list (result-choices.js, measured, decides nothing): of the 17 sets that would decide, the number shown is exact on 13, the label is in [M, M + 1, M - 1] on 15.
 Right when sure (R16, sure.ts; measured, decides nothing): of 17 sets that decide, 15 counted. With the body check alone (before 19 October 2026), shown as sure 9: 8 exact (89%), 1 off by 1 or 2, 0 off by 3+; asked to confirm 6: 4 exact (67%), 1 off by 1 or 2, 1 off by 3+. As the app ships, the sensitivity check and a refused head rep asking too: shown as sure 8: 8 exact (100%), 0 off by 1 or 2, 0 off by 3+; asked to confirm 7: 4 exact (57%), 2 off by 1 or 2, 1 off by 3+.
    sets-07oct-video/barbell_squat_9_a.json.gz  label 9  before 9 (exact)  now 9 (exact)
@@ -43,7 +43,7 @@ Right when sure (R16, sure.ts; measured, decides nothing): of 17 sets that decid
    sets-07oct-video/sissy_squat_9_5007.json.gz  label 9  before 9 (exact)  now 9 (exact)
    sets-07oct-video/standing_barbell_curl_8.json.gz  label 8  before refused (refused)  now refused (refused)  (proposal 8)
 KNOWN CATASTROPHIC  sets-14nov-video/dumbbell_bench_press_9_angle.json.gz  label 9  now 16
--> sets-14nov-video/dumbbell_bench_press_9_angle.json.gz  label 9  before - (new)  now 16 (catastrophic)
+   sets-14nov-video/dumbbell_bench_press_9_angle.json.gz  label 9  before 16 (catastrophic)  now 16 (catastrophic)
    sets-18oct-video/lat_pulldown_11_back.json.gz  label 11  before 10 (off -1)  now 10 (off -1)
    sets-18oct-video/squat_6_front.json.gz  label 6  before 6 (exact)  now 6 (exact)
 
