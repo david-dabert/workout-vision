@@ -1,0 +1,6 @@
+{
+  "note": "A real gym video of 14 November 2026, read whole by the built app as sets-07oct-video/ was (its README and capture.mjs). Label by David (R1), given in the conversation of 14 November 2026, never from the app. No video is in the repository.",
+  "sets": [
+    { "name": "dumbbell_bench_press_9_angle", "original": "workoutvision-dumbbell-bench-press-16.mp4", "lift": "dumbbell_bench_press", "label": 9, "labelSource": "David, 14 November 2026 (\"the app counted 16 on a 9 reps bench press\")", "view": "angle", "what": "dumbbell bench press on a flat bench in a gym, filmed from near the feet and to the side; the app on David's iPhone showed 16" }
+  ]
+}
