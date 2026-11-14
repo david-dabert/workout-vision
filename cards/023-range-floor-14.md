@@ -1,5 +1,6 @@
 # 023. The counter counts the shallow reps it now drops, and loses none it counts today
-Status: ready
+Status: failed (14 November 2026; TRIED.md)
+Result: real-phone unchanged; public 468 to 477 exact, but the sure set's off by 3 or more 7 to 10; synthetic one curl newly off by 3 and one exact lost; the synthetic range gate fails (29 to 31 degrees). The floor stays at 20.
 Executor: careful
 Claim: a person whose reps move the joint between 14 and 20 degrees gets them counted, and no set counted exactly today is counted worse.
 Reference: the overnight lab, first run of 13 November 2026 (TRIED.md; `test/real-phone/autoresearch/log.jsonl`): `MIN_ROM_DEGREES` 20 to 14 alone, read on every suite against the baseline. TRIED.md, 8 October 2026: a floor of 16 broke one synthetic curl then; the counter has changed since, and the eval below decides.
