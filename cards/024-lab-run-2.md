@@ -1,5 +1,5 @@
 # 024. The overnight lab keeps only what holds on real video
-Status: ready (after 023)
+Status: withdrawn (14 November 2026, review board): guarding the search with the real videos and RepCount turns the only real test sets into tuning data, and card 023 showed variant-eval's exact counts miss the sure set, the synthetic set by set and the range. A next lab run must score every gate CI runs, not exact counts alone.
 Executor: careful
 Claim: David wakes to a counter change the lab found and the real videos already confirm, not a value that only fits half A.
 Reference: TRIED.md, the overnight lab's first run (13 November 2026): nine values kept on half A gained 14 exact on half B but lost 2 of 16 real videos and 5 of 79 RepCount sets.
