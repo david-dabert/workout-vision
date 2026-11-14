@@ -33,7 +33,7 @@ const gap = (a: any, b: any) => {
   return median(d);
 };
 
-const ua = files.length ? read(files.find(f => f.includes('.safari.')) ?? files[0]).userAgent : '';
+const ua = files.map(read).find(r => r.browser === 'safari' && r.userAgent)?.userAgent ?? '';
 const rows: string[] = [];
 let exactS = 0, exactC = 0, disagree = 0, n = 0;
 for (const [clip, rs] of [...byClip].sort()) {
@@ -53,3 +53,19 @@ console.log('| Clip | David\'s count | Safari run 1 | Safari run 2 | Chromium | 
 console.log('|---|---|---|---|---|---|---|---|---|');
 for (const r of rows) console.log(r);
 console.log(`\nExact: Safari ${exactS} of ${n}, Chromium ${exactC} of ${n}. Clips where the two browsers count differently: ${disagree}.`);
+
+// The same browser on the same clip as stored three ways (14 November 2026): Safari's count on the MP4, on the iPhone
+// format upright, and on the iPhone format stored sideways with a display rotation, with the samples read and the
+// decoder's rotation decision. A clip whose count moves between these is read differently by its storage alone.
+const base = [...new Set([...byClip.keys()].map(k => k.replace(/-iphone(-rot)?$/, '')))].sort();
+const s1Of = (k: string) => byClip.get(k)?.find(r => r.browser === 'safari' && r.run === 1);
+const cell = (r: any) => !r ? '' : r.error ? 'error' : `${countOf(r)} (${r.timestamps.length})`;
+console.log('\n### Safari, one clip stored three ways\n');
+console.log('| Clip | David\'s count | MP4 | iPhone format | iPhone format, rotated | Rotation decision (rotated) |');
+console.log('|---|---|---|---|---|---|');
+for (const k of base) {
+  const m = s1Of(k), i = s1Of(`${k}-iphone`), r = s1Of(`${k}-iphone-rot`);
+  const label = (m ?? i ?? r)?.label ?? '';
+  console.log(`| ${k} | ${label} | ${cell(m)} | ${cell(i)} | ${cell(r)} | ${r?.metadata?.rotationDecision ?? (r?.error ? String(r.error).split(' | ')[0] : '')} |`);
+}
+

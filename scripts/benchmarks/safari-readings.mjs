@@ -23,6 +23,11 @@ const BASE = arg('base', 'http://localhost:5173/workout-vision/');
 // out of display order, a frame dropped in seven so the frame rate varies), 14 November 2026: David's iPhone counted a
 // hip thrust 1 for 12 after reading all 370 samples, where a computer reading a VP9 copy counts 12.
 const SET = arg('set', 'demo');
+// demo: public/demo/<clip>.mp4. iphone: the same clips as HEVC with reordered frames at a variable rate, upright.
+// iphone-rot: those stored sideways with a -90 degree display matrix, as an iPhone stores a portrait video, so WebKit's
+// hand rotation (frameExtractor.js manualRotationNeeded) is read (14 November 2026).
+const SUFFIX = { demo: '', iphone: '', 'iphone-rot': '-rot' }[SET];
+if (SUFFIX === undefined) throw new Error(`unknown --set=${SET}`);
 const HARNESS = `${BASE}test/real-phone/harness.html`;
 
 // The five demo sets published on the About page (public/demo/), each named with David's count, and the lift the
@@ -77,10 +82,10 @@ const run = BROWSER === 'safari' ? withSafari : withChromium;
 await run(async read => {
   for (let k = 1; k <= RUNS; k++) {
     for (const c of CLIPS) {
-      const r = await read(SET === 'iphone' ? `${BASE}demo/iphone/${c.clip}.mov` : `${BASE}demo/${c.clip}.mp4`);
+      const r = await read(SET === 'demo' ? `${BASE}demo/${c.clip}.mp4` : `${BASE}demo/iphone/${c.clip}${SUFFIX}.mov`);
       if (r?.error) console.log(`[${BROWSER} run ${k}] ${c.clip}: ERROR ${r.error.split('\n').slice(0, 6).join(' | ')}`);
       else console.log(`[${BROWSER} run ${k}] ${c.clip}: ${r.timestamps.length} samples, ${r.seconds.toFixed(1)} s, ${r.metadata?.extractionMethod}`);
-      const clip = SET === 'iphone' ? `${c.clip}-iphone` : c.clip;
+      const clip = SET === 'demo' ? c.clip : `${c.clip}-${SET}`;
       writeFileSync(join(OUT, `${clip}.${BROWSER}.${k}.json`), JSON.stringify({ ...c, clip, browser: BROWSER, run: k, ...r }));
     }
   }

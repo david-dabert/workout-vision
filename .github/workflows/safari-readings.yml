@@ -41,6 +41,8 @@ jobs:
       - run: node scripts/benchmarks/safari-readings.mjs --browser=safari --runs=2 --set=iphone --out=readings
       - run: node scripts/benchmarks/safari-readings.mjs --browser=chromium --runs=1 --set=iphone --out=readings
         continue-on-error: true
+      # Those clips stored sideways with a display rotation, as an iPhone stores a portrait video (WebKit rotates by hand).
+      - run: node scripts/benchmarks/safari-readings.mjs --browser=safari --runs=1 --set=iphone-rot --out=readings
       - name: Compare
         run: npx tsx scripts/benchmarks/safari-compare.ts readings | tee -a "$GITHUB_STEP_SUMMARY"
       - if: always()
