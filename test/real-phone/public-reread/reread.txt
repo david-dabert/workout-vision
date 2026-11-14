@@ -1,0 +1,72 @@
+Public re-read 2026-11-14: stored reads (test/real-phone/public) against the same videos read again (REREAD), build half, live core.
+
+countix: 438 sets in both (447 stored, 438 re-read); scored 438; counts moved 66.
+  exact 199 -> 190; off by 3 or more (refused included) 70 -> 60; samples 49072 -> 49072.
+  Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 438 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; one row per file; measured, decides nothing): 11 gained, 20 lost, McNemar p = 0.15; exact-rate change -2.1 points, 95 % interval [-4.6, +0.5].
+  stored only: 9; re-read only: 0.
+  04s5S8V2Rx0_000004_0.json.gz  label 5  stored 4  re-read 3  samples 135 -> 135
+  0_EeIVIi5vU_000012_6423.json.gz  label 2  stored 1  re-read 2  samples 53 -> 53
+  1vnGNr5Xy2g_000005_0.json.gz  label 2  stored 2  re-read 3  samples 117 -> 117
+  2BC4P5QWDSk_000008_200.json.gz  label 4  stored refused  re-read 2  samples 88 -> 88
+  2o-XwlT0Nvs_000065_625.json.gz  label 4  stored refused  re-read 5  samples 140 -> 140
+  3MbLV9MjhUk_000003_500.json.gz  label 6  stored 4  re-read 6  samples 141 -> 141
+  7QmGi3r4RPE_000004_33.json.gz  label 3  stored 5  re-read 4  samples 149 -> 149
+  8o0iRYpHDJw_000000_0.json.gz  label 2  stored 2  re-read 3  samples 67 -> 67
+  9tiGuIXhkrw_000015_0.json.gz  label 11  stored refused  re-read 4  samples 149 -> 149
+  A1A40a9ADKE_000000_0.json.gz  label 6  stored 5  re-read 4  samples 150 -> 150
+  BYHQ4KptOM4_000015_0.json.gz  label 2  stored 1  re-read 2  samples 90 -> 90
+  Bg2uQMSKXew_000019_0.json.gz  label 2  stored 1  re-read 3  samples 133 -> 133
+  CElE2vVloh0_000003_0.json.gz  label 6  stored 4  re-read 3  samples 150 -> 150
+  DA6N2ebQ8WA_000013_0.json.gz  label 2  stored refused  re-read 2  samples 68 -> 68
+  DSlmPd3L_i8_000024_3125.json.gz  label 4  stored refused  re-read 3  samples 103 -> 103
+  E0p8QDRa0Fg_000063_0.json.gz  label 8  stored 6  re-read 7  samples 150 -> 150
+  EMm7fbm9nus_000001_0.json.gz  label 4  stored 3  re-read 1  samples 149 -> 149
+  G1E_vGTK4PI_000011_733.json.gz  label 5  stored 3  re-read 4  samples 138 -> 138
+  GjVPcCoTz5U_000009_0.json.gz  label 15  stored 10  re-read 6  samples 149 -> 149
+  HAMAZ4bJ1bY_000000_1400.json.gz  label 5  stored 4  re-read 3  samples 129 -> 129
+  HZNs_FOXF14_000002_0.json.gz  label 3  stored refused  re-read 3  samples 149 -> 149
+  IDkiffbx_YU_000041_0.json.gz  label 4  stored 6  re-read 4  samples 149 -> 149
+  J5UH-E8zclg_000000_0.json.gz  label 9  stored 4  re-read 3  samples 150 -> 150
+  LPQSm5megAo_000000_1201.json.gz  label 3  stored 3  re-read 4  samples 88 -> 88
+  LlhMJGUP2W8_000000_1602.json.gz  label 2  stored refused  re-read 1  samples 114 -> 114
+  MLLbKM7T41Y_000020_0.json.gz  label 6  stored refused  re-read 4  samples 150 -> 150
+  N4HNxuOIVEs_000029_0.json.gz  label 7  stored 2  re-read 4  samples 149 -> 149
+  NX5TcYEILhI_000000_0.json.gz  label 9  stored 4  re-read 7  samples 128 -> 128
+  NvqLMRadijE_000028_6640.json.gz  label 2  stored 1  re-read refused  samples 20 -> 20
+  OJo44HSJ_DQ_000021_0.json.gz  label 2  stored 2  re-read 1  samples 150 -> 150
+  QTe-0a-Tr64_000007_0.json.gz  label 6  stored 4  re-read 5  samples 150 -> 150
+  QkQQjFGnZlg_000001_0.json.gz  label 2  stored refused  re-read 3  samples 94 -> 94
+  Si9szzJPSrE_000022_0.json.gz  label 2  stored 1  re-read 0  samples 73 -> 73
+  Ss7rqrjXGJo_000011_0.json.gz  label 10  stored 2  re-read 3  samples 115 -> 115
+  Ss7rqrjXGJo_000011_8075.json.gz  label 3  stored 0  re-read 2  samples 28 -> 28
+  T9odnWLsJNo_000037_0.json.gz  label 2  stored refused  re-read 1  samples 28 -> 28
+  TgFU_Q8M3cE_000066_0.json.gz  label 2  stored 2  re-read 3  samples 74 -> 74
+  U_BLNvSJM14_000038_467.json.gz  label 3  stored 6  re-read 5  samples 142 -> 142
+  Uh9dsi8DgeU_000062_0.json.gz  label 5  stored refused  re-read 4  samples 127 -> 127
+  VEm0ZiURvtI_000004_0.json.gz  label 4  stored 4  re-read 3  samples 150 -> 150
+  VXvnQ6vnSTQ_000004_0.json.gz  label 3  stored 3  re-read 4  samples 150 -> 150
+  WNW4qKlqL2g_000002_5700.json.gz  label 3  stored 3  re-read 2  samples 64 -> 64
+  Wba1CfX_V-g_000005_0.json.gz  label 3  stored 3  re-read 2  samples 96 -> 96
+  Wyojc0Clzsk_000074_0.json.gz  label 7  stored 2  re-read 4  samples 98 -> 98
+  YaHfRx04h4o_000171_0.json.gz  label 3  stored 3  re-read 2  samples 61 -> 61
+  _uRAdM3_VtU_000000_2583.json.gz  label 3  stored 3  re-read 0  samples 111 -> 111
+  _yG3rt8mN2c_000000_0.json.gz  label 6  stored 6  re-read 5  samples 150 -> 150
+  aiJcIGNepAM_000017_0.json.gz  label 8  stored refused  re-read 8  samples 150 -> 150
+  bX15GI0K2tI_000017_0.json.gz  label 6  stored 4  re-read 3  samples 80 -> 80
+  bfQGBGK81JE_000001_0.json.gz  label 5  stored 6  re-read 7  samples 150 -> 150
+  bpreIIDbeHA_000174_834.json.gz  label 2  stored 2  re-read 1  samples 87 -> 87
+  d0xd8qpo51k_000008_0.json.gz  label 3  stored 3  re-read 4  samples 116 -> 116
+  eADfklkBhuc_000170_0.json.gz  label 2  stored 2  re-read 3  samples 62 -> 62
+  fw3FnkqViKo_000010_0.json.gz  label 2  stored 1  re-read 2  samples 82 -> 82
+  jacxhCrLN44_000050_1280.json.gz  label 5  stored 4  re-read 3  samples 130 -> 130
+  k5fWvRy20r0_000013_0.json.gz  label 5  stored 4  re-read 7  samples 150 -> 150
+  kDa5uFDTXAc_000000_1867.json.gz  label 5  stored 5  re-read 4  samples 122 -> 122
+  kGDIhlrBW0M_000000_0.json.gz  label 2  stored 4  re-read 2  samples 109 -> 109
+  l2gsgHZMZyk_000004_0.json.gz  label 2  stored 2  re-read 3  samples 138 -> 138
+  n4M5qV8mJx8_000154_0.json.gz  label 2  stored 2  re-read 1  samples 39 -> 39
+  o08hRRttMIw_000004_0.json.gz  label 5  stored 5  re-read 4  samples 139 -> 139
+  qEl3lhCLFwY_000006_6300.json.gz  label 2  stored 1  re-read 2  samples 54 -> 54
+  w7zbBdBln-E_000000_267.json.gz  label 3  stored 2  re-read 3  samples 101 -> 101
+  xNN9Sha2SAM_000001_0.json.gz  label 3  stored 3  re-read 4  samples 137 -> 137
+  y2OiEe3K-8c_000003_0.json.gz  label 7  stored 6  re-read 5  samples 149 -> 149
+  zJ_7ZJuHslY_000026_0.json.gz  label 3  stored refused  re-read 1  samples 146 -> 146
