@@ -187,6 +187,13 @@ Written 2 October 2026, after two proposals in one hour repeated closed work.
     `MIN_ROM_DEGREES` 20 to 14 alone (the first kept value) loses nothing anywhere: half B 258 to 265, off by 3 or more 88 to 85; occlusion 27 to 32; synthetic 74 to 78; video 12, RepCount 27, David 14, all unchanged.
     It is the one candidate, and it ships only through R2 on its own branch (scoreboard before and after, per-clip diff).
     Lesson for the next run: RepCount and the real videos must guard the search, not only confirm it; a value kept on half A alone is a hypothesis.
+  - Card 023, `MIN_ROM_DEGREES` 14 through R2 (14 November 2026; branch card/023-range-floor-14): failed, not shipped.
+    Real-phone scoreboard: unchanged, set by set.
+    Public scoreboard: 468 to 477 exact of 949 deciding (12 gained, 3 lost, none newly off by 3, McNemar p = 0.04); but of the sets the app shows as sure, off by 3 or more 7 to 10.
+    Synthetic: 74 to 78 exact, off by 3 or more 13 to 10, but `soldier-bicep_curl-v60-a-10` (truth 5) 6 to 9, newly off by 3, and `soldier-bicep_curl-v60-a0` (truth 6) 6 to 7, an exact set lost: the second hump inside a curl rep that the floor of 16 counted on 8 October.
+    The reps it newly counts read their range 45 to 77 degrees short (`michelle-overhead_press-v90-*`, `soldier-squat-v0-a0`), so the synthetic gate's mean range error grows 29 to 31 degrees and CI fails.
+    The lab's variant-eval missed all three: it reads exact counts per suite, not the sure set, the synthetic set by set, or the range.
+    Reopen only with the guard of 8 October (a minimum rep duration from the set's period), measured on the same gates.
 
 - **The Countix build half read again through today's pose path** (14 November 2026; review board item 4; `test/real-phone/public-reread/reread.test.ts`, `reread.txt`; the new reads written outside the repository with `WV_PUBLIC_OUT` and `--split build`, the held-out half not read; the stored reads and every baseline untouched, R13). The videos re-fetched from the CVDF mirror (`fetch-countix.sh`), read by `run-public.mjs` with today's code: 438 written, 64 failed (videos shorter than their label, or not read whole, as on 10 October); the 9 stored sets the re-read does not write are the nine of 10 October that predate the whole-read rule.
   - On the 438 sets in both, scored as the public scoreboard scores them (live core, counted inside the labelled window): 66 counts move; exact 199 -> 190; off by 3 or more, refusals included, 70 -> 60; 11 gained, 20 lost, McNemar p = 0.15, exact-rate change -2.1 points [-4.6, +0.5]. Sample counts are identical (49,072): the poses differ, not the sampling.
