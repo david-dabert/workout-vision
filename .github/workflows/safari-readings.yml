@@ -45,5 +45,12 @@ jobs:
       - run: node scripts/benchmarks/safari-readings.mjs --browser=safari --runs=1 --set=iphone-rot --out=readings
       - name: Compare
         run: npx tsx scripts/benchmarks/safari-compare.ts readings | tee -a "$GITHUB_STEP_SUMMARY"
+      # The readings themselves (landmarks, timestamps, the middle frame), to recount them with the app's whole path.
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: safari-readings
+          path: readings/
+          retention-days: 14
       - if: always()
         run: tail -n 40 vite.log

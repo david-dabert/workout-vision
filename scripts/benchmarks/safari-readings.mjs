@@ -40,7 +40,8 @@ export const CLIPS = [
   { clip: 'bicep-curl-5', lift: 'bicep_curl', label: 5 },
 ];
 
-// Run inside the page: read one clip whole, keep what the comparison needs (no image landmarks, no frame picture).
+// Run inside the page: read one clip whole, keep what the comparison needs (no image landmarks); the middle frame as
+// the pose model received it, to see whether a rotated clip reached it upright (14 November 2026).
 const IN_PAGE = `
   const done = arguments[arguments.length - 1];
   const url = arguments[0];
@@ -49,7 +50,7 @@ const IN_PAGE = `
     const t0 = performance.now();
     const r = await window._fetchAndProcess(url);
     return { seconds: (performance.now() - t0) / 1000, metadata: r.metadata, timestamps: r.timestamps,
-      worldLandmarks: r.worldLandmarks, pixelHashes: r.pixelHashes, userAgent: navigator.userAgent };
+      worldLandmarks: r.worldLandmarks, pixelHashes: r.pixelHashes, midFrame: r.midFrameDataURL, userAgent: navigator.userAgent };
   // Safari's stack names no message: name and message first, then the stack (14 November 2026, run 43626543919).
   })().then(done, e => done({ error: e ? e.name + ': ' + e.message + ' | ' + (e.stack || '') : String(e) }));
 `;

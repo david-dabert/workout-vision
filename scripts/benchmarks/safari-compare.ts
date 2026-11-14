@@ -59,7 +59,8 @@ console.log(`\nExact: Safari ${exactS} of ${n}, Chromium ${exactC} of ${n}. Clip
 // decoder's rotation decision. A clip whose count moves between these is read differently by its storage alone.
 const base = [...new Set([...byClip.keys()].map(k => k.replace(/-iphone(-rot)?$/, '')))].sort();
 const s1Of = (k: string) => byClip.get(k)?.find(r => r.browser === 'safari' && r.run === 1);
-const cell = (r: any) => !r ? '' : r.error ? 'error' : `${countOf(r)} (${r.timestamps.length})`;
+const cov = (r: any) => typeof r.metadata?.poseCoverage === 'number' ? `, pose ${Math.round(100 * (r.metadata.poseCoverage > 1 ? r.metadata.poseCoverage / 100 : r.metadata.poseCoverage))} %` : '';
+const cell = (r: any) => !r ? '' : r.error ? 'error' : `${countOf(r)} (${r.timestamps.length} samples${cov(r)})`;
 console.log('\n### Safari, one clip stored three ways\n');
 console.log('| Clip | David\'s count | MP4 | iPhone format | iPhone format, rotated | Rotation decision (rotated) |');
 console.log('|---|---|---|---|---|---|');
