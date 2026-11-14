@@ -84,6 +84,8 @@ David's recorded words (DIRECTIVES.md Part 1, docs/VISION.md, R16), held against
 
 ## Now
 
+14 November 2026, night (Antigravity): branch `lab/dormant-counting-bench`, card 026 done: benchmarked the four dormant counting/pose modules of `docs/AUDIT-2026-11.md` (`recurrenceSegmenter.ts`, `kinematicOcclusionInpainter.ts`, `perspectiveInvariance.js`, `groundPlaneCorrection.ts`) in `test/real-phone/dormant-counting/` and closed them in `TRIED.md` (none improves any suite over baseline: recurrence 412/1064 public, 9/20 david, 3/16 video; inpainter 513/1064, 27/68 occlusion; perspective 11/16 video; groundPlane 10/16 video). No `src/` file touched.
+
 14 November 2026, 02:30 UTC: main at efbf88b0 (#415, the overnight lab, no count changed). First run, 531 experiments: nine values kept on half A overfit (real videos 12 to 10, RepCount 27 to 22); `MIN_ROM_DEGREES` 14 alone loses nothing and gains 7 exact on half B. No card was ready; cards 023 (ship that value through R2) and 024 (a second run guarded by the real videos) written, both ready.
 
 13 November 2026, 15:00 UTC: main at e484d902 (#412, card 017 done). The queue was finished; new cards 021 (one exercise passes its exam, blocked on David's four curl sets) and 022 (the security policy without `'unsafe-eval'`). Card 022 failed: the WebCodecs path is refused without it, as on 3 October; a guard test now holds that path.
