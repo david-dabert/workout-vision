@@ -61,17 +61,24 @@ const tally = (xs: { c: any; l: number }[]) => {
 };
 
 test.skipIf(!process.env.LPHASE)('learned phase counter against core and PSC', () => {
-  const MD = process.env.LPHASE_MODELS ?? resolve(__dirname, 'models');
+  // LPHASE_MODELS may name several folders, comma-separated: a seed ensemble (14 November 2026, review board item 3).
+  // learnedCount averages the models' per-frame outputs before its readouts (model.js). Each folder holds model-0,
+  // model-1 and model-all; a folder without the fold models (a run that kept model-all only) is read for the exams only.
+  const MDS = (process.env.LPHASE_MODELS ?? resolve(__dirname, 'models')).split(',').map(s => s.trim()).filter(Boolean);
   const READ = (process.env.LPHASE_READOUT ?? 'density') as 'density' | 'phase';
   const models: Record<string, any> = {};
-  for (const k of ['0', '1', 'all']) models[k] = loadModel(JSON.parse(readFileSync(resolve(MD, `model-${k}.json`), 'utf8')));
+  for (const k of ['0', '1', 'all']) {
+    const ms = MDS.map(d => resolve(d, `model-${k}.json`)).filter(f => { try { readFileSync(f); return true; } catch { return false; } }).map(f => loadModel(JSON.parse(readFileSync(f, 'utf8'))));
+    models[k] = ms.length === 1 ? ms[0] : ms.length ? ms : null;
+  }
+  expect(models.all, 'model-all.json in every LPHASE_MODELS folder').not.toBeNull();
   const items = load();
   expect(items.length).toBeGreaterThan(0);
   const res = new Map<Item, any>();
   let ms = 0, secs = 0;
   for (const it of items) {
     const t0 = performance.now();
-    const L = learnedCount(models[it.model], it.wl, it.ts, { lift: it.lift, spec: it.spec, image: it.image });
+    const L = models[it.model] ? learnedCount(models[it.model], it.wl, it.ts, { lift: it.lift, spec: it.spec, image: it.image }) : null;
     const dt = performance.now() - t0;
     if (it.model === 'all') { ms += dt; secs += it.ts[it.ts.length - 1] - it.ts[0]; }
     let core: any = 'no counter';
@@ -103,9 +110,10 @@ test.skipIf(!process.env.LPHASE)('learned phase counter against core and PSC', (
   const R = (i: Item) => res.get(i);
   const suitesSeen = () => [...new Set(items.map(i => i.suite))].map(s => { const g = items.filter(i => i.suite === s); return `${s} ${g.filter(i => i.spec).length} of ${g.length}`; }).join(', ');
   const day = new Date().toISOString().slice(0, 10);
-  const m0 = models.all;
+  const m0 = Array.isArray(models.all) ? models.all[0] : models.all;
+  const nEns = Array.isArray(models.all) ? models.all.length : 1;
   const lines = [`Learned phase counter (test/real-phone/learned-phase/), readout "${READ}", against the core (summarizeCount) and PSC (psc.js), ${day}. Build halves only.`,
-    `Model: ${m0.meta.trainSets} training sets (${m0.meta.trainSuites.join(', ')}), ${m0.bytes} bytes of float16 weights, ${m0.dil.length} dilated blocks of ${m0.C} channels${m0.input === 'progress' ? `; input pose and the spec's progress (sets with a spec: ${suitesSeen()})` : ''}.`,
+    `Model${nEns > 1 ? `: an ensemble of ${nEns} (per-frame outputs averaged), the first` : ''}: ${m0.meta.trainSets} training sets (${m0.meta.trainSuites.join(', ')}), ${m0.bytes} bytes of float16 weights, ${m0.dil.length} dilated blocks of ${m0.C} channels${m0.input === 'progress' ? `; input pose and the spec's progress (sets with a spec: ${suitesSeen()})` : ''}.`,
     `JS inference (model.js, this machine, Node): ${(ms / Math.max(secs, 1) * 60).toFixed(0)} ms per minute of recording (features + forward + readout).`,
     'Cells: exact / within 1 / off by 3+ (a refusal or no count is off by 3+). Held out: cv suites by the fold model not trained on their fold; RepCount-A and David\'s sets by the model trained on all training sets.', '',
     '| Dataset | Sets | Learned | PSC | Core (mapped) | Learned on mapped | PSC on mapped | Selector core/PSC on mapped | Control: PSC where core refuses | Control: selector where both count | Mapped |', '|---|---:|---|---|---|---|---|---|---|---|---:|'];
