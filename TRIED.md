@@ -187,3 +187,9 @@ Written 2 October 2026, after two proposals in one hour repeated closed work.
     `MIN_ROM_DEGREES` 20 to 14 alone (the first kept value) loses nothing anywhere: half B 258 to 265, off by 3 or more 88 to 85; occlusion 27 to 32; synthetic 74 to 78; video 12, RepCount 27, David 14, all unchanged.
     It is the one candidate, and it ships only through R2 on its own branch (scoreboard before and after, per-clip diff).
     Lesson for the next run: RepCount and the real videos must guard the search, not only confirm it; a value kept on half A alone is a hypothesis.
+
+- **A seed ensemble of the learned counter** (14 November 2026; review board item 3, David: "Tackle all five"; `learned-phase.test.ts` now takes several model folders in `LPHASE_MODELS`, and `learnedCount` averages their per-frame outputs before its readouts; bench only). First read on the three library-progress models of the motion library run of 8 October (`runs/motion-library-37747962880`, `model-all` only, so only the exams are read: real videos, stored sets, RepCount-A build). Exact / within 1 / off by 3 or more:
+  - David's 16 real videos: seeds 9 / 15 / 0, 6 / 14 / 1, 2 / 13 / 1; ensemble **3 / 11 / 1**; the core 12 / 14 / 2.
+  - His 20 stored sets: seeds 10, 10, 14 exact; ensemble 10 / 19 / 1; the core 14 / 18 / 1.
+  - RepCount-A build, 124 sets (classes without a counter included): seeds 37, 36, 42 exact; ensemble 36 / 73 / 26; on its 79 mapped sets the core 27 exact.
+  - Averaging the outputs does not cancel the seeds' errors on David's videos: it lands below two of the three seeds. No learned model reaches the core on David's sets. The retrain on the 758 RepCount-A train sets on disk (the run of 8 October had 111; TRIED.md's "638 not fetched" was stale: the shards were committed on 6 November) is running in CI (motion library run 43558697771); its result follows here.
