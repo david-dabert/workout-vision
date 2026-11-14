@@ -208,3 +208,22 @@ test('C4: the count is confirmed before it is saved or the next set is offered',
   expect((await lastSaved(page))).toMatchObject({ reps: n, corrected: false });
   expect(errors).toEqual([]);
 });
+
+// Card 011 (14 November 2026): under the record, the saved result names the record to beat, a count and nothing else.
+test('card 011: a set saved under the record names the record to beat', async ({ page }) => {
+  test.setTimeout(150000);
+  const errors = await start(page);
+  await saveSet(page, BASE);
+  const best = Number(await page.getByTestId('res-numeral').textContent());
+  await page.getByTestId('new-set').click();
+  await chooseDrawnVideo(page);
+  await expect(page.locator('.result-screen')).toBeVisible({ timeout: 60000 });
+  await expect(page.getByTestId('ask-card')).toBeVisible();
+  await page.getByRole('button', { name: 'Une de moins' }).click();
+  await page.getByTestId('res-save').click();
+  await expect(page.getByTestId('saved-card')).toBeVisible();
+  await expect(page.getByTestId('moment')).toHaveText(`Votre record : ${best}. À battre à la prochaine série.`);
+  await expect(page.getByTestId('moment')).not.toContainText('°');
+  if (process.env.SHOT) { await page.waitForTimeout(2000); await page.screenshot({ path: process.env.SHOT }); }
+  expect(errors).toEqual([]);
+});

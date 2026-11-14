@@ -36,7 +36,8 @@ const HERE = dirname(fileURLToPath(import.meta.url)), ROOT = resolve(HERE, '../.
 const [videoDir, ...only] = process.argv.slice(2);
 if (!videoDir) throw new Error('usage: node test/real-phone/sets-07oct-video/capture.mjs <folder of re-encodes> [name ...]');
 const OUT = process.env.SETS_OUT || HERE;
-const manifest = JSON.parse(readFileSync(resolve(HERE, 'manifest.json'), 'utf8'));
+// SETS_MANIFEST=<file> reads another day's manifest (sets-14nov-video/manifest.json, 14 November 2026); unset, this folder's.
+const manifest = JSON.parse(readFileSync(process.env.SETS_MANIFEST || resolve(HERE, 'manifest.json'), 'utf8'));
 const version = JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8')).version;
 const PORT = Number(process.env.SETS_PORT || 4179), BASE = `http://localhost:${PORT}/workout-vision/`;
 const GRAY_SIDE = 128;
