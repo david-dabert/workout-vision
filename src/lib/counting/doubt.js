@@ -38,20 +38,31 @@ export function poseDoubt(core, timestamps, { together = false } = {}) {
   const n = Math.min(seen.length, timestamps.length);
   if (!n) return null;
   const step = n > 1 ? (timestamps[n - 1] - timestamps[0]) / (n - 1) : 0;
-  const durs = (core.reps ?? []).map(r => r.endTime - r.startTime).filter(d => d > 0).sort((a, b) => a - b);
+  const reps = core.reps ?? [];
+  const durs = reps.map(r => r.endTime - r.startTime).filter(d => d > 0).sort((a, b) => a - b);
   const median = durs.length >= 2 ? durs[Math.floor(durs.length / 2)] : null;
   const minHole = median !== null ? HOLE_SHARE * median : HOLE_FALLBACK_SEC;
+  // Measure only between the first counted rep's start and the last one's end so setup/walk-away tails are not holes.
+  let lo = 0, hi = n;
+  if (reps.length > 0) {
+    const startT = Math.min(...reps.map(r => r.startTime));
+    const endT = Math.max(...reps.map(r => r.endTime));
+    while (lo < n && timestamps[lo] < startT) lo++;
+    while (hi > lo && timestamps[hi - 1] > endT) hi--;
+    if (lo >= hi) { lo = 0; hi = n; }
+  }
+  const span = hi - lo;
   let holes = 0, unseenSec = 0, longest = 0, seenCount = 0;
-  for (let i = 0; i < n;) {
+  for (let i = lo; i < hi;) {
     if (seen[i]) { seenCount++; i++; continue; }
     let j = i;
-    while (j < n && !seen[j]) j++;
+    while (j < hi && !seen[j]) j++;
     // A run of k unseen samples hides k sample periods of time.
     const sec = (j - i) * step;
     longest = Math.max(longest, sec);
     if (sec >= minHole) { holes++; unseenSec += sec; }
     i = j;
   }
-  const coverage = seenCount / n;
+  const coverage = seenCount / span;
   return { coverage: round2(coverage), holes, unseenSec: round2(unseenSec), longestGapSec: round2(longest), flagged: holes > 0 || coverage < MIN_COVERAGE };
 }

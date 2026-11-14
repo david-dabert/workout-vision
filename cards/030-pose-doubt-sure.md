@@ -1,7 +1,7 @@
 # 030. Surface existing poseDoubt on Result and "Right when sure"
 Status: done
 Executor: quick
-Claim: Wire the already-computed `result.doubt?.flagged` (`src/lib/counting/doubt.js`, frozen 6 October 2026) into `Result.jsx` (`toCheck` and `lowAsk` cause), `result-copy.js` (`doubtCause` FR/EN), `test/real-phone/accuracy/sure.ts` (`sureRow`), and `test/real-phone/accuracy/sure-parity.test.ts` (`screenSure`) so sets with incomplete pose coverage or tracking holes open for confirmation instead of appearing as sure.
+Claim: Wire the already-computed `result.doubt?.flagged` (`src/lib/counting/doubt.js`, frozen thresholds kept intact) into `Result.jsx` (`toCheck` and `lowAsk` cause), `result-copy.js` (`doubtCause` FR/EN), `test/real-phone/accuracy/sure.ts` (`sureRow`), and `test/real-phone/accuracy/sure-parity.test.ts` (`screenSure`) so sets with incomplete pose coverage or tracking holes between the first counted rep's start and the last one's end open for confirmation instead of appearing as sure. Setup and walk-away tails outside `[firstRep.startTime, lastRep.endTime]` are ignored by `poseDoubt` so finishing a live or recorded set does not count as a hole.
 Reference: Handover Flaw #1 (Phase 1.4 Refusal & "Right when sure" audit), R8, R10, R14, R16.
 Eval:
 1. Unit tests (`result-blind.test.jsx`, `result-bodycheck.test.jsx`, `no-unmeasured-metrics.test.jsx`, `french-typography.test.js`) pass.
