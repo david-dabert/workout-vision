@@ -493,3 +493,9 @@ Regulatory caution: wording stays "follows the programme, angle reached", never 
 - What the app could measure honestly, none of it built or measured yet: time on one leg before the free foot touches down; the number of touchdowns in a set time; the sway of the hips about the standing foot. These are holds and events, not reps: the counter does not read them, and a measure needs its own labelled sets and eval (gate 7, R8, R16), filmed by David or testers with their own counts of touchdowns.
 - Proposing it: a drill shown to athletes is a coaching statement and carries a source (R9). Balance and proprioceptive training is studied for ankle sprain prevention; the citations are to be checked before any copy is written (UNSOURCED until then).
 - Why not now: R7 and R16 hold a new area until the counting it depends on passes its gates. David may open it; the smallest first card would be the drill shown as a guided hold (« Équilibre sur une jambe ») with a timer and no measured number.
+
+## 14 November 2026: a flagged count opens its slot empty (card 025)
+- What: when the body check flags a set (Result.jsx `flagged`), the slot would open empty, with the app's count offered as one key labelled « Proposition de l’appli », as the universal proposal already does, instead of opening on the count.
+- Why: on the flagged real-world sets the count is exact 40 times in 127 (31 %) and off by 3 or more 21 times (17 %) (`test/real-phone/accuracy/body-check.txt`, 8 October 2026). David's bench press of 14 November opened on 16 for 9 (`cards/025-bench-angle-asks.md`).
+- Cost: one more tap on the 31 % the count gets right; about one counted set in five on the real-world suites is flagged.
+- Decision: David's (a screen he uses, R3). Nothing built.

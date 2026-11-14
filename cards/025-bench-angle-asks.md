@@ -1,5 +1,5 @@
 # 025. A bench press the app cannot read is asked, not counted
-Status: ready
+Status: met at baseline (14 November 2026); no code written
 Executor: careful
 Claim: David, filming a bench press from an angle the pose cannot follow, is asked to confirm a count instead of being told a wrong one.
 Reference: David's set of 14 November 2026 (`test/real-phone/sets-14nov-video/dumbbell_bench_press_9_angle`, label 9, read 16) and his stored bench press of 1 October (`landmarks/bench_press_7_angle_mufhcy60`, refused); R8 ("when confidence is low, the app asks the user to confirm"); R16.
@@ -8,3 +8,8 @@ Baseline: the 14 November set read 16 and shown as sure (to be confirmed with `s
 Scope: the sure check (`sure.ts` and the gate it reads), its test, TRIED.md. The counter's count is not changed. Candidate signals, measured before choosing: the regularity of the counted reps' timing against the set's own period (PSC or the motion rhythm), the share of the counted joint's samples the pose model sees with low visibility, the angle's spread inside a rep against its range.
 Stop: if no candidate passes on these sets, record each in TRIED.md and set the card to failed; a bench press from an angle then stays a lift the filming guide steers to a side view.
 Needs from David: nothing. More bench sets filmed from an angle, with his count, would make the eval stronger.
+
+## Baseline, measured 14 November 2026 before any code
+On the stored landmarks of `sets-14nov-video/dumbbell_bench_press_9_angle`, through the app's path as it ships (`summarizeCount`, `withProposal`, `withBodyCheck`, `withSensitivity`; the screen's rule as `accuracy/sure-parity.test.ts` `screenSure` applies it): count 16, not refused, body check flagged (agreement -0.06, under the 0.5 threshold; its second reading also 16), so the result screen shows the set as "À confirmer", not as sure. The pass condition on this set holds before any change, and no other set is touched, so nothing is built.
+What David saw stays a defect: a flagged set opens its slot on the app's count (Result.jsx, `trueN`), here 16, with "Vérifiez ce nombre avant d'enregistrer". On the flagged real-world sets the count is exact 40 times in 127 (31 %) and off by 3 or more 21 times (17 %) (`accuracy/body-check.txt`, 8 October 2026). Opening a flagged set's slot empty, with the app's count offered as one labelled key (as the universal proposal already does), is a change of a screen David uses: it is his decision, recorded in BACKLOG.md, not made here.
+
