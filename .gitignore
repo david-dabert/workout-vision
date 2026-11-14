@@ -68,6 +68,8 @@ benchmark/unverified/
 # All video files anywhere (any case)
 *.[mM][pP]4
 *.[mM][oO][vV]
+# The five public demo clips stored as an iPhone stores them (HEVC, reordered frames; Safari readings, 14 November 2026).
+!public/demo/iphone/*.mov
 *.[mM]4[vV]
 *.[wW][eE][bB][mM]
 
