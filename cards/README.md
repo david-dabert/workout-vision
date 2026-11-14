@@ -14,6 +14,10 @@ Reordered by Claude on 13 November 2026, on David's order of that day ("Fix the 
 
 Reordered by Claude on 13 November 2026, from the flaw register (`docs/FLAWS-2026-11.md`): 014 first (live overclaims, cheap), then 016 (the accuracy figure R16 rests on), then 015.
 
+Reordered by Claude on 14 November 2026, nightly run: no card was ready; 023 and 024 written from the overnight lab's first run, first because they are the only cards that can raise the count without David.
+
+0. 023, the range floor from 20 to 14 degrees, through R2: the one value of the lab's first run that loses nothing on any suite.
+0. 024, the lab's second run, guarded by the real videos and RepCount.
 1. 001, the kiné comparison held against public data: the proof the kiné offer rests on. Blocked since 12 November 2026 on David's four videos; its public half passed (#391).
 2. 011, today's set against your own best set, in the lab lane: the reason to come back. Lab lane merged (#393), off in production.
 3. 018, the app says it is sure only of a set filmed whole. Failed, 13 November 2026 (85.0 % on half B against 90 %; TRIED.md): kept here as the lead for the next attempt.
