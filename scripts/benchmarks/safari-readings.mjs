@@ -9,6 +9,7 @@
  *
  *   node scripts/benchmarks/safari-readings.mjs --browser=safari --runs=2 --out=readings
  *   node scripts/benchmarks/safari-readings.mjs --browser=chromium --runs=1 --out=readings
+ *   node scripts/benchmarks/safari-readings.mjs --browser=safari --runs=2 --set=iphone --out=readings
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -18,6 +19,10 @@ const BROWSER = arg('browser', 'safari');
 const RUNS = Number(arg('runs', '1'));
 const OUT = arg('out', 'readings');
 const BASE = arg('base', 'http://localhost:5173/workout-vision/');
+// --set=iphone reads the same clips re-encoded as an iPhone stores them (public/demo/iphone/: HEVC in .mov, frames stored
+// out of display order, a frame dropped in seven so the frame rate varies), 14 November 2026: David's iPhone counted a
+// hip thrust 1 for 12 after reading all 370 samples, where a computer reading a VP9 copy counts 12.
+const SET = arg('set', 'demo');
 const HARNESS = `${BASE}test/real-phone/harness.html`;
 
 // The five demo sets published on the About page (public/demo/), each named with David's count, and the lift the
@@ -71,10 +76,11 @@ const run = BROWSER === 'safari' ? withSafari : withChromium;
 await run(async read => {
   for (let k = 1; k <= RUNS; k++) {
     for (const c of CLIPS) {
-      const r = await read(`${BASE}demo/${c.clip}.mp4`);
+      const r = await read(SET === 'iphone' ? `${BASE}demo/iphone/${c.clip}.mov` : `${BASE}demo/${c.clip}.mp4`);
       if (r?.error) console.log(`[${BROWSER} run ${k}] ${c.clip}: ERROR ${r.error.split('\n')[0]}`);
       else console.log(`[${BROWSER} run ${k}] ${c.clip}: ${r.timestamps.length} samples, ${r.seconds.toFixed(1)} s, ${r.metadata?.extractionMethod}`);
-      writeFileSync(join(OUT, `${c.clip}.${BROWSER}.${k}.json`), JSON.stringify({ ...c, browser: BROWSER, run: k, ...r }));
+      const clip = SET === 'iphone' ? `${c.clip}-iphone` : c.clip;
+      writeFileSync(join(OUT, `${clip}.${BROWSER}.${k}.json`), JSON.stringify({ ...c, clip, browser: BROWSER, run: k, ...r }));
     }
   }
 });

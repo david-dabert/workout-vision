@@ -10,6 +10,7 @@ on:
       - .github/workflows/safari-readings.yml
       - scripts/benchmarks/safari-readings.mjs
       - scripts/benchmarks/safari-compare.ts
+      - public/demo/iphone/**
 
 jobs:
   safari:
@@ -36,6 +37,10 @@ jobs:
           curl -sf -o /dev/null http://localhost:5173/workout-vision/demo/dip-13.mp4 && echo served
       - run: node scripts/benchmarks/safari-readings.mjs --browser=safari --runs=2 --out=readings
       - run: node scripts/benchmarks/safari-readings.mjs --browser=chromium --runs=1 --out=readings
+      # The same clips stored as an iPhone stores them (HEVC, reordered frames, variable frame rate), 14 November 2026.
+      - run: node scripts/benchmarks/safari-readings.mjs --browser=safari --runs=2 --set=iphone --out=readings
+      - run: node scripts/benchmarks/safari-readings.mjs --browser=chromium --runs=1 --set=iphone --out=readings
+        continue-on-error: true
       - name: Compare
         run: npx tsx scripts/benchmarks/safari-compare.ts readings | tee -a "$GITHUB_STEP_SUMMARY"
       - if: always()
