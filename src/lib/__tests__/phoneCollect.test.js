@@ -92,6 +92,18 @@ describe('the file kept', () => {
     expect('appRefused' in collectedPayload({ result, lift: 'squat', kept: 7, view: 'side', sha256: 'x', hashOf: 'video', version: 'v' })).toBe(false);
   });
 
+  // 14 November 2026: a refused set whose count was typed by hand, with no blind count, is kept for its read, marked
+  // typed; the blind parser finds no blind count in it and never reads it as a label (R1).
+  it('marks a refused set\'s typed count as typed, and the blind parser takes no label from it', async () => {
+    const refused = { ...result, count: 0, refused: true, proposal: { count: 3 } };
+    const p = collectedPayload({ result: refused, lift: 'seated_cable_row', kept: 4, view: 'side', sha256: 'a'.repeat(64), hashOf: 'video', version: 'v', typed: true });
+    expect(p).toMatchObject({ count: 4, appCount: 0, appRefused: true, proposal: 3, typed: true, labelKind: 'after-app' });
+    expect('blind' in p).toBe(false);
+    expect('typed' in collectedPayload({ result: refused, lift: 'squat', kept: 6, view: 'side', sha256: 'x', hashOf: 'video', version: 'v', blind: { count: 6, p: 1 } })).toBe(false);
+    const { parseBlindFile } = await import('../../../test/real-phone/blind/parse.mjs');
+    expect(parseBlindFile(p).status).toBe('none');
+  });
+
   it('is stored gzipped under the collector\'s name, readable as the scoreboard reads a set', async () => {
     mem.clear();
     const s = storage({ [COLLECT_KEY]: '1' });
