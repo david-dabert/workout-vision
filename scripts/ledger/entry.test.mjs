@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { mkdtempSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { agentOf, clip, entries, insert, when, write } from './entry.mjs';
+import { agentOf, clip, enrich, entries, filesOf, insert, when, write } from './entry.mjs';
 
 describe('agentOf', () => {
   it('takes an Agent trailer first, then the branch prefix, then a merge message, then Claude\'s trailer', () => {
@@ -60,6 +60,24 @@ describe('push', () => {
   it('records a deleted branch and a pushed tag', () => {
     expect(entries('push', { ref: 'refs/heads/antigravity/old', deleted: true, before: 'abcdef1234', commits: [] })[0].text).toBe('Antigravity · BRANCH DELETED · antigravity/old (was abcdef12)');
     expect(entries('push', { ref: 'refs/tags/v1.5.0', after: 'abcdef1234', commits: [], head_commit: { timestamp: '2026-11-14T20:00:00Z' } })[0].text).toBe('TAG PUSHED · v1.5.0 @ abcdef12');
+  });
+});
+
+describe('files changed', () => {
+  it('names the files and lines the API gave, four at most', () => {
+    const c = { files: ['a.js', 'b.js', 'c.js', 'd.js', 'e.js'].map(filename => ({ filename, status: 'modified' })), stats: { additions: 12, deletions: 3 } };
+    expect(filesOf(c)).toBe(' · 5 files, +12 -3 lines: a.js, b.js, c.js, d.js, and 1 more');
+    expect(filesOf({ files: [{ filename: 'x.md' }], stats: null })).toBe(' · 1 file: x.md');
+  });
+  it('asks the API for each new commit, and keeps the push\'s lists when it does not answer', async () => {
+    const event = { commits: [{ id: 'aaa', distinct: true }, { id: 'bbb', distinct: false }, { id: 'ccc', distinct: true }] };
+    const asked = [];
+    const fetchImpl = async url => { asked.push(url); return url.endsWith('/aaa') ? { ok: true, json: async () => ({ files: [{ filename: 'f.js', status: 'added' }], stats: { additions: 1, deletions: 0 } }) } : { ok: false }; };
+    await enrich('push', event, { token: 't', repo: 'o/r', fetchImpl });
+    expect(asked).toEqual(['https://api.github.com/repos/o/r/commits/aaa', 'https://api.github.com/repos/o/r/commits/ccc']);
+    expect(event.commits[0].files).toEqual([{ filename: 'f.js', status: 'added' }]);
+    expect(event.commits[2].files).toBeUndefined();
+    expect(await enrich('pull_request', { x: 1 }, { token: 't', repo: 'o/r', fetchImpl })).toEqual({ x: 1 });
   });
 });
 

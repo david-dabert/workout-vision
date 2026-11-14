@@ -55,6 +55,39 @@ const minutes = (a, b) => {
   return Number.isFinite(s) && s >= 0 ? (s < 120 ? `${Math.round(s)} s` : `${Math.round(s / 60)} min`) : '';
 };
 
+/**
+ * What a commit changed: its files and lines when the API gave them (enrich, below), else the push's own lists, else
+ * nothing (Actions' push events carry empty lists, and no count is better than a false 0).
+ */
+export function filesOf(c) {
+  if (Array.isArray(c.files)) {
+    const names = c.files.map(f => clip(f.filename, 70));
+    const shown = names.slice(0, 4).join(', ') + (names.length > 4 ? `, and ${names.length - 4} more` : '');
+    const lines = c.stats ? `, +${c.stats.additions ?? 0} -${c.stats.deletions ?? 0} lines` : '';
+    return ` · ${names.length} file${names.length === 1 ? '' : 's'}${lines}: ${shown}`;
+  }
+  const [a, m, r] = [c.added, c.modified, c.removed].map(x => (Array.isArray(x) ? x.length : 0));
+  return a + m + r > 0 ? ` · ${a} added, ${m} changed, ${r} removed` : '';
+}
+
+/**
+ * Adds each pushed commit's files and line counts from the GitHub API (GET /repos/{repo}/commits/{sha}), at most 20
+ * commits; a commit the API does not answer for keeps what the push gave. Returns the event.
+ */
+export async function enrich(eventName, event, { token, repo, fetchImpl = globalThis.fetch } = {}) {
+  if (eventName !== 'push' || !token || !repo || !Array.isArray(event.commits)) return event;
+  for (const c of event.commits.slice(0, 20)) {
+    if (c.distinct === false) continue;
+    try {
+      const res = await fetchImpl(`https://api.github.com/repos/${repo}/commits/${c.id}`, { headers: { authorization: `Bearer ${token}`, accept: 'application/vnd.github+json' } });
+      if (!res.ok) continue;
+      const d = await res.json();
+      if (Array.isArray(d.files)) { c.files = d.files.map(f => ({ filename: f.filename, status: f.status })); c.stats = d.stats ?? null; }
+    } catch { /* the line keeps what the push gave */ }
+  }
+  return event;
+}
+
 /** The lines of one push: a warning for a force push or a direct push to main, then each commit, newest first. */
 function pushLines(e) {
   const ref = e.ref ?? '';
@@ -73,9 +106,7 @@ function pushLines(e) {
   const isMerge = c => /^Merge pull request #\d+/.test(c.message ?? '');
   for (const c of [...commits].reverse()) {
     const who = agentOf({ branch: name, message: c.message, authorName: c.author?.name, authorEmail: c.author?.email });
-    // GitHub sends no file lists with the push that creates a branch: no count is then better than a false 0.
-    const [a, m, r] = [c.added, c.modified, c.removed].map(x => (Array.isArray(x) ? x.length : 0));
-    const files = a + m + r > 0 ? ` · ${a} added, ${m} changed, ${r} removed` : '';
+    const files = filesOf(c);
     lines.push({ at: c.timestamp ?? at, text: `${who} · COMMIT · ${clip(name, 60)} @ ${short(c.id)} · "${clip(subject(c.message))}"${files} · [commit](${c.url})` });
   }
   const more = Number(e.size ?? all.length) - all.length;
@@ -188,7 +219,7 @@ export function write(dir, eventName, event) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const name = process.env.GITHUB_EVENT_NAME ?? '';
-  const event = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH ?? '/dev/null', 'utf8') || '{}');
+  const event = await enrich(name, JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH ?? '/dev/null', 'utf8') || '{}'), { token: process.env.GH_TOKEN, repo: process.env.GITHUB_REPOSITORY });
   const i = process.argv.indexOf('--write');
   const lines = i > 0 ? write(process.argv[i + 1], name, event) : entries(name, event);
   for (const l of lines) console.log(`- ${when(l.at)} · ${l.text}`);
