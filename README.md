@@ -10,4 +10,4 @@ How a line names who did the work, strongest sign first:
 
 A comment on #190 names its agent in its first line, as `CLAIM (Antigravity)`, `REPORT (Claude)`, `PUBLISHED (Antigravity)`. Work done outside GitHub (a page published, a store listing, a setting changed) appears here only through such a comment: `PUBLISHED (Antigravity): what, where, link`.
 
-Warnings: a force push (R5), a direct push to main that is not a pull request merge (R6), a comment on #190 by an account other than david-dabert (R15).
+A force push and a direct push to main are written as events, so a history rewritten or a change that skipped a pull request can be found and undone (David's decision of 14 November 2026: Antigravity pushes freely when the outcome is progress). One warning stays: a comment on #190 by an account other than david-dabert, which every agent ignores (R15).
