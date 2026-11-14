@@ -1,0 +1,29 @@
+{
+  "params": {
+    "MIN_ROM_DEGREES": 14,
+    "VIS_THRESHOLD": 0.425,
+    "HEAD_RETURN_SHARE": 0.35,
+    "TOGETHER_MIN_CORRELATION": 0.39,
+    "CUT_RETURN_SHARE": 0.49,
+    "TAIL_HOLD_MAX_SEC": 1.98,
+    "SPLIT_LONG": 1.82,
+    "SPLIT_RETURN_SHARE": 0.56,
+    "TAIL_DEPTH_SHARE": 0.595
+  },
+  "publicA": {
+    "n": 546,
+    "exact": 280,
+    "bad": 66
+  },
+  "david": {
+    "n": 20,
+    "exact": 14,
+    "bad": 1
+  },
+  "synthetic": {
+    "n": 96,
+    "exact": 78,
+    "bad": 10
+  },
+  "at": "2026-11-13T21:58:05.557Z"
+}
