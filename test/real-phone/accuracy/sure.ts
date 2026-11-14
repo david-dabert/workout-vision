@@ -30,8 +30,8 @@ export function sureRow(result: any, lift: string, label: number, countOf: (r: a
     return r.refused ? null : r.count;
   }) : null);
   const moved = Array.isArray(recounts) && recounts.some(c => c !== result.count) && sensitivityAsks(result.count, recounts);
-  // Since 19 October 2026 the result screen also asks on a refused head rep (Result.jsx): read with the shipped checks.
-  return { err: Math.abs((Number.isFinite(scored) ? scored : 0) - label), flagged: result.bodyCheck?.flagged === true, moved: moved || result.headRefused === true };
+  // Since 19 October 2026 the result screen asks on a refused head rep; since 14 November 2026 it also asks when poseDoubt flags gaps or low coverage (Result.jsx).
+  return { err: Math.abs((Number.isFinite(scored) ? scored : 0) - label), flagged: result.bodyCheck?.flagged === true, moved: moved || result.headRefused === true || result.doubt?.flagged === true };
 }
 
 const pct = (k: number, n: number) => (n ? Math.round((100 * k) / n) : 0);

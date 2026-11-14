@@ -87,6 +87,9 @@ export const RESULT = {
     // The video opened inside a rep the counter did not count (core.ts headRefused). Written 19 October 2026, awaiting
     // David's delegation of French copy, 20 October 2026 (R10).
     midRepCause: 'La vidéo démarre en pleine répétition : la première n’a peut-être pas été comptée.',
+    // A count with gaps in pose tracking (counting/doubt.js poseDoubt). Status: written 14 November 2026,
+    // awaiting David's confirmation (R10).
+    doubtCause: 'Suivi du corps incomplet par endroits\u00A0: vérifiez le nombre.',
   },
   en: {
     toConfirm: 'To confirm',
@@ -141,5 +144,6 @@ export const RESULT = {
     or: 'Or:',
     sensitiveCause: 'Uncertain count on this set: check the number.',
     midRepCause: 'The video starts mid-rep: the first one may not have been counted.',
+    doubtCause: 'Pose tracking dropped during parts of this set: check the number.',
   },
 };
