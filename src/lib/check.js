@@ -111,3 +111,30 @@ export async function landmarksPrint(worldLandmarks, subtle = globalThis.crypto?
   const d = await subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(worldLandmarks ?? [])));
   return Array.from(new Uint8Array(d)).slice(0, 6).map(b => b.toString(16).padStart(2, '0')).join('');
 }
+
+/** Bundled public demo clips with David's verified rep counts for one-tap on-device Safari checks (no gallery picker). */
+export const DEMO_CLIPS = [
+  { id: 'demo_bicep_curl_5', file: 'bicep-curl-5.mp4', lift: 'bicep_curl', label: 5, titleEn: 'Bicep curl (bundled demo)', titleFr: 'Curl biceps (vidéo intégrée)' },
+  { id: 'demo_bodyweight_squat_9', file: 'bodyweight-squat-9.mp4', lift: 'squat', label: 9, titleEn: 'Bodyweight squat (bundled demo)', titleFr: 'Squat poids du corps (vidéo intégrée)' },
+  { id: 'demo_dip_13', file: 'dip-13.mp4', lift: 'dip', label: 13, titleEn: 'Dip (bundled demo)', titleFr: 'Dips (vidéo intégrée)' },
+  { id: 'demo_ez_curl_10', file: 'ez-curl-10.mp4', lift: 'bicep_curl', label: 10, titleEn: 'EZ bar curl (bundled demo)', titleFr: 'Curl barre EZ (vidéo intégrée)' },
+  { id: 'demo_lat_pulldown_6', file: 'lat-pulldown-6.mp4', lift: 'lat_pulldown', label: 6, titleEn: 'Lat pulldown (bundled demo)', titleFr: 'Tirage vertical (vidéo intégrée)' },
+];
+
+/** Join Vite base path and demo clip file name without double slashes. */
+export function demoAssetUrl(file, base = '/') {
+  const b = base && String(base).endsWith('/') ? String(base) : `${base || ''}/`;
+  return `${b}demo/${file}`;
+}
+
+/** Tally string for the one-tap bundled demo section on check.html. */
+export function demoVerdictText(entries, total, fr = false) {
+  const ran = entries.length;
+  const exact = entries.filter(e => e.exact).length;
+  const refused = entries.filter(e => e.refused).length;
+  const failed = entries.filter(e => e.error).length;
+  if (fr) {
+    return `Vidéos intégrées\u00A0: ${ran} sur ${total} testées · ${exact} exactes · ${refused} refusées · ${failed} erreurs`;
+  }
+  return `Bundled demo: ${ran} of ${total} checked · ${exact} exact · ${refused} refused · ${failed} errors`;
+}
