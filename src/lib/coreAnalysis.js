@@ -38,9 +38,16 @@ export class FrozenSkeletonsError extends Error {
 }
 
 // tuning: a recount with nearby settings (core.ts CountTuning), only from withSensitivity below; the app's count has none.
-export function summarizeCount(worldLandmarks, timestamps, lift, tuning = undefined, _imageLandmarks = undefined) {
+/**
+ * @param {any[]} worldLandmarks
+ * @param {number[]} timestamps
+ * @param {string} lift
+ * @param {{ marginScale?: number; outlierWindow?: number }} [tuning]
+ * @param {unknown[]} [imageLandmarks]
+ */
+export function summarizeCount(worldLandmarks, timestamps, lift, tuning = undefined, imageLandmarks = undefined) {
   const effectiveWorld = worldLandmarks;
-  const core = countReps(effectiveWorld, timestamps, lift, tuning);
+  const core = countReps(effectiveWorld, timestamps, lift, tuning, imageLandmarks);
   // A strict majority of unavailable joint angles is the only counting refusal.
   // Use the core's own raw-angle validity (before outlier removal/bridging).
   // A two-sided exercise is counted on both sides, so each must be in sight: the less visible side decides
