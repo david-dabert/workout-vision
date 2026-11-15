@@ -37,6 +37,17 @@ export class FrozenSkeletonsError extends Error {
   constructor({ samples, repeats }, decoder = '', fallback = null) { super(`${repeats} of ${samples} skeletons repeat the one before: the video was read frozen`); this.name = 'FrozenSkeletonsError'; this.samples = samples; this.repeats = repeats; this.decoder = decoder; this.fallback = fallback; }
 }
 
+/** Whether a rise from rest past the working threshold is still open when the video stops (summarizeCount tailOpen). */
+function openAtEnd(c, timestamps, rest) {
+  if (!c?.smoothedAngles?.length) return false;
+  const o = openRise(c.smoothedAngles, timestamps, c.lowThreshold, c.highThreshold, rest, c.reps?.length ? c.reps.at(-1).endTime : -Infinity);
+  if (!o) return false;
+  let last = null;
+  for (let i = c.smoothedAngles.length - 1; i >= 0 && last === null; i--) last = c.smoothedAngles[i];
+  const mid = (c.lowThreshold + c.highThreshold) / 2;
+  return rest === 'low' ? last >= mid : last <= mid;
+}
+
 // tuning: a recount with nearby settings (core.ts CountTuning), only from withSensitivity below; the app's count has none.
 /**
  * @param {any[]} worldLandmarks
@@ -72,7 +83,16 @@ export function summarizeCount(worldLandmarks, timestamps, lift, tuning = undefi
     const t = scoreTest(reps, timestamps.at(-1), FITNESS_TESTS[lift].windowSec, open, timestamps[0]);  // count = reps kept, the open rise among them
     return { ...core, count: t.score, reps: t.reps, refused, doubt, worldLandmarks: effectiveWorld, test: { windowSec: FITNESS_TESTS[lift].windowSec, t0: t.t0, complete: t.complete, beyond: t.beyond, open: t.open, counted: core.count } };
   }
-  return { ...core, refused, doubt, worldLandmarks: effectiveWorld };
+  // A rise left open at the end (fitness-tests.js openRise: from rest, past halfway, to the working threshold, with no
+  // lost pose) after the last counted rep, and still past halfway on the last seen sample: the count left it out, and
+  // one joint angle cannot tell a rep cut by the end of the video from a movement after the set (TRIED.md, 1 and 15
+  // October, 15 November 2026). Each side of a both-sides lift is read on its own reps and thresholds (the side cut
+  // mid-rep has one rep fewer, so it is never the primary; reviewer, 15 November 2026). The count stays; the set is
+  // marked, and the result screen asks on David's #collecte phone only until he chooses (card 039). Status:
+  // experimental: on the public build sets shown as sure a marked set is mostly short, on David's sets it caught no
+  // error (TRIED.md, 15 November 2026).
+  const tailOpen = !refused && (core.sides ? [core.sides.left, core.sides.right] : [core]).some(c => openAtEnd(c, timestamps, liftDefinition(lift).rest));
+  return { ...core, refused, doubt, ...(tailOpen ? { tailOpen: true } : {}), worldLandmarks: effectiveWorld };
 }
 
 /**
