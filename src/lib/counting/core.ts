@@ -204,10 +204,7 @@ export const LIFTS = {
   // Presses rest at lockout, so the bar comes down first. To be confirmed on their build sets.
   bench_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
   overhead_press: { joint: 'elbow', rest: 'high', first: 'eccentric', allowLowRest: true },
-  // lateral_raise (15 November 2026, Card 034): admit 15-degree single reps (default MIN_ROM_DEGREES is 20):
-  // synthetic +1 exact (22 -> 23 of 24), 0 lost across public, synthetic, occlusion, David, or video suites.
-  // Source: UNSOURCED. Status: experimental.
-  lateral_raise: { joint: 'shoulder', rest: 'low', first: 'concentric', minRepRomDeg: 15 },
+  lateral_raise: { joint: 'shoulder', rest: 'low', first: 'concentric' },
   // Squat depth varies from rep to rep (a tiring or touch-and-go set; Countix clips): the working-end threshold sits
   // a third of the range above the deepest level, not a fifth, so a rep counts once the knee has bent two thirds of
   // the way down. Status: experimental, UNSOURCED; an unvalidated starting value (PLAN.md), chosen on the first
@@ -217,10 +214,7 @@ export const LIFTS = {
   // unchanged: Countix half B squat 9 -> 10 of 42 exact, none lost; no count moved on the 96 synthetic sets or on
   // David's 14 (squat_7 stays 7). The crossings of the rest-end threshold are unchanged, so it can add a rep to
   // the count, never remove one. squat-depth.test.ts.
-  // Shallow-ROM calibration (15 November 2026, Card 034): minRangeDeg 15, minRepRomDeg 15 admit side/occluded squats
-  // spanning 15-20 degrees (synthetic 18 -> 19 of 24, off >= 3 4 -> 3; occlusion 7 -> 10 of 20, off >= 3 11 -> 8;
-  // publicB +2 exact, 0 lost across all suites). Source: UNSOURCED. Status: experimental.
-  squat: { joint: 'knee', rest: 'high', first: 'eccentric', workMargin: 1 / 3, minRangeDeg: 15, minRepRomDeg: 15 },
+  squat: { joint: 'knee', rest: 'high', first: 'eccentric', workMargin: 1 / 3 },
   leg_press: { joint: 'knee', rest: 'high', first: 'eccentric' },
   leg_extension: { joint: 'knee', rest: 'low', first: 'concentric' },
   leg_curl: { joint: 'knee', rest: 'high', first: 'concentric' },
@@ -275,10 +269,8 @@ const PATTERNS = guidePatterns as Record<string, string>;
 // Source: UNSOURCED. Status: experimental.
 // sissy_squat (25 October 2026): fixed-footplate apparatus squat with shallow knee angle excursion in side view
 // (minRepRomDeg 15 deg). Source: UNSOURCED. Status: experimental.
-// (minRangeDeg 15 matches minRepRomDeg 15; Card 034, 15 November 2026: publicA +2 exact, -1 off >= 3, 0 lost;
-// mismatchFloor reads minRangeDeg so collector warnings stay aligned). Status: experimental, UNSOURCED.
 const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRepRomDeg' | 'minRangeDeg' | 'together' | 'eitherSide' | 'togetherMinCorrelation' | 'minRepSec' | 'noSplit' | 'fixedFeet' | 'clampFootplateInversion'>> = {
-  push_up: { thresholdMargin: 0.25, minRepRomDeg: 15, minRangeDeg: 15 },
+  push_up: { thresholdMargin: 0.25, minRepRomDeg: 15 },
   front_raise: { together: true, eitherSide: false, togetherMinCorrelation: -Infinity },
   prone_y_raise: { minRangeDeg: 10, minRepRomDeg: 10, minRepSec: 1.2, noSplit: true, thresholdMargin: 0.25 },
   hack_squat: { fixedFeet: true, clampFootplateInversion: true },
