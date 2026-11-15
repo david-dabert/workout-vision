@@ -9,7 +9,7 @@
 import { analyzeCoreVideo, repeatedSkeletons } from './lib/coreAnalysis';
 import { TARGET_FPS } from './lib/extractionConfig';
 import { watchInterruption, whenVisible, holdScreenAwake, isInterruption } from './lib/interruption';
-import { clipId, delegateParam, DEMO_CLIPS, demoAssetUrl, demoVerdictText, injectVerdict, landmarksPrint, pathTally, poseLine, readLines, rowVerdict } from './lib/check';
+import { clipId, delegateParam, DEMO_CLIPS, demoAssetUrl, demoVerdictText, formatDemoEntry, injectVerdict, isUndecodableError, landmarksPrint, pathTally, poseCoveragePct, poseLine, readLines, rowVerdict } from './lib/check';
 import baseline from './lib/check-baseline.json';
 
 const VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0';
@@ -237,8 +237,8 @@ function setupDemoSection() {
   if (heading) heading.textContent = fr ? 'Vidéos intégrées (un appui, sans galerie)' : 'Bundled demo clips (one tap, no gallery picker)';
   if (note) {
     note.textContent = fr
-      ? 'Ces cinq clips publics sont déjà fournis avec l’application. Un appui mesure directement le décodeur, la rotation et les répétitions dans Safari.'
-      : 'These five public clips are bundled with the app. One tap benchmarks the decoder, rotation and rep count directly in Safari.';
+      ? `Ces ${DEMO_CLIPS.length} clips (5 MP4 publics et 10 MOV iPhone) sont déjà fournis avec l’application. Un appui mesure directement le décodeur, la rotation et les répétitions dans Safari.`
+      : `These ${DEMO_CLIPS.length} clips (5 public MP4 and 10 iPhone MOV) are bundled with the app. One tap benchmarks the decoder, rotation and rep count directly in Safari.`;
   }
   runAllBtn.textContent = fr ? `Tester les ${DEMO_CLIPS.length} vidéos intégrées` : `Run all ${DEMO_CLIPS.length} bundled clips`;
   if (copyBtn) copyBtn.textContent = fr ? 'Copier le bilan JSON' : 'Copy JSON report';
@@ -262,66 +262,102 @@ function setupDemoSection() {
     const unwatch = watchInterruption(() => ac.abort());
     const release = holdScreenAwake();
     btn.disabled = true;
+    let source = null;
+    let decoderSeen = null;
     try {
       const resp = await fetch(demoAssetUrl(clip.file, base), { signal: ac.signal });
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const blob = await resp.blob();
-      const file = new File([blob], clip.file, { type: blob.type || 'video/mp4' });
+      const fileName = clip.file.split('/').pop() || clip.file;
+      const mimeType = /\.mov$/i.test(fileName) ? 'video/quicktime' : (blob.type || 'video/mp4');
+      const file = new File([blob], fileName, { type: mimeType });
       const model = await benchModel();
-      let source = null;
       const r = await analyzeCoreVideo(file, clip.lift, {
         signal: ac.signal,
         ...(forced ? { path: 'rvfc' } : {}),
         ...(POSE_MODE ? { poseMode: POSE_MODE } : {}),
         ...(model ? { benchModel: model } : {}),
         ...(DELEGATE ? { delegate: DELEGATE } : {}),
+        onDecoder: d => { decoderSeen = d; },
         onSource: s => { source = s; },
         onProgress: progress(out),
       });
       const fp = await landmarksPrint(r.worldLandmarks);
       const skel = repeatedSkeletons(r.worldLandmarks);
-      const cov = r.metadata?.pose?.coverage;
-      const covPct = typeof cov === 'number' ? Math.round(cov <= 1 ? cov * 100 : cov) : null;
+      const covPct = poseCoveragePct(r.worldLandmarks, r.metadata?.pose?.coverage);
       const exact = !r.refused && r.count === clip.label;
-      const entry = {
-        id: clip.id,
-        file: clip.file,
-        lift: clip.lift,
-        label: clip.label,
+      const entry = formatDemoEntry(clip, {
         count: r.refused ? 'refused' : r.count,
         exact,
         refused: !!r.refused,
         error: false,
-        samples: r.timestamps.length,
-        decoder: r.metadata?.method || null,
+        samplesRead: r.timestamps.length,
+        decoderPath: r.metadata?.method || decoderSeen || null,
         fallback: r.metadata?.fallback ?? null,
         rotationDecision: r.metadata?.rotationDecision || null,
         source,
-        poseCoveragePct: covPct,
+        poseCoverage: covPct,
         pose: r.metadata?.pose || null,
         fingerprint: fp,
-      };
+      });
       demoResults.set(clip.id, entry);
       box.classList.add(exact ? 'ok' : 'bad');
       const verdictLabel = r.refused
         ? (fr ? `Refusée (attendu\u00A0: ${clip.label})` : `Refused (expected ${clip.label})`)
         : exact
-          ? (fr ? `Exact\u00A0: ${r.count} sur ${clip.label} (${r.timestamps.length} éch.${covPct !== null ? `, pose ${covPct}\u00A0%` : ''})` : `Exact: ${r.count} of ${clip.label} (${r.timestamps.length} samples${covPct !== null ? `, pose ${covPct}%` : ''})`)
-          : (fr ? `Écart\u00A0: ${r.count} au lieu de ${clip.label} (${r.timestamps.length} éch.${covPct !== null ? `, pose ${covPct}\u00A0%` : ''})` : `Diff: ${r.count} instead of ${clip.label} (${r.timestamps.length} samples${covPct !== null ? `, pose ${covPct}%` : ''})`);
+          ? (fr ? `Exact\u00A0: ${r.count} sur ${clip.label}` : `Exact: ${r.count} of ${clip.label}`)
+          : (fr ? `Écart\u00A0: ${r.count} au lieu de ${clip.label}` : `Diff: ${r.count} instead of ${clip.label}`);
+      const covText = covPct !== null ? `${covPct}${fr ? '\u00A0%' : '%'}` : (fr ? 'inconnu' : 'unknown');
+      const rotText = entry.rotationDecision || 'none';
+      const decText = entry.decoderPath || (fr ? 'inconnu' : 'unknown');
+      const fbText = entry.fallback || (fr ? 'aucun' : 'none');
       const srcLine = source
-        ? `Source: ${source.codec || '?'} ${source.width}x${source.height} rot=${source.rotation} | Rotation: ${r.metadata?.rotationDecision || 'none'}`
-        : `Rotation: ${r.metadata?.rotationDecision || 'none'}`;
+        ? `Source: ${source.codec || '?'} ${source.width}x${source.height} rot=${source.rotation} | Rotation: ${rotText}`
+        : `Rotation: ${rotText}`;
       out.textContent = [
         verdictLabel,
-        ...readLines({ pictures: r.metadata?.repeats, skeletons: skel, decoder: r.metadata?.method || '', fallback: r.metadata?.fallback ?? null }, fr),
+        fr
+          ? `Nombre\u00A0: ${entry.count} · Échantillons lus\u00A0: ${entry.samplesRead}`
+          : `Count: ${entry.count} · Samples read: ${entry.samplesRead}`,
+        fr
+          ? `Chemin décodeur\u00A0: ${decText} · repli\u00A0: ${fbText}`
+          : `Decoder path: ${decText} · fallback: ${fbText}`,
+        fr
+          ? `Décision rotation\u00A0: ${rotText} · Couverture pose\u00A0: ${covText}`
+          : `Rotation decision: ${rotText} · Pose coverage: ${covText}`,
+        ...readLines({ pictures: r.metadata?.repeats, skeletons: skel, decoder: entry.decoderPath || '', fallback: entry.fallback }, fr),
         poseLine(r.metadata?.pose, fp, fr),
         srcLine,
       ].join('\n');
     } catch (e) {
-      const msg = isInterruption() ? (fr ? 'Interrompue' : 'Interrupted') : `${e?.name || 'Error'}: ${e?.message || e}`;
-      demoResults.set(clip.id, { id: clip.id, file: clip.file, label: clip.label, exact: false, refused: false, error: msg });
+      const notDecodable = !isInterruption() && isUndecodableError(e, clip.file);
+      const rawMsg = isInterruption() ? (fr ? 'Interrompue' : 'Interrupted') : `${e?.name || 'Error'}: ${e?.message || e}`;
+      const decPath = decoderSeen || e?.decoder || (notDecodable ? 'none' : null);
+      const rotDec = source?.rotation != null ? `source rot=${source.rotation}` : null;
+      const entry = formatDemoEntry(clip, {
+        notDecodable,
+        samplesRead: 0,
+        decoderPath: decPath,
+        fallback: e?.fallback ?? null,
+        rotationDecision: rotDec,
+        source,
+        poseCoverage: null,
+        error: notDecodable ? 'not decodable here' : rawMsg,
+      });
+      demoResults.set(clip.id, entry);
       box.classList.add('bad');
-      out.textContent = msg;
+      if (notDecodable) {
+        const statusLine = fr ? 'Non décodable ici' : 'not decodable here';
+        out.textContent = [
+          statusLine,
+          fr ? `Nombre\u00A0: s.o. · Échantillons lus\u00A0: 0` : `Count: n/a · Samples read: 0`,
+          fr ? `Chemin décodeur\u00A0: ${decPath || 'aucun'}` : `Decoder path: ${decPath || 'none'}`,
+          fr ? `Décision rotation\u00A0: ${rotDec || 'aucune'} · Couverture pose\u00A0: s.o.` : `Rotation decision: ${rotDec || 'none'} · Pose coverage: n/a`,
+          rawMsg,
+        ].join('\n');
+      } else {
+        out.textContent = rawMsg;
+      }
       await whenVisible();
     } finally {
       unwatch();

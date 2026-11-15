@@ -74,22 +74,53 @@ test('check.html?inject=frozen: a frozen stream on the playback path is refused'
   await expect(page.locator('#verdict')).toContainText('Frozen injection: refused, as it must be.');
 });
 
-test('bundled demo section offers one-tap runs without manual file picking', async ({ page }) => {
+test('bundled demo section offers 15 one-tap runs (MP4 + iPhone MOV) and handles undecodable clips cleanly', async ({ page }) => {
   test.setTimeout(120_000);
   await page.route('**/assets/corePoseWorker-*.js', r => r.fulfill({ status: 200, contentType: 'text/javascript', body: fakeWorker }));
+  await page.addInitScript(() => {
+    window.__copiedReport = null;
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async t => { window.__copiedReport = t; } },
+    });
+  });
   await page.goto('/workout-vision/check.html');
   const video = Buffer.from(await drawnWebm(page, 4000), 'base64');
   await page.route('**/demo/bicep-curl-5.mp4', r => r.fulfill({ status: 200, contentType: 'video/webm', body: video }));
+  await page.route('**/demo/iphone/bicep-curl-5.mov', r => r.fulfill({ status: 200, contentType: 'video/quicktime', body: Buffer.from('not-a-playable-chromium-mov') }));
   await expect(page.getByTestId('run-demo-clips')).toBeVisible();
-  await expect(page.getByTestId('demo-verdict')).toContainText('Bundled demo: 0 of 5 checked');
+  await expect(page.getByTestId('demo-verdict')).toContainText('Bundled demo: 0 of 15 checked');
   await page.locator('#force-rvfc').check();
+
   const row = page.getByTestId('demo-row-demo_bicep_curl_5');
   await expect(row).toBeVisible();
   await page.getByTestId('demo-run-demo_bicep_curl_5').click();
-  await expect(page.getByTestId('demo-verdict')).toContainText('Bundled demo: 1 of 5 checked', { timeout: 90_000 });
+  await expect(page.getByTestId('demo-verdict')).toContainText('Bundled demo: 1 of 15 checked', { timeout: 90_000 });
   const out = await row.locator('.out').textContent();
+  expect(out).toContain('Count:');
+  expect(out).toContain('Samples read:');
+  expect(out).toContain('Decoder path:');
+  expect(out).toContain('Rotation decision:');
+  expect(out).toContain('Pose coverage:');
   expect(out).toContain('Decoder: rvfc');
   expect(out).toContain('fingerprint');
-  expect(out).toContain('Rotation:');
+
+  const movRow = page.getByTestId('demo-row-demo_iphone_bicep_curl_5');
+  await expect(movRow).toBeVisible();
+  await page.getByTestId('demo-run-demo_iphone_bicep_curl_5').click();
+  await expect(page.getByTestId('demo-verdict')).toContainText('1 not decodable here', { timeout: 90_000 });
+  const movOut = await movRow.locator('.out').textContent();
+  expect(movOut).toContain('not decodable here');
+  expect(movOut).toContain('Samples read: 0');
+
   await expect(page.getByTestId('copy-demo-report')).toBeVisible();
+  await page.getByTestId('copy-demo-report').click();
+  const copied = await page.evaluate(() => JSON.parse(window.__copiedReport));
+  expect(copied.results).toHaveLength(2);
+  for (const key of ['count', 'samplesRead', 'decoderPath', 'rotationDecision', 'poseCoverage', 'notDecodable']) {
+    expect(copied.results[0]).toHaveProperty(key);
+    expect(copied.results[1]).toHaveProperty(key);
+  }
+  expect(copied.results[1].notDecodable).toBe(true);
+  expect(copied.results[1].error).toBe('not decodable here');
 });

@@ -114,11 +114,21 @@ export async function landmarksPrint(worldLandmarks, subtle = globalThis.crypto?
 
 /** Bundled public demo clips with David's verified rep counts for one-tap on-device Safari checks (no gallery picker). */
 export const DEMO_CLIPS = [
-  { id: 'demo_bicep_curl_5', file: 'bicep-curl-5.mp4', lift: 'bicep_curl', label: 5, titleEn: 'Bicep curl (bundled demo)', titleFr: 'Curl biceps (vidéo intégrée)' },
-  { id: 'demo_bodyweight_squat_9', file: 'bodyweight-squat-9.mp4', lift: 'squat', label: 9, titleEn: 'Bodyweight squat (bundled demo)', titleFr: 'Squat poids du corps (vidéo intégrée)' },
-  { id: 'demo_dip_13', file: 'dip-13.mp4', lift: 'dip', label: 13, titleEn: 'Dip (bundled demo)', titleFr: 'Dips (vidéo intégrée)' },
-  { id: 'demo_ez_curl_10', file: 'ez-curl-10.mp4', lift: 'bicep_curl', label: 10, titleEn: 'EZ bar curl (bundled demo)', titleFr: 'Curl barre EZ (vidéo intégrée)' },
-  { id: 'demo_lat_pulldown_6', file: 'lat-pulldown-6.mp4', lift: 'lat_pulldown', label: 6, titleEn: 'Lat pulldown (bundled demo)', titleFr: 'Tirage vertical (vidéo intégrée)' },
+  { id: 'demo_bicep_curl_5', file: 'bicep-curl-5.mp4', lift: 'bicep_curl', label: 5, titleEn: 'Bicep curl (bundled demo MP4)', titleFr: 'Curl biceps (vidéo intégrée MP4)' },
+  { id: 'demo_bodyweight_squat_9', file: 'bodyweight-squat-9.mp4', lift: 'squat', label: 9, titleEn: 'Bodyweight squat (bundled demo MP4)', titleFr: 'Squat poids du corps (vidéo intégrée MP4)' },
+  { id: 'demo_dip_13', file: 'dip-13.mp4', lift: 'dip', label: 13, titleEn: 'Dip (bundled demo MP4)', titleFr: 'Dips (vidéo intégrée MP4)' },
+  { id: 'demo_ez_curl_10', file: 'ez-curl-10.mp4', lift: 'bicep_curl', label: 10, titleEn: 'EZ bar curl (bundled demo MP4)', titleFr: 'Curl barre EZ (vidéo intégrée MP4)' },
+  { id: 'demo_lat_pulldown_6', file: 'lat-pulldown-6.mp4', lift: 'lat_pulldown', label: 6, titleEn: 'Lat pulldown (bundled demo MP4)', titleFr: 'Tirage vertical (vidéo intégrée MP4)' },
+  { id: 'demo_iphone_bicep_curl_5', file: 'iphone/bicep-curl-5.mov', lift: 'bicep_curl', label: 5, titleEn: 'Bicep curl (iPhone MOV)', titleFr: 'Curl biceps (MOV iPhone)' },
+  { id: 'demo_iphone_bicep_curl_5_rot', file: 'iphone/bicep-curl-5-rot.mov', lift: 'bicep_curl', label: 5, titleEn: 'Bicep curl sideways (iPhone MOV)', titleFr: 'Curl biceps tourné (MOV iPhone)' },
+  { id: 'demo_iphone_bodyweight_squat_9', file: 'iphone/bodyweight-squat-9.mov', lift: 'squat', label: 9, titleEn: 'Bodyweight squat (iPhone MOV)', titleFr: 'Squat poids du corps (MOV iPhone)' },
+  { id: 'demo_iphone_bodyweight_squat_9_rot', file: 'iphone/bodyweight-squat-9-rot.mov', lift: 'squat', label: 9, titleEn: 'Bodyweight squat sideways (iPhone MOV)', titleFr: 'Squat poids du corps tourné (MOV iPhone)' },
+  { id: 'demo_iphone_dip_13', file: 'iphone/dip-13.mov', lift: 'dip', label: 13, titleEn: 'Dip (iPhone MOV)', titleFr: 'Dips (MOV iPhone)' },
+  { id: 'demo_iphone_dip_13_rot', file: 'iphone/dip-13-rot.mov', lift: 'dip', label: 13, titleEn: 'Dip sideways (iPhone MOV)', titleFr: 'Dips tournés (MOV iPhone)' },
+  { id: 'demo_iphone_ez_curl_10', file: 'iphone/ez-curl-10.mov', lift: 'bicep_curl', label: 10, titleEn: 'EZ bar curl (iPhone MOV)', titleFr: 'Curl barre EZ (MOV iPhone)' },
+  { id: 'demo_iphone_ez_curl_10_rot', file: 'iphone/ez-curl-10-rot.mov', lift: 'bicep_curl', label: 10, titleEn: 'EZ bar curl sideways (iPhone MOV)', titleFr: 'Curl barre EZ tourné (MOV iPhone)' },
+  { id: 'demo_iphone_lat_pulldown_6', file: 'iphone/lat-pulldown-6.mov', lift: 'lat_pulldown', label: 6, titleEn: 'Lat pulldown (iPhone MOV)', titleFr: 'Tirage vertical (MOV iPhone)' },
+  { id: 'demo_iphone_lat_pulldown_6_rot', file: 'iphone/lat-pulldown-6-rot.mov', lift: 'lat_pulldown', label: 6, titleEn: 'Lat pulldown sideways (iPhone MOV)', titleFr: 'Tirage vertical tourné (MOV iPhone)' },
 ];
 
 /** Join Vite base path and demo clip file name without double slashes. */
@@ -127,14 +137,71 @@ export function demoAssetUrl(file, base = '/') {
   return `${b}demo/${file}`;
 }
 
+/** Integer pose coverage percentage (0..100) from metadata or non-empty world landmarks; null when unavailable. */
+export function poseCoveragePct(worldLandmarks, explicitCoverage = null) {
+  if (typeof explicitCoverage === 'number' && Number.isFinite(explicitCoverage)) {
+    return Math.round(explicitCoverage <= 1 ? explicitCoverage * 100 : explicitCoverage);
+  }
+  if (!Array.isArray(worldLandmarks) || worldLandmarks.length === 0) return null;
+  const detected = worldLandmarks.filter(w => (Array.isArray(w) ? w.length > 0 : Boolean(w))).length;
+  return Math.round((detected / worldLandmarks.length) * 100);
+}
+
+/** True when an analysis failure means this browser cannot decode the container/codec (e.g. HEVC .mov in Chromium). */
+export function isUndecodableError(err, file = '') {
+  if (!err || err.name === 'AbortError' || err.frozen || err.name === 'FrozenReadError' || err.name === 'FrozenSkeletonsError' || err.name === 'PartialReadError') {
+    return false;
+  }
+  const msg = String(err.message || err);
+  if (/^HTTP \d+/i.test(msg)) return false;
+  if (err.name === 'NotSupportedError') return true;
+  if (/No decoder could process this file|Codec not supported|Video load failed|Video load timeout|MEDIA_ERR_SRC_NOT_SUPPORTED|MEDIA_ERR_DECODE|BLANK_FRAMES|Canvas tainted|No video track found/i.test(msg)) {
+    return true;
+  }
+  return /\.mov$/i.test(file) && /decode|demux|format|support/i.test(msg);
+}
+
+/** Normalized demo row / JSON export entry carrying explicit count, samples read, decoder path, rotation decision, pose coverage and decode status. */
+export function formatDemoEntry(clip, data = {}) {
+  const notDecodable = Boolean(data.notDecodable);
+  const samplesRead = Number.isFinite(data.samplesRead) ? data.samplesRead : 0;
+  const decoderPath = data.decoderPath ?? data.decoder ?? null;
+  const poseCoverage = Number.isFinite(data.poseCoverage) ? data.poseCoverage : null;
+  return {
+    id: clip.id,
+    file: clip.file,
+    lift: clip.lift,
+    label: clip.label,
+    count: notDecodable ? null : (data.count ?? null),
+    samplesRead,
+    samples: samplesRead,
+    decoderPath,
+    decoder: decoderPath,
+    fallback: data.fallback ?? null,
+    rotationDecision: data.rotationDecision ?? null,
+    poseCoverage,
+    poseCoveragePct: poseCoverage,
+    notDecodable,
+    exact: notDecodable ? false : Boolean(data.exact),
+    refused: notDecodable ? false : Boolean(data.refused),
+    error: notDecodable ? 'not decodable here' : (data.error || false),
+    source: data.source ?? null,
+    pose: data.pose ?? null,
+    fingerprint: data.fingerprint ?? null,
+  };
+}
+
 /** Tally string for the one-tap bundled demo section on check.html. */
 export function demoVerdictText(entries, total, fr = false) {
   const ran = entries.length;
   const exact = entries.filter(e => e.exact).length;
   const refused = entries.filter(e => e.refused).length;
-  const failed = entries.filter(e => e.error).length;
+  const notDecodable = entries.filter(e => e.notDecodable).length;
+  const failed = entries.filter(e => e.error && !e.notDecodable).length;
   if (fr) {
-    return `Vidéos intégrées\u00A0: ${ran} sur ${total} testées · ${exact} exactes · ${refused} refusées · ${failed} erreurs`;
+    const base = `Vidéos intégrées\u00A0: ${ran} sur ${total} testées · ${exact} exactes · ${refused} refusées · ${failed} erreurs`;
+    return notDecodable > 0 ? `${base} · ${notDecodable} non décodable${notDecodable > 1 ? 's' : ''} ici` : base;
   }
-  return `Bundled demo: ${ran} of ${total} checked · ${exact} exact · ${refused} refused · ${failed} errors`;
+  const base = `Bundled demo: ${ran} of ${total} checked · ${exact} exact · ${refused} refused · ${failed} errors`;
+  return notDecodable > 0 ? `${base} · ${notDecodable} not decodable here` : base;
 }
