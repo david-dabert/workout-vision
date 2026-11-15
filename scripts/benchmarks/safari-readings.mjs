@@ -68,12 +68,15 @@ async function withSafari(fn) {
   } finally { await driver.quit(); }
 }
 
-async function withChromium(fn) {
-  const { chromium } = await import('@playwright/test');
-  const browser = await chromium.launch(process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {});
+// --browser=webkit: Playwright's WebKit build (15 November 2026). On macOS it decodes with Apple's own media stack, as
+// Safari on an iPhone does (HEVC included), with an iPhone's screen and user agent, and without safaridriver.
+async function withPlaywright(fn, kind) {
+  const pw = await import('@playwright/test');
+  const browser = await pw[kind].launch(kind === 'chromium' && process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {});
+  const context = kind === 'webkit' ? await browser.newContext({ ...pw.devices['iPhone 13'] }) : await browser.newContext();
   try {
     return await fn(async url => {
-      const page = await browser.newPage();
+      const page = await context.newPage();
       await page.goto(HARNESS);
       const r = await page.evaluate(([src, u, rb]) => new Promise(done => new Function(src).call(null, u, rb, done)), [IN_PAGE, url, READBACK]);
       await page.close();
@@ -83,7 +86,7 @@ async function withChromium(fn) {
 }
 
 mkdirSync(OUT, { recursive: true });
-const run = BROWSER === 'safari' ? withSafari : withChromium;
+const run = BROWSER === 'safari' ? withSafari : fn => withPlaywright(fn, BROWSER === 'webkit' ? 'webkit' : 'chromium');
 await run(async read => {
   for (let k = 1; k <= RUNS; k++) {
     for (const c of CLIPS) {

@@ -11,6 +11,8 @@ import { join } from 'node:path';
 import { summarizeCount } from '../../src/lib/coreAnalysis';
 
 const dir = process.argv[2] ?? 'readings';
+// The browser read as the phone's: 'safari' (safaridriver) or 'webkit' (Playwright's WebKit, iPhone profile).
+const PHONE = process.argv[3] ?? 'safari';
 const files = readdirSync(dir).filter(f => f.endsWith('.json'));
 const read = (f: string) => JSON.parse(readFileSync(join(dir, f), 'utf8'));
 const byClip = new Map<string, any[]>();
@@ -33,11 +35,11 @@ const gap = (a: any, b: any) => {
   return median(d);
 };
 
-const ua = files.map(read).find(r => r.browser === 'safari' && r.userAgent)?.userAgent ?? '';
+const ua = files.map(read).find(r => r.browser === PHONE && r.userAgent)?.userAgent ?? '';
 const rows: string[] = [];
 let exactS = 0, exactC = 0, disagree = 0, n = 0;
 for (const [clip, rs] of [...byClip].sort()) {
-  const s1 = rs.find(r => r.browser === 'safari' && r.run === 1), s2 = rs.find(r => r.browser === 'safari' && r.run === 2);
+  const s1 = rs.find(r => r.browser === PHONE && r.run === 1), s2 = rs.find(r => r.browser === PHONE && r.run === 2);
   const c1 = rs.find(r => r.browser === 'chromium' && r.run === 1);
   const label = (s1 ?? c1).label;
   const cs1 = countOf(s1), cs2 = countOf(s2), cc = countOf(c1);
@@ -58,7 +60,7 @@ console.log(`\nExact: Safari ${exactS} of ${n}, Chromium ${exactC} of ${n}. Clip
 // format upright, and on the iPhone format stored sideways with a display rotation, with the samples read and the
 // decoder's rotation decision. A clip whose count moves between these is read differently by its storage alone.
 const base = [...new Set([...byClip.keys()].map(k => k.replace(/-iphone(-rot)?$/, '')))].sort();
-const s1Of = (k: string) => byClip.get(k)?.find(r => r.browser === 'safari' && r.run === 1);
+const s1Of = (k: string) => byClip.get(k)?.find(r => r.browser === PHONE && r.run === 1);
 const cov = (r: any) => typeof r.metadata?.poseCoverage === 'number' ? `, pose ${Math.round(100 * (r.metadata.poseCoverage > 1 ? r.metadata.poseCoverage / 100 : r.metadata.poseCoverage))} %` : '';
 const cell = (r: any) => !r ? '' : r.error ? 'error' : `${countOf(r)} (${r.timestamps.length} samples${cov(r)})`;
 console.log('\n### Safari, one clip stored three ways\n');
