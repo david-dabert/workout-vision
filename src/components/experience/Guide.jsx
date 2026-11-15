@@ -12,6 +12,14 @@ import { useCondensingTopbar } from './topbar';
 import { hasGuideFigure } from './guide-figure';
 import stillKeys from './guide-svg-keys.json';
 import { GuideFigure } from './GuideFigure';
+import { filmingGuideFor } from './filming-guide';
+
+function FilmingPlacement({ exerciseKey, fr }) {
+  const info = filmingGuideFor(exerciseKey, fr);
+  return <p className="guide-placement" data-testid="guide-filming-note">
+    <strong>{fr ? 'Placement\u00A0:' : 'Camera:'}</strong> {info.angleLabel} · {info.framingLabel}. <span>{info.evidenceNote}</span>
+  </p>;
+}
 
 const CATALOGUE = getAllGuideExercises();
 const ZONES = { front: ['shoulders', 'chest', 'biceps', 'abs', 'quads'], back: ['back', 'triceps', 'lowerback', 'glutes', 'hamstrings', 'calves'] };
@@ -102,6 +110,7 @@ export default function Guide({ onClose, onChoose, lift }) {
       <div className="guide-focus" data-testid="guide-focus" data-reveal style={{ '--i': 2 }}>
         <p className="item-name">{fr ? focus.fr : focus.name}</p>
         <GuideFrames exercise={focus} fr={fr} />
+        <FilmingPlacement exerciseKey={focus.key} fr={fr} />
         <button className="btn-primary press" onClick={() => onChoose(focus.key)}>{fr ? 'Filmer cet exercice' : 'Film this exercise'}</button>
         <button className="btn-ghost is-s press" onClick={() => setFocus(null)}>{fr ? 'Tous les exercices' : 'All exercises'}</button>
       </div>
@@ -134,6 +143,7 @@ export default function Guide({ onClose, onChoose, lift }) {
           <span className={`tag${isOffered(e.key) ? ' on' : ''}`}>{isOffered(e.key) ? tierTag(tierOf(e.key) || 'experimental', fr) : (fr ? 'Non compté' : 'Not counted')}</span>
         </button>
         {open === e.key && <div className="guide-detail"><GuideFrames exercise={e} fr={fr} /><p>{isOffered(e.key) ? `${fr ? 'Compté' : 'Counted'} · ${tierLabel(tierOf(e.key) || 'experimental', fr)}.` : (fr ? 'Pas encore compté par l’appli\u00A0: elle propose au mieux un nombre, à vérifier.' : 'Not counted by the app yet: at best it suggests a number for you to check.')}{hasGuideFigure(e.key) ? (fr ? ' Illustration à titre indicatif.' : ' Illustration for guidance only.') : e.similar ? (fr ? ' Dessin d’un mouvement proche.' : ' Drawing of a similar movement.') : ''}</p>
+          <FilmingPlacement exerciseKey={e.key} fr={fr} />
           <button className="btn-line press" onClick={() => onChoose(e.key)}>{fr ? 'Filmer cet exercice' : 'Film this exercise'}</button>
           <button className="btn-ghost is-s press" onClick={() => setOpen(null)}>{fr ? 'Fermer' : 'Close'}</button>
         </div>}

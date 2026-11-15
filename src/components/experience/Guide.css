@@ -46,3 +46,5 @@
 .wv-experience .thumb-none { width: 22px; height: 28px; border-radius: 11px 11px 4px 4px; border: 1px solid var(--c-rule); }
 .wv-experience .guide-frames.guide-how { display: grid; place-items: center; padding: var(--s-5); }
 .wv-experience .guide-how p { margin: 0; font-size: var(--fs-body); line-height: 1.5; color: var(--bone-2); text-align: center; text-wrap: pretty; }
+.wv-experience .guide-placement { margin: var(--s-2) 0 0; padding: var(--s-3) var(--s-4); border-radius: var(--r-m); border: 1px solid var(--c-rule); background: var(--well); font-size: var(--fs-caption); line-height: 1.5; color: var(--bone-2); text-wrap: pretty; }
+.wv-experience .guide-placement strong { color: var(--c-fg); }
