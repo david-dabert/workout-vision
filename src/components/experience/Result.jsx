@@ -467,7 +467,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const [before, setBefore] = useState(() => { const k = knownSets(); return k ? mine(k) : null; });
   useEffect(() => { let live = true; loadSets().then(l => { if (live) setBefore(b => b ?? mine(l)); }, () => {}); return () => { live = false; }; }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // Once saved: the one earned line, a record, a record equalled or a first set (moment.js), above the thanks.
-  const moment = step === 'saved' ? momentLine({ n: trueN, before, fr }) : null;
+  const moment = step === 'saved' && !result.refused ? momentLine({ n: trueN, before, fr, load: savedLoadKg, refused: !!result.refused }) : null;
   const account = setAccount({ reps, first: liftDefinition(lift)?.first, fr, name: liftName, count: trueN, corrected: step === 'saved' && isCorrected(trueN, count), previous: before?.length ? before[0].reps : null, nth: before ? before.length + 1 : null, doubted: flagged });
   const shortSet = new Set(account.short);
   // The level read as the screen opens (level.js); the expert's table and speed line are the report's own,

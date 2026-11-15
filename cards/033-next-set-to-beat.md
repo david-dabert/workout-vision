@@ -1,5 +1,5 @@
 # 033. The next set to beat, by load and reps
-Status: ready (after 032)
+Status: done
 Executor: careful
 Claim: After a saved set with its load, the saved screen names the next set to beat from the person's own history, labelled as a goal (« Objectif »), never as a measurement (R8).
 Reference: STATE.md, the promise "What to do next": not kept. Card 011 names the record to beat as a count only. Double progression, accepted coaching practice: keep the load and add a rep until the top of a rep range, then add the smallest load step and start again at the bottom of the range. R9 status: convention; the range (8 to 12 reps) and the step (2.5 kg) are stated in code as UNSOURCED conventions David may change.

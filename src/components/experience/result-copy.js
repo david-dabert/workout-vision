@@ -97,6 +97,7 @@ export const RESULT = {
     loadSavedNote: kgText => `Charge notée${NB}: ${kgText}.`,
     loadInvalid: 'Entrez un nombre positif en kg.',
     loadError: 'La charge n’a pas pu être enregistrée.',
+    nextGoal: (n, loadText) => `Objectif${NB}: ${n} ${reps(n, true)} à ${loadText}`,
   },
   en: {
     toConfirm: 'To confirm',
@@ -159,5 +160,6 @@ export const RESULT = {
     loadSavedNote: kgText => `Load saved: ${kgText}.`,
     loadInvalid: 'Enter a positive number in kg.',
     loadError: 'The load could not be saved.',
+    nextGoal: (n, loadText) => `Target: ${n} ${reps(n, false)} at ${loadText}`,
   },
 };
