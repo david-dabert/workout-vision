@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useId } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { exerciseName, filmView } from './exercise-info';
 import { saveWorkout } from '../../lib/storage';
@@ -7,7 +7,7 @@ import { contribution, contributeAsks, keepContribution, markContributeAsked, re
 import ContributeAsk from './ContributeAsk';
 import { contributeBuild, showUnmeasuredRoutes } from '../../lib/buildFlags';
 import { warmReportPdf } from './Report';
-import { refreshSets, loadSets, knownSets } from './sets';
+import { refreshSets, loadSets, knownSets, updateSetLoad } from './sets';
 import { setAccount } from './set-account';
 import RestClock from './RestClock';
 import { restClock } from './rest-clock';
@@ -20,7 +20,7 @@ import BiomechanicalRetentionQuiz from './BiomechanicalRetentionQuiz';
 import { predictFatigueHorizon } from '../../lib/coaching/fatigueHorizon';
 import { referenceBand } from '../../lib/reference-ranges';
 import { waveAngles } from './wave';
-import { savedSet } from './saved-set';
+import { savedSet, parseLoadKg, formatLoadKg } from './saved-set';
 import { InstallSuggest } from './Install';
 import FirstWord from './FirstWord';
 import BestSet from './BestSet';
@@ -211,8 +211,9 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // The video opened inside a rep the counter did not count (core.ts headRefused, 19 October 2026): such a count is
   // wrong 14 times in 17 on the suites (TRIED.md, 18 October), so it is asked, never shown as sure (R8, R16).
   const openedMidRep = !result.refused && result.count > 0 && !flagged && result.headRefused === true;
-  // The app's count, standing as one to confirm: a flagged set's or a moved one's.
-  const toCheck = flagged || sensitive || openedMidRep;
+  const doubted = !result.refused && result.count > 0 && !flagged && result.doubt?.flagged === true;
+  // The app's count, standing as one to confirm: a flagged, moved, mid-rep or low-pose-coverage set's.
+  const toCheck = flagged || sensitive || openedMidRep || doubted;
   const low = !!result.refused || unsure || liveDiffers || toCheck;
   // A refused set may carry PSC's count (coreAnalysis.js, withProposal; 8 October 2026): the slot opens on it, labelled
   // "Proposition de l'appli", and nothing is saved until the person confirms or changes it (R8: a number to confirm,
@@ -277,6 +278,45 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     fatigueHorizon = null;
   }
   const savedId = useRef(null), restRef = useRef(null);
+  const loadInputId = useId();
+  const [loadText, setLoadText] = useState('');
+  const [savedLoadKg, setSavedLoadKg] = useState(null);
+  const [loadState, setLoadState] = useState('idle');
+  const savedKgRef = useRef(null);
+  const loadSaveRef = useRef(Promise.resolve());
+  function commitLoad(strictInvalid = false) {
+    const id = savedId.current;
+    if (!id) return Promise.resolve();
+    const trimmed = loadText.trim();
+    if (!trimmed) {
+      if (savedKgRef.current === null) { setLoadState('idle'); return Promise.resolve(); }
+      savedKgRef.current = null;
+      setSavedLoadKg(null);
+      setLoadState('idle');
+      const p = updateSetLoad(id, null).catch(() => { setLoadState('error'); });
+      loadSaveRef.current = p;
+      return p;
+    }
+    const parsed = parseLoadKg(trimmed);
+    if (parsed === null) {
+      if (strictInvalid) setLoadState('invalid');
+      return Promise.resolve();
+    }
+    if (parsed === savedKgRef.current) {
+      setLoadState('saved');
+      return loadSaveRef.current;
+    }
+    savedKgRef.current = parsed;
+    setSavedLoadKg(parsed);
+    setLoadState('saved');
+    const p = updateSetLoad(id, parsed).catch(() => {
+      savedKgRef.current = null;
+      setSavedLoadKg(null);
+      setLoadState('error');
+    });
+    loadSaveRef.current = p;
+    return p;
+  }
   // Once saved, the rest is what the user looks at on the bench: it is brought into view (critic, 30 September).
   useEffect(() => { if (step === 'saved') restRef.current?.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }, [step]); // the report compares this set with the one before it, never with itself
   const [shareNote, setShareNote] = useState('');
@@ -296,7 +336,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // While the question is open, the close button takes it back to the count's question: a slip undone in one tap.
   const askClose = () => {
     if (unsavedRef.current && !emptyRef.current) setClosing(c => !c);
-    else release().then(onClose);
+    else commitLoad(false).then(() => release()).then(onClose);
   };
   // The question takes focus and comes into view as it opens, for VoiceOver, the keyboard and a short screen.
   useEffect(() => {
@@ -346,8 +386,8 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       release();
     };
   }, [unsaved]); // eslint-disable-line react-hooks/exhaustive-deps
-  // Every way on from the result waits for the entry to be taken back first.
-  const after = fn => (...a) => guard.current.pending.then(() => fn(...a));
+  // Every way on from the result waits for the entry to be taken back first, and finishes any optional load write.
+  const after = fn => (...a) => guard.current.pending.then(() => commitLoad(false)).then(() => fn(...a));
   const rootRef = useRef(null);
   const reportRef = useRef(null);
   const replayRef = useRef(null);
@@ -427,7 +467,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const [before, setBefore] = useState(() => { const k = knownSets(); return k ? mine(k) : null; });
   useEffect(() => { let live = true; loadSets().then(l => { if (live) setBefore(b => b ?? mine(l)); }, () => {}); return () => { live = false; }; }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // Once saved: the one earned line, a record, a record equalled or a first set (moment.js), above the thanks.
-  const moment = step === 'saved' ? momentLine({ n: trueN, before, fr }) : null;
+  const moment = step === 'saved' && !result.refused ? momentLine({ n: trueN, before, fr, load: savedLoadKg, refused: !!result.refused }) : null;
   const account = setAccount({ reps, first: liftDefinition(lift)?.first, fr, name: liftName, count: trueN, corrected: step === 'saved' && isCorrected(trueN, count), previous: before?.length ? before[0].reps : null, nth: before ? before.length + 1 : null, doubted: flagged });
   const shortSet = new Set(account.short);
   // The level read as the screen opens (level.js); the expert's table and speed line are the report's own,
@@ -536,13 +576,15 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       if (!manual && corrected !== null && contributeBuild() && readChoice() === 'yes') keepThis(n); // a typed or unanswered count is no label of the app's read
       // On David's phone only (the flag set at #collecte, phoneCollect.js): the set's landmark file in the collector's
       // format, with the count kept here, marked after-app, and his blind count when he gave one. Video sets only: a
-      // live set has no video and is not read at the collector's settings. A refused set is kept too when he gave his
-      // count blind and the app read a body (pillar 1: the failures belong in the measure as much as the successes);
-      // a set the app could not read (notRead) has no landmarks. Never sent from here; never awaited, so a failure
-      // does not touch the save.
-      const blindKept = blindN !== null && !result.notRead;
-      if ((!manual || blindKept) && corrected !== null && videoFile && collectOn()) {
-        holdWhile(collectThisSet({ result, lift, kept: n, view: filmView(lift), videoFile, version: appVersion(), blind, choice }))
+      // live set has no video and is not read at the collector's settings. A refused set is kept too, whenever the app
+      // read a body (pillar 1: the failures belong in the measure as much as the successes); a set the app could not
+      // read (notRead) has no landmarks. Until 14 November 2026 a refused set was kept only with a blind count, so a
+      // seated cable row refused on David's iPhone that day, its count typed by hand, left no read to diagnose. Its
+      // count, typed after the refusal, is marked `typed` and is no label (R1: only a blind count is; blind/parse.mjs
+      // and accuracy/sets.ts hold every file without one). Never sent from here; never awaited, so a failure does not
+      // touch the save.
+      if ((!manual || !result.notRead) && corrected !== null && videoFile && collectOn()) {
+        holdWhile(collectThisSet({ result, lift, kept: n, view: filmView(lift), videoFile, version: appVersion(), blind, choice, typed: manual && blindN === null }))
           .catch(e => console.warn('[collecte] this set could not be kept', e));
       }
       // The sets were never read: read them now, the one just saved first, and count the others.
@@ -722,6 +764,36 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     <button type="button" className="res-key press" onClick={onRefilm}>{c.refilm}</button>
   </div>}</div>, <i key="dock-end" className="res-dock-end" aria-hidden="true" />];
 
+  const loadBox = step === 'saved' && trueN > 0 && (
+    <form className="saved-load" data-testid="saved-load" onSubmit={e => { e.preventDefault(); commitLoad(true); }}>
+      <label className="saved-load-label" htmlFor={loadInputId}>{c.loadLabel}</label>
+      <div className="saved-load-row">
+        <input
+          id={loadInputId}
+          className="saved-load-input"
+          data-testid="saved-load-input"
+          type="text"
+          inputMode="decimal"
+          autoComplete="off"
+          placeholder={c.loadPlaceholder}
+          value={loadText}
+          onChange={e => { setLoadText(e.target.value); if (loadState !== 'idle') setLoadState('idle'); }}
+          onBlur={() => { if (loadText.trim() || savedKgRef.current !== null) commitLoad(false); }}
+        />
+        <span className="saved-load-unit" aria-hidden="true">kg</span>
+        <button type="submit" className={`saved-load-btn press${loadState === 'saved' ? ' is-saved' : ''}`} data-testid="saved-load-save">
+          {loadState === 'saved' ? c.loadSavedBtn : c.loadSaveBtn}
+        </button>
+      </div>
+      <p className={`saved-load-note${loadState === 'invalid' || loadState === 'error' ? ' is-error' : ''}`} role="status" data-testid="saved-load-status">
+        {loadState === 'saved' && savedLoadKg !== null ? c.loadSavedNote(formatLoadKg(savedLoadKg, fr))
+          : loadState === 'invalid' ? c.loadInvalid
+          : loadState === 'error' ? c.loadError
+          : ''}
+      </p>
+    </form>
+  );
+
   if (result.refused) {
     // A set the app could not read (CoreUpload.jsx, notRead): what stopped the analysis, in its failure screen's own
     // words, no fix, the count typed by hand.
@@ -785,6 +857,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
                 </div>
               )}
             </div>
+            {loadBox}
             <button className="btn-primary press" onClick={after(onNewSet)} data-testid="new-set">{fr ? 'Nouvelle série' : 'New set'}</button>
             <button className="text-btn press" onClick={after(onChangeLift)} data-testid="change-lift">{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
           </div>}
@@ -846,7 +919,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const blocks = {
     // Low confidence: the cause and the question, no number (05b). Otherwise the question, the count between − and +,
     // its state in a mark and a word, and where it comes from (05).
-    count: low && step !== 'saved' ? lowAsk(false, unsure ? [c.noneFound] : [...(liveDiffers ? [c.liveDiffers(liveShown)] : []), ...(flagged ? [c.bodyCause(jointName(liftDefinition(lift)?.joint, fr))] : []), ...(sensitive ? [c.sensitiveCause] : []), ...(openedMidRep ? [c.midRepCause] : [])]) : <div key="count" className="res-count">
+    count: low && step !== 'saved' ? lowAsk(false, unsure ? [c.noneFound] : [...(liveDiffers ? [c.liveDiffers(liveShown)] : []), ...(flagged ? [c.bodyCause(jointName(liftDefinition(lift)?.joint, fr))] : []), ...(sensitive ? [c.sensitiveCause] : []), ...(openedMidRep ? [c.midRepCause] : []), ...(doubted ? [c.doubtCause] : [])]) : <div key="count" className="res-count">
       {step !== 'saved' && <p className={`res-q${asked ? '' : ' is-waiting'}${step === 'fix' ? ' is-fix' : ''}`} aria-hidden={asked ? undefined : true}>{step === 'fix' ? c.howMany : c.question(count)}</p>}
       {hero(<span key={big} className={`numeral tick${typedView ? ' is-typed' : ''}${String(big).length > 2 ? ' is-long' : ''}`} aria-hidden="true" data-testid="res-numeral">{big}</span>, asked, step !== 'saved')}
       {step === 'fix' && <p className="sr" aria-live="polite" aria-atomic="true">{trueN}</p>}
@@ -963,10 +1036,11 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
               </div>
             )}
           </div>
+          {loadBox}
           {/* A gym session is several sets of one lift: the next set goes straight back to filming this lift, and
               changing lift is the quieter choice beside it (WP1.3 of docs/SPEC-production.md). Once saved, the next
               set is the one thing left to do (design pass of 4 October). */}
-          <button ref={reportRef} className="btn-ghost press res-report-btn" onClick={() => onReport(trueN, savedId.current)} data-testid="res-report-btn">
+          <button ref={reportRef} className="btn-ghost press res-report-btn" onClick={() => commitLoad(false).then(() => onReport(trueN, savedId.current))} data-testid="res-report-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z" /><path d="M14 3v5h5" /><path d="M8.5 13h7M8.5 16.5h5" /></svg>
             <span>{fr ? 'Rapport de séance' : 'Session report'}</span>
             <span className="res-report-badge" aria-hidden="true">{fr ? 'Vue 3D & PDF' : '3D view & PDF'}</span>

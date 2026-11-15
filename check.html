@@ -38,6 +38,16 @@
   <label class="force"><input type="checkbox" id="force-rvfc"> Force the playback path (skip WebCodecs), to test the fix</label>
   <div id="verdict">Normal path: 0 of 6 checked.</div>
   <div id="clips"></div>
+  <section id="demo-section">
+    <h2 id="demo-heading"></h2>
+    <p class="note" id="demo-note"></p>
+    <div id="demo-bar" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;">
+      <button type="button" id="run-demo" data-testid="run-demo-clips" style="padding:8px 12px;font:inherit;cursor:pointer;"></button>
+      <button type="button" id="copy-demo" data-testid="copy-demo-report" hidden style="padding:8px 12px;font:inherit;cursor:pointer;"></button>
+    </div>
+    <div id="demo-verdict" data-testid="demo-verdict" style="margin:8px 0 12px;font-weight:600;"></div>
+    <div id="demo-clips"></div>
+  </section>
   <p id="version"></p>
   <script type="module" src="/src/check-main.js"></script>
 </body>

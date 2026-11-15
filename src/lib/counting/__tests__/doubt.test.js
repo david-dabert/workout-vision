@@ -37,6 +37,14 @@ describe('poseDoubt', () => {
     expect(poseDoubt(core, ts(300)).flagged).toBe(true);
     expect(poseDoubt(core, ts(300), { together: true }).flagged).toBe(false);
   });
+
+  it('ignores unseen setup/walk-away samples before the first counted rep or after the last one', () => {
+    const angles = Array(300).fill(90);
+    for (let i = 0; i < 30; i++) angles[i] = null;      // 2 s walk-in before first rep
+    for (let i = 255; i < 300; i++) angles[i] = null;   // 3 s walk-away after last rep
+    const setReps = [{ startTime: 2, endTime: 4 }, { startTime: 6, endTime: 8 }, { startTime: 14, endTime: 16.5 }];
+    expect(poseDoubt({ angles, reps: setReps }, ts(300))).toEqual({ coverage: 1, holes: 0, unseenSec: 0, longestGapSec: 0, flagged: false });
+  });
 });
 
 describe('the saved set', () => {

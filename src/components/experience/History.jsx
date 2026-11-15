@@ -4,7 +4,8 @@ import { exerciseName } from './exercise-info';
 import { limbLabel } from './lift-meta';
 import Report, { warmReportPdf } from './Report';
 import { loadSets, knownSets, onSetsChanged, removeSet, countedBy, proposedBy, setTime } from './sets';
-import { exerciseProgress, recordsOf } from './progress';
+import { exerciseProgress, recordsOf, storedLoad } from './progress';
+import { formatLoadKg } from './saved-set';
 import ExerciseProgress from './ExerciseProgress';
 import ExportSets from './ExportSets';
 import KeepSets from './KeepSets';
@@ -174,12 +175,13 @@ export default function History({ onClose }) {
             // David's approval of the words (R10).
             const universal = byHand && proposedBy(w) === 'universal';
             const seconds = Math.round(w.duration || 0);
+            const load = storedLoad(w), loadText = load !== null ? formatLoadKg(load, fr) : '';
             return <li key={w.id} className="hist-item">
               <button ref={el => { rowRefs.current[w.id] = el; }} className="hist-btn press" aria-expanded={shown} onClick={() => toggle(w.id)}>
                 <span className={`hist-n${fixed || byHand ? ' is-corrected' : ''}`} aria-hidden="true">{w.reps}</span>
                 <span className="hist-txt">
                   <span className="hist-name">{liftName(w)}</span>
-                  <span className="hist-meta"><span>{[time(w), seconds ? `${seconds}\u00A0s` : '', arm].filter(Boolean).map((part, i) => <span key={i}>{part}</span>)}</span></span>
+                  <span className="hist-meta"><span>{[time(w), seconds ? `${seconds}\u00A0s` : '', loadText, arm].filter(Boolean).map((part, i) => <span key={i}>{part}</span>)}</span></span>
                   <span className="sr">{fr ? `${w.reps} ${w.reps > 1 ? 'répétitions' : 'répétition'}` : `${w.reps} ${w.reps === 1 ? 'rep' : 'reps'}`}</span>
                 </span>
                 {/* Reps, records and corrections only: the symmetry, consistency and "Certifié" tags of sets saved on 11-14

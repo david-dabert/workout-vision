@@ -14,14 +14,21 @@
 
 import { canvasPixels, isFrozenRead, pixelsFingerprint, repeatCounter } from './frozenRead';
 
+/** Normalize rotation metadata in degrees onto [0, 360). */
+export function normalizeRotation(deg) {
+  if (typeof deg !== 'number' || !Number.isFinite(deg)) return 0;
+  const norm = ((Math.round(deg) % 360) + 360) % 360;
+  return norm === 0 ? 0 : norm;
+}
+
 /**
  * Whether a frame must be rotated by hand: the container says it is turned (90, 180 or 270°) and the decoded frame
  * does not carry that rotation itself (WebKit). 180° was left out before (only 90 and 270 swap the sides), so an
  * iPhone filming landscape the other way up gave the pose model an upside-down person (second audit, 3 October).
  */
 export function manualRotationNeeded(containerRotation, frameRotation) {
-  if (!containerRotation) return false;
-  return !(typeof frameRotation === 'number' && frameRotation !== 0);
+  if (!normalizeRotation(containerRotation)) return false;
+  return !(typeof frameRotation === 'number' && normalizeRotation(frameRotation) !== 0);
 }
 
 /** How long the feeding waits, with the main loop waiting too and nothing decoded, before it feeds on (see below). */

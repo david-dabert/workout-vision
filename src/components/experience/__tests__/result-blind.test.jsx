@@ -121,6 +121,12 @@ describe('a count the sensitivity check moved', () => {
     expect(html).toContain('La vidéo démarre en pleine répétition\u00A0: la première n’a peut-être pas été comptée.');
     expect(html).toMatch(/data-testid="res-save"[^>]*>Confirmer 9 répétitions<\/button>/);
   });
+  it('a set flagged by poseDoubt: the count to confirm, with its own cause', async () => {
+    const html = await renderOn({ ...nine, doubt: { coverage: 0.67, holes: 1, unseenSec: 2.1, flagged: true } }, false);
+    expect(html).toContain('L’appli n’a pas pu compter cette série avec certitude.');
+    expect(html).toContain('Suivi du corps incomplet par endroits\u00A0: vérifiez le nombre.');
+    expect(html).toMatch(/data-testid="res-save"[^>]*>Confirmer 9 répétitions<\/button>/);
+  });
   it('the same on the #collecte phone; when nothing moved, the screen as before', async () => {
     expect(await renderOn(moved, true)).toContain('Comptage incertain sur cette série : vérifiez le nombre.');
     expect(await renderOn({ ...nine, sensitivity: { moved: false, counts: Array(6).fill(9) } }, false)).toContain('data-testid="res-yes"');

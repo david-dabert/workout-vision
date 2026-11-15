@@ -16,7 +16,8 @@ export function screenSure(result: any): boolean {
   const flagged = result.bodyCheck?.flagged === true;
   const sensitive = !flagged && result.sensitivity?.moved === true && sensitivityAsks(result.count, result.sensitivity?.counts);
   const openedMidRep = !flagged && result.headRefused === true;
-  return !(flagged || sensitive || openedMidRep);
+  const doubted = !flagged && result.doubt?.flagged === true;
+  return !(flagged || sensitive || openedMidRep || doubted);
 }
 
 const appResult = (s: any) => {

@@ -38,15 +38,15 @@ const G = FIGURES.guided;
 export const STATED = `range ${f(G.range.median)} degrees at the median and ${f(G.range.p90)} at the 90th percentile; lifting time ${f(G.conc.median, 1)} s and ${f(G.conc.p90, 1)} s; lowering time ${f(G.ecc.median, 1)} s and ${f(G.ecc.p90, 1)} s`;
 
 describe('card 019: range and tempo against the synthetic truth', () => {
-  it('reads the 96 sets: 90 with a measure, all 24 at the guided view', () => {
+  it('reads the 96 sets: 91 with a measure, all 24 at the guided view', () => {
     expect(setLines).toHaveLength(96);
-    expect(rows).toHaveLength(90);
+    expect(rows).toHaveLength(91);
     expect(guided).toHaveLength(24);
     const A = FIGURES.all, S = FIGURES.signedGuided;
     writeFileSync(resolve(here, 'measures-error.txt'), [
       '# Card 019: absolute error of the shown measures against the rendered truth (measures-error.test.ts, from synth.txt)',
       `guided view, ${G.n} sets: ${STATED}`,
-      `all views, ${A.n} sets with a measure (6 of 96 counted 0, none at the guided view): range ${f(A.range.median)} and ${f(A.range.p90)} degrees; lifting ${f(A.conc.median, 1)} and ${f(A.conc.p90, 1)} s; lowering ${f(A.ecc.median, 1)} and ${f(A.ecc.p90, 1)} s (median and 90th percentile)`,
+      `all views, ${A.n} sets with a measure (5 of 96 counted 0, none at the guided view): range ${f(A.range.median)} and ${f(A.range.p90)} degrees; lifting ${f(A.conc.median, 1)} and ${f(A.conc.p90, 1)} s; lowering ${f(A.ecc.median, 1)} and ${f(A.ecc.p90, 1)} s (median and 90th percentile)`,
       `guided view, signed medians: range ${f(S.range.median)} degrees, lifting ${f(S.conc.median, 1)} s, lowering ${f(S.ecc.median, 1)} s (negative: the app reads less than the truth)`,
       '',
     ].join('\n'));

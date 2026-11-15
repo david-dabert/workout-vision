@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { delegateParam, landmarksPrint, poseLine } from '../check';
+import { delegateParam, DEMO_CLIPS, demoAssetUrl, demoVerdictText, landmarksPrint, poseLine } from '../check';
 
 // The check page's GPU measurement (pillar 4, 9 October 2026): the parameter, the line of each row, the fingerprint.
 describe('the check page\'s pose line', () => {
@@ -21,5 +21,13 @@ describe('the check page\'s pose line', () => {
     expect(p).toMatch(/^[0-9a-f]{12}$/);
     expect(await landmarksPrint(JSON.parse(JSON.stringify(a)))).toBe(p);
     expect(await landmarksPrint([[{ x: 0.1, y: 0.2, z: 0.30001, visibility: 1 }], null])).not.toBe(p);
+  });
+  it('lists the five bundled demo clips and formats demo URLs and verdict tallies cleanly', () => {
+    expect(DEMO_CLIPS).toHaveLength(5);
+    expect(demoAssetUrl('bicep-curl-5.mp4', '/workout-vision/')).toBe('/workout-vision/demo/bicep-curl-5.mp4');
+    expect(demoAssetUrl('dip-13.mp4', '/workout-vision')).toBe('/workout-vision/demo/dip-13.mp4');
+    expect(demoVerdictText([{ exact: true, refused: false, error: false }, { exact: false, refused: true, error: false }], 5, false))
+      .toBe('Bundled demo: 2 of 5 checked · 1 exact · 1 refused · 0 errors');
+    expect(demoVerdictText([], 5, true)).toBe('Vidéos intégrées\u00A0: 0 sur 5 testées · 0 exactes · 0 refusées · 0 erreurs');
   });
 });

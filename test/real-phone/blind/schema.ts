@@ -17,6 +17,8 @@ export interface BlindFile {
   appCount?: number | null;
   appRefused?: boolean;
   proposal?: number | null;
+  /** A refused set's count typed by hand, kept for its read; never with a blind count (14 November 2026). */
+  typed?: boolean;
   /** The day the count was kept, YYYY-MM-DD (Phase 6). */
   recordedAt?: string;
   /** The page load's anonymous id, a version 4 UUID (Phase 6). */
