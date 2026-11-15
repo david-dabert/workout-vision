@@ -49,6 +49,28 @@ export async function removeSet(id) {
   else pending = null;
 }
 
+/** Stores or clears an optional load in kg on a saved set (absent when cleared, never 0). */
+export async function updateSetLoad(id, kg) {
+  if (!id) return null;
+  const weight = typeof kg === 'number' && Number.isFinite(kg) && kg > 0 ? kg : undefined;
+  const { updateWorkout } = await import('../../lib/storage');
+  const updated = await updateWorkout(id, { weight });
+  tellOthers();
+  if (known) {
+    known = known.map(w => {
+      if (w.id !== id) return w;
+      if (updated) return updated;
+      if (weight !== undefined) return { ...w, weight };
+      const { weight: _w, ...rest } = w;
+      return rest;
+    });
+    pending = Promise.resolve(known);
+  } else {
+    pending = null;
+  }
+  return updated ?? null;
+}
+
 export const setTime = w => new Date(w.createdAt ?? w.date).getTime();
 
 /**

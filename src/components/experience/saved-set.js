@@ -76,3 +76,18 @@ export function savedSet({ result, lift, n, corrected, sides = null, manual = fa
     wave: compactWave(waveAngles(result), result.timestamps),
   });
 }
+
+/** Parses an optional load entered in kg; returns a positive number or null (never 0). */
+export function parseLoadKg(raw) {
+  if (typeof raw === 'number') return Number.isFinite(raw) && raw > 0 ? Math.round(raw * 100) / 100 : null;
+  if (typeof raw !== 'string') return null;
+  const text = raw.trim().replace(',', '.');
+  if (!/^\d+(?:\.\d+)?$/.test(text)) return null;
+  const value = Number(text);
+  return Number.isFinite(value) && value > 0 ? Math.round(value * 100) / 100 : null;
+}
+
+/** Formats a stored positive load in kg with a non-breaking space before the unit. */
+export function formatLoadKg(kg, fr = false) {
+  return `${kg.toLocaleString(fr ? 'fr-FR' : 'en-GB', { maximumFractionDigits: 2 })}\u00A0kg`;
+}

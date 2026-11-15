@@ -347,6 +347,9 @@ export async function updateWorkout(id, updates) {
   const existing = await workoutStore.getItem(id);
   if (!existing) return;
   const updated = { ...existing, ...updates, updatedAt: Date.now() };
+  for (const [k, v] of Object.entries(updates || {})) {
+    if (v === undefined) delete updated[k];
+  }
   await workoutStore.setItem(id, updated);
   return updated;
 }
