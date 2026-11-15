@@ -61,7 +61,7 @@ soldier-overhead_press-v0-person              100%  0      6        5       6
 soldier-overhead_press-v0-rack                100%  -      6        5       6      
 soldier-overhead_press-v90-clean              99%   -      6        6       6      
 soldier-overhead_press-v90-dim                37%   -      refused  6       6      
-soldier-overhead_press-v90-person             95%   4      10       6       6      
+soldier-overhead_press-v90-person             95%   4      12       6       6      
 soldier-overhead_press-v90-plate              99%   -      0        6       6      
 soldier-overhead_press-v90-rack               100%  -      6        6       6      
 soldier-squat-v0-clean                        100%  -      6        6       6      

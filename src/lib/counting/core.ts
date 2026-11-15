@@ -188,8 +188,6 @@ export interface LiftDefinition {
    * machine occlusion are held at the median platform position to prevent false extension spikes at the bottom of the squat.
    */
   fixedFeet?: boolean;
-  /** For hybrid resting lifts (overhead_press), detect bottom-racked sets resting low before pressing. */
-  allowLowRest?: boolean;
   /** Clamp impossible anatomical inversions (ankle.y < knee.y) caused by angled sled footplate occlusion (hack_squat). */
   clampFootplateInversion?: boolean;
 }
@@ -203,7 +201,7 @@ export const LIFTS = {
   triceps_pushdown: { joint: 'elbow', rest: 'low', first: 'concentric' },
   // Presses rest at lockout, so the bar comes down first. To be confirmed on their build sets.
   bench_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
-  overhead_press: { joint: 'elbow', rest: 'high', first: 'eccentric', allowLowRest: true },
+  overhead_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
   // lateral_raise (15 November 2026, Card 034): admit 15-degree single reps (default MIN_ROM_DEGREES is 20):
   // synthetic +1 exact (22 -> 23 of 24), 0 lost across public, synthetic, occlusion, David, or video suites.
   // Source: UNSOURCED. Status: experimental.
@@ -546,18 +544,6 @@ const TAIL_AT_WORK_SEC = param('TAIL_AT_WORK_SEC', 0.6);
 const TAIL_HOLD_MAX_SEC = param('TAIL_HOLD_MAX_SEC', 1.5);
 const TAIL_DEPTH_SHARE = param('TAIL_DEPTH_SHARE', 0.85);
 const TAIL_REST_MAX_SEC = param('TAIL_REST_MAX_SEC', 4.0);   // a candidate cut rep must begin within 4.0 s of the previous cycle completing (post-set rest + exit is not a rep). Source: UNSOURCED. Status: experimental
-// Transient pose flicker tolerance in seenToEnd (TAIL_AT_WORK): a single- or two-frame visibility dip (<= 0.22 s)
-// during a cut tail must not veto stoppedAtWork once bridged smoothly, while ending within TAIL_END_GAP_SEC (0.15 s)
-// of the clip's end keeps lost-person endings out. Measured 15 November 2026 via compare-variants across 1,344 sets:
-// publicA 261 -> 268 exact (+7, 0 lost, chi2 = 5.14), publicB 260 -> 261 (+2/-1, off3+ 88 -> 87), 0 lost across
-// david/video/synthetic/repcount/occlusion. Source: UNSOURCED. Status: experimental.
-const TAIL_FLICKER_MAX_GAP_SEC = param('TAIL_FLICKER_MAX_GAP_SEC', 0.22);
-const TAIL_END_GAP_SEC = param('TAIL_END_GAP_SEC', 0.15);
-// Hybrid bottom-racked rest inference for overhead_press: when the first 5 and last 5 valid samples sit below this
-// share of [lowThreshold..highThreshold], the lifter rested racked at the shoulders rather than overhead locked out.
-// Measured 15 November 2026 via compare-variants across 1,344 sets: publicA 261 -> 272 (+11, 0 lost, chi2 = 9.09),
-// publicB 260 -> 260 (0 lost), synthetic off3+ 12 -> 11. Source: UNSOURCED. Status: experimental.
-const HYBRID_LOW_REST_SHARE = param('HYBRID_LOW_REST_SHARE', 0.25);
 // Monocular 2D-vs-3D impulse flip guard: detects 1-3 frame MediaPipe world-z depth inversions on elbow lifts where
 // 3D angle jumps sharply away from surrounding samples while 2D image-plane angle stays smooth. Preserves raw
 // angle visibility so coverage/refusal are unchanged. Source: UNSOURCED (reproduces david_curl_7_rvfc i=236-237).
@@ -808,41 +794,6 @@ function maskMonocularFlipImpulses(
   return masked;
 }
 
-/** Switch hybrid overhead presses that both open and finish racked at shoulders to low-rest concentric-first. */
-function inferBottomRestDefinition(
-  def: LiftDefinition,
-  validAngles: number[],
-  pLow: number,
-  pHigh: number,
-  margin: number,
-  workMargin: number,
-): LiftDefinition {
-  if (!def.allowLowRest || validAngles.length < 10) return def;
-  const lowBase = pLow + (def.rest === 'high' ? workMargin : margin);
-  const highBase = pHigh - (def.rest === 'high' ? margin : workMargin);
-  const threshold = lowBase + HYBRID_LOW_REST_SHARE * (highBase - lowBase);
-  const firstAvg = validAngles.slice(0, 5).reduce((a, b) => a + b, 0) / 5;
-  const lastAvg = validAngles.slice(-5).reduce((a, b) => a + b, 0) / 5;
-  return firstAvg < threshold && lastAvg < threshold ? { ...def, rest: 'low', first: 'concentric' } : def;
-}
-
-/** Allow transient <= TAIL_FLICKER_MAX_GAP_SEC visibility dips in a cut-tail finish while requiring active end sight. */
-function isSeenToEndWithFlicker(
-  seen: boolean[] | null | undefined,
-  timestamps: number[],
-  firstAtWork: number,
-  last: number,
-): boolean {
-  if (!seen || firstAtWork < 0 || timestamps[timestamps.length - 1] - timestamps[last] > TAIL_END_GAP_SEC) return false;
-  let lastTrue = firstAtWork;
-  for (let k = firstAtWork; k <= last; k++) {
-    if (!seen[k]) continue;
-    if (timestamps[k] - timestamps[lastTrue] > TAIL_FLICKER_MAX_GAP_SEC) return false;
-    lastTrue = k;
-  }
-  return timestamps[timestamps.length - 1] - timestamps[lastTrue] <= TAIL_FLICKER_MAX_GAP_SEC;
-}
-
 function countSide(
   worldLandmarks: WorldLandmarkFrame[],
   timestamps: number[],
@@ -897,20 +848,19 @@ function countSide(
   const margin = range * (def.thresholdMargin ?? THRESHOLD_MARGIN) * scale;
   // The working end may sit further in (LiftDefinition.workMargin, squat); the rest end keeps the margin.
   const workMargin = range * (def.workMargin ?? def.thresholdMargin ?? THRESHOLD_MARGIN) * scale;
-  const effDef = inferBottomRestDefinition(def, validAngles, pLow, pHigh, margin, workMargin);
-  const lowThreshold = pLow + (effDef.rest === 'high' ? workMargin : margin);
-  const highThreshold = pHigh - (effDef.rest === 'high' ? margin : workMargin);
+  const lowThreshold = pLow + (def.rest === 'high' ? workMargin : margin);
+  const highThreshold = pHigh - (def.rest === 'high' ? margin : workMargin);
 
-  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, effDef.rest, effDef.minRepRomDeg ?? MIN_ROM_DEGREES, effDef.minRepSec ?? MIN_REP_SEC, !!effDef.noSplit, effDef.joint !== 'elbow', !!effDef.lift, rawAngles.map(a => a !== null), effDef.first === 'concentric');
+  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES, def.minRepSec ?? MIN_REP_SEC, !!def.noSplit, def.joint !== 'elbow', !!def.lift, rawAngles.map(a => a !== null), def.first === 'concentric');
   const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
   // Speeds are read only where every sample the smoothing used was seen, not filled in by the bridge: the jump
   // where a pose comes back after a short loss is no limb's speed (second audit, 3 October).
   const halfSg = Math.floor(sgSize / 2);
   const seenAround = cleaned.map((_, i) => { for (let j = Math.max(0, i - halfSg); j <= Math.min(cleaned.length - 1, i + halfSg); j++) if ((cleaned[j] === null && bridged[j] !== null) || filled[j]) return false; return true; });
-  const reps = placeBoundaries(cycles, smoothed, timestamps, lowThreshold, highThreshold, band, effDef, seenAround);
+  const reps = placeBoundaries(cycles, smoothed, timestamps, lowThreshold, highThreshold, band, def, seenAround);
 
   // Partial repetitions (lengthened and shortened partials):
-  const partials = detectPartialReps(smoothed, timestamps, lowThreshold, highThreshold, effDef, range, cycles, reps, seenAround);
+  const partials = detectPartialReps(smoothed, timestamps, lowThreshold, highThreshold, def, range, cycles, reps, seenAround);
 
   // 8. Confidence: fraction of samples with a detected pose on the tracked side. It is pose coverage, not certainty
   // that the count is right: a set seen throughout can still be miscounted (Astra's review of 5 October). Read it as
@@ -1590,8 +1540,9 @@ function detectReps(
     for (let i = repStartIdx; i <= last; i++) if (atWork(smoothed[i])) { lastAtWork = i; if (firstAtWork < 0) firstAtWork = i; }
     const duration = timestamps[last] - timestamps[repStartIdx];
     const whole = duration >= minSec && bounded(repStartIdx, last) && peakAngle - troughAngle >= minRom;
-    // Seen by the pose model, not filled in across long gaps, from where it reached the working end to the clip end.
-    const seenToEnd = isSeenToEndWithFlicker(seen, timestamps, firstAtWork, last);
+    // Seen by the pose model, not filled in, from where it reached the working end to the video's last sample.
+    const seenToEnd = !!seen && firstAtWork > -1 && last === timestamps.length - 1
+      && seen.slice(firstAtWork, last + 1).every(Boolean);
     // As deep as the set's own reps: the median working extreme of the accepted reps, measured from the rest threshold.
     const restLine = restsLow ? lowThreshold : highThreshold;
     const depths = cycles.map(c => {
