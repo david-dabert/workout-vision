@@ -176,6 +176,18 @@
 .wv-experience .save-error { color: var(--c-accent); text-align: center; margin: var(--s-3) 0 0; }
 .wv-experience .saved .share-note { margin: 0; text-align: center; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); }
 .wv-experience .saved .share-note:empty { display: none; }
+.wv-experience .saved-load { margin: var(--s-2) 0 var(--s-1); padding: 12px 14px; border: 1px solid var(--c-rule); border-radius: var(--r-s); background: var(--basalt); display: flex; flex-direction: column; gap: var(--s-2); }
+.wv-experience .saved-load-label { font-family: var(--mono); font-size: var(--fs-label); letter-spacing: 0.1em; text-transform: uppercase; color: var(--bone-2); }
+.wv-experience .saved-load-row { display: flex; align-items: center; gap: var(--s-2); }
+.wv-experience .saved-load-input { flex: 1 1 0; min-width: 0; height: 48px; min-height: 44px; box-sizing: border-box; padding: 0 12px; border: 1.5px solid var(--c-edge); border-radius: 4px; background: var(--well); color: var(--c-fg); font-family: var(--sans); font-size: var(--fs-input); font-variant-numeric: tabular-nums; outline: none; }
+.wv-experience .saved-load-input::placeholder { color: var(--ash-2); }
+.wv-experience .saved-load-input:focus { border-color: var(--lamp-line-strong); }
+.wv-experience .saved-load-unit { flex: none; font-family: var(--mono); font-size: var(--fs-caption); color: var(--c-fg-muted); }
+.wv-experience .saved-load-btn { flex: none; height: 48px; min-height: 44px; padding: 0 16px; border: 1.5px solid var(--c-edge); border-radius: 4px; background: transparent; color: var(--c-fg); font-family: var(--sans); font-size: var(--fs-key); font-weight: 600; cursor: pointer; }
+.wv-experience .saved-load-btn.is-saved { border-color: var(--lamp-line-strong); color: var(--lamp-hi); }
+.wv-experience .saved-load-note { margin: 0; font-size: var(--fs-caption); line-height: 1.4; color: var(--bone-2); }
+.wv-experience .saved-load-note.is-error { color: var(--c-accent); }
+.wv-experience .saved-load-note:empty { display: none; }
 .wv-experience .result-screen .text-btn { border-radius: var(--r-pill); }
 
 

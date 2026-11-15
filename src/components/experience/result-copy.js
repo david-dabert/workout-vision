@@ -90,6 +90,13 @@ export const RESULT = {
     // A count with gaps in pose tracking (counting/doubt.js poseDoubt). Status: written 14 November 2026,
     // awaiting David's confirmation (R10).
     doubtCause: 'Suivi du corps incomplet par endroits\u00A0: vérifiez le nombre.',
+    loadLabel: 'Charge (kg)',
+    loadPlaceholder: 'Optionnel, ex. 60',
+    loadSaveBtn: 'Noter',
+    loadSavedBtn: 'Notée',
+    loadSavedNote: kgText => `Charge notée${NB}: ${kgText}.`,
+    loadInvalid: 'Entrez un nombre positif en kg.',
+    loadError: 'La charge n’a pas pu être enregistrée.',
   },
   en: {
     toConfirm: 'To confirm',
@@ -145,5 +152,12 @@ export const RESULT = {
     sensitiveCause: 'Uncertain count on this set: check the number.',
     midRepCause: 'The video starts mid-rep: the first one may not have been counted.',
     doubtCause: 'Pose tracking dropped during parts of this set: check the number.',
+    loadLabel: 'Load (kg)',
+    loadPlaceholder: 'Optional, e.g. 60',
+    loadSaveBtn: 'Save',
+    loadSavedBtn: 'Saved',
+    loadSavedNote: kgText => `Load saved: ${kgText}.`,
+    loadInvalid: 'Enter a positive number in kg.',
+    loadError: 'The load could not be saved.',
   },
 };

@@ -1,5 +1,5 @@
 # 032. The load of each set, kept with its count
-Status: ready
+Status: done
 Executor: fast
 Claim: A lifter who saves a counted set can add its load in kilograms in one tap after saving, and the history and the records by load show it.
 Reference: the competitor research of 14 November 2026: weight per set is the feature every log has (Hevy, Strong) and WorkoutVision keeps reps only. `src/components/experience/progress.js` already reads a positive `weight` in kg (`storedLoad`) and computes records by load, for manual sets only.
