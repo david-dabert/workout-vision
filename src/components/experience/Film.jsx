@@ -5,6 +5,7 @@ import { liftDefinition } from '../../lib/counting/core';
 import { tierLabel } from '../../lib/liftTiers';
 import { tierOf } from '../../lib/offer';
 import { exerciseName, filmView, guideExercise } from './exercise-info';
+import { filmingGuideFor } from './filming-guide';
 import { GuideFrames } from './Guide';
 import { GUIDE_BOX, hasGuideFigure } from './guide-figure';
 import { GuideFigure } from './GuideFigure';
@@ -45,6 +46,7 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
   const [hero, setHero] = useState(arrivedByTransition);
   useEffect(() => { if (!hero) return undefined; const t = setTimeout(() => setHero(false), 700); return () => clearTimeout(t); }, [hero]);
   const view = filmView(activeLift) || filmView(countingLiftKey);
+  const placement = filmingGuideFor(activeLift, fr);
   const test = FITNESS_TESTS[activeLift] ?? null;
   // The nine card lifts show the framing of their reference set; every other exercise, the guide's drawings.
   // An exercise of the guide with an animated figure of the app (GuideFigure.jsx) shows it in place of the drawings.
@@ -272,6 +274,9 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
           ? (fr ? 'L’image de la caméra reste sur votre téléphone\u00A0: elle n’est ni enregistrée ni envoyée.' : 'The camera’s picture stays on your phone: it is neither recorded nor sent.')
           : (fr ? 'La vidéo reste sur votre téléphone.' : 'The video stays on your phone.')}</span>
       </p>
+      {!test && <p className="film-placement-note" data-testid="film-filming-note" data-reveal style={{ '--i': 7 }}>
+        {placement.angleLabel} · {placement.framingLabel}. {placement.evidenceNote}
+      </p>}
       {drawerOpen && (
         <FilmExerciseDrawer
           currentLift={activeLift}
