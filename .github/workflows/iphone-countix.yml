@@ -1,0 +1,84 @@
+# Countix clips read as David's iPhone reads them (15 November 2026; David: "download videos and analyze as if you were
+# using my phone"). Per lift, a macOS runner fetches labelled clips of Countix's build half from the public Kinetics
+# mirror, stores each as an MP4, in the iPhone format and in the iPhone format sideways
+# (scripts/benchmarks/iphone-countix-prepare.sh), and reads them through the app's harness in Playwright's WebKit, which
+# on macOS decodes with Apple's media stack under an iPhone 13 profile. A last job scores every reading against the
+# human label and the stored Chromium reading (scripts/benchmarks/iphone-countix-compare.ts). Measures, decides
+# nothing; no video is kept, only landmarks.
+name: iPhone reading, Countix
+
+on:
+  push:
+    branches: ['claude/**']
+    paths:
+      - .github/workflows/iphone-countix.yml
+      - scripts/benchmarks/iphone-countix-prepare.sh
+      - scripts/benchmarks/iphone-countix-compare.ts
+  workflow_dispatch:
+    inputs:
+      sets:
+        description: Sets per lift
+        default: '20'
+
+jobs:
+  read:
+    name: WebKit, iPhone format (${{ matrix.lift }})
+    runs-on: macos-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        lift: [bench_press, front_raise, lunge, pull_up, push_up, squat, triceps_pushdown]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: ffmpeg with x265
+        run: |
+          command -v ffmpeg > /dev/null || brew install ffmpeg
+          ffmpeg -hide_banner -encoders | grep -q libx265
+      - name: Fetch and store the clips
+        run: bash scripts/benchmarks/iphone-countix-prepare.sh ${{ matrix.lift }} ${{ inputs.sets || '20' }}
+      # The pose model checked before the server starts (safari-readings.yml: the dev server's copy races the first read).
+      - run: node scripts/copy-models.js
+      - name: Serve the app
+        run: |
+          npx vite --port 5173 --strictPort > vite.log 2>&1 &
+          for i in $(seq 90); do curl -sf http://localhost:5173/workout-vision/test/real-phone/harness.html > /dev/null && break; sleep 2; done
+          curl -sf -o /dev/null "http://localhost:5173/workout-vision/$(node -p "require('./public/countix-iphone/list.json')[0].path")" && echo served
+      - run: npx playwright install webkit
+      - run: node scripts/benchmarks/safari-readings.mjs --browser=webkit --list=public/countix-iphone/list.json --out=readings
+      # Five MP4s read again, for WebKit's spread against itself.
+      - run: node scripts/benchmarks/safari-readings.mjs --browser=webkit --list=public/countix-iphone/repeat.json --from-run=2 --out=readings
+      - name: Score this lift
+        if: always()
+        run: npx tsx scripts/benchmarks/iphone-countix-compare.ts readings
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: readings-${{ matrix.lift }}
+          path: readings/
+          retention-days: 14
+      - if: always()
+        run: tail -n 20 vite.log
+
+  score:
+    name: Score every lift
+    needs: read
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: readings-*
+          path: readings
+      - run: npx tsx scripts/benchmarks/iphone-countix-compare.ts readings | tee -a "$GITHUB_STEP_SUMMARY"

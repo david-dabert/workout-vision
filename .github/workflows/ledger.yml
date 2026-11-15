@@ -22,6 +22,7 @@ on:
       - Footage from Commons, by category
       - Update visual snapshots
       - WebKit probe
+      - iPhone reading, Countix
     types: [completed]
   issue_comment:
     types: [created]

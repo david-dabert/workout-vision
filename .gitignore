@@ -108,3 +108,5 @@ smoke-shots/
 !public/demo/**/*.jpg
 !public/demo/**/*.png
 public/footage-tmp/
+# Countix clips stored as an iPhone stores them, made on a CI runner (scripts/benchmarks/iphone-countix-prepare.sh): never committed.
+public/countix-iphone/

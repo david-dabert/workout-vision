@@ -10,8 +10,9 @@
  *   node scripts/benchmarks/safari-readings.mjs --browser=safari --runs=2 --out=readings
  *   node scripts/benchmarks/safari-readings.mjs --browser=chromium --runs=1 --out=readings
  *   node scripts/benchmarks/safari-readings.mjs --browser=safari --runs=2 --set=iphone --out=readings
+ *   node scripts/benchmarks/safari-readings.mjs --browser=webkit --list=public/countix-iphone/list.json --out=readings
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const arg = (name, dflt) => (process.argv.find(a => a.startsWith(`--${name}=`)) ?? `=${dflt}`).split('=')[1];
@@ -31,6 +32,11 @@ const READBACK = arg('readback', '');
 // hand rotation (frameExtractor.js manualRotationNeeded) is read (14 November 2026).
 const SUFFIX = { demo: '', iphone: '', 'iphone-rot': '-rot' }[SET];
 if (SUFFIX === undefined) throw new Error(`unknown --set=${SET}`);
+// --list=<file>: the clips named in a JSON list, [{ clip, lift, label, window?, path }] with path under public/, in
+// place of the demo clips (scripts/benchmarks/iphone-countix-prepare.sh, 15 November 2026). --from-run=N numbers the
+// runs from N, so a second read of some clips is saved beside the first.
+const LIST = arg('list', '');
+const FROM_RUN = Number(arg('from-run', '1'));
 const HARNESS = `${BASE}test/real-phone/harness.html`;
 
 // The five demo sets published on the About page (public/demo/), each named with David's count, and the lift the
@@ -87,17 +93,18 @@ async function withPlaywright(fn, kind) {
 
 mkdirSync(OUT, { recursive: true });
 const run = BROWSER === 'safari' ? withSafari : fn => withPlaywright(fn, BROWSER === 'webkit' ? 'webkit' : 'chromium');
+const clips = LIST ? JSON.parse(readFileSync(LIST, 'utf8')) : CLIPS;
 await run(async read => {
-  for (let k = 1; k <= RUNS; k++) {
-    for (const c of CLIPS) {
-      const url = SET === 'demo' ? `${BASE}demo/${c.clip}.mp4` : `${BASE}demo/iphone/${c.clip}${SUFFIX}.mov`;
+  for (let k = FROM_RUN; k < FROM_RUN + RUNS; k++) {
+    for (const c of clips) {
+      const url = LIST ? `${BASE}${c.path}` : SET === 'demo' ? `${BASE}demo/${c.clip}.mp4` : `${BASE}demo/iphone/${c.clip}${SUFFIX}.mov`;
       // Some macOS runners refuse Safari's canvas readback ("InvalidStateError" at getImageData, runs 43626543919 and
       // 43628027656; another runner read all ten): a read refused so is tried again, twice at most, in a fresh page.
       let r = await read(url);
       for (let t = 0; t < 2 && /InvalidStateError/.test(r?.error ?? ''); t++) r = await read(url);
       if (r?.error) console.log(`[${BROWSER} run ${k}] ${c.clip}: ERROR ${r.error.split('\n').slice(0, 6).join(' | ')}`);
       else console.log(`[${BROWSER} run ${k}] ${c.clip}: ${r.timestamps.length} samples, ${r.seconds.toFixed(1)} s, ${r.metadata?.extractionMethod}`);
-      const clip = SET === 'demo' ? c.clip : `${c.clip}-${SET}`;
+      const clip = LIST || SET === 'demo' ? c.clip : `${c.clip}-${SET}`;
       writeFileSync(join(OUT, `${clip}.${BROWSER}.${k}.json`), JSON.stringify({ ...c, clip, browser: BROWSER, run: k, ...r }));
     }
   }
