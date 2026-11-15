@@ -37,11 +37,11 @@ Labelled sets are counted by the same code the app runs, in CI on every push and
 - stored landmark sets: 13 of the 15 that decide are exact (not 14, not 15); the 5 bench and overhead press sets are measured and decide nothing (PLAN.md);
 - real videos read whole by the built app: 12 of 17 exact, 2 refused, and 1 known error of 3 or more, a dumbbell bench press filmed from an angle, 16 for 9 (test/real-phone/sets-14nov-video/; not 13, not 14; the pendulum squat error of 14 for 7 resolved to 7 exact, back extension 17 to 18 exact, sissy squat 5_5011 refused to 5 exact, sissy squat 7_5006 5 to 7 exact).
 
-**Public build half** (test/real-phone/accuracy/public-scoreboard.txt, 8 November 2026): 1064 sets, 517 exact (49 %). Of the 949 in the baseline that decide, 468 exact (49%), 0 newly off by 3 or more. Per dataset: Countix cut to its labelled window 204 of 447 exact (46%), Countix whole 188 of 447 (42%), CFRep 8 of 12 (67%), MM-Fit 117 of 158 (74%). Countix by distinct clip: both readings exact on 172 of 447 (38%), either reading on 220 (49%).
+**Public build half** (test/real-phone/accuracy/public-scoreboard.txt, 15 November 2026): 1064 sets, 521 exact (49 %). Of the 949 in the baseline that decide, 472 exact (50%), 0 newly off by 3 or more. Per dataset: Countix cut to its labelled window 206 of 447 exact (46%), Countix whole 190 of 447 (43%), CFRep 8 of 12 (67%), MM-Fit 117 of 158 (74%). Countix by distinct clip: both readings exact on 174 of 447 (39%), either reading on 222 (50%).
 
 **Testers' blind counts** (test/real-phone/blind/, 8 November 2026): 0 sets recorded; collection schema, automated evaluation loop, baseline regression gate (`npm run scoreboard:blind`), and SHA-256 integrity lock (`labels.lock`) established.
 
-**Synthetic sets** (test/real-phone/synth/synth.txt, last written 6 October 2026): two rendered bodies read by the app's pose detection, 96 sets: 74 exact (77 %), 13 off by 3 or more. Ranges of motion read on average 29 degrees (30 %) below the skeleton's truth, and phase times about 0.6 s short. Synthetic bodies are not people: these figures bound what the pipeline can do in clean conditions.
+**Synthetic sets** (test/real-phone/synth/synth.txt, last written 15 November 2026): two rendered bodies read by the app's pose detection, 96 sets: 76 exact (79 %), 12 off by 3 or more. Ranges of motion read on average 30 degrees (30 %) below the skeleton's truth, and phase times about 0.6 s short. Synthetic bodies are not people: these figures bound what the pipeline can do in clean conditions.
 
 ## How it works
 
