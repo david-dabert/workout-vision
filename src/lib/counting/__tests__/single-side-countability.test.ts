@@ -57,4 +57,42 @@ describe('single-side countability before summed visibility (Phase 1.2)', () => 
     expect(summary.refused).toBe(false);
     expect(summary.count).toBe(0);
   });
+
+  it('never switches an arm lift read (prone_y_raise) to the far arm when the picked arm is under 50% countable (card 031)', () => {
+    const D = Math.PI / 180;
+    const sps = 15;
+    const lifts = sample(cycles({ rest: -3, work: 13, firstSec: 1.0, secondSec: 0.9, restSec: 0.5 }), -3, sps);
+    const ts = timestamps(lifts.length, sps);
+
+    const makeProneFrame = (lift: number, lElWrVis: number, rVis: number) => {
+      const f = Array.from({ length: 33 }, () => ({ x: 0, y: 0, z: 0, visibility: 0.9 }));
+      for (const [sh, el, wr, hip, side, shVis, endVis] of [
+        [11, 13, 15, 23, 1, 0.99, lElWrVis],
+        [12, 14, 16, 24, -1, rVis, rVis],
+      ] as const) {
+        const s = { x: 0.5, y: -0.05, z: side * 0.18, visibility: shVis };
+        const dir = (len: number, v: number) => ({
+          x: s.x + len * Math.cos(lift * D) * Math.cos(45 * D),
+          y: s.y - len * Math.sin(lift * D),
+          z: s.z + side * len * Math.cos(lift * D) * Math.sin(45 * D),
+          visibility: v,
+        });
+        f[sh] = s;
+        f[el] = dir(0.29, endVis);
+        f[wr] = dir(0.55, endVis);
+        f[hip] = { x: 0, y: 0, z: side * 0.09, visibility: 0.9 };
+      }
+      return f;
+    };
+
+    // Left arm has higher summed visibility (0.99+0.99+0.99 on 40%, 0.99+0.45+0.45 on 60% -> avg 2.322 > 1.80),
+    // yet both elbow and wrist fall below VIS_THRESHOLD on 60% of frames so left is < 50% countable.
+    // Right arm is 100% countable at 0.60 and moves through reps; lift reads must keep left and refuse.
+    const wl = lifts.map((l, i) => makeProneFrame(l, i % 5 < 2 ? 0.99 : 0.45, 0.60));
+
+    const res = countReps(wl, ts, 'prone_y_raise');
+    expect(res.arm).toBe('left');
+    const summary = summarizeCount(wl, ts, 'prone_y_raise');
+    expect(summary.refused).toBe(true);
+  });
 });

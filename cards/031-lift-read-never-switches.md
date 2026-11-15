@@ -1,5 +1,5 @@
 # 031. An arm's lift read never switches to the far arm
-Status: ready
+Status: done (15 November 2026, branch `antigravity/031-lift-read-never-switches`)
 Executor: careful
 Claim: A prone raise (an exercise read as an arm's lift, `lift` in its PATTERNS entry) filmed with its picked arm unseen is asked, not counted on the far arm, as before PR #431; the seated row fix of #431 is kept.
 Reference: `src/lib/counting/core.ts`, the comment above the still-limb rule: "An arm's lift read (prone raises) never switches: its far arm's rest wanders past the 10-degree floor (DETECTION, prone_y_raise)". PR #431 (card 027) put its countability switch before that guard (Claude's review of 14 November 2026, issue #190).
