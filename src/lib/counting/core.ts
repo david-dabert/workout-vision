@@ -565,8 +565,10 @@ const HYBRID_LOW_REST_SHARE = param('HYBRID_LOW_REST_SHARE', 0.25);
 const FLIP_WINDOW_SEC = 0.60;
 const FLIP_MIN_NEIGHBORS = 5;
 const FLIP_DIFF_DEG = 40;
+const FLIP_SELF_DIFF_DEG = 25;
 const FLIP_WORLD_JUMP_DEG = 35;
 const FLIP_IMAGE_MAX_DRIFT_DEG = 25;
+const FLIP_MAX_RUN_FRAMES = 3;
 // How many accepted reps the depth is read from (their median). Two until 20 October 2026: a clip of two or three
 // reps cut at its last working end then had no depth to compare with, and its last rep never counted (triage of the
 // public undercounts, test/real-phone/consensus/triage.test.ts: 47 of 133 such tails refused for this alone). One rep
@@ -776,8 +778,8 @@ function maskMonocularFlipImpulses(
     const near = l !== -1 ? imAngles[l]! : r !== -1 ? imAngles[r]! : null;
     return near !== null && Math.abs(a2 - near) <= FLIP_IMAGE_MAX_DRIFT_DEG;
   };
-  return filledAngles.map((v, i) => {
-    if (v === null || diffs[i] === null || rawAngles[i] === null || imAngles[i] === null) return v;
+  const flagged = filledAngles.map((v, i) => {
+    if (v === null || diffs[i] === null || rawAngles[i] === null || imAngles[i] === null) return false;
     const nbrD: number[] = [], nbr3: number[] = [];
     for (let j = Math.max(0, i - 8); j <= Math.min(rawAngles.length - 1, i + 8); j++) {
       if (j === i || Math.abs(timestamps[j] - timestamps[i]) > FLIP_WINDOW_SEC) continue;
@@ -786,11 +788,24 @@ function maskMonocularFlipImpulses(
         nbr3.push(rawAngles[j]!);
       }
     }
-    if (nbrD.length < FLIP_MIN_NEIGHBORS) return v;
+    if (nbrD.length < FLIP_MIN_NEIGHBORS) return false;
+    const selfDiff = Math.abs(diffs[i]!) >= FLIP_SELF_DIFF_DEG;
     const jumpDiff = Math.abs(diffs[i]! - median(nbrD)) >= FLIP_DIFF_DEG;
     const jumpWorld = Math.abs(rawAngles[i]! - median(nbr3)) >= FLIP_WORLD_JUMP_DEG;
-    return jumpDiff && jumpWorld && isSmooth2D(i) ? null : v;
+    return selfDiff && jumpDiff && jumpWorld && isSmooth2D(i);
   });
+  // Only mask isolated 1-3 frame impulses; longer runs reflect sustained foreshortening or real posture change.
+  const masked = [...filledAngles];
+  for (let i = 0; i < flagged.length; ) {
+    if (!flagged[i]) { i++; continue; }
+    let end = i;
+    while (end < flagged.length && flagged[end]) end++;
+    if (end - i <= FLIP_MAX_RUN_FRAMES) {
+      for (let k = i; k < end; k++) masked[k] = null;
+    }
+    i = end;
+  }
+  return masked;
 }
 
 /** Switch hybrid overhead presses that both open and finish racked at shoulders to low-rest concentric-first. */

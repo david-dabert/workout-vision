@@ -54,6 +54,20 @@ describe('monocular 2D-vs-3D impulse flip guard, hybrid overhead press rest, and
     expect(summary.refused).toBe(false);
   });
 
+  it('does not mask a genuine flexion frame where 3D matches 2D even when neighboring frames foreshorten', () => {
+    const worldAngles = [
+      165, 165, 165, 165, 165, 160, 145, 120, 90, 50, 82, 84, 83, 82, 85, 100, 130, 160, 165, 165,
+    ];
+    const imageAngles = [
+      165, 165, 165, 165, 165, 160, 145, 120, 85, 48, 22, 10, 10, 15, 40, 85, 125, 160, 165, 165,
+    ];
+    const { world, timestamps } = makeElbowFrames(worldAngles);
+    const { world: image } = makeElbowFrames(imageAngles);
+    const withImg = summarizeCount(world, timestamps, 'bicep_curl', undefined, image);
+    const withoutImg = summarizeCount(world, timestamps, 'bicep_curl');
+    expect(withImg.smoothedAngles[9]).toBeCloseTo(withoutImg.smoothedAngles[9]!, 4);
+  });
+
   it('infers low-rest concentric-first on overhead_press when racked at shoulders at start and end', () => {
     const def = liftDefinition('overhead_press');
     expect(def?.allowLowRest).toBe(true);
