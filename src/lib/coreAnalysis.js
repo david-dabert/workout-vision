@@ -88,7 +88,7 @@ export function summarizeCount(worldLandmarks, timestamps, lift, tuning = undefi
   // one joint angle cannot tell a rep cut by the end of the video from a movement after the set (TRIED.md, 1 and 15
   // October, 15 November 2026). Each side of a both-sides lift is read on its own reps and thresholds (the side cut
   // mid-rep has one rep fewer, so it is never the primary; reviewer, 15 November 2026). The count stays; the set is
-  // marked, and the result screen asks on David's #collecte phone only until he chooses (card 035). Status:
+  // marked, and the result screen asks on David's #collecte phone only until he chooses (card 039). Status:
   // experimental: on the public build sets shown as sure a marked set is mostly short, on David's sets it caught no
   // error (TRIED.md, 15 November 2026).
   const tailOpen = !refused && (core.sides ? [core.sides.left, core.sides.right] : [core]).some(c => openAtEnd(c, timestamps, liftDefinition(lift).rest));

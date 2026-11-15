@@ -1,4 +1,4 @@
-# Card 035: Ask when the video stops on a rise the count left out
+# Card 039: Ask when the video stops on a rise the count left out
 
 Status: built on `claude/counter-accuracy`; the question shows on David's #collecte phone only, until his product choice (below)
 Lane: careful

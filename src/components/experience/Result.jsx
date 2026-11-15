@@ -213,7 +213,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const openedMidRep = !result.refused && result.count > 0 && !flagged && result.headRefused === true;
   const doubted = !result.refused && result.count > 0 && !flagged && result.doubt?.flagged === true;
   // The video stops on a rise the counter left out (coreAnalysis.js tailOpen, 15 November 2026): asked on David's
-  // #collecte phone only until he chooses (card 035): on the public sets shown as sure such a count was mostly short, on
+  // #collecte phone only until he chooses (card 039): on the public sets shown as sure such a count was mostly short, on
   // his own sets it caught no error and asked on two exact ones (TRIED.md, 15 November 2026).
   const endedMidRep = !result.refused && result.count > 0 && !flagged && result.tailOpen === true && collectOn();
   // The app's count, standing as one to confirm: a flagged, moved, mid-rep or low-pose-coverage set's.

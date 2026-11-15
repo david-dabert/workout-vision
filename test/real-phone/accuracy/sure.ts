@@ -31,7 +31,7 @@ export function sureRow(result: any, lift: string, label: number, countOf: (r: a
   }) : null);
   const moved = Array.isArray(recounts) && recounts.some(c => c !== result.count) && sensitivityAsks(result.count, recounts);
   // Since 19 October 2026 the result screen asks on a refused head rep; since 14 November 2026 it also asks when poseDoubt flags gaps or low coverage (Result.jsx);
-  // the open last rise (coreAnalysis.js tailOpen) asks on David's #collecte phone only (card 035): measured apart, as tail.
+  // the open last rise (coreAnalysis.js tailOpen) asks on David's #collecte phone only (card 039): measured apart, as tail.
   return { err: Math.abs((Number.isFinite(scored) ? scored : 0) - label), flagged: result.bodyCheck?.flagged === true, moved: moved || result.headRefused === true || result.doubt?.flagged === true, tail: result.tailOpen === true };
 }
 
@@ -48,5 +48,5 @@ export function sureLine(rows: SureRow[]) {
   return `Right when sure (R16, sure.ts; measured, decides nothing): of ${rows.length} sets that decide, ${counted.length} counted. `
     + `With the body check alone (before 19 October 2026), shown as sure ${part(sure)}; asked to confirm ${part(counted.filter(r => r.flagged))}. `
     + `As the app ships, the sensitivity check, a refused head rep and pose doubt asking too: shown as sure ${part(sureSens)}; asked to confirm ${part(counted.filter(r => r.flagged || r.moved))}. `
-    + `With the open last rise asking too (card 035, David's #collecte phone only): shown as sure ${part(sureSens.filter(r => !r.tail))}; asked to confirm ${part(counted.filter(r => r.flagged || r.moved || r.tail))}.`;
+    + `With the open last rise asking too (card 039, David's #collecte phone only): shown as sure ${part(sureSens.filter(r => !r.tail))}; asked to confirm ${part(counted.filter(r => r.flagged || r.moved || r.tail))}.`;
 }

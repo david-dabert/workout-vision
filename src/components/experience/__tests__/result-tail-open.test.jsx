@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-// A set whose video stops on a rise the count left out (coreAnalysis.js tailOpen, card 035, 15 November 2026): asked on
-// David's #collecte phone only, until he chooses (card 035); every other phone shows the screen as before.
+// A set whose video stops on a rise the count left out (coreAnalysis.js tailOpen, card 039, 15 November 2026): asked on
+// David's #collecte phone only, until he chooses (card 039); every other phone shows the screen as before.
 vi.mock('../lift-scenes', () => ({ hasFigure: () => false, liftView: () => null, topPose: () => null }));
 vi.mock('../entry-scene', () => ({ Body: class {}, mapPose: () => null, DPR: 1, LITE: false }));
 vi.mock('../stage-loop', () => ({ addLayer: () => () => {}, presence: () => 0, holdStage: () => {} }));
