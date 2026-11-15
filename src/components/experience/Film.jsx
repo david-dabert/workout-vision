@@ -275,7 +275,7 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
           : (fr ? 'La vidéo reste sur votre téléphone.' : 'The video stays on your phone.')}</span>
       </p>
       {!test && <p className="film-placement-note" data-testid="film-filming-note" data-reveal style={{ '--i': 7 }}>
-        {placement.angleLabel} · {placement.framingLabel}. {placement.evidenceNote}
+        {placement.angleLabel} · {placement.framingLabel}.
       </p>}
       {drawerOpen && (
         <FilmExerciseDrawer

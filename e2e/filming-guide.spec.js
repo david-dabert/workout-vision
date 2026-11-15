@@ -5,7 +5,10 @@ test.use({ serviceWorkers: 'block', viewport: { width: 390, height: 844 }, local
 
 const keepFault = f => !f.startsWith('note: ');
 
-test('card 041: Guide and Film show per-lift camera placement without pushing Filmer ma série below the fold', async ({ page }) => {
+// Card 042 (15 November 2026): the placement note gives the angle and the framing, and no figure from rendered bodies (R8).
+const CLAIM = /exactes|Synth[eè]se|synth[eé]tique|\b\d\/6\b/;
+
+test('cards 041 and 042: Guide and Film show per-lift camera placement, with no figure, without pushing Filmer ma série below the fold', async ({ page }) => {
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
@@ -29,7 +32,7 @@ test('card 041: Guide and Film show per-lift camera placement without pushing Fi
   const guideNote = page.getByTestId('guide-filming-note');
   await expect(guideNote).toBeVisible();
   await expect(guideNote).toContainText('De profil (90°)');
-  await expect(guideNote).toContainText('4/6 exactes');
+  await expect(guideNote).not.toHaveText(CLAIM);
   expect((await page.evaluate(layoutFaults)).filter(keepFault)).toEqual([]);
 
   // 2. Navigate from Guide into Film for bicep_curl and verify primary CTA stays in viewport.
@@ -38,7 +41,7 @@ test('card 041: Guide and Film show per-lift camera placement without pushing Fi
   const filmNote = page.getByTestId('film-filming-note');
   await expect(filmNote).toBeVisible();
   await expect(filmNote).toContainText('De profil (90°)');
-  await expect(filmNote).toContainText('4/6 exactes');
+  await expect(filmNote).not.toHaveText(CLAIM);
 
   const filmBtn = page.locator('.film-screen .actions .btn-primary');
   await expect(filmBtn).toContainText('Filmer ma série');
@@ -52,7 +55,7 @@ test('card 041: Guide and Film show per-lift camera placement without pushing Fi
   await page.locator('.rail > .altar[aria-label="Élévations latérales"]').first().click();
   await expect(page.locator('.film-screen')).toBeVisible({ timeout: 20_000 });
   await expect(page.getByTestId('film-filming-note')).toContainText('De face (0°)');
-  await expect(page.getByTestId('film-filming-note')).toContainText('6/6 exactes');
+  await expect(page.getByTestId('film-filming-note')).not.toHaveText(CLAIM);
 
   const lrBox = await page.locator('.film-screen .actions .btn-primary').boundingBox();
   expect(lrBox).not.toBeNull();
