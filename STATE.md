@@ -84,6 +84,8 @@ David's recorded words (DIRECTIVES.md Part 1, docs/VISION.md, R16), held against
 
 ## Now
 
+15 November 2026, 02:30 UTC (nightly run, Claude): main at 6c849bc5. Merged on 14 November: #431 (card 027, a single-side lift counts the other arm when the picked one is unseen), #432 (card 029, the one-tap demo runner on check.html), #429 (the agent ledger, branch `ledger`), #434 (CLAUDE.md R5, R6, R15 amended). Open: #433 (card 030, Antigravity). No card was ready; cards 031 to 033 written. Measured: on the public build sets the core refuses none of the 259 seen clearly (TRIED.md).
+
 14 November 2026, night (Antigravity): branch `lab/dormant-counting-bench`, card 026 done: benchmarked the four dormant counting/pose modules of `docs/AUDIT-2026-11.md` (`recurrenceSegmenter.ts`, `kinematicOcclusionInpainter.ts`, `perspectiveInvariance.js`, `groundPlaneCorrection.ts`) in `test/real-phone/dormant-counting/` and closed them in `TRIED.md` (none improves any suite over baseline: recurrence 412/1064 public, 9/20 david, 3/16 video; inpainter 513/1064, 27/68 occlusion; perspective 11/16 video; groundPlane 10/16 video). No `src/` file touched.
 
 14 November 2026, 02:30 UTC: main at efbf88b0 (#415, the overnight lab, no count changed). First run, 531 experiments: nine values kept on half A overfit (real videos 12 to 10, RepCount 27 to 22); `MIN_ROM_DEGREES` 14 alone loses nothing and gains 7 exact on half B. No card was ready; cards 023 (ship that value through R2) and 024 (a second run guarded by the real videos) written, both ready.
