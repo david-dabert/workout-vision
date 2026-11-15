@@ -6,7 +6,7 @@ The queue of METHOD.md. One file per task, taken in the order of "Order" below a
 
 Set by Claude on 11 November 2026 on David's order of that day ("you will have to do the hard work ... give your own instructions"). David may reorder it at any time; an agent reorders it only in a report that says why.
 
-Reordered by Claude on 12 November 2026, on David's message of that day (the moment after the first set, and real progress each morning). Done: 002, 004, 005, 006, 007, 008, 009, 010, 013, 014, 015, 016, 017, 019, 026.
+Reordered by Claude on 12 November 2026, on David's message of that day (the moment after the first set, and real progress each morning). Done: 002, 004, 005, 006, 007, 008, 009, 010, 013, 014, 015, 016, 017, 019, 026, 027, 028, 029.
 
 Reordered by Claude on 12 November 2026, from the audit (card 006): card 013 first, because the report, the home and three addresses show in production what the switch of 11 November turned off (R8).
 
@@ -16,6 +16,11 @@ Reordered by Claude on 13 November 2026, from the flaw register (`docs/FLAWS-202
 
 Reordered by Claude on 14 November 2026, nightly run: no card was ready; 023 and 024 written from the overnight lab's first run, first because they are the only cards that can raise the count without David.
 
+Reordered by Claude on 15 November 2026, nightly run: no card was ready (028 was merged in #430 and still marked ready; 030 is Antigravity's, #433). Three cards written, in the phases of the roadmap of 14 November 2026: 031 first because it guards a Phase 1 fix merged that night (#431), then 032 and 033, Phase 2, the promise STATE.md marks worst kept ("What to do next"). A refusal audit on public data was measured and not written as a card: it passes before any change (TRIED.md, 15 November 2026).
+
+0. 031, an arm's lift read never switches to the far arm: the exception #431 skipped.
+0. 032, the load of each set, kept with its count.
+0. 033, the next set to beat, by load and reps (after 032).
 0. 023, the range floor from 20 to 14 degrees, through R2: the one value of the lab's first run that loses nothing on any suite.
 0. 024, the lab's second run, guarded by the real videos and RepCount.
 1. 001, the kiné comparison held against public data: the proof the kiné offer rests on. Blocked since 12 November 2026 on David's four videos; its public half passed (#391).
