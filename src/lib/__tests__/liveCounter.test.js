@@ -42,7 +42,7 @@ describe('live counting', () => {
 
   for (const set of [...real, ...synth]) {
     it(`${set.name}: fed in chunks, ends on the batch count`, () => {
-      const batch = summarizeCount(set.world, set.t, set.lift);
+      const batch = summarizeCount(set.world, set.t, set.lift, undefined, set.image);
       // 7 samples is about the 500 ms between two counts on screen; 1 and 23 are the extremes either side.
       for (const chunk of [1, 7, 23]) {
         const { live, announced, last } = feed(set, chunk);

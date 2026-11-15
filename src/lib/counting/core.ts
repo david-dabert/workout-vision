@@ -188,6 +188,8 @@ export interface LiftDefinition {
    * machine occlusion are held at the median platform position to prevent false extension spikes at the bottom of the squat.
    */
   fixedFeet?: boolean;
+  /** For hybrid resting lifts (overhead_press), detect bottom-racked sets resting low before pressing. */
+  allowLowRest?: boolean;
   /** Clamp impossible anatomical inversions (ankle.y < knee.y) caused by angled sled footplate occlusion (hack_squat). */
   clampFootplateInversion?: boolean;
 }
@@ -201,7 +203,7 @@ export const LIFTS = {
   triceps_pushdown: { joint: 'elbow', rest: 'low', first: 'concentric' },
   // Presses rest at lockout, so the bar comes down first. To be confirmed on their build sets.
   bench_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
-  overhead_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
+  overhead_press: { joint: 'elbow', rest: 'high', first: 'eccentric', allowLowRest: true },
   // lateral_raise (15 November 2026, Card 034): admit 15-degree single reps (default MIN_ROM_DEGREES is 20):
   // synthetic +1 exact (22 -> 23 of 24), 0 lost across public, synthetic, occlusion, David, or video suites.
   // Source: UNSOURCED. Status: experimental.
@@ -544,6 +546,27 @@ const TAIL_AT_WORK_SEC = param('TAIL_AT_WORK_SEC', 0.6);
 const TAIL_HOLD_MAX_SEC = param('TAIL_HOLD_MAX_SEC', 1.5);
 const TAIL_DEPTH_SHARE = param('TAIL_DEPTH_SHARE', 0.85);
 const TAIL_REST_MAX_SEC = param('TAIL_REST_MAX_SEC', 4.0);   // a candidate cut rep must begin within 4.0 s of the previous cycle completing (post-set rest + exit is not a rep). Source: UNSOURCED. Status: experimental
+// Transient pose flicker tolerance in seenToEnd (TAIL_AT_WORK): a single- or two-frame visibility dip (<= 0.22 s)
+// during a cut tail must not veto stoppedAtWork once bridged smoothly, while ending within TAIL_END_GAP_SEC (0.15 s)
+// of the clip's end keeps lost-person endings out. Measured 15 November 2026 via compare-variants across 1,344 sets:
+// publicA 261 -> 268 exact (+7, 0 lost, chi2 = 5.14), publicB 260 -> 261 (+2/-1, off3+ 88 -> 87), 0 lost across
+// david/video/synthetic/repcount/occlusion. Source: UNSOURCED. Status: experimental.
+const TAIL_FLICKER_MAX_GAP_SEC = param('TAIL_FLICKER_MAX_GAP_SEC', 0.22);
+const TAIL_END_GAP_SEC = param('TAIL_END_GAP_SEC', 0.15);
+// Hybrid bottom-racked rest inference for overhead_press: when the first 5 and last 5 valid samples sit below this
+// share of [lowThreshold..highThreshold], the lifter rested racked at the shoulders rather than overhead locked out.
+// Measured 15 November 2026 via compare-variants across 1,344 sets: publicA 261 -> 272 (+11, 0 lost, chi2 = 9.09),
+// publicB 260 -> 260 (0 lost), synthetic off3+ 12 -> 11. Source: UNSOURCED. Status: experimental.
+const HYBRID_LOW_REST_SHARE = param('HYBRID_LOW_REST_SHARE', 0.25);
+// Monocular 2D-vs-3D impulse flip guard: detects 1-3 frame MediaPipe world-z depth inversions on elbow lifts where
+// 3D angle jumps sharply away from surrounding samples while 2D image-plane angle stays smooth. Preserves raw
+// angle visibility so coverage/refusal are unchanged. Source: UNSOURCED (reproduces david_curl_7_rvfc i=236-237).
+// Status: experimental.
+const FLIP_WINDOW_SEC = 0.60;
+const FLIP_MIN_NEIGHBORS = 5;
+const FLIP_DIFF_DEG = 40;
+const FLIP_WORLD_JUMP_DEG = 35;
+const FLIP_IMAGE_MAX_DRIFT_DEG = 25;
 // How many accepted reps the depth is read from (their median). Two until 20 October 2026: a clip of two or three
 // reps cut at its last working end then had no depth to compare with, and its last rep never counted (triage of the
 // public undercounts, test/real-phone/consensus/triage.test.ts: 47 of 133 such tails refused for this alone). One rep
@@ -602,15 +625,16 @@ export function countReps(
   timestamps: number[],
   lift: Lift | string,
   tuning: CountTuning = {},
+  imageLandmarks?: unknown[],
 ): CountResult {
   // An exercise with no definition (no joint in the guide, or a key the core does not know) gets no
   // count: never another lift's (review of 29 September 2026).
   const def = liftDefinition(lift);
   if (!def) return { count: 0, reps: [], partialCount: 0, totalCount: 0, partials: [], arm: 'left', confidence: 0, angles: [], smoothedAngles: [], lowThreshold: 0, highThreshold: 0 };
-  if (def.bothSides) return countBothSides(worldLandmarks, timestamps, def, tuning);
+  if (def.bothSides) return countBothSides(worldLandmarks, timestamps, def, tuning, imageLandmarks);
   const seen = selectSide(worldLandmarks, def.joint);
   if (def.together) {
-    const joined = countBothSides(worldLandmarks, timestamps, def, tuning);
+    const joined = countBothSides(worldLandmarks, timestamps, def, tuning, imageLandmarks);
     const { left, right } = joined.sides!;
     if (correlation(left.smoothedAngles, right.smoothedAngles) > (def.togetherMinCorrelation ?? TOGETHER_MIN_CORRELATION)) {
       // Either knee in sight sees the rep: the share of samples where one of them is.
@@ -619,7 +643,7 @@ export function countReps(
     }
     // The knees do not move together: counted as eitherSide, below.
   }
-  const mine = countSide(worldLandmarks, timestamps, def, seen, tuning);
+  const mine = countSide(worldLandmarks, timestamps, def, seen, tuning, imageLandmarks);
   const countable = (r: CountResult) => r.angles.filter(a => a !== null).length >= worldLandmarks.length / 2;
   if (!def.eitherSide && !def.together) {
     // Summed visibility (selectSide) can pick a side whose individual landmarks fail VIS_THRESHOLD on over half the
@@ -627,7 +651,7 @@ export function countReps(
     // Check countability on the picked side before the still-limb check, except for arm lift reads (def.lift, prone raises),
     // which never switch to the far arm (card 031).
     if (!def.lift && !countable(mine)) {
-      const other = countSide(worldLandmarks, timestamps, def, seen === 'left' ? 'right' : 'left', tuning);
+      const other = countSide(worldLandmarks, timestamps, def, seen === 'left' ? 'right' : 'left', tuning, imageLandmarks);
       if (countable(other)) return other;
       return mine;
     }
@@ -642,7 +666,7 @@ export function countReps(
     // switches: its far arm's rest wanders past the 10-degree floor (DETECTION, prone_y_raise).
     // Source: UNSOURCED (no published rule). Status: experimental.
     if (mine.count > 0 || def.lift || spreadDeg(mine.smoothedAngles) >= STILL_SIDE_DEG) return mine;
-    const other = countSide(worldLandmarks, timestamps, def, seen === 'left' ? 'right' : 'left', tuning);
+    const other = countSide(worldLandmarks, timestamps, def, seen === 'left' ? 'right' : 'left', tuning, imageLandmarks);
     return other.count > 0 && countable(other) && spreadDeg(other.smoothedAngles) >= MIN_ROM_DEGREES ? other : mine;
   }
   // The side with more reps; on a tie, the better seen. A side seen in fewer than half the samples, which the count
@@ -654,7 +678,7 @@ export function countReps(
   // compared first, then reps (third audit, C01, 3 October: a push-up whose picked wrist hovered at 0.45 was
   // refused although the other elbow, seen on every sample, counted the same 6). Measured on 3 October with
   // variant-eval: no count moved on David's sets, either public half or the synthetic sets.
-  const other = countSide(worldLandmarks, timestamps, def, seen === 'left' ? 'right' : 'left', tuning);
+  const other = countSide(worldLandmarks, timestamps, def, seen === 'left' ? 'right' : 'left', tuning, imageLandmarks);
   const mineSeen = countable(mine), otherSeen = countable(other);
   if (mineSeen !== otherSeen) return otherSeen ? other : mine;
   return other.count > mine.count ? other : mine;
@@ -710,12 +734,107 @@ function sanitizeFixedFeet(worldLandmarks: WorldLandmarkFrame[], joint: Joint, c
   });
 }
 
+/** Mask 1-3 frame monocular 3D depth flips contradicted by smooth 2D image-plane joint angles. */
+function maskMonocularFlipImpulses(
+  filledAngles: (number | null)[],
+  rawAngles: (number | null)[],
+  timestamps: number[],
+  joint: Joint,
+  arm: 'left' | 'right',
+  imageLandmarks?: unknown[],
+): (number | null)[] {
+  if (!imageLandmarks || imageLandmarks.length !== rawAngles.length || joint !== 'elbow') return filledAngles;
+  const [sI, eI, wI] = JOINT_POINTS.elbow[arm];
+  const median = (arr: number[]) => {
+    const sorted = [...arr].sort((a, b) => a - b);
+    return sorted[Math.floor(sorted.length / 2)];
+  };
+  const imAngles = imageLandmarks.map((frame): number | null => {
+    if (!frame || typeof frame !== 'object') return null;
+    const f = frame as Record<number, { x: number; y: number } | number>;
+    const pt = (k: number) => (typeof f[0] === 'number'
+      ? { x: Number(f[2 * k]), y: Number(f[2 * k + 1]) }
+      : (f[k] as { x: number; y: number } | undefined));
+    const p1 = pt(sI), p2 = pt(eI), p3 = pt(wI);
+    if (!p1 || !p2 || !p3) return null;
+    const x1 = p1.x - p2.x, y1 = p1.y - p2.y, x2 = p3.x - p2.x, y2 = p3.y - p2.y;
+    const m1 = Math.hypot(x1, y1), m2 = Math.hypot(x2, y2);
+    if (m1 <= 1e-6 || m2 <= 1e-6) return null;
+    return Math.acos(Math.max(-1, Math.min(1, (x1 * x2 + y1 * y2) / (m1 * m2)))) * 180 / Math.PI;
+  });
+  const diffs = rawAngles.map((a3, i) => (a3 !== null && imAngles[i] !== null ? a3 - imAngles[i]! : null));
+  const isSmooth2D = (i: number): boolean => {
+    const a2 = imAngles[i];
+    if (a2 === null) return false;
+    let l = -1, r = -1;
+    for (let k = i - 1; k >= Math.max(0, i - 3); k--) if (imAngles[k] !== null) { l = k; break; }
+    for (let k = i + 1; k <= Math.min(imAngles.length - 1, i + 3); k++) if (imAngles[k] !== null) { r = k; break; }
+    if (l !== -1 && r !== -1) {
+      const chord = imAngles[l]! + (imAngles[r]! - imAngles[l]!) * ((i - l) / (r - l));
+      return Math.abs(a2 - chord) <= FLIP_IMAGE_MAX_DRIFT_DEG;
+    }
+    const near = l !== -1 ? imAngles[l]! : r !== -1 ? imAngles[r]! : null;
+    return near !== null && Math.abs(a2 - near) <= FLIP_IMAGE_MAX_DRIFT_DEG;
+  };
+  return filledAngles.map((v, i) => {
+    if (v === null || diffs[i] === null || rawAngles[i] === null || imAngles[i] === null) return v;
+    const nbrD: number[] = [], nbr3: number[] = [];
+    for (let j = Math.max(0, i - 8); j <= Math.min(rawAngles.length - 1, i + 8); j++) {
+      if (j === i || Math.abs(timestamps[j] - timestamps[i]) > FLIP_WINDOW_SEC) continue;
+      if (diffs[j] !== null && rawAngles[j] !== null && imAngles[j] !== null) {
+        nbrD.push(diffs[j]!);
+        nbr3.push(rawAngles[j]!);
+      }
+    }
+    if (nbrD.length < FLIP_MIN_NEIGHBORS) return v;
+    const jumpDiff = Math.abs(diffs[i]! - median(nbrD)) >= FLIP_DIFF_DEG;
+    const jumpWorld = Math.abs(rawAngles[i]! - median(nbr3)) >= FLIP_WORLD_JUMP_DEG;
+    return jumpDiff && jumpWorld && isSmooth2D(i) ? null : v;
+  });
+}
+
+/** Switch hybrid overhead presses that both open and finish racked at shoulders to low-rest concentric-first. */
+function inferBottomRestDefinition(
+  def: LiftDefinition,
+  validAngles: number[],
+  pLow: number,
+  pHigh: number,
+  margin: number,
+  workMargin: number,
+): LiftDefinition {
+  if (!def.allowLowRest || validAngles.length < 10) return def;
+  const lowBase = pLow + (def.rest === 'high' ? workMargin : margin);
+  const highBase = pHigh - (def.rest === 'high' ? margin : workMargin);
+  const threshold = lowBase + HYBRID_LOW_REST_SHARE * (highBase - lowBase);
+  const firstAvg = validAngles.slice(0, 5).reduce((a, b) => a + b, 0) / 5;
+  const lastAvg = validAngles.slice(-5).reduce((a, b) => a + b, 0) / 5;
+  return firstAvg < threshold && lastAvg < threshold ? { ...def, rest: 'low', first: 'concentric' } : def;
+}
+
+/** Allow transient <= TAIL_FLICKER_MAX_GAP_SEC visibility dips in a cut-tail finish while requiring active end sight. */
+function isSeenToEndWithFlicker(
+  seen: boolean[] | null | undefined,
+  timestamps: number[],
+  firstAtWork: number,
+  last: number,
+): boolean {
+  if (!seen || firstAtWork < 0 || timestamps[timestamps.length - 1] - timestamps[last] > TAIL_END_GAP_SEC) return false;
+  let lastTrue = firstAtWork;
+  for (let k = firstAtWork; k <= last; k++) {
+    if (!seen[k]) continue;
+    if (timestamps[k] - timestamps[lastTrue] > TAIL_FLICKER_MAX_GAP_SEC) return false;
+    lastTrue = k;
+  }
+  return timestamps[timestamps.length - 1] - timestamps[lastTrue] <= TAIL_FLICKER_MAX_GAP_SEC;
+}
+
 function countSide(
   worldLandmarks: WorldLandmarkFrame[],
   timestamps: number[],
   def: LiftDefinition,
   arm: 'left' | 'right',
   tuning: CountTuning = {},
+  imageLandmarks?: unknown[],
 ): CountResult {
   const landmarks = def.fixedFeet ? sanitizeFixedFeet(worldLandmarks, def.joint, !!def.clampFootplateInversion) : worldLandmarks;
   // 1. Extract raw angle per sample
@@ -732,9 +851,10 @@ function countSide(
   // 2. Estimate sample rate from timestamps
   const sampleRate = estimateSampleRate(timestamps);
 
-  // 3. Remove outliers (before bridging, so spikes don't propagate)
+  // 3. Mask monocular 3D flip impulses (preserving rawAngles coverage), then remove isolated outliers
+  const flipCleaned = maskMonocularFlipImpulses(filledAngles, rawAngles, timestamps, def.joint, arm, imageLandmarks);
   const outlierSize = tuning.outlierWindow ?? secToOddSamples(OUTLIER_WINDOW_SEC, sampleRate);
-  const cleaned = removeOutliers(filledAngles, outlierSize, OUTLIER_DEVIATION_DEG);
+  const cleaned = removeOutliers(flipCleaned, outlierSize, OUTLIER_DEVIATION_DEG);
 
   // 4. Bridge short dropouts
   const bridged = bridgeDropouts(cleaned, timestamps, BRIDGE_GAP_SEC);
@@ -762,19 +882,20 @@ function countSide(
   const margin = range * (def.thresholdMargin ?? THRESHOLD_MARGIN) * scale;
   // The working end may sit further in (LiftDefinition.workMargin, squat); the rest end keeps the margin.
   const workMargin = range * (def.workMargin ?? def.thresholdMargin ?? THRESHOLD_MARGIN) * scale;
-  const lowThreshold = pLow + (def.rest === 'high' ? workMargin : margin);
-  const highThreshold = pHigh - (def.rest === 'high' ? margin : workMargin);
+  const effDef = inferBottomRestDefinition(def, validAngles, pLow, pHigh, margin, workMargin);
+  const lowThreshold = pLow + (effDef.rest === 'high' ? workMargin : margin);
+  const highThreshold = pHigh - (effDef.rest === 'high' ? margin : workMargin);
 
-  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, def.rest, def.minRepRomDeg ?? MIN_ROM_DEGREES, def.minRepSec ?? MIN_REP_SEC, !!def.noSplit, def.joint !== 'elbow', !!def.lift, rawAngles.map(a => a !== null), def.first === 'concentric');
+  const cycles = detectReps(smoothed, timestamps, lowThreshold, highThreshold, effDef.rest, effDef.minRepRomDeg ?? MIN_ROM_DEGREES, effDef.minRepSec ?? MIN_REP_SEC, !!effDef.noSplit, effDef.joint !== 'elbow', !!effDef.lift, rawAngles.map(a => a !== null), effDef.first === 'concentric');
   const band = Math.max(REST_BAND_MIN_DEG, range * REST_BAND_FRACTION);
   // Speeds are read only where every sample the smoothing used was seen, not filled in by the bridge: the jump
   // where a pose comes back after a short loss is no limb's speed (second audit, 3 October).
   const halfSg = Math.floor(sgSize / 2);
   const seenAround = cleaned.map((_, i) => { for (let j = Math.max(0, i - halfSg); j <= Math.min(cleaned.length - 1, i + halfSg); j++) if ((cleaned[j] === null && bridged[j] !== null) || filled[j]) return false; return true; });
-  const reps = placeBoundaries(cycles, smoothed, timestamps, lowThreshold, highThreshold, band, def, seenAround);
+  const reps = placeBoundaries(cycles, smoothed, timestamps, lowThreshold, highThreshold, band, effDef, seenAround);
 
   // Partial repetitions (lengthened and shortened partials):
-  const partials = detectPartialReps(smoothed, timestamps, lowThreshold, highThreshold, def, range, cycles, reps, seenAround);
+  const partials = detectPartialReps(smoothed, timestamps, lowThreshold, highThreshold, effDef, range, cycles, reps, seenAround);
 
   // 8. Confidence: fraction of samples with a detected pose on the tracked side. It is pose coverage, not certainty
   // that the count is right: a set seen throughout can still be miscounted (Astra's review of 5 October). Read it as
@@ -851,9 +972,9 @@ export function jointRange(worldLandmarks: WorldLandmarkFrame[], timestamps: num
  * second's lag counted 12 for 6). Status: experimental, UNSOURCED.
  * The count needs both arms in view, so the confidence is the lower of the two.
  */
-function countBothSides(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], def: LiftDefinition, tuning: CountTuning = {}): CountResult {
-  const left = countSide(worldLandmarks, timestamps, def, 'left', tuning);
-  const right = countSide(worldLandmarks, timestamps, def, 'right', tuning);
+function countBothSides(worldLandmarks: WorldLandmarkFrame[], timestamps: number[], def: LiftDefinition, tuning: CountTuning = {}, imageLandmarks?: unknown[]): CountResult {
+  const left = countSide(worldLandmarks, timestamps, def, 'left', tuning, imageLandmarks);
+  const right = countSide(worldLandmarks, timestamps, def, 'right', tuning, imageLandmarks);
   // T5 (survey.ts, ALT_DIFF, off): the two sides move in turn, so the reps are read on their difference.
   if (def.bothSides && !def.together && altDiffOn() && correlation(left.smoothedAngles, right.smoothedAngles) < altMaxR()) {
     const alt = countAlternating(left, right, timestamps, def);
@@ -1454,9 +1575,8 @@ function detectReps(
     for (let i = repStartIdx; i <= last; i++) if (atWork(smoothed[i])) { lastAtWork = i; if (firstAtWork < 0) firstAtWork = i; }
     const duration = timestamps[last] - timestamps[repStartIdx];
     const whole = duration >= minSec && bounded(repStartIdx, last) && peakAngle - troughAngle >= minRom;
-    // Seen by the pose model, not filled in, from where it reached the working end to the video's last sample.
-    const seenToEnd = !!seen && firstAtWork > -1 && last === timestamps.length - 1
-      && seen.slice(firstAtWork, last + 1).every(Boolean);
+    // Seen by the pose model, not filled in across long gaps, from where it reached the working end to the clip end.
+    const seenToEnd = isSeenToEndWithFlicker(seen, timestamps, firstAtWork, last);
     // As deep as the set's own reps: the median working extreme of the accepted reps, measured from the rest threshold.
     const restLine = restsLow ? lowThreshold : highThreshold;
     const depths = cycles.map(c => {
