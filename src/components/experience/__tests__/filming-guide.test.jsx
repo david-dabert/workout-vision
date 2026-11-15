@@ -68,6 +68,40 @@ describe('filmingGuideFor (card 041, card 042)', () => {
   });
 });
 
+describe('a catalogue variant of the « Changer » drawer (review of card 042, 15 November 2026)', () => {
+  // The drawer passes catalogue ids (barbell_back_squat), whose counting lift is in the catalogue's counting_key.
+  // The framing follows the lift it counts as; the angle too when the guide knows no view of its own for the variant.
+  it('gets the framing and the angle of the lift it counts as', async () => {
+    stubEnv();
+    const { filmingGuideFor } = await import('../filming-guide');
+    expect(filmingGuideFor('barbell_back_squat', true, 'squat').framingLabel).toBe('corps entier, pieds compris');
+    expect(filmingGuideFor('conventional_deadlift', true, 'deadlift').framingLabel).toBe('corps entier, pieds compris');
+    expect(filmingGuideFor('standing_barbell_overhead_press', true, 'overhead_press').angleLabel).toBe('De face (0°)');
+  });
+
+  it('on Film, the note, the eyebrow and step 2 say the same thing', async () => {
+    stubEnv({ wv_lang: 'fr' });
+    const [{ LanguageProvider }, { default: Film }] = await Promise.all([
+      import('../../../lib/LanguageContext'),
+      import('../Film.jsx'),
+    ]);
+    const film = lift => renderToStaticMarkup(
+      <LanguageProvider>
+        <Film lift={lift} onBack={() => {}} onFile={() => {}} onLive={() => {}} onChangeLift={() => {}} />
+      </LanguageProvider>,
+    );
+    const note = html => html.match(/data-testid="film-filming-note"[^>]*>([^<]*)</)?.[1] ?? '';
+
+    const squat = film('barbell_back_squat');
+    expect(squat).toContain('Le corps entier dans le cadre, pieds compris.');
+    expect(note(squat)).toContain('corps entier, pieds compris');
+
+    const press = film('standing_barbell_overhead_press');
+    expect(note(press)).toContain('De face (0°)');
+    expect(press).toContain('Filmé de face');
+  });
+});
+
 describe('Guide & Film camera placement rendering (card 041, card 042)', () => {
   it('renders the angle and framing in the Guide focus view and on Film, and no figure', async () => {
     stubEnv({ wv_lang: 'fr' });

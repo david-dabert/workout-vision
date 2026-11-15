@@ -4,7 +4,7 @@ import { createLiftScene, hasFigure, restBox } from './lift-scenes';
 import { liftDefinition } from '../../lib/counting/core';
 import { tierLabel } from '../../lib/liftTiers';
 import { tierOf } from '../../lib/offer';
-import { exerciseName, filmView, guideExercise } from './exercise-info';
+import { exerciseName, guideExercise } from './exercise-info';
 import { filmingGuideFor } from './filming-guide';
 import { GuideFrames } from './Guide';
 import { GUIDE_BOX, hasGuideFigure } from './guide-figure';
@@ -45,8 +45,9 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
   // so a Film screen still fading out never shares the name with the next one.
   const [hero, setHero] = useState(arrivedByTransition);
   useEffect(() => { if (!hero) return undefined; const t = setTimeout(() => setHero(false), 700); return () => clearTimeout(t); }, [hero]);
-  const view = filmView(activeLift) || filmView(countingLiftKey);
-  const placement = filmingGuideFor(activeLift, fr);
+  // One source for the angle: the note, the eyebrow and step 1 all read it (review of card 042).
+  const placement = filmingGuideFor(activeLift, fr, countingLiftKey);
+  const view = placement.view;
   const test = FITNESS_TESTS[activeLift] ?? null;
   // The nine card lifts show the framing of their reference set; every other exercise, the guide's drawings.
   // An exercise of the guide with an animated figure of the app (GuideFigure.jsx) shows it in place of the drawings.
