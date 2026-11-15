@@ -135,3 +135,12 @@
   border-radius: 50%;
   background: currentColor;
 }
+.wv-experience .film-placement-note {
+  margin: var(--s-2) auto 0;
+  max-width: 40ch;
+  text-align: center;
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--c-fg-muted);
+  text-wrap: pretty;
+}

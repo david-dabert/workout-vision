@@ -42,6 +42,7 @@ const COUNTED = {
 
 export function shouldShowEntry() {
   if (new URLSearchParams(location.search).has('entry')) return true;
+  if (location.hash.replace(/^#\/?/, '').toLowerCase() === 'guide-collecte') return false;
   try { return localStorage.getItem('wv_seen_entry') !== 'true'; } catch { return true; }
 }
 

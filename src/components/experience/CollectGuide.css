@@ -1,0 +1,15 @@
+/* One-page tester guide (#guide-collecte): design tokens only, 390px single-column mobile layout. */
+.wv-experience .cg-screen .wrap { padding-bottom: var(--s-7); }
+.wv-experience .cg-screen .title { margin-top: var(--s-6); color: var(--c-fg); }
+.wv-experience .cg-lead { margin: var(--s-3) 0 0; font-size: 16px; line-height: 1.55; color: var(--bone-2); max-width: 38ch; }
+.wv-experience .cg-status { margin: var(--s-4) 0 0; padding: var(--s-3) var(--s-4); border-radius: var(--r-m); border: 1px solid var(--c-rule); background: var(--well); font-size: 14px; line-height: 1.45; color: var(--c-fg); }
+.wv-experience .cg-status.is-on { border-color: var(--c-accent); }
+.wv-experience .cg-actions { margin-top: var(--s-4); display: flex; flex-wrap: wrap; gap: var(--s-3); }
+.wv-experience .cg-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 18px; border-radius: var(--r-pill); border: 1px solid var(--c-accent); background: var(--c-accent); color: var(--ink); font-size: 15px; font-weight: 600; text-decoration: none; cursor: pointer; }
+.wv-experience .cg-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 16px; border-radius: var(--r-pill); border: 1px solid var(--c-rule); background: var(--well); color: var(--c-fg); font-size: 14px; font-weight: 500; cursor: pointer; }
+.wv-experience .cg-steps { margin: var(--s-6) 0 0; padding: 0; list-style: none; display: grid; gap: var(--s-3); }
+.wv-experience .cg-step { padding: var(--s-4); border-radius: var(--r-m); border: 1px solid var(--c-rule); background: var(--well); }
+.wv-experience .cg-step-kicker { display: block; font-family: var(--mono); font-size: var(--fs-label); letter-spacing: var(--track-label); text-transform: uppercase; color: var(--c-accent); }
+.wv-experience .cg-step-title { margin: var(--s-1) 0 0; font-size: 16px; font-weight: 600; color: var(--c-fg); }
+.wv-experience .cg-step-body { margin: var(--s-2) 0 0; font-size: 14px; line-height: 1.55; color: var(--bone-2); }
+.wv-experience .cg-note { margin: var(--s-5) 0 0; font-size: 13px; line-height: 1.5; color: var(--c-fg-muted); }

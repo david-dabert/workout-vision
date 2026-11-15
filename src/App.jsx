@@ -63,6 +63,7 @@ const Chat = lazyScreen(() => import('./components/chat/Chat.jsx'));
 // The activity engine's screen (docs/VISION.md): volleyball on synthetic jumps, opened from the sports rail.
 const Activity = lazyScreen(() => import('./components/activity/ActivityScreen.jsx'));
 const InvestorShowcase = lazyScreen(() => import('./components/experience/InvestorShowcaseModal.jsx'));
+const CollectGuide = lazyScreen(() => import('./components/experience/CollectGuide.jsx'));
 const LAZY = {
   film: ExperienceFilm,
   analyze: Analyze,
@@ -71,6 +72,7 @@ const LAZY = {
   live: LiveSession,
   about: About,
   comptage: UsageNotice,
+  'guide-collecte': CollectGuide,
   pro: Pro,
   programme: Programme,
   resultats: Results,
@@ -283,6 +285,9 @@ function AppInner() {
   } else if (page === 'comptage') {
     key = 'comptage';
     screen = <UsageNotice onClose={() => go('dashboard')} />;
+  } else if (page === 'guide-collecte') {
+    key = 'guide-collecte';
+    screen = <CollectGuide onClose={() => go('dashboard')} />;
   } else if (page === 'about') {
     key = 'about';
     screen = <About onClose={() => go('dashboard')} onManifesto={() => go('manifesto')} />;
