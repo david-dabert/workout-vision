@@ -616,8 +616,9 @@ export function countReps(
   if (!def.eitherSide && !def.together) {
     // Summed visibility (selectSide) can pick a side whose individual landmarks fail VIS_THRESHOLD on over half the
     // frames (countable < 50%), turning a countable opposite side into a refusal (seated_cable_row / side-on sets).
-    // Check countability on the picked side before any still-limb or lift early return.
-    if (!countable(mine)) {
+    // Check countability on the picked side before the still-limb check, except for arm lift reads (def.lift, prone raises),
+    // which never switch to the far arm (card 031).
+    if (!def.lift && !countable(mine)) {
       const other = countSide(worldLandmarks, timestamps, def, seen === 'left' ? 'right' : 'left', tuning);
       if (countable(other)) return other;
       return mine;
