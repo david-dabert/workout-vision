@@ -37,14 +37,6 @@ export class FrozenSkeletonsError extends Error {
   constructor({ samples, repeats }, decoder = '', fallback = null) { super(`${repeats} of ${samples} skeletons repeat the one before: the video was read frozen`); this.name = 'FrozenSkeletonsError'; this.samples = samples; this.repeats = repeats; this.decoder = decoder; this.fallback = fallback; }
 }
 
-// tuning: a recount with nearby settings (core.ts CountTuning), only from withSensitivity below; the app's count has none.
-/**
- * @param {any[]} worldLandmarks
- * @param {number[]} timestamps
- * @param {string} lift
- * @param {{ marginScale?: number; outlierWindow?: number }} [tuning]
- * @param {unknown[]} [imageLandmarks]
- */
 /** Whether a rise from rest past the working threshold is still open when the video stops (summarizeCount tailOpen). */
 function openAtEnd(c, timestamps, rest) {
   if (!c?.smoothedAngles?.length) return false;
@@ -56,6 +48,14 @@ function openAtEnd(c, timestamps, rest) {
   return rest === 'low' ? last >= mid : last <= mid;
 }
 
+// tuning: a recount with nearby settings (core.ts CountTuning), only from withSensitivity below; the app's count has none.
+/**
+ * @param {any[]} worldLandmarks
+ * @param {number[]} timestamps
+ * @param {string} lift
+ * @param {{ marginScale?: number; outlierWindow?: number }} [tuning]
+ * @param {unknown[]} [imageLandmarks]
+ */
 export function summarizeCount(worldLandmarks, timestamps, lift, tuning = undefined, imageLandmarks = undefined) {
   const effectiveWorld = worldLandmarks;
   const core = countReps(effectiveWorld, timestamps, lift, tuning, imageLandmarks);
