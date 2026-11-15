@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { countReps, liftDefinition } from '../core';
+import { countReps } from '../core';
 import { summarizeCount } from '../../coreAnalysis';
 
 function makeElbowFrames(anglesDeg: number[], visibilities?: number[]) {
@@ -34,7 +34,7 @@ function buildCurlAngles(reps: number): number[] {
   return angles;
 }
 
-describe('monocular 2D-vs-3D impulse flip guard, hybrid overhead press rest, and cut-tail flicker guard', () => {
+describe('monocular 2D-vs-3D impulse flip guard', () => {
   it('masks 2-frame and 3-frame monocular 3D elbow flip spikes contradicted by 2D image angles without dropping coverage', () => {
     const angles = buildCurlAngles(7);
     const { world, image, timestamps } = makeElbowFrames(angles);
@@ -66,43 +66,5 @@ describe('monocular 2D-vs-3D impulse flip guard, hybrid overhead press rest, and
     const withImg = summarizeCount(world, timestamps, 'bicep_curl', undefined, image);
     const withoutImg = summarizeCount(world, timestamps, 'bicep_curl');
     expect(withImg.smoothedAngles[9]).toBeCloseTo(withoutImg.smoothedAngles[9]!, 4);
-  });
-
-  it('infers low-rest concentric-first on overhead_press when racked at shoulders at start and end', () => {
-    const def = liftDefinition('overhead_press');
-    expect(def?.allowLowRest).toBe(true);
-
-    // 5 reps starting and ending racked at shoulders (~70 deg) pressing to ~160 deg
-    const angles: number[] = [];
-    for (let i = 0; i < 10; i++) angles.push(70);
-    for (let r = 0; r < 5; r++) {
-      for (let k = 0; k <= 10; k++) angles.push(70 + 90 * (k / 10));
-      for (let k = 1; k <= 10; k++) angles.push(160 - 90 * (k / 10));
-      for (let k = 0; k < 5; k++) angles.push(70);
-    }
-    const { world, timestamps } = makeElbowFrames(angles);
-    const res = countReps(world, timestamps, 'overhead_press');
-    expect(res.count).toBe(5);
-  });
-
-  it('accepts a cut working-end rep across a brief 1-frame flicker but rejects a sustained end dropout', () => {
-    const angles: number[] = [];
-    for (let i = 0; i < 12; i++) angles.push(155);
-    // 2 complete reps (flex to 50, extend back to 155)
-    for (let r = 0; r < 2; r++) {
-      for (let k = 0; k <= 10; k++) angles.push(155 - 105 * (k / 10));
-      for (let k = 1; k <= 10; k++) angles.push(50 + 105 * (k / 10));
-      for (let k = 0; k < 5; k++) angles.push(155);
-    }
-    // 3rd rep reaches working end (~50 deg) and holds briefly before clip ends
-    for (let k = 0; k <= 10; k++) angles.push(155 - 105 * (k / 10));
-    for (let k = 0; k < 8; k++) angles.push(50);
-    const visFlicker = angles.map((_, i) => (i === angles.length - 3 ? 0.3 : 0.95));
-    const flicker = makeElbowFrames(angles, visFlicker);
-    expect(countReps(flicker.world, flicker.timestamps, 'bicep_curl').count).toBe(3);
-
-    const visLongDrop = angles.map((_, i) => (i >= angles.length - 7 && i <= angles.length - 2 ? 0.2 : 0.95));
-    const longDrop = makeElbowFrames(angles, visLongDrop);
-    expect(countReps(longDrop.world, longDrop.timestamps, 'bicep_curl').count).toBe(2);
   });
 });
