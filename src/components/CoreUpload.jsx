@@ -23,7 +23,7 @@ const CRASH_MARK_MS = 2000;
 // unconfirmed count, which only ran without a file, could never be reached and were removed (third audit, C51);
 // the Result screen saves the count the user confirms.
 // onNewSet: after a saved set, the next set of the same lift (back to Film); onClose: back to the choice of lift.
-export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, initialLift = '', initialFile = null, planned = null }) {
+export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, initialLift = '', initialFile = null, planned = null, sample = false }) {
   const lift = initialLift, file = initialFile;
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState('');
@@ -49,7 +49,7 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
   const closeTimer = useRef(null);
   // The blind question (blind.js): on David's phone (#collecte), the person's count is asked while the video is read,
   // and the app's count waits for the answer. Decided once per set: a restarted analysis keeps the answer given.
-  const [plan] = useState(() => blindPlan({ collect: collectOn(), video: !!file }));
+  const [plan] = useState(() => blindPlan({ collect: !sample && collectOn(), video: !!file }));
   const [blind, setBlind] = useState(null); // { count, p } once answered
   useEffect(() => () => { abort.current?.abort(); clearTimeout(closeTimer.current); markCrash({ phase: null }); }, []);
 
@@ -102,7 +102,7 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
       release();
       // The Result screen saves the count once the user confirms it.
       if (mine()) {
-        setResult(settled);
+        setResult(sample ? { ...settled, sample: true } : settled);
         // Counted, or no rep found and the count asked for (Result.jsx, unsure), or refused.
         track(settled.refused ? 'analysis_refused' : settled.count === 0 ? 'analysis_uncounted' : 'analysis_done', { lift });
       }
@@ -128,7 +128,7 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
       : kind === 'error'
         ? { kind: phase === 'model' ? 'model' : 'error', decoder: error?.decoder || '', failure: error ? `${error.name}: ${error.message}` : '' }
         : { kind };
-    setResult({ refused: true, notRead, count: 0, reps: [], arm: null, confidence: null, imageLandmarks: [], metadata: {} });
+    setResult({ refused: true, notRead, count: 0, reps: [], arm: null, confidence: null, imageLandmarks: [], metadata: {}, ...(sample ? { sample: true } : {}) });
   };
   function closeOverlay() {
     if (overlayLeaving) return;
@@ -156,9 +156,9 @@ export default function CoreUpload({ onClose, onRefilm, onNewSet = onRefilm, ini
     <ScreenFade screenKey={view}>
       {view === 'watch' && <Watch lift={lift} progress={progress} phase={phase} landmarks={landmarks} frameSize={frameSize} onSkip={() => { if (abort.current) track('analysis_cancelled', { lift }); abort.current?.abort(); refilm(); }}
         blind={holding ? { onAnswer: n => setBlind(blindAnswer(n, plan.p)) } : null} />}
-      {view === 'error' && <AnalysisError lift={lift} phase={phase} failure={error} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} onByHand={byHand('error')} />}
-      {view === 'incomplete' && <AnalysisIncomplete lift={lift} read={incomplete.read} expected={incomplete.expected} disordered={incomplete.disordered} decoder={incomplete.decoder} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} onByHand={byHand('partial')} />}
-      {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} onByHand={byHand('interrupted')} />}
+      {view === 'error' && <AnalysisError lift={lift} phase={phase} failure={error} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} onByHand={sample ? undefined : byHand('error')} />}
+      {view === 'incomplete' && <AnalysisIncomplete lift={lift} read={incomplete.read} expected={incomplete.expected} disordered={incomplete.disordered} decoder={incomplete.decoder} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} onByHand={sample ? undefined : byHand('partial')} />}
+      {view === 'interrupted' && <AnalysisInterrupted lift={lift} onClose={onClose} onRestart={() => analyze()} onRefilm={refilm} onByHand={sample ? undefined : byHand('interrupted')} />}
       {view === 'result' && <Result result={result} lift={lift} videoFile={file} covered={overlay && !overlayLeaving ? overlay : null} onClose={onClose} onReport={openReport} onReplay={result.notRead ? undefined : () => openOverlay('replay')} onNewSet={onNewSet} onChangeLift={onClose} onRefilm={refilm} planned={planned} blind={blind} onSaved={(n, sides, measures) => { setSavedCount(n); setSavedSides(sides ?? null); setSavedMeasures(measures ?? null); }} />}
     </ScreenFade>
     {view === 'result' && overlay === 'report' && <Report lift={lift} count={reportMeta.count ?? result.count} counted={result.count} arm={result.arm} reps={savedMeasures?.reps ?? []} setId={reportMeta.id} sides={savedSides} wave={savedMeasures?.wave ?? null} recounted={!!savedMeasures?.recounted} doubted={!!savedMeasures?.doubted} planned={planned} result={result} leaving={overlayLeaving} onBack={closeOverlay} />}

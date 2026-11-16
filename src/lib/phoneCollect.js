@@ -173,6 +173,7 @@ export function collectedPayload({ result, lift, kept, view, sha256, hashOf, ver
  */
 export async function collectThisSet({ result, lift, kept, view, videoFile = null, version, blind = null, choice = null, typed = false, storage = globalThis.localStorage, put, now = () => new Date() }) {
   if (!collectOn(storage)) return null;
+  if (result?.sample) return null; // bundled sample video never enters sealed/collected sets (card 044)
   if (!result || !Array.isArray(result.worldLandmarks) || !result.worldLandmarks.length || !Number.isInteger(kept)) return null;
   // The clock is read when the count is kept, before the video is read and hashed: Safari can suspend the page for as
   // long as the phone stays locked (review of 8 November 2026).

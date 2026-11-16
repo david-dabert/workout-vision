@@ -1,5 +1,5 @@
 # 044. The sample video is marked « Exemple » and never saved as the person's set
-Status: ready
+Status: done
 Executor: fast (Antigravity)
 Phase: 1 (a defect; allowed by PLAN.md, THE FREEZE)
 Claim: a person who tries the sample video on the filming screen sees its result marked « Exemple », and nothing of it reaches « Vos séries », « Vos progrès » or, on a #collecte phone, the collected sets.
