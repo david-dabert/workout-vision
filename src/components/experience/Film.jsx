@@ -48,7 +48,7 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
   // One source for the angle: the note, the eyebrow and step 1 all read it (review of card 042).
   const placement = filmingGuideFor(activeLift, fr, countingLiftKey);
   const view = placement.view;
-  const test = FITNESS_TESTS[activeLift] ?? null;
+  const test = Object.hasOwn(FITNESS_TESTS, activeLift) ? FITNESS_TESTS[activeLift] : null;
   // The nine card lifts show the framing of their reference set; every other exercise, the guide's drawings.
   // An exercise of the guide with an animated figure of the app (GuideFigure.jsx) shows it in place of the drawings.
   const figure = hasFigure(activeLift), guide = figure ? null : (guideExercise(activeLift) || guideExercise(countingLiftKey)), animated = !figure && hasGuideFigure(guide?.key);

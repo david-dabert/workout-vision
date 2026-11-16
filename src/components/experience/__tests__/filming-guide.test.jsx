@@ -81,10 +81,66 @@ describe('a catalogue variant of the « Changer » drawer (review of card 042, 1
 
   it('the view a #collecte set is saved with is the view Film asks for (second review of card 042)', async () => {
     stubEnv();
-    const { filmingGuideFor } = await import('../filming-guide');
-    const { filmView } = await import('../exercise-info');
+    const [{ filmingGuideFor }, { collectedView }, { filmView }, fs] = await Promise.all([
+      import('../filming-guide'),
+      import('../Result.jsx'),
+      import('../exercise-info'),
+      import('node:fs'),
+    ]);
     for (const [id, counting] of [['standing_barbell_overhead_press', 'overhead_press'], ['barbell_back_squat', 'squat'], ['bicep_curl', 'bicep_curl']]) {
-      expect(filmingGuideFor(id, true, counting).view).toBe(filmView(id));
+      expect(filmingGuideFor(id, true, counting).view).toBe(filmView(counting));
+      expect(collectedView(id)).toBe(filmView(counting));
+    }
+    const resultSrc = fs.readFileSync(new URL('../Result.jsx', import.meta.url), 'utf8');
+    expect(resultSrc).not.toMatch(/filmView\(/);
+    expect(resultSrc).toContain('view: collectedView(lift)');
+    const guideHelperSrc = fs.readFileSync(new URL('../filming-guide.js', import.meta.url), 'utf8');
+    expect(guideHelperSrc).not.toContain('exercises/index');
+  });
+
+  it('resolves every catalogue variant to its counting lift angle when not directly overridden, guards prototype keys, and keeps Result.jsx in sync (card 045)', async () => {
+    stubEnv();
+    const [
+      { filmingGuideFor, exerciseView },
+      { collectedView },
+      { filmView },
+      { getAllExercises, getExercise },
+      { LIFTS },
+      { FITNESS_TESTS },
+      familiesModule,
+    ] = await Promise.all([
+      import('../filming-guide'),
+      import('../Result.jsx'),
+      import('../exercise-info'),
+      import('../../../lib/exercises/index'),
+      import('../lift-meta'),
+      import('../../../lib/fitness-tests'),
+      import('../../../lib/counting/guide-families.json'),
+    ]);
+    const families = familiesModule.default;
+
+    expect(filmingGuideFor('standing_barbell_overhead_press', true, 'overhead_press').angleLabel).toBe('De face (0°)');
+    expect(exerciseView('constructor')).toBe('side');
+    expect(exerciseView('standing_barbell_overhead_press', 'constructor')).toBe('side');
+    expect(filmingGuideFor('constructor', true).view).toBe('side');
+    expect(collectedView('constructor')).toBe('side');
+    expect(collectedView(42)).toBe('side');
+
+    const all = getAllExercises();
+    expect(all.length).toBeGreaterThan(1000);
+    for (const entry of all) {
+      const cat = getExercise(entry.id);
+      const shown = filmingGuideFor(entry.id, true, cat.counting_key);
+      expect(shown.view, entry.id).toBe(collectedView(entry.id));
+
+      const directlyKnown = Object.hasOwn(FITNESS_TESTS, entry.id) || LIFTS.includes(entry.id) || Object.hasOwn(families, entry.id);
+      const expectedView = directlyKnown ? filmView(entry.id) : filmView(cat.counting_key);
+      expect(shown.view, entry.id).toBe(expectedView);
+    }
+
+    // Keys the guide or a card knows keep their own view even when passed through exerciseView.
+    for (const key of [...LIFTS, ...Object.keys(FITNESS_TESTS), ...Object.keys(families)]) {
+      expect(exerciseView(key), key).toBe(filmView(key));
     }
   });
 
@@ -105,9 +161,10 @@ describe('a catalogue variant of the « Changer » drawer (review of card 042, 1
     expect(squat).toContain('Le corps entier dans le cadre, pieds compris.');
     expect(note(squat)).toContain('corps entier, pieds compris');
 
-    // The note's angle, the eyebrow and step 1 read one view.
-    for (const html of [squat, film('standing_barbell_overhead_press'), film('lateral_raise')]) {
+    // The note's angle, the eyebrow and step 1 read one view, and the front/side assignment matches the counting lift.
+    for (const [html, expectFront] of [[squat, false], [film('standing_barbell_overhead_press'), true], [film('lateral_raise'), true]]) {
       const front = note(html).startsWith('De face');
+      expect(front).toBe(expectFront);
       expect(html).toContain(front ? 'Filmé de face' : 'Filmé de profil');
       const step1 = html.match(/<span class="n">1<\/span><span>([^<]*)</)?.[1] ?? '';
       expect(step1).toMatch(front ? /face à vous/ : /sur le côté/);
