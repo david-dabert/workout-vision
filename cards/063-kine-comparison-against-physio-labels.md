@@ -1,0 +1,18 @@
+# 063. The kiné comparison says « Conforme » or « À revoir » as physiotherapists do
+Status: ready (track A now; track B on the authors' written permission; track C now)
+Executor: careful (Claude)
+Phase: 1 lab (no screen); it decides whether Phase 5 measures anything
+Claim: on repetitions a physiotherapist labelled correct or incorrect, the app's comparison against a correct repetition of the same exercise agrees with the physiotherapist at least as often as the published agreement between two clinicians, or the comparison is not offered as a verdict.
+Reference: David, 16 November 2026: test the comparison on downloaded videos of people doing recovery exercises and drills, as input and output. Card 001 proved only that the comparison tells one exercise from another (99.7 % of 10,562 public triplets, #391); it never tested correct against incorrect execution, which is the physiotherapist's question (R16: "physiotherapy: the physiotherapist's own judgment").
+Data (credit each, never committed to the repository, results only):
+- A. IntelliRehabDS (Zenodo 4610859, CC BY 4.0, commercial use allowed with attribution; Miron et al., Data 2021, doi 10.3390/data6050046): 29 people, 15 of them patients, 9 rehabilitation movements, each repetition labelled correct or incorrect; Kinect skeletons, no colour video. Tests the comparison's logic on skeletons.
+- B. REHAB24-6 (Zenodo 13305826; Černek, Sedmidubsky, Budikova, SISAP 2024): 1,072 repetitions of 6 exercises, physiotherapist's correctness labels, two RGB cameras, optical motion capture. Its licence reads "for academic or non-profit organization noncommercial research": used only after the authors' written permission for a results-only evaluation (`docs/sell/rehab24-permission.md`). It would also give joint angles against motion capture and counting on unseen video.
+- C. Synthetic planted faults through the app's renderer (`test/real-phone/synth/`): a correct repetition and the same with known faults (range at 70 %, one side late, trunk lean, a pause), each fault's size known.
+Eval, fixed before any read:
+1. Split by person: half to set the comparison's tolerance, half judged once.
+2. On the judged half: Cohen's kappa between the app's verdict and the label, with its 95 % interval; sensitivity to « À revoir » on incorrect repetitions; false « À revoir » on correct ones.
+3. Pass: kappa's lower bound at least 0.40 (moderate agreement, Landis and Koch 1977, literature) and above the comparison's agreement with labels shuffled within person. Fail: the verdict stays off in production (`compare.js` tolerances remain UNSOURCED and experimental) and Phase 5 shrinks to programmes and adherence (physiotherapist lens, 16 November 2026).
+4. Track C: each planted fault found at its known size, false alarms at most 5 % (UNSOURCED, fixed now).
+Scope: benches under `test/real-phone/kine-labels/`, scripts reading data from outside the repository, TRIED.md. No screen, no counting file.
+Stop: track B waits on the permission; tracks A and C report whatever they show, pass or fail.
+Needs from David: sending the permission request for track B.
