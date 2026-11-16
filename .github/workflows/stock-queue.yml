@@ -1,0 +1,52 @@
+# The labelling queue's clips (scripts/stock/fetch-queue.mjs; David, 16 November 2026: "Go ahead, build it now").
+# Run by hand (Actions, "Stock queue", Run workflow). GitHub's runners reach Wikimedia Commons, Pexels and Pixabay;
+# the coding sessions' network does not. Pexels and Pixabay are searched only when the repository secrets
+# PEXELS_API_KEY and PIXABAY_API_KEY exist (free keys: pexels.com/api, pixabay.com/api/docs). The queue is pushed to
+# the branch stock-queue, never to main: an agent brings it to main through a pull request, so CI checks it.
+name: Stock queue
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stock-queue
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            scripts/stock
+            public/stock
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # The queue grows on the branch stock-queue, one commit per run, never force-pushed (R5); the scripts are main's.
+      - name: Start from the queue already on stock-queue, if any
+        run: |
+          cp -r scripts/stock "$RUNNER_TEMP/stock"
+          if git fetch --depth=1 origin stock-queue; then
+            git show FETCH_HEAD:public/stock/queue.json > "$RUNNER_TEMP/queue.json" 2>/dev/null || true
+          fi
+          git fetch --depth=1 origin stock-queue && git checkout -B stock-queue FETCH_HEAD || git checkout -B stock-queue
+          mkdir -p public/stock
+          if [ -s "$RUNNER_TEMP/queue.json" ]; then cp "$RUNNER_TEMP/queue.json" public/stock/queue.json; fi
+      - name: Search the sources and add to the queue
+        env:
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+        run: node "$RUNNER_TEMP/stock/fetch-queue.mjs" --out public/stock/queue.json | tee "$RUNNER_TEMP/report.txt"
+      - name: Push the queue to the branch stock-queue
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/stock/queue.json
+          git commit -m "Stock queue: $(grep '^Queue:' "$RUNNER_TEMP/report.txt")" -m "Run ${{ github.run_id }}." || { echo "No change."; exit 0; }
+          git push origin stock-queue
