@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import { buildReference, compareAttempt } from '../../../src/lib/reference/compare.js';
 
 const DIR = join(process.env.IRDS_DIR ?? '', 'SkeletonData', 'Simplified');
-const FPS = 30; // Kinect v2 skeleton stream (IntelliRehabDS paper)
+const FPS = 30; // Kinect v2 skeleton stream (IntelliRehabDS paper); compare.js takes timestamps in seconds
 // Kinect v2 joints to the MediaPipe indices compare.js reads: shoulders, elbows, wrists, hips.
 const MAP = { 11: 4, 13: 5, 15: 6, 12: 8, 14: 9, 16: 10, 23: 12, 24: 16 };
 
@@ -39,11 +39,11 @@ for (const list of groups.values()) {
   const ref = list.find(x => x.correct);
   if (!ref) continue;
   const rl = landmarksOf(readFileSync(join(DIR, ref.f), 'utf8'));
-  const reference = buildReference(rl, rl.map((_, i) => (i * 1000) / FPS));
+  const reference = buildReference(rl, rl.map((_, i) => i / FPS));
   for (const a of list) {
     if (a === ref) continue;
     const al = landmarksOf(readFileSync(join(DIR, a.f), 'utf8'));
-    const r = compareAttempt(reference, al, al.map((_, i) => (i * 1000) / FPS));
+    const r = compareAttempt(reference, al, al.map((_, i) => i / FPS));
     const moving = (r.joints ?? []).filter(j => j.kind === 'moving' || j.within != null);
     const score = moving.length ? Math.min(...moving.map(j => j.within ?? 1)) : null;
     rows.push({ subject: a.subject, gesture: a.gesture, correct: a.correct, verdict: r.verdict, score });
@@ -82,3 +82,16 @@ const line = (name, rs) => {
 };
 console.log(line('All movements', rows));
 for (const g of [...new Set(rows.map(r => r.gesture))].sort()) console.log('  ' + line(`movement ${g}`, rows.filter(r => r.gesture === g)));
+
+// Step 2 of the protocol: the tolerance set on half of the people, judged once on the other half. The score is the
+// worst moving joint's share of moments within tolerance; "Conforme" when it reaches the threshold. People split by the
+// parity of their place in the sorted list of subject ids, fixed before the read.
+const people = [...new Set(rows.map(r => r.subject))].sort();
+const half = new Map(people.map((p, i) => [p, i % 2 ? 'judged' : 'build']));
+const withScore = rows.filter(r => r.score != null);
+const at = (rs, t) => rs.map(r => ({ ...r, verdict: r.score >= t ? 'match' : 'revise' }));
+const build = withScore.filter(r => half.get(r.subject) === 'build'), judged = withScore.filter(r => half.get(r.subject) === 'judged');
+let best = { t: 0, k: -1 };
+for (let t = 0; t <= 1.0001; t += 0.02) { const k = kappa(at(build, t)); if (k > best.k) best = { t, k }; }
+console.log(`\nTolerance set on the build half (${build.length} attempts, ${people.length / 2} people): threshold ${best.t.toFixed(2)}, kappa there ${best.k.toFixed(2)}`);
+console.log(line('Judged half, once, at that threshold', at(judged, best.t)));
