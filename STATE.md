@@ -1,4 +1,4 @@
-PLAN.md on counter-core prevails over this file.
+PLAN.md on main prevails over this file (David, 15 November 2026: "adopt"; the branch counter-core is historical).
 # STATE
 
 Before proposing any counting, measurement or data idea, read TRIED.md: it lists what was tried and closed, with the evidence.
@@ -83,6 +83,8 @@ David's recorded words (DIRECTIVES.md Part 1, docs/VISION.md, R16), held against
 | A video people share | Built, slow | The replay exports after a wait (card 004) |
 
 ## Now
+
+16 November 2026, 04:30 UTC (Claude): David's decision of 15 November 2026 ("adopt"; "Plan MD signed, governance approved"), from the review board's second opinion (issue #190): PLAN.md on main prevails, and its amendment of 15 November is the one roadmap (five phases with their gates, the freeze of new screens until Phase 1's gate passes, the data rules, the team). Current sets are tuning data; sets filmed after 15 November are sealed (`test/real-phone/sealed/`). Card 038 parked. Card 042 (#447) withdraws the rendered-body figures from the filming screens. A panel of nine independent reviewers (physiotherapist, coach, athlete and habit, navigation, accuracy, biomechanics, market, architecture, red team) reported on 16 November; its synthesis goes to David.
 
 15 November 2026, 02:30 UTC (nightly run, Claude): main at 6c849bc5. Merged on 14 November: #431 (card 027, a single-side lift counts the other arm when the picked one is unseen), #432 (card 029, the one-tap demo runner on check.html), #429 (the agent ledger, branch `ledger`), #434 (CLAUDE.md R5, R6, R15 amended). Open: #433 (card 030, Antigravity). No card was ready; cards 031 to 033 written. Measured: on the public build sets the core refuses none of the 259 seen clearly (TRIED.md).
 

@@ -18,6 +18,23 @@ Reordered by Claude on 14 November 2026, nightly run: no card was ready; 023 and
 
 Reordered by Claude on 15 November 2026, nightly run: no card was ready (028 was merged in #430 and still marked ready; 030 is Antigravity's, #433). Three cards written, in the phases of the roadmap of 14 November 2026: 031 first because it guards a Phase 1 fix merged that night (#431), then 032 and 033, Phase 2, the promise STATE.md marks worst kept ("What to do next"). A refusal audit on public data was measured and not written as a card: it passes before any change (TRIED.md, 15 November 2026).
 
+Reordered by Claude on 15 November 2026, on David's decision of that day ("adopt"; "Plan MD signed, governance approved"): the order follows the phases of PLAN.md's amendment of 15 November 2026, the only roadmap. Each card names its phase. A card's number is reserved on issue #190 before work starts. Until Phase 1's gate passes, no card adds a screen or an element on a screen (PLAN.md, THE FREEZE). Done since the last order: 030, 031, 032, 033, 034, 037, 039, 040, 041.
+
+Phase 1, trust on the iPhone (open):
+1. The iPhone's read beside the computer's (card 037's table): blocked on David's run of check.html's 15 clips on his iPhone, its copied result sent.
+2. The hip thrust, 1 for 12 on the iPhone: blocked on its original file.
+3. The sealed sets of Phase 1's gate: at least 20 of David's sets filmed after 15 November 2026, in `test/real-phone/sealed/`, read once.
+4. 042, the filming screens show no figure measured on rendered bodies (a claim withdrawn, allowed by the freeze).
+
+Parked until Phase 1's gate passes:
+- 038, the estimated maximum (Antigravity, branch not pushed): returns in Phase 2 through a card with its eval and the question "How many more reps could you have done?".
+- 011 (lab lane, off in production), 012 (a video David chooses), 020 (David's choice a, b or c).
+
+Blocked on David: 001 (four videos), 021 (four curl sets).
+Failed or withdrawn, kept as leads: 003, 018, 022, 023, 024. Met at baseline: 025.
+
+The order of 15 November 2026 above replaces the numbered list below it, kept for its record.
+
 0. 031, an arm's lift read never switches to the far arm: the exception #431 skipped.
 0. 032, the load of each set, kept with its count.
 0. 033, the next set to beat, by load and reps (after 032).

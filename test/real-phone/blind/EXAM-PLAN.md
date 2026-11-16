@@ -24,3 +24,5 @@ This file is changed only by adding a dated line below it. A rule edited after t
 ## Not decided here
 
 - Whether a counter that passes is shown to users: that is a product card, with David's yes (METHOD.md, two lanes).
+
+15 November 2026 (David: "adopt", item 6 of the review board's second opinion): David's labelled sets and videos on disk and the public build halves are tuning data from this date, since the counting changes of November were chosen or checked on them (PLAN.md, amendment of 15 November 2026, THE DATA). Every set filmed after this date is sealed: a tester's in this pool, David's in `test/real-phone/sealed/` under the same rules. RepCount-A's held-out half, never rebuilt (`test/real-phone/loop/exam-result.txt`), is unread and stays sealed.

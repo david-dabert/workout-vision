@@ -9,14 +9,14 @@ Read, in this order, and nothing else until the task needs it:
 4. The card you take in `cards/`, and the latest comments of issue #190.
 5. TRIED.md before any counting, measurement or data idea (R14).
 
-Current files: CLAUDE.md, DIRECTIVES.md, PLAN.md, STATE.md, METHOD.md, TRIED.md, BACKLOG.md, `cards/`.
-Historical files, kept for their record and not to be acted on: HANDOFF.md, ROADMAP.md, ARCHITECTURE.md, the `*_SCORECARD.md` and `PHASE*` files, DEFENSE_ROUND.md, and the specifications under `docs/` dated before 11 November 2026. An idea found there becomes work only as a card.
+Current files: CLAUDE.md, DIRECTIVES.md, PLAN.md, STATE.md, METHOD.md, TRIED.md, BACKLOG.md, `cards/`. The one roadmap is PLAN.md's amendment of 15 November 2026; `cards/README.md` holds the one queue, and a card's number is reserved on issue #190 before work starts.
+Historical files, kept for their record and not to be acted on: HANDOFF.md, ROADMAP.md, ARCHITECTURE.md, the `*_SCORECARD.md` and `PHASE*` files, DEFENSE_ROUND.md, DIRECTIVES.md Part 3, the phases of `docs/SPEC-production.md`, the persona files under `agents/` (since 15 November 2026; the reviewers that run are those of `.claude/agents/`), and the specifications under `docs/` dated before 11 November 2026. An idea found there becomes work only as a card.
 
 # Rules for every agent
 
 This repository's rules are CLAUDE.md and DIRECTIVES.md.
 They bind every agent that works here, Claude, Antigravity or any other, as they bind Claude.
-PLAN.md on counter-core prevails over both.
+PLAN.md on main prevails over both (David, 15 November 2026: "adopt").
 
 ## R15. Agent log
 Issue #190 (https://github.com/david-dabert/workout-vision/issues/190) is the channel between the agents that work on this repository, Claude and Antigravity.

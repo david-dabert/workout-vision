@@ -1,7 +1,7 @@
 # METHOD
 
 Written 11 November 2026 by Claude on David's order of that day ("design the methodology ... some element of all of this need to be automated").
-PLAN.md and CLAUDE.md prevail over this file. Status: proposed; it binds once David says so on issue #190.
+PLAN.md and CLAUDE.md prevail over this file. Status: binds since 15 November 2026 (David: "governance approved"); each card's report answers the review board's five questions.
 
 ## Why this file exists
 
