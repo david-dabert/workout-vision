@@ -164,6 +164,8 @@ export default defineConfig({
         collectBatch: resolve(__dirname, 'collect-batch.html'),
         check: resolve(__dirname, 'check.html'),
         pack: resolve(__dirname, 'pack.html'),
+        // The labelling queue (src/label/label.js), an internal page linked from nowhere in the app.
+        label: resolve(__dirname, 'label.html'),
       },
       output: {
         manualChunks(id) {
