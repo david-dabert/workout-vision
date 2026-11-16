@@ -1,7 +1,23 @@
 import fs from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { SAMPLE_HZ, align, buildReference, compareAttempt, compareCurves, dropJumps, fillGaps, jointAngles, mirrorLandmarks, referenceFromCurves, unwrapAround } from '../compare.js';
+import {
+  ALL_JOINTS,
+  LEG_JOINTS,
+  SAMPLE_HZ,
+  align,
+  buildReference,
+  compareAttempt,
+  compareCurves,
+  dropJumps,
+  fillGaps,
+  jointAngles,
+  mirrorLandmarks,
+  rangeWeightedScore,
+  referenceFromCurves,
+  unwrapAround,
+  weightedRangeShortfall,
+} from '../compare.js';
 
 // A staged raise like Olivier's video 4: shoulder 10 -> 90 -> hold -> 170 -> hold -> 10, elbow held straight.
 function staged(speed = 1) {
@@ -303,5 +319,177 @@ describe.skipIf(!local || !fs.existsSync(`${local}/olivier-4-supine-staged-raise
   it('does not match another exercise (video 1)', () => {
     const other = read('olivier-1-supine-clasped');
     expect(compareAttempt(ref, other.imageLandmarks, other.timestamps, opts(other)).verdict).toBe('revise');
+  });
+});
+
+// Synthesizes a 3D standing limb repetition across arms, torso/hips, and knees for Card 063 Track A & C checks.
+function plantedPoseSet({
+  shoulderMaxDeg = 120,
+  leftDelaySec = 0,
+  kneeMaxDeg = 0,
+  trunkLeanDeg = 0,
+  pauseMidSec = 0,
+  speed = 1,
+  hideLegs = false,
+} = {}) {
+  const hz = 15, baseDur = 4, totalDur = baseDur / speed + pauseMidSec;
+  const ts = [], lms = [];
+  const rad = d => (d * Math.PI) / 180;
+  for (let i = 0; i <= Math.round(totalDur * hz); i++) {
+    const t = i / hz;
+    const effT = pauseMidSec > 0 && t > (baseDur / 2) / speed
+      ? Math.max((baseDur / 2) / speed, t - pauseMidSec)
+      : t;
+    const progress = s => {
+      const u = Math.max(0, Math.min(1, ((effT - s) * speed) / baseDur));
+      return 0.5 - 0.5 * Math.cos(2 * Math.PI * u);
+    };
+    const pR = progress(0), pL = progress(leftDelaySec);
+    const lean = rad(trunkLeanDeg * Math.sin(Math.PI * Math.min(1, effT * speed / baseDur)));
+    const sR = rad(15 + (shoulderMaxDeg - 15) * pR);
+    const sL = rad(15 + (shoulderMaxDeg - 15) * pL);
+    const kR = rad(kneeMaxDeg * pR);
+    const hipY = 0.55, hipX = 0.5;
+    const shY = hipY - 0.3 * Math.cos(lean), shX = hipX + 0.3 * Math.sin(lean);
+    const pts = Array.from({ length: 33 }, () => ({ x: 0.5, y: 0.5, z: 0, visibility: 0.95 }));
+    const setUpper = (s, e, w, zOff, ang) => {
+      pts[s] = { x: shX, y: shY, z: zOff, visibility: 0.95 };
+      // Upper arm vector relative to trunk vector (hip -> shoulder: [sin(lean), -cos(lean)] -> down-trunk is [-sin(lean), cos(lean)])
+      const armAng = ang + lean;
+      pts[e] = { x: shX + 0.14 * Math.sin(armAng), y: shY + 0.14 * Math.cos(armAng), z: zOff, visibility: 0.95 };
+      pts[w] = { x: shX + 0.28 * Math.sin(armAng), y: shY + 0.28 * Math.cos(armAng), z: zOff, visibility: 0.95 };
+    };
+    pts[24] = { x: hipX, y: hipY, z: 0.08, visibility: 0.95 };
+    pts[23] = { x: hipX, y: hipY, z: -0.08, visibility: 0.95 };
+    setUpper(12, 14, 16, 0.1, sR);
+    setUpper(11, 13, 15, -0.1, sL);
+    const legVis = hideLegs ? 0.1 : 0.95;
+    const kneeY = hipY + 0.22, kneeX = hipX;
+    pts[26] = { x: kneeX, y: kneeY, z: 0.08, visibility: legVis };
+    pts[25] = { x: kneeX, y: kneeY, z: -0.08, visibility: legVis };
+    pts[28] = { x: kneeX - 0.22 * Math.sin(kR), y: kneeY + 0.22 * Math.cos(kR), z: 0.08, visibility: legVis };
+    pts[27] = { x: kneeX, y: kneeY + 0.22, z: -0.08, visibility: legVis };
+    ts.push(t);
+    lms.push(pts);
+  }
+  return { ts, lms };
+}
+
+describe('leg joints flag and range-weighted DTW scoring (Card 063 Tracks A & C)', () => {
+  it('keeps leg joints opt-in so waist-up videos remain unrefused by default', () => {
+    expect(Object.keys(LEG_JOINTS)).toEqual(['leftHip', 'rightHip', 'leftKnee', 'rightKnee']);
+    expect(Object.keys(ALL_JOINTS)).toHaveLength(8);
+    const refCut = plantedPoseSet({ hideLegs: true });
+    const refDefault = buildReference(refCut.lms, refCut.ts);
+    const refLegs = buildReference(refCut.lms, refCut.ts, { includeLegs: true });
+    expect(refDefault.joints.map(j => j.name)).toEqual(['leftShoulder', 'rightShoulder', 'leftElbow', 'rightElbow']);
+    expect(refLegs.unused.map(u => u.name)).toEqual(['leftHip', 'rightHip', 'leftKnee', 'rightKnee']);
+    expect(compareAttempt(refDefault, refCut.lms, refCut.ts).verdict).toBe('match');
+  });
+
+  it('captures knee flexion movements when includeLegs is enabled', () => {
+    const refLeg = plantedPoseSet({ shoulderMaxDeg: 20, kneeMaxDeg: 90 });
+    const attGood = plantedPoseSet({ shoulderMaxDeg: 20, kneeMaxDeg: 90, speed: 1.25 });
+    const attShallow = plantedPoseSet({ shoulderMaxDeg: 20, kneeMaxDeg: 45 });
+    const ref = buildReference(refLeg.lms, refLeg.ts, { includeLegs: true });
+    expect(ref.joints.find(j => j.name === 'rightKnee')?.kind).toBe('moving');
+    const good = compareAttempt(ref, attGood.lms, attGood.ts, { includeLegs: true, rangeWeighted: true });
+    const shallow = compareAttempt(ref, attShallow.lms, attShallow.ts, { includeLegs: true, rangeWeighted: true });
+    expect(weightedRangeShortfall(ref, good)).toBeLessThan(0.05);
+    expect(weightedRangeShortfall(ref, shallow)).toBeGreaterThan(0.45);
+    expect(rangeWeightedScore(ref, shallow)).toBeGreaterThan(rangeWeightedScore(ref, good) + 8);
+  });
+
+  it('weights DTW alignment by joint ROM and separates planted faults with low false alarms (Track C)', () => {
+    const base = plantedPoseSet({ shoulderMaxDeg: 120, kneeMaxDeg: 0 });
+    const ref = buildReference(base.lms, base.ts, { includeLegs: true });
+
+    // Clean paced variants -> no false alarms (< 5% across valid variations).
+    const cleanVariants = [0.8, 1.0, 1.25].map(speed => {
+      const att = plantedPoseSet({ shoulderMaxDeg: 120, kneeMaxDeg: 0, speed });
+      const res = compareAttempt(ref, att.lms, att.ts, { includeLegs: true, rangeWeighted: true });
+      return rangeWeightedScore(ref, res);
+    });
+    const maxClean = Math.max(...cleanVariants);
+    expect(maxClean).toBeLessThan(5);
+
+    // Fault 1: range stopped at 70% (shortfall ~0.30).
+    const attShort = plantedPoseSet({ shoulderMaxDeg: 84 });
+    const rShort = compareAttempt(ref, attShort.lms, attShort.ts, { includeLegs: true, rangeWeighted: true });
+    expect(weightedRangeShortfall(ref, rShort)).toBeCloseTo(0.32, 1);
+    expect(rangeWeightedScore(ref, rShort)).toBeGreaterThan(maxClean + 8);
+
+    // Fault 2: one side late by 0.8 s.
+    const attLate = plantedPoseSet({ shoulderMaxDeg: 120, leftDelaySec: 0.8 });
+    const rLate = compareAttempt(ref, attLate.lms, attLate.ts, { includeLegs: true, rangeWeighted: true });
+    expect(rangeWeightedScore(ref, rLate)).toBeGreaterThan(maxClean + 4);
+
+    // Fault 3: trunk lean compensation (30 deg).
+    const attLean = plantedPoseSet({ shoulderMaxDeg: 120, trunkLeanDeg: 30 });
+    const rLean = compareAttempt(ref, attLean.lms, attLean.ts, { includeLegs: true, rangeWeighted: true });
+    expect(rangeWeightedScore(ref, rLean)).toBeGreaterThan(maxClean + 2);
+
+    // Fault 4: shortened hold / early return against a staged top hold (caught by holds() + weighted cost).
+    const holdRef = referenceFromCurves(staged());
+    const fastHold = staged();
+    fastHold.rightShoulder = [...fastHold.rightShoulder.slice(0, 75), ...fastHold.rightShoulder.slice(105)];
+    fastHold.rightElbow = fastHold.rightShoulder.map(() => 172);
+    const holdCmp = compareCurves(holdRef, fastHold, { rangeWeighted: true });
+    expect(holdCmp.holds.some(h => h.refAngle > 160 && h.status === 'short')).toBe(true);
+    // Also verify a paused repetition alters alignment under pauseMidSec.
+    const pausedAtt = plantedPoseSet({ shoulderMaxDeg: 120, pauseMidSec: 2 });
+    const rPaused = compareAttempt(ref, pausedAtt.lms, pausedAtt.ts, { includeLegs: true, rangeWeighted: true });
+    expect(rPaused.tempo).toBeGreaterThan(1.3);
+
+    // align() must follow non-uniform weights (replaces weight ordering if joint 0 vs joint 1 disagree on offset).
+    const pJ0 = align(
+      [[0, 50, 100], [100, 100, 0]],
+      [[80, 0, 50, 100, 0, 0, 0], [0, 0, 0, 0, 100, 100, 0]],
+      [100, 0],
+    );
+    const pJ1 = align(
+      [[0, 50, 100], [100, 100, 0]],
+      [[80, 0, 50, 100, 0, 0, 0], [0, 0, 0, 0, 100, 100, 0]],
+      [0, 100],
+    );
+    expect(pJ0[0]).toEqual([0, 1]);
+    expect(pJ1[0]).toEqual([0, 4]);
+    // Partial, non-finite, or negative weights must fall back safely without NaN paths.
+    const pPartial = align([[0, 10, 20], [0, 0, 0]], [[5, 0, 10, 20, 5], [0, 0, 0, 0, 0]], [20]);
+    expect(pPartial[0]).toEqual([0, 1]);
+    const pNeg = align([[0, 10, 20], [0, 0, 0]], [[5, 0, 10, 20, 5], [0, 0, 0, 0, 0]], [-10, NaN]);
+    expect(pNeg[0]).toEqual([0, 1]);
+  });
+
+  it('handles weightedRangeShortfall & rangeWeightedScore edge cases (null refs, refused, mirrored, held-only)', () => {
+    // Held-only reference (< 10 deg) -> null instead of 0.
+    const heldRef = referenceFromCurves({ rightShoulder: Array(20).fill(90), rightElbow: Array(20).fill(170) });
+    const heldRes = compareCurves(heldRef, { rightShoulder: Array(20).fill(90), rightElbow: Array(20).fill(170) });
+    expect(weightedRangeShortfall(heldRef, heldRes)).toBeNull();
+    expect(rangeWeightedScore(heldRef, heldRes)).toBeNull();
+
+    // Refused comparison -> null.
+    const activeRef = referenceFromCurves(staged());
+    const refusedRes = { verdict: 'refused', reasons: ['unseen:rightShoulder'], joints: [] };
+    expect(weightedRangeShortfall(activeRef, refusedRes)).toBeNull();
+    expect(rangeWeightedScore(activeRef, refusedRes)).toBeNull();
+
+    // All-unseen matched samples -> null.
+    expect(weightedRangeShortfall(activeRef, {
+      verdict: 'match',
+      cost: 1,
+      matched: [[null, null], [null, null]],
+      seen: [[false, false], [false, false]],
+    })).toBeNull();
+
+    // Mirrored comparison preserves active joint index alignment and evaluates shortfall correctly.
+    const refR = plantedPoseSet({ shoulderMaxDeg: 120 });
+    const refOneSide = buildReference(refR.lms, refR.ts, { joints: { rightShoulder: [24, 12, 14] } });
+    const mirShort = plantedPoseSet({ shoulderMaxDeg: 70 });
+    // Flip right <-> left landmarks cleanly so mirror: true measures the patient's left side against ref right.
+    mirShort.lms.forEach(lm => { [lm[11], lm[12]] = [lm[12], lm[11]]; [lm[13], lm[14]] = [lm[14], lm[13]]; [lm[23], lm[24]] = [lm[24], lm[23]]; });
+    const mirRes = compareAttempt(refOneSide, mirShort.lms, mirShort.ts, { mirror: true, rangeWeighted: true });
+    expect(mirRes.mirrored).toBe(true);
+    expect(weightedRangeShortfall(refOneSide, mirRes)).toBeGreaterThan(0.4);
   });
 });

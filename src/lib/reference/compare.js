@@ -18,6 +18,21 @@ export const JOINTS = Object.freeze({
   rightElbow: [12, 14, 16],
 });
 
+// Lower-limb joints kept opt-in behind `includeLegs` so upper-limb videos cropped at the waist are not refused when
+// knees or ankles sit outside the frame (Card 063 Track A).
+export const LEG_JOINTS = Object.freeze({
+  leftHip: [11, 23, 25],
+  rightHip: [12, 24, 26],
+  leftKnee: [23, 25, 27],
+  rightKnee: [24, 26, 28],
+});
+export const ALL_JOINTS = Object.freeze({ ...JOINTS, ...LEG_JOINTS });
+// Minimum reference range (deg) for a joint to enter weightedRangeShortfall; joints below this stay excluded as minor
+// noise/held jitter (above e.g. 5 deg jitter and below standing hip flexion 17 deg in IntelliRehabDS). Status:
+// experimental, UNSOURCED.
+const ACTIVE_SHORTFALL_RANGE_DEG = 10;
+const jointsOf = ({ joints, includeLegs = false } = {}) => joints ?? (includeLegs ? ALL_JOINTS : JOINTS);
+
 // A landmark is seen at the counting core's floor (core.ts VIS_THRESHOLD). Source: the core's rule. Status: convention.
 export const SEEN_VISIBILITY = 0.5;
 // The curves are compared at 10 samples a second: holds and slow raises (the reference's fastest move takes about
@@ -98,7 +113,9 @@ export function bodyLine(landmarks, aspect = 1) {
 }
 
 /** Raw angle of each joint and direction of each segment per sample, null where a point is unseen; `aspect` = width / height of the picture. */
-export function jointAngles(landmarks, { joints = JOINTS, directions = {}, aspect } = {}) {
+export function jointAngles(landmarks, options = {}) {
+  const { directions = {}, aspect } = options;
+  const joints = jointsOf(options);
   const out = {};
   if (Object.keys(directions).length) {
     const k = aspect ?? 1, line = bodyLine(landmarks, k);
@@ -242,17 +259,25 @@ export function referenceFromCurves(curveByJoint, directionNames = []) {
   return { joints: used, duration: length / SAMPLE_HZ, unused };
 }
 
+function jointWeightFn(weights, count) {
+  if (!weights) return () => 1 / count;
+  const clean = Array.from({ length: count }, (_, k) => (Number.isFinite(weights[k]) && weights[k] > 0 ? weights[k] : 0));
+  const sum = clean.reduce((s, w) => s + w, 0);
+  return k => (sum > 0 ? clean[k] / sum : 1 / count);
+}
+
 /**
  * Subsequence dynamic time warping: the whole reference against any stretch of the attempt (the attempt may hold
- * extra footage before and after). Cost: mean absolute angle difference over the joints. Returns the path as
- * [refIndex, attemptIndex] pairs.
+ * extra footage before and after). Cost: weighted mean absolute angle difference over the joints (uniform when `weights`
+ * is omitted). Returns the path as [refIndex, attemptIndex] pairs.
  */
-export function align(refCurves, attCurves) {
+export function align(refCurves, attCurves, weights = null) {
   const n = refCurves[0].length, m = attCurves[0].length, J = refCurves.length;
+  const weightAt = jointWeightFn(weights, J);
   const cost = (i, j) => {
     let s = 0;
-    for (let k = 0; k < J; k++) s += Math.abs(refCurves[k][i] - attCurves[k][j]);
-    return s / J;
+    for (let k = 0; k < J; k++) s += weightAt(k) * Math.abs(refCurves[k][i] - attCurves[k][j]);
+    return s;
   };
   const D = Array.from({ length: n }, () => new Float64Array(m));
   const B = Array.from({ length: n }, () => new Uint8Array(m)); // 0 diagonal, 1 from above, 2 from left
@@ -283,9 +308,10 @@ export function align(refCurves, attCurves) {
  * Compares an attempt's curves with the reference model.
  * Returns { verdict: 'match' | 'revise' | 'refused', reasons, joints, start, end, tempo } where joints holds, per
  * joint, the share of moments within tolerance, the 90th percentile gap, the range reached, and the moment of the
- * reference where the gap is largest.
+ * reference where the gap is largest. Options: `rangeWeighted` weights alignment and mean DTW cost by each reference
+ * joint's range of motion (default false).
  */
-export function compareCurves(reference, attemptCurves) {
+export function compareCurves(reference, attemptCurves, { rangeWeighted = false } = {}) {
   const reasons = [];
   if (!reference.joints.length) return { verdict: 'refused', reasons: ['reference-unseen'], joints: [] };
   for (const j of reference.joints) {
@@ -293,11 +319,13 @@ export function compareCurves(reference, attemptCurves) {
   }
   if (reasons.length) return { verdict: 'refused', reasons, joints: [] };
   const ref = reference.joints.map(j => j.curve);
+  const weights = rangeWeighted ? reference.joints.map(j => j.range) : null;
+  const weightAt = jointWeightFn(weights, ref.length);
   // Where the attempt shows each measure: its gaps are filled below for the alignment only, never judged (R8).
   const attSeen = reference.joints.map(j => attemptCurves[j.name].map(v => v != null));
   // A direction's samples set on the reference's side of the circle.
   const att = reference.joints.map((j, k) => fillGaps(j.direction ? unwrapAround(attemptCurves[j.name], circularMedian(ref[k])) : attemptCurves[j.name]));
-  const path = align(ref, att);
+  const path = align(ref, att, weights);
   const start = path[0][1], end = path.at(-1)[1];
   // The attempt's value at each moment of the reference: the mean of the seen attempt samples matched to it, null
   // where none is seen.
@@ -343,7 +371,7 @@ export function compareCurves(reference, attemptCurves) {
   }
   return {
     verdict: reasons.length ? 'revise' : 'match', reasons, joints,
-    cost: path.reduce((sum, [i, x]) => sum + ref.reduce((t, curve, k) => t + Math.abs(curve[i] - att[k][x]), 0), 0) / path.length / ref.length,
+    cost: path.reduce((sum, [i, x]) => sum + ref.reduce((t, curve, k) => t + weightAt(k) * Math.abs(curve[i] - att[k][x]), 0), 0) / path.length,
     start: start / SAMPLE_HZ, end: end / SAMPLE_HZ,
     tempo: (end - start + 1) / ref[0].length,
     path,
@@ -444,7 +472,8 @@ export function mirrorLandmarks(landmarks) {
 export const NEARER_MARGIN = 0.1;
 
 /** Mean visibility, over the attempt, of the points the reference's measures are read from. */
-function seenScore(reference, landmarks, { joints = JOINTS, directions = {} } = {}) {
+function seenScore(reference, landmarks, options = {}) {
+  const joints = jointsOf(options), directions = options.directions ?? {};
   const points = [...new Set(reference.joints.flatMap(j => (directions[j.name] ? [directions[j.name].from, directions[j.name].to] : joints[j.name] ?? [])))];
   let sum = 0, n = 0;
   for (const lm of landmarks) {
@@ -470,7 +499,8 @@ export function compareAttempt(reference, landmarks, timestamps, options = {}) {
   // `mirror`: the patient is known to work the reference's other side (set by the physiotherapist): only the mirrored
   // reading is made.
   const flipped = mirrorLandmarks(landmarks);
-  const plain = options.mirror ? null : compareCurves(reference, curves(landmarks, timestamps, options));
+  const curveOpts = { rangeWeighted: !!options.rangeWeighted };
+  const plain = options.mirror ? null : compareCurves(reference, curves(landmarks, timestamps, options), curveOpts);
   if (plain?.reasons.includes('reference-unseen')) return { ...plain, mirrored: false };
   // The reference judges the arm nearest its camera (the one it sees); so does the attempt: the mirror reading is
   // kept when it sees the measured points clearly better (a patient filmed from the other side), never because it
@@ -478,7 +508,7 @@ export function compareAttempt(reference, landmarks, timestamps, options = {}) {
   const nearer = plain && plain.verdict !== 'refused'
     && seenScore(reference, flipped, options) > seenScore(reference, landmarks, options) + NEARER_MARGIN;
   if (plain && plain.verdict !== 'refused' && !nearer) return { ...plain, mirrored: false };
-  const m = compareCurves(reference, curves(flipped, timestamps, options));
+  const m = compareCurves(reference, curves(flipped, timestamps, options), curveOpts);
   if (plain && m.verdict === 'refused') return { ...plain, mirrored: false };
   return {
     ...m,
@@ -487,6 +517,35 @@ export function compareAttempt(reference, landmarks, timestamps, options = {}) {
     reasons: m.reasons.map(r => { const [kind, name] = r.split(':'); return name ? `${kind}:${otherSide(name)}` : r; }),
     holds: (m.holds ?? []).map(h => ({ ...h, joint: otherSide(h.joint) })),
   };
+}
+
+/**
+ * Range-weighted fraction of reference range lost by the attempt over active joints (`range >= 10` deg), 0 to 1.
+ * Lower is closer to reference ROM; null if the comparison was refused or no joint reached the active range floor.
+ */
+export function weightedRangeShortfall(reference, result) {
+  if (!reference?.joints?.length || !result || result.verdict === 'refused' || !result.matched) return null;
+  let num = 0, den = 0;
+  reference.joints.forEach((j, k) => {
+    if (!Number.isFinite(j.range) || j.range < ACTIVE_SHORTFALL_RANGE_DEG || j.range <= 0) return;
+    const seen = result.seen?.[k];
+    const seenVals = (result.matched[k] ?? []).filter((v, i) => v != null && (!seen || seen[i]));
+    const rAtt = seenVals.length ? range(seenVals) : null;
+    if (rAtt == null || !Number.isFinite(rAtt)) return;
+    const sf = Math.max(0, 1 - rAtt / j.range);
+    num += j.range * sf;
+    den += j.range;
+  });
+  return den > 0 ? num / den : null;
+}
+
+// Experimental Card 063 Track A combined score: range-weighted DTW error plus weighted range shortfall. Default lab
+// placeholder weight 20 (empirical sweep midpoint, not clinically calibrated; Status: experimental, UNSOURCED).
+export const DEFAULT_SHORTFALL_WEIGHT = 20;
+export function rangeWeightedScore(reference, result, shortfallWeight = DEFAULT_SHORTFALL_WEIGHT) {
+  const sf = weightedRangeShortfall(reference, result);
+  if (sf == null || !Number.isFinite(result?.cost)) return null;
+  return result.cost + shortfallWeight * sf;
 }
 
 /** An angle as the screens show it: a direction, measured against the body line, as its angle to that line (0 to 180). */
