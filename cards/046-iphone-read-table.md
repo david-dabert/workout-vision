@@ -1,5 +1,5 @@
 # 046. The iPhone's read of the bundled clips, set beside the computer's, in one committed table
-Status: ready (the tool); the table waits on David's run
+Status: done (the tool); the table waits on David's run
 Executor: fast (Antigravity)
 Phase: 1 (its gate's first condition, PLAN.md)
 Claim: when David runs « Run all 15 » on check.html on his iPhone and sends the copied result, one command turns it into a committed table that sets each clip's iPhone read beside the computer's read of the same file, and says for each clip whether the counts agree.
