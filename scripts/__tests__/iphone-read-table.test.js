@@ -227,7 +227,7 @@ describe('scripts/iphone-read-table.mjs', () => {
     }
   });
 
-  it('uses committed test/real-phone/iphone-read/computer.json: selects Chromium for MP4, WebKit for HEVC MOV, and lists PartialReadError reasons', () => {
+  it('uses committed test/real-phone/iphone-read/computer.json: selects Chromium for MP4 and WebKit for HEVC MOV, including low-fps bicep-curl-5 clips', () => {
     const dir = mkdtempSync(join(tmpdir(), 'wv-iphone-committed-'));
     try {
       const phonePath = join(dir, 'phone.json');
@@ -245,10 +245,21 @@ describe('scripts/iphone-read-table.mjs', () => {
         computerCount: '13',
         agree: 'yes',
       });
-      const partial = report.rows.find(r => r.id === 'demo_bicep_curl_5');
-      expect(partial.computerCount).toBe('no read');
-      expect(partial.agree).toBe('no');
-      expect(partial.reason).toContain('PartialReadError');
+      expect(report.rows.find(r => r.id === 'demo_bicep_curl_5')).toMatchObject({
+        computerBrowser: 'Chromium',
+        computerCount: '5',
+        agree: 'yes',
+      });
+      expect(report.rows.find(r => r.id === 'demo_iphone_bicep_curl_5')).toMatchObject({
+        computerBrowser: 'macOS WebKit',
+        computerCount: '5',
+        agree: 'yes',
+      });
+      expect(report.rows.find(r => r.id === 'demo_iphone_bicep_curl_5_rot')).toMatchObject({
+        computerBrowser: 'macOS WebKit',
+        computerCount: '4',
+        agree: 'no',
+      });
       expect(readFileSync(outPath, 'utf8')).toBe(markdown);
     } finally {
       rmSync(dir, { recursive: true, force: true });

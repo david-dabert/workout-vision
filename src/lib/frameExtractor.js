@@ -470,6 +470,8 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
 
     const duration = mediaInfo.duration;
     const rotation = videoStream.rotation || 0;
+    const rawNbFrames = Number(videoStream.nb_frames);
+    const sourceFrames = Number.isFinite(rawNbFrames) && rawNbFrames > 0 ? rawNbFrames : null;
     let srcWidth = videoStream.width;
     let srcHeight = videoStream.height;
     // Apply rotation to get display dimensions
@@ -562,14 +564,18 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
       }, STALL_MS);
     };
 
+    let fedPackets = 0, decodedCount = 0, skippedBySampler = 0, demuxerEof = false;
+
     const decoder = new VideoDecoder({
       output: (frame) => {
         progress++;
+        decodedCount++;
         watchStall();
         const timestamp = frame.timestamp / 1_000_000;
         // Once the sampling grid has started, a frame before the next capture time is never sampled: closed at once.
         // Before the grid starts (origin null), the first frame sets it and is kept.
         if ((origin !== null && timestamp < nextCaptureTime - 0.001) || handedAlready(timestamp)) {
+          skippedBySampler++;
           frame.close();
           return;
         }
@@ -608,8 +614,9 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
         while (true) {
           if (signal?.aborted || extractedCount >= frameCount) break;
           const { done, value } = await reader.read();
-          if (done) break;
+          if (done) { demuxerEof = true; break; }
           const idle = decoder.decodeQueueSize === 0;
+          fedPackets++;
           decoder.decode(value);
           if (idle) watchStall();
           let seen = progress, since = performance.now();
@@ -715,6 +722,7 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
           extractedCount++;
           if (onProgress) onProgress(Math.round((extractedCount / frameCount) * 100));
         } else {
+          skippedBySampler++;
           frame.close();
         }
       }
@@ -724,7 +732,13 @@ export async function extractFramesWebCodecs(file, targetFps, maxFrames, maxWidt
     release();
     await feedPromise;
 
-    return { width: frameWidth, height: frameHeight, fps: targetFps, duration, frameCount: extractedCount, peakOpenFrames, feedStalls, rotationDecision };
+    const decodedWhole = Boolean(
+      startFrame === 0 && demuxerEof && !decodeError && !signal?.aborted
+      && fedPackets > 0 && decodedCount === fedPackets
+      && sourceFrames !== null && decodedCount === sourceFrames,
+    );
+    const sampledSourceFrames = decodedWhole ? Math.max(0, decodedCount - skippedBySampler) : null;
+    return { width: frameWidth, height: frameHeight, fps: targetFps, duration, frameCount: extractedCount, peakOpenFrames, feedStalls, rotationDecision, sourceFrames, sampledSourceFrames, decodedWhole };
   } finally {
     release();
     demuxer.destroy();
