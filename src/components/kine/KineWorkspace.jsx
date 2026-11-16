@@ -13,7 +13,7 @@ import FollowUp from './FollowUp';
 import Calibration from './Calibration';
 import PessacClinicSpecialtyHub from './PessacClinicSpecialtyHub';
 import { exportPessacDossier } from '../../lib/kine/pessacDossierExport';
-import { showUnmeasuredRoutes } from '../../lib/buildFlags';
+import { kineJudged, showUnmeasuredRoutes } from '../../lib/buildFlags';
 import { KINE } from './kine-copy';
 import '../reference/ReferenceCompare.css';
 import './Kine.css';
@@ -237,10 +237,14 @@ export default function KineWorkspace({ onClose }) {
   useCondensingTopbar(screenRef, [lang]);
   // A result opened on this phone (KineResult.jsx) can ask for its patient's follow-up.
   const [followUpOf, setFollowUpOf] = useState(takeFollowUpRequest);
-  const [tab, setTab] = useState(followUpOf != null ? 'followup' : 'programme');
+  // Without a judgment (buildFlags.js, kineJudged), no result comes back from a patient: no follow-up tab, no calibration.
+  const judged = kineJudged();
+  const [tab, setTab] = useState(followUpOf != null && judged ? 'followup' : 'programme');
   const [section, setSection] = useState('profile');
   const extended = showUnmeasuredRoutes();
-  const tabs = extended ? [...MAIN_TABS, 'specialties'] : MAIN_TABS;
+  const mainTabs = judged ? MAIN_TABS : MAIN_TABS.filter(id => id !== 'followup');
+  const tabs = extended ? [...mainTabs, 'specialties'] : mainTabs;
+  const sections = judged ? CABINET_SECTIONS : CABINET_SECTIONS.filter(id => id !== 'calibration');
   const [profile, setProfile] = useState(readProfile);
   const save = p => { saveProfile(p); setProfile(p); };
 
@@ -276,17 +280,17 @@ export default function KineWorkspace({ onClose }) {
             </div>
           </div>
           {tab === 'programme' && <ProgrammeTab fr={fr} k={k} profile={profile} />}
-          {tab === 'followup' && <FollowUp fr={fr} k={k} profile={profile} initial={followUpOf} />}
+          {judged && tab === 'followup' && <FollowUp fr={fr} k={k} profile={profile} initial={followUpOf} />}
           {tab === 'compare' && <section className="sc-section"><p className="sc-caption">{k.compareHint}</p><ReferenceCompare embedded /></section>}
           {tab === 'profile' && <>
             <div className="sc-section">
               <div className="sc-rail" role="tablist" aria-label={k.tabs.profile} data-testid="kn-cabinet-sections">
-                {CABINET_SECTIONS.map(id => <button key={id} type="button" role="tab" className="sc-chip press" aria-pressed={section === id} aria-selected={section === id} onClick={() => { hapticLight(); setSection(id); }} data-testid={id === 'profile' ? 'kn-section-profile' : `kn-tab-${id}`}>{id === 'profile' ? k.cabinetDetails : k.tabs[id]}</button>)}
+                {sections.map(id => <button key={id} type="button" role="tab" className="sc-chip press" aria-pressed={section === id} aria-selected={section === id} onClick={() => { hapticLight(); setSection(id); }} data-testid={id === 'profile' ? 'kn-section-profile' : `kn-tab-${id}`}>{id === 'profile' ? k.cabinetDetails : k.tabs[id]}</button>)}
               </div>
             </div>
             {section === 'profile' && <ProfileTab k={k} profile={profile} onSave={save} />}
             {section === 'invoice' && <InvoiceTab fr={fr} k={k} profile={profile} onProfile={() => setSection('profile')} />}
-            {section === 'calibration' && <Calibration fr={fr} k={k} />}
+            {judged && section === 'calibration' && <Calibration fr={fr} k={k} />}
           </>}
           {extended && tab === 'specialties' && <PessacClinicSpecialtyHub />}
         </div>

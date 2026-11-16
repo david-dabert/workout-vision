@@ -9,6 +9,7 @@ import { RGB, rgba } from '../experience/palette';
 import { steadyFrames } from '../experience/replay-smooth';
 import AttemptKeep from './AttemptKeep';
 import { COPY, JOINT_NAMES, clock, deg, pct } from './reference-copy';
+import { kineJudged } from '../../lib/buildFlags';
 import './ReferenceCompare.css';
 
 // The comparison of a patient's attempt with a reference (src/lib/reference/compare.js), as every screen shows it
@@ -67,7 +68,9 @@ function Timeline({ result, names, c, refNow, onSeekRef }) {
 // `measures`: what the reference is compared on (library.js), when not the default joints.
 // `mirror`: the patient works the reference's other side, so the attempt is read as in a mirror (compareAttempt).
 // `keep`: { report, title } where the person may keep the attempt's report and video (KinePatient.jsx, AttemptKeep.jsx).
-export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onResult, measures, mirror = false, keep = null }) {
+// `judged`: false shows the two videos side by side and nothing judged: no verdict, no share, no angle, no colouring
+// out of tolerance, no tempo, no position held, no curve (buildFlags.js, kineJudged; off in production).
+export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onResult, measures, mirror = false, keep = null, judged = kineJudged() }) {
   const { lang } = useT();
   const fr = lang === 'fr';
   const c = COPY[fr ? 'fr' : 'en'];
@@ -114,7 +117,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
         const ctx = cv.getContext('2d');
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, w, h);
-        const { tr, ri } = drawComparison(ctx, { t, w, h, result, attPose: attShown, refPose: refShown, maps, measures, names, refShort: c.refShort, colors: { lamp, bone, ash }, ghost, anchor, labels: false });
+        const { tr, ri } = drawComparison(ctx, { t, w, h, result, attPose: attShown, refPose: refShown, maps, measures, names, refShort: c.refShort, colors: { lamp, bone, ash }, ghost, anchor, labels: false, judged });
         setNow(Math.round(t * 10) / 10); setRefNow(ri);
         const rv = refVideo.current;
         if (rv && !rv.seeking && Math.abs(rv.currentTime - tr) > 0.12) rv.currentTime = tr;
@@ -161,13 +164,17 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
 
   if (!result) return null;
   return <div ref={rootRef}>
-            <section className="sc-section" data-testid="rc-result">
+            {!judged && result.verdict === 'refused' && <section className="sc-section" data-testid="rc-result">
+              <GroupHead title={c.player} />
+              <p className="sc-frame-note" data-testid="rc-refused">{c.notAligned} {result.reasons.includes('reference-unseen') ? c.refUnseen : c.refusedWhy(unseen)}</p>
+            </section>}
+            {judged && <section className="sc-section" data-testid="rc-result">
               <GroupHead title={c.verdict} />
               <p className={`rc-verdict is-${result.verdict}`} data-testid="rc-verdict">{result.verdict === 'match' ? c.match : result.verdict === 'revise' ? c.revise : c.refused}</p>
               {result.verdict === 'refused' && <p className="sc-frame-note" data-testid="rc-refused">{result.reasons.includes('reference-unseen') ? c.refUnseen : c.refusedWhy(unseen)}</p>}
               {reasons.length > 0 && <ul className="rc-reasons">{reasons.map((r, i) => <li key={i}>{r}</li>)}</ul>}
-            </section>
-            {keep && result.verdict === 'refused' && <AttemptKeep video={attVideo} result={result} attPose={attShown} refPose={refShown} maps={maps} measures={measures} names={names} c={c} report={keep.report} title={keep.title} lang={lang} anchor={anchor} onBusy={setKeepBusy} />}
+            </section>}
+            {keep && judged && result.verdict === 'refused' && <AttemptKeep video={attVideo} result={result} attPose={attShown} refPose={refShown} maps={maps} measures={measures} names={names} c={c} report={keep.report} title={keep.title} lang={lang} anchor={anchor} onBusy={setKeepBusy} />}
 
             {result.verdict !== 'refused' && <>
               <section className="sc-section">
@@ -185,7 +192,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
                     <canvas ref={refCanvas} className="rc-canvas" />
                     <span className="rc-inset-tag">{c.refLabel}</span>
                   </div>
-                  <div className="rc-stage-hud" data-testid="rc-stage-hud">
+                  {judged && <div className="rc-stage-hud" data-testid="rc-stage-hud">
                     {result.joints.map((j, k) => {
                       const seenAtNow = result.seen?.[k]?.[refNow];
                       const attVal = seenAtNow && result.matched?.[k]?.[refNow] != null ? Math.round(shownAngle(result.matched[k][refNow], j.direction)) : null;
@@ -207,7 +214,7 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
                         </div>
                       );
                     })}
-                  </div>
+                  </div>}
                 </div>
                 <div className="rc-controls">
                   <button type="button" className="rc-play press" onClick={toggle} disabled={keepBusy} aria-label={playing ? c.pause : c.play} data-testid="rc-play">
@@ -220,8 +227,9 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
                 <label className="rc-toggle"><input type="checkbox" checked={ghost} onChange={e => setGhost(e.target.checked)} /> {c.ghost}</label>
               </section>
 
-              {keep && <AttemptKeep video={attVideo} result={result} attPose={attShown} refPose={refShown} maps={maps} measures={measures} names={names} c={c} report={keep.report} title={keep.title} lang={lang} anchor={anchor} onBusy={setKeepBusy} />}
+              {keep && judged && <AttemptKeep video={attVideo} result={result} attPose={attShown} refPose={refShown} maps={maps} measures={measures} names={names} c={c} report={keep.report} title={keep.title} lang={lang} anchor={anchor} onBusy={setKeepBusy} />}
 
+              {judged && <>
               <section className="sc-section">
                 <GroupHead title={c.tempo} />
                 <div className="sc-metrics">
@@ -270,11 +278,12 @@ export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onRes
                 <GroupHead title={c.timeline} />
                 <Timeline result={result} names={names} c={c} refNow={refNow} onSeekRef={seekRefIndex} />
               </section>
+              </>}
             </>}
 
             {/* The share of the movement judged, when the attempt's pose was lost on part of it (filmed on the floor):
                 the verdict rests on the moments both videos show (R8). */}
-            {result.verdict !== 'refused' && result.joints.some(j => j.shown < 0.95) && <p className="sc-caption" data-testid="rc-partial">{c.partial(Math.min(...result.joints.map(j => j.shown)))}</p>}
-            <p className="sc-caption">{c.note(TOLERANCE_DEG)}</p>
+            {judged && result.verdict !== 'refused' && result.joints.some(j => j.shown < 0.95) && <p className="sc-caption" data-testid="rc-partial">{c.partial(Math.min(...result.joints.map(j => j.shown)))}</p>}
+            <p className="sc-caption" data-testid="rc-note">{judged ? c.note(TOLERANCE_DEG) : c.plainNote}</p>
   </div>;
 }

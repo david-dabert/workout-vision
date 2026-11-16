@@ -24,11 +24,14 @@ async function render(name, hash = '', lang = 'fr', extra = {}, media = '') {
 }
 
 describe('the physiotherapist workspace', () => {
-  it('opens on the programme, with the four tabs and Olivier\'s four exercises to add', async () => {
+  // No follow-up tab in production: no result comes back from a patient without a judgment (buildFlags.js, kineJudged).
+  it('opens on the programme, with three tabs and Olivier\'s four exercises to add', async () => {
     const html = await render('KineWorkspace');
     expect(html).toContain('data-testid="kine-screen"');
-    for (const tab of ['programme', 'followup', 'compare', 'profile']) expect(html).toContain(`data-testid="kn-tab-${tab}"`);
-    expect(html.match(/data-testid="kn-tab-/g)).toHaveLength(4);
+    for (const tab of ['programme', 'compare', 'profile']) expect(html).toContain(`data-testid="kn-tab-${tab}"`);
+    expect(html).not.toContain('data-testid="kn-tab-followup"');
+    expect(html.match(/data-testid="kn-tab-/g)).toHaveLength(3);
+    expect(html).not.toContain('compare chaque essai');
     // The library is the lower half of the programme; the mock-up assessment and its dossier are not offered.
     expect(html).toContain('data-testid="kn-library"');
     expect(html).not.toContain('kn-tab-specialties');
@@ -81,6 +84,7 @@ describe('the patient programme', () => {
   });
 
   it('lists the attempts made on this phone, each with its report to print again', async () => {
+    vi.stubEnv('VITE_EXTENDED_ROUTES', '1');
     const { programmeLink } = await import('../../lib/kine/links');
     const link = programmeLink('https://example.org/app/', { kine: { name: 'Olivier' }, patient: 'Christophe', items: [{ id: 'mains-jointes' }] });
     const hash = link.slice(link.indexOf('#'));
@@ -99,6 +103,22 @@ describe('the patient programme', () => {
     expect(html.match(/class="kn-past"/g)).toHaveLength(1);
   });
 
+  it('lists the attempts without a verdict or a report, and says nothing is sent, in a production build', async () => {
+    const { programmeLink } = await import('../../lib/kine/links');
+    const link = programmeLink('https://example.org/app/', { kine: { name: 'Olivier' }, patient: 'Christophe', items: [{ id: 'mains-jointes' }] });
+    const hash = link.slice(link.indexOf('#'));
+    const payload = hash.slice(hash.indexOf('=') + 1);
+    let h = 0x811c9dc5;
+    for (let i = 0; i < payload.length; i++) { h ^= payload.charCodeAt(i); h = Math.imul(h, 16777619); }
+    const id = (h >>> 0).toString(36);
+    const report = { v: 1, id: 'mains-jointes', patient: 'Christophe', kine: 'Olivier', date: '2026-10-17T09:05', verdict: 'match', reasons: [], judged: 1, tempo: 1, joints: [], holds: [] };
+    const html = await render('KinePatient', hash, 'fr', { wv_kine_attempts: JSON.stringify({ [id]: [{ id: 'mains-jointes', date: '2026-10-17T07:05:00.000Z', verdict: 'match', report }] }) });
+    expect(html).toContain('data-testid="kn-past"');
+    for (const judged of ['Conforme', 'À revoir', 'Rapport (PDF)', 'Seul le résultat']) expect(html).not.toContain(judged);
+    expect(html).toContain('rien n’est envoyé');
+    expect(html).toContain('pas un dispositif médical');
+  });
+
   it('tells the patient which side to work when it is not the video\'s', async () => {
     const { programmeLink } = await import('../../lib/kine/links');
     const link = programmeLink('https://example.org/app/', { kine: { name: 'Olivier' }, patient: 'C', items: [{ id: 'rotation-externe', side: 'right' }, { id: 'abduction-horizontale', side: 'left' }] });
@@ -114,6 +134,8 @@ describe('the patient programme', () => {
 });
 
 describe('the AI commentary', () => {
+  // The AI's opinion on a movement is a judgment: extended build only (buildFlags.js, kineJudged).
+  beforeEach(() => { vi.stubEnv('VITE_EXTENDED_ROUTES', '1'); });
   const commentary = { visible: true, sameExercise: 'yes', reps: 4, holds: [{ rep: 1, seconds: 4.5 }], compensations: ['Les épaules montent.'], setup: [], camera: ['Filmez de profil.'], advice: ['Gardez les épaules basses.'], summary: 'Quatre répétitions, bien conduites.' };
 
   it('says the video stays on the phone unless the patient asks for it, only when the build names the proxy', async () => {
@@ -165,6 +187,7 @@ describe('the AI commentary', () => {
 });
 
 describe('the follow-up', () => {
+  beforeEach(() => { vi.stubEnv('VITE_EXTENDED_ROUTES', '1'); });
   const results = JSON.stringify([
     { id: 'mains-jointes', patient: 'Christophe', date: '2026-10-16T09:00', verdict: 'revise', tempo: 1, joints: [{ name: 'rightShoulder', within: 0.55, range: 0.8 }], holds: [] },
     { id: 'mains-jointes', patient: 'Christophe', date: '2026-10-20T09:00', verdict: 'match', tempo: 1, joints: [{ name: 'rightShoulder', within: 0.93, range: 1 }], holds: [] },
@@ -230,7 +253,16 @@ describe('the calibration', () => {
 });
 
 describe('a patient result', () => {
+  it('opens a link from an earlier version on the exercise, without its verdict or figures, in a production build', async () => {
+    const { resultLink } = await import('../../lib/kine/links');
+    const link = resultLink('https://example.org/app/', { id: 'mains-jointes', patient: 'Christophe', prog: 'abc1', verdict: 'match', tempo: 1.2, attSec: 12, refSec: 10, joints: [{ name: 'rightShoulder', within: 0.95, gap: 8, range: 1 }], holds: [] });
+    const html = await render('KineResult', link.slice(link.indexOf('#')), 'fr', { wv_kine_labels: JSON.stringify({ abc1: 'Christophe' }) });
+    expect(html).toContain('data-testid="kn-result-plain"');
+    for (const judged of ['kn-result-verdict', 'Conforme', 'Proche de la référence', '95\u00A0%', 'kn-result-follow']) expect(html).not.toContain(judged);
+  });
+
   it('shows the verdict, local patient label, and measured difference in degrees and seconds', async () => {
+    vi.stubEnv('VITE_EXTENDED_ROUTES', '1');
     const { resultLink } = await import('../../lib/kine/links');
     const link = resultLink('https://example.org/app/', { id: 'mains-jointes', patient: 'Christophe', prog: 'abc1', verdict: 'match', tempo: 1.2, attSec: 12, refSec: 10, joints: [{ name: 'rightShoulder', within: 0.95, gap: 8, range: 1 }], holds: [] });
     const html = await render('KineResult', link.slice(link.indexOf('#')), 'fr', { wv_kine_labels: JSON.stringify({ abc1: 'Christophe' }) });

@@ -263,7 +263,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
             video compared with the physiotherapist's, measured on the person's own videos, above the demos. */}
         {onReference && <button className="row-link press" onClick={onReference} data-testid="choice-reference">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="9" height="14" rx="2" /><rect x="13" y="5" width="9" height="14" rx="2" /><path d="M6.5 9v6M17.5 9l-2 6M17.5 9l2 6" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'Espace kiné' : 'Physio workspace'}</b><small>{fr ? 'Vos exercices en vidéo, le programme en un lien, le geste du patient comparé au vôtre' : 'Your exercises on video, the programme in one link, the patient’s movement compared with yours'}</small></span>
+          <span className="row-txt"><b>{fr ? 'Espace kiné' : 'Physio workspace'}</b><small>{fr ? 'Vos exercices en vidéo, envoyés à vos patients en un lien' : 'Your exercises on video, sent to your patients in one link'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* Espace pro (Pro.jsx): the coach's and the physiotherapist's programme builder, after the physio workspace. */}

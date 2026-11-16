@@ -43,6 +43,9 @@ const COUNTED = {
 export function shouldShowEntry() {
   if (new URLSearchParams(location.search).has('entry')) return true;
   if (location.hash.replace(/^#\/?/, '').toLowerCase() === 'guide-collecte') return false;
+  // A link a physiotherapist or a patient was sent opens on what it carries, not on the welcome (think tank of
+  // 16 November 2026: a patient tapping a programme link met « L’œil d’un coach » and had to tap « Commencer »).
+  if (/^kine-(p|r)=/i.test(location.hash.replace(/^#\/?/, ''))) return false;
   try { return localStorage.getItem('wv_seen_entry') !== 'true'; } catch { return true; }
 }
 

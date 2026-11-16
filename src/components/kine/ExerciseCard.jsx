@@ -22,7 +22,8 @@ export default function ExerciseCard({ ex, fr, k, action, open: startOpen = fals
         preload="none"
         onError={() => setVideoError(true)}
       />
-    ) : (
+    ) : showUnmeasuredRoutes() ? (
+      // No video yet: in production the card shows no empty media area (think tank of 16 November 2026, design lens).
       <div className="kn-video-placeholder" data-testid={`kn-placeholder-${ex.id}`}>
         <div className="kn-protocol-badge">
           <svg viewBox="0 0 16 16" fill="currentColor" role="img" aria-hidden="true">
@@ -37,7 +38,7 @@ export default function ExerciseCard({ ex, fr, k, action, open: startOpen = fals
           </div>
         )}
       </div>
-    )}
+    ) : null}
     <div className="kn-card-body">
       <div className="kn-card-head">
         <div>

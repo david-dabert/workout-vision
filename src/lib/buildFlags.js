@@ -14,3 +14,12 @@ export const liveBuild = () => import.meta.env.VITE_LIVE === '1';
 export const contributeBuild = () => import.meta.env.VITE_CONTRIBUTE === '1';
 /** True when extended experimental / unmeasured routes (equine, 8 sports, coaches, etc.) are enabled. Off in production. */
 export const showUnmeasuredRoutes = () => import.meta.env.VITE_EXTENDED_ROUTES === '1';
+/**
+ * True when the comparison of a patient's movement with the physiotherapist's shows a judgment: the verdict
+ * (« Conforme » / « À revoir »), the shares within tolerance, the angles, the colouring out of tolerance, the tempo and
+ * the positions held. Off in production (think tank of 16 November 2026, on David's order of that day): measured on
+ * IntelliRehabDS's physiotherapist labels, the verdict flagged 893 of 1,712 correct repetitions (kappa 0.19; card 063,
+ * TRIED.md), and a judgment of a patient's movement is what MDR 2017/745 Annex VIII Rule 11 classes as a medical
+ * device. Without it the patient sees the two videos side by side. Status: validated (IntelliRehabDS), for the off.
+ */
+export const kineJudged = () => showUnmeasuredRoutes();

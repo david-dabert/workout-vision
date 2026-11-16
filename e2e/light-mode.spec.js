@@ -108,7 +108,8 @@ test('every screen reads in light mode', async ({ page }) => {
   await page.goto(BASE + '#kine');
   await page.reload();
   await expect(page.getByTestId('kine-screen')).toBeVisible({ timeout: 20000 });
-  for (const tab of ['programme', 'followup', 'compare', 'profile']) {
+  // No Suivi tab in production: no result comes back without a judgment (buildFlags.js, kineJudged; 16 November 2026).
+  for (const tab of ['programme', 'compare', 'profile']) {
     await page.getByTestId(`kn-tab-${tab}`).click();
     await judge(`kine-${tab}`);
   }

@@ -5,6 +5,7 @@ import { useCondensingTopbar } from '../experience/topbar';
 import { Topbar } from '../experience/Showcase';
 import { readPose } from '../../lib/reference/readPose';
 import ComparisonView from './ComparisonView';
+import { kineJudged } from '../../lib/buildFlags';
 import { FilePick } from './parts';
 import { useObjectUrl } from '../../lib/reference/useObjectUrl';
 import { COPY } from './reference-copy';
@@ -83,7 +84,7 @@ export default function ReferenceCompare({ onClose, embedded = false }) {
       {phase === 'error' && <p className="rc-error" role="alert" data-testid="rc-error">{c.failed} <small>{error}</small> <button type="button" className="rc-link press" onClick={run}>{c.retry}</button></p>}
     </div>
     {phase === 'done' && <>
-      {healthy && <p className="sc-caption" data-testid="rc-healthy-read">{c.healthyRead}</p>}
+      {healthy && kineJudged() && <p className="sc-caption" data-testid="rc-healthy-read">{c.healthyRead}</p>}
       <ComparisonView refPose={refPose} attPose={attPose} refUrl={refUrl} attUrl={attUrl} mirror={healthy} />
       <button type="button" className="rc-btn is-wide press" onClick={() => { hapticLight(); setAttFile(null); setAttPose(null); setPhase('pick'); }} data-testid="rc-new">{c.newAttempt}</button>
     </>}
@@ -96,7 +97,7 @@ export default function ReferenceCompare({ onClose, embedded = false }) {
           <Topbar fr={fr} backTestId="reference-back-btn" onBack={onClose || (() => { window.location.hash = ''; })} />
           <p className="eyebrow">{c.eyebrow}</p>
           <h1 className="title">{c.title}</h1>
-          <p className="sub">{c.sub}</p>
+          <p className="sub">{kineJudged() ? c.sub : c.subPlain}</p>
           {content}
         </div>
       </section>
