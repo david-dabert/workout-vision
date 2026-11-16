@@ -1,17 +1,11 @@
 // Per-lift camera placement and framing (card 041), shown on the filming screen and in the guide.
-// The framing comes from the joint of the lift the exercise counts as; the angle from the exercise's own view where the
-// guide or a card knows one, else from that lift's view (filmView answers 'side' for any key it does not know).
+// The framing comes from the joint of the lift the exercise counts as. The angle is the exercise's filmView, the view a
+// #collecte set is saved with (Result.jsx, phoneCollect.js): the two must agree (review of card 042).
 // Source: test/real-phone/synth/synth.txt, rendered bodies filmed at 0 and 90 degrees for lateral_raise, overhead_press,
 // bicep_curl and squat. Status: experimental (R9). Rendered bodies validate nothing (measures.js), so the screens give
 // the advice and no figure (card 042, 15 November 2026, R8).
 import { liftDefinition } from '../../lib/counting/core';
-import families from '../../lib/counting/guide-families.json';
-import { FITNESS_TESTS } from '../../lib/fitness-tests';
 import { filmView } from './exercise-info';
-import { hasFigure } from './lift-scenes';
-
-// The keys filmView knows a view for: a fitness test, a card lift with its figure, a family of the guide.
-const knowsView = k => Boolean(FITNESS_TESTS[k] || hasFigure(k) || families[k]);
 
 /**
  * Returns camera placement and framing for an exercise.
@@ -21,7 +15,7 @@ const knowsView = k => Boolean(FITNESS_TESTS[k] || hasFigure(k) || families[k]);
  * @returns {{ view: 'front'|'side', angleLabel: string, framingLabel: string }}
  */
 export function filmingGuideFor(key, fr = true, countingKey = key) {
-  const view = filmView(knowsView(key) ? key : countingKey);
+  const view = filmView(key);
   const wholeBody = ['knee', 'hip'].includes(liftDefinition(countingKey)?.joint);
 
   const angleLabel = view === 'front'

@@ -70,13 +70,22 @@ describe('filmingGuideFor (card 041, card 042)', () => {
 
 describe('a catalogue variant of the « Changer » drawer (review of card 042, 15 November 2026)', () => {
   // The drawer passes catalogue ids (barbell_back_squat), whose counting lift is in the catalogue's counting_key.
-  // The framing follows the lift it counts as; the angle too when the guide knows no view of its own for the variant.
-  it('gets the framing and the angle of the lift it counts as', async () => {
+  // The framing follows the lift it counts as. The angle stays the exercise's filmView, the view a #collecte set is
+  // saved with (Result.jsx); a variant's own angle is open in card 042 until Result.jsx moves with it.
+  it('gets the framing of the lift it counts as', async () => {
     stubEnv();
     const { filmingGuideFor } = await import('../filming-guide');
     expect(filmingGuideFor('barbell_back_squat', true, 'squat').framingLabel).toBe('corps entier, pieds compris');
     expect(filmingGuideFor('conventional_deadlift', true, 'deadlift').framingLabel).toBe('corps entier, pieds compris');
-    expect(filmingGuideFor('standing_barbell_overhead_press', true, 'overhead_press').angleLabel).toBe('De face (0°)');
+  });
+
+  it('the view a #collecte set is saved with is the view Film asks for (second review of card 042)', async () => {
+    stubEnv();
+    const { filmingGuideFor } = await import('../filming-guide');
+    const { filmView } = await import('../exercise-info');
+    for (const [id, counting] of [['standing_barbell_overhead_press', 'overhead_press'], ['barbell_back_squat', 'squat'], ['bicep_curl', 'bicep_curl']]) {
+      expect(filmingGuideFor(id, true, counting).view).toBe(filmView(id));
+    }
   });
 
   it('on Film, the note, the eyebrow and step 2 say the same thing', async () => {
@@ -96,9 +105,13 @@ describe('a catalogue variant of the « Changer » drawer (review of card 042, 1
     expect(squat).toContain('Le corps entier dans le cadre, pieds compris.');
     expect(note(squat)).toContain('corps entier, pieds compris');
 
-    const press = film('standing_barbell_overhead_press');
-    expect(note(press)).toContain('De face (0°)');
-    expect(press).toContain('Filmé de face');
+    // The note's angle, the eyebrow and step 1 read one view.
+    for (const html of [squat, film('standing_barbell_overhead_press'), film('lateral_raise')]) {
+      const front = note(html).startsWith('De face');
+      expect(html).toContain(front ? 'Filmé de face' : 'Filmé de profil');
+      const step1 = html.match(/<span class="n">1<\/span><span>([^<]*)</)?.[1] ?? '';
+      expect(step1).toMatch(front ? /face à vous/ : /sur le côté/);
+    }
   });
 });
 
