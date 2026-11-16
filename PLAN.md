@@ -48,6 +48,19 @@ THE TEAM
 - One roadmap, this section. `cards/README.md` holds the only queue: each card names its phase, and its number is reserved on issue #190 before work starts. ROADMAP.md, DIRECTIVES.md Part 3, the phases of `docs/SPEC-production.md` and `agents/ARCHITECTURE.md` are historical.
 - METHOD.md binds, its review board answered in each card's report (David, "governance approved", 15 November 2026).
 
+DECISIONS OF 16 NOVEMBER 2026 (David: "Bring in the agents and think tank to answer to your questions damn it and execute accordingly")
+- Taken by the review panel of 16 November 2026 (nine specialists) and, where they split, by a board of three (Karpathy, red team, Black), on David's delegation. Each holds until David overrules it.
+- The « Espace kiné » row leaves the home until a written regulatory opinion is on file (EU MDR, Rule 11); patients' and physiotherapists' links keep working (card 043).
+- The home's simplification (WP5.1) moves into Phase 1: it only removes (card 053).
+- The exam, two tiers, replacing "four exam sets ... every exam set is counted exactly" in RULES:
+  1. A lift is offered on at least 8 sealed sets, at least 7 exact, none off by 3 or more, no set shown as sure wrong. Its result is printed with its lower bound (8 of 8 exact bounds the true rate at 69 %, one-sided 95 %) and scoped "one person" until testers' sets join.
+  2. A per-lift accuracy figure is published (R13, Phase 3) only on at least 29 sealed sets shown as sure, all exact, from at least 3 people: the bound is then 90 % (one-sided 95 %).
+  Phase 1's gate (18 of 20) bounds the rate at 72 %: it is reported with that bound, never as 90 %.
+- The reverts #441 and #442 merge, with the flip mask, under card 054's written condition: a baseline falls only through a pure revert of named commits back to their parent's numbers, every lost set named, David's own baselines unmoved.
+- Profile questions: no new question reaches a screen before Phase 1's gate passes; until then the app uses the answers it already asks (level, goal, what bothers the person). In Phase 2: training days per week and equipment. Age only for the two fitness tests, once their norms are checked at the source. Never asked: height, weight, desired physique, calorie goals. Pain only in the physiotherapist's path, as the patient's own answer, never turned into advice.
+- No streaks, loss warnings, variable rewards or fake waits; reminders opt-in, timed by the person, off in one tap; success is measured by people coming back by choice.
+- Antigravity's cards 048 to 053 and Claude's 043 and 054 carry these decisions (`cards/README.md`).
+
 RULES
 - One branch, counter-core. Nothing merges to main before Step 5, except the approved exceptions. After Step 5, main moves only by fast-forward to a counter-core commit whose preview David has approved on his phone. Work yourself, one step at a time. No background agents; the two sub-agents under METHOD are the only exception.
 - On the Mac, the repository lives at ~/Developer/workout-vision, outside iCloud. The cloud session works in its own checkout and is the only writer to counter-core.

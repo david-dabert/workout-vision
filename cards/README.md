@@ -31,7 +31,16 @@ Phase 1 cards of 16 November 2026, from the review panel of that day (David: "No
 6. 044 (Antigravity), the sample video is marked « Exemple » and never saved or collected as the person's set. Same reason.
 7. 046 (Antigravity), the iPhone's read of the bundled clips beside the computer's, in one committed table: the tool now, the table when David's run arrives.
 8. 047 (Antigravity), the saved-load browser test passes on its first run, every run.
-9. 043 (Claude), the physiotherapist's screens show no dossier under a clinic's name and no target without a source.
+9. 043 (Claude), the physiotherapist's screens show no dossier under a clinic's name, no target without a source, and no « Espace kiné » row on the home until a written regulatory opinion exists.
+
+Phase 1 cards of 16 November 2026, decided by the board (David: "Bring in the agents and think tank to answer to your questions damn it and execute accordingly"), after 047:
+10. 048 (Antigravity), Espace pro offers only the coach's own programmes, no unsourced templates.
+11. 053 (Antigravity, after 044), the home is the approved prototype plus two rows; one question per saved set (WP5.1 moved to Phase 1: it only removes).
+12. 050 (Antigravity), an unknown address says so, and the level is set in one place.
+13. 049 (Antigravity), the production build ships only what its pages use.
+14. 052 (Antigravity, careful: Claude reviews before merge), one analysis configuration, checked by the type checker.
+15. 051 (Antigravity, lab lane), two references for measurement: rep duration against human boundaries, 2D angle against synthetic truth.
+16. 054 (Claude), the reverts #441 and #442, under the board's written condition (PLAN.md, decisions of 16 November 2026).
 
 Parked until Phase 1's gate passes:
 - 038, the estimated maximum (Antigravity, branch not pushed): returns in Phase 2 through a card with its eval and the question "How many more reps could you have done?".
