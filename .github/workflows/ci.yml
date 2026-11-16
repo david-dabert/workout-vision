@@ -39,6 +39,25 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      # The data rules of PLAN.md's amendment of 15 November 2026 (THE DATA; scripts/check-data-discipline.mjs): a pull
+      # request that changes src/lib/counting/ names in TRIED.md the data it was chosen on and other data it was confirmed
+      # on; on every run, no code file outside the exam's allowlist names the sealed folder of David's sets (PLAN.md).
+      - name: Data discipline
+        run: |
+          if [ -n "$GITHUB_BASE_REF" ]; then
+            git fetch --depth=1 origin "$GITHUB_BASE_REF"
+            node scripts/check-data-discipline.mjs --base FETCH_HEAD
+          else
+            node scripts/check-data-discipline.mjs
+          fi
+      # The freeze of the same amendment: the files the built pages do not reach may not outnumber the base branch's
+      # count (scripts/reach-baseline.json, read from the base; the head's own file only when the base has none yet).
+      - name: No new unreached code
+        run: |
+          if [ -n "$GITHUB_BASE_REF" ]; then git fetch --depth=1 origin "$GITHUB_BASE_REF"; base=FETCH_HEAD; else base=HEAD^1; fi
+          max=$(git show "$base:scripts/reach-baseline.json" 2>/dev/null | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).unreached)}catch{console.log("")}})')
+          if [ -z "$max" ]; then max=$(node -p 'require("./scripts/reach-baseline.json").unreached'); fi
+          node scripts/audit-reach.mjs --max "$max"
       - run: npm ci
       # Labelled sets lock (CLAUDE.md R1), against the base the pull request's merge commit was made on
       # (pull_request.base.sha) and the branch's previous tip on a push (github.event.before; a new branch falls back to HEAD^1):

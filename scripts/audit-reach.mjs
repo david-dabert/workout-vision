@@ -134,3 +134,17 @@ if (i >= 0) {
   for (const u of unnamed) console.log(`    ${u}`);
   if (missing.length || unnamed.length) process.exit(1);
 }
+
+// The freeze of PLAN.md's amendment of 15 November 2026: CI fails when the files the built pages do not reach outnumber
+// the base branch's count (scripts/reach-baseline.json, read from the base branch by ci.yml).
+const m = args.indexOf('--max');
+if (m >= 0) {
+  const max = Number(args[m + 1]);
+  if (!Number.isInteger(max) || max < 0) { console.log(`\n--max needs a whole number, got "${args[m + 1]}".`); process.exit(2); }
+  if (unreached.length > max) {
+    console.log(`\n::error::${unreached.length} files are not reached, more than the base branch's ${max}: a new file the app does not import is lab work behind a switch (imported, switched off) or nothing (PLAN.md, THE FREEZE).`);
+    process.exit(1);
+  }
+  if (unreached.length < max) console.log(`\n${unreached.length} files not reached, fewer than the base branch's ${max}: lower scripts/reach-baseline.json to ${unreached.length}.`);
+  else console.log(`\n${unreached.length} files not reached, as on the base branch.`);
+}
