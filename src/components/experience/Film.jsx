@@ -37,7 +37,12 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
   // build made with VITE_LIVE=1: production hides it until Phase 6 (buildFlags.js, WP0.3).
   const liveOffered = liveBuild() && !!onLive && canOpenCamera();
   const [mode, setModeState] = useState(() => (liveOffered ? readFilmMode() : 'video'));
-  const setMode = m => { setModeState(m); writeFilmMode(m); };
+  const setMode = m => {
+    sampleAbort.current?.abort();
+    setSampleError(false);
+    setModeState(m);
+    writeFilmMode(m);
+  };
   const live = liveOffered && mode === 'live';
   const canvas = useRef(null);
   const fileRef = useRef(null);
@@ -90,17 +95,31 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
 
   function handleFile(e) {
     const f = e.target.files?.[0];
-    if (f) onFile(f);
+    if (f) {
+      sampleAbort.current?.abort();
+      setSampleError(false);
+      onFile(f);
+    }
   }
 
   function handleSelectExercise(newLift) {
+    sampleAbort.current?.abort();
+    setSampleError(false);
     setCurrentLift(newLift);
     onChangeLift?.(newLift);
     setDrawerOpen(false);
   }
 
   const [sampleLoading, setSampleLoading] = useState(false);
+  const [sampleError, setSampleError] = useState(false);
+  const sampleAbort = useRef(null);
   const [deviceTilt, setDeviceTilt] = useState(null);
+
+  useEffect(() => {
+    setSampleLoading(false);
+    setSampleError(false);
+    return () => { sampleAbort.current?.abort(); };
+  }, [activeLift]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !('DeviceOrientationEvent' in window)) return undefined;
@@ -123,23 +142,36 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
 
   async function handleSampleVideo() {
     if (sampleLoading) return;
+    sampleAbort.current?.abort();
+    const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+    sampleAbort.current = ctrl;
+    let handed = false;
     setSampleLoading(true);
+    setSampleError(false);
     try {
       let demoFile = 'bodyweight-squat-9.mp4';
       const l = (activeLift || '').toLowerCase();
-      if (l.includes('curl')) demoFile = 'bicep-curl-5.mp4';
+      if (l.includes('ez')) demoFile = 'ez-curl-10.mp4';
+      else if (l.includes('curl')) demoFile = 'bicep-curl-5.mp4';
       else if (l.includes('pulldown') || l.includes('pull')) demoFile = 'lat-pulldown-6.mp4';
       else if (l.includes('dip')) demoFile = 'dip-13.mp4';
-      else if (l.includes('ez')) demoFile = 'ez-curl-10.mp4';
 
-      const res = await fetch(`${import.meta.env.BASE_URL}demo/${demoFile}`);
+      const res = await fetch(`${import.meta.env.BASE_URL}demo/${demoFile}`, ctrl ? { signal: ctrl.signal } : undefined);
+      if (!res.ok) throw new Error(`Demo fetch failed: ${res.status}`);
       const blob = await res.blob();
+      if (ctrl?.signal.aborted || sampleAbort.current !== ctrl) return;
       const file = new File([blob], demoFile, { type: 'video/mp4' });
-      onFile(file);
-    } catch {
-      fileRef.current?.click();
+      handed = true;
+      onFile(file, { sample: true });
+    } catch (err) {
+      if (err?.name !== 'AbortError' && !ctrl?.signal.aborted && sampleAbort.current === ctrl) {
+        setSampleError(true);
+      }
     } finally {
-      setSampleLoading(false);
+      if (sampleAbort.current === ctrl) {
+        sampleAbort.current = null;
+        if (!handed) setSampleLoading(false);
+      }
     }
   }
 
@@ -157,7 +189,7 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
   return <div className="wv-experience">
     <section ref={screen} className="screen is-active film-screen"><div className="wrap">
       <div className="topbar">
-        <button className="icon-btn press" onClick={onBack} aria-label={fr ? 'Retour' : 'Back'}>
+        <button className="icon-btn press" onClick={() => { sampleAbort.current?.abort(); onBack(); }} aria-label={fr ? 'Retour' : 'Back'}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
         </button>
         <div className="film-topbar-end">
@@ -257,6 +289,7 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
             ? (fr ? 'Chargement de l’exemple…' : 'Loading sample set…')
             : (fr ? 'Tester un exemple préenregistré' : 'Try with a sample set')}</span>
         </button>
+        {sampleError && <p role="alert" className="film-placement-note" data-testid="film-sample-error">{fr ? 'Impossible de charger la vidéo d’exemple.' : 'Could not load the sample video.'}</p>}
       </div>}
       {/* How to count, under the action, so the frame and the action keep their place on a short screen (fitness-tests.spec.js). */}
       {liveOffered && <div className="film-mode" role="group" aria-label={fr ? 'Comment compter' : 'How to count'} data-reveal style={{ '--i': 5 }}>

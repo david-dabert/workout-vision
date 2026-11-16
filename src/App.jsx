@@ -132,6 +132,7 @@ function AppInner() {
   const [page, setPage, browserMoves, browserPending] = useHashRouter();
   const [selectedLift, setSelectedLift] = useState('');
   const [videoFile, setVideoFile] = useState(null);
+  const [sampleVideo, setSampleVideo] = useState(false);
   // The page a View Transition brought in; its screen change needs no fade of its own.
   const [transitionPage, setTransitionPage] = useState(null);
   const fileSerial = useRef(0);
@@ -239,27 +240,27 @@ function AppInner() {
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage('WARM_DEFERRED');
     }
-    go('film', () => { setSelectedLift(lift); setVideoFile(null); setGuideLift(''); });
+    go('film', () => { setSelectedLift(lift); setVideoFile(null); setSampleVideo(false); setGuideLift(''); });
   };
   // A target holds only for its own exercise: one left from an earlier tap never reaches another set (excellence hunt,
   // 9 October 2026). A target kept before it carried its exercise (no key) stands as it did.
   const target = planned && (planned.key === undefined || planned.key === selectedLift) ? planned : null;
   const backToChoice = () => (target
-    ? go('programme', () => { setSelectedLift(''); setVideoFile(null); setPlanned(null); })
-    : go('dashboard', () => { setSelectedLift(''); setVideoFile(null); }));
-  const backToFilm = () => go('film', () => setVideoFile(null));
+    ? go('programme', () => { setSelectedLift(''); setVideoFile(null); setSampleVideo(false); setPlanned(null); })
+    : go('dashboard', () => { setSelectedLift(''); setVideoFile(null); setSampleVideo(false); }));
+  const backToFilm = () => go('film', () => { setVideoFile(null); setSampleVideo(false); });
 
   let key, screen;
   if (page === 'film' && selectedLift) {
     key = `film:${selectedLift}`;
-    screen = <ExperienceFilm lift={selectedLift} onChangeLift={setSelectedLift} hero={transitionPage === 'film'} onBack={backToChoice} onFile={f => { track('film_start', { lift: selectedLift }); go('analyze', () => { fileSerial.current += 1; setVideoFile(f); }); }}
-      onLive={liveBuild() ? () => { track('film_start', { lift: selectedLift }); go('live', () => { fileSerial.current += 1; }); } : undefined} />;
+    screen = <ExperienceFilm lift={selectedLift} onChangeLift={setSelectedLift} hero={transitionPage === 'film'} onBack={backToChoice} onFile={(f, opts) => { track('film_start', { lift: selectedLift }); go('analyze', () => { fileSerial.current += 1; setSampleVideo(Boolean(opts?.sample)); setVideoFile(f); }); }}
+      onLive={liveBuild() ? () => { track('film_start', { lift: selectedLift }); go('live', () => { fileSerial.current += 1; setSampleVideo(false); }); } : undefined} />;
   } else if (page === 'live' && selectedLift && liveBuild()) {
     key = `live:${fileSerial.current}`;
     screen = <LiveSession lift={selectedLift} planned={target} onClose={backToChoice} onRecord={backToFilm} />;
   } else if (page === 'analyze' && selectedLift && videoFile) {
     key = `analyze:${fileSerial.current}`;
-    screen = <Analyze initialLift={selectedLift} initialFile={videoFile} planned={target} onClose={backToChoice} onRefilm={backToFilm} onNewSet={backToFilm} />;
+    screen = <Analyze initialLift={selectedLift} initialFile={videoFile} sample={sampleVideo} planned={target} onClose={backToChoice} onRefilm={backToFilm} onNewSet={backToFilm} />;
   } else if (page === 'exercises') {
     key = guideLift ? `guide:${guideLift}` : 'guide';
     screen = <ExerciseGuide lift={guideLift} onClose={() => (planned && guideLift ? go('programme', () => { setGuideLift(''); setPlanned(null); }) : go('dashboard', () => setGuideLift('')))} onChoose={l => chooseLift(l, true)} />;

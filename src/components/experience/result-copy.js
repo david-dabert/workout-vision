@@ -12,6 +12,7 @@ export const RESULT = {
     // The status line: the state of the count, then the lift and, for a set filmed from a programme, its place.
     toConfirm: 'À confirmer',
     saved: 'Enregistré',
+    sample: 'Exemple',
     yourCount: 'À vous de compter',
     // A hold the app does not time (universalProposal.js): nothing to count, as the guide marks it. Awaiting David's
     // approval (R10).
@@ -23,6 +24,9 @@ export const RESULT = {
     source: (s, live) => (live
       ? (s ? `Compté par l’appli en direct, sur ${s}${NB}s.` : 'Compté par l’appli en direct.')
       : (s ? `Compté par l’appli sur votre vidéo de ${s}${NB}s.` : 'Compté par l’appli sur votre vidéo.')),
+    sampleSource: s => (s ? `Compté par l’appli sur la vidéo d’exemple (${s}${NB}s, non enregistré).` : 'Compté par l’appli sur la vidéo d’exemple (non enregistré).'),
+    sampleUncertain: 'La série d’exemple n’a pas pu être comptée avec certitude.',
+    sampleMine: 'Filmer ma série',
     typedBy: 'Saisi par vous',
     countedWas: n => `Compté par l’appli${NB}: ${n}.`,
     // The keys.
@@ -105,6 +109,7 @@ export const RESULT = {
   en: {
     toConfirm: 'To confirm',
     saved: 'Saved',
+    sample: 'Sample',
     yourCount: 'Your count',
     notCounted: 'Not counted',
     setOf: (k, n) => `Set ${k} / ${n}`,
@@ -112,6 +117,9 @@ export const RESULT = {
     source: (s, live) => (live
       ? (s ? `Counted by the app live, over ${s}${NB}s.` : 'Counted by the app live.')
       : (s ? `Counted by the app on your ${s}${NB}s video.` : 'Counted by the app on your video.')),
+    sampleSource: s => (s ? `Counted by the app on the sample video (${s}${NB}s, not saved).` : 'Counted by the app on the sample video (not saved).'),
+    sampleUncertain: 'The sample set could not be counted with certainty.',
+    sampleMine: 'Record my set',
     typedBy: 'Typed by you',
     countedWas: n => `Counted by the app: ${n}.`,
     yes: n => `Yes, ${n} ${reps(n, false)}`,

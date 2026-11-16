@@ -182,10 +182,13 @@ const OFFER_BODY_SECOND = false;
 // for "Je ne sais pas". Absent when the set was not asked.
 // Shared with Film (filming-guide.js, card 045): saves the same view Film asked for, even on 253 front-view catalogue variants.
 export const collectedView = lift => exerciseView(lift, typeof lift === 'string' ? getExercise(lift)?.counting_key : null);
+// Bundled demo sets (Film.jsx handleSampleVideo, card 044) carry sample: true and never enter saved or #collecte sets.
+export const canSaveResult = result => !result?.sample;
 
 export default function Result({ result, lift, videoFile = null, covered, onClose, onReport, onReplay, onNewSet, onChangeLift = onClose, onRefilm, onSaved = () => {}, liveShown = null, planned = null, blind = null }) {
   const { lang } = useT(), fr = lang === 'fr';
   const reduced = useRef(REDUCED()).current;
+  const isSample = !canSaveResult(result);
   // A set the counter did not refuse but found no rep in is not a measured 0 (R8): the app cannot tell an
   // empty set from reps it missed. The screen asserts no number, no measure and no mark, and opens on the
   // question "How many did you do?"; the set is saved with the app's 0 beside the person's count, as a
@@ -220,7 +223,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // The video stops on a rise the counter left out (coreAnalysis.js tailOpen, 15 November 2026): asked on David's
   // #collecte phone only until he chooses (card 039): on the public sets shown as sure such a count was mostly short, on
   // his own sets it caught no error and asked on two exact ones (TRIED.md, 15 November 2026).
-  const endedMidRep = !result.refused && result.count > 0 && !flagged && result.tailOpen === true && collectOn();
+  const endedMidRep = !isSample && !result.refused && result.count > 0 && !flagged && result.tailOpen === true && collectOn();
   // The app's count, standing as one to confirm: a flagged, moved, mid-rep or low-pose-coverage set's.
   const toCheck = flagged || sensitive || openedMidRep || endedMidRep || doubted;
   const low = !!result.refused || unsure || liveDiffers || toCheck;
@@ -242,14 +245,14 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // changed, with the app's beside it ("Compté par l'appli : N."), so it is saved in one tap; equal, the app's count to
   // confirm as usual; on a low-confidence set, in the slot. Nothing else changes: the app's count, its proposal and its
   // cause are shown as they would be. Status: convention (David's order of 9 October 2026, pillar 1).
-  const blindN = Number.isInteger(blind?.count) && blind.count > 0 ? blind.count : null;
+  const blindN = !isSample && Number.isInteger(blind?.count) && blind.count > 0 ? blind.count : null;
   const [step, setStep] = useState(low ? 'fix' : blindN !== null && blindN !== result.count ? 'fix' : 'ask'); // ask | fix | saved
   // The list the screen can offer (result-choices.js; pillar 2, 9 October 2026): on a counted set, the two neighbours of
   // the count under "Oui, N répétitions", each saved in one tap. On David's phone only (#collecte) until he approves the
   // words and checks it on his iPhone (R10, R3); low-confidence screens are unchanged (R8: their keys are never centred
   // on the app's count, Result.jsx lowAsk). The saved set keeps what was offered and how the number was given.
   const choices = countChoices(result, { liveShown });
-  const [offerAlts] = useState(() => choices.state === 'counted' && choices.alts.length > 0 && collectOn());
+  const [offerAlts] = useState(() => !isSample && choices.state === 'counted' && choices.alts.length > 0 && collectOn());
   const pickedAlt = useRef(false), altsShown = useRef(false);
   // The button tapped goes with its card ("Non", "Enregistrer"): focus follows to the new card's first words, so
   // VoiceOver and the keyboard are not left on nothing (second audit, 3 October). Only when focus was lost.
@@ -282,7 +285,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       velocityLossPercent: s.velocityLoss?.lossPercent ?? 12,
     }));
     // Built on the velocity decline (noise, measures.js) and a default of 12 % for sets that carry none: hidden with it.
-    fatigueHorizon = UNVALIDATED_BIOMECHANICS_SHOWN ? predictFatigueHorizon(history, result?.velocityLoss?.lossPercent ?? null, lift) : null;
+    fatigueHorizon = !isSample && UNVALIDATED_BIOMECHANICS_SHOWN ? predictFatigueHorizon(history, result?.velocityLoss?.lossPercent ?? null, lift) : null;
   } catch {
     fatigueHorizon = null;
   }
@@ -335,7 +338,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // browser's back (Safari's edge swipe) both lead here, so a set is never lost by a slip of the thumb. A refused set
   // too, once a number stands in its slot (the app's proposal, or one typed): excellence hunt, 9 October 2026.
   const [closing, setClosing] = useState(false);
-  const unsaved = step !== 'saved';
+  const unsaved = step !== 'saved' && !isSample;
   // A set the app counted none in, with no number typed yet, holds nothing to keep: closing it asks nothing.
   const empty = low && step === 'fix' && trueN === 0;
   const emptyRef = useRef(empty);
@@ -476,8 +479,8 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const [before, setBefore] = useState(() => { const k = knownSets(); return k ? mine(k) : null; });
   useEffect(() => { let live = true; loadSets().then(l => { if (live) setBefore(b => b ?? mine(l)); }, () => {}); return () => { live = false; }; }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // Once saved: the one earned line, a record, a record equalled or a first set (moment.js), above the thanks.
-  const moment = step === 'saved' && !result.refused ? momentLine({ n: trueN, before, fr, load: savedLoadKg, refused: !!result.refused }) : null;
-  const account = setAccount({ reps, first: liftDefinition(lift)?.first, fr, name: liftName, count: trueN, corrected: step === 'saved' && isCorrected(trueN, count), previous: before?.length ? before[0].reps : null, nth: before ? before.length + 1 : null, doubted: flagged });
+  const moment = step === 'saved' && !isSample && !result.refused ? momentLine({ n: trueN, before, fr, load: savedLoadKg, refused: !!result.refused }) : null;
+  const account = setAccount({ reps, first: liftDefinition(lift)?.first, fr, name: liftName, count: trueN, corrected: step === 'saved' && isCorrected(trueN, count), previous: !isSample && before?.length ? before[0].reps : null, nth: !isSample && before ? before.length + 1 : null, doubted: flagged });
   const shortSet = new Set(account.short);
   // The level read as the screen opens (level.js); the expert's table and speed line are the report's own,
   // its first column headed Repère after a correction, as the report heads it (third audit C11).
@@ -488,7 +491,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const [levelBefore] = useState(() => ({ level: readLevel(), asked: levelAsked() }));
   const [chosen, setChosen] = useState('');
   // A refused set typed by hand shows neither question, so neither is spent on it (review of 4 October).
-  const offerLevel = !result.refused && shouldAskLevel({ step, ...levelBefore });
+  const offerLevel = !isSample && !result.refused && shouldAskLevel({ step, ...levelBefore });
   useEffect(() => { if (offerLevel) markLevelAsked(); }, [offerLevel]);
   // Whether to help improve the count: asked on the saved card of the first set, and once more from the fifth when
   // left unanswered, never after a yes or a no (contribute.js shouldAskContribute). Decided once the sets on the
@@ -552,11 +555,14 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
 
   // The set saved, as a contribution, kept on this phone until the person sends or erases it.
   // True once kept; a write the phone refuses is never taken for a kept set (audit of 2 October).
-  const keepThis = n => keepContribution(contribution({ result, lift, kept: n, setId: savedId.current, appVersion: appVersion() }))
-    .then(() => true, e => { console.warn('[contribute] this set could not be kept', e); return false; });
+  const keepThis = n => {
+    if (!canSaveResult(result)) return Promise.resolve(false);
+    return keepContribution(contribution({ result, lift, kept: n, setId: savedId.current, appVersion: appVersion() }))
+      .then(() => true, e => { console.warn('[contribute] this set could not be kept', e); return false; });
+  };
 
   async function doSave(n, corrected, manual = false) {
-    if (saving.current) return false;
+    if (!canSaveResult(result) || saving.current) return false;
     saving.current = true;
     // The rest begins at the first attempt to save; a retry leaves the clock as the user left it.
     if (!restBegun.current) { restBegun.current = true; rest.start(); }
@@ -676,12 +682,14 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const live = !!result.metadata?.live;
   // For a set filmed from a programme: the day's sets of this exercise and the set's place among them
   // (result-plan.js). Until the sets are read there is no table and no set number, never a wrong one.
-  const day = dayPlan({ planned, sets: before, lift });
+  const day = isSample ? null : dayPlan({ planned, sets: before, lift });
   // The status line (one per screen, final direction): the state of the count, then where the set stands.
-  const where = day ? `${liftName} · ${c.setOf(day.index, Math.max(day.sets, day.index))}` : low ? liftName : `${liftName} · ${armLabel}`;
-  const typedSaved = step === 'saved' && (!!result.refused || isCorrected(trueN, count));
+  const where = day ? `${liftName} · ${c.setOf(day.index, Math.max(day.sets, day.index))}` : low || isSample ? liftName : `${liftName} · ${armLabel}`;
+  const typedSaved = !isSample && step === 'saved' && (!!result.refused || isCorrected(trueN, count));
   const status = <div className="res-status" data-testid="res-status">
-    <p className="res-status-state">{step === 'saved'
+    <p className="res-status-state">{isSample
+      ? <><i className="res-mark is-measured" aria-hidden="true" />{c.sample}</>
+      : step === 'saved'
       ? <><i className={`res-mark is-sq${typedSaved ? '' : ' is-measured'}`} aria-hidden="true" />{c.saved}</>
       : <><i className={`res-mark is-ring${!low && step === 'ask' ? ' is-measured' : ''}`} aria-hidden="true" />{uniHold ? c.notCounted : low && !offeredBy(trueN) ? c.yourCount : c.toConfirm}</>}</p>
     <p className="res-status-where">{where}</p>
@@ -733,14 +741,14 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   // the foot of an empty screen (second round of the honesty pass, 14 October 2026).
   const lowAsk = (manual, cause, { title = null, slot = true } = {}) => <div key="count" className="res-low" data-testid="fix-card">
     <h2 className="res-low-title refused-title" data-testid={manual ? undefined : 'res-uncounted'}>{title ?? (liveDiffers || proposal || toCheck ? c.notSure : c.noCount)}</h2>
-    <div className="res-cause">
+    {cause.length > 0 && <div className="res-cause">
       <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.5" /><path d="M10 5.5v5.5" /><circle className="dot" cx="10" cy="14.2" r=".6" /></svg>
       <div>{cause.map(l => <p key={l}>{l}</p>)}</div>
-    </div>
-    {!slot && <div className="res-keys res-keys-inline">
+    </div>}
+    {!slot && !isSample && <div className="res-keys res-keys-inline">
       <button type="button" className="res-key is-primary press" data-testid="change-lift" onClick={() => release().then(onChangeLift)}>{fr ? 'Changer d’exercice' : 'Change exercise'}</button>
     </div>}
-    {slot && <>
+    {slot && !isSample && <>
     <p className="ask-q res-ask" id="res-ask">{c.howMany}</p>
     {hero(trueN > 0
       ? <span key={trueN} className="res-typed" data-testid="res-typed" aria-hidden="true">{trueN}</span>
@@ -768,7 +776,10 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     {centreLine && <p className="res-hint res-centre">{centreLine}</p>}
     </>}
   </div>;
-  const lowDock = manual => [<div key="dock" className="res-dock" data-testid="res-dock">{closing && unsaved ? closeCard : <div className="res-keys">
+  const lowDock = manual => [<div key="dock" className="res-dock" data-testid="res-dock">{isSample ? <div className="res-keys">
+    <button type="button" className="res-key is-primary press" data-testid="sample-film" onClick={after(onNewSet || onRefilm || onClose)}>{c.sampleMine}</button>
+    {manual && <button type="button" className="res-key press" onClick={after(onChangeLift)}>{fr ? 'Changer d’exercice' : 'Change exercise'}</button>}
+  </div> : closing && unsaved ? closeCard : <div className="res-keys">
     <button type="button" className="res-key is-primary press" data-testid="res-save" disabled={trueN === 0} onClick={() => { if (trueN === 0) return; navigator.vibrate?.(10); doSave(trueN, toCheck ? trueN !== count : true, manual); }}>{trueN > 0 ? (offeredBy(trueN) ? c.confirmN(trueN) : c.saveN(trueN)) : c.save}</button>
     <button type="button" className="res-key press" onClick={onRefilm}>{c.refilm}</button>
   </div>}</div>, <i key="dock-end" className="res-dock-end" aria-hidden="true" />];
@@ -849,9 +860,9 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
         {status}
         {tierLine}
         {step !== 'saved' && (universal
-          ? lowAsk(true, [fix], { title: c.universalTitle, slot: !uniHold })
-          : lowAsk(true, [text, fix].filter(Boolean)))}
-        {step !== 'saved' && !(universal && uniHold) && lowDock(true)}
+          ? (isSample ? lowAsk(true, uniHold ? [c.universalHold] : [], { title: c.universalTitle, slot: false }) : lowAsk(true, [fix], { title: c.universalTitle, slot: !uniHold }))
+          : lowAsk(true, [text, ...(isSample ? [] : [fix])].filter(Boolean)))}
+        {step !== 'saved' && !(universal && uniHold && !isSample) && lowDock(true)}
         <div ref={cardRef}>
           {step === 'saved' && <div className="saved appear" data-testid="saved-card">
             <p className="saved-msg">{proposal && trueN === proposal ? c.savedConfirmed(trueN) : fr ? `Merci. ${trueN} ${trueN > 1 ? 'répétitions enregistrées, saisies' : 'répétition enregistrée, saisie'} à la main.` : `Thank you. ${trueN} ${trueN === 1 ? 'rep' : 'reps'} saved, typed by hand.`}</p>
@@ -928,16 +939,18 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const blocks = {
     // Low confidence: the cause and the question, no number (05b). Otherwise the question, the count between − and +,
     // its state in a mark and a word, and where it comes from (05).
-    count: low && step !== 'saved' ? lowAsk(false, unsure ? [c.noneFound] : [...(liveDiffers ? [c.liveDiffers(liveShown)] : []), ...(flagged ? [c.bodyCause(jointName(liftDefinition(lift)?.joint, fr))] : []), ...(sensitive ? [c.sensitiveCause] : []), ...(openedMidRep ? [c.midRepCause] : []), ...(endedMidRep ? [c.endMidRepCause] : []), ...(doubted ? [c.doubtCause] : [])]) : <div key="count" className="res-count">
-      {step !== 'saved' && <p className={`res-q${asked ? '' : ' is-waiting'}${step === 'fix' ? ' is-fix' : ''}`} aria-hidden={asked ? undefined : true}>{step === 'fix' ? c.howMany : c.question(count)}</p>}
-      {hero(<span key={big} className={`numeral tick${typedView ? ' is-typed' : ''}${String(big).length > 2 ? ' is-long' : ''}`} aria-hidden="true" data-testid="res-numeral">{big}</span>, asked, step !== 'saved')}
-      {step === 'fix' && <p className="sr" aria-live="polite" aria-atomic="true">{trueN}</p>}
-      <p className={`res-state${typedView ? ' is-typed' : ''}${step === 'saved' ? ' is-saved' : ''}`} data-testid="res-state">{typedView
+    count: low && step !== 'saved' ? lowAsk(false, unsure ? [c.noneFound] : isSample ? [liveDiffers ? c.liveDiffers(liveShown) : c.sampleUncertain] : [...(liveDiffers ? [c.liveDiffers(liveShown)] : []), ...(flagged ? [c.bodyCause(jointName(liftDefinition(lift)?.joint, fr))] : []), ...(sensitive ? [c.sensitiveCause] : []), ...(openedMidRep ? [c.midRepCause] : []), ...(endedMidRep ? [c.endMidRepCause] : []), ...(doubted ? [c.doubtCause] : [])]) : <div key="count" className="res-count">
+      {!isSample && step !== 'saved' && <p className={`res-q${asked ? '' : ' is-waiting'}${step === 'fix' ? ' is-fix' : ''}`} aria-hidden={asked ? undefined : true}>{step === 'fix' ? c.howMany : c.question(count)}</p>}
+      {hero(<span key={big} className={`numeral tick${typedView && !isSample ? ' is-typed' : ''}${String(big).length > 2 ? ' is-long' : ''}`} aria-hidden="true" data-testid="res-numeral">{big}</span>, asked, !isSample && step !== 'saved')}
+      {!isSample && step === 'fix' && <p className="sr" aria-live="polite" aria-atomic="true">{trueN}</p>}
+      <p className={`res-state${typedView && !isSample ? ' is-typed' : ''}${step === 'saved' ? ' is-saved' : ''}`} data-testid="res-state">{isSample
+        ? <><i className="res-mark is-measured" aria-hidden="true" />{c.sample}</>
+        : typedView
         ? c.typedBy
         : <><i className={`res-mark ${step === 'saved' ? 'is-sq' : 'is-ring'} is-measured`} aria-hidden="true" />{step === 'saved' ? c.saved : c.toConfirm}</>}</p>
       {/* Where the number comes from: the app, on a video whose length is measured (metadata.duration); once the person
           changed it, the app's own count beside theirs (the saved card says it once saved). */}
-      {step === 'fix' ? <p className="res-src">{c.countedWas(count)}</p> : !typedView && <p className="res-src" data-testid="res-src">{c.source(seconds, live)}</p>}
+      {isSample ? <p className="res-src" data-testid="res-src">{c.sampleSource(seconds)}</p> : step === 'fix' ? <p className="res-src">{c.countedWas(count)}</p> : !typedView && <p className="res-src" data-testid="res-src">{c.source(seconds, live)}</p>}
       {/* A set the app counted none in, saved with the person's number: no rep to measure, said so (R8). */}
       {step === 'saved' && unsure && <p className="res-meta" data-testid="res-no-measure">{`${c.noMeasure} ${c.noneFound}`}</p>}
       {tierLine}
@@ -1003,7 +1016,12 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     // The keys, in the thumb zone: "Oui, N répétitions" confirms the app's count, the video is one tap away. A changed
     // count is saved as the person's. Nothing is saved, and nothing celebrates, before one of them is pressed.
     dock: !low && step !== 'saved' && [<div key="dock" className="res-dock" data-testid="res-dock">
-      {closing && unsaved ? closeCard
+      {isSample
+        ? <div className="res-keys">
+          <button type="button" className="res-key is-primary press" data-testid="sample-film" onClick={after(onNewSet || onRefilm || onClose)}>{c.sampleMine}</button>
+          {replayKey}
+        </div>
+        : closing && unsaved ? closeCard
         : step === 'ask'
           ? (asked && <div className="res-keys appear" data-testid="ask-card">
             <button type="button" className="res-key is-primary press" data-testid="res-yes" onClick={() => { navigator.vibrate?.(10); doSave(count, false); }}>{c.yes(count)}</button>
