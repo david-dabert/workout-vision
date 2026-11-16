@@ -1,4 +1,4 @@
-PLAN.md on counter-core prevails over this file.
+PLAN.md on main prevails over this file (David, 15 November 2026: "adopt"; the branch counter-core is historical).
 # WorkoutVision: Build Directives
 
 Owner: David Dabert. Executor: the Claude Code companion.
@@ -105,6 +105,8 @@ Added 15 October 2026 (David).
 Amended 20 October 2026 (David: "Yes, add the line"), after two comments on 19 October from hg18hgz, an account that is not a collaborator, describing work on another codebase.
 
 ## Part 3. The phases
+
+Historical since 15 November 2026: the phases are those of PLAN.md's amendment of that day.
 
 ### Phase 0. Stabilise the live app
 

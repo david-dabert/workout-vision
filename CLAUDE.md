@@ -1,7 +1,7 @@
-PLAN.md on counter-core prevails over this file.
+PLAN.md on main prevails over this file (David, 15 November 2026: "adopt"; the branch counter-core is historical).
 # WorkoutVision Standing Rules
 
-Source: DIRECTIVES.md Part 2, Version 1, 24 September 2026; amended 15 October 2026 by David (R1, R8, R11, R14, R15); R16 added 18 October 2026 by David; R10 and R15 amended 20 October 2026 by David; R1 amended 25 October 2026 by David; R6 amended 13 November 2026 by David; R5, R6 and R15 amended 14 November 2026 by David.
+Source: DIRECTIVES.md Part 2, Version 1, 24 September 2026; amended 15 October 2026 by David (R1, R8, R11, R14, R15); R16 added 18 October 2026 by David; R10 and R15 amended 20 October 2026 by David; R1 amended 25 October 2026 by David; R6 amended 13 November 2026 by David; R5, R6 and R15 amended 14 November 2026 by David; precedence moved from PLAN.md on counter-core to PLAN.md on main 15 November 2026 by David ("adopt").
 Every session starts by reading CLAUDE.md, DIRECTIVES.md and STATE.md, and the latest comments of issue #190 (R15).
 
 **R1. Ground truth is sacred.**

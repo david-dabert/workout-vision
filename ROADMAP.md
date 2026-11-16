@@ -1,4 +1,4 @@
-PLAN.md on counter-core prevails over this file.
+Historical since 15 November 2026: the roadmap is PLAN.md's amendment of that day (David: "adopt"). Kept for its record, not to be acted on.
 # ROADMAP
 
 The order of work, ranked (David, 18 October 2026: "Go", in reply to "one ranked roadmap of ten items replacing the backlog as the driver").

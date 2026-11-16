@@ -1,5 +1,53 @@
 Fresh start. This message is PLAN.md. It overrides every earlier plan, the council document, your memory notes and any plan pasted from another model. Reread PLAN.md at the start of every session and after every compaction. If a later message conflicts with it, ask David whether to amend PLAN.md before acting.
 
+AMENDMENT OF 15 NOVEMBER 2026 (David: "adopt"; then "Plan MD signed, governance approved")
+- Written by Claude from the six decisions of the review board's second opinion of 15 November 2026 (issue #190), adopted and signed by David the same day.
+- This file on main is the plan. It replaces "PLAN.md on counter-core" in every rule file: counter-core has not moved since 11 October 2026 (`7b332a8c`) and its PLAN.md lacks lines this one holds.
+- This section prevails over every older line of this file. Where an older line disagrees with it ("One branch, counter-core", "Nothing merges to main before Step 5", the phases of 6 November), this section holds.
+
+THE ROADMAP
+A phase ends when its gate passes, never on a date. The dates are the estimates of 14 November 2026. Nothing from a later phase reaches users before the earlier gate passes.
+
+Phase 1. Trust on the iPhone (estimate: 5 December 2026)
+- The iPhone's own read of check.html's bundled clips and of David's videos, set beside the computer's read of the same files, in a committed table (card 037). GitHub's macOS runners cannot reproduce the iPhone read (TRIED.md, 14 November 2026): the proof is the phone's.
+- The hip thrust counted 1 for 12 on the iPhone: its original file, read on the phone and on the computer.
+- Gate, all three:
+  1. Every clip of that table counts the same on the iPhone as on the computer.
+  2. The hip thrust reads 12 on the iPhone.
+  3. On at least 20 sealed sets filmed after 15 November 2026 (THE DATA below), at least 9 in 10 of the counts the app shows as sure are exact, and none shown as sure is off by 3 or more. With 20 sets one set is 5 points: a difference of one set is reported as it is, never as a gain.
+
+Phase 2. The complete athlete app (estimate: 9 January 2027)
+- Each kept lift passes its exam under the lift rule of RULES above ("A lift is offered only once it counts right on sets it has never seen").
+- The log with load (cards 032 and 033, built). The estimated maximum (card 038) returns only through a card with its eval, together with the question "How many more reps could you have done?" (DIRECTIVES.md 5.2), since the published formulas assume a set taken to failure. Until then `progress.js` keeps "no estimated maximum".
+- The live count, switched on only for a lift whose live count matches its recorded count on the same sets.
+- The filming guide (card 041; its figures removed by card 042), the replay to share (card 004), one written design system, a real replay on the first screen (card 012).
+- Gate: each kept lift passes its exam; 10 testers use the app for two weeks.
+
+Phase 3. Launch and first sales (estimate: 6 February 2027)
+- An App Store version (a native shell around the web app, or native where the shell fails), a domain and a landing page; payment (free count and log, a paid subscription); privacy policy, terms of sale, legal notice and RGPD under the legal entity that sells the app; a public accuracy page per lift from the latest exam (R13); a help page; a funnel on the existing anonymous counts; about 100 beta users from gyms, then a price test.
+- Gate: a stranger finds, installs, pays, uses the app and gets help without David; the first subscriptions are paid.
+
+Phase 4. The coach tier (months 4 to 6). Gate: 5 coaches with at least 5 clients each use it for 4 weeks and pay.
+
+Phase 5. The physiotherapist tier and new areas (months 6 to 12). Gate: a pilot clinic uses it for 3 months; a written regulatory opinion comes before any clinical claim.
+
+THE FREEZE
+- Until Phase 1's gate passes, no new screen and no new element on an existing screen reaches users.
+- Work continues on: Phase 1; the lab lane, behind a switch that is off in production (METHOD.md); any change that withdraws or qualifies a claim already on screen; the fix of a defect.
+- CI fails when the number of files under src/ that the built pages do not reach rises above the base branch's (`scripts/audit-reach.mjs`, `scripts/reach-baseline.json`).
+
+THE DATA
+- Tuning data, from 15 November 2026: David's labelled sets and videos on disk, the public build halves A and B, RepCount-A's build half, the occlusion and synthetic sets, and the opened held-out halves of Countix and CFRep (`test/real-phone/public/exposed.json`). The counting changes of November were chosen or checked on them (TRIED.md). They stay regression gates; a gain on them proves nothing any more. The counting gate of 6 November stands: no change is chosen on David's sets.
+- RepCount-A's held-out half was never rebuilt (`test/real-phone/loop/exam-result.txt`): it is unread and stays sealed.
+- Sealed: every set filmed after 15 November 2026, by David (`test/real-phone/sealed/`) or by a tester (`test/real-phone/blind/<tester>/`, `test/real-phone/blind/EXAM-PLAN.md`). It is read once, by its exam script, for a gate. No other script, test or agent opens it before that read; CI fails when a file outside the exam's allowlist names the sealed folder (`scripts/check-data-discipline.mjs`).
+- A pull request that changes `src/lib/counting/` adds to TRIED.md a line "Chosen on:" naming the data its choice was made on and a line "Confirmed on:" naming other data, not used in that choice, it was confirmed on; CI refuses it otherwise (`scripts/check-data-discipline.mjs`).
+
+THE TEAM
+- The reviewers that run are those of `.claude/agents/` (wv-reviewer, wv-verifier, wv-control). No new reviewer agent: the iPhone read is proved on the phone, the data discipline by CI.
+- The persona files under `agents/` are historical (AGENTS.md); none is deleted.
+- One roadmap, this section. `cards/README.md` holds the only queue: each card names its phase, and its number is reserved on issue #190 before work starts. ROADMAP.md, DIRECTIVES.md Part 3, the phases of `docs/SPEC-production.md` and `agents/ARCHITECTURE.md` are historical.
+- METHOD.md binds, its review board answered in each card's report (David, "governance approved", 15 November 2026).
+
 RULES
 - One branch, counter-core. Nothing merges to main before Step 5, except the approved exceptions. After Step 5, main moves only by fast-forward to a counter-core commit whose preview David has approved on his phone. Work yourself, one step at a time. No background agents; the two sub-agents under METHOD are the only exception.
 - On the Mac, the repository lives at ~/Developer/workout-vision, outside iCloud. The cloud session works in its own checkout and is the only writer to counter-core.

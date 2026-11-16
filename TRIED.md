@@ -1,4 +1,4 @@
-PLAN.md on counter-core prevails over this file.
+PLAN.md on main prevails over this file (David, 15 November 2026: "adopt"; the branch counter-core is historical).
 # Tried and closed
 
 Read this before proposing any counting, measurement or data idea (CLAUDE.md, R11).
