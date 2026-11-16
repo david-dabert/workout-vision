@@ -25,6 +25,12 @@ const DATASET_EVIDENCE: Record<string, string> = {
   squat: 'MM-Fit, all 64 sets through the counter at dfe4d43 (27 September 2026): 60 exact, 63 within one (test/real-phone/mmfit/results.json); measured on an older core',
 };
 
+// Field failure on David's hardware not yet captured in committed sets (R3): keeps the lift Experimental even when
+// committed stored sets count exact.
+const FIELD_FAILURES: Record<string, string> = {
+  hip_thrust: 'iPhone field report (14 Nov 2026: 1 for 12); held experimental until verified at 12 on iPhone (#190 Task 7)',
+};
+
 test('every lift tier follows the evidence of David\'s labelled sets', () => {
   const { sets, unreadable } = labelledSets();
   expect(unreadable).toEqual([]);
@@ -41,6 +47,7 @@ test('every lift tier follows the evidence of David\'s labelled sets', () => {
     const press = !decides(lift);
     let rule: 'beta' | 'experimental', why: string;
     if (press) { rule = 'experimental'; why = 'press: measured, decides nothing (PLAN.md)'; }
+    else if (FIELD_FAILURES[lift]) { rule = 'experimental'; why = FIELD_FAILURES[lift]; }
     else if (own.length && exact === own.length) { rule = 'beta'; why = 'every set of David\'s counts exactly'; }
     else if (own.length) { rule = 'experimental'; why = `${own.length - exact} of David's sets not exact`; }
     else if (DATASET_EVIDENCE[lift]) { rule = 'beta'; why = `no set of David's; dataset: ${DATASET_EVIDENCE[lift]}`; }
