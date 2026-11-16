@@ -258,8 +258,17 @@ export function recountTo(result, lift, n) {
  * Status: convention, from the extractor's own sampling rule; a shortfall of 2 samples or 1 % is whole (collector.js,
  * READ_SHORT_TOLERANCE, 6 October).
  */
-export function unreadSamples({ samples, duration, fps, maxFrames }) {
-  const expected = Math.floor(duration * fps);
+const MIN_SOURCE_FPS = 8;
+
+export function unreadSamples({ samples, duration, fps, maxFrames, sourceFrames = null, sampledSourceFrames = null, decodedWhole = false }) {
+  const targetExpected = Math.floor(duration * fps);
+  // Natively < 15 fps clips (e.g. 9.79 fps MP4 or 8.44 fps MOV) decode 100% of their stream cleanly via WebCodecs;
+  // accept sampledSourceFrames (or sourceFrames when VFR didn't skip bursts) only when EOF decoded whole and rate >= MIN_SOURCE_FPS (8 fps).
+  const expected = decodedWhole && Number.isFinite(sourceFrames) && sourceFrames > 0
+    && Number.isFinite(targetExpected) && sourceFrames < targetExpected
+    && Number.isFinite(duration) && duration > 0 && sourceFrames / duration >= MIN_SOURCE_FPS
+    ? (Number.isFinite(sampledSourceFrames) && sampledSourceFrames > 0 ? sampledSourceFrames : sourceFrames)
+    : targetExpected;
   const whole = Number.isFinite(expected) && expected > 0 && expected <= maxFrames && readIsWhole(samples, expected);
   return whole ? null : { read: samples, expected: Number.isFinite(expected) && expected > 0 ? expected : null };
 }
@@ -412,7 +421,15 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     // Samples in time order, each after the last: a read that repeats or goes back is not whole either.
     // The real number of samples is kept beside the flag, so the screen never says "NaN %" (third audit, C08).
     const ordered = timestamps.every((t, i) => i === 0 || t > timestamps[i - 1]);
-    const missed = unreadSamples({ samples: timestamps.length, duration: metadata?.duration, fps: TARGET_FPS, maxFrames: MAX_FRAMES });
+    const missed = unreadSamples({
+      samples: timestamps.length,
+      duration: metadata?.duration,
+      fps: TARGET_FPS,
+      maxFrames: MAX_FRAMES,
+      sourceFrames: metadata?.sourceFrames ?? null,
+      sampledSourceFrames: metadata?.sampledSourceFrames ?? null,
+      decodedWhole: Boolean(metadata?.decodedWhole),
+    });
     if (missed || !ordered) throw new PartialReadError({ ...(missed ?? { read: timestamps.length, expected: timestamps.length }), disordered: !ordered, decoder: metadata?.method || '', fallback: metadata?.fallback ?? null });
     // Defence in depth behind the extractor's frozen-read check (frozenRead.js, isFrozenRead, the same rule and
     // threshold): skeletons that repeat are a picture that did not move, read as a still person and a confident 0 on
@@ -446,7 +463,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     };
     const result = withSensitivity(withBodyCheck(withProposal(mergedSummary, lift), lift), lift);
     // Local diagnostic event: tests observe actual app output, never inject landmarks.
-    window.dispatchEvent(new CustomEvent('wv:core-result', { detail: result }));
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('wv:core-result', { detail: result }));
     return result;
   } finally {
     signal?.removeEventListener('abort', abort);

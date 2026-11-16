@@ -12,19 +12,19 @@
         "file": "bicep-curl-5.mp4",
         "lift": "bicep_curl",
         "label": 5,
-        "count": null,
-        "samplesRead": 0,
-        "samples": 0,
+        "count": 5,
+        "samplesRead": 117,
+        "samples": 117,
         "decoderPath": "webcodecs",
         "decoder": "webcodecs",
         "fallback": null,
-        "rotationDecision": "source rot=0",
-        "poseCoverage": null,
-        "poseCoveragePct": null,
+        "rotationDecision": null,
+        "poseCoverage": 100,
+        "poseCoveragePct": 100,
         "notDecodable": false,
-        "exact": false,
+        "exact": true,
         "refused": false,
-        "error": "PartialReadError: 117 samples read where the video holds 179",
+        "error": false,
         "source": {
           "codec": "avc1.4d401f",
           "width": 540,
@@ -32,8 +32,14 @@
           "rotation": 0,
           "duration": 11.953332999999999
         },
-        "pose": null,
-        "fingerprint": null
+        "pose": {
+          "delegate": "CPU",
+          "renderer": null,
+          "msMedian": 38.3,
+          "msP90": 39.2,
+          "samples": 117
+        },
+        "fingerprint": "0750a8b1c97c"
       },
       {
         "id": "demo_bodyweight_squat_9",
@@ -463,19 +469,19 @@
         "file": "bicep-curl-5.mp4",
         "lift": "bicep_curl",
         "label": 5,
-        "count": null,
-        "samplesRead": 0,
-        "samples": 0,
+        "count": 5,
+        "samplesRead": 117,
+        "samples": 117,
         "decoderPath": "webcodecs",
         "decoder": "webcodecs",
         "fallback": null,
-        "rotationDecision": "source rot=0",
-        "poseCoverage": null,
-        "poseCoveragePct": null,
+        "rotationDecision": null,
+        "poseCoverage": 99,
+        "poseCoveragePct": 99,
         "notDecodable": false,
-        "exact": false,
+        "exact": true,
         "refused": false,
-        "error": "PartialReadError: 117 samples read where the video holds 179",
+        "error": false,
         "source": {
           "codec": "avc1.4d401f",
           "width": 540,
@@ -483,8 +489,14 @@
           "rotation": 0,
           "duration": 11.953332999999999
         },
-        "pose": null,
-        "fingerprint": null
+        "pose": {
+          "delegate": "CPU",
+          "renderer": null,
+          "msMedian": 40,
+          "msP90": 41,
+          "samples": 117
+        },
+        "fingerprint": "7ce7de4285fc"
       },
       {
         "id": "demo_bodyweight_squat_9",
@@ -627,19 +639,19 @@
         "file": "iphone/bicep-curl-5.mov",
         "lift": "bicep_curl",
         "label": 5,
-        "count": null,
-        "samplesRead": 0,
-        "samples": 0,
+        "count": 5,
+        "samplesRead": 100,
+        "samples": 100,
         "decoderPath": "webcodecs",
         "decoder": "webcodecs",
         "fallback": null,
-        "rotationDecision": "source rot=0",
-        "poseCoverage": null,
-        "poseCoveragePct": null,
+        "rotationDecision": null,
+        "poseCoverage": 99,
+        "poseCoveragePct": 99,
         "notDecodable": false,
-        "exact": false,
+        "exact": true,
         "refused": false,
-        "error": "PartialReadError: 100 samples read where the video holds 177",
+        "error": false,
         "source": {
           "codec": "hev1.1.6.L90.90",
           "width": 540,
@@ -647,27 +659,33 @@
           "rotation": 0,
           "duration": 11.851666999999999
         },
-        "pose": null,
-        "fingerprint": null
+        "pose": {
+          "delegate": "CPU",
+          "renderer": null,
+          "msMedian": 40,
+          "msP90": 42,
+          "samples": 100
+        },
+        "fingerprint": "a6ade44e40eb"
       },
       {
         "id": "demo_iphone_bicep_curl_5_rot",
         "file": "iphone/bicep-curl-5-rot.mov",
         "lift": "bicep_curl",
         "label": 5,
-        "count": null,
-        "samplesRead": 0,
-        "samples": 0,
+        "count": 4,
+        "samplesRead": 100,
+        "samples": 100,
         "decoderPath": "webcodecs",
         "decoder": "webcodecs",
         "fallback": null,
-        "rotationDecision": "source rot=90",
-        "poseCoverage": null,
-        "poseCoveragePct": null,
+        "rotationDecision": "frame has no rotation (rotation=undefined), manual rotation=90° from container",
+        "poseCoverage": 99,
+        "poseCoveragePct": 99,
         "notDecodable": false,
         "exact": false,
         "refused": false,
-        "error": "PartialReadError: 100 samples read where the video holds 176",
+        "error": false,
         "source": {
           "codec": "hev1.1.6.L90.90",
           "width": 960,
@@ -675,8 +693,14 @@
           "rotation": 90,
           "duration": 11.795
         },
-        "pose": null,
-        "fingerprint": null
+        "pose": {
+          "delegate": "CPU",
+          "renderer": null,
+          "msMedian": 40,
+          "msP90": 42,
+          "samples": 100
+        },
+        "fingerprint": "7d3b0e0784fe"
       },
       {
         "id": "demo_iphone_bodyweight_squat_9",
