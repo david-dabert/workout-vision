@@ -27,23 +27,27 @@ const BackIcon = () => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor
  * the phone could not keep (storage refused), which the app holds for the visit (App.jsx) and gets back through onHold:
  * the return from filming, or from the choice, finds it.
  */
-export default function Programme({ payload = (typeof window !== 'undefined' ? payloadOf(window.location.hash) : null), held = null, onHold, onClose, onStart }) {
+export default function Programme({ payload = (typeof window !== 'undefined' ? payloadOf(window.location.hash) : null), held = null, preview = null, onHold, onClose, onStart }) {
   const { lang } = useT(), fr = lang === 'fr', c = PRO[fr ? 'fr' : 'en'];
   // 'opening' while a link is read; then the programme kept, an error, or none.
-  const [state, setState] = useState(() => (payload ? { kind: 'opening' } : current(loadReceived(), held && programmeId(held), held)));
+  const [state, setState] = useState(() => (preview
+    ? { kind: 'programme', entry: { id: 'preview', programme: preview }, others: [] }
+    : payload ? { kind: 'opening' } : current(loadReceived(), held && programmeId(held), held)));
   const [confirm, setConfirm] = useState(false);
   const [note, setNote] = useState('');
+  const [previewTapped, setPreviewTapped] = useState(false);
   // The in-app browser's copy of the programme's link: its own line, and the link to select when the copy is refused.
   const [copyNote, setCopyNote] = useState(''), [copyShown, setCopyShown] = useState(false);
   // The results link to select when neither the share sheet nor the copy is allowed (an app's own browser): the sets
   // filmed there live only there, so the link must reach the coach (live-app audit, 10 October 2026).
   const [resultsShown, setResultsShown] = useState(false);
   const screenRef = useRef(null);
-  useCondensingTopbar(screenRef, [lang, state.kind, state.entry?.id]);
+  const activeState = preview ? { kind: 'programme', entry: { id: 'preview', programme: preview }, others: [] } : state;
+  useCondensingTopbar(screenRef, [lang, activeState.kind, activeState.entry?.id]);
   const sets = useSets();
 
   useEffect(() => {
-    if (!payload) return undefined;
+    if (preview || !payload) return undefined;
     let live = true;
     decodeProgramme(payload).then(r => {
       if (!live) return;
@@ -55,47 +59,47 @@ export default function Programme({ payload = (typeof window !== 'undefined' ? p
       setState(current(loadReceived(), id, r.programme));
     });
     return () => { live = false; };
-  }, [payload]);
+  }, [preview, payload]);
 
   const show = id => { openReceived(id); setConfirm(false); setState(current(loadReceived(), id)); screenRef.current?.scrollTo?.({ top: 0 }); };
   // A programme from a link pasted in (PasteLink), kept as one opened from its link.
   const keepPasted = programme => { const { id } = keepReceived(programme); setConfirm(false); setState(current(loadReceived(), id, programme)); screenRef.current?.scrollTo?.({ top: 0 }); };
   const remove = id => { removeReceived(id); setConfirm(false); setState(current(loadReceived())); };
   // The programme shown that the phone could not keep goes to the app for the visit; one kept, or none, ends it.
-  const unkept = state.kind === 'programme' && state.entry.unkept ? state.entry.programme : null;
-  useEffect(() => { if (state.kind === 'programme' || state.kind === 'none') onHold?.(unkept); }, [state.kind, unkept, onHold]);
+  const unkept = activeState.kind === 'programme' && activeState.entry.unkept ? activeState.entry.programme : null;
+  useEffect(() => { if (!preview && (activeState.kind === 'programme' || activeState.kind === 'none')) onHold?.(unkept); }, [preview, activeState.kind, unkept, onHold]);
 
   const top = <div className="topbar">
     <button className="icon-btn press" onClick={onClose} aria-label={c.back}><BackIcon /></button>
-    <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
+    <span className="pill">{preview ? c.previewPill : (fr ? 'Version de test' : 'Test version')}</span>
   </div>;
 
-  if (state.kind !== 'programme') {
-    const words = state.kind === 'error' ? [c.errorTitle, c.errors[state.error] || c.errors.malformed] : state.kind === 'opening' ? [c.opening, ''] : [c.none, c.noneSubPaste];
+  if (activeState.kind !== 'programme') {
+    const words = activeState.kind === 'error' ? [c.errorTitle, c.errors[activeState.error] || c.errors.malformed] : activeState.kind === 'opening' ? [c.opening, ''] : [c.none, c.noneSubPaste];
     return <div className="wv-experience">
-      <section ref={screenRef} className="screen is-active pro-screen programme-screen" data-testid="programme-screen" aria-busy={state.kind === 'opening' || undefined}><div className="wrap">
+      <section ref={screenRef} className="screen is-active pro-screen programme-screen" data-testid="programme-screen" aria-busy={activeState.kind === 'opening' || undefined}><div className="wrap">
         {top}
         <p className="eyebrow pro-eyebrow" data-reveal style={{ '--i': 0 }}>{c.clientEyebrow}</p>
-        <h1 className="title" data-reveal style={{ '--i': 0 }} data-testid={state.kind === 'error' ? 'programme-error' : undefined}>{words[0]}</h1>
+        <h1 className="title" data-reveal style={{ '--i': 0 }} data-testid={activeState.kind === 'error' ? 'programme-error' : undefined}>{words[0]}</h1>
         {words[1] && <p className="sub pro-sub" data-reveal style={{ '--i': 1 }}>{words[1]}</p>}
-        {state.kind !== 'opening' && <PasteLink c={c} onOpen={keepPasted} />}
-        {state.kind !== 'opening' && <div className="actions" data-reveal style={{ '--i': 2 }}><button type="button" className="btn-ghost press" onClick={onClose}>{c.errorBack}</button></div>}
+        {activeState.kind !== 'opening' && <PasteLink c={c} onOpen={keepPasted} />}
+        {activeState.kind !== 'opening' && <div className="actions" data-reveal style={{ '--i': 2 }}><button type="button" className="btn-ghost press" onClick={onClose}>{c.errorBack}</button></div>}
       </div></section>
     </div>;
   }
 
-  const { entry, others } = state, p = entry.programme;
+  const { entry, others } = activeState, p = entry.programme;
   // The programme and the earlier versions it replaced (programme-store.js, keepReceived): their sets of the day count.
   const ids = [entry.id, ...(entry.previous || [])];
-  const mine = Array.isArray(sets) ? sets : [], now = new Date();
+  const mine = preview ? [] : (Array.isArray(sets) ? sets : []), now = new Date();
   const progress = progressOf(p, ids, mine, now);
   // The results link (programme.js, resultsOf): ready before the tap, as a share must be called within it (Safari).
   // Offered once a set is saved today; with none today, the latest session of the week, which its own day did not
   // send (excellence hunt, 9 October 2026), found from this version only: an earlier version's session was its own.
   // The plain payload, made at once.
-  const past = progress.items.some(i => i.done.length) ? null : lastDayOf(p, entry.id, mine, now);
+  const past = preview || progress.items.some(i => i.done.length) ? null : lastDayOf(p, entry.id, mine, now);
   const sent = past ? progressOf(p, ids, mine, past) : progress;
-  const resultsUrl = sent.items.some(i => i.done.length) ? resultsLink(location.href, plainResultsPayload(resultsOf(p, sent, past || now))) : null;
+  const resultsUrl = !preview && sent.items.some(i => i.done.length) ? resultsLink(location.href, plainResultsPayload(resultsOf(p, sent, past || now))) : null;
   const pastDay = past ? dayWords(past, lang) : '';
   const frequency = frequencyOf(p);
   // The programme's own link, for the in-app browser's copy.
@@ -120,6 +124,8 @@ export default function Programme({ payload = (typeof window !== 'undefined' ? p
         {frequency && <span data-testid="programme-frequency">{c.frequency(frequency.times, frequency.per)}</span>}
         {progress.total > 0 && <span data-testid="programme-today">{c.today(progress.complete, progress.total)}</span>}
       </p>
+      {preview && <p className="programme-note" data-testid="programme-preview-note">{c.previewBanner}</p>}
+      {preview && <p className="pro-status" role="status" data-testid="programme-preview-tap-note">{previewTapped ? c.previewTapNote : ''}</p>}
       {p.note && <p className="programme-note" data-reveal style={{ '--i': 1 }}>{p.note}</p>}
       <ol className="programme-list" data-reveal style={{ '--i': 2 }}>{p.items.map((item, i) => {
         const name = exerciseName(item.key, lang), e = guideExercise(item.key), got = progress.items[i];
@@ -139,7 +145,7 @@ export default function Programme({ payload = (typeof window !== 'undefined' ? p
           </div>
         </li>;
         return <li key={`${item.key}-${i}`} className={`programme-item${got.complete ? ' is-done' : ''}`} data-testid="programme-item">
-          <button type="button" className="programme-btn press" onClick={() => onStart(item.key, plannedOf(entry.id, i, item))} aria-label={c.film(name)}>
+          <button type="button" className="programme-btn press" onClick={() => (preview ? setPreviewTapped(true) : onStart(item.key, plannedOf(entry.id, i, item)))} aria-label={c.film(name)}>
             {e ? <Thumb exercise={e} /> : <span className="thumb" />}
             <span className="programme-body">
               <span className="programme-name">{name}</span>
@@ -166,8 +172,9 @@ export default function Programme({ payload = (typeof window !== 'undefined' ? p
         <p className="foot pro-foot">{past ? c.resultsPrivacyOf(pastDay) : c.resultsPrivacy}</p>
       </div>}
       {/* How to film and send: for a programme with something to film. */}
-      {progress.total > 0 && <p className="foot pro-foot">{c.tapHint} {c.sendBack}</p>}
-      <p className="foot pro-foot" data-testid={entry.unkept ? 'programme-not-kept' : undefined}>{entry.unkept ? c.notKept : c.clientPrivacy}</p>
+      {/* How to film and send: for a programme with something to film. */}
+      {progress.total > 0 && <p className="foot pro-foot">{preview ? c.tapHint : `${c.tapHint} ${c.sendBack}`}</p>}
+      {!preview && <p className="foot pro-foot" data-testid={entry.unkept ? 'programme-not-kept' : undefined}>{entry.unkept ? c.notKept : c.clientPrivacy}</p>}
       {others.length > 0 && <>
         <h2 className="section-head">{c.othersHead}</h2>
         <ul className="pro-drafts">{others.map(o => <li key={o.id}>
@@ -178,7 +185,7 @@ export default function Programme({ payload = (typeof window !== 'undefined' ? p
         </li>)}</ul>
       </>}
       {/* In an app's own browser the programme stays there: its link, to open it in the phone's browser or app. */}
-      {inAppBrowser(navigator.userAgent) && <div className="actions programme-send" data-testid="programme-in-app">
+      {!preview && inAppBrowser(navigator.userAgent) && <div className="actions programme-send" data-testid="programme-in-app">
         <p className="foot pro-foot">{c.inAppNote}</p>
         <button type="button" className="btn-ghost press" onClick={() => copyLink(ownLink)}>{c.copyLink}</button>
         {copyNote && <p className="pro-status" role="status" data-testid="programme-in-app-status">{copyNote}</p>}
@@ -188,8 +195,8 @@ export default function Programme({ payload = (typeof window !== 'undefined' ? p
         </div>}
       </div>}
       {/* The installed app receives no link: another programme comes in pasted. */}
-      {onHomeScreen() && <PasteLink c={c} onOpen={keepPasted} />}
-      <div className="pro-delete">
+      {!preview && onHomeScreen() && <PasteLink c={c} onOpen={keepPasted} />}
+      {!preview && <div className="pro-delete">
         {confirm
           ? <div className="pro-confirm" role="group" aria-label={c.confirmRemove}>
             <p>{c.confirmRemove}</p>
@@ -199,7 +206,7 @@ export default function Programme({ payload = (typeof window !== 'undefined' ? p
             </div>
           </div>
           : <button type="button" className="text-btn press" onClick={() => setConfirm(true)}>{c.removeProgramme}</button>}
-      </div>
+      </div>}
     </div></section>
   </div>;
 }

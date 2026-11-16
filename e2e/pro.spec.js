@@ -5,6 +5,7 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync, mkdirSync } from 'node:fs';
 import { PRO } from '../src/components/experience/pro-copy.js';
+import { fakeWorker, chooseDrawnVideo } from './shared/filmed-set.js';
 
 if (process.env.PW_CHROMIUM) test.use({ launchOptions: { executablePath: process.env.PW_CHROMIUM } });
 test.use({ serviceWorkers: 'block' });
@@ -462,5 +463,169 @@ test('the no-QR warning is said again after the share sheet closes', async ({ pa
   await expect(page.locator('.pro-status')).toHaveText('');
   await page.evaluate(() => window.__closeSheet());
   await expect(page.locator('.pro-status')).toHaveText(c.pdfNoQr);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+// Handoff Task 5: templates are relabelled « Exemples à adapter » with a source note, and the coach can preview
+// the exact client view (`pro-preview`) without writing to `wv_programmes` or losing edits on return.
+for (const viewport of [{ width: 390, height: 664 }, { width: 320, height: 568 }]) {
+  test(`task 5: Espace pro labels starter examples to adapt and previews the client screen cleanly (${viewport.width}x${viewport.height})`, async ({ page }) => {
+    const errors = await prepare(page, viewport);
+    await page.goto('/workout-vision/#pro');
+    await expect(page.getByTestId('pro-screen')).toBeVisible({ timeout: 20000 });
+    await expect(page.locator('.pro-templates h2.section-head')).toHaveText(c.templatesHead);
+    await expect(page.getByTestId('pro-templates-note')).toHaveText(c.templatesNote);
+    await expect(page.getByTestId('pro-screen')).not.toContainText('Modèles recommandés');
+
+    await page.getByTestId('template-conditioning').click();
+    await expect(page.getByTestId('pro-editor')).toBeVisible();
+    await page.locator('#pWho').fill('Camille');
+    await page.getByTestId('pro-preview').click();
+
+    const preview = page.getByTestId('programme-screen');
+    await expect(preview).toBeVisible({ timeout: 20000 });
+    await expect(page.getByTestId('programme-preview-note')).toHaveText(c.previewBanner);
+    await expect(preview).toContainText(c.whoLine('Camille'));
+    await expect(page.getByTestId('programme-item')).toHaveCount(3);
+    await noOverflow(page, '.programme-screen');
+
+    // Tapping an exercise inside preview shows a pre-mounted preview hint inside the viewport without leaving for filming.
+    const tapNote = page.getByTestId('programme-preview-tap-note');
+    await expect(tapNote).toBeAttached();
+    await page.getByRole('button', { name: c.film('Squat') }).click();
+    await expect(tapNote).toHaveText(c.previewTapNote);
+    await expect(tapNote).toBeInViewport();
+    expect(await page.evaluate(() => localStorage.getItem('wv_programmes'))).toBeNull();
+
+    // Back returns cleanly to the editor with edits intact and topbar sticky/condensing listeners restored.
+    await preview.getByRole('button', { name: c.back }).click();
+    await expect(page.getByTestId('pro-editor')).toBeVisible();
+    await expect(page.locator('#pWho')).toHaveValue('Camille');
+    await expect(page.locator('.pro-edit .topbar')).toHaveClass(/is-sticky/);
+    await noOverflow(page, '.pro-edit');
+    expect(errors, errors.join('\n')).toEqual([]);
+  });
+}
+
+test('task 5: failed preview chunk load stays in Editor without losing draft; slow chunk cancelled if draft is cleared mid-load', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', e => errors.push(e.message));
+  await page.setViewportSize({ width: 390, height: 664 });
+  await page.addInitScript(() => {
+    localStorage.setItem('wv_seen_entry', 'true');
+    localStorage.setItem('wv_lang', 'fr');
+  });
+
+  // 1. Slow chunk load: coach clears #pTitle while Programme chunk is pending, then chunk resolves and coach types 'A'.
+  // Must remain in Editor without hijacking focus mid-typing, then open cleanly on explicit pro-preview tap.
+  let releaseChunk;
+  const gate = new Promise(r => { releaseChunk = r; });
+  await page.route('**/assets/Programme-*.js', async route => {
+    await gate;
+    await route.continue();
+  });
+  await page.goto('/workout-vision/#pro');
+  await page.getByTestId('template-conditioning').click();
+  await expect(page.getByTestId('pro-editor')).toBeVisible({ timeout: 20000 });
+  await page.getByTestId('pro-preview').click();
+  await page.locator('#pTitle').fill('');
+  releaseChunk();
+  await page.waitForTimeout(200);
+  await page.locator('#pTitle').fill('A');
+  await expect(page.getByTestId('pro-editor')).toBeVisible();
+  await expect(page.locator('#pTitle')).toHaveValue('A');
+  await expect(page.getByTestId('programme-screen')).toHaveCount(0);
+  await page.getByTestId('pro-preview').click();
+  await expect(page.getByTestId('programme-screen')).toBeVisible({ timeout: 20000 });
+
+  // 2. Fresh page where chunk download fails on tap: stays in Editor showing previewError with draft intact (no ErrorBoundary).
+  const offline = await page.context().newPage();
+  const offlineErrors = [];
+  offline.on('pageerror', e => offlineErrors.push(e.message));
+  await offline.setViewportSize({ width: 390, height: 664 });
+  await offline.addInitScript(() => {
+    localStorage.setItem('wv_seen_entry', 'true');
+    localStorage.setItem('wv_lang', 'fr');
+  });
+  await offline.route('**/assets/Programme-*.js', r => r.abort());
+  await offline.goto('/workout-vision/#pro');
+  await offline.getByTestId('template-conditioning').click();
+  await expect(offline.getByTestId('pro-editor')).toBeVisible({ timeout: 20000 });
+  await offline.locator('#pWho').fill('Camille');
+  await offline.getByTestId('pro-preview').click();
+  await expect(offline.locator('.pro-status')).toHaveText(c.previewError, { timeout: 10000 });
+  await expect(offline.getByTestId('pro-editor')).toBeVisible();
+  await expect(offline.locator('#pWho')).toHaveValue('Camille');
+  expect(offlineErrors).toEqual([]);
+  await offline.close();
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+// Handoff Task 8: full end-to-end coach path (build programme -> link -> client films & counts real set ->
+// send results link back to coach -> coach sees counted sets and opens draft via Ajuster le programme).
+test('task 8: full coach -> client filmed set -> #resultats -> coach adjust round-trip', async ({ page, browser }) => {
+  test.setTimeout(120_000);
+  const errors = await prepare(page, { width: 390, height: 844 });
+  await page.goto('/workout-vision/#pro');
+  await expect(page.getByTestId('pro-screen')).toBeVisible({ timeout: 20000 });
+
+  await page.getByTestId('pro-new').click();
+  await page.locator('#pTitle').fill('Force bras');
+  await page.locator('#pWho').fill('Camille');
+  await pick(page, 'bicep_curl', 'Curl biceps');
+  await page.locator('#p0r').fill('4');
+  await page.locator('#p0r').blur();
+  await page.locator('#p0t').fill('60');
+  await page.locator('#p0t').blur();
+  await page.getByTestId('pro-item').first().locator('.pro-item-note').fill('Coudes collés au buste');
+
+  await page.getByTestId('pro-link').click();
+  const shared = await page.waitForFunction(() => window.__shared).then(h => h.jsonValue());
+  expect(shared.url).toContain('#programme=');
+
+  // Fresh client phone opens the coach's link, films a real drawn 12 s set counted at 4 reps, saves it, and sends results.
+  const client = await browser.newContext();
+  const phone = await client.newPage();
+  const clientErrors = await prepare(phone, { width: 390, height: 844 });
+  await phone.addInitScript(() => { localStorage.setItem('wv_level', 'intermediate'); });
+  await phone.route('**/assets/corePoseWorker-*.js', r => r.fulfill({ status: 200, contentType: 'text/javascript', body: fakeWorker }));
+  await phone.goto(shared.url);
+  await expect(phone.getByTestId('programme-screen')).toBeVisible({ timeout: 20000 });
+
+  await phone.getByRole('button', { name: c.film('Curl biceps') }).click();
+  await expect(phone.locator('.film-screen')).toBeVisible({ timeout: 20000 });
+  await chooseDrawnVideo(phone, 12);
+  await expect(phone.locator('.result-screen')).toBeVisible({ timeout: 60_000 });
+  const confirmYes = phone.getByRole('button', { name: /^Oui, 4 répétitions$/ });
+  await expect(confirmYes).toBeVisible({ timeout: 15_000 });
+  await confirmYes.click();
+  await expect(phone.getByTestId('saved-card')).toBeVisible();
+
+  await phone.locator('.result-screen .topbar .icon-btn').click();
+  await expect(phone.getByTestId('programme-screen')).toBeVisible({ timeout: 20000 });
+  const firstCell = phone.getByTestId('programme-sets').first().locator('li').first();
+  await expect(firstCell).toHaveText('4');
+  await expect(firstCell).toHaveClass(/is-met/);
+
+  await phone.getByTestId('programme-send').click();
+  await phone.waitForFunction(() => window.__shared?.url?.includes('#resultats='), null, { timeout: 5000 });
+  const sent = await phone.evaluate(() => window.__shared);
+  expect(clientErrors, clientErrors.join('\n')).toEqual([]);
+  await client.close();
+
+  // Coach opens the #resultats link, verifies the counted 4-rep cell, and returns to their draft to adjust.
+  await page.goto(sent.url);
+  const results = page.getByTestId('results-screen');
+  await expect(results.locator('h1.title')).toHaveText('Force bras', { timeout: 20000 });
+  await expect(results).toContainText(c.whoLine('Camille'));
+  await expect(page.getByTestId('results-done')).toHaveText(c.resultsSets(1, 3, 1));
+  const coachCell = page.getByTestId('results-sets').first().locator('li').first();
+  await expect(coachCell).toHaveText('4');
+  await expect(coachCell).toHaveClass(/is-met/);
+
+  await page.getByTestId('results-adjust').click();
+  await expect(page.getByTestId('pro-editor')).toBeVisible({ timeout: 20000 });
+  await expect(page.locator('#pWho')).toHaveValue('Camille');
+  await expect(page.getByTestId('pro-item').first().locator('.pro-item-note')).toHaveValue('Coudes collés au buste');
   expect(errors, errors.join('\n')).toEqual([]);
 });
