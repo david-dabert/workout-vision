@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { showUnmeasuredRoutes } from '../../lib/buildFlags';
 import { mediaUrl } from '../../lib/kine/library';
 
 // One exercise of the library (lib/kine/library.js): its video with the physiotherapist's voice, its title, dosage and
@@ -29,7 +30,8 @@ export default function ExerciseCard({ ex, fr, k, action, open: startOpen = fals
           </svg>
           <span>{fr ? 'Protocole guidé · Repères cliniques' : 'Guided protocol · Clinical benchmarks'}</span>
         </div>
-        {ex.targets && ex.targets.length > 0 && (
+        {/* Card 043: a target angle needs a source and a status (R9); until then, extended build only. */}
+        {showUnmeasuredRoutes() && ex.targets && ex.targets.length > 0 && (
           <div className="kn-targets-badge">
             <span>{fr ? `Cible\u00A0: ${ex.targets.join('° à ')}°` : `Target: ${ex.targets.join('° to ')}°`}</span>
           </div>

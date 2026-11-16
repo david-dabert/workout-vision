@@ -59,7 +59,23 @@ describe('FollowUp and KineWorkspace Pessac Clinic Dossier Export', () => {
     expect(html).toContain('Dossier Clinique BDK');
   });
 
-  it('renders the 8-pole specialty dropdown and export button for a patient in FollowUp', async () => {
+  it('production build: FollowUp prints no Pessac dossier (card 043)', async () => {
+    vi.stubGlobal('localStorage', { getItem: () => null, setItem() {}, removeItem() {} });
+    const { LanguageProvider } = await import('../../../lib/LanguageContext');
+    const { default: FollowUp } = await import('../FollowUp');
+    const { KINE } = await import('../kine-copy');
+    const html = renderToStaticMarkup(
+      <LanguageProvider>
+        <FollowUp fr={true} k={KINE.fr} profile={{ name: 'Olivier Martin' }} initial="patient-dupont" />
+      </LanguageProvider>
+    );
+    expect(html).not.toContain('kn-follow-pessac-section');
+    expect(html).not.toContain('Pessac');
+    expect(html).toContain('data-testid="kn-follow-pdf"');
+  });
+
+  it('renders the 8-pole specialty dropdown and export button for a patient in FollowUp, in a build with the extended routes', async () => {
+    vi.stubEnv('VITE_EXTENDED_ROUTES', '1');
     vi.stubGlobal('localStorage', { getItem: () => null, setItem() {}, removeItem() {} });
     const { LanguageProvider } = await import('../../../lib/LanguageContext');
     const { default: FollowUp } = await import('../FollowUp');
@@ -85,7 +101,8 @@ describe('FollowUp and KineWorkspace Pessac Clinic Dossier Export', () => {
     expect(html).toContain('Rachis Lombaire');
   });
 
-  it('renders correctly in English for English practitioners', async () => {
+  it('renders correctly in English for English practitioners, in a build with the extended routes', async () => {
+    vi.stubEnv('VITE_EXTENDED_ROUTES', '1');
     vi.stubGlobal('localStorage', { getItem: () => null, setItem() {}, removeItem() {} });
     const { LanguageProvider } = await import('../../../lib/LanguageContext');
     const { default: FollowUp } = await import('../FollowUp');

@@ -7,6 +7,7 @@ import { followUp, forgetPatient, keepResult, sessionWithin } from '../../lib/ki
 import { TOLERANCE_DEG, TOLERANCE_SHARE } from '../../lib/reference/compare';
 import { COPY, JOINT_NAMES, deg, pct, sec } from '../reference/reference-copy';
 import { exportPessacDossier, PESSAC_SPECIALTIES } from '../../lib/kine/pessacDossierExport';
+import { showUnmeasuredRoutes } from '../../lib/buildFlags';
 import { computeClinicalTrend } from '../../lib/kine/clinicalTrendAnalysis';
 import { CLINICAL_TREND_SHOWN } from '../experience/measures';
 import Backup from './Backup';
@@ -126,6 +127,9 @@ export default function FollowUp({ fr, k, profile, initial = null }) {
       <section className="sc-section">
         <p className="sc-caption">{c.note(TOLERANCE_DEG)}</p>
         <button type="button" className="rc-btn is-primary is-wide press" onClick={exportPdf} data-testid="kn-follow-pdf">{k.fPdf}</button>
+        {/* Card 043 (16 November 2026): a dossier under a clinic's name, with norms, is extended-build only, as
+            KineWorkspace.jsx says (R8, EU MDR Rule 11). */}
+        {showUnmeasuredRoutes() && (
         <div className="kn-pessac-follow-export" data-testid="kn-follow-pessac-section">
           <label className="kn-field">
             <span>{fr ? 'Pôle clinique (Dossier BDK)' : 'Clinical pole (BDK Dossier)'}</span>
@@ -158,6 +162,7 @@ export default function FollowUp({ fr, k, profile, initial = null }) {
             {fr ? 'Imprimer le Dossier Clinique Pessac (8 Pôles BDK)' : 'Print Pessac Clinical Dossier (8-Pole BDK)'}
           </button>
         </div>
+        )}
         {note && <p className="sc-caption" role="status">{note}</p>}
         <button type="button" className="rc-link press kn-forget" onClick={forget} data-testid="kn-follow-forget">{k.fForget}</button>
       </section>
