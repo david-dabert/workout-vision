@@ -6,7 +6,7 @@ if (process.env.PW_CHROMIUM) test.use({ launchOptions: { executablePath: process
 test.use({ viewport: { width: 390, height: 664 }, serviceWorkers: 'block' });
 
 const APP = 'http://localhost:4175/workout-vision/';
-const FIELDS = ['event', 'lift', 'tier', 'durationBucket', 'appVersion', 'lang'];
+const FIELDS = ['event', 'lift', 'tier', 'durationBucket', 'appVersion', 'lang', 'seq'];
 
 // Every request the page makes outside its own origin, and the events the intercepted server receives.
 async function listen(page) {
@@ -15,8 +15,11 @@ async function listen(page) {
   await page.route('https://events.invalid/**', async route => {
     const req = route.request();
     expect(req.method()).toBe('POST');
-    expect(Object.keys(JSON.parse(req.postData()))).toEqual(['events']);
-    events.push(...JSON.parse(req.postData()).events);
+    // 16 November 2026: the events, and with them the phone's random id and the visit's number, or neither.
+    const body = JSON.parse(req.postData());
+    expect(['events', 'aid,events,sess']).toContain(Object.keys(body).sort().join(','));
+    if (body.aid) { expect(body.aid).toMatch(/^[0-9a-f]{32}$/); expect(Number.isInteger(body.sess)).toBe(true); }
+    events.push(...body.events);
     await route.fulfill({ status: 204, headers: { 'Access-Control-Allow-Origin': '*' } });
   });
   return { events, foreign };
@@ -34,8 +37,8 @@ test('a visit sends the expected events, with only their fields, and nothing els
   expect(csp).toContain("connect-src 'self' blob: https://world.openfoodfacts.org https://events.invalid;");
   expect(response.ok()).toBe(true);
   // The choice says what is counted, and offers to stop it.
-  await expect(page.getByTestId('usage-note')).toContainText('Pour s’améliorer, l’appli compte de façon anonyme l’usage de ses écrans et de ses analyses : ni identité, ni vidéo, ni mouvement.');
-  await expect(page.getByRole('button', { name: 'Désactiver le comptage anonyme' })).toBeVisible();
+  await expect(page.getByTestId('usage-note')).toContainText('Pour s’améliorer, l’appli mesure l’usage de ses écrans et de ses analyses, avec un identifiant tiré au hasard sur ce téléphone : ni nom, ni vidéo, ni mouvement.');
+  await expect(page.getByRole('button', { name: 'Désactiver la mesure d’audience' })).toBeVisible();
 
   await page.getByRole('button', { name: /Vos séries/ }).click();
   await page.getByRole('button', { name: 'Retour' }).first().click();
@@ -61,9 +64,11 @@ test('a visit sends the expected events, with only their fields, and nothing els
   expect(events.filter(e => e.event !== 'session_end').every(e => !('durationBucket' in e))).toBe(true);
   // Nothing of the page's own goes anywhere but the events server.
   expect(foreign.filter(u => !u.startsWith('https://events.invalid/'))).toEqual([]);
-  // No identifier was written: the page's storage holds only what it held, and no cookie.
+  // The events of the visit carry their step, in order.
+  expect(events.map(e => e.seq)).toEqual(expected.map((_, i) => i));
+  // The phone's id and the visit's number are the only things written to identify the phone; no cookie.
   expect(await page.evaluate(() => document.cookie)).toBe('');
-  expect(await page.evaluate(() => Object.keys(localStorage).filter(k => /count|event|track|uid|sid|session/i.test(k)))).toEqual([]);
+  expect(await page.evaluate(() => Object.keys(localStorage).filter(k => /count|event|track|uid|sid|session|aid|sess/i.test(k)).sort())).toEqual(['wv_aid', 'wv_sess']);
 });
 
 test('turned off, nothing is sent, in this visit or the next; the entry speaks of the video', async ({ page }) => {
@@ -74,9 +79,10 @@ test('turned off, nothing is sent, in this visit or the next; the entry speaks o
   await expect(page.getByText('La vidéo reste sur votre téléphone.')).toBeVisible({ timeout: 20000 });
   await expect(page.getByText('Rien ne quitte votre téléphone sans votre accord.')).toHaveCount(0);
   await page.getByRole('button', { name: 'Commencer' }).click();
-  await page.getByRole('button', { name: 'Désactiver le comptage anonyme' }).click();
-  await expect(page.getByTestId('usage-note')).toContainText('Comptage anonyme désactivé sur ce téléphone.');
-  await expect(page.getByRole('button', { name: 'Réactiver le comptage anonyme' })).toBeVisible();
+  await page.getByRole('button', { name: 'Désactiver la mesure d’audience' }).click();
+  await expect(page.getByTestId('usage-note')).toContainText('Mesure d’audience désactivée sur ce téléphone.');
+  await expect(page.getByRole('button', { name: 'Réactiver la mesure d’audience' })).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('wv_aid'))).toBeNull();
   // The opening, queued before the choice, is dropped if it has not left yet.
   await page.getByRole('button', { name: /Vos séries/ }).click();
   // The history open (its address is #history), then the next visit at the app's address. A reload raced the
@@ -85,7 +91,7 @@ test('turned off, nothing is sent, in this visit or the next; the entry speaks o
   await expect(page.locator('.history-screen')).toBeVisible({ timeout: 20000 });
   await pagehide(page);
   await page.goto(APP);
-  await expect(page.getByRole('button', { name: 'Réactiver le comptage anonyme' })).toBeVisible({ timeout: 20000 });
+  await expect(page.getByRole('button', { name: 'Réactiver la mesure d’audience' })).toBeVisible({ timeout: 20000 });
   await pagehide(page);
   await page.waitForTimeout(5000);
   // Only the opening may have left, if its wait ran out before the tap; nothing after it.
@@ -124,7 +130,7 @@ test('the notice opens from the line under the choice and from the footer, names
   await page.getByRole('button', { name: 'Retour' }).first().click();
   await page.getByTestId('usage-link').click();
   await expect(page.getByTestId('usage-notice')).toBeVisible({ timeout: 20000 });
-  await page.getByRole('button', { name: 'Désactiver le comptage anonyme' }).click();
+  await page.getByRole('button', { name: 'Désactiver la mesure d’audience' }).click();
   await expect(page.getByText('Désactivé sur ce téléphone.')).toBeVisible();
   const before = events.length;
   await pagehide(page);

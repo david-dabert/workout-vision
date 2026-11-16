@@ -146,6 +146,12 @@ function AppInner() {
   const [heldProgramme, setHeldProgramme] = useState(null);
   // For one visit: a browser back then forward to Espace pro opens its list, never a start draft since deleted.
   useEffect(() => { if (page !== 'pro') setProStart(null); }, [page]);
+  // Espace pro and the kiné path, counted when opened (events.js; 16 November 2026). The kiné path goes in the daily
+  // totals only, never with the phone's id (usage-schema.js AGGREGATE_ONLY).
+  useEffect(() => {
+    if (page === 'pro') track('pro_open');
+    else if (page === 'kine' || page === 'reeducation' || page === 'kinep' || page === 'kiner') track('kine_open');
+  }, [page]);
   // Run storage schema migration on mount
   // The saved sets are read once the records are migrated, while the entry plays,
   // so the choice of lift never waits for them.

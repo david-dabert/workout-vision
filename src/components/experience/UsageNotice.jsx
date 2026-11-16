@@ -59,6 +59,9 @@ export default function UsageNotice({ onClose, listAll = false }) {
           <h2 className="un-h">{c.never}</h2>
           <p className="un-p">{c.neverText}</p>
 
+          <h2 className="un-h">{c.idTitle}</h2>
+          <p className="un-p" data-testid="usage-notice-id">{c.idText}</p>
+
           <h2 className="un-h">{c.where}</h2>
           <p className="un-p" data-testid="usage-notice-host">{c.whereText(HOST)}</p>
 

@@ -77,15 +77,20 @@ describe('track', () => {
     expect(p.posts[0].u).toBe(URL_);
   });
 
-  it('stores no identifier: no write to storage, no cookie', async () => {
+  // 16 November 2026 (David: "Yes to the tracking, build it"): the phone's random id and the visit's number, no cookie.
+  it('stores only the phone\'s random id and the visit\'s number, and no cookie', async () => {
     const p = phone();
     const ev = await load();
     ev.startEvents();
     ev.track('choose_lift', { lift: 'bicep_curl' });
     p.fire('pagehide');
-    expect(p.writes).toEqual([]);
+    expect([...new Set(p.writes)].sort()).toEqual(['wv_aid', 'wv_sess']);
     expect(document.cookie).toBe('');
     expect(p.sent().length).toBe(3);
+    const body = JSON.parse(p.posts[0].body);
+    expect(body.aid).toMatch(/^[0-9a-f]{32}$/);
+    expect(body.sess).toBe(1);
+    expect(body.events.map(e => e.seq)).toEqual([0, 1, 2]);
   });
 
   it('waits to send events together, and sends at once when the page is hidden or the batch is full', async () => {
@@ -125,7 +130,7 @@ describe('track', () => {
     p.fire('pagehide');
     p.fire('pagehide');
     const ends = p.sent().filter(e => e.event === 'session_end');
-    expect(ends).toEqual([{ event: 'session_end', durationBucket: '5-15', appVersion: expect.any(String), lang: 'fr' }]);
+    expect(ends).toEqual([{ event: 'session_end', durationBucket: '5-15', appVersion: expect.any(String), lang: 'fr', seq: expect.any(Number) }]);
   });
 
   it('sends by a keepalive fetch without credentials first, never by the beacon, which carries cookies (N7)', async () => {
@@ -212,7 +217,62 @@ describe('track', () => {
     ev.setEventsLang('en');
     ev.setEventsLang('en');
     ev.flushEvents();
-    expect(p.sent()).toEqual([{ event: 'open', appVersion: expect.any(String), lang: 'en' }]);
+    expect(p.sent()).toEqual([{ event: 'open', appVersion: expect.any(String), lang: 'en', seq: 0 }]);
+  });
+});
+
+describe('the phone\'s id', () => {
+  const day = n => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
+
+  it('keeps the same id across visits and numbers each visit', async () => {
+    const p = phone();
+    let ev = await load();
+    ev.startEvents(); p.fire('pagehide');
+    const first = JSON.parse(p.store.wv_aid).id;
+    vi.resetModules();
+    ev = await load();
+    ev.startEvents(); p.fire('pagehide');
+    const last = JSON.parse(p.posts.at(-1).body);
+    expect(last.aid).toBe(first);
+    expect(last.sess).toBe(2);
+  });
+
+  it('is replaced 13 months after it was made, and never extended by a visit', async () => {
+    const old = { id: 'c'.repeat(32), born: day(400) };
+    const p = phone({ store: { wv_aid: JSON.stringify(old) } });
+    const ev = await load();
+    ev.startEvents();
+    const kept = JSON.parse(p.store.wv_aid);
+    expect(kept.id).not.toBe(old.id);
+    expect(kept.born).toBe(day(0));
+    vi.resetModules();
+    const young = { id: 'd'.repeat(32), born: day(100) };
+    const q = phone({ store: { wv_aid: JSON.stringify(young) } });
+    (await load()).startEvents();
+    expect(JSON.parse(q.store.wv_aid)).toEqual(young);
+  });
+
+  it('is never made under Global Privacy Control, and is deleted when the counting is turned off', async () => {
+    const p = phone({ nav: { globalPrivacyControl: true } });
+    (await load()).startEvents();
+    expect(p.store.wv_aid).toBeUndefined();
+    vi.resetModules();
+    const q = phone();
+    const ev = await load();
+    ev.startEvents();
+    expect(q.store.wv_aid).toBeDefined();
+    ev.setCountingOff(true);
+    expect(q.store.wv_aid).toBeUndefined();
+    expect(q.store.wv_sess).toBeUndefined();
+  });
+
+  it('sends the kiné path alone, at once, with no id, visit or step (GDPR art. 9)', async () => {
+    const p = phone();
+    const ev = await load();
+    ev.startEvents();
+    ev.track('kine_open');
+    const alone = p.posts.map(x => JSON.parse(x.body)).find(b => b.events.some(e => e.event === 'kine_open'));
+    expect(alone).toEqual({ events: [{ event: 'kine_open', appVersion: expect.any(String), lang: 'fr' }] });
   });
 });
 

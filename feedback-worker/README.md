@@ -99,3 +99,19 @@ No wrangler command is run by the code or by an agent. If the worker was ever de
 ## Schema
 
 `schema.sql` creates every table; `migrations/0001_usage.sql` adds the usage tables to an existing database (a test checks the two match). The `feedback` table (kinds: correction, crash, feedback, rating) is no longer written by anything; it is kept until David decides D24.
+
+## Usage per phone (16 November 2026)
+
+Returns, retention, the funnel of a visit and where people stop need two steps on Cloudflare, once:
+
+```sh
+cd feedback-worker
+npx wrangler d1 execute workout-vision-feedback --remote --file=migrations/0002_cohort.sql
+openssl rand -hex 32 | npx wrangler secret put AID_PEPPER
+npx wrangler deploy
+```
+
+Without `AID_PEPPER` the worker keeps only the daily totals, as before: nothing is stored per phone.
+The pepper is never written anywhere else; lost, the old rows can no longer be joined to new visits, which is harmless.
+The dashboard (`/dashboard`, STATS_TOKEN) then shows phones active per day and week, the share coming back after 1, 7 and 30 days, the funnel, the last step of phones gone 14 days, and Espace pro.
+What it does against the CNIL's exemption: `docs/privacy/cnil-audience-grid.md`.

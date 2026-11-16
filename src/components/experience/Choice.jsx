@@ -316,7 +316,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           {/* Why the app exists, in David's words (About.jsx). */}
           {onAbout && <button type="button" className="about-link press" onClick={onAbout} data-testid="about-link">{ABOUT[fr ? 'fr' : 'en'].link}</button>}
           {/* The notice of the anonymous counts (UsageNotice.jsx), whenever the build sends them. */}
-          {onUsage && eventsConfigured() && <button type="button" className="about-link press" onClick={onUsage} data-testid="usage-link">{fr ? 'Comptage anonyme' : 'Anonymous counts'}</button>}
+          {onUsage && eventsConfigured() && <button type="button" className="about-link press" onClick={onUsage} data-testid="usage-link">{fr ? 'Mesure d’audience' : 'Usage counts'}</button>}
           {showUnmeasuredRoutes() && onChat && <button type="button" className="about-link press" onClick={onChat} data-testid="chat-link">{fr ? 'Messagerie (démo)' : 'Messaging (demo)'}</button>}{/* HOME-1: no "P2P"; French awaiting David's approval (R10) */}
         </div>
       </div>
@@ -357,11 +357,11 @@ function UsageNote({ fr, onUsage }) {
   const toggle = () => { setCountingOff(!off); setOff(!off); };
   return <div className="foot usage-note" data-testid="usage-note">
     <p role="status">{off
-      ? (fr ? 'Comptage anonyme désactivé sur ce téléphone.' : 'Anonymous counting is off on this phone.')
-      : (fr ? 'Pour s’améliorer, l’appli compte de façon anonyme l’usage de ses écrans et de ses analyses\u00A0: ni identité, ni vidéo, ni mouvement.' : 'To improve, the app counts anonymously how often its screens and analyses are used: no identity, no video, no movement data.')}</p>
+      ? (fr ? 'Mesure d’audience désactivée sur ce téléphone.' : 'Usage counts are off on this phone.')
+      : (fr ? 'Pour s’améliorer, l’appli mesure l’usage de ses écrans et de ses analyses, avec un identifiant tiré au hasard sur ce téléphone\u00A0: ni nom, ni vidéo, ni mouvement.' : 'To improve, the app measures how its screens and analyses are used, with an id drawn at random on this phone: no name, no video, no movement data.')}</p>
     <div className="usage-keys">
       <button type="button" className="text-btn press" onClick={toggle}
-        aria-label={off ? (fr ? 'Réactiver le comptage anonyme' : 'Turn anonymous counting back on') : (fr ? 'Désactiver le comptage anonyme' : 'Turn off anonymous counting')}>
+        aria-label={off ? (fr ? 'Réactiver la mesure d’audience' : 'Turn usage counts back on') : (fr ? 'Désactiver la mesure d’audience' : 'Turn off usage counts')}>
         {off ? (fr ? 'Réactiver' : 'Turn on') : (fr ? 'Désactiver' : 'Turn off')}
       </button>
       {/* What is counted, where it goes (UsageNotice.jsx; PRIV-3). */}
