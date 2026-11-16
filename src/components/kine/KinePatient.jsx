@@ -9,6 +9,7 @@ import { loadReferencePose } from '../../lib/kine/media';
 import { attemptsOf, logAttempt, updateAttemptReport } from '../../lib/kine/store';
 import { isReport, reportOf, withCommentary } from '../../lib/kine/report';
 import { glimpseOn } from '../../lib/kine/glimpse';
+import { kineJudged } from '../../lib/buildFlags';
 import AiCommentary from './AiCommentary';
 import { KeptFile } from '../reference/AttemptKeep';
 import { useKeptFile } from '../reference/useKeptFile';
@@ -34,6 +35,8 @@ const localMinute = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth(
 
 // `mirror`: the patient works the side opposite the reference's (the programme's side, library.js `side`).
 function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror, dosage }) {
+  // Without a judgment (buildFlags.js, kineJudged): no result sent, no AI opinion, no report; the two videos side by side.
+  const judged = kineJudged();
   const c = COPY[fr ? 'fr' : 'en'];
   const input = useRef(null);
   const library = useRef(null);
@@ -152,10 +155,10 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror, dosage }
         <p className="sc-caption">{k.pDeepHint}</p>
         <button type="button" className="rc-btn is-primary is-wide press" onClick={deep} data-testid={`kn-deep-${ex.id}-go`}>{k.pDeep}</button>
       </div>}
-      {attPose?.model === 'heavy' && <p className="sc-caption" data-testid={`kn-deep-done-${ex.id}`}>{result?.verdict === 'refused' ? k.pDeepStill : k.pDeepDone}</p>}
+      {judged && attPose?.model === 'heavy' && <p className="sc-caption" data-testid={`kn-deep-done-${ex.id}`}>{result?.verdict === 'refused' ? k.pDeepStill : k.pDeepDone}</p>}
       <ComparisonView refPose={refPose} attPose={attPose} refUrl={mediaUrl(ex, 'mp4')} attUrl={attUrl} onResult={onResult} measures={ex.measures} mirror={mirror} keep={report ? { report, title: ex[fr ? 'fr' : 'en'].title } : null} />
-      {result && glimpseOn() && <AiCommentary key={attUrl} file={file} ex={ex} fr={fr} k={k} dosage={dosage} initial={report?.ai ?? null} onCommentary={onCommentary} />}
-      {result && <button type="button" className="rc-btn is-wide press" onClick={send} data-testid={`kn-send-${ex.id}`} data-link={resLink}>{k.pSend}</button>}
+      {result && judged && glimpseOn() && <AiCommentary key={attUrl} file={file} ex={ex} fr={fr} k={k} dosage={dosage} initial={report?.ai ?? null} onCommentary={onCommentary} />}
+      {result && judged && <button type="button" className="rc-btn is-wide press" onClick={send} data-testid={`kn-send-${ex.id}`} data-link={resLink}>{k.pSend}</button>}
     </>}
   </div>;
 }
@@ -163,6 +166,7 @@ function Attempt({ ex, programme, programmeId, fr, k, onLogged, mirror, dosage }
 // One past attempt: the exercise, when, the verdict, and its report to print again (without the video's frames, which
 // stay with the video on the phone).
 function PastAttempt({ entry, fr, k, c }) {
+  const judged = kineJudged();
   const keep = useKeptFile();
   const ex = exerciseById(entry.report.id);
   const when = new Date(entry.date).toLocaleString(fr ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -172,20 +176,21 @@ function PastAttempt({ entry, fr, k, c }) {
     return new File([attemptPdf(entry.report, { lang: fr ? 'fr' : 'en' }).output('blob')], `${c.keepPdfStem(entry.report)}.pdf`, { type: 'application/pdf' });
   };
   return <li className="kn-past">
-    <span className="kn-session-head"><b>{ex ? ex[fr ? 'fr' : 'en'].title : entry.report.id}</b><Verdict ok={entry.verdict === 'match'}>{verdict}</Verdict></span>
+    <span className="kn-session-head"><b>{ex ? ex[fr ? 'fr' : 'en'].title : entry.report.id}</b>{judged && <Verdict ok={entry.verdict === 'match'}>{verdict}</Verdict>}</span>
     <small className="sc-caption">{when}</small>
-    <KeptFile keep={keep} make={make} testId={`kn-past-${entry.date}`} labels={{ make: k.pReportMake, making: c.keepPdfMaking, share: c.keepPdfShare, save: c.keepPdfSave, failed: () => c.keepPdfFailed, cancel: c.cancel, shareBroke: c.keepShareBroke }} />
+    {judged && <KeptFile keep={keep} make={make} testId={`kn-past-${entry.date}`} labels={{ make: k.pReportMake, making: c.keepPdfMaking, share: c.keepPdfShare, save: c.keepPdfSave, failed: () => c.keepPdfFailed, cancel: c.cancel, shareBroke: c.keepShareBroke }} />}
   </li>;
 }
 
 /** The attempts made on this phone with their report, newest first. */
 function PastAttempts({ log, fr, k }) {
+  const judged = kineJudged();
   const c = COPY[fr ? 'fr' : 'en'];
   const kept = log.filter(a => isReport(a.report)).slice(-30).reverse();
   if (!kept.length) return null;
   return <section className="sc-section" data-testid="kn-past">
     <GroupHead title={k.pHistory} />
-    <p className="sc-caption">{k.pHistoryHint}</p>
+    <p className="sc-caption">{judged ? k.pHistoryHint : k.pHistoryPlain}</p>
     <ul className="kn-sessions">{kept.map(a => <PastAttempt key={a.date} entry={a} fr={fr} k={k} c={c} />)}</ul>
   </section>;
 }
@@ -230,7 +235,7 @@ export default function KinePatient({ onClose }) {
               </section>;
             })}
             <PastAttempts log={log} fr={fr} k={k} />
-            <p className="sc-caption">{glimpseOn() ? k.pPrivacyAi : k.pPrivacy}</p>
+            <p className="sc-caption">{!kineJudged() ? k.pPrivacyPlain : glimpseOn() ? k.pPrivacyAi : k.pPrivacy}</p>
           </>}
         </div>
       </section>

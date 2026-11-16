@@ -116,6 +116,10 @@ export const COPY = {
     partial: share => `Avis donné sur ${pct(share, true)} du geste : le reste n’était pas assez visible pour être mesuré.`,
     note: tol => `Tolérance provisoire : ±${tol}° autour de la référence, sur 90 % du geste. Elle sera réglée par le kinésithérapeute ; elle n’a pas encore été validée sur des patients.`,
     newAttempt: 'Comparer une autre vidéo du patient',
+    // Without a judgment (buildFlags.js, kineJudged).
+    notAligned: 'Les deux vidéos n’ont pas pu être mises côte à côte.',
+    subPlain: 'La vidéo du kiné sert de modèle. Celle du patient défile à côté, au même rythme. Tout reste sur ce téléphone.',
+    plainNote: 'Les deux vidéos défilent au même rythme, le squelette de la référence en pointillés. L’appli ne juge pas le geste\u00A0: c’est le rôle du kinésithérapeute. WorkoutVision n’est pas un dispositif médical.',
   },
   en: {
     eyebrow: 'Rehabilitation',
@@ -199,6 +203,9 @@ export const COPY = {
     partial: share => `Judged on ${pct(share, false)} of the movement: the rest was not visible enough to be measured.`,
     note: tol => `Provisional tolerance: ${tol}° around the reference, 9 moments in 10. The physiotherapist sets it; it has not yet been measured on patients.`,
     newAttempt: 'Compare another video of the patient',
+    notAligned: 'The two videos could not be set side by side.',
+    subPlain: 'The physiotherapist’s video is the model. The patient’s plays beside it, at the same pace. Everything stays on this phone.',
+    plainNote: 'The two videos play at the same pace, the reference’s skeleton dotted. The app does not judge the movement: that is the physiotherapist’s role. WorkoutVision is not a medical device.',
   },
 };
 

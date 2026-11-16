@@ -41,11 +41,14 @@ vi.mock('../../../lib/reference/compare', async importOriginal => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
   vi.resetModules();
 });
 
 describe('ComparisonView live HUD and collision-free cards', () => {
+  // The judged view is the extended build's (buildFlags.js, kineJudged; think tank of 16 November 2026).
   it('renders clinical video HUD and structured joint cards with separated metrics', async () => {
+    vi.stubEnv('VITE_EXTENDED_ROUTES', '1');
     const { LanguageProvider } = await import('../../../lib/LanguageContext');
     const { default: ComparisonView } = await import('../ComparisonView');
 
@@ -82,5 +85,16 @@ describe('ComparisonView live HUD and collision-free cards', () => {
     expect(html).toContain('rc-joint-top');
     expect(html).toContain('rc-joint-metrics');
     expect(html).toContain('rc-go');
+  });
+
+  it('shows the two videos side by side and nothing judged in a production build', async () => {
+    const { LanguageProvider } = await import('../../../lib/LanguageContext');
+    const { default: ComparisonView } = await import('../ComparisonView');
+    const pose = { width: 1920, height: 1080, aspect: 16 / 9, timestamps: [0, 1, 2], imageLandmarks: [[{ x: 0.5, y: 0.5, visibility: 0.9 }], [{ x: 0.5, y: 0.5, visibility: 0.9 }], [{ x: 0.5, y: 0.5, visibility: 0.9 }]] };
+    const html = renderToStaticMarkup(<LanguageProvider><ComparisonView attPose={pose} refPose={pose} attUrl="blob:att" refUrl="blob:ref" /></LanguageProvider>);
+    expect(html).toContain('data-testid="rc-att-video"');
+    expect(html).toContain('data-testid="rc-ref-video"');
+    for (const judged of ['rc-verdict', 'rc-stage-hud', 'rc-joint-', 'rc-tempo', 'rc-timeline', 'rc-hold-', '%']) expect(html).not.toContain(judged);
+    expect(html).toContain('not a medical device');
   });
 });

@@ -8,6 +8,7 @@ import { COPY, JOINT_NAMES, deg, pct, sec } from '../reference/reference-copy';
 import { TOLERANCE_DEG } from '../../lib/reference/compare';
 import { keepResult, patientKey, patientLabel, requestFollowUp } from '../../lib/kine/store';
 import { KINE } from './kine-copy';
+import { kineJudged } from '../../lib/buildFlags';
 import '../reference/ReferenceCompare.css';
 import './Kine.css';
 
@@ -22,11 +23,14 @@ export default function KineResult({ onClose }) {
   const k = KINE[fr ? 'fr' : 'en'], c = COPY[fr ? 'fr' : 'en'], names = JOINT_NAMES[fr ? 'fr' : 'en'];
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [lang]);
+  // Without a judgment (buildFlags.js, kineJudged): a link sent by an earlier version opens on the exercise and the
+  // date, never its verdict or figures.
+  const judged = kineJudged();
   const r = useMemo(() => cleanResult(unpack(payloadAfter(window.location.hash, RESULT_KEY))), []);
   const ex = r ? exerciseById(r.id) : null;
   // Kept in this browser's follow-up when the screen first renders: 'kept', 'already' or 'failed'. React keeps the
   // first result of a state initialiser (a second run in development finds it 'already' and is dropped).
-  const [kept] = useState(() => (r && ex ? keepResult(r) : null));
+  const [kept] = useState(() => (r && ex && judged ? keepResult(r) : null));
   const [copied, setCopied] = useState(false);
   const openFollowUp = () => { requestFollowUp(patientKey(r)); window.location.hash = 'kine'; };
   // On an iPhone, the app installed on the home screen does not share Safari's storage: the link is copied, to be
@@ -46,6 +50,8 @@ export default function KineResult({ onClose }) {
           {!r || !ex ? <p className="sc-frame-note" data-testid="kn-bad-result">{k.rBad}</p> : <>
             <p className="eyebrow">{k.rEyebrow}{when ? ` · ${when}` : ''}</p>
             <h1 className="title">{k.rTitle(who, ex[fr ? 'fr' : 'en'].title)}</h1>
+            {!judged && <p className="sub" data-testid="kn-result-plain">{k.rPlain}</p>}
+            {judged && <>
             <p className={`rc-verdict is-${r.verdict}`} data-testid="kn-result-verdict">{r.verdict === 'match' ? c.match : r.verdict === 'revise' ? c.revise : c.refused}</p>
             {r.tempo != null && <p className="sub">{k.rTempo(r.tempo)}{secDiff ? ` (${secDiff})` : ''}</p>}
             {r.joints.length > 0 && <section className="sc-section">
@@ -69,7 +75,8 @@ export default function KineResult({ onClose }) {
               </div></li>)}</ul>
             </section>}
             <p className="sc-caption">{c.note(TOLERANCE_DEG)}</p>
-            {kept != null && <section className="sc-section">
+            </>}
+            {judged && kept != null && <section className="sc-section">
               <p className="sc-caption" data-testid="kn-result-kept">{kept === 'kept' ? k.rSaved : kept === 'already' ? k.rAlready : k.rFailed}</p>
               {kept !== 'failed' && <button type="button" className="rc-btn is-primary is-wide press" onClick={openFollowUp} data-testid="kn-result-follow">{k.rOpenFollow}</button>}
               <button type="button" className="rc-btn is-wide press" onClick={copyLink} data-testid="kn-result-copy">{copied ? k.copied : k.rCopy}</button>

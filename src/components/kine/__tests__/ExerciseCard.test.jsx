@@ -32,20 +32,24 @@ describe('ExerciseCard Media and Guided Protocol Rendering', () => {
     const { exerciseById: getEx } = await import('../../../lib/kine/library');
     const ex = getEx('test-dorsiflexion-cheville');
 
+    // Production: no empty media area, no placeholder pill, no target angle (card 043; think tank of 16 November 2026).
     const html = renderToStaticMarkup(<Card ex={ex} fr={true} k={kFr} />);
     expect(html).not.toContain('class="kn-video"');
-    expect(html).toContain('kn-video-placeholder');
-    expect(html).toContain('Protocole guidé');
-    // Card 043: no target angle without a source (R9) in production; it stays in the extended build.
+    expect(html).not.toContain('kn-video-placeholder');
+    expect(html).not.toContain('Protocole guidé');
     expect(html).not.toContain('Cible');
     vi.stubEnv('VITE_EXTENDED_ROUTES', '1');
     vi.resetModules();
     const { default: Extended } = await import('../ExerciseCard');
-    expect(renderToStaticMarkup(<Extended ex={ex} fr={true} k={kFr} />)).toContain('Cible\u00A0: 35° à 40°');
+    const extended = renderToStaticMarkup(<Extended ex={ex} fr={true} k={kFr} />);
+    expect(extended).toContain('kn-video-placeholder');
+    expect(extended).toContain('Protocole guidé');
+    expect(extended).toContain('Cible\u00A0: 35° à 40°');
   });
 
   it('renders all four Olivier exercises with videos and all mobility screens with protocol badges', async () => {
     vi.stubEnv('VITE_KINE_MEDIA_URL', 'https://pub-r2.example.com');
+    vi.stubEnv('VITE_EXTENDED_ROUTES', '1');
     vi.resetModules();
     const { default: Card } = await import('../ExerciseCard');
     const { LIBRARY: lib, MOBILITY_SCREENS: screens } = await import('../../../lib/kine/library');

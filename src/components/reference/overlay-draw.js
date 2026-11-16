@@ -46,14 +46,16 @@ export function refMomentAt(t, result, maps) {
  * for a still whose caption gives the values (a report's frames). anchor: the ghost's (overlay.js ghostAnchor).
  * Returns the reference's moment ({ tr, ri }).
  */
-export function drawComparison(ctx, { t, w, h, u = 1, result, attPose, refPose, maps, measures, names, refShort, colors, ghost = true, labels = true, anchor = 'trunk' }) {
+export function drawComparison(ctx, { t, w, h, u = 1, result, attPose, refPose, maps, measures, names, refShort, colors, ghost = true, labels = true, anchor = 'trunk', judged = true }) {
   const { lamp, bone, ash } = colors;
   const { tr, ri } = refMomentAt(t, result, maps);
   const lm = attPose.imageLandmarks[nearestIndex(attPose.timestamps, t)];
   const rlm = refPose.imageLandmarks[nearestIndex(refPose.timestamps, tr)];
   // Gap of each compared joint at this moment of the reference.
+  // judged false (buildFlags.js, kineJudged): the skeleton in one colour, no joint out of tolerance, no label.
   const off = {};
-  result.joints.forEach((j, k) => { off[pointOf(j.measure ?? j.name, measures, result.mirrored)] = result.seen[k][ri] && Math.abs(result.matched[k][ri] - result.reference[k][ri]) > TOLERANCE_DEG; });
+  if (!judged) labels = false;
+  if (judged) result.joints.forEach((j, k) => { off[pointOf(j.measure ?? j.name, measures, result.mirrored)] = result.seen[k][ri] && Math.abs(result.matched[k][ri] - result.reference[k][ri]) > TOLERANCE_DEG; });
   if (ghost && lm && rlm) {
     const g = ghostPoints(rlm, { w: 1, h: refPose.height / refPose.width }, lm, { w, h: w * (attPose.height / attPose.width) }, anchor);
     if (g) drawSkeleton(ctx, g, { color: ash, width: 6 * u, dash: [2 * u, 8 * u], alpha: 0.75 });
