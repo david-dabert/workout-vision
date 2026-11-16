@@ -130,6 +130,16 @@ jobs:
       - run: git diff --exit-code test/real-phone/synth/synth.txt
       - run: npm run build
       - run: npm run check:entry-budget
+      - name: Check production dist has no events URL (D6)
+        run: node scripts/check-dist-events.mjs dist
+      - name: Check build with events URL sets connect-src and notice host across all pages (Task 12, PRIV-3)
+        env:
+          VITE_EVENTS_URL: https://events.invalid/event
+          EVENTS_URL_VAR: https://events.invalid/event
+        run: |
+          trap 'rm -rf dist-events' EXIT
+          npx vite build --outDir dist-events --emptyOutDir
+          node scripts/check-dist-events.mjs dist-events
 
   e2e-shard:
     name: Browser tests (${{ matrix.shard }}/4)

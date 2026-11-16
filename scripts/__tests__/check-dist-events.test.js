@@ -52,6 +52,16 @@ describe('a build given an events URL (after D6)', () => {
     const other = site({ 'assets/a.js': `const E="${url}";const F="https://other.dd.workers.dev/event";` });
     expect(await findEventsUrls(other, { url })).toEqual([{ file: 'assets/a.js', found: 'https://other.dd.workers.dev/event' }]);
   });
+  it('fails when any HTML entry page uses connect-src without blob: (label.html / #460 regression)', async () => {
+    const url = 'https://wv.dd.workers.dev/event';
+    const badPage = site({
+      'index.html': CSP.replace("blob:;", 'blob: https://world.openfoodfacts.org https://wv.dd.workers.dev;'),
+      'label.html': CSP.replace("connect-src 'self' blob:;", "connect-src 'self';"),
+    });
+    expect(await findEventsUrls(badPage, { url })).toEqual([
+      { file: 'label.html', found: "connect-src 'self'" },
+    ]);
+  });
 });
 
 describe('the notice names the host the counts go to (PRIV-3)', () => {
