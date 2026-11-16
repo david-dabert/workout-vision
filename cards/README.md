@@ -24,7 +24,14 @@ Phase 1, trust on the iPhone (open):
 1. The iPhone's read beside the computer's (card 037's table): blocked on David's run of check.html's 15 clips on his iPhone, its copied result sent.
 2. The hip thrust, 1 for 12 on the iPhone: blocked on its original file.
 3. The sealed sets of Phase 1's gate: at least 20 of David's sets filmed after 15 November 2026, in `test/real-phone/sealed/`, read once.
-4. 042, the filming screens show no figure measured on rendered bodies (a claim withdrawn, allowed by the freeze).
+4. 042, the filming screens show no figure measured on rendered bodies (a claim withdrawn, allowed by the freeze). Done (#447).
+
+Phase 1 cards of 16 November 2026, from the review panel of that day (David: "Now give antigravity the tasks it is supposed to do"), in this order:
+5. 045 (Antigravity, careful: Claude reviews before merge), a catalogue variant is told the angle of the lift it counts as, and saved with that view. First, because sets filmed after 15 November are sealed and must carry the right view.
+6. 044 (Antigravity), the sample video is marked « Exemple » and never saved or collected as the person's set. Same reason.
+7. 046 (Antigravity), the iPhone's read of the bundled clips beside the computer's, in one committed table: the tool now, the table when David's run arrives.
+8. 047 (Antigravity), the saved-load browser test passes on its first run, every run.
+9. 043 (Claude), the physiotherapist's screens show no dossier under a clinic's name and no target without a source.
 
 Parked until Phase 1's gate passes:
 - 038, the estimated maximum (Antigravity, branch not pushed): returns in Phase 2 through a card with its eval and the question "How many more reps could you have done?".
