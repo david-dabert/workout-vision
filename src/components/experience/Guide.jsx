@@ -17,7 +17,7 @@ import { filmingGuideFor } from './filming-guide';
 function FilmingPlacement({ exerciseKey, fr }) {
   const info = filmingGuideFor(exerciseKey, fr);
   return <p className="guide-placement" data-testid="guide-filming-note">
-    <strong>{fr ? 'Placement\u00A0:' : 'Camera:'}</strong> {info.angleLabel} · {info.framingLabel}. <span>{info.evidenceNote}</span>
+    <strong>{fr ? 'Placement\u00A0:' : 'Camera:'}</strong> {info.angleLabel} · {info.framingLabel}.
   </p>;
 }
 
