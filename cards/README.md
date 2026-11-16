@@ -42,6 +42,13 @@ Phase 1 cards of 16 November 2026, decided by the board (David: "Bring in the ag
 15. 051 (Antigravity, lab lane), two references for measurement: rep duration against human boundaries, 2D angle against synthetic truth.
 16. 054 (Claude), the reverts #441 and #442, under the board's written condition (PLAN.md, decisions of 16 November 2026).
 
+The path to a sellable product, cards of 16 November 2026 from the review panel (David: tasks to execute, not a summary):
+- Now, no code, David sends: 060 (ten coaches at a named price, `docs/sell/coach-offer.md`), 061 (ten testers, thirty blind sets, `docs/sell/tester-kit.md`).
+- Phase 1, Claude: 055 (every sealed set scored on the phone's read and the computer's), after 043 and 054.
+- Phase 1, Antigravity: 059 (one data store keeping body points; careful, Claude reviews), after 051.
+- Lab now, product in Phase 2: 056 (Claude, one calibrated "sure" check), 057 (Antigravity, filming starts and ends at rest), 058 (Antigravity, a client's results carry load, effort and pain).
+- Phase 3 prepared now: 062 (Claude drafts the legal floor; David gives the entity's facts; a lawyer checks).
+
 Parked until Phase 1's gate passes:
 - 038, the estimated maximum (Antigravity, branch not pushed): returns in Phase 2 through a card with its eval and the question "How many more reps could you have done?".
 - 011 (lab lane, off in production), 012 (a video David chooses), 020 (David's choice a, b or c).
