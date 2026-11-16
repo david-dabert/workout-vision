@@ -4,7 +4,7 @@
 // IP salted with a secret and the day; that hash lives at most three minutes in its own table (a job every minute
 // deletes it, purgeRateKeys, worker.js scheduled) and is never written beside a count. GET /stats and GET /dashboard
 // read the counts with the STATS_TOKEN secret, sent in the Authorization header; the dashboard's form posts it.
-import { validEvent, MAX_BATCH, EVENT_NAMES, DURATION_BUCKETS } from './usage-schema.js';
+import { validEvent, MAX_BATCH, EVENT_NAMES, DURATION_BUCKETS, AGGREGATE_ONLY, AID_RE, MAX_SESS } from './usage-schema.js';
 
 const MAX_BODY = 4096;
 // Events accepted per IP hash per minute. A visit sends about a dozen; 120 lets a busy gym's shared Wi-Fi through and
@@ -55,17 +55,81 @@ export async function overRate(env, key, hits, nowMs = Date.now()) {
   return !!row && row.hits > USAGE_RATE_MAX;
 }
 
-/** The events of a request body: one event, or { events: [...] } with 1 to MAX_BATCH events. Null when malformed. */
-export function parseEvents(body) {
+/**
+ * A request body: one event, or { events: [...], aid?, sess? } with 1 to MAX_BATCH events. aid is the phone's random
+ * id and sess its visit number (events.js), both or neither; a batch holding an AGGREGATE_ONLY event never carries
+ * them. Null when malformed.
+ */
+export function parseBatch(body) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return null;
-  let list;
+  let list, aid = null, sess = null;
   if ('events' in body) {
-    if (Object.keys(body).length !== 1 || !Array.isArray(body.events)) return null;
+    if (!Object.keys(body).every(k => ['events', 'aid', 'sess'].includes(k)) || !Array.isArray(body.events)) return null;
     list = body.events;
+    if ('aid' in body || 'sess' in body) {
+      if (typeof body.aid !== 'string' || !AID_RE.test(body.aid) || !Number.isInteger(body.sess) || body.sess < 1 || body.sess > MAX_SESS) return null;
+      aid = body.aid; sess = body.sess;
+    }
   } else list = [body];
   if (list.length < 1 || list.length > MAX_BATCH) return null;
-  const out = list.map(validEvent);
-  return out.every(Boolean) ? out : null;
+  const events = list.map(validEvent);
+  if (!events.every(Boolean)) return null;
+  if (aid && events.some(e => AGGREGATE_ONLY.includes(e.event))) return null;
+  return { events, aid, sess };
+}
+
+/** The events of a request body (parseBatch), without the phone's id. */
+export function parseEvents(body) {
+  return parseBatch(body)?.events ?? null;
+}
+
+/**
+ * The phone's id as stored: an HMAC-SHA256 of the id the phone sent, keyed with the AID_PEPPER secret, cut to 64 bits.
+ * Without the secret the id cannot be worked back from what is stored, and the stored value means nothing outside this
+ * database. Null without a pepper of 16 characters or more: then nothing is stored per phone.
+ */
+export async function storedAid(env, aid) {
+  const pepper = env.AID_PEPPER;
+  if (!pepper || pepper.length < 16 || !aid) return null;
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pepper), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const mac = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(aid));
+  return Array.from(new Uint8Array(mac).slice(0, 8), b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * The events of one phone's visit, kept one row each with their step (seq), and the phone's days of use, so returns,
+ * retention and drop-off can be read (readCohorts). The day only, never a finer time; no IP; AGGREGATE_ONLY events are
+ * never written here. A step already written (a request sent twice) is written once.
+ */
+export async function addCohort(env, aid, sess, events, day) {
+  const rows = events.filter(e => !AGGREGATE_ONLY.includes(e.event) && Number.isInteger(e.seq));
+  const statements = rows.map(e => env.DB.prepare(
+    `INSERT OR IGNORE INTO usage_event (aid, day, sess, seq, event, lift, tier, duration_bucket, app_version, lang)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(aid, day, sess, e.seq, e.event, e.lift, e.tier, e.durationBucket, e.appVersion, e.lang));
+  statements.push(env.DB.prepare('INSERT OR IGNORE INTO usage_active (aid, day) VALUES (?, ?)').bind(aid, day));
+  statements.push(env.DB.prepare(
+    `INSERT INTO usage_device (aid, first_day, last_day) VALUES (?, ?, ?)
+     ON CONFLICT(aid) DO UPDATE SET last_day = MAX(last_day, excluded.last_day), first_day = MIN(first_day, excluded.first_day)`
+  ).bind(aid, day, day));
+  if (typeof env.DB.batch === 'function') await env.DB.batch(statements);
+  else for (const s of statements) await s.run();
+}
+
+// Rows per phone are deleted after this many days: 25 months, the CNIL's longest retention for audience measurement
+// (docs/privacy/cnil-audience-grid.md). Status: literature (CNIL, audience measurement; to be checked at cnil.fr).
+export const COHORT_KEEP_DAYS = 761;
+
+/** Deletes the rows per phone older than COHORT_KEEP_DAYS (run by the worker's job, worker.js scheduled). */
+export async function purgeCohorts(env, nowMs = Date.now()) {
+  const cutoff = utcDay(new Date(nowMs - COHORT_KEEP_DAYS * 86400000));
+  const statements = [
+    env.DB.prepare('DELETE FROM usage_event WHERE day < ?').bind(cutoff),
+    env.DB.prepare('DELETE FROM usage_active WHERE day < ?').bind(cutoff),
+    env.DB.prepare('DELETE FROM usage_device WHERE last_day < ?').bind(cutoff),
+  ];
+  if (typeof env.DB.batch === 'function') await env.DB.batch(statements);
+  else for (const s of statements) await s.run();
 }
 
 /** Adds the events to their daily counts. */
@@ -95,14 +159,17 @@ export async function handleEvent(request, env, cors, now = new Date()) {
   if (text.length > MAX_BODY) return json({ error: 'Payload too large' }, 413, cors);
   let body;
   try { body = JSON.parse(text); } catch { return json({ error: 'Invalid JSON' }, 400, cors); }
-  const events = parseEvents(body);
-  if (!events) return json({ error: 'Invalid event' }, 422, cors);
+  const batch = parseBatch(body);
+  if (!batch) return json({ error: 'Invalid event' }, 422, cors);
+  const { events } = batch;
   const day = utcDay(now);
   const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
   if (await overRate(env, await rateKey(env, ip, day), events.length, now.getTime())) {
     return json({ error: 'Rate limit exceeded' }, 429, { 'Retry-After': '60', ...cors });
   }
   await addCounts(env, events, day);
+  const aid = batch.aid ? await storedAid(env, batch.aid) : null;
+  if (aid) await addCohort(env, aid, batch.sess, events, day);
   return new Response(null, { status: 204, headers: cors });
 }
 
@@ -141,9 +208,42 @@ const daysParam = url => {
   return Number.isInteger(d) && d >= 1 && d <= 366 ? d : 30;
 };
 
+// A phone is counted as gone after this many days without a visit (the last event before it is read as where it
+// stopped). Status: convention (14 days; UNSOURCED), David may change it.
+export const GONE_AFTER_DAYS = 14;
+// The funnel of a visit, in order: each step counted when it comes after the one before, in the same visit.
+export const FUNNEL = Object.freeze([['Opened', 'open'], ['Lift chosen', 'choose_lift'], ['Video chosen', 'film_start'], ['Count shown', 'analysis_done'], ['Count kept', 'result_kept']]);
+
+/**
+ * What the rows per phone tell over the last `days` days: phones active each day and each week, the share of each
+ * day's new phones that came back 1, 7 and 30 days later, the funnel of visits, the last event of the phones gone for
+ * GONE_AFTER_DAYS, and the phones that opened Espace pro. Counts of phones, never one phone's rows.
+ */
+export async function readCohorts(env, days, now = new Date()) {
+  const from = utcDay(new Date(now.getTime() - (days - 1) * 86400000));
+  const all = async (sql, ...args) => (await env.DB.prepare(sql).bind(...args).all()).results || [];
+  const daily = await all('SELECT day, COUNT(*) AS phones FROM usage_active WHERE day >= ? GROUP BY day ORDER BY day DESC', from);
+  const weekly = await all("SELECT strftime('%Y-W%W', day) AS week, COUNT(DISTINCT aid) AS phones FROM usage_active WHERE day >= ? GROUP BY week ORDER BY week DESC", from);
+  const back = n => `SUM(EXISTS (SELECT 1 FROM usage_active a WHERE a.aid = d.aid AND a.day = date(d.first_day, '+${n} day')))`;
+  const retention = await all(`SELECT d.first_day AS cohort, COUNT(*) AS phones, ${back(1)} AS d1, ${back(7)} AS d7, ${back(30)} AS d30
+    FROM usage_device d WHERE d.first_day >= ? GROUP BY d.first_day ORDER BY d.first_day DESC`, from);
+  const step = ev => `MIN(CASE WHEN event = '${ev}' THEN seq END)`;
+  const [f] = await all(`WITH v AS (SELECT aid, sess, ${FUNNEL.map(([, ev], i) => `${step(ev)} AS s${i}`).join(', ')}
+      FROM usage_event WHERE day >= ? GROUP BY aid, sess)
+    SELECT ${FUNNEL.map((_, i) => `SUM(CASE WHEN ${Array.from({ length: i + 1 }, (_, k) => (k ? `s${k} > s${k - 1}` : 's0 IS NOT NULL')).join(' AND ')} THEN 1 ELSE 0 END) AS f${i}`).join(', ')} FROM v`, from);
+  const gone = await all(`SELECT event, COUNT(*) AS phones FROM (
+      SELECT e.event, ROW_NUMBER() OVER (PARTITION BY e.aid ORDER BY e.day DESC, e.sess DESC, e.seq DESC) AS rn
+      FROM usage_event e JOIN usage_device d ON d.aid = e.aid
+      WHERE d.last_day <= date(?, '-${GONE_AFTER_DAYS} day') AND d.last_day >= ?)
+    WHERE rn = 1 GROUP BY event ORDER BY phones DESC`, utcDay(now), from);
+  const [pro] = await all("SELECT COUNT(DISTINCT aid) AS phones FROM usage_event WHERE day >= ? AND event = 'pro_open'", from);
+  return { from, to: utcDay(now), daily, weekly, retention, funnel: FUNNEL.map(([name], i) => [name, Number(f?.[`f${i}`] ?? 0)]), gone, pro: Number(pro?.phones ?? 0) };
+}
+
 export async function handleStats(request, env, now = new Date()) {
   if (!(await authorised(request, env))) return json({ error: 'Unauthorized' }, 401);
-  return json(await readCounts(env, daysParam(new URL(request.url)), now));
+  const days = daysParam(new URL(request.url));
+  return json({ ...(await readCounts(env, days, now)), cohorts: await readCohorts(env, days, now) });
 }
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -172,8 +272,25 @@ function table(head, rows) {
   }</tbody></table>`;
 }
 
-/** The dashboard's HTML for the counts read by readCounts. */
-export function dashboardHtml({ from, to, rows }) {
+/** The dashboard's sections read from the rows per phone (readCohorts). */
+export function cohortHtml(c) {
+  if (!c) return '';
+  const pct = (k, n) => (n ? `${Math.round((100 * k) / n)}%` : '–');
+  const top = c.funnel[0]?.[1] || 0;
+  return `<h2>Phones</h2><p>Each phone is one random id, replaced after 13 months; a person on two phones counts twice, two people on one phone once. The kiné path is not counted per phone.</p>
+<div class="wrap">${table(['Day', 'Phones active'], c.daily.map(r => [r.day, r.phones]))}</div>
+<div class="wrap">${table(['Week', 'Phones active'], c.weekly.map(r => [r.week, r.phones]))}</div>
+<h2>Coming back</h2><p>Of the phones first seen on a day, the share seen again exactly 1, 7 and 30 days later.</p>
+<div class="wrap">${table(['First day', 'New phones', 'Day 1', 'Day 7', 'Day 30'], c.retention.map(r => [r.cohort, r.phones, pct(r.d1, r.phones), pct(r.d7, r.phones), pct(r.d30, r.phones)]))}</div>
+<h2>Visits, step by step</h2><p>Visits reaching each step in order, in the same visit.</p>
+<div class="wrap">${table(['Step', 'Visits', 'Of visits opened'], c.funnel.map(([name, n]) => [name, n, pct(n, top)]))}</div>
+<h2>Where they stopped</h2><p>The last step of the phones not seen for ${GONE_AFTER_DAYS} days.</p>
+<div class="wrap">${table(['Last step', 'Phones'], c.gone.map(r => [r.event, r.phones]))}</div>
+<p>Phones that opened Espace pro over the period: ${esc(String(c.pro))}.</p>`;
+}
+
+/** The dashboard's HTML for the counts read by readCounts, and the rows per phone (readCohorts) when given. */
+export function dashboardHtml({ from, to, rows }, cohorts = null) {
   const sum = (filter, events) => rows.filter(r => events.includes(r.event) && filter(r)).reduce((n, r) => n + r.count, 0);
   const days = [...new Set(rows.map(r => r.day))].sort().reverse();
   const daily = days.map(d => [d, ...DAY_COLUMNS.map(([, ev]) => sum(r => r.day === d, ev))]);
@@ -193,7 +310,8 @@ export function dashboardHtml({ from, to, rows }) {
 h1{font-size:20px}h2{font-size:16px;margin-top:28px}.wrap{overflow-x:auto}table{border-collapse:collapse;font-variant-numeric:tabular-nums}
 th,td{border-bottom:1px solid #ddd;padding:4px 8px;text-align:left;white-space:nowrap}.n{text-align:right}p{max-width:60em}</style></head><body>
 <h1>WorkoutVision usage, ${esc(from)} to ${esc(to)} (UTC days)</h1>
-<p>Anonymous daily counts of events, as the app sends them: no person can be told from another, so these are counts of events, not of people. A visit sends one Open.${unknown ? ` ${unknown} rows have an event this worker no longer lists.` : ''}</p>
+<p>Daily counts of events, as the app sends them. A visit sends one Open.${unknown ? ` ${unknown} rows have an event this worker no longer lists.` : ''}</p>
+${cohortHtml(cohorts)}
 <h2>By day</h2><div class="wrap">${table(['Day', ...DAY_COLUMNS.map(([h]) => h)], daily)}</div>
 <h2>By lift, over the period</h2><div class="wrap">${table(['Lift', 'Tier', ...LIFT_COLUMNS.map(([h]) => h)], byLift)}</div>
 <h2>Visit length</h2><div class="wrap">${table(['Length', 'Visits'], sessions)}</div>
@@ -243,5 +361,5 @@ export async function handleDashboard(request, env, now = new Date()) {
     days = Number.isInteger(d) && d >= 1 && d <= 366 ? d : 30;
   } else ok = await authorised(request, env);
   if (!ok) return new Response(tokenFormHtml(tried), { status: 401, headers: HTML_HEADERS });
-  return new Response(dashboardHtml(await readCounts(env, days, now)), { headers: HTML_HEADERS });
+  return new Response(dashboardHtml(await readCounts(env, days, now), await readCohorts(env, days, now)), { headers: HTML_HEADERS });
 }

@@ -23,6 +23,7 @@ function d1(db) {
 function setup(extra = {}) {
   const db = new DatabaseSync(':memory:');
   db.exec(MIGRATION);
+  db.exec(readFileSync(new URL('./migrations/0002_cohort.sql', import.meta.url), 'utf8'));
   return { db, env: { DB: d1(db), STATS_TOKEN: TOKEN, RATE_SALT: 'test-salt', ...extra } };
 }
 

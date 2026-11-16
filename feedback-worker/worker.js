@@ -3,7 +3,7 @@
 // POST /event: anonymous usage counts (usage.js). POST /ingest (feedback) was removed on 3 October 2026 (WP0.4): 404.
 // GET /stats, GET /dashboard (usage) and GET /feedback (feedback aggregates): STATS_TOKEN, in the Authorization header
 // only; POST /dashboard takes it from the dashboard's form. A job every minute deletes the rate-limit hashes (scheduled).
-import { handleEvent, handleStats, handleDashboard, authorised, purgeRateKeys } from './usage.js';
+import { handleEvent, handleStats, handleDashboard, authorised, purgeRateKeys, purgeCohorts } from './usage.js';
 
 // POST /ingest was removed on 3 October 2026 (WP0.4, docs/SPEC-production.md): it took free text and a hash of the IP
 // salted with a constant written in this public repository, with no notice and no consent. It now answers 404 like any
@@ -22,7 +22,9 @@ export default {
   // Every minute (wrangler.toml, crons): the usage rate limit's IP hashes older than the last minute are deleted, so
   // none outlives three minutes even when no event follows to delete it (review finding N4).
   async scheduled(controller, env, ctx) {
-    const done = purgeRateKeys(env, controller?.scheduledTime ?? Date.now());
+    // And the rows per phone older than 25 months (purgeCohorts; 16 November 2026).
+    const at = controller?.scheduledTime ?? Date.now();
+    const done = Promise.all([purgeRateKeys(env, at), purgeCohorts(env, at)]);
     if (ctx?.waitUntil) ctx.waitUntil(done);
     await done;
   },

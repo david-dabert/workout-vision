@@ -41,3 +41,30 @@ CREATE TABLE IF NOT EXISTS usage_rate (
   PRIMARY KEY (key, minute)
 );
 CREATE INDEX IF NOT EXISTS idx_usage_rate_minute ON usage_rate(minute);
+
+-- Usage per phone: the same as migrations/0002_cohort.sql (a test checks they match).
+CREATE TABLE IF NOT EXISTS usage_event (
+  aid TEXT NOT NULL,
+  day TEXT NOT NULL,                       -- UTC day, YYYY-MM-DD
+  sess INTEGER NOT NULL,                   -- the visit's number on the phone
+  seq INTEGER NOT NULL,                    -- the step's order in the visit
+  event TEXT NOT NULL,
+  lift TEXT NOT NULL DEFAULT '',
+  tier TEXT NOT NULL DEFAULT '',
+  duration_bucket TEXT NOT NULL DEFAULT '',
+  app_version TEXT NOT NULL DEFAULT '',
+  lang TEXT NOT NULL DEFAULT '',
+  PRIMARY KEY (aid, sess, seq)
+);
+CREATE INDEX IF NOT EXISTS idx_usage_event_day ON usage_event(day, event);
+CREATE TABLE IF NOT EXISTS usage_active (
+  aid TEXT NOT NULL,
+  day TEXT NOT NULL,
+  PRIMARY KEY (aid, day)
+);
+CREATE INDEX IF NOT EXISTS idx_usage_active_day ON usage_active(day);
+CREATE TABLE IF NOT EXISTS usage_device (
+  aid TEXT PRIMARY KEY,
+  first_day TEXT NOT NULL,
+  last_day TEXT NOT NULL
+);

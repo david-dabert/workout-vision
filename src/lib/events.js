@@ -1,4 +1,12 @@
-// Anonymous usage counts (analytics, 3 October 2026), so David knows how many people use the app and how far they get.
+// Usage counts (analytics, 3 October 2026), so David knows how many people use the app and how far they get.
+//
+// Since 16 November 2026 (David: "Yes to the tracking, build it"): a random id of this phone (wv_aid: 128 random bits
+// and the day it was made, replaced 13 months later and never extended by a visit), the visit's number (wv_sess) and
+// each event's step in the visit (seq) go with the events, so returns, retention and the point where people stop can be
+// read. The worker keeps the id only as a keyed hash (feedback-worker/usage.js). The kiné path (AGGREGATE_ONLY) is sent
+// alone, without the id. Within the CNIL's audience-measurement exemption (docs/privacy/cnil-audience-grid.md). Under
+// Global Privacy Control, Do Not Track or the opt-out, no id is made, and turning the counting off deletes it.
+// The paragraph below described the counts before that day; its "no identifier" no longer holds.
 //
 // What leaves the phone, and only when the build names a server (VITE_EVENTS_URL): an event's name from the list in
 // feedback-worker/usage-schema.js, the lift and its tier where the event carries them, a visit's length in one of four
@@ -8,12 +16,17 @@
 // Nothing is sent, the first opening included, when no server is named, when the browser asks sites not to track
 // (Global Privacy Control, Do Not Track), or after the person turns the counting off on the choice screen or in the
 // notice (Choice.jsx, UsageNotice.jsx): that choice is the one thing written on the phone, and it holds no identifier.
-import { USAGE_EVENTS, MAX_BATCH, durationBucket, validEvent } from '../../feedback-worker/usage-schema.js';
+import { USAGE_EVENTS, MAX_BATCH, AGGREGATE_ONLY, AID_RE, durationBucket, validEvent } from '../../feedback-worker/usage-schema.js';
 import { appVersion } from './reportLinks';
 import { tierOf } from './offer';
 
 const ENDPOINT = import.meta.env.VITE_EVENTS_URL || '';
 const OFF_KEY = 'wv_count_off';
+const AID_KEY = 'wv_aid';
+const SESS_KEY = 'wv_sess';
+// The id's life: 13 months, the CNIL's longest for an audience-measurement tracker, counted from the day it was made
+// and never extended. 13 x 30.4 days, rounded down. Status: literature (CNIL, audience measurement; check at cnil.fr).
+export const AID_LIFE_DAYS = 395;
 // Events wait this long to leave together, so a visit makes a few requests, not one per tap. Status: convention.
 const FLUSH_MS = 4000;
 // A page that sends more than this has a bug looping: it stops sending. A visit sends about fifteen. Status: convention.
@@ -44,9 +57,43 @@ export function countingOff() {
 /** Turns the counting off (true) or back on (false) on this phone. Events waiting are dropped when it goes off. */
 export function setCountingOff(off) {
   try { if (off) globalThis.localStorage?.setItem(OFF_KEY, '1'); else globalThis.localStorage?.removeItem(OFF_KEY); } catch { /* the choice holds for this visit */ }
-  if (off) { queue = []; clearTimeout(timer); timer = 0; offThisVisit = true; openPending = false; } else offThisVisit = false;
+  if (off) {
+    queue = []; clearTimeout(timer); timer = 0; offThisVisit = true; openPending = false;
+    try { globalThis.localStorage?.removeItem(AID_KEY); globalThis.localStorage?.removeItem(SESS_KEY); } catch { /* nothing kept */ }
+    aid = null; sess = 0;
+  } else offThisVisit = false;
 }
 let offThisVisit = false;
+
+// This page's phone id and visit number, set by startEvents; null and 0 when none was made (counting off, storage
+// refused): the events then go without them, counted in the daily totals only.
+let aid = null;
+let sess = 0;
+let seq = 0;
+const today = () => new Date().toISOString().slice(0, 10);
+const ageDays = day => (Date.parse(today()) - Date.parse(day)) / 86400000;
+
+/** This phone's id, made on the first visit and replaced once AID_LIFE_DAYS old; null when storage refuses it. */
+export function phoneId() {
+  try {
+    const kept = JSON.parse(globalThis.localStorage?.getItem(AID_KEY) || 'null');
+    if (kept && AID_RE.test(kept.id) && /^\d{4}-\d{2}-\d{2}$/.test(kept.born) && ageDays(kept.born) >= 0 && ageDays(kept.born) < AID_LIFE_DAYS) return kept.id;
+    const b = new Uint8Array(16);
+    globalThis.crypto.getRandomValues(b);
+    const id = Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
+    globalThis.localStorage.setItem(AID_KEY, JSON.stringify({ id, born: today() }));
+    return JSON.parse(globalThis.localStorage.getItem(AID_KEY)).id === id ? id : null;
+  } catch { return null; }
+}
+
+/** The next visit's number on this phone (1, 2, …); 0 when storage refuses it. */
+function nextVisit() {
+  try {
+    const n = (Number.parseInt(globalThis.localStorage?.getItem(SESS_KEY) || '0', 10) || 0) + 1;
+    globalThis.localStorage.setItem(SESS_KEY, String(n));
+    return n;
+  } catch { return 0; }
+}
 
 /** True when an event would be sent now. */
 export const eventsActive = () => eventsConfigured() && !browserRefuses() && !offThisVisit && !countingOff();
@@ -80,8 +127,13 @@ export function track(event, props = {}) {
   if (allowed.includes('durationBucket') && props?.durationBucket) e.durationBucket = props.durationBucket;
   e.appVersion = appVersion() || '0.0.0';
   e.lang = uiLang;
+  const alone = AGGREGATE_ONLY.includes(event);
+  if (!alone && aid) e.seq = seq;
   if (!validEvent(e) || sent >= MAX_PER_PAGE) return false;
   sent += 1;
+  // The kiné path leaves at once, alone, with no id, visit or step: it is counted in the daily totals only.
+  if (alone) { post(JSON.stringify({ events: [e] })); return true; }
+  if (aid) seq += 1;
   queue.push(e);
   if (queue.length >= MAX_BATCH) flushEvents();
   else if (!timer) timer = setTimeout(flushEvents, FLUSH_MS);
@@ -92,7 +144,7 @@ export function track(event, props = {}) {
 export function flushEvents() {
   clearTimeout(timer);
   timer = 0;
-  while (queue.length) post(JSON.stringify({ events: queue.splice(0, MAX_BATCH) }));
+  while (queue.length) post(JSON.stringify({ events: queue.splice(0, MAX_BATCH), ...(aid && sess ? { aid, sess } : {}) }));
 }
 
 // Whether this browser's fetch can outlive the page (keepalive): Safari and Chrome for years, Firefox since 133.
@@ -128,6 +180,10 @@ export function startEvents(now = () => globalThis.performance?.now?.() ?? Date.
   if (started || !eventsActive()) return;
   started = true;
   const t0 = now();
+  aid = phoneId();
+  sess = aid ? nextVisit() : 0;
+  if (!sess) aid = null;
+  seq = 0;
   if (uiLang) track('open'); else openPending = true;
   let ended = false;
   globalThis.addEventListener?.('pagehide', () => {
