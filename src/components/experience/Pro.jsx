@@ -10,12 +10,14 @@ import {
 import { MAX_DRAFTS, isEmptyDraft, loadDrafts, saveDraft, removeDraft, newDraft, newItem, createFromTemplate } from './programme-store';
 import { useCondensingTopbar } from './topbar';
 import { showUnmeasuredRoutes } from '../../lib/buildFlags';
+import { lazyScreen } from '../../lib/lazyScreen';
 // The form's fields are the report's (Report.css: .field), so the two forms read alike.
 import './Report.css';
 import './Pro.css';
 
 const ExerciseList = lazy(() => import('./ExerciseList'));
 const CoachSuite = lazy(() => import('../coaches/CoachSuite'));
+const Programme = lazyScreen(() => import('./Programme.jsx'));
 
 // The programme's PDF (jsPDF and the app's fonts) loads apart, once, as the report's does (Report.jsx), and is warmed
 // as soon as a programme is open, so the share happens within the tap.
@@ -58,6 +60,7 @@ export default function Pro({ onClose, start = null }) {
   // 10 October 2026).
   const rebuiltId = start?.rebuilt ? start.draft.id : null;
   const [picking, setPicking] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
   // The "Pour" field takes focus in a copy made for another client.
   const [focusWho, setFocusWho] = useState(false);
   const open = drafts.find(d => d.id === openId) || null;
@@ -77,15 +80,16 @@ export default function Pro({ onClose, start = null }) {
   };
   // A draft opened says whether it is kept (a copy refused as 'full' says so again); the list asks nothing.
   const show = id => {
-    setFocusWho(false); setOpenId(id);
+    setPreviewing(false); setFocusWho(false); setOpenId(id);
     const d = drafts.find(x => x.id === id);
     if (d && !isEmptyDraft(d)) setKept(saveDraft(d));
   };
-  const create = () => { const d = newDraft(); setDrafts(list => [d, ...list]); setKept(true); setFocusWho(false); setOpenId(d.id); };
+  const create = () => { const d = newDraft(); setDrafts(list => [d, ...list]); setKept(true); setPreviewing(false); setFocusWho(false); setOpenId(d.id); };
   const createTemplate = templateId => {
     const d = createFromTemplate(templateId);
     setDrafts(list => [d, ...list]);
     setKept(saveDraft(d));
+    setPreviewing(false);
     setFocusWho(false);
     setOpenId(d.id);
   };
@@ -94,9 +98,9 @@ export default function Pro({ onClose, start = null }) {
     removeDraft(id);
     const stored = new Set(loadDrafts().map(d => d.id)), left = drafts.filter(d => d.id !== id);
     for (const d of left) if (!stored.has(d.id) && !isEmptyDraft(d)) saveDraft(d);
-    setDrafts(left); setFocusWho(false); setOpenId(null); setKept(true);
+    setDrafts(left); setPreviewing(false); setFocusWho(false); setOpenId(null); setKept(true);
   };
-  const back = () => (open && isEmptyDraft(open) ? remove(open.id) : (setFocusWho(false), setOpenId(null)));
+  const back = () => { setPreviewing(false); return open && isEmptyDraft(open) ? remove(open.id) : (setFocusWho(false), setOpenId(null)); };
   // The same programme for another client: title, exercises, cues and note, "Pour" left empty.
   const duplicate = () => { const d = { ...open, id: newDraft().id, who: '' }; update(d); setOpenId(d.id); setFocusWho(true); };
 
@@ -104,6 +108,10 @@ export default function Pro({ onClose, start = null }) {
     if (open.items.length < LIMITS.items) update({ ...open, items: [...open.items, newItem(key)] });
     setPicking(false);
   }} />;
+  const openPreview = open && previewing ? programmeOf(open) : null;
+  if (openPreview) return <Suspense fallback={<div className="wv-experience" aria-busy="true"><section className="screen is-active pro-screen programme-screen"><div className="wrap"><div className="topbar"><button className="icon-btn press" onClick={() => setPreviewing(false)} aria-label={c.back}><BackIcon /></button><span className="pill">{c.previewPill}</span></div><p className="pro-status" role="status">{c.previewBusy}</p></div></section></div>}>
+    <Programme preview={openPreview} onClose={() => setPreviewing(false)} />
+  </Suspense>;
   // "Ajouter au programme" from the strengthening tab (CoachSuite.jsx): the exercise joins the programme it opened
   // earlier in this visit while it is still there and has room, rather than a new programme at every tap (PHY-1).
   // Title: French awaiting David's approval (R10).
@@ -124,7 +132,7 @@ export default function Pro({ onClose, start = null }) {
     setOpenId(d.id);
   };
 
-  if (open) return <Editor key={open.id} c={c} fr={fr} lang={lang} draft={open} kept={kept} rebuilt={open.id === rebuiltId} focusWho={focusWho} onChange={update} onPick={() => { setFocusWho(false); setPicking(true); }} onBack={back} onDuplicate={duplicate} onDelete={() => remove(open.id)} />;
+  if (open) return <Editor key={open.id} c={c} fr={fr} lang={lang} draft={open} kept={kept} rebuilt={open.id === rebuiltId} focusWho={focusWho} onChange={update} onPick={() => { setFocusWho(false); setPicking(true); }} onPreview={() => setPreviewing(true)} onBack={back} onDuplicate={duplicate} onDelete={() => remove(open.id)} />;
   return <List c={c} fr={fr} drafts={drafts.filter(d => !isEmptyDraft(d))} onClose={onClose} onCreate={create} onTemplate={createTemplate} onOpen={show} proTab={proTab} onSetProTab={setProTab} onAddPhysio={handleAddPhysio} />;
 }
 
@@ -178,6 +186,7 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, on
           </div>
           <div className="pro-templates" data-reveal style={{ '--i': 2.5 }}>
             <h2 className="section-head">{c.templatesHead}</h2>
+            <p className="pro-templates-note" data-testid="pro-templates-note">{c.templatesNote}</p>
             <div className="pro-template-grid">
               <button type="button" className="pro-template-card press" onClick={() => onTemplate('posture')} data-testid="template-posture">
                 <span className="row-txt"><b>{c.templatePosture}</b><small>{c.templatePostureSub}</small></span>
@@ -236,7 +245,7 @@ function Choice({ id, label, value, options, onChange }) {
   </div>;
 }
 
-function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, onChange, onPick, onBack, onDuplicate, onDelete }) {
+function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, onChange, onPick, onPreview, onBack, onDuplicate, onDelete }) {
   const screenRef = useRef(null), whoRef = useRef(null);
   useEffect(() => { if (focusWho) whoRef.current?.focus({ preventScroll: false }); }, [focusWho]);
   // The bar's small title follows the programme's title as it is typed.
@@ -249,8 +258,16 @@ function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, o
   const [confirm, setConfirm] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState('');
+  const [previewShape, setPreviewShape] = useState(null);
+  const mountedRef = useRef(true), previewTicketRef = useRef(0), shapeRef = useRef('');
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
   const noteTimer = useRef(0), shareAt = useRef({ pdf: -Infinity, link: -Infinity });
   const programme = programmeOf(draft), shape = programme ? JSON.stringify(programme) : '';
+  const previewBusy = Boolean(shape) && previewShape === shape;
+  useEffect(() => { previewTicketRef.current++; shapeRef.current = shape; }, [shape]);
   // The link is the programme's as it stands, made in the render itself (the plain form), so the tap shares it at once
   // (Safari shares only from the tap itself); the packed form, shorter, takes its place once made. 8 October 2026: on
   // David's iPhone, a number typed, then "Share the link" said "The link could not be prepared": leaving the field
@@ -371,6 +388,19 @@ function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, o
     }
   }
 
+  function openPreview() {
+    if (!programme) { say(c.needs); return; }
+    if (Programme.loaded()) { onPreview(); return; }
+    const ticket = ++previewTicketRef.current;
+    setPreviewShape(shape);
+    Programme.warm().then(() => {
+      if (!mountedRef.current || ticket !== previewTicketRef.current) return;
+      setPreviewShape(null);
+      if (Programme.loaded() && shapeRef.current) onPreview();
+      else if (!Programme.loaded()) say(c.previewError);
+    });
+  }
+
   return <div className="wv-experience">
     <section ref={screenRef} className="screen is-active pro-screen pro-edit" data-testid="pro-editor"><div className="wrap">
       <div className="topbar">
@@ -472,6 +502,9 @@ function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, o
           </button>
           <button type="button" className="btn-ghost press pro-copy" aria-disabled={!linkReady || undefined} onClick={copy} data-testid="pro-copy">{c.copyLink}</button>
         </div>
+        <button type="button" className={`btn-ghost press${previewBusy ? ' is-busy' : ''}`} aria-disabled={!programme || previewBusy || undefined} onClick={openPreview} data-testid="pro-preview">
+          <span>{previewBusy ? c.previewBusy : c.previewClient}</span>
+        </button>
         {showLink && linkReady && <div className="field">
           <label htmlFor="pLink">{c.linkLabel}</label>
           <input id="pLink" type="text" readOnly value={link} onFocus={e => e.currentTarget.select()} />

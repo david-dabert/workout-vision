@@ -103,8 +103,9 @@
 .wv-experience .pro-paste { margin-top: var(--s-5); }
 .wv-experience .pro-paste .btn-line { margin-top: var(--s-2); }
 
-/* Recommended templates for coaches and physical preparators */
+/* Starter examples to adapt for coaches and physical preparators */
 .wv-experience .pro-templates { margin-top: var(--s-5); }
+.wv-experience .pro-templates-note { margin: var(--s-1) 0 0; font-size: var(--fs-caption); line-height: 1.45; color: var(--c-fg-muted); text-wrap: pretty; }
 .wv-experience .pro-template-grid { display: flex; flex-direction: column; gap: var(--s-2); margin-top: var(--s-2); }
 .wv-experience .pro-template-card {
   width: 100%; display: flex; align-items: center; justify-content: space-between; gap: var(--s-3);
