@@ -10,18 +10,25 @@
 // to tell "the tolerance is wrong" from "the measure carries no signal".
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { buildReference, compareAttempt } from '../../../src/lib/reference/compare.js';
+import {
+  buildReference,
+  compareAttempt,
+  DEFAULT_SHORTFALL_WEIGHT,
+  rangeWeightedScore,
+  weightedRangeShortfall,
+} from '../../../src/lib/reference/compare.js';
 
 const DIR = join(process.env.IRDS_DIR ?? '', 'SkeletonData', 'Simplified');
 const FPS = 30; // Kinect v2 skeleton stream (IntelliRehabDS paper); compare.js takes timestamps in seconds
-// Kinect v2 joints to the MediaPipe indices compare.js reads: shoulders, elbows, wrists, hips.
-const MAP = { 11: 4, 13: 5, 15: 6, 12: 8, 14: 9, 16: 10, 23: 12, 24: 16 };
+// Kinect v2 joints to the MediaPipe indices compare.js reads: shoulders, elbows, wrists, hips, plus opt-in knees & ankles.
+const BASE_MAP = { 11: 4, 13: 5, 15: 6, 12: 8, 14: 9, 16: 10, 23: 12, 24: 16 };
+const LEG_MAP = { ...BASE_MAP, 25: 13, 27: 14, 26: 17, 28: 18 };
 
-function landmarksOf(text) {
+function landmarksOf(text, map) {
   return text.trim().split('\n').map(line => {
     const v = line.split(',').map(Number);
     const frame = Array.from({ length: 33 }, () => ({ x: 0, y: 0, z: 0, visibility: 0 }));
-    for (const [mp, k] of Object.entries(MAP)) frame[mp] = { x: v[3 * k], y: -v[3 * k + 1], z: v[3 * k + 2], visibility: 1 };
+    for (const [mp, k] of Object.entries(map)) frame[mp] = { x: v[3 * k], y: -v[3 * k + 1], z: v[3 * k + 2], visibility: 1 };
     return frame;
   });
 }
@@ -34,19 +41,38 @@ const groups = new Map();
 for (const x of files) { const k = `${x.subject}|${x.gesture}|${x.position}`; (groups.get(k) ?? groups.set(k, []).get(k)).push(x); }
 
 const rows = [];
+const labRows = [];
 for (const list of groups.values()) {
   list.sort((a, b) => a.rep - b.rep);
   const ref = list.find(x => x.correct);
   if (!ref) continue;
-  const rl = landmarksOf(readFileSync(join(DIR, ref.f), 'utf8'));
-  const reference = buildReference(rl, rl.map((_, i) => i / FPS));
+  const refText = readFileSync(join(DIR, ref.f), 'utf8');
+  const rl = landmarksOf(refText, BASE_MAP);
+  const rlAll = landmarksOf(refText, LEG_MAP);
+  const rts = rl.map((_, i) => i / FPS);
+  const reference = buildReference(rl, rts);
+  const refLab = buildReference(rlAll, rts, { includeLegs: true });
   for (const a of list) {
     if (a === ref) continue;
-    const al = landmarksOf(readFileSync(join(DIR, a.f), 'utf8'));
-    const r = compareAttempt(reference, al, al.map((_, i) => i / FPS));
+    const attText = readFileSync(join(DIR, a.f), 'utf8');
+    const al = landmarksOf(attText, BASE_MAP);
+    const alAll = landmarksOf(attText, LEG_MAP);
+    const ats = al.map((_, i) => i / FPS);
+    const r = compareAttempt(reference, al, ats);
     const moving = (r.joints ?? []).filter(j => j.kind === 'moving' || j.within != null);
     const score = moving.length ? Math.min(...moving.map(j => j.within ?? 1)) : null;
     rows.push({ subject: a.subject, gesture: a.gesture, correct: a.correct, verdict: r.verdict, score });
+
+    const rLab = compareAttempt(refLab, alAll, ats, { includeLegs: true, rangeWeighted: true });
+    labRows.push({
+      subject: a.subject,
+      gesture: a.gesture,
+      correct: a.correct,
+      verdict: rLab.verdict,
+      cost: rLab.cost ?? null,
+      score: rangeWeightedScore(refLab, rLab, DEFAULT_SHORTFALL_WEIGHT),
+      shortfall: weightedRangeShortfall(refLab, rLab),
+    });
   }
 }
 
@@ -66,19 +92,21 @@ function boot(rs, B = 1000) {
   ks.sort((a, b) => a - b);
   return [ks[Math.floor(0.025 * ks.length)], ks[Math.floor(0.975 * ks.length)]];
 }
-function auc(rs) {
+function auc(rs, higherBetter = true) {
   const s = rs.filter(r => r.score != null), pos = s.filter(r => r.correct).map(r => r.score), neg = s.filter(r => !r.correct).map(r => r.score);
   if (!pos.length || !neg.length) return NaN;
-  let w = 0; for (const p of pos) for (const q of neg) w += p > q ? 1 : p === q ? 0.5 : 0;
+  let w = 0;
+  for (const p of pos) for (const q of neg) w += higherBetter ? (p > q ? 1 : p === q ? 0.5 : 0) : (p < q ? 1 : p === q ? 0.5 : 0);
   return w / (pos.length * neg.length);
 }
-const line = (name, rs) => {
+const line = (name, rs, higherBetter = true) => {
   const j = rs.filter(r => r.verdict !== 'refused');
   const tp = j.filter(r => !r.correct && r.verdict === 'revise').length, inc = j.filter(r => !r.correct).length;
   const fp = j.filter(r => r.correct && r.verdict === 'revise').length, cor = j.filter(r => r.correct).length;
   const [lo, hi] = boot(rs);
   return `${name}: attempts ${rs.length}, refused ${rs.length - j.length}; judged ${j.length} (correct ${cor}, incorrect ${inc}); ` +
-    `"À revoir" on incorrect ${tp}/${inc}, on correct ${fp}/${cor}; kappa ${kappa(rs).toFixed(2)} [${lo?.toFixed(2)}, ${hi?.toFixed(2)}]; ideal-threshold AUC ${auc(rs).toFixed(2)}`;
+    `"À revoir" on incorrect ${tp}/${inc}, on correct ${fp}/${cor} (${cor ? ((100 * fp) / cor).toFixed(1) : 'NaN'}%); ` +
+    `kappa ${kappa(rs).toFixed(2)} [${lo?.toFixed(2)}, ${hi?.toFixed(2)}]; ideal-threshold AUC ${auc(rs, higherBetter).toFixed(2)}`;
 };
 console.log(line('All movements', rows));
 for (const g of [...new Set(rows.map(r => r.gesture))].sort()) console.log('  ' + line(`movement ${g}`, rows.filter(r => r.gesture === g)));
@@ -95,3 +123,66 @@ let best = { t: 0, k: -1 };
 for (let t = 0; t <= 1.0001; t += 0.02) { const k = kappa(at(build, t)); if (k > best.k) best = { t, k }; }
 console.log(`\nTolerance set on the build half (${build.length} attempts, ${people.length / 2} people): threshold ${best.t.toFixed(2)}, kappa there ${best.k.toFixed(2)}`);
 console.log(line('Judged half, once, at that threshold', at(judged, best.t)));
+
+// Step 3 (Task 9): strict leave-one-person-out (LOSO) over all 30 people, comparing shipped `min(within)` vs
+// lab range-weighted DTW + range shortfall with opt-in leg joints (`includeLegs: true, rangeWeighted: true`).
+function loso(rs, scoreFn, grid, higherBetter) {
+  const oof = [];
+  for (const s of people) {
+    const train = rs.filter(r => r.subject !== s && scoreFn(r) != null);
+    let bestT = grid[0], bestK = -1;
+    for (const t of grid) {
+      const k = kappa(train.map(r => ({ ...r, verdict: (higherBetter ? scoreFn(r) >= t : scoreFn(r) <= t) ? 'match' : 'revise' })));
+      if (k > bestK) { bestK = k; bestT = t; }
+    }
+    for (const r of rs.filter(r => r.subject === s)) {
+      const v = scoreFn(r);
+      oof.push({ ...r, verdict: v == null ? 'refused' : (higherBetter ? v >= bestT : v <= bestT) ? 'match' : 'revise' });
+    }
+  }
+  return oof;
+}
+
+const shippedLoso = loso(rows, r => r.score, Array.from({ length: 51 }, (_, i) => i * 0.02), true);
+console.log('\n' + line('Shipped LOSO (min within, no leg joints)', shippedLoso));
+
+const labScoreGrid = Array.from({ length: 61 }, (_, i) => 5 + i * 0.5);
+const labLoso = loso(labRows, r => r.score, labScoreGrid, false);
+console.log(line(`Lab LOSO (includeLegs + rangeWeighted DTW + ${DEFAULT_SHORTFALL_WEIGHT}*shortfall)`, labLoso, false));
+for (const g of [...new Set(labLoso.map(r => r.gesture))].sort()) console.log('  ' + line(`movement ${g}`, labLoso.filter(r => r.gesture === g), false));
+
+// Nested LOSO: fits both shortfall weight and threshold strictly inside each 29-person training fold.
+const nestedOof = [];
+for (const s of people) {
+  const train = labRows.filter(r => r.subject !== s && r.cost != null && r.shortfall != null);
+  let bestK = -1, bestW = DEFAULT_SHORTFALL_WEIGHT, bestT = 20;
+  for (const w of [0, 5, 10, 15, 20, 25, 30, 40]) {
+    for (const t of labScoreGrid) {
+      const k = kappa(train.map(r => ({ ...r, verdict: (r.cost + w * r.shortfall) <= t ? 'match' : 'revise' })));
+      if (k > bestK) { bestK = k; bestW = w; bestT = t; }
+    }
+  }
+  for (const r of labRows.filter(r => r.subject === s)) {
+    const v = r.cost != null && r.shortfall != null ? r.cost + bestW * r.shortfall : null;
+    nestedOof.push({ ...r, score: v, verdict: v == null ? 'refused' : v <= bestT ? 'match' : 'revise' });
+  }
+}
+console.log(line('Lab Nested LOSO (weight + threshold fit per fold)', nestedOof, false));
+
+// Shuffled-within-person baseline check (Card 063 Eval step 3).
+let shufSeed = 190;
+const nextRnd = () => ((shufSeed = (shufSeed * 1103515245 + 12345) % 2147483648) / 2147483648);
+const shuffled = [];
+for (const s of people) {
+  const sub = nestedOof.filter(r => r.subject === s);
+  const labels = sub.map(r => r.correct);
+  for (let i = labels.length - 1; i > 0; i--) { const j = Math.floor(nextRnd() * (i + 1)); [labels[i], labels[j]] = [labels[j], labels[i]]; }
+  sub.forEach((r, i) => shuffled.push({ ...r, correct: labels[i] }));
+}
+console.log(`Within-person shuffled control kappa: ${kappa(shuffled).toFixed(2)}`);
+
+const [nestedLo] = boot(nestedOof);
+const nestedJudged = nestedOof.filter(r => r.verdict !== 'refused');
+const nestedCorrectJudged = nestedJudged.filter(r => r.correct);
+const nestedFpRate = nestedCorrectJudged.length ? nestedCorrectJudged.filter(r => r.verdict === 'revise').length / nestedCorrectJudged.length : NaN;
+console.log(`Gate check (nested LOSO): kappa=${kappa(nestedOof).toFixed(2)} (>=0.53), fp=${(100 * nestedFpRate).toFixed(1)}% (<=6%), lowerBound=${nestedLo.toFixed(2)} (${nestedLo >= 0.4 ? 'PASS >=0.40' : 'HOLD <0.40: kineJudged stays false'})`);
