@@ -286,8 +286,9 @@
 .wv-experience .surface-glass { border-radius: var(--r-l); border: 1px solid var(--c-rule); background: rgba(20, 17, 13, 0.56); -webkit-backdrop-filter: blur(22px) saturate(1.15); backdrop-filter: blur(22px) saturate(1.15); }
 .no-glass .wv-experience .surface-glass { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(20, 17, 13, 0.9); }
 .wv-experience .surface-card { border-radius: var(--r-l); border: 1px solid var(--c-rule); padding: 18px 20px; }
-/* Numbers that move like instruments: each digit in a cell of its own; only the digit that changes rolls in. */
-.wv-experience .dg { display: inline-block; width: 0.52em; text-align: center; animation: dg-in var(--d-tick) var(--ease); }
+/* Numbers that move like instruments: each digit in a cell of its own; only the digit that changes rolls in.
+   Geist tabular digits are ~0.64em wide; 0.52em clipped "0".."9" against their cell boxes and overlapped ":" and neighbours. */
+.wv-experience .dg { display: inline-block; width: max(0.68em, 1ch); text-align: center; animation: dg-in var(--d-tick) var(--ease); }
 .wv-experience .dg.is-sep { width: auto; animation: none; }
 @keyframes dg-in { from { translate: 0 0.35em; opacity: 0; } }
 /* A count's word under its numeral, and the numeral's tick: shared by the result and the entry's example. */

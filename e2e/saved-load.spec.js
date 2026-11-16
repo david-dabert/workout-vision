@@ -51,14 +51,15 @@ test('card 032: entering 60 kg once saved updates history, record by load and CS
   await page.waitForTimeout(400);
 
   await page.screenshot({ path: testInfo.outputPath('saved-without-load.png') });
-  const keepFault = f => !f.startsWith('note: ') && !/^text (runs out of its box: "0"|overlaps text: "0" and (":"|"0"))$/.test(f);
+  const keepFault = f => !f.startsWith('note: ');
   expect((await page.evaluate(layoutFaults)).filter(keepFault)).toEqual([]);
 
   await page.getByTestId('saved-load-input').fill('60');
   await page.getByTestId('saved-load-save').click();
   await expect(page.getByTestId('saved-load-status')).toContainText('60');
   await page.getByTestId('saved-load').scrollIntoViewIfNeeded();
-  await page.waitForTimeout(200);
+  // Wait for the rest clock's first second tick so layoutFaults always checks changed digits (e.g. 0:01) too.
+  await expect(page.getByTestId('rest-clock')).not.toContainText('0:00');
   await page.screenshot({ path: testInfo.outputPath('saved-with-load.png') });
   expect((await page.evaluate(layoutFaults)).filter(keepFault)).toEqual([]);
 

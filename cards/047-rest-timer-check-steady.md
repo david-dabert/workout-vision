@@ -1,5 +1,5 @@
 # 047. The saved-load browser test passes on its first run, every run
-Status: ready
+Status: done
 Executor: fast (Antigravity)
 Phase: 1 (a defect of the gate itself)
 Claim: `e2e/saved-load.spec.js` gives the same verdict on every run of the same commit, so a red CI run always means a real fault.
