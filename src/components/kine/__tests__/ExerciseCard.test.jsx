@@ -36,7 +36,12 @@ describe('ExerciseCard Media and Guided Protocol Rendering', () => {
     expect(html).not.toContain('class="kn-video"');
     expect(html).toContain('kn-video-placeholder');
     expect(html).toContain('Protocole guidé');
-    expect(html).toContain('Cible\u00A0: 35° à 40°');
+    // Card 043: no target angle without a source (R9) in production; it stays in the extended build.
+    expect(html).not.toContain('Cible');
+    vi.stubEnv('VITE_EXTENDED_ROUTES', '1');
+    vi.resetModules();
+    const { default: Extended } = await import('../ExerciseCard');
+    expect(renderToStaticMarkup(<Extended ex={ex} fr={true} k={kFr} />)).toContain('Cible\u00A0: 35° à 40°');
   });
 
   it('renders all four Olivier exercises with videos and all mobility screens with protocol badges', async () => {
