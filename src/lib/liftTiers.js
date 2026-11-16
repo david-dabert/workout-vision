@@ -13,10 +13,9 @@ export const TIERS = {
   lat_pulldown: 'beta',
   squat: 'beta',
   bench_press: 'experimental',
-  // 18 October: beta again. All three of David's sets count exactly once a last rep the video stops at its working
-  // end counts (core.ts TAIL_AT_WORK_SEC; set02_hip_thrust_7 now 7). 6 October: experimental, set02 read 6 for 7.
-  // Beta from 3 to 6 October on the one set.
-  hip_thrust: 'beta',
+  // 16 November 2026 (#190 handoff Task 7): experimental again until David's iPhone counts 12 (14 Nov field report: 1 for 12
+  // on 370 frames; TRIED.md). Beta previously on stored sets once TAIL_AT_WORK_SEC shipped (18 Oct).
+  hip_thrust: 'experimental',
   // 3 October: beta. sets-29sep/romanian_deadlift_8 counts 8 for 8, its only set (scoreboard.txt).
   romanian_deadlift: 'beta',
   // 3 October: sets-29sep/leg_press_13 counts 13 for 13 since the first-return rule (HEAD_RETURN_SHARE, core.ts;
