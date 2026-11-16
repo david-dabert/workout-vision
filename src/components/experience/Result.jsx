@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useId } from 'react';
 import { useT } from '../../lib/LanguageContext';
-import { exerciseName, filmView } from './exercise-info';
+import { exerciseName } from './exercise-info';
+import { exerciseView } from './filming-guide';
+import { getExercise } from '../../lib/exercises/index';
 import { saveWorkout } from '../../lib/storage';
 import { askToKeep } from '../../lib/keep-sets';
 import { contribution, contributeAsks, keepContribution, markContributeAsked, readChoice, shouldAskContribute } from '../../lib/contribute';
@@ -178,6 +180,9 @@ const OFFER_BODY_SECOND = false;
 
 // blind: the count the person gave before the app showed its own (blind.js, CoreUpload.jsx), as { count, p }; count null
 // for "Je ne sais pas". Absent when the set was not asked.
+// Shared with Film (filming-guide.js, card 045): saves the same view Film asked for, even on 253 front-view catalogue variants.
+export const collectedView = lift => exerciseView(lift, typeof lift === 'string' ? getExercise(lift)?.counting_key : null);
+
 export default function Result({ result, lift, videoFile = null, covered, onClose, onReport, onReplay, onNewSet, onChangeLift = onClose, onRefilm, onSaved = () => {}, liveShown = null, planned = null, blind = null }) {
   const { lang } = useT(), fr = lang === 'fr';
   const reduced = useRef(REDUCED()).current;
@@ -588,7 +593,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       // and accuracy/sets.ts hold every file without one). Never sent from here; never awaited, so a failure does not
       // touch the save.
       if ((!manual || !result.notRead) && corrected !== null && videoFile && collectOn()) {
-        holdWhile(collectThisSet({ result, lift, kept: n, view: filmView(lift), videoFile, version: appVersion(), blind, choice, typed: manual && blindN === null }))
+        holdWhile(collectThisSet({ result, lift, kept: n, view: collectedView(lift), videoFile, version: appVersion(), blind, choice, typed: manual && blindN === null }))
           .catch(e => console.warn('[collecte] this set could not be kept', e));
       }
       // The sets were never read: read them now, the one just saved first, and count the others.
