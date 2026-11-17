@@ -122,8 +122,12 @@ export const PEAK_MIN_FRAME_GAP = 3;
 // poseAnalysis.js : ghost pose decay
 // ---------------------------------------------------------------------------
 
+// Reduced from 5 to 2. At 30fps, 5 ghost frames = 167ms of stale landmark plateau.
+// interpolateOccludedLandmarks treats undecayed ghost frames as valid landmarks,
+// creating a flat plateau in the angle signal that shifts valley positions ±2 frames.
+// At 2 frames (67ms), the plateau falls below the 9-frame smoothing window : invisible.
 /** Consecutive ghost frames before visibility starts decaying */
-export const GHOST_DECAY_START = 5;
+export const GHOST_DECAY_START = 2;
 
 /** Visibility decay rate per ghost frame beyond GHOST_DECAY_START */
 export const GHOST_DECAY_RATE = 0.20;
@@ -237,39 +241,6 @@ export const REP_PERIOD_BOUNDS: Record<string, PeriodBound> = {
   leg_extension:     { min: 0.8, max: 4.0 },
   leg_curl:          { min: 0.8, max: 4.0 },
   calf_raise:        { min: 0.5, max: 3.0 },
-  hip_thrust:        { min: 1.0, max: 4.0 },
-  glute_bridge:      { min: 0.8, max: 3.5 },
-  dip:               { min: 0.8, max: 4.0 },
-  seated_row:        { min: 0.8, max: 4.0 },
-  lat_pulldown:      { min: 0.8, max: 4.0 },
-  face_pull:         { min: 0.8, max: 3.5 },
-  cable_fly:         { min: 0.8, max: 4.0 },
-  dumbbell_fly:      { min: 0.8, max: 4.0 },
-  shrug:             { min: 0.5, max: 3.0 },
-  dumbbell_shrug:    { min: 0.5, max: 3.0 },
-  cable_shrug:       { min: 0.5, max: 3.0 },
-  incline_bench_press: { min: 0.7, max: 4.0 },
-  decline_bench_press: { min: 0.7, max: 4.0 },
-  close_grip_bench:  { min: 0.7, max: 4.0 },
-  kettlebell_swing:  { min: 0.4, max: 2.0 },
-  burpee:            { min: 1.5, max: 5.0 },
-  mountain_climber:  { min: 0.2, max: 1.5 },
-  jumping_jack:      { min: 0.3, max: 2.0 },
-  box_jump:          { min: 1.0, max: 4.0 },
-  thruster:          { min: 1.0, max: 4.0 },
-  sumo_deadlift:     { min: 1.2, max: 5.0 },
-  hack_squat:        { min: 0.8, max: 4.0 },
-  bulgarian_split_squat: { min: 1.0, max: 4.0 },
-  diamond_push_up:   { min: 1.0, max: 4.0 },
-  wide_push_up:      { min: 1.0, max: 4.0 },
-  incline_push_up:   { min: 1.0, max: 4.0 },
-  decline_push_up:   { min: 1.0, max: 4.0 },
-  pike_push_up:      { min: 1.0, max: 4.0 },
-  chest_dip:         { min: 0.8, max: 4.0 },
-  bench_dip:         { min: 0.8, max: 4.0 },
-  cable_crunch:      { min: 0.5, max: 3.0 },
-  decline_crunch:    { min: 0.3, max: 3.0 },
-  bicycle_crunch:    { min: 0.3, max: 2.5 },
   _default:          { min: 0.6, max: 4.0 },
 };
 

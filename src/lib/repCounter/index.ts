@@ -799,7 +799,7 @@ export class RepCounter {
 
   /**
    * Exercise-specific rep period bounds in seconds.
-   * Delegates to centralized config in analysisConfig.js.
+   * Delegates to centralized config in analysisConfig.ts.
    */
   static _repPeriodBounds(exerciseKey: string): { min: number; max: number } {
     return getRepPeriodBounds(exerciseKey);

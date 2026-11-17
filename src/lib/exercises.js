@@ -23,7 +23,7 @@
 // preventing threshold crossing. This helper uses the side with better
 // landmark visibility, falling back safely when both are low-confidence.
 //
-// Unified visibility threshold from analysisConfig.js (0.55).
+// Unified visibility threshold from analysisConfig.ts (0.55).
 import { VISIBILITY_THRESHOLD } from './analysisConfig';
 const VIS_THRESHOLD = VISIBILITY_THRESHOLD;
 
