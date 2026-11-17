@@ -1,4 +1,4 @@
 {
   "note": "Files under src/components and src/lib that the five built pages do not reach (scripts/audit-reach.mjs). CI fails when the count rises above the base branch's value (PLAN.md, amendment of 15 November 2026, THE FREEZE). Lower it when files are removed or wired.",
-  "unreached": 126
+  "unreached": 125
 }
