@@ -24,7 +24,8 @@ import { referenceBand } from '../../lib/reference-ranges';
 import { waveAngles } from './wave';
 import { savedSet, parseLoadKg, formatLoadKg } from './saved-set';
 import { InstallSuggest } from './Install';
-import FirstWord from './FirstWord';
+import { installKind, shouldSuggestInstall } from '../../lib/install';
+import FirstWord, { FIRST_WORD_KEY } from './FirstWord';
 import BestSet from './BestSet';
 import { momentLine } from './moment';
 import { readLevel, writeLevel, levelAsked, markLevelAsked, shouldAskLevel, levelView, resultBlocks } from './level';
@@ -182,6 +183,25 @@ const OFFER_BODY_SECOND = false;
 // for "Je ne sais pas". Absent when the set was not asked.
 // Shared with Film (filming-guide.js, card 045): saves the same view Film asked for, even on 253 front-view catalogue variants.
 export const collectedView = lift => exerciseView(lift, typeof lift === 'string' ? getExercise(lift)?.counting_key : null);
+// In-memory session fallback when localStorage.setItem throws (e.g. QuotaExceededError / restricted WebView),
+// preventing a prompt from repeating forever and starving later prompts.
+const sessionAsked = { install: false, firstWord: 0, contribute: { asks: 0, at: 0 }, level: false };
+export function resetSessionPromptsForTest() {
+  sessionAsked.install = sessionAsked.level = false;
+  sessionAsked.firstWord = 0;
+  sessionAsked.contribute = { asks: 0, at: 0 };
+}
+
+// Card 053: decide the single post-save question on the saved card (install -> first-word -> contribute -> level).
+export function pickSavedQuestion({ refused, count, skipPrompts, canInstall, firstWordAsked, canContribute, canLevel }) {
+  if (skipPrompts || refused) return 'none';
+  if (canInstall && !sessionAsked.install) return 'install';
+  if (count > 0 && !firstWordAsked) return 'first-word';
+  if (canContribute) return 'contribute';
+  if (canLevel && !sessionAsked.level) return 'level';
+  return 'none';
+}
+
 // Bundled demo sets (Film.jsx handleSampleVideo, card 044) carry sample: true and never enter saved or #collecte sets.
 export const canSaveResult = result => !result?.sample;
 
@@ -487,18 +507,45 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
   const [view] = useState(() => levelView(readLevel()));
   const perRep = view.perRep && MEASURES_SHOWN ? { table: repTable({ reps, first: liftDefinition(lift)?.first, fr, corrected, doubted: flagged }), speed: SPEED_CHANGE_SHOWN ? speedChangeLine(reps, fr) : '' } : null;
   const table = perRep?.table, speedLine = perRep?.speed || '';
-  // The question on the level: offered once, after a saved set, when none is stored.
+  // Card 053: a saved set asks at most one question (priority: install -> first-word -> contribute -> level).
+  const [savedQuestion, setSavedQuestion] = useState(null);
+  const readFirstWordState = () => { try { return JSON.parse(localStorage.getItem(FIRST_WORD_KEY) || 'null'); } catch { return null; } };
+  const firstWordDone = () => {
+    const fw = readFirstWordState();
+    if (fw?.bother || fw?.skipped) return true;
+    const storedAsked = (() => { try { return Number(localStorage.getItem('wv_first_word_asked') || 0); } catch { return 0; } })();
+    const asks = Math.max(storedAsked, sessionAsked.firstWord);
+    // Allow one resume attempt if the user started by picking a goal without finishing botherQ.
+    if (fw?.goal) return asks >= 2;
+    return asks >= 1;
+  };
   const [levelBefore] = useState(() => ({ level: readLevel(), asked: levelAsked() }));
   const [chosen, setChosen] = useState('');
-  // A refused set typed by hand shows neither question, so neither is spent on it (review of 4 October).
-  const offerLevel = !isSample && !result.refused && shouldAskLevel({ step, ...levelBefore });
-  useEffect(() => { if (offerLevel) markLevelAsked(); }, [offerLevel]);
-  // Whether to help improve the count: asked on the saved card of the first set, and once more from the fifth when
-  // left unanswered, never after a yes or a no (contribute.js shouldAskContribute). Decided once the sets on the
-  // phone are read after the save; shown is asked.
   const [contributeAt, setContributeAt] = useState(null); // the sets on the phone when it is asked
-  const showContribute = !result.refused && step === 'saved' && contributeAt !== null;
-  useEffect(() => { if (showContribute) markContributeAsked(contributeAt); }, [showContribute]); // eslint-disable-line react-hooks/exhaustive-deps
+  const showContribute = !result.refused && step === 'saved' && savedQuestion === 'contribute' && contributeAt !== null;
+  useEffect(() => {
+    if (!showContribute) return;
+    if (!markContributeAsked(contributeAt)) {
+      const prev = contributeAsks();
+      const baseAsks = Math.max(prev.asks, sessionAsked.contribute.asks);
+      const baseAt = prev.asks > sessionAsked.contribute.asks ? prev.at : (sessionAsked.contribute.at || prev.at || contributeAt);
+      sessionAsked.contribute = { asks: baseAsks + 1, at: baseAt };
+    }
+  }, [showContribute]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (step !== 'saved') return;
+    if (savedQuestion === 'install') sessionAsked.install = true;
+    if (savedQuestion === 'level') {
+      sessionAsked.level = true;
+      markLevelAsked();
+    }
+    if (savedQuestion === 'first-word') {
+      const fw = readFirstWordState();
+      const next = fw?.goal ? 2 : 1;
+      sessionAsked.firstWord = Math.max(sessionAsked.firstWord, next);
+      try { localStorage.setItem('wv_first_word_asked', String(sessionAsked.firstWord)); } catch { /* ignore */ }
+    }
+  }, [step, savedQuestion]);
   // "Noted" only when the phone stored it (audit of 2 October); otherwise the screen says it was not kept.
   const [levelLost, setLevelLost] = useState(false);
   function chooseLevel(l) { setLevelLost(!writeLevel(l)); setChosen(l); }
@@ -561,7 +608,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       .then(() => true, e => { console.warn('[contribute] this set could not be kept', e); return false; });
   };
 
-  async function doSave(n, corrected, manual = false) {
+  async function doSave(n, corrected, manual = false, { skipPrompts = false } = {}) {
     if (!canSaveResult(result) || saving.current) return false;
     saving.current = true;
     // The rest begins at the first attempt to save; a retry leaves the clock as the user left it.
@@ -581,6 +628,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       }
       const savedResult = again ? { ...result, reps: again.reps, smoothedAngles: again.smoothedAngles, recount: { n, tuning: again.tuning } } : result;
       const kept = savedSet({ result: savedResult, lift, n, corrected, sides: again ? again.sides : sides, manual, planned, proposal, blind, choice });
+      const cachedBefore = knownSets();
       savedId.current = await saveWorkout(kept);
       setRemeasured(again);
       refreshSets();
@@ -604,10 +652,25 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
       }
       // The sets were never read: read them now, the one just saved first, and count the others.
       if (before === null) loadSets().then(l => setBefore(b => b ?? mine(l).slice(1)), () => {});
-      // The question on helping, from the number of sets now on the phone; unread, it is not asked.
-      if (contributeBuild()) loadSets().then(l => {
-        if (shouldAskContribute({ choice: readChoice(), ...contributeAsks(), saved: l.length })) setContributeAt(c => c ?? l.length);
-      }, () => {});
+      // Decide the single question allowed on the saved card (Card 053): install -> first-word -> contribute -> level.
+      // Fallback to cachedBefore + kept if loadSets() rejects, without dropping slow IndexedDB reads.
+      const fallbackSets = Array.isArray(cachedBefore) ? [...cachedBefore, kept] : null;
+      const allSaved = !skipPrompts && contributeBuild() && !result.refused
+        ? await loadSets().catch(() => fallbackSets)
+        : null;
+      const storedC = contributeAsks();
+      const cAsks = storedC.asks >= sessionAsked.contribute.asks ? storedC : sessionAsked.contribute;
+      const q = pickSavedQuestion({
+        refused: result.refused,
+        count,
+        skipPrompts,
+        canInstall: !skipPrompts && shouldSuggestInstall({ kind: installKind() }),
+        firstWordAsked: firstWordDone(),
+        canContribute: Boolean(allSaved && shouldAskContribute({ choice: readChoice(), ...cAsks, saved: allSaved.length })),
+        canLevel: Boolean(!isSample && shouldAskLevel({ step: 'saved', ...levelBefore })),
+      });
+      setSavedQuestion(q);
+      if (q === 'contribute') setContributeAt(allSaved.length);
       setSaveError(''); // a retry that saves takes back "not saved"
       if (!manual) track(isCorrected(n, count) ? 'result_corrected' : 'result_kept', { lift });
       setStep('saved');
@@ -640,7 +703,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
     }
     // A flagged set kept at one of the app's own numbers is a confirmed count, not a correction.
     // A refused set is kept as the person's own count, as its save key keeps it (WP1.6).
-    if (await doSave(step === 'fix' ? trueN : count, toCheck ? trueN !== count : step === 'fix', !!result.refused)) { setClosing(false); await released(); onClose(); }
+    if (await doSave(step === 'fix' ? trueN : count, toCheck ? trueN !== count : step === 'fix', !!result.refused, { skipPrompts: true })) { setClosing(false); await released(); onClose(); }
   }
   async function discardAndClose() {
     if (saving.current) return; // a save already under way finishes; the card stays until it does
@@ -1078,19 +1141,17 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
           <p className="share-note" role="status">{shareNote}</p>
           {/* Once, on the saved card of the first set saved where the app is not installed: how to install it (Install.jsx).
               After the confirmation, never before it. */}
-          <InstallSuggest fr={fr} />
-          {/* After the first saved set (and once more from the fifth): one quiet question, which nothing waits on. */}
+          {savedQuestion === 'install' && <InstallSuggest fr={fr} />}
           {showContribute && <ContributeAsk fr={fr} onYes={() => keepThis(trueN)} />}
-          {/* Once, after a saved set, when no level is stored. */}
-          {offerLevel && <div className="level-ask appear" data-testid="level-ask">
+          {savedQuestion === 'level' && <div className="level-ask appear" data-testid="level-ask">
             <p className="level-q" aria-hidden="true">{fr ? 'Pour adapter l’écran, quel est votre niveau ?' : 'To fit the screen to you, what is your level?'}</p>
             <LevelPick id="level-ask-label" quiet label={fr ? 'Pour adapter l’écran, quel est votre niveau ?' : 'To fit the screen to you, what is your level?'} value={chosen} onChange={chooseLevel} fr={fr} />
             {chosen && <p className="level-note" role="status">{levelLost
               ? (fr ? 'Votre niveau n’a pas pu être enregistré sur ce téléphone.' : 'Your level could not be saved on this phone.')
               : (fr ? 'C’est noté. L’écran s’adapte dès la prochaine série. Vous pouvez le changer dans Vos séries.' : 'Noted. The screen adapts from your next set. You can change it in Your sets.')}</p>}
           </div>}
-          {/* Card 010: after a saved set, the goal and what bothers the person, then one true word about the set. */}
-          {!result.refused && count > 0 && <FirstWord reps={reps} fr={fr} />}
+          {/* Card 010: after a saved set, the goal and what bothers the person, then one true word about the set (never stacked under another active question). */}
+          {!result.refused && count > 0 && (savedQuestion === 'first-word' || (savedQuestion === 'none' && Boolean(readFirstWordState()?.bother))) && <FirstWord reps={reps} fr={fr} />}
           {/* Card 011, lab lane (measures.js BEST_SET_SHOWN, off in production): today beside the best set. */}
           {BEST_SET_SHOWN && !result.refused && count > 0 && <BestSet before={before} reps={reps} count={trueN} fr={fr} first={liftDefinition(lift)?.first} />}
           {/* The profile quiz is offered once three sets are saved, not on the first result (11 November 2026), and only in

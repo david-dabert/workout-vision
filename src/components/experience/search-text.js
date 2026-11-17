@@ -17,3 +17,12 @@ export function searchMatch(text, query) {
   const words = Array.isArray(text) ? text : searchWords(text);
   return q.every(t => words.some(w => w.startsWith(t)));
 }
+
+// French muscle synonyms shared between Guide.jsx and ExerciseList.jsx so French searches find English muscle tags.
+export const MUSCLE_FR = Object.freeze({
+  Core: 'abdominaux abdos gainage', Glutes: 'fessiers', Shoulders: 'épaules deltoïdes', Hamstrings: 'ischios ischio-jambiers',
+  Triceps: 'triceps', Quads: 'quadriceps cuisses', Biceps: 'biceps', Chest: 'pectoraux pecs', Back: 'dos', Lats: 'dorsaux grand dorsal',
+  Forearms: 'avant-bras', 'Upper Back': 'haut du dos trapèzes', 'Rear Delts': 'deltoïdes postérieurs arrière d’épaule',
+  'Lower Back': 'lombaires bas du dos', Calves: 'mollets', 'Posterior Chain': 'chaîne postérieure', Grip: 'prise poigne',
+  Adductors: 'adducteurs', Legs: 'jambes',
+});

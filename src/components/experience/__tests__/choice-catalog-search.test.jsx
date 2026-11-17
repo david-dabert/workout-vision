@@ -58,17 +58,15 @@ describe('Choice screen Universal Catalog Search Entry', () => {
     vi.unstubAllGlobals();
   });
 
-  it('renders the universal catalog row button in French', () => {
+  it('renders the find-an-exercise row button in French', () => {
     const html = renderChoice('fr');
-    expect(html).toContain('data-testid="choice-catalog-search"');
-    expect(html).toContain('Catalogue universel');
-    expect(html).toContain('183 exercices et mouvements');
+    expect(html).toContain('data-testid="choice-find-exercise"');
+    expect(html).toContain('Trouver un exercice');
   });
 
-  it('renders the universal catalog row button in English', () => {
+  it('renders the find-an-exercise row button in English', () => {
     const html = renderChoice('en');
-    expect(html).toContain('data-testid="choice-catalog-search"');
-    expect(html).toContain('Universal catalog');
-    expect(html).toContain('183 exercises and movements');
+    expect(html).toContain('data-testid="choice-find-exercise"');
+    expect(html).toContain('Find an exercise');
   });
 });

@@ -37,8 +37,8 @@ function Choices({ id, label, options, fr, onPick }) {
 
 /** The two questions, then the word. `reps`: the saved set's reps as the result screen holds them. */
 export default function FirstWord({ reps, fr }) {
-  const [answers, setAnswers] = useState(read);
-  const [goal, setGoal] = useState(null);
+  const [answers, setAnswers] = useState(() => { const r = read(); return r?.bother || r?.skipped ? r : null; });
+  const [goal, setGoal] = useState(() => { const r = read(); return r && !r.bother && !r.skipped ? r.goal ?? null : null; });
   const save = v => { write(v); setAnswers(v); };
 
   if (!answers) {
@@ -46,7 +46,7 @@ export default function FirstWord({ reps, fr }) {
     const botherQ = fr ? 'Sur cet exercice, qu’est-ce qui vous gêne le plus\u00A0?' : 'On this exercise, what bothers you most?';
     return <div className="level-ask fw-ask appear" data-testid="first-word-ask">
       {goal === null
-        ? <><p className="level-q" aria-hidden="true">{goalQ}</p><Choices id="fw-goal" label={goalQ} options={GOALS} fr={fr} onPick={setGoal} /></>
+        ? <><p className="level-q" aria-hidden="true">{goalQ}</p><Choices id="fw-goal" label={goalQ} options={GOALS} fr={fr} onPick={g => { write({ goal: g }); setGoal(g); }} /></>
         : <><p className="level-q" aria-hidden="true">{botherQ}</p><Choices id="fw-bother" label={botherQ} options={BOTHERS} fr={fr} onPick={b => save({ goal, bother: b })} /></>}
       <button type="button" className="text-btn press fw-skip" onClick={() => save({ skipped: true })} data-testid="first-word-skip">{fr ? 'Passer' : 'Skip'}</button>
     </div>;

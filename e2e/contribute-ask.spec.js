@@ -44,6 +44,7 @@ async function start(page, { choice = null } = {}) {
     localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', 'fr');
     localStorage.setItem('wv_level', 'intermediate'); localStorage.setItem('wv_film_mode', 'live');
     localStorage.setItem('wv_live_voice', 'off');
+    localStorage.setItem('wv_first_word', JSON.stringify({ skipped: true }));
     if (choice) localStorage.setItem('wv_contribute', choice);
   }, choice);
   return errors;

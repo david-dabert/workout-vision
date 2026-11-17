@@ -9,7 +9,14 @@
 // written in, as the phone's camera does), and a pose worker that answers each sample with the landmarks of David's
 // real biceps curl set (test/real-phone/landmarks, as contribute-ask.spec.js does for live counting).
 import { test, expect } from '@playwright/test';
-import { start, openFilm, saveSet, openHistory } from './shared/filmed-set.js';
+import { start as baseStart, openFilm, saveSet, openHistory } from './shared/filmed-set.js';
+
+// Card 053 asks at most one question per saved set; mark FirstWord handled so these flag tests isolate ContributeAsk.
+async function start(page, opts) {
+  const errors = await baseStart(page, opts);
+  await page.addInitScript(() => localStorage.setItem('wv_first_word', JSON.stringify({ skipped: true })));
+  return errors;
+}
 
 test.use({ serviceWorkers: 'block', viewport: { width: 390, height: 844 } });
 
