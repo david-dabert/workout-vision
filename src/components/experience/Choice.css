@@ -92,24 +92,26 @@
 .wv-experience .topbar .offline-badge svg { width: 11px; height: 11px; color: var(--lamp); flex-shrink: 0; }
 @media (max-width: 360px) { .wv-experience .topbar .offline-badge span { display: none; } }
 @media (max-height: 700px) {
-  .wv-experience .choose-screen { --reserve: 240px; }
+  .wv-experience .choose-screen { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--s-2)); }
   .wv-experience .choose-screen .title { margin-top: 8px; }
   .wv-experience .choose-screen .sub { margin-top: 6px; }
   .wv-experience .choose-screen.has-welcome .sub { display: none; }
   .wv-experience .welcome { margin-top: 4px; }
-  .wv-experience .rail { min-height: 220px; margin-top: 10px; }
+  .wv-experience .recents { margin-top: 6px; }
+  .wv-experience .rail { margin-top: 10px; }
   .wv-experience .altar-meta { padding: 4px 18px 14px; }
   .wv-experience .dots { margin-top: 6px; }
-  .wv-experience .row-link { margin-top: 4px; padding: 6px 2px; }
-  .wv-experience .ins-row { margin-top: var(--s-2); }
-  .wv-experience .choose-head { margin-top: var(--s-2); margin-bottom: 0; }
-  .wv-experience .foot { margin-top: var(--s-2); }
-  .wv-experience .choice-foot-links { margin-top: 2px; padding-bottom: 4px; }
+  .wv-experience .row-ico { width: 38px; height: 38px; }
+  .wv-experience .row-link { margin-top: 0; padding: 3px 2px; }
+  .wv-experience .ins-row { margin-top: var(--s-1); }
+  .wv-experience .choose-head { margin-top: var(--s-1); margin-bottom: 0; }
+  .wv-experience .foot, .wv-experience .usage-note { margin-top: var(--s-1); }
+  .wv-experience .choice-foot-links { margin-top: 0; padding-bottom: 0; }
 }
 /* Short screens (a 4.7-inch iPhone in Safari or in an app's browser): the heading gives the
    figure more room. */
 @media (max-height: 600px) {
-  .wv-experience .choose-screen .title { font-size: var(--fs-title-xs); margin-top: 10px; }
+  .wv-experience .choose-screen .title { font-size: var(--fs-title-xs); margin-top: 8px; }
   .wv-experience .choose-screen .sub { font-size: var(--fs-caption); line-height: 1.45; margin-top: 6px; }
   .wv-experience .welcome { margin-top: 4px; }
   .wv-experience .welcome-l1 { font-size: var(--fs-name); }
@@ -117,6 +119,6 @@
   .wv-experience .recents { margin-top: 6px; }
   /* A returning visitor has swiped the cards before: the instruction gives its lines to the figure. */
   .wv-experience .choose-screen.has-welcome .sub { display: none; }
-  .wv-experience .rail { margin-top: 12px; }
+  .wv-experience .rail { margin-top: 10px; }
   .wv-experience .altar-name { font-size: var(--fs-altar-xs); }
 }
