@@ -1,5 +1,5 @@
 {
-  "note": "The counts last accepted (2026-11-15), measured on the live core by npm run scoreboard:public, not typed.",
+  "note": "The counts last accepted (2026-11-17), measured on the live core by npm run scoreboard:public, not typed.",
   "counts": {
     "public/cfrep/build/deadlift_diag_m3_12_0.json.gz": 13,
     "public/cfrep/build/deadlift_diag_w1_9_3.json.gz": 12,
@@ -245,7 +245,7 @@
     "public/countix/build/QkQQjFGnZlg_000001_0.json.gz": "refused",
     "public/countix/build/RiZXMZhERqI_000005_0.json.gz": 2,
     "public/countix/build/SB5cHBrvR_k_000024_0.json.gz": 3,
-    "public/countix/build/Si9szzJPSrE_000022_0.json.gz": 1,
+    "public/countix/build/Si9szzJPSrE_000022_0.json.gz": 2,
     "public/countix/build/Sm7b-2973nY_000009_0.json.gz": "refused",
     "public/countix/build/Ss7rqrjXGJo_000011_0.json.gz": 2,
     "public/countix/build/Ss7rqrjXGJo_000011_8075.json.gz": 0,
@@ -281,7 +281,7 @@
     "public/countix/build/YaHfRx04h4o_000171_0.json.gz": 3,
     "public/countix/build/YoY4176oESc_000028_2833.json.gz": 1,
     "public/countix/build/Yxfc0XYQI3I_000000_4120.json.gz": 0,
-    "public/countix/build/Z70mhrz9LIc_000008_0.json.gz": 0,
+    "public/countix/build/Z70mhrz9LIc_000008_0.json.gz": 3,
     "public/countix/build/ZuCAObqE5FA_000071_0.json.gz": 2,
     "public/countix/build/ZuCAObqE5FA_000071_5188.json.gz": 1,
     "public/countix/build/_D5JONyKh8I_000005_0.json.gz": 4,

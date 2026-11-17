@@ -200,7 +200,11 @@ export const LIFTS = {
   lat_pulldown: { joint: 'elbow', rest: 'high', first: 'concentric' },
   seated_row: { joint: 'elbow', rest: 'high', first: 'concentric' },
   dumbbell_row: { joint: 'elbow', rest: 'high', first: 'concentric' },
-  triceps_pushdown: { joint: 'elbow', rest: 'low', first: 'concentric' },
+  // triceps_pushdown (17 November 2026, Task 10): admit 15-degree shallow cable/band pushdown sets in side/oblique
+  // view (default MIN_ROM_DEGREES is 20): Chosen on: publicA 279 -> 280 exact (+1/-0, off >= 3 72 -> 71, 0 newly off >= 3).
+  // Confirmed on: publicB 261 -> 262 exact (+1/-0, 0 newly off >= 3), David 14/20, synthetic 76/96, occlusion 30/68.
+  // Source: UNSOURCED. Status: experimental.
+  triceps_pushdown: { joint: 'elbow', rest: 'low', first: 'concentric', minRangeDeg: 15, minRepRomDeg: 15 },
   // Presses rest at lockout, so the bar comes down first. To be confirmed on their build sets.
   bench_press: { joint: 'elbow', rest: 'high', first: 'eccentric' },
   overhead_press: { joint: 'elbow', rest: 'high', first: 'eccentric', allowLowRest: true },
@@ -279,6 +283,9 @@ const PATTERNS = guidePatterns as Record<string, string>;
 // mismatchFloor reads minRangeDeg so collector warnings stay aligned). Status: experimental, UNSOURCED.
 const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRepRomDeg' | 'minRangeDeg' | 'together' | 'eitherSide' | 'togetherMinCorrelation' | 'minRepSec' | 'noSplit' | 'fixedFeet' | 'clampFootplateInversion'>> = {
   push_up: { thresholdMargin: 0.25, minRepRomDeg: 15, minRangeDeg: 15 },
+  // tricep_pushdown (17 November 2026, Task 10): guide key alias matching LIFTS.triceps_pushdown above.
+  // Source: UNSOURCED. Status: experimental.
+  tricep_pushdown: { minRepRomDeg: 15, minRangeDeg: 15 },
   front_raise: { together: true, eitherSide: false, togetherMinCorrelation: -Infinity },
   prone_y_raise: { minRangeDeg: 10, minRepRomDeg: 10, minRepSec: 1.2, noSplit: true, thresholdMargin: 0.25 },
   hack_squat: { fixedFeet: true, clampFootplateInversion: true },

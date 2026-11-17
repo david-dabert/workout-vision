@@ -84,6 +84,25 @@ describe('Counting core : lifts by joint', () => {
     expect(result.arm).toBe('right');
     expect(result.count).toBe(6);
   });
+
+  it('triceps_pushdown and tricep_pushdown: counts shallow 18-degree reps inside a set (Task 10)', () => {
+    const sps = 15;
+    // Six pushdowns (95 -> 114, 19 deg ROM) where the 10-90th percentile span sits between 15 and 20 degrees.
+    const path = [
+      { hold: 95, sec: 0.2 },
+      { to: 114, sec: 0.8 }, { to: 95, sec: 0.8 },
+      { to: 114, sec: 0.8 }, { to: 95, sec: 0.8 },
+      { to: 114, sec: 0.8 }, { to: 95, sec: 0.8 },
+      { to: 114, sec: 0.8 }, { to: 95, sec: 0.8 },
+      { to: 114, sec: 0.8 }, { to: 95, sec: 0.8 },
+      { to: 114, sec: 0.8 }, { to: 95, sec: 0.8 },
+    ];
+    const angles = sample(path, 95, sps);
+    const ts = timestamps(angles.length, sps);
+    const f = frames('elbow', angles, 'left');
+    expect(countReps(f, ts, 'triceps_pushdown').count).toBe(6);
+    expect(countReps(f, ts, 'tricep_pushdown').count).toBe(6);
+  });
 });
 
 // ─── Alternating curl: both arms, one rep per arm ───

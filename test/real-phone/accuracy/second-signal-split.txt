@@ -1,6 +1,29 @@
 # Card 003, attempt 1: ceiling of a split of overlong reps by a second signal (second-signal-split.test.ts; bench only)
-public half A: counted 433, exact 238, under 170, over 25; would gain at most 3, would break at least 15 exact sets
+public half A: counted 437, exact 248, under 164, over 25; would gain at most 2, would break at least 17 exact sets
 David's labelled sets: counted 15, exact 13; would gain at most 1, would break at least 2
-gained (half A): public/countix-whole/build/0OpUaIKCDmc_000007_0.json.gz; public/countix-whole/build/CQDBpBmzYaQ_000000_7007.json.gz; public/countix-whole/build/OfiZWZVPyD8_000011_5700.json.gz
-broken (half A): public/cfrep/build/deadlift_diag_w1_9_3.json.gz; public/countix/build/0OpUaIKCDmc_000007_0.json.gz; public/countix/build/2RLoQCFdz4Y_000016_0.json.gz; public/countix/build/7zAlYPCPLPo_000016_0.json.gz; public/countix/build/GTBDPTCg68g_000045_0.json.gz; public/countix/build/YaHfRx04h4o_000171_0.json.gz; public/countix/build/d0xd8qpo51k_000008_0.json.gz; public/countix/build/hqMseeTi3Ys_000045_0.json.gz; public/countix/build/mEHI7lXMLCg_000000_0.json.gz; public/countix-whole/build/2RLoQCFdz4Y_000016_0.json.gz; public/countix-whole/build/GTBDPTCg68g_000045_0.json.gz; public/countix-whole/build/Itbz9-ghSfc_000022_0.json.gz
+gained (half A): public/countix-whole/build/CQDBpBmzYaQ_000000_7007.json.gz; public/countix-whole/build/OfiZWZVPyD8_000011_5700.json.gz
+broken (half A): public/cfrep/build/deadlift_diag_w1_9_3.json.gz; public/countix/build/0OpUaIKCDmc_000007_0.json.gz; public/countix/build/2RLoQCFdz4Y_000016_0.json.gz; public/countix/build/7zAlYPCPLPo_000016_0.json.gz; public/countix/build/GTBDPTCg68g_000045_0.json.gz; public/countix/build/YaHfRx04h4o_000171_0.json.gz; public/countix/build/d0xd8qpo51k_000008_0.json.gz; public/countix/build/hqMseeTi3Ys_000045_0.json.gz; public/countix/build/mEHI7lXMLCg_000000_0.json.gz; public/countix-whole/build/0OpUaIKCDmc_000007_0.json.gz; public/countix-whole/build/2RLoQCFdz4Y_000016_0.json.gz; public/countix-whole/build/GTBDPTCg68g_000045_0.json.gz; public/countix-whole/build/Itbz9-ghSfc_000022_0.json.gz; public/countix-whole/build/TgFU_Q8M3cE_000066_0.json.gz; public/countix-whole/build/_uRAdM3_VtU_000000_2583.json.gz; public/countix-whole/build/d0xd8qpo51k_000008_0.json.gz; public/countix-whole/build/mEHI7lXMLCg_000000_0.json.gz
 broken (David): sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz; sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz
+
+# Attempt 2 (Task 10, TRIED.md:191 reopen condition): per-exercise motion-spec signal (signalProfile / bodyConsensus) checked on the broken sets and Half A
+## Mode: spec_consensus
+- Attempt-1 broken sets still broken: half A 1/17 (public/countix/build/hqMseeTi3Ys_000045_0.json.gz), David 2/2 (sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz; sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz)
+- Public half A: gain at most 0, break at least 1 exact sets (net -1)
+- David's labelled sets: gain at most 0, break at least 2 exact sets
+- gained (half A): none
+- broken (half A): public/countix/build/hqMseeTi3Ys_000045_0.json.gz
+- broken (David): sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz; sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz
+## Mode: spec_top
+- Attempt-1 broken sets still broken: half A 0/17 (none), David 2/2 (sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz; sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz)
+- Public half A: gain at most 0, break at least 0 exact sets (net +0)
+- David's labelled sets: gain at most 0, break at least 2 exact sets
+- gained (half A): none
+- broken (half A): none
+- broken (David): sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz; sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz
+## Mode: spec_consensus_plus_partial50
+- Attempt-1 broken sets still broken: half A 0/17 (none), David 2/2 (sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz; sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz)
+- Public half A: gain at most 0, break at least 0 exact sets (net +0)
+- David's labelled sets: gain at most 0, break at least 2 exact sets
+- gained (half A): none
+- broken (half A): none
+- broken (David): sets-05oct/machine_seated_back_extension_8_side_36b81b22.json.gz; sets-06oct/set01_machine_seated_back_extension_13_side_c6f69462.json.gz
