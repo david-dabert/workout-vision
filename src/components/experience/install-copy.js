@@ -30,7 +30,7 @@ export const INSTALL = {
     suggestOther: 'Elle s’ouvre alors en plein écran, d’une touche.',
     suggestKey: 'Installer l’appli',
     later: 'Non merci',
-    laterNote: 'Le lien reste en bas de la liste des exercices.',
+    laterNote: 'Le lien reste en bas de l’écran d’accueil.',
   },
   en: {
     row: 'Install the app',
@@ -55,6 +55,6 @@ export const INSTALL = {
     suggestOther: 'It then opens full screen, in one tap.',
     suggestKey: 'Install the app',
     later: 'No thanks',
-    laterNote: 'The link stays at the bottom of the exercise list.',
+    laterNote: 'The link stays at the bottom of the home screen.',
   },
 };

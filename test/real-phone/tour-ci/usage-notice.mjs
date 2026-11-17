@@ -69,8 +69,8 @@ for (const [W, H] of sizes) for (const lang of ['fr', 'en']) {
     notes.push(`notice's last line ends at ${tall} px, steps folded, for a ${H} px screen`);
     await page.getByRole('button', { name: lang === 'fr' ? 'Retour' : 'Back' }).first().click();
     await page.waitForTimeout(1200);
-    await page.getByTestId('usage-link').scrollIntoViewIfNeeded();
-    await page.getByTestId('usage-link').click();
+    await page.getByTestId('usage-more').scrollIntoViewIfNeeded();
+    await page.getByTestId('usage-more').click();
     await expect(page.getByTestId('usage-notice')).toBeVisible({ timeout: 10000 });
     await expect(page.getByTestId('usage-notice-host')).toContainText('events.invalid');
   } catch (e) {

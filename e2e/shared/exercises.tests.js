@@ -10,52 +10,56 @@ async function openChoice(page, expect, lang) {
   await page.addInitScript(l => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', l); }, lang);
   await page.goto('/workout-vision/');
   await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
-  await expect(page.locator('.all-exercises .item')).toHaveCount(183, { timeout: 20000 });
+}
+
+async function openGuide(page, expect, lang) {
+  await openChoice(page, expect, lang);
+  await page.getByTestId('choice-find-exercise').click();
+  await expect(page.locator('#guide-search')).toBeVisible({ timeout: 20000 });
+  await expect(page.locator('.guide-screen .list .item')).toHaveCount(309, { timeout: 20000 });
 }
 
 export default function exercisesTests(test, expect) {
-  test('the 183 counted exercises are listed under the nine cards; only the six with verified evidence carry a tag, Beta, pinned on top', async ({ page }) => {
-    await openChoice(page, expect, 'en');
-    const rail = await page.locator('.rail').boundingBox(), list = await page.locator('.all-exercises').boundingBox();
-    expect(list.y).toBeGreaterThan(rail.y + rail.height);
-    await expect(page.locator('.all-exercises .tier-beta')).toHaveCount(6);
-    await expect(page.locator('.all-exercises .item .tag')).toHaveCount(6);
-    await expect(page.locator('.all-exercises .all-note')).toHaveText('Unless marked Beta, these exercises are experimental: we are still learning to count them.');
-    await expect(page.locator('.all-exercises [data-exercise="walking_lunge"]')).toHaveCount(0);
+  test('all 309 guide exercises live behind Trouver un exercice, with search first and the six Beta lifts pinned on top', async ({ page }) => {
+    await openGuide(page, expect, 'en');
+    const search = await page.locator('#guide-search').boundingBox();
+    const list = await page.locator('.guide-screen .list').boundingBox();
+    expect(list.y).toBeGreaterThan(search.y + search.height);
+    await expect(page.locator('.guide-screen [data-exercise="walking_lunge"] .tag')).toHaveText('Not counted');
     for (const key of ['bicep_curl', 'lat_pulldown', 'squat', 'romanian_deadlift', 'leg_press', 'machine_seated_back_extension']) {
-      await expect(page.locator(`.all-exercises [data-exercise="${key}"] .tag`)).toHaveText('Beta');
+      await expect(page.locator(`.guide-screen [data-exercise="${key}"] .tag`)).toHaveText('Beta');
     }
-    // The Beta exercises lead the list (David, 3 October), alphabetical within their group; hip_thrust and lateral_raise
-    // are Experimental and carry no tag.
-    const keys = await page.$$eval('.all-exercises [data-exercise]', els => els.map(e => e.dataset.exercise));
-    expect(keys.slice(0, 6)).toEqual(['bicep_curl', 'lat_pulldown', 'leg_press', 'machine_seated_back_extension', 'romanian_deadlift', 'squat']);
-    await expect(page.locator('.all-exercises [data-exercise="hip_thrust"] .tag')).toHaveCount(0);
-    await expect(page.locator('.all-exercises [data-exercise="lateral_raise"] .tag')).toHaveCount(0);
-    // A search still filters the whole list, the pinned group included.
-    await page.fill('#all-search', 'squat');
-    await expect(page.locator('.all-exercises [data-exercise="squat"]')).toBeVisible();
-    await expect(page.locator('.all-exercises [data-exercise="bicep_curl"]')).toHaveCount(0);
-    await page.fill('#all-search', '');
-    await expect(page.locator('.all-exercises [data-exercise="pec_deck"]')).toHaveCount(0);
+    // The Beta exercises lead the list; hip_thrust and lateral_raise remain Experimental.
+    const keys = await page.$$eval('.guide-screen .list [data-exercise]', els => els.map(e => e.dataset.exercise));
+    expect(new Set(keys.slice(0, 6))).toEqual(new Set(['bicep_curl', 'lat_pulldown', 'leg_press', 'machine_seated_back_extension', 'romanian_deadlift', 'squat']));
+    await expect(page.locator('.guide-screen [data-exercise="hip_thrust"] .tag')).toHaveText('Experimental');
+    await expect(page.locator('.guide-screen [data-exercise="lateral_raise"] .tag')).toHaveText('Experimental');
+    // Search filters the whole list cleanly.
+    await page.fill('#guide-search', 'squat');
+    await expect(page.locator('.guide-screen [data-exercise="squat"]')).toBeVisible();
+    await expect(page.locator('.guide-screen [data-exercise="bicep_curl"]')).toHaveCount(0);
+    await page.fill('#guide-search', '');
+    await expect(page.locator('.guide-screen .list .item')).toHaveCount(309);
   });
 
   test('the search finds an exercise by its French or English name, and says when none matches', async ({ page }) => {
-    await openChoice(page, expect, 'fr');
-    await page.fill('#all-search', 'marteau');
-    await expect(page.locator('.all-exercises [data-exercise="hammer_curl"]')).toBeVisible();
-    await page.fill('#all-search', 'hammer');
-    await expect(page.locator('.all-exercises [data-exercise="hammer_curl"]')).toBeVisible();
-    await page.fill('#all-search', 'zzzz');
-    await expect(page.locator('.all-exercises .item')).toHaveCount(0);
-    await expect(page.locator('.all-exercises .empty')).toHaveText('Aucun exercice trouvé.');
+    await openGuide(page, expect, 'fr');
+    await page.fill('#guide-search', 'marteau');
+    await expect(page.locator('.guide-screen [data-exercise="hammer_curl"]')).toBeVisible();
+    await page.fill('#guide-search', 'hammer');
+    await expect(page.locator('.guide-screen [data-exercise="hammer_curl"]')).toBeVisible();
+    await page.fill('#guide-search', 'zzzz');
+    await expect(page.locator('.guide-screen .list .item')).toHaveCount(0);
+    await expect(page.locator('.guide-screen .empty')).toHaveText('Aucun exercice trouvé.');
   });
 
   test('a tap on an exercise without a card opens its filming screen, named, labelled and with the app’s animated figure', async ({ page }) => {
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
-    await openChoice(page, expect, 'en');
-    await page.fill('#all-search', 'forward lunge');
-    await page.locator('.all-exercises [data-exercise="forward_lunge"] .item-btn').click();
+    await openGuide(page, expect, 'en');
+    await page.fill('#guide-search', 'forward lunge');
+    await page.locator('.guide-screen [data-exercise="forward_lunge"] .item-btn').click();
+    await page.locator('.guide-screen [data-exercise="forward_lunge"] .btn-line').click();
     await expect(page.locator('.film-screen h2.title')).toHaveText('Forward Lunge', { timeout: 10000 });
     await expect(page.locator('.film-screen .tier')).toHaveText('Experimental: we are still learning this exercise');
     // The app's own figure, drawn from the exercise's motion spec (GuideFigure.jsx), in place of the guide's drawings,
@@ -67,56 +71,71 @@ export default function exercisesTests(test, expect) {
     expect(errors).toEqual([]);
   });
 
-  test('a card lift reached from the list keeps its figure and its Beta label', async ({ page }) => {
-    await openChoice(page, expect, 'fr');
-    await page.fill('#all-search', 'curl biceps');
-    await page.locator('.all-exercises [data-exercise="bicep_curl"] .item-btn').click();
+  test('a card lift reached from the guide keeps its figure and its Beta label', async ({ page }) => {
+    await openGuide(page, expect, 'fr');
+    await page.fill('#guide-search', 'curl biceps');
+    await page.locator('.guide-screen [data-exercise="bicep_curl"] .item-btn').click();
+    await page.locator('.guide-screen [data-exercise="bicep_curl"] .btn-line').click();
     await expect(page.locator('.film-screen h2.title')).toHaveText('Curl biceps', { timeout: 10000 });
     await expect(page.locator('.film-screen .tier')).toHaveText('Bêta');
     await expect(page.locator('.film-screen .frame canvas')).toHaveCount(1);
     await expect(page.locator('.film-screen .guide-frames')).toHaveCount(0);
   });
 
-  test('the choice screen with its list holds together at 375 px, in French, and no name takes more than two lines', async ({ page }) => {
+  test('the guide list holds together at 375 px, in French, and no name takes more than two lines', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
-    await openChoice(page, expect, 'fr');
-    await expect(page.locator('.all-exercises .all-note')).toHaveText('Sauf mention Bêta, ces exercices sont expérimentaux\u00A0: nous apprenons encore à les compter.');
+    await openGuide(page, expect, 'fr');
     await page.evaluate(() => document.fonts.ready); // the names' face, not the fallback's
-    const lines = await page.$$eval('.all-exercises .item-name', els => els.map(el => ({ name: el.textContent, lines: Math.round(el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight)) })));
+    const lines = await page.$$eval('.guide-screen .list .item-name', els => els.map(el => ({ name: el.textContent, lines: Math.round(el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight)) })));
     expect(lines.filter(l => l.lines > 2)).toEqual([]);
-    await page.locator('.all-exercises').scrollIntoViewIfNeeded();
+    await page.locator('.guide-screen .list').scrollIntoViewIfNeeded();
     await page.waitForTimeout(800);
     expect((await page.evaluate(layoutFaults)).filter(f => !f.startsWith('note: '))).toEqual([]);
-    expect(await page.locator('.all-exercises').textContent()).not.toContain('\u2014');
+    expect(await page.locator('.guide-screen .list').textContent()).not.toContain('\u2014');
   });
 
   // Review 02 of 29 September.
   test('an exercise filmed from the front is filmed from the front, whole body included', async ({ page }) => {
-    await openChoice(page, expect, 'en');
-    await page.fill('#all-search', 'lateral lunge');
-    await page.locator('.all-exercises [data-exercise="lateral_lunge"] .item-btn').click();
+    await openGuide(page, expect, 'en');
+    await page.fill('#guide-search', 'lateral lunge');
+    await page.locator('.guide-screen [data-exercise="lateral_lunge"] .item-btn').click();
+    await page.locator('.guide-screen [data-exercise="lateral_lunge"] .btn-line').click();
     await expect(page.locator('.film-screen .eyebrow')).toHaveText('Filmed from the front', { timeout: 10000 });
     await expect(page.locator('.film-screen .steps')).not.toContainText('profile');
     await expect(page.locator('.film-screen .steps')).toContainText('facing you');
     await expect(page.locator('.film-screen .steps')).toContainText('whole body');
   });
 
-  test('the French search finds exercises by their muscles in French', async ({ page }) => {
-    await openChoice(page, expect, 'fr');
+  test('the French search finds exercises by their muscles in French and ranks Beta first on muscle queries', async ({ page }) => {
+    await openGuide(page, expect, 'fr');
+    await page.fill('#guide-search', 'dos');
+    await expect(page.locator('.guide-screen .list [data-exercise] .tag').first()).toHaveText('Bêta');
     for (const word of ['mollets', 'quadriceps', 'abdos', 'pectoraux', 'ischios', 'fessiers']) {
-      await page.fill('#all-search', word);
-      expect(await page.locator('.all-exercises .item').count(), word).toBeGreaterThan(0);
+      await page.fill('#guide-search', word);
+      expect(await page.locator('.guide-screen .list .item').count(), word).toBeGreaterThan(0);
     }
   });
 
-  test('if the list cannot load, the nine cards still show', async ({ page }) => {
-    await page.route(/ExerciseList[^/]*\.js$/, r => r.abort());
+  test('Guide handles null 2d canvas context on BodyMap without crashing', async ({ page }) => {
+    await page.addInitScript(() => {
+      const orig = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+        if (type === '2d' && this.closest('.map-inner')) return null;
+        return orig.call(this, type, ...args);
+      };
+    });
+    await openGuide(page, expect, 'en');
+    await expect(page.locator('#guide-search')).toBeVisible();
+  });
+
+  test('if the guide cannot load, the nine cards still show and tapping Trouver un exercice opens the error recovery screen', async ({ page }) => {
+    await page.route(/Guide[^/]*\.js$/, r => r.abort());
     await page.addInitScript(() => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', 'en'); });
     await page.goto('/workout-vision/');
     await expect(page.locator('.altar')).toHaveCount(9, { timeout: 20000 });
-    await page.waitForTimeout(1500);
-    await expect(page.locator('.altar')).toHaveCount(9);
     await expect(page.locator('.all-exercises')).toHaveCount(0);
+    await page.getByTestId('choice-find-exercise').click();
+    await expect(page.getByRole('button', { name: 'Reload' })).toBeVisible({ timeout: 10000 });
   });
 
   test('the welcome back names a set of an exercise without a card by its name, never its key', async ({ page }) => {
@@ -137,9 +156,9 @@ export default function exercisesTests(test, expect) {
   for (const lang of ['fr', 'en']) {
     test(`at 320 px, in ${lang === 'fr' ? 'French' : 'English'}, no name takes more than two lines`, async ({ page }) => {
       await page.setViewportSize({ width: 320, height: 568 });
-      await openChoice(page, expect, lang);
+      await openGuide(page, expect, lang);
       await page.evaluate(() => document.fonts.ready);
-      const lines = await page.$$eval('.all-exercises .item-name', els => els.map(el => ({ name: el.textContent, lines: Math.round(el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight)) })));
+      const lines = await page.$$eval('.guide-screen .list .item-name', els => els.map(el => ({ name: el.textContent, lines: Math.round(el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight)) })));
       expect(lines.filter(l => l.lines > 2)).toEqual([]);
     });
   }

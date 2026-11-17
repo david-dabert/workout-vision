@@ -5,7 +5,7 @@ import { isTest } from '../../lib/fitness-tests';
 import { tierTag } from '../../lib/liftTiers';
 import { guideExercise } from './exercise-info';
 import { EQUIPMENT, Thumb } from './Guide';
-import { searchMatch, searchWords } from './search-text';
+import { MUSCLE_FR, searchMatch, searchWords } from './search-text';
 import { getMappedKeys } from '../../lib/exerciseGuide';
 import { knownExercise, programmable } from './programme';
 
@@ -22,15 +22,6 @@ const ENTRIES = OFFERED.filter(k => !isTest(k)).map(guideExercise).filter(Boolea
 const ALL = getMappedKeys().filter(knownExercise).map(guideExercise).filter(Boolean);
 // The equipment's name never breaks, so no word of it stands alone on the row's last line.
 const keep = s => (s || '').replace(/ /g, '\u00A0');
-// The catalogue names muscles in English; the French names people search for, so that the hint
-// "Nom, muscle, matériel" holds in French too (review of 29 September).
-const MUSCLE_FR = {
-  Core: 'abdominaux abdos gainage', Glutes: 'fessiers', Shoulders: 'épaules deltoïdes', Hamstrings: 'ischios ischio-jambiers',
-  Triceps: 'triceps', Quads: 'quadriceps cuisses', Biceps: 'biceps', Chest: 'pectoraux pecs', Back: 'dos', Lats: 'dorsaux grand dorsal',
-  Forearms: 'avant-bras', 'Upper Back': 'haut du dos trapèzes', 'Rear Delts': 'deltoïdes postérieurs arrière d’épaule',
-  'Lower Back': 'lombaires bas du dos', Calves: 'mollets', 'Posterior Chain': 'chaîne postérieure', Grip: 'prise poigne',
-  Adductors: 'adducteurs', Legs: 'jambes',
-};
 
 const REALM_FILTERS = [
   { id: 'all', labelFr: 'Tous', labelEn: 'All' },

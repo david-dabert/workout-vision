@@ -139,7 +139,7 @@ test('the suggestion comes once, on the saved card, after the count is confirmed
   expect(await page.evaluate(() => localStorage.getItem('wv_install_hint'))).toBe('shown');
   await suggest.getByTestId('install-dismiss').click();
   await expect(suggest).toHaveCount(0);
-  await expect(page.getByTestId('install-later')).toContainText('Le lien reste en bas de la liste des exercices.');
+  await expect(page.getByTestId('install-later')).toContainText('Le lien reste en bas de l’écran d’accueil.');
   expect(await page.evaluate(() => localStorage.getItem('wv_install_hint'))).toBe('dismissed');
   // The next set: saved again, and no suggestion.
   await page.getByTestId('new-set').click();

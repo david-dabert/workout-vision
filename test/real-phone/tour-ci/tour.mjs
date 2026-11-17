@@ -91,9 +91,9 @@ try {
   await between('t02-to-choice');
   await settle();
 
-  // The choice and its nine cards.
+  // The choice and its nine cards, without the old 183-row list inline on Home.
   await expect(page.locator('.altar')).toHaveCount(9, { timeout: 10000 });
-  await expect(page.locator('.all-exercises .item')).toHaveCount(183, { timeout: 10000 });
+  await expect(page.locator('.all-exercises')).toHaveCount(0);
   await shot('02-choice');
   await inView('02-choice', page.locator('.altar'));
   // Every card, not only the first: each is brought to the middle of the rail and the screen checked again
@@ -120,15 +120,22 @@ try {
   await between('t04-back-to-choice');
   await settle();
 
-  // The list under the cards, searched, and an exercise without a card.
-  await page.locator('.all-exercises').scrollIntoViewIfNeeded();
-  await page.evaluate(() => document.querySelector('.all-exercises').scrollIntoView({ block: 'start' }));
+  // Trouver un exercice opens the unified Guide (search first, list below), and an exercise without a card.
+  await page.locator('[data-testid="choice-find-exercise"]').click();
+  await between('t09-to-guide');
+  await settle();
+  await expect(page.locator('.guide-screen')).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('.guide-screen .list .item')).toHaveCount(309, { timeout: 10000 });
+  await shot('09-guide');
+  await inView('09-guide', page.locator('#guide-search'));
+  await page.locator('.guide-screen .list').scrollIntoViewIfNeeded();
   await settle();
   await shot('05-list');
-  await page.fill('#all-search', 'fente avant');
+  await page.fill('#guide-search', 'fente avant');
   await page.waitForTimeout(400);
   await shot('06-list-search');
-  await page.locator('.all-exercises [data-exercise="forward_lunge"] .item-btn').click();
+  await page.locator('.guide-screen [data-exercise="forward_lunge"] .item-btn').click();
+  await page.locator('.guide-screen [data-exercise="forward_lunge"] .btn-line').click();
   await between('t07-to-film-guide');
   await settle();
   // The app's animated figure (GuideFigure.jsx) in place of the guide's three drawings since 18 October 2026.
@@ -140,14 +147,16 @@ try {
   await settle();
 
   // The list exercise with the longest name, whose title wraps the most: its filming screen, and back.
-  await page.fill('#all-search', '');
-  await page.waitForTimeout(400);
-  const longest = await page.$$eval('.all-exercises [data-exercise]', els => els
+  await page.locator('[data-testid="choice-find-exercise"]').click();
+  await settle();
+  await expect(page.locator('.guide-screen .list .item')).toHaveCount(309, { timeout: 10000 });
+  const longest = await page.$$eval('.guide-screen .list [data-exercise]', els => els
     .map(e => ({ key: e.dataset.exercise, len: e.querySelector('.item-name').textContent.length }))
     .sort((a, b) => b.len - a.len)[0].key);
   notes.push(`longest list name: ${longest}`);
-  await page.evaluate(k => document.querySelector(`.all-exercises [data-exercise="${k}"] .item-btn`).scrollIntoView({ block: 'center' }), longest);
-  await page.locator(`.all-exercises [data-exercise="${longest}"] .item-btn`).click();
+  await page.evaluate(k => document.querySelector(`.guide-screen [data-exercise="${k}"] .item-btn`).scrollIntoView({ block: 'center' }), longest);
+  await page.locator(`.guide-screen [data-exercise="${longest}"] .item-btn`).click();
+  await page.locator(`.guide-screen [data-exercise="${longest}"] .btn-line`).click();
   await between('t08b-to-film-longest');
   await settle();
   // The app's animated figure (GuideFigure.jsx) in place of the guide's three drawings since 18 October 2026.
@@ -158,14 +167,10 @@ try {
   await between('t08c-back-to-choice');
   await settle();
 
-  // The guide, and back.
-  await page.evaluate(() => window.scrollTo(0, 0));
-  await page.locator('.row-link').first().click();
-  await between('t09-to-guide');
+  // Open guide and back to choice via its back button.
+  await page.locator('[data-testid="choice-find-exercise"]').click();
   await settle();
   await expect(page.locator('.guide-screen')).toBeVisible({ timeout: 10000 });
-  await shot('09-guide');
-  await inView('09-guide', page.locator('#guide-search'));
   await page.locator('.guide-screen .icon-btn').first().click();
   await between('t10-back-to-choice');
   await settle();

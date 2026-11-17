@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState, lazy, Suspense } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FITNESS_TESTS } from '../../lib/fitness-test-list';
 import { useT } from '../../lib/LanguageContext';
 import { CARD_ORDER, META } from './lift-meta';
 import { useSets, recentLifts } from './sets';
-import { isOffered, tierOf } from '../../lib/offer';
+import { isOffered } from '../../lib/offer';
 import { holdStage } from './stage-loop';
 import { TIERS, tierLabel, tierTag } from '../../lib/liftTiers';
 import { setName } from './set-name';
@@ -15,8 +15,6 @@ import { onHomeScreen } from '../../lib/keep-sets';
 import { InstallRow } from './Install';
 import { pendingIncident, dismissIncident } from '../../lib/crashLog';
 import { CRASH, crashLine } from './crash-copy';
-const FilmExerciseDrawer = lazy(() => import('./FilmExerciseDrawer'));
-const BiomechanicalRetentionQuiz = lazy(() => import('./BiomechanicalRetentionQuiz'));
 import { showUnmeasuredRoutes } from '../../lib/buildFlags';
 import './Choice.css';
 
@@ -37,9 +35,8 @@ const PRO_ROW = {
   },
 };
 
-// The list of every counted exercise loads after the choice has shown (ExerciseList.jsx).
-// If its code cannot load (offline, after an update), the choice shows without it: the cards stay.
-const ExerciseList = lazy(() => import('./ExerciseList').catch(() => ({ default: () => null })));
+// The catalogue and counted-exercise search live on #exercises (Guide.jsx) behind one "Trouver un exercice" row on
+// the home screen (Card 053, 16 November 2026).
 
 // A visit that opens on saved sets is a return: the choice greets it, as in the prototype.
 let returning = null;
@@ -129,10 +126,6 @@ function LiftCard({ children, onClick, label, describedBy, cardRef }) {
 export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, onProgramme, onManifesto, onEquine, onSports, onCoaches, onBuddies, onErgonomics, onReference, onChat, onUsage, held = null }) {
   const { lang, tExercise } = useT(), fr = lang === 'fr';
   const railRef = useRef(null), dotsRef = useRef(null), cards = useRef([]);
-  const [catalogOpen, setCatalogOpen] = useState(false);
-  const [catalogArchetype] = useState('all');
-  const [catalogZone] = useState('all');
-  const [profileQuizOpen, setProfileQuizOpen] = useState(false);
   // The guide's names load after the choice; until then a set of an exercise without a card is not
   // named, so the welcome never shows an internal key (review of 29 September).
   const [nameOf, setNameOf] = useState(null);
@@ -164,7 +157,9 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
   const lastName = lastRaw && lastRaw.toLocaleLowerCase(fr ? 'fr-FR' : 'en-GB');
   // The last lifts filmed, one tap each to their filming screen (WP1.5 of docs/SPEC-production.md): a lift the app no
   // longer offers is left out. Named as the history names them; a lift whose name is not loaded yet waits for it.
-  const recents = sets?.length ? recentLifts(sets, 3).filter(isOffered).map(key => ({ key, name: setName({ key, lang, meta: META, nameOf, tExercise }) })).filter(r => r.name) : [];
+  const extraRows = (received ? 1 : 0) + (eventsConfigured() ? (browserRefuses() ? 1 : 2) : 0);
+  const maxRecents = Math.max(0, Math.min(2, 3 - extraRows));
+  const recents = sets?.length && maxRecents > 0 ? recentLifts(sets, maxRecents).filter(isOffered).map(key => ({ key, name: setName({ key, lang, meta: META, nameOf, tExercise }) })).filter(r => r.name) : [];
   return <div className="wv-experience">
     <section className={`screen is-active choose-screen${last ? ' has-welcome' : ''}`}>
       <div className="choose-hero">
@@ -220,25 +215,11 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{pro.programmeRow}</b><small>{received.programme.title}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        <button className="row-link press" onClick={onGuide}>
-          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="4.5" r="2" /><path d="M4.5 9.5L12 8l7.5 1.5" /><path d="M12 8v6" /><path d="M12 14l-3.5 7" /><path d="M12 14l3.5 7" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'Un autre exercice' : 'Another exercise'}</b><small>{fr ? 'Trouvez-le par la zone du corps' : 'Find it by body area'}</small></span>
-          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
-        </button>
-        <button className="row-link press" onClick={() => setCatalogOpen(true)} data-testid="choice-catalog-search">
+        <button className="row-link press" onClick={onGuide} data-testid="choice-find-exercise">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'Catalogue universel' : 'Universal catalog'}</b><small>{fr ? '183 exercices et mouvements' : '183 exercises and movements'}</small></span>
+          <span className="row-txt"><b>{fr ? 'Trouver un exercice' : 'Find an exercise'}</b><small>{fr ? 'Recherche, zones du corps et guide des mouvements' : 'Search, body areas and movement guide'}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>
-        {/* The fitness tests (fitness-tests.js): a count in 30 seconds, under a published protocol. Each row carries its
-            tier tag as the list's rows do (tierOf, offer.js: Experimental; R8, audit of 6 October). */}
-        {['chair_stand_test', 'arm_curl_test'].map(key => <button key={key} className="row-link press" onClick={() => onChoose(key)} data-testid={`choose-${key}`}>
-          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="13.5" r="7.5" /><path d="M12 13.5V9.5" /><path d="M10 3h4" /><path d="M12 3v3" /></svg></span>
-          {/* The tag sits beside the name, so the caption keeps the row's full width (tour, 390x745: a caption beside
-              the tag left one word alone on its last line). */}
-          <span className="row-txt"><span className="row-head"><b>{FITNESS_TESTS[key][fr ? 'fr' : 'en']}</b>{tierOf(key) && <span className={`tag tier-tag tier-${tierOf(key)}`} data-testid={`tier-${key}`}>{tierTag(tierOf(key), fr)}</span>}</span><small>{fr ? 'Test de condition physique' : 'Fitness test'}</small></span>
-          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
-        </button>)}
         {/* Industrial Ergonomics & NIOSH */}
         {showUnmeasuredRoutes() && onErgonomics && <button className="row-link press" onClick={onErgonomics} data-testid="choice-ergonomics">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg></span>
@@ -252,15 +233,8 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{fr ? 'Vos séries' : 'Your sets'}</b><small>{n === 0 ? (fr ? 'Restaurer une sauvegarde' : 'Restore a backup') : fr ? `${n} ${n > 1 ? 'séries' : 'série'} sur ce téléphone` : `${n} ${n === 1 ? 'set' : 'sets'} on this phone`}</small></span>
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {/* Off in production (card 013): its femur ratio and its calorie promise rest on a typed height, nothing measured. */}
-        {showUnmeasuredRoutes() && <button className="row-link press" onClick={() => setProfileQuizOpen(true)} data-testid="choice-athlete-profile">
-          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></span>
-          <span className="row-txt"><b>{fr ? 'Profil athlète & Calibration' : 'Athlete Profile & Calibration'}</b><small>{fr ? 'Vos leviers articulaires, silhouette cible et dépense réelle' : 'Your joint levers, target physique, and real calorie burn'}</small></span>
-          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
-        </button>}
         {(onReference || onPro) && <h2 className="section-head choose-head" data-testid="choose-head-pro">{fr ? 'Pour les professionnels' : 'For professionals'}</h2>}
-        {/* The physiotherapist's workspace (15 October 2026, components/kine/): programmes sent as links, the patient's
-            video compared with the physiotherapist's, measured on the person's own videos, above the demos. */}
+        {/* The physiotherapist's workspace (15 October 2026, components/kine/; restored to Home per David's Task 3 order). */}
         {onReference && <button className="row-link press" onClick={onReference} data-testid="choice-reference">
           <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="9" height="14" rx="2" /><rect x="13" y="5" width="9" height="14" rx="2" /><path d="M6.5 9v6M17.5 9l-2 6M17.5 9l2 6" /></svg></span>
           <span className="row-txt"><b>{fr ? 'Espace kiné' : 'Physio workspace'}</b><small>{fr ? 'Vos exercices en vidéo, envoyés à vos patients en un lien' : 'Your exercises on video, sent to your patients in one link'}</small></span>
@@ -273,7 +247,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
         {/* What measures nothing yet is offered only by a build with the extended routes (METHOD.md, lab lane; card 008,
-            11 November 2026): a newcomer meets nothing the app cannot do. The manifesto stays, under its own heading. */}
+            11 November 2026): a newcomer meets nothing the app cannot do. */}
         {showUnmeasuredRoutes() && (onEquine || onSports || onCoaches || onBuddies) && <h2 className="section-head choose-head" data-testid="choose-head-explore">{fr ? 'En préparation et nouvelles disciplines' : 'Roadmap & New Disciplines'}</h2>}
         {/* EquiVision: horse locomotion and gait biomechanics roadmap */}
         {showUnmeasuredRoutes() && onEquine && <button className="row-link press" onClick={onEquine} data-testid="choice-equine">
@@ -299,51 +273,23 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           <span className="row-txt"><b>{fr ? 'Partenaires de salle (démo)' : 'Gym partners (demo)'}</b><small>{fr ? 'Des profils fictifs, pour comparer vos charges' : 'Fictional profiles, to compare your working weights'}</small></span>{/* HOME-1; French awaiting David's approval (R10) */}
           <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
         </button>}
-        {/* The WorkoutVision Manifesto: The Science, History, and Mechanics of Optimal Lifting */}
-        {onManifesto && <button className="row-link press" onClick={onManifesto} data-testid="choice-manifesto">
-          <span className="row-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /><path d="M9 7h6M9 11h4" /></svg></span>
-          <span className="row-txt"><span className="row-head"><b>{fr ? 'Le Manifeste WorkoutVision' : 'The WorkoutVision Manifesto'}</b></span><small>{fr ? 'La science, l’histoire et la mécanique du mouvement' : 'The science, history, and mechanics of optimal lifting'}</small></span>
-          <svg className="row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14" /><path d="M13 6l6 6-6 6" /></svg>
-        </button>}
-        {/* Before the long list of every exercise, where it is read on the first scroll, not after 181 rows. */}
         <UsageNote fr={fr} onUsage={onUsage} />
         <CollectSwitched fr={fr} />
-        <Suspense fallback={null}><ExerciseList onChoose={onChoose} /></Suspense>
-        {/* Installing the app (Install.jsx): a quiet row at the foot of the list, never once the app is installed. */}
+        {/* Installing the app (Install.jsx): a quiet row at the foot of the home, never once the app is installed. */}
         <InstallRow fr={fr} />
         <p className="foot">{fr ? 'Analyse biomécanique par vision par ordinateur, traitée localement sur votre téléphone.' : 'Computer vision biomechanical analysis, processed locally on your phone.'}</p>
-        <div className="choice-foot-links">
-          {/* Why the app exists, in David's words (About.jsx). */}
+        {/* One foot row (Card 053): 30-second fitness tests (with their Experimental tag), Manifesto, and About. */}
+        <div className="choice-foot-links" data-testid="choice-foot-links">
+          {['chair_stand_test', 'arm_curl_test'].map(key => <button key={key} type="button" className="about-link foot-test-link press" onClick={() => onChoose(key)} data-testid={`choose-${key}`}>
+            <span>{FITNESS_TESTS[key][fr ? 'fr' : 'en']}</span>
+            <span className="tag tier-tag tier-experimental" data-testid={`tier-${key}`}>{tierTag('experimental', fr)}</span>
+          </button>)}
+          {onManifesto && <button type="button" className="about-link press" onClick={onManifesto} data-testid="choice-manifesto">{fr ? 'Manifeste' : 'Manifesto'}</button>}
           {onAbout && <button type="button" className="about-link press" onClick={onAbout} data-testid="about-link">{ABOUT[fr ? 'fr' : 'en'].link}</button>}
-          {/* The notice of the anonymous counts (UsageNotice.jsx), whenever the build sends them. */}
-          {onUsage && eventsConfigured() && <button type="button" className="about-link press" onClick={onUsage} data-testid="usage-link">{fr ? 'Mesure d’audience' : 'Usage counts'}</button>}
-          {showUnmeasuredRoutes() && onChat && <button type="button" className="about-link press" onClick={onChat} data-testid="chat-link">{fr ? 'Messagerie (démo)' : 'Messaging (demo)'}</button>}{/* HOME-1: no "P2P"; French awaiting David's approval (R10) */}
+          {onUsage && eventsConfigured() && browserRefuses() && <button type="button" className="about-link press" onClick={onUsage} data-testid="usage-link">{fr ? 'Mesure d’audience' : 'Usage counts'}</button>}
+          {showUnmeasuredRoutes() && onChat && <button type="button" className="about-link press" onClick={onChat} data-testid="chat-link">{fr ? 'Messagerie (démo)' : 'Messaging (demo)'}</button>}
         </div>
       </div>
-      {catalogOpen && (
-        <Suspense fallback={null}>
-          <FilmExerciseDrawer
-            currentLift={null}
-            initialArchetype={catalogArchetype}
-            initialZone={catalogZone}
-            recents={recents}
-            onGuide={onGuide}
-            onSelect={key => {
-              setCatalogOpen(false);
-              onChoose(key);
-            }}
-            onClose={() => setCatalogOpen(false)}
-          />
-        </Suspense>
-      )}
-      {profileQuizOpen && (
-        <Suspense fallback={null}>
-          <BiomechanicalRetentionQuiz
-            onClose={() => setProfileQuizOpen(false)}
-            onComplete={() => setProfileQuizOpen(false)}
-          />
-        </Suspense>
-      )}
     </section>
   </div>;
 }

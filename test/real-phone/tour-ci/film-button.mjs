@@ -24,8 +24,9 @@ async function sweep([W, H]) {
     let page = await context.newPage();
     await page.goto(base, { waitUntil: 'networkidle' });
     await page.locator('.enter').click();
-    await page.locator('.all-exercises [data-exercise]').first().waitFor();
-    const keys = await page.$$eval('.all-exercises [data-exercise]', els => els.map(e => e.dataset.exercise));
+    await page.locator('[data-testid="choice-find-exercise"]').click();
+    await page.locator('.guide-screen [data-exercise]').first().waitFor();
+    const keys = await page.$$eval('.guide-screen .list [data-exercise]:has(.tag.on)', els => els.map(e => e.dataset.exercise));
     const lines = [];
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
@@ -38,10 +39,12 @@ async function sweep([W, H]) {
         page = await context.newPage();
         await page.goto(base, { waitUntil: 'networkidle' });
         await page.locator('.enter').click();
-        await page.locator('.all-exercises [data-exercise]').first().waitFor();
+        await page.locator('[data-testid="choice-find-exercise"]').click();
+        await page.locator('.guide-screen [data-exercise]').first().waitFor();
       }
-      await page.evaluate(k => document.querySelector(`.all-exercises [data-exercise="${k}"] .item-btn`).scrollIntoView({ block: 'center' }), key);
-      await page.locator(`.all-exercises [data-exercise="${key}"] .item-btn`).click();
+      await page.evaluate(k => document.querySelector(`.guide-screen [data-exercise="${k}"] .item-btn`).scrollIntoView({ block: 'center' }), key);
+      await page.locator(`.guide-screen [data-exercise="${key}"] .item-btn`).click();
+      await page.locator(`.guide-screen [data-exercise="${key}"] .btn-line`).click();
       const button = page.locator('.film-screen .actions .btn-primary');
       await button.waitFor();
       await page.evaluate(() => document.fonts.ready);
@@ -51,7 +54,8 @@ async function sweep([W, H]) {
       lines.push({ key, W, H, top: Math.round(box.y), bottom: Math.round(box.y + box.height), titleH });
       await page.locator('.film-screen .icon-btn').click();
       await page.locator('.film-screen').waitFor({ state: 'detached' });
-      await page.locator('.all-exercises').waitFor();
+      await page.locator('[data-testid="choice-find-exercise"]').click();
+      await page.locator('.guide-screen .list').waitFor();
       await page.waitForTimeout(40);
     }
     await context.close();

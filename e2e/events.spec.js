@@ -128,7 +128,7 @@ test('the notice opens from the line under the choice and from the footer, names
   await expect(page.getByTestId('usage-notice-host')).toContainText('events.invalid');
   await expect(page.getByRole('heading', { name: 'Ce qui est envoyé' })).toBeVisible();
   await page.getByRole('button', { name: 'Retour' }).first().click();
-  await page.getByTestId('usage-link').click();
+  await page.getByTestId('usage-more').click();
   await expect(page.getByTestId('usage-notice')).toBeVisible({ timeout: 20000 });
   await page.getByRole('button', { name: 'Désactiver la mesure d’audience' }).click();
   await expect(page.getByText('Désactivé sur ce téléphone.')).toBeVisible();

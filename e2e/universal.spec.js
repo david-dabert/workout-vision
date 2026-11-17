@@ -17,7 +17,7 @@ const BASE = '/workout-vision/';
 
 async function filmFromGuide(page, query) {
   await page.goto(BASE);
-  await page.getByRole('button', { name: /Un autre exercice/ }).click({ timeout: 20000 });
+  await page.getByTestId('choice-find-exercise').click({ timeout: 20000 });
   await page.locator('#guide-search').fill(query);
   const item = page.locator('.list .item').first();
   await expect(item.locator('.tag')).toHaveText('Non compté');

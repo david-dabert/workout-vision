@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { searchMatch, searchWords } from './search-text';
+import { MUSCLE_FR, norm, searchMatch, searchWords } from './search-text';
 import { useT } from '../../lib/LanguageContext';
 import { getAllGuideExercises } from '../../lib/exerciseGuide';
 import { Body, mapPose, DPR } from './entry-scene';
@@ -31,13 +31,15 @@ const MUSCLES = { shoulders: ['Shoulders', 'Rear Delts'], chest: ['Chest'], bice
 export const EQUIPMENT = { Barbell: 'Barre', Bench: 'Banc', Bodyweight: 'Poids du corps', Box: 'Banc / box', Cable: 'Poulie', Cardio: 'Cardio', Chair: 'Chaise', Doorway: 'Encadrement de porte', Dumbbell: 'Haltères', Kettlebell: 'Kettlebell', Machine: 'Machine', 'Medicine Ball': 'Médecine-ball', Plate: 'Disque', 'Pull-up Bar': 'Barre de traction', 'Resistance Band': 'Élastique', Sandbag: 'Sac lesté', 'Stability Ball': 'Ballon', Towel: 'Serviette', Wall: 'Mur' };
 const inZone = (e, zone) => !zone || e.muscles.some(m => MUSCLES[zone].includes(m));
 // Each exercise's words for the search (search-text.js), cut once: its names, equipment, zones and muscles.
-const WORDS = new Map(CATALOGUE.map(e => [e.key, searchWords([e.fr, e.name, ...e.aliases, e.equipment, EQUIPMENT[e.equipment], ...Object.keys(MUSCLES).filter(z => inZone(e, z)).flatMap(z => [ZONE_NAMES.fr[z], ZONE_NAMES.en[z]]), ...e.muscles].join(' '))]));
+const WORDS = new Map(CATALOGUE.map(e => [e.key, searchWords([e.fr, e.name, ...e.aliases, e.equipment, EQUIPMENT[e.equipment], ...Object.keys(MUSCLES).filter(z => inZone(e, z)).flatMap(z => [ZONE_NAMES.fr[z], ZONE_NAMES.en[z]]), ...e.muscles, ...e.muscles.map(m => MUSCLE_FR[m] || '')].join(' '))]));
 const countedLift = e => e.key;
 
 function BodyMap() {
   const canvas = useRef(null);
   useEffect(() => {
-    const c = canvas.current, ctx = c.getContext('2d'), body = new Body(1500, 31), out = new Float32Array(66);
+    const c = canvas.current, ctx = c?.getContext?.('2d');
+    if (!c || !ctx) return undefined;
+    const body = new Body(1500, 31), out = new Float32Array(66);
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     let frame, stopped = false, seen = true;
     function draw(now) {
@@ -48,7 +50,9 @@ function BodyMap() {
     }
     function resize() { c.width = c.clientWidth * DPR; c.height = c.clientHeight * DPR; draw(performance.now()); }
     function loop(now) { if (stopped || !seen) return; draw(now); frame = requestAnimationFrame(loop); }
-    const observer = new ResizeObserver(resize); observer.observe(c); resize();
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(resize) : null;
+    observer?.observe(c);
+    resize();
     if (!reduced) frame = requestAnimationFrame(loop);
     // Scrolled out of view, the figure stops drawing: the list scrolls with the whole frame budget.
     const io = reduced || typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(entries => {
@@ -58,7 +62,7 @@ function BodyMap() {
       if (seen) frame = requestAnimationFrame(loop); else cancelAnimationFrame(frame);
     });
     io?.observe(c);
-    return () => { stopped = true; cancelAnimationFrame(frame); observer.disconnect(); io?.disconnect(); };
+    return () => { stopped = true; cancelAnimationFrame(frame); observer?.disconnect(); io?.disconnect(); };
   }, []);
   return <canvas ref={canvas} aria-hidden="true" />;
 }
@@ -101,6 +105,7 @@ export default function Guide({ onClose, onChoose, lift }) {
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [!!focus, lang]);
   useEffect(() => { if (missing) onChoose(lift); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (!focus) { screenRef.current?.scrollTo?.(0, 0); window.scrollTo?.(0, 0); } }, [focus]);
   if (missing) return <div className="wv-experience" aria-busy="true" />;
   if (focus) return <div className="wv-experience">
     <section ref={screenRef} className="screen is-active guide-screen"><div className="wrap">
@@ -117,7 +122,10 @@ export default function Guide({ onClose, onChoose, lift }) {
       <p className="guide-credit">{fr ? 'Illustrations\u00A0:' : 'Illustrations:'} Everkinetic, via <a href="https://github.com/bryllim/workout-guide" target="_blank" rel="noreferrer">bryllim/workout-guide</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">CC BY-SA 4.0</a>. {fr ? 'Redimensionnées et converties en WebP.' : 'Resized and converted to WebP.'}</p>
     </div></section>
   </div>;
-  const list = CATALOGUE.filter(e => inZone(e, zone)).filter(e => searchMatch(WORDS.get(e.key), query));
+  const nq = norm(query.trim());
+  const isDirectTitle = e => !!nq && (norm(e.fr) === nq || norm(e.name) === nq);
+  const list = CATALOGUE.filter(e => inZone(e, zone)).filter(e => searchMatch(WORDS.get(e.key), query))
+    .sort((a, b) => (isDirectTitle(b) - isDirectTitle(a)) || ((tierOf(b.key) === 'beta') - (tierOf(a.key) === 'beta')));
   function pickZone(z) { setZone(previous => previous === z ? null : z); setOpen(null); }
   return <div className="wv-experience">
     <section ref={screenRef} className="screen is-active guide-screen"><div className="wrap">

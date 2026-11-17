@@ -195,7 +195,8 @@ describe('No unmeasured metrics or invented physics in production markup', () =>
     expect(html).not.toContain('Zéro serveur');
     expect(html).toContain('La vidéo reste sur votre téléphone');
     expect(html).not.toContain('1 200+ variantes');
-    expect(html).toContain('183 exercices et mouvements');
+    expect(html).toContain('data-testid="choice-find-exercise"');
+    expect(html).toContain('Trouver un exercice');
     expect(html).toContain('data-testid="choose-head-pro"');
     expect(html).toContain('data-testid="choice-reference"');
     expect(html).toContain('data-testid="choice-pro"');
