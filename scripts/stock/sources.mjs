@@ -11,10 +11,19 @@ export const QUERIES = Object.freeze({
   lateral_raise: ['lateral raise', 'dumbbell lateral raise'],
   lat_pulldown: ['lat pulldown'],
   bench_press: ['bench press'],
-  hip_thrust: ['hip thrust'],
+  hip_thrust: ['hip thrust', 'glute bridge exercise'],
   romanian_deadlift: ['romanian deadlift', 'deadlift'],
   leg_press: ['leg press'],
   overhead_press: ['overhead press', 'shoulder press'],
+  push_up: ['push up exercise', 'push-ups fitness'],
+  pull_up: ['pull up exercise', 'chin up exercise'],
+  lunge: ['lunge exercise', 'walking lunges'],
+  front_raise: ['dumbbell front raise'],
+  tricep_pushdown: ['tricep pushdown', 'triceps extension'],
+  seated_row: ['seated cable row', 'rowing machine exercise'],
+  leg_extension: ['leg extension exercise'],
+  leg_curl: ['leg curl exercise', 'hamstring curl'],
+  glute_bridge: ['glute bridge exercise'],
 });
 
 // A clip shorter than this holds less than a set; longer, it is rarely one set. Status: convention (a set of 5 to 15
@@ -30,6 +39,18 @@ const keepDuration = d => Number.isFinite(d) && d >= MIN_SEC && d <= MAX_SEC;
 export function commonsLicenceOk(short) {
   const s = String(short || '').toLowerCase();
   return /^(cc0|public domain|pd\b|cc[ -]by(-sa)?[ -]?\d)/.test(s) && !/nc|nd/.test(s);
+}
+
+const COMMONS_BLOCK = /sexual|orgasm|fapping|doggy_style|porn|intercourse|insemination|masturbat|erotic|nude|naked|hydrothermal|memorial|fighter_wing|emergency_management|volleyball|interview|moon_watch|rowing_boat|rowing_club|rowing_in_|rowing_competition|rowing_sports|rowing_-_|man_rowing|women_rowing|scull|regatta|paddleboard|cannery_row|row_house|river_trail|front_row_seats|row_the_boat|row-ses|silikose|étalon|etalon|récup|recup|icarly|beverly_sunrise|summer_rebuild|civil_engineer|stay_ready|live_fire|protest|felony|arrest|rally/i;
+const COMMONS_EXERCISE = /\b(squats?|curls?|press|deadlifts?|lunges?|push[-_ ]?ups?|pull[-_ ]?ups?|chin[-_ ]?ups?|pulldown|row|extensions?|thrusts?|bridges?|raises?|kettlebells?|dumbbells?|barbells?|muscle|strength|strengthening|fitness|workout|exercises?|gym|training|powerlifting|weightlifting|conditioning|lift|cadera)\b/i;
+
+/** Rejects NSFW or off-topic Commons filenames while keeping exercise demonstration and training videos. */
+export function commonsFileOk(page = '', file = '') {
+  const raw = decodeURIComponent(`${page} ${file}`);
+  if (COMMONS_BLOCK.test(raw)) return false;
+  const filePart = decodeURIComponent(String(page || '').split('File:').pop() || '');
+  if (filePart.length >= 4 && !COMMONS_EXERCISE.test(filePart.replace(/_/g, ' '))) return false;
+  return true;
 }
 
 const strip = html => String(html || '').replace(/<[^>]*>/g, '').trim();
@@ -52,7 +73,8 @@ export function fromCommons(json, lift, query) {
     if (!ii || !/^video\//.test(ii.mime || '')) continue;
     const meta = ii.extmetadata || {};
     const licence = meta.LicenseShortName?.value;
-    if (!commonsLicenceOk(licence) || !keepDuration(ii.duration) || !(ii.url || '').startsWith('https://upload.wikimedia.org/')) continue;
+    if (!commonsLicenceOk(licence) || !keepDuration(ii.duration) || !ii.width || ii.width > MAX_WIDTH || !(ii.url || '').startsWith('https://upload.wikimedia.org/')) continue;
+    if (!commonsFileOk(ii.descriptionurl, ii.url)) continue;
     out.push({ id: `commons-${pg.pageid}`, source: 'commons', page: ii.descriptionurl, file: ii.url, licence, author: strip(meta.Artist?.value) || 'unknown', duration: Math.round(ii.duration), width: ii.width, height: ii.height, lift, query });
   }
   return out;

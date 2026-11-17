@@ -6,6 +6,8 @@ import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from '
 import { gunzipSync } from 'node:zlib';
 import { resolve } from 'node:path';
 import { parseBlindFile, placeBlindFiles } from '../blind/schema';
+import { agreedCounts, disagreements } from '../../../scripts/stock/labels.mjs';
+import { splitOf } from '../../../scripts/public/split.mjs';
 
 export const ROOT = resolve(__dirname, '..');
 export type LabelledSet = { name: string; lift: string; label: number; wl: any[]; ts: number[]; il?: any[] | null };
@@ -202,6 +204,76 @@ export function benchSets(ds: string, split: 'build' | 'holdout' = 'build') {
   }
   sets.sort((a, b) => a.name.localeCompare(b.name));
   return { sets, unreadable, missing, notScored, record };
+}
+
+export type StockSet = {
+  name: string;
+  id: string;
+  lift: string;
+  label: number;
+  who: string;
+  wl: any[];
+  ts: number[];
+  image: (number[] | null)[] | null;
+  visibleShare: number;
+  source: string;
+};
+
+/**
+ * Stock clips counted on label.html by people David names (test/real-phone/stock/labels.json; R1) and extracted by
+ * scripts/stock/stream-stock.mjs into test/real-phone/stock/<build|holdout>/<id>.json.gz.
+ * Non-gating section of public-scoreboard.test.ts: only agreed human counts are scored; disagreed counts and clips
+ * awaiting landmark extraction are listed explicitly, and the held-out half stays unread unless HOLDOUT=1.
+ */
+export function stockSets(split: 'build' | 'holdout' = 'build', root = ROOT) {
+  if (split === 'holdout' && !process.env.HOLDOUT) throw new Error('The held-out half is read only by its own run (HOLDOUT=1).');
+  const stockDir = resolve(root, 'stock');
+  const sets: StockSet[] = [], unreadable: string[] = [], missing: string[] = [], notScored: string[] = [];
+  let book: { labels?: any[] } = { labels: [] };
+  try {
+    const f = resolve(stockDir, 'labels.json');
+    if (existsSync(f)) book = JSON.parse(readFileSync(f, 'utf8'));
+  } catch {
+    unreadable.push('stock/labels.json');
+    return { sets, unreadable, missing, notScored, held: 0, disagreed: 0, awaitingExtraction: 0 };
+  }
+  const splitDisagreed = disagreements(book);
+  for (const d of splitDisagreed) {
+    if (splitOf(d.id) === split) {
+      notScored.push(`stock/${d.id}: disagreed (${d.counts.map((c: any) => `${c.who} ${c.count ?? c.verdict}`).join(', ')})`);
+    }
+  }
+  const agreed = agreedCounts(book);
+  const held = agreed.filter((l: any) => splitOf(l.id) === 'holdout').length;
+  let awaitingExtraction = 0;
+  for (const l of agreed) {
+    if (splitOf(l.id) !== split) continue;
+    const f = resolve(stockDir, split, `${l.id}.json.gz`), name = `stock/${split}/${l.id}.json.gz`;
+    if (!existsSync(f)) {
+      awaitingExtraction++;
+      notScored.push(`stock/${l.id}: labelled (${l.lift}, ${l.count} reps by ${l.who}), awaiting landmark extraction`);
+      continue;
+    }
+    let d: any;
+    try { d = JSON.parse(gunzipSync(readFileSync(f)).toString()); } catch { unreadable.push(name); continue; }
+    if (!Array.isArray(d.worldLandmarks) || !Array.isArray(d.timestamps) || d.split !== split) { unreadable.push(name); continue; }
+    const lift = l.lift || d.lift;
+    if (!lift || !Number.isInteger(l.count)) { unreadable.push(name); continue; }
+    sets.push({
+      name,
+      id: l.id,
+      lift,
+      label: l.count,
+      who: l.who,
+      wl: d.worldLandmarks,
+      ts: d.timestamps,
+      image: d.imageXY ?? null,
+      visibleShare: d.visibleShare ?? 0,
+      source: d.source ?? 'stock',
+    });
+  }
+  sets.sort((a, b) => a.name.localeCompare(b.name));
+  return { sets, unreadable, missing, notScored, held, disagreed: splitDisagreed.length, awaitingExtraction };
 }
 
 export function publicSets(split: 'build' | 'holdout' = 'build') {
