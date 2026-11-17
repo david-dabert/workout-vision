@@ -9,7 +9,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { summarizeCount, withBodyCheck } from '../../../src/lib/coreAnalysis';
 import { sureLine, sureRow, type SureRow } from './sure';
-import { benchSets, countInWindow, decides, doubtLine, PRESS_DECIDES_NOTHING, publicSets, writeScoreboard } from './sets';
+import { benchSets, countInWindow, decides, doubtLine, PRESS_DECIDES_NOTHING, publicSets, stockSets, writeScoreboard } from './sets';
 import { liftDefinition } from '../../../src/lib/counting/core';
 import { pairedLine, type Pair } from './paired';
 
@@ -87,6 +87,35 @@ function repCountSection() {
   ];
 }
 
+// Stock clips (label.html, test/real-phone/stock/labels.json, scripts/stock/stream-stock.mjs), build half:
+// human-labelled open-licence clips (Wikimedia Commons, Pexels, Pixabay; R1), non-gating section (Task 11).
+function stockSection() {
+  const { sets, unreadable, missing, notScored, held, disagreed, awaitingExtraction } = stockSets('build');
+  if (!sets.length && !held && !disagreed && !awaitingExtraction && !unreadable.length) {
+    return ['Stock clips (label.html, test/real-phone/stock/; benchmark only, decides nothing): 0 labelled sets on disk.'];
+  }
+  const rows = new Map<string, { n: number; exact: number; one: number; bad: number; refused: number }>();
+  for (const s of sets) {
+    const g = rows.get(s.lift) ?? { n: 0, exact: 0, one: 0, bad: 0, refused: 0 };
+    g.n++;
+    const r = summarizeCount(s.wl, s.ts, s.lift, undefined, s.image ?? undefined);
+    const e = r.refused ? Infinity : Math.abs(r.count - s.label);
+    if (r.refused) g.refused++; else if (e === 0) g.exact++; else if (e === 1) g.one++;
+    if (e >= 3) g.bad++;
+    rows.set(s.lift, g);
+  }
+  const n = sets.length, ex = [...rows.values()].reduce((a, g) => a + g.exact, 0);
+  return [
+    `Stock clips (label.html, test/real-phone/stock/; build half; benchmark only, decides nothing): ${n} build sets of ${rows.size} lifts; ${held} held out, unread; ${disagreed} disagreed; ${awaitingExtraction} awaiting extraction. Core on the ${n} build sets: ${ex} exact (${n ? Math.round((100 * ex) / n) : 0}%). Off by 3+ counts refusals.`,
+    ...(rows.size ? [
+      '| Lift | Sets | Exact | Off by 1 | Off by 3+ | Refused |', '|---|---:|---:|---:|---:|---:|',
+      ...[...rows].sort(([a], [b]) => a.localeCompare(b)).map(([l, g]) => `| ${l} | ${g.n} | ${g.exact} | ${g.one} | ${g.bad} | ${g.refused} |`),
+    ] : []),
+    ...missing.map(m => `MISSING ${m}`), ...unreadable.map(u => `UNREADABLE ${u}`),
+    ...(notScored.length ? [`Not scored (${notScored.length}):`, ...notScored] : []),
+  ];
+}
+
 test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
   // In CI, the base branch's counts (PUBLIC_BASE): a change cannot lower the bar by editing them (audit of 3 October).
   const from = process.env.PUBLIC_BASE || BASELINE;
@@ -127,7 +156,7 @@ test.skipIf(!process.env.SCOREBOARD)('public scoreboard', () => {
   // correlated, they likely make the interval narrower than one reading per clip would. Printed only, decides nothing.
   const paired = pairedLine(pairs, "Countix's two readings of a clip counted as two sets, as in the headline");
   const text = [head, paired, doubtLine(doubts), sureLine(sure), '', ...honestLines(sets, live), '', ...table, '', ...rows, ...missing.map(m => `MISSING ${m}`), ...absent.map(m => `MISSING ${m} (recorded as written, no file)`), ...unreadable.map(u => `UNREADABLE ${u}`),
-    ...(notScored.length ? ['', `Not scored (${notScored.length}), each with its reason:`, ...notScored] : []), '', ...repCountSection()].join('\n') + '\n';
+    ...(notScored.length ? ['', `Not scored (${notScored.length}), each with its reason:`, ...notScored] : []), '', ...repCountSection(), '', ...stockSection()].join('\n') + '\n';
   writeScoreboard(resolve(__dirname, 'public-scoreboard.txt'), text);
   process.stdout.write(text);
   expect(exactNow).toBeGreaterThanOrEqual(exactBefore);

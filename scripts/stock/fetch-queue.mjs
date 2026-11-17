@@ -6,7 +6,7 @@
 // source and lift, how many clips were found and kept, and names every request that failed: none is dropped quietly.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { commonsUrl, fromCommons, fromPexels, fromPixabay, mergeQueue, pexelsUrl, pixabayUrl, QUERIES } from './sources.mjs';
+import { commonsFileOk, commonsUrl, fromCommons, fromPexels, fromPixabay, MAX_WIDTH, mergeQueue, pexelsUrl, pixabayUrl, QUERIES } from './sources.mjs';
 
 const args = process.argv.slice(2);
 const OUT = resolve(args.includes('--out') ? args[args.indexOf('--out') + 1] : 'public/stock/queue.json');
@@ -20,7 +20,8 @@ async function getJson(url, headers = {}) {
   return res.json();
 }
 
-const queue = existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')).clips ?? [] : [];
+const rawQueue = existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')).clips ?? [] : [];
+const queue = rawQueue.filter(c => c.width && c.width <= MAX_WIDTH && (c.source !== 'commons' || commonsFileOk(c.page, c.file)));
 const before = queue.length;
 let all = queue;
 const failures = [];

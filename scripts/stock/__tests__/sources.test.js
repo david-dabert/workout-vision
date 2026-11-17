@@ -1,7 +1,16 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { commonsLicenceOk, fromCommons, fromPexels, fromPixabay, mergeQueue } from '../sources.mjs';
+import { commonsFileOk, commonsLicenceOk, fromCommons, fromPexels, fromPixabay, MAX_WIDTH, mergeQueue, QUERIES } from '../sources.mjs';
+import { liftDefinition } from '../../../src/lib/counting/core.ts';
 
 describe('the stock sources', () => {
+  it('queries only catalogue exercises that have a counter', () => {
+    const keys = Object.keys(QUERIES);
+    expect(keys.length).toBeGreaterThanOrEqual(17);
+    for (const k of keys) {
+      expect(liftDefinition(k), `missing liftDefinition for ${k}`).not.toBeNull();
+    }
+  });
   it('keeps Commons videos under a free licence, of a set\'s length, served from upload.wikimedia.org', () => {
     const page = (pageid, licence, duration, mime = 'video/webm', url = `https://upload.wikimedia.org/x/${pageid}.webm`) => ({ pageid, imageinfo: [{ mime, url, descriptionurl: `https://commons.wikimedia.org/wiki/File:${pageid}`, duration, width: 1280, height: 720, extmetadata: { LicenseShortName: { value: licence }, Artist: { value: '<a href="x">Ann</a>' } } }] });
     const json = { query: { pages: { 1: page(1, 'CC BY-SA 4.0', 30), 2: page(2, 'CC BY-NC 4.0', 30), 3: page(3, 'CC0', 3), 4: page(4, 'CC0', 40, 'image/jpeg'), 5: page(5, 'Public domain', 20), 6: page(6, 'CC BY 3.0', 20, 'video/webm', 'https://evil.example/x.webm') } } };
@@ -39,5 +48,16 @@ describe('the stock sources', () => {
     const q = [{ id: 'pexels-1', lift: 'squat', file: 'a' }];
     const merged = mergeQueue(q, [{ id: 'pexels-1', lift: 'bench_press', file: 'b' }, { id: 'pexels-2', lift: 'squat', file: 'c' }]);
     expect(merged).toEqual([{ id: 'pexels-1', lift: 'squat', file: 'a' }, { id: 'pexels-2', lift: 'squat', file: 'c' }]);
+  });
+
+  it('excludes explicit/NSFW and off-topic files and enforces MAX_WIDTH in fromCommons and public/stock/queue.json', () => {
+    expect(commonsFileOk('https://commons.wikimedia.org/wiki/File:Unprotected_human_sexual_intercourse.webm', '')).toBe(false);
+    expect(commonsFileOk('https://commons.wikimedia.org/wiki/File:0501-hydrothermal-vents-640x360.webm', '')).toBe(false);
+    expect(commonsFileOk('https://commons.wikimedia.org/wiki/File:Squats_Wikipedia.webm', '')).toBe(true);
+    const overWidth = { query: { pages: { 1: { pageid: 1, imageinfo: [{ mime: 'video/webm', url: 'https://upload.wikimedia.org/x/Squat.webm', descriptionurl: 'https://commons.wikimedia.org/wiki/File:Squat.webm', duration: 20, width: 3840, height: 2160, extmetadata: { LicenseShortName: { value: 'CC0' } } }] } } } };
+    expect(fromCommons(overWidth, 'squat', 'squat exercise')).toEqual([]);
+    const queue = JSON.parse(readFileSync('public/stock/queue.json', 'utf8'));
+    expect(queue.clips.filter(c => /sexual|orgasm|fapping|doggy_style|porn/i.test(`${c.page} ${c.file}`))).toEqual([]);
+    expect(queue.clips.filter(c => c.width > MAX_WIDTH)).toEqual([]);
   });
 });
