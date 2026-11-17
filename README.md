@@ -37,7 +37,7 @@ Labelled sets are counted by the same code the app runs, in CI on every push and
 - stored landmark sets: 13 of the 15 that decide are exact (not 14, not 15); the 5 bench and overhead press sets are measured and decide nothing (PLAN.md);
 - real videos read whole by the built app: 12 of 17 exact, 2 refused, and 1 known error of 3 or more, a dumbbell bench press filmed from an angle, 16 for 9 (test/real-phone/sets-14nov-video/; not 13, not 14; the pendulum squat error of 14 for 7 resolved to 7 exact, back extension 17 to 18 exact, sissy squat 5_5011 refused to 5 exact, sissy squat 7_5006 5 to 7 exact).
 
-**Public build half** (test/real-phone/accuracy/public-scoreboard.txt, 15 November 2026): 1064 sets, 540 exact (51 %). Of the 949 in the baseline that decide, 478 exact (50%), 0 newly off by 3 or more. Per dataset: Countix cut to its labelled window 211 of 447 exact (47%), Countix whole 194 of 447 (43%), CFRep 7 of 12 (58%), MM-Fit 128 of 158 (81%). Countix by distinct clip: both readings exact on 178 of 447 (40%), either reading on 227 (51%).
+**Public build half** (test/real-phone/accuracy/public-scoreboard.txt, 17 November 2026): 1064 sets, 542 exact (51 %). Of the 949 in the baseline that decide, 480 exact (51%), 0 newly off by 3 or more. Per dataset: Countix cut to its labelled window 213 of 447 exact (48%), Countix whole 194 of 447 (43%), CFRep 7 of 12 (58%), MM-Fit 128 of 158 (81%). Countix by distinct clip: both readings exact on 178 of 447 (40%), either reading on 229 (51%).
 
 **Testers' blind counts** (test/real-phone/blind/, 8 November 2026): 0 sets recorded; collection schema, automated evaluation loop, baseline regression gate (`npm run scoreboard:blind`), and SHA-256 integrity lock (`labels.lock`) established.
 
