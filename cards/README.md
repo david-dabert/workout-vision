@@ -40,7 +40,7 @@ Phase 1 cards of 16 November 2026, decided by the board (David: "Bring in the ag
 13. 049 (Antigravity), the production build ships only what its pages use.
 14. 052 (Antigravity, careful: Claude reviews before merge), one analysis configuration, checked by the type checker.
 15. 051 (Antigravity, lab lane), two references for measurement: rep duration against human boundaries, 2D angle against synthetic truth.
-16. 054 (Claude), the reverts #441 and #442, under the board's written condition (PLAN.md, decisions of 16 November 2026).
+16. 054 (Claude), the reverts #441 and #442, under the board's written condition (PLAN.md, decisions of 16 November 2026). Blocked 17 November 2026: CI's baseline ratchet refuses the fall the card allows; needs David's written rule or reset (card 054).
 
 The path to a sellable product, cards of 16 November 2026 from the review panel (David: tasks to execute, not a summary):
 - Now, no code, David sends: 060 (ten coaches at a named price, `docs/sell/coach-offer.md`), 061 (ten testers, thirty blind sets, `docs/sell/tester-kit.md`).
