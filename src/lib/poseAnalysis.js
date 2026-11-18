@@ -248,7 +248,8 @@ async function createLandmarker({ forceCPU = false, useImageMode = false, delega
         runningMode,
         // Lifter lock (lifterLock.js): two poses asked in IMAGE mode, so a bystander ranked first no longer hides
         // the lifter; detectPoseImage keeps one. Off unless LIFTER_LOCK or the bench hook (__WV_BENCH_LOCK__).
-        numPoses: useImageMode && _lockOn() ? LIFTER_POSES : 1,
+        // Test benches only (__WV_BENCH_ALL_POSES__, test/real-phone/occlusion/track-video.mjs): every person found is recorded.
+        numPoses: useImageMode && _allPosesOn() ? (globalThis.__WV_BENCH_NUM_POSES__ || 3) : useImageMode && _lockOn() ? LIFTER_POSES : 1,
         // Detection 0.35 and presence 0.4: below MediaPipe's defaults of 0.5, UNSOURCED, experimental. Tracking 0.5:
         // MediaPipe's default, convention; it acts in VIDEO mode only (IMAGE mode runs the person detector on every
         // image), where it decides whether a half-hidden body is followed or searched for again. The app reads in
@@ -393,6 +394,7 @@ let _gate = newGate();
 let _gatedFrames = 0;
 export const gatedFrames = () => _gatedFrames;
 function _gateOn() { return (JUMP_GATE || globalThis.__WV_BENCH_GATE__ === true) && !globalThis.__WV_BENCH_NO_GATE__; }
+function _allPosesOn() { return globalThis.__WV_BENCH_ALL_POSES__ === true; }
 function _lockOn() { return (LIFTER_LOCK || globalThis.__WV_BENCH_LOCK__ === true) && !globalThis.__WV_BENCH_NO_LOCK__; }
 // A result with several poses reduced to the lifter's (pickLifter), so every caller reads landmarks[0] as before; a
 // result with one pose is returned as it is. Updates the reference from the pose kept.
@@ -524,6 +526,12 @@ export function detectPoseImage(landmarker, source, timestamp, { rethrow = false
     if (_landmarkerIsImageMode) {
       result = landmarker.detect(source);
       const now = timestamp != null ? timestamp : performance.now();
+      // Test benches only (__WV_BENCH_ALL_POSES__; the app never sets it): every pose of the frame is recorded in
+      // globalThis.__WV_BENCH_POSES__, and the frame goes on with the model's first pose, as with one pose asked.
+      if (_allPosesOn() && result) {
+        (globalThis.__WV_BENCH_POSES__ ||= []).push({ t: now, image: result.landmarks || [], world: result.worldLandmarks || [] });
+        result = { ...result, landmarks: (result.landmarks || []).slice(0, 1), worldLandmarks: (result.worldLandmarks || []).slice(0, 1) };
+      }
       if (_lockOn()) result = _keepLifter(result, source, now);
       const backOn = backfill && _backOn();
       const gateOn = _gateOn();
