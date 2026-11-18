@@ -95,7 +95,7 @@ export function createLiveCounter(lift, { summarize = summarizeCount } = {}) {
      */
     evaluate() {
       if (!timestamps.length) return { count: null, inView: false, refused: true, announce: null, samples: 0 };
-      const core = summarize(worldLandmarks, timestamps, lift, undefined, imageLandmarks);
+      const core = summarize(worldLandmarks, timestamps, lift);
       const { seen, of } = recentSeen(core, lift, IN_VIEW_SAMPLES);
       const inView = of > 0 && seen * 2 >= of;
       const shown = inView && !core.refused;
@@ -124,7 +124,7 @@ export function createLiveCounter(lift, { summarize = summarizeCount } = {}) {
       const metadata = { width: w, height: h, fps: TARGET_FPS, duration, frameCount: timestamps.length, method: 'live', live: true, maxLongSide: MAX_LONG_SIDE };
       // A refused set carries PSC's proposal and a counted one its body check, as the recorded path's do
       // (coreAnalysis.js, withProposal, withBodyCheck).
-      return withSensitivity(withBodyCheck(withProposal({ ...summarize(worldLandmarks, timestamps, lift, undefined, imageLandmarks), exercise: lift, metadata, imageLandmarks: imageLandmarks.slice(), worldLandmarks: worldLandmarks.slice(), timestamps: timestamps.slice() }, lift), lift), lift);
+      return withSensitivity(withBodyCheck(withProposal({ ...summarize(worldLandmarks, timestamps, lift), exercise: lift, metadata, imageLandmarks: imageLandmarks.slice(), worldLandmarks: worldLandmarks.slice(), timestamps: timestamps.slice() }, lift), lift), lift);
     },
   };
 }

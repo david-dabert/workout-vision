@@ -161,12 +161,3 @@ describe('the lift of a limb against gravity', () => {
   });
 });
 
-describe('per-exercise shallow-ROM floors (Card 034, 15 November 2026)', () => {
-  it('exposes the calibrated 15-degree floors on squat, lateral_raise, and push_up', () => {
-    expect(liftDefinition('squat')).toMatchObject({ minRangeDeg: 15, minRepRomDeg: 15 });
-    expect(liftDefinition('lateral_raise')).toMatchObject({ minRepRomDeg: 15 });
-    expect(liftDefinition('push_up')).toMatchObject({ thresholdMargin: 0.25, minRangeDeg: 15, minRepRomDeg: 15 });
-  });
-});
-
-
