@@ -9,6 +9,9 @@ import { drawSkeleton, litSides, trailPoints, LAMP } from './replay-draw';
 import { steadyFrames, trailAt } from './replay-smooth';
 import { overlayLines, skeletonCaption } from './replay-labels';
 import { RGB, rgba } from './palette';
+import { ArrayBufferTarget, Muxer } from 'mp4-muxer';
+import { extractFramesWebCodecs, withRestarts } from '../../lib/frameExtractor';
+import { pickEncoder } from '../../lib/pack';
 
 const MIMES = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm'];
 
@@ -102,7 +105,80 @@ function setVideo({ file, result, lift, fr, saved, clean = false, onProgress, si
       }
     }
   };
-  return recordVideo({ file, screen, draw, onProgress, signal, name: mime => exportFileName(lift, mime, Number.isInteger(saved) ? saved : result?.count, clean) });
+  const name = mime => exportFileName(lift, mime, Number.isInteger(saved) ? saved : result?.count, clean);
+  // Frame by frame first (encodeVideo below): every picture of the set at up to 30 a second, whatever the phone's speed.
+  // The recording of the screen as it plays (recordVideo) stays for a browser without WebCodecs' encoder, and as the
+  // fallback when the encoding fails.
+  if (!canEncode()) return recordVideo({ file, screen, draw, onProgress, signal, name });
+  return encodeVideo({ file, draw, name, onProgress, signal }).catch(e => {
+    if (e?.name === 'AbortError') throw e;
+    return recordVideo({ file, screen, draw, onProgress, signal, name });
+  });
+}
+
+// Pictures a second in the exported video (at most: a video filmed slower keeps its own). 30: the phone's own camera
+// rate, the rate the recording asked of its stream (captureStream(30)). Status: convention.
+export const EXPORT_FPS = 30;
+// Pictures the encoder may hold before the reader waits (videoPack.js's MAX_ENCODE_QUEUE). Status: convention.
+const EXPORT_QUEUE = 2;
+
+/** Whether the frame-by-frame export can run: WebCodecs' encoder and frames (Safari from 16.4, Chromium). */
+export const canEncode = () => typeof globalThis.VideoEncoder === 'function' && typeof globalThis.VideoFrame === 'function';
+
+/**
+ * The set's video with what draw(ctx, t, W, H, u) lays over each picture, made frame by frame, not recorded as it plays
+ * (18 November 2026). The live recording kept the pictures the phone managed to draw while the video played: David's
+ * export of his seated row held 5.1 pictures a second (ffprobe avg_frame_rate 5250/1027), and the skeleton jumped
+ * between them. Here every picture is read by the app's own frame reader (frameExtractor.js extractFramesWebCodecs, the
+ * phone's hardware decoder, rotation applied, at most 1280 px), drawn with its overlay at its own time, encoded by the
+ * phone's H.264 encoder and written to an MP4 (mp4-muxer), as videoPack.js packs a video. Nothing leaves the phone.
+ * deps: the reader and encoder, for tests.
+ */
+export async function encodeVideo({ file, draw, name, onProgress, signal, deps = {} }) {
+  const extract = deps.extract ?? extractFramesWebCodecs;
+  const Encoder = deps.VideoEncoder ?? globalThis.VideoEncoder;
+  const Frame = deps.VideoFrame ?? globalThis.VideoFrame;
+  const restarts = deps.withRestarts ?? withRestarts;
+  let encoder = null, muxer = null, target = null, picked = null, out = null, ctx = null, first = null, frames = 0, err = null;
+  try {
+    const onFrame = async (picture, index, t) => {
+      if (signal?.aborted) throw new DOMException('aborted', 'AbortError');
+      if (!encoder) {
+        const [W, H] = exportSize(picture.width, picture.height);
+        out = Object.assign(document.createElement('canvas'), { width: W, height: H });
+        ctx = out.getContext('2d');
+        picked = await pickEncoder(W, H, c => Encoder.isConfigSupported(c));
+        if (!picked) throw new Error('no-encoder');
+        picked.config = { ...picked.config, bitrate: EXPORT_BITS_PER_SECOND, framerate: EXPORT_FPS };
+        target = new ArrayBufferTarget();
+        muxer = new Muxer({ target, video: { codec: picked.mux, width: W, height: H }, fastStart: 'in-memory', firstTimestampBehavior: 'offset' });
+        encoder = new Encoder({ output: (chunk, meta) => { try { muxer.addVideoChunk(chunk, meta); } catch (e) { err ??= e; } }, error: e => { err ??= e; } });
+        encoder.configure(picked.config);
+        first = t;
+      }
+      if (err) throw err;
+      const W = out.width, H = out.height;
+      ctx.drawImage(picture, 0, 0, W, H);
+      draw(ctx, t, W, H, W / 390);
+      const frame = new Frame(out, { timestamp: Math.round((t - first) * 1e6), duration: Math.round(1e6 / EXPORT_FPS) });
+      try { encoder.encode(frame, { keyFrame: frames % (2 * EXPORT_FPS) === 0 }); } finally { frame.close(); }
+      frames++;
+      while (encoder.encodeQueueSize > EXPORT_QUEUE && !err) {
+        if (signal?.aborted) throw new DOMException('aborted', 'AbortError');
+        await new Promise(r => setTimeout(r, 0));
+      }
+    };
+    await restarts(pass => extract(file, EXPORT_FPS, Infinity, 1280, onFrame, p => onProgress?.(Math.min(0.99, (p || 0) / 100)), pass), { signal });
+    if (!encoder || frames === 0) throw new Error('unreadable');
+    await encoder.flush();
+    if (err) throw err;
+    muxer.finalize();
+    onProgress?.(1);
+    return new File([target.buffer], name('video/mp4'), { type: 'video/mp4' });
+  } finally {
+    if (encoder && encoder.state !== 'closed') { try { encoder.close(); } catch { /* already closed */ } }
+    if (out) { out.width = 0; out.height = 0; }
+  }
 }
 
 /**
