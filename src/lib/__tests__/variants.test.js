@@ -11,7 +11,7 @@ import legacy from '../exercises/legacy-ids.json';
 import { baseKey, isVariantKey } from '../variant-key';
 import { isOffered, isKnownExercise, tierOf } from '../offer';
 import { isGuideKey } from '../guide-keys';
-import { liftDefinition } from '../counting/core';
+import { liftDefinition, VARIANT_COUNT_AS } from '../counting/core';
 import { signalProfile } from '../counting/bodyCheck';
 import { makeVariants } from '../../../scripts/make-variants.mjs';
 import svgKeys from '../../components/experience/guide-svg-keys.json';
@@ -51,7 +51,8 @@ describe('the variants of the catalogue', () => {
   it('are counted, offered and checked as their base, and are experimental whatever the base\'s tier', () => {
     for (const v of variants) {
       const b = baseKey(v.key);
-      expect(liftDefinition(v.key), v.key).toEqual(liftDefinition(b));
+      // A variant named in VARIANT_COUNT_AS is counted by the definition it names (tested below), every other by its base's.
+      expect(liftDefinition(v.key), v.key).toEqual(liftDefinition(VARIANT_COUNT_AS[v.key] ?? b));
       expect(isOffered(v.key), v.key).toBe(isOffered(b));
       expect(isKnownExercise(v.key), v.key).toBe(isKnownExercise(b));
       expect(isGuideKey(v.key), v.key).toBe(true);
@@ -98,5 +99,13 @@ describe('the former registry\'s ids', () => {
     for (const [id, key] of Object.entries(legacy)) expect(byKey.has(key), `${id} -> ${key}`).toBe(true);
     expect(legacy.barbell_back_squat_drop_set).toBe('squat');
     expect(legacy.pendulum_squat_tempo).toBe('hack_squat--pendulum');
+  });
+});
+
+describe('a variant counted by another definition than its base (VARIANT_COUNT_AS, 18 November 2026)', () => {
+  it('counts the alternating curl variant with both arms joined', () => {
+    expect(liftDefinition('bicep_curl--alternating')).toEqual(liftDefinition('bicep_curl_alternating'));
+    expect(liftDefinition('bicep_curl--alternating').bothSides).toBe(true);
+    expect(liftDefinition('bicep_curl--cable')).toEqual(liftDefinition('bicep_curl'));
   });
 });
