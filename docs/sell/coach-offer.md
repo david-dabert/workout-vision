@@ -10,7 +10,7 @@ Je développe WorkoutVision, une application qui compte les répétitions à par
 La vidéo reste sur le téléphone de votre client : rien n'est envoyé, rien n'est à installer.
 Votre client filme sa série, l'application propose un nombre de répétitions qu'il confirme d'un geste, puis rejoue sa vidéo avec le squelette et le tempo de chaque répétition.
 Vous envoyez un programme par simple lien, et vous recevez en retour les séries réalisées.
-Je cherche dix coachs pour l'utiliser avec leurs clients pendant un mois, au tarif fondateur de [prix] euros par mois.
+Je cherche dix coachs pour l'utiliser avec leurs clients pendant un mois, au tarif fondateur de 15 euros par mois.
 Puis-je vous la montrer en dix minutes cette semaine ?
 
 David Dabert
@@ -27,9 +27,9 @@ Say plainly, if asked: the app asks the person to confirm whenever it is not sur
 
 ## The price
 
-Proposed: [prix] euros per coach per month, founding price, invoiced by hand from the web until payment is built (card 062 comes first: no invoice before the legal floor).
+Proposed: 15 euros per coach per month, founding price, invoiced by hand from the web until payment is built (card 062 comes first: no invoice before the legal floor).
 The market lens's reference: OnForm's cheapest coach plan, USD 19.99 per month (App Store listing, 15 November 2026, not opened at its source).
-David's decision: the figure in [prix].
+Decided by the board of 18 November 2026 on David's standing order of that day (PLAN.md): 15 euros per coach per month, unlimited clients. David may change it.
 
 ## The tally
 

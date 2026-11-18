@@ -1,6 +1,6 @@
 # Discovery interview guides (18 November 2026)
 
-Written by the lab's discovery agent (`.claude/agents/wv-lab-discovery.md`) for David to run in person. Questions about what the person did, never what they might do; videos and counting are raised only after the person has had the chance to name them; every figure is noted as said or shown. The coach demo is the five steps of `coach-offer.md`, with no accuracy figure and no time-saving claim (R8, R13); the price stays [prix] until David sets it, and nothing is invoiced before card 062. The physiotherapist guide shows only the fitness count on David himself: the app is not offered for patients before a written regulatory opinion (BACKLOG.md, 6 October). The silence of about three seconds, the 60 % speaking share and sending the tally within 24 hours are coaching habits, UNSOURCED.
+Written by the lab's discovery agent (`.claude/agents/wv-lab-discovery.md`) for David to run in person. Questions about what the person did, never what they might do; videos and counting are raised only after the person has had the chance to name them; every figure is noted as said or shown. The coach demo is the five steps of `coach-offer.md`, with no accuracy figure and no time-saving claim (R8, R13); the price stays 15 until David sets it, and nothing is invoiced before card 062. The physiotherapist guide shows only the fitness count on David himself: the app is not offered for patients before a written regulatory opinion (BACKLOG.md, 6 October). The silence of about three seconds, the 60 % speaking share and sending the tally within 24 hours are coaching habits, UNSOURCED.
 
 ---
 
@@ -55,7 +55,7 @@ Ne rien promettre d'autre : pas de gain de temps chiffré, pas d'analyse de la t
 14. « Honnêtement, qu'en pensez-vous ? Qu'est-ce qui manque, qu'est-ce qui est en trop ? »
 15. « Qu'est-ce qui vous empêcherait de l'essayer avec deux ou trois clients le mois prochain ? »
 
-Puis, seulement si David a fixé le prix : « Je cherche dix coachs pour l'utiliser un mois avec leurs clients, au tarif fondateur de [prix] euros par mois. Ça vous intéresse ? » Noter la réponse dans le tableau de docs/sell/coach-offer.md. Ne rien encaisser avant la carte 062.
+Puis, seulement si David a fixé le prix : « Je cherche dix coachs pour l'utiliser un mois avec leurs clients, au tarif fondateur de 15 euros par mois. Ça vous intéresse ? » Noter la réponse dans le tableau de docs/sell/coach-offer.md. Ne rien encaisser avant la carte 062.
 
 ## Ce qu'il faut observer
 - **Montré ou raconté.** La personne ouvre une appli, une facture, un tableau ? Cocher « montré » sur la fiche.
@@ -95,7 +95,7 @@ A parlé des vidéos avant la question 6 : oui / non
 | Ce qui a décidé le dernier changement d'outil | | |
 | Autres décideurs | | |
 | Présentation vue : oui / non. Frein principal (Q15) | | |
-| Tarif fondateur proposé [prix] : oui / non / à revoir le ___ | | |
+| Tarif fondateur proposé 15 : oui / non / à revoir le ___ | | |
 | Contacts de coachs donnés (nombre) | | |
 
 Si la question n'a pas été posée : n.r. Si la personne ne sait pas : « ne sait pas ». Ne jamais compléter après coup.
