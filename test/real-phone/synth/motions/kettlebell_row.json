@@ -1,0 +1,40 @@
+{
+ "key": "kettlebell_row",
+ "source": "convention: one-arm kettlebell row, hips hinged, the free hand on the knee, the bell rowed to the hip; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 55,
+  "hipFlex": 60,
+  "hipAbd": 10,
+  "knee": 25,
+  "ankle": -10,
+  "left": {
+   "shoulderFlex": 60,
+   "shoulderAbd": 8,
+   "elbow": 5
+  },
+  "right": {
+   "shoulderFlex": 40,
+   "shoulderAbd": 10,
+   "elbow": 60
+  }
+ },
+ "end": {
+  "pitch": 55,
+  "hipFlex": 60,
+  "hipAbd": 10,
+  "knee": 25,
+  "ankle": -10,
+  "left": {
+   "shoulderFlex": -25,
+   "shoulderAbd": 10,
+   "elbow": 100
+  },
+  "right": {
+   "shoulderFlex": 40,
+   "shoulderAbd": 10,
+   "elbow": 60
+  }
+ },
+ "side": "left"
+}

@@ -1,0 +1,26 @@
+{
+ "key": "kettlebell_halo",
+ "source": "convention: halo, the bell held by the horns and circled round the head close to the neck, one way then the other; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 10,
+  "shoulderFlex": 60,
+  "shoulderAbd": 10,
+  "elbow": 120
+ },
+ "end": {
+  "hipAbd": 10,
+  "left": {
+   "shoulderFlex": 40,
+   "shoulderAbd": 150,
+   "elbow": 110
+  },
+  "right": {
+   "shoulderFlex": 100,
+   "shoulderAbd": 60,
+   "elbow": 130
+  }
+ },
+ "alternate": "mirror",
+ "view": 0
+}

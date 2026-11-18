@@ -1,0 +1,21 @@
+{
+ "key": "lateral_box_jump",
+ "source": "convention: lateral box jump, side on to the box, jumped up sideways and landed soft; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 10,
+  "shoulderAbd": 8,
+  "elbow": 15
+ },
+ "end": {
+  "trunk": 30,
+  "hipFlex": 70,
+  "hipAbd": 16,
+  "knee": 90,
+  "ankle": -25,
+  "shoulderFlex": 40,
+  "shoulderAbd": 10,
+  "elbow": 20
+ },
+ "view": 0
+}

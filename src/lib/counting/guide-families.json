@@ -2092,5 +2092,223 @@
     "first": "eccentric",
     "view": "side",
     "why": "From kneeling upright on the pad, the knee opens as the body lowers forward, then the hamstrings pull it back up, as the Nordic curl."
+  },
+  "clean_pull": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hip extension lifts the bar from the floor to a full extension on the toes, as the deadlift. To be confirmed on its own build set."
+  },
+  "snatch_pull": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hip extension lifts the bar from the floor to a full extension on the toes, wide grip, as the deadlift. To be confirmed on its own build set."
+  },
+  "clean_and_press": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Each rep starts from the floor with the hip closed and ends standing with the bar pressed overhead; the press does not bend the hip. Follows the deadlift pattern; to be confirmed on its own build set."
+  },
+  "split_jerk": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "why": "The jerk rests at lockout between reps and the bar comes down to the shoulders first, as the push press. To be confirmed on its own build set."
+  },
+  "snatch_balance": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "From standing with the bar on the back, the lifter drops under it into an overhead squat: the knee closes once per rep and opens on the stand."
+  },
+  "muscle_snatch": {
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "The bar travels from the thighs to straight arms overhead with no drop under it: the shoulder opens once per rep."
+  },
+  "kettlebell_halo": {
+    "joint": null,
+    "why": "Rotation drives this movement rather than one reliable tracked angle closing and opening, as the Russian twist. Guide only."
+  },
+  "kettlebell_figure_8": {
+    "joint": null,
+    "why": "The bell passes between the legs from hand to hand in a figure of eight: no joint closes once per rep, and the reps alternate. Guide only."
+  },
+  "turkish_get_up": {
+    "joint": null,
+    "why": "A sequence of positions from lying to standing and back, one rep lasting tens of seconds: no single joint cycle marks the rep. Guide only."
+  },
+  "kettlebell_high_pull": {
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "concentric",
+    "view": "front",
+    "why": "From a sumo stance, the hips drive and the elbows lift high and wide, opening hip-shoulder-elbow, as the upright row."
+  },
+  "kettlebell_thruster": {
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Squat then press in one movement with the bells in the rack: the arms go from the rack to straight overhead once per rep, as the thruster."
+  },
+  "kettlebell_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start, the free hand braced on the knee. One limb at a time: each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
+  },
+  "external_rotation": {
+    "joint": null,
+    "why": "Rotation of the upper arm about its own axis, the elbow held at the side: hip-shoulder-elbow and the elbow angle stay still. Guide only."
+  },
+  "internal_rotation": {
+    "joint": null,
+    "why": "Rotation of the upper arm about its own axis, the elbow held at the side: hip-shoulder-elbow and the elbow angle stay still. Guide only."
+  },
+  "dumbbell_scaption": {
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "concentric",
+    "view": "front",
+    "why": "The arms rise in the plane of the shoulder blade, about 30 degrees forward of the side, opening hip-shoulder-elbow."
+  },
+  "svend_press": {
+    "joint": "elbow",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Plates squeezed between the palms at the chest, pressed straight forward: the elbow opens and closes once per rep."
+  },
+  "depth_jump": {
+    "joint": null,
+    "why": "The jumping or airborne phase falls outside controlled joint-cycle counting, as the jump squat. Guide only."
+  },
+  "hurdle_hop": {
+    "joint": null,
+    "why": "The jumping or airborne phase falls outside controlled joint-cycle counting, as the jump squat. Guide only."
+  },
+  "lateral_box_jump": {
+    "joint": null,
+    "why": "The jumping or airborne phase falls outside controlled joint-cycle counting, as the jump squat. Guide only."
+  },
+  "star_jump": {
+    "joint": null,
+    "why": "The jumping or airborne phase falls outside controlled joint-cycle counting, as the jump squat. Guide only."
+  },
+  "frankenstein_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the bar balanced on the shoulders with the arms held straight out; quadriceps extend it back."
+  },
+  "jefferson_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Straddling the bar, knee flexion lowers the body and the bar between the legs; quadriceps extend it back."
+  },
+  "kneeling_squat": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Kneeling with the bar on the back, the hips sit back to the heels, closing shoulder-hip-knee, and the glutes drive them forward."
+  },
+  "zercher_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the bar held in the crook of the elbows; quadriceps extend it back."
+  },
+  "seated_good_morning": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Seated with the bar on the back, the trunk hinges forward at the hip, closing shoulder-hip-knee, and returns upright."
+  },
+  "sternum_chin_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The pull flexes the extended elbows as the body leans back and brings the lower chest to the bar."
+  },
+  "bench_pull": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Lying face down on a high bench, the elbows flex to pull the bar to the underside of the bench."
+  },
+  "gorilla_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "From a wide hinged stance over two bells, one elbow flexes to row, then the other. One limb at a time: each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
+  },
+  "suitcase_deadlift": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hip extension lifts the single load held at one side from the floor, as the deadlift; the trunk resists the side pull."
+  },
+  "reverse_wrist_curl": {
+    "joint": null,
+    "why": "Forearm muscles move the wrist while the tracked elbow stays nearly fixed, as the wrist curl. Guide only."
+  },
+  "bayesian_curl": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Facing away from a low pulley, the arm behind the trunk, the elbow flexes to curl. One limb at a time: each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
+  },
+  "single_arm_push_up": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "One hand on the floor, the other behind the back, the working elbow lowers the body and extends it back. One limb at a time: each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
+  },
+  "suitcase_carry": {
+    "joint": null,
+    "why": "A carry: walked, without a repeated tracked joint cycle, as the farmer carry. Guide only."
+  },
+  "waiter_walk": {
+    "joint": null,
+    "why": "A carry: walked, without a repeated tracked joint cycle, as the farmer carry. Guide only."
+  },
+  "wrist_roller": {
+    "joint": null,
+    "why": "Forearm muscles turn the wrists while the arms are held straight out: the tracked elbow and shoulder stay still. Guide only."
+  },
+  "medicine_ball_chest_pass": {
+    "joint": null,
+    "why": "A throw: the ball leaves the hands and the start varies from rep to rep, as the ball slam. Guide only."
+  },
+  "landmine_rotation": {
+    "joint": null,
+    "why": "Rotation drives this movement rather than one reliable tracked angle closing and opening, as the Russian twist. Guide only."
   }
 }

@@ -1,0 +1,33 @@
+{
+ "key": "gorilla_row",
+ "source": "convention: gorilla row, feet wide, hips hinged over two bells, rowing one while the other hand presses into its bell; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 50,
+  "hipFlex": 60,
+  "hipAbd": 25,
+  "knee": 45,
+  "ankle": -15,
+  "shoulderFlex": 50,
+  "shoulderAbd": 8,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 50,
+  "hipFlex": 60,
+  "hipAbd": 25,
+  "knee": 45,
+  "ankle": -15,
+  "left": {
+   "shoulderFlex": -25,
+   "shoulderAbd": 10,
+   "elbow": 100
+  },
+  "right": {
+   "shoulderFlex": 50,
+   "shoulderAbd": 8,
+   "elbow": 5
+  }
+ },
+ "side": "left"
+}

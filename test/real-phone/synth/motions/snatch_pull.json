@@ -1,0 +1,35 @@
+{
+ "key": "snatch_pull",
+ "source": "convention: snatch pull, snatch-width grip, finished on the toes with a shrug, arms straight; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 45,
+  "trunk": 10,
+  "hipFlex": 110,
+  "hipAbd": 12,
+  "knee": 85,
+  "ankle": -15,
+  "shoulderFlex": 55,
+  "shoulderAbd": 35,
+  "elbow": 5
+ },
+ "end": {
+  "hipAbd": 12,
+  "knee": 5,
+  "ankle": 20,
+  "shrug": 15,
+  "shoulderFlex": 5,
+  "shoulderAbd": 35,
+  "elbow": 10
+ },
+ "tempo": {
+  "out": [
+   0.6,
+   1
+  ],
+  "back": [
+   1.2,
+   2
+  ]
+ }
+}

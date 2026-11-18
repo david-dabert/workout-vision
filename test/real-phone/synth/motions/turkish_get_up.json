@@ -1,0 +1,47 @@
+{
+ "key": "turkish_get_up",
+ "source": "convention: Turkish get-up, the bell held on a straight arm overhead from lying on the back to standing and back down; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": 10,
+  "hipAbd": 10,
+  "knee": 5,
+  "ankle": 20,
+  "left": {
+   "shoulderFlex": 90,
+   "shoulderAbd": 5,
+   "elbow": 5
+  },
+  "right": {
+   "shoulderAbd": 45,
+   "elbow": 5
+  }
+ },
+ "end": {
+  "hipAbd": 8,
+  "left": {
+   "shoulderFlex": 175,
+   "shoulderAbd": 10,
+   "elbow": 5
+  },
+  "right": {
+   "shoulderAbd": 10,
+   "elbow": 5
+  }
+ },
+ "tempo": {
+  "out": [
+   8,
+   12
+  ],
+  "back": [
+   8,
+   12
+  ]
+ }
+}

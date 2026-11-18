@@ -1,0 +1,29 @@
+{
+ "key": "kneeling_squat",
+ "source": "convention: kneeling squat, kneeling on a pad with the bar on the back, the hips sat back to the heels and driven forward to upright; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.05
+ },
+ "start": {
+  "knee": 90,
+  "ankle": 40,
+  "hipAbd": 10,
+  "shoulderFlex": 0,
+  "shoulderAbd": 50,
+  "humRot": 90,
+  "elbow": 150
+ },
+ "end": {
+  "pitch": 20,
+  "hipFlex": 70,
+  "knee": 140,
+  "ankle": 40,
+  "hipAbd": 10,
+  "shoulderFlex": 0,
+  "shoulderAbd": 50,
+  "humRot": 90,
+  "elbow": 150
+ }
+}

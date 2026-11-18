@@ -1,0 +1,34 @@
+{
+ "key": "jefferson_squat",
+ "source": "convention: Jefferson squat, astride the bar with one foot forward and one back, one hand in front and one behind; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 18,
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 8
+  },
+  "right": {
+   "hipFlex": -8
+  }
+ },
+ "end": {
+  "trunk": 10,
+  "hipAbd": 22,
+  "shoulderFlex": 10,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 90,
+   "knee": 110,
+   "ankle": -30
+  },
+  "right": {
+   "hipFlex": 70,
+   "knee": 100,
+   "ankle": -25
+  }
+ }
+}

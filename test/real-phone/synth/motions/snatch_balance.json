@@ -1,0 +1,32 @@
+{
+ "key": "snatch_balance",
+ "source": "convention: snatch balance, the bar driven off the back and the lifter dropped under it into the bottom of an overhead squat; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 14,
+  "shoulderFlex": 0,
+  "shoulderAbd": 50,
+  "humRot": 90,
+  "elbow": 150
+ },
+ "end": {
+  "trunk": 15,
+  "hipFlex": 100,
+  "hipAbd": 18,
+  "knee": 130,
+  "ankle": -32,
+  "shoulderFlex": 175,
+  "shoulderAbd": 40,
+  "elbow": 5
+ },
+ "tempo": {
+  "out": [
+   0.6,
+   1
+  ],
+  "back": [
+   1.2,
+   2
+  ]
+ }
+}

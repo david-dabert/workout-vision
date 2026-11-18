@@ -831,7 +831,6 @@
       "barbell squat",
       "barbell back squat",
       "safety bar squat",
-      "zercher squat",
       "box squat",
       "belt squat",
       "low bar squat",
@@ -5442,7 +5441,10 @@
     "aliases": [
       "seated knee tuck",
       "relevé de genoux assis",
-      "seated knee tuck"
+      "seated knee tuck",
+      "seated leg tuck",
+      "leg pull in",
+      "knee tuck"
     ]
   },
   {
@@ -6700,6 +6702,741 @@
       "glute ham raise",
       "ghr",
       "glute ham developer"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "clean_pull",
+    "name": "Clean Pull",
+    "slug": "clean-pull",
+    "category": "back",
+    "equipment": "Barbell",
+    "muscles": [
+      "Posterior Chain",
+      "Upper Back",
+      "Quads"
+    ],
+    "fr": "Tirage d’épaulé",
+    "aliases": [
+      "clean pull",
+      "tirage d’épaulé",
+      "tirage epaule",
+      "tirage d epaule"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "snatch_pull",
+    "name": "Snatch Pull",
+    "slug": "snatch-pull",
+    "category": "back",
+    "equipment": "Barbell",
+    "muscles": [
+      "Posterior Chain",
+      "Upper Back",
+      "Quads"
+    ],
+    "fr": "Tirage d’arraché",
+    "aliases": [
+      "snatch pull",
+      "tirage d’arraché",
+      "tirage arrache",
+      "tirage d arrache"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "clean_and_press",
+    "name": "Clean and Press",
+    "slug": "clean-and-press",
+    "category": "full_body",
+    "equipment": "Barbell",
+    "muscles": [
+      "Posterior Chain",
+      "Shoulders",
+      "Triceps",
+      "Quads"
+    ],
+    "fr": "Épaulé-développé",
+    "aliases": [
+      "clean and press",
+      "épaulé-développé",
+      "epaule developpe",
+      "clean & press"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "split_jerk",
+    "name": "Split Jerk",
+    "slug": "split-jerk",
+    "category": "shoulders",
+    "equipment": "Barbell",
+    "muscles": [
+      "Shoulders",
+      "Triceps",
+      "Quads"
+    ],
+    "fr": "Jeté fendu",
+    "aliases": [
+      "split jerk",
+      "jeté fendu",
+      "jete fendu",
+      "jerk"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "snatch_balance",
+    "name": "Snatch Balance",
+    "slug": "snatch-balance",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Quads",
+      "Shoulders",
+      "Core"
+    ],
+    "fr": "Snatch balance",
+    "aliases": [
+      "snatch balance",
+      "equilibre arrache"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "muscle_snatch",
+    "name": "Muscle Snatch",
+    "slug": "muscle-snatch",
+    "category": "shoulders",
+    "equipment": "Barbell",
+    "muscles": [
+      "Shoulders",
+      "Upper Back",
+      "Posterior Chain"
+    ],
+    "fr": "Muscle snatch",
+    "aliases": [
+      "muscle snatch",
+      "arrache muscle"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "kettlebell_halo",
+    "name": "Kettlebell Halo",
+    "slug": "kettlebell-halo",
+    "category": "shoulders",
+    "equipment": "Kettlebell",
+    "muscles": [
+      "Shoulders",
+      "Core",
+      "Mobility"
+    ],
+    "fr": "Halo au kettlebell",
+    "aliases": [
+      "kettlebell halo",
+      "halo au kettlebell",
+      "halo",
+      "kb halo"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "kettlebell_figure_8",
+    "name": "Kettlebell Figure 8",
+    "slug": "kettlebell-figure-8",
+    "category": "full_body",
+    "equipment": "Kettlebell",
+    "muscles": [
+      "Core",
+      "Posterior Chain",
+      "Forearms"
+    ],
+    "fr": "Huit au kettlebell",
+    "aliases": [
+      "kettlebell figure 8",
+      "huit au kettlebell",
+      "figure eight",
+      "huit kettlebell"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "turkish_get_up",
+    "name": "Turkish Get-Up",
+    "slug": "turkish-get-up",
+    "category": "full_body",
+    "equipment": "Kettlebell",
+    "muscles": [
+      "Shoulders",
+      "Core",
+      "Glutes",
+      "Quads"
+    ],
+    "fr": "Turkish get-up",
+    "aliases": [
+      "turkish get-up",
+      "turkish get up",
+      "tgu",
+      "get up",
+      "releve turc"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "kettlebell_high_pull",
+    "name": "Kettlebell High Pull",
+    "slug": "kettlebell-high-pull",
+    "category": "shoulders",
+    "equipment": "Kettlebell",
+    "muscles": [
+      "Shoulders",
+      "Upper Back",
+      "Glutes"
+    ],
+    "fr": "Tirage haut au kettlebell",
+    "aliases": [
+      "kettlebell high pull",
+      "tirage haut au kettlebell",
+      "sumo high pull",
+      "kettlebell sumo high pull",
+      "tirage haut kettlebell"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "kettlebell_thruster",
+    "name": "Kettlebell Thruster",
+    "slug": "kettlebell-thruster",
+    "category": "full_body",
+    "equipment": "Kettlebell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Shoulders",
+      "Triceps"
+    ],
+    "fr": "Thruster aux kettlebells",
+    "aliases": [
+      "kettlebell thruster",
+      "thruster aux kettlebells",
+      "kb thruster",
+      "thruster kettlebell"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "kettlebell_row",
+    "name": "Kettlebell Row",
+    "slug": "kettlebell-row",
+    "category": "back",
+    "equipment": "Kettlebell",
+    "muscles": [
+      "Back",
+      "Lats",
+      "Biceps"
+    ],
+    "fr": "Rowing au kettlebell",
+    "aliases": [
+      "kettlebell row",
+      "rowing au kettlebell",
+      "kb row",
+      "one arm kettlebell row",
+      "rowing kettlebell"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "external_rotation",
+    "name": "Shoulder External Rotation",
+    "slug": "external-rotation",
+    "category": "shoulders",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Shoulders",
+      "Rear Delts"
+    ],
+    "fr": "Rotation externe de l’épaule",
+    "aliases": [
+      "shoulder external rotation",
+      "rotation externe de l’épaule",
+      "external rotation",
+      "band external rotation",
+      "cable external rotation",
+      "rotation externe"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "internal_rotation",
+    "name": "Shoulder Internal Rotation",
+    "slug": "internal-rotation",
+    "category": "shoulders",
+    "equipment": "Resistance Band",
+    "muscles": [
+      "Shoulders",
+      "Chest"
+    ],
+    "fr": "Rotation interne de l’épaule",
+    "aliases": [
+      "shoulder internal rotation",
+      "rotation interne de l’épaule",
+      "internal rotation",
+      "band internal rotation",
+      "cable internal rotation",
+      "rotation interne"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "dumbbell_scaption",
+    "name": "Dumbbell Scaption",
+    "slug": "dumbbell-scaption",
+    "category": "shoulders",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Shoulders",
+      "Upper Back"
+    ],
+    "fr": "Scaption aux haltères",
+    "aliases": [
+      "dumbbell scaption",
+      "scaption aux haltères",
+      "scaption",
+      "y raise standing",
+      "elevation en y"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "svend_press",
+    "name": "Svend Press",
+    "slug": "svend-press",
+    "category": "chest",
+    "equipment": "Plate",
+    "muscles": [
+      "Chest",
+      "Shoulders",
+      "Triceps"
+    ],
+    "fr": "Svend press",
+    "aliases": [
+      "svend press",
+      "plate squeeze press",
+      "plate press"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "depth_jump",
+    "name": "Depth Jump",
+    "slug": "depth-jump",
+    "category": "legs",
+    "equipment": "Box",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Calves"
+    ],
+    "fr": "Saut en contrebas",
+    "aliases": [
+      "depth jump",
+      "saut en contrebas",
+      "drop jump",
+      "saut de profondeur"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "hurdle_hop",
+    "name": "Hurdle Hop",
+    "slug": "hurdle-hop",
+    "category": "cardio",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Quads",
+      "Calves",
+      "Core"
+    ],
+    "fr": "Sauts de haies",
+    "aliases": [
+      "hurdle hop",
+      "sauts de haies",
+      "hurdle hops",
+      "cone hops"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "lateral_box_jump",
+    "name": "Lateral Box Jump",
+    "slug": "lateral-box-jump",
+    "category": "legs",
+    "equipment": "Box",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Adductors"
+    ],
+    "fr": "Saut latéral sur box",
+    "aliases": [
+      "lateral box jump",
+      "saut latéral sur box",
+      "side box jump",
+      "saut lateral sur box"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "star_jump",
+    "name": "Star Jump",
+    "slug": "star-jump",
+    "category": "cardio",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Quads",
+      "Shoulders",
+      "Calves"
+    ],
+    "fr": "Saut en étoile",
+    "aliases": [
+      "star jump",
+      "saut en étoile",
+      "saut en etoile",
+      "star jumps"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "frankenstein_squat",
+    "name": "Frankenstein Squat",
+    "slug": "frankenstein-squat",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Core"
+    ],
+    "fr": "Squat Frankenstein",
+    "aliases": [
+      "frankenstein squat",
+      "squat frankenstein",
+      "zombie squat"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "jefferson_squat",
+    "name": "Jefferson Squat",
+    "slug": "jefferson-squat",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Adductors"
+    ],
+    "fr": "Squat Jefferson",
+    "aliases": [
+      "jefferson squat",
+      "squat jefferson",
+      "straddle squat"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "kneeling_squat",
+    "name": "Kneeling Squat",
+    "slug": "kneeling-squat",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Glutes",
+      "Hamstrings"
+    ],
+    "fr": "Squat à genoux",
+    "aliases": [
+      "kneeling squat",
+      "squat à genoux",
+      "squat a genoux",
+      "kneeling barbell squat"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "zercher_squat",
+    "name": "Zercher Squat",
+    "slug": "zercher-squat",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Upper Back",
+      "Core"
+    ],
+    "fr": "Squat Zercher",
+    "aliases": [
+      "zercher squat",
+      "squat zercher",
+      "zercher"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "seated_good_morning",
+    "name": "Seated Good Morning",
+    "slug": "seated-good-morning",
+    "category": "back",
+    "equipment": "Barbell",
+    "muscles": [
+      "Lower Back",
+      "Hamstrings",
+      "Glutes"
+    ],
+    "fr": "Good morning assis",
+    "aliases": [
+      "seated good morning",
+      "good morning assis"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "sternum_chin_up",
+    "name": "Sternum Chin-Up",
+    "slug": "sternum-chin-up",
+    "category": "back",
+    "equipment": "Pull-up Bar",
+    "muscles": [
+      "Lats",
+      "Upper Back",
+      "Biceps"
+    ],
+    "fr": "Traction au sternum",
+    "aliases": [
+      "sternum chin-up",
+      "traction au sternum",
+      "sternum chin up",
+      "gironda sternum chin",
+      "gironda chin up",
+      "traction sternum"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "bench_pull",
+    "name": "Bench Pull",
+    "slug": "bench-pull",
+    "category": "back",
+    "equipment": "Barbell",
+    "muscles": [
+      "Upper Back",
+      "Lats",
+      "Rear Delts"
+    ],
+    "fr": "Rowing allongé sur banc",
+    "aliases": [
+      "bench pull",
+      "rowing allongé sur banc",
+      "prone bench row",
+      "seal row barbell",
+      "rowing allonge"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "gorilla_row",
+    "name": "Gorilla Row",
+    "slug": "gorilla-row",
+    "category": "back",
+    "equipment": "Kettlebell",
+    "muscles": [
+      "Back",
+      "Lats",
+      "Core"
+    ],
+    "fr": "Gorilla row",
+    "aliases": [
+      "gorilla row",
+      "kettlebell gorilla row",
+      "alternating kettlebell row"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "suitcase_deadlift",
+    "name": "Suitcase Deadlift",
+    "slug": "suitcase-deadlift",
+    "category": "back",
+    "equipment": "Kettlebell",
+    "muscles": [
+      "Posterior Chain",
+      "Core",
+      "Grip"
+    ],
+    "fr": "Soulevé de terre valise",
+    "aliases": [
+      "suitcase deadlift",
+      "soulevé de terre valise",
+      "single arm deadlift",
+      "souleve de terre valise"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "reverse_wrist_curl",
+    "name": "Reverse Wrist Curl",
+    "slug": "reverse-wrist-curl",
+    "category": "arms",
+    "equipment": "Barbell",
+    "muscles": [
+      "Forearms",
+      "Grip"
+    ],
+    "fr": "Curl poignet inversé",
+    "aliases": [
+      "reverse wrist curl",
+      "curl poignet inversé",
+      "palms down wrist curl",
+      "curl poignet pronation"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "bayesian_curl",
+    "name": "Bayesian Curl",
+    "slug": "bayesian-curl",
+    "category": "arms",
+    "equipment": "Cable",
+    "muscles": [
+      "Biceps"
+    ],
+    "fr": "Curl bayésien",
+    "aliases": [
+      "bayesian curl",
+      "curl bayésien",
+      "bayesian cable curl",
+      "curl bayesien",
+      "behind the body cable curl"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "single_arm_push_up",
+    "name": "Single-Arm Push-Up",
+    "slug": "single-arm-push-up",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Core"
+    ],
+    "fr": "Pompe à un bras",
+    "aliases": [
+      "single-arm push-up",
+      "pompe à un bras",
+      "single arm push up",
+      "one arm push up",
+      "pompe a un bras"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "suitcase_carry",
+    "name": "Suitcase Carry",
+    "slug": "suitcase-carry",
+    "category": "core",
+    "equipment": "Kettlebell",
+    "muscles": [
+      "Core",
+      "Grip",
+      "Shoulders"
+    ],
+    "fr": "Marche valise",
+    "aliases": [
+      "suitcase carry",
+      "marche valise",
+      "single arm farmer carry"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "waiter_walk",
+    "name": "Waiter Walk",
+    "slug": "waiter-walk",
+    "category": "shoulders",
+    "equipment": "Kettlebell",
+    "muscles": [
+      "Shoulders",
+      "Core"
+    ],
+    "fr": "Marche du serveur",
+    "aliases": [
+      "waiter walk",
+      "marche du serveur",
+      "overhead carry",
+      "waiter carry"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "wrist_roller",
+    "name": "Wrist Roller",
+    "slug": "wrist-roller",
+    "category": "arms",
+    "equipment": "Plate",
+    "muscles": [
+      "Forearms",
+      "Grip"
+    ],
+    "fr": "Enrouleur de poignets",
+    "aliases": [
+      "wrist roller",
+      "enrouleur de poignets",
+      "enrouleur",
+      "wrist roller exercise"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "medicine_ball_chest_pass",
+    "name": "Medicine Ball Chest Pass",
+    "slug": "medicine-ball-chest-pass",
+    "category": "chest",
+    "equipment": "Medicine Ball",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Shoulders"
+    ],
+    "fr": "Passe de poitrine au médecine-ball",
+    "aliases": [
+      "medicine ball chest pass",
+      "passe de poitrine au médecine-ball",
+      "chest pass",
+      "passe de poitrine"
+    ],
+    "figureOnly": true
+  },
+  {
+    "key": "landmine_rotation",
+    "name": "Landmine Rotation",
+    "slug": "landmine-rotation",
+    "category": "core",
+    "equipment": "Barbell",
+    "muscles": [
+      "Core",
+      "Shoulders"
+    ],
+    "fr": "Rotation landmine",
+    "aliases": [
+      "landmine rotation",
+      "rotation landmine",
+      "landmine 180",
+      "landmine twist"
     ],
     "figureOnly": true
   }

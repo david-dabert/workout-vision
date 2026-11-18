@@ -1,0 +1,23 @@
+{
+ "key": "suitcase_deadlift",
+ "source": "convention: suitcase deadlift, one bell beside one foot, lifted to standing without leaning towards it; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 30,
+  "trunk": 5,
+  "hipFlex": 75,
+  "hipAbd": 8,
+  "knee": 85,
+  "ankle": -25,
+  "shoulderFlex": 35,
+  "shoulderAbd": 8,
+  "elbow": 5
+ },
+ "end": {
+  "hipAbd": 8,
+  "knee": 3,
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 5
+ }
+}

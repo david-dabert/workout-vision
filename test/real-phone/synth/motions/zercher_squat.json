@@ -1,0 +1,23 @@
+{
+ "key": "zercher_squat",
+ "source": "convention: Zercher squat, the bar in the crook of the elbows against the body, the trunk upright; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 14,
+  "shoulderFlex": 55,
+  "shoulderAbd": 10,
+  "humRot": -30,
+  "elbow": 125
+ },
+ "end": {
+  "trunk": 15,
+  "hipFlex": 100,
+  "hipAbd": 14,
+  "knee": 130,
+  "ankle": -32,
+  "shoulderFlex": 70,
+  "shoulderAbd": 10,
+  "humRot": -30,
+  "elbow": 125
+ }
+}

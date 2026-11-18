@@ -1,0 +1,42 @@
+{
+ "key": "single_arm_push_up",
+ "source": "convention: single-arm push-up, feet wide, the free hand behind the back, the chest lowered beside the working hand; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "pitch": 68,
+  "hipAbd": 25,
+  "ankle": 30,
+  "left": {
+   "shoulderFlex": 70,
+   "shoulderAbd": 10,
+   "elbow": 5
+  },
+  "right": {
+   "shoulderFlex": -30,
+   "shoulderAbd": 10,
+   "humRot": 90,
+   "elbow": 100
+  }
+ },
+ "end": {
+  "pitch": 80,
+  "hipAbd": 25,
+  "ankle": 40,
+  "left": {
+   "shoulderFlex": 0,
+   "shoulderAbd": 40,
+   "elbow": 95
+  },
+  "right": {
+   "shoulderFlex": -30,
+   "shoulderAbd": 10,
+   "humRot": 90,
+   "elbow": 100
+  }
+ },
+ "side": "left"
+}

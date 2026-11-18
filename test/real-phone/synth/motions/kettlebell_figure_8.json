@@ -1,0 +1,34 @@
+{
+ "key": "kettlebell_figure_8",
+ "source": "convention: figure 8, a half squat with the back flat, the bell passed between the legs from one hand to the other; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 35,
+  "hipFlex": 55,
+  "hipAbd": 22,
+  "knee": 40,
+  "ankle": -15,
+  "shoulderFlex": 35,
+  "shoulderAbd": 10,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 35,
+  "hipFlex": 55,
+  "hipAbd": 22,
+  "knee": 40,
+  "ankle": -15,
+  "left": {
+   "shoulderFlex": 60,
+   "shoulderAbd": -10,
+   "elbow": 5
+  },
+  "right": {
+   "shoulderFlex": 20,
+   "shoulderAbd": 25,
+   "elbow": 10
+  }
+ },
+ "alternate": "mirror",
+ "view": 0
+}

@@ -1,0 +1,37 @@
+{
+ "key": "muscle_snatch",
+ "source": "convention: muscle snatch, snatch grip, the bar pulled high and turned over to straight arms without re-bending the knees; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 12,
+  "knee": 5,
+  "shoulderFlex": 0,
+  "shoulderAbd": 30,
+  "elbow": 5
+ },
+ "mid": {
+  "hipAbd": 12,
+  "ankle": 15,
+  "shrug": 15,
+  "shoulderFlex": 10,
+  "shoulderAbd": 70,
+  "humRot": -60,
+  "elbow": 100
+ },
+ "end": {
+  "hipAbd": 12,
+  "shoulderFlex": 170,
+  "shoulderAbd": 40,
+  "elbow": 5
+ },
+ "tempo": {
+  "out": [
+   0.6,
+   1
+  ],
+  "back": [
+   1.2,
+   2
+  ]
+ }
+}

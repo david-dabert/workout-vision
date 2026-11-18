@@ -1,0 +1,15 @@
+{
+ "key": "dumbbell_scaption",
+ "source": "convention: scaption, thumbs up, the arms raised to shoulder height about 30 degrees forward of the side; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 5,
+  "shoulderAbd": 10,
+  "elbow": 10
+ },
+ "end": {
+  "shoulderFlex": 65,
+  "shoulderAbd": 65,
+  "elbow": 10
+ }
+}

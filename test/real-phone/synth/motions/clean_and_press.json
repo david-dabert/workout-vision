@@ -1,0 +1,39 @@
+{
+ "key": "clean_and_press",
+ "source": "convention: clean to the front rack, then a strict press to straight arms; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 45,
+  "trunk": 10,
+  "hipFlex": 105,
+  "hipAbd": 8,
+  "knee": 75,
+  "ankle": -15,
+  "shoulderFlex": 55,
+  "shoulderAbd": 10,
+  "elbow": 5
+ },
+ "mid": {
+  "hipAbd": 10,
+  "knee": 10,
+  "shoulderFlex": 95,
+  "shoulderAbd": 15,
+  "elbow": 150
+ },
+ "end": {
+  "hipAbd": 10,
+  "shoulderFlex": 175,
+  "shoulderAbd": 15,
+  "elbow": 5
+ },
+ "tempo": {
+  "out": [
+   1.6,
+   2.4
+  ],
+  "back": [
+   1.4,
+   2.2
+  ]
+ }
+}

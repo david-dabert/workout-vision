@@ -1,0 +1,24 @@
+{
+ "key": "sternum_chin_up",
+ "source": "convention: Gironda sternum chin-up, the body leaning back as it rises so the sternum, not the chin, meets the bar; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "shoulderFlex": 170,
+  "shoulderAbd": 15,
+  "elbow": 5,
+  "hipFlex": 10,
+  "knee": 30
+ },
+ "end": {
+  "pitch": -35,
+  "shoulderFlex": 0,
+  "shoulderAbd": 25,
+  "elbow": 125,
+  "hipFlex": 25,
+  "knee": 40
+ }
+}

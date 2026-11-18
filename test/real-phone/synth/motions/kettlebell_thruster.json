@@ -1,0 +1,37 @@
+{
+ "key": "kettlebell_thruster",
+ "source": "convention: kettlebell thruster, two bells in the rack, squat to below parallel and press out of the bottom; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 12,
+  "shoulderFlex": 60,
+  "shoulderAbd": 20,
+  "elbow": 140
+ },
+ "mid": {
+  "trunk": 20,
+  "hipFlex": 100,
+  "hipAbd": 16,
+  "knee": 130,
+  "ankle": -32,
+  "shoulderFlex": 75,
+  "shoulderAbd": 20,
+  "elbow": 140
+ },
+ "end": {
+  "hipAbd": 12,
+  "shoulderFlex": 175,
+  "shoulderAbd": 15,
+  "elbow": 5
+ },
+ "tempo": {
+  "out": [
+   1.2,
+   2
+  ],
+  "back": [
+   0.8,
+   1.4
+  ]
+ }
+}

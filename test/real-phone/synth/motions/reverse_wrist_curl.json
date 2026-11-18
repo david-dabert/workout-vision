@@ -1,0 +1,31 @@
+{
+ "key": "reverse_wrist_curl",
+ "source": "convention: reverse wrist curl, seated, forearms on the thighs, palms down, the hands raised by the wrists; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "hipFlex": 90,
+  "knee": 90,
+  "hipAbd": 15,
+  "trunk": 35,
+  "shoulderFlex": 35,
+  "shoulderAbd": 8,
+  "elbow": 90,
+  "pronation": 90,
+  "wrist": 50
+ },
+ "end": {
+  "hipFlex": 90,
+  "knee": 90,
+  "hipAbd": 15,
+  "trunk": 35,
+  "shoulderFlex": 35,
+  "shoulderAbd": 8,
+  "elbow": 90,
+  "pronation": 90,
+  "wrist": -50
+ }
+}

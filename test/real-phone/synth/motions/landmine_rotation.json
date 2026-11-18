@@ -1,0 +1,23 @@
+{
+ "key": "landmine_rotation",
+ "source": "convention: landmine rotation, the bar end held overhead with straight arms and swung down to one hip, then the other; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 14,
+  "shoulderFlex": 110,
+  "shoulderAbd": 5,
+  "elbow": 10
+ },
+ "end": {
+  "hipAbd": 14,
+  "pitch": 10,
+  "trunkTwist": 50,
+  "trunkSide": -15,
+  "knee": 15,
+  "shoulderFlex": 70,
+  "shoulderAbd": 5,
+  "elbow": 10
+ },
+ "alternate": "mirror",
+ "view": 0
+}

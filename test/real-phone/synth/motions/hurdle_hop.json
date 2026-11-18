@@ -1,0 +1,19 @@
+{
+ "key": "hurdle_hop",
+ "source": "convention: hurdle hops, two-footed hops over low hurdles with the knees tucked; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 10,
+  "shoulderAbd": 8,
+  "elbow": 30
+ },
+ "end": {
+  "hipFlex": 75,
+  "hipAbd": 8,
+  "knee": 95,
+  "ankle": 20,
+  "shoulderFlex": 40,
+  "shoulderAbd": 10,
+  "elbow": 80
+ }
+}

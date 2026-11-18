@@ -1,0 +1,19 @@
+{
+ "key": "wrist_roller",
+ "source": "convention: wrist roller, arms straight out in front, the rope wound up by turning the wrists in turn; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 90,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "pronation": 90,
+  "wrist": -40
+ },
+ "end": {
+  "shoulderFlex": 90,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "pronation": 90,
+  "wrist": 40
+ }
+}

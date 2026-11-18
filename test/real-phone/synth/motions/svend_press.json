@@ -1,0 +1,17 @@
+{
+ "key": "svend_press",
+ "source": "convention: Svend press, two plates squeezed palm to palm at the chest and pressed out to straight arms; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 55,
+  "shoulderAbd": 5,
+  "humRot": -80,
+  "elbow": 135
+ },
+ "end": {
+  "shoulderFlex": 90,
+  "shoulderAbd": 5,
+  "humRot": -80,
+  "elbow": 5
+ }
+}
