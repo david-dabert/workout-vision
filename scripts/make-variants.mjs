@@ -25,9 +25,12 @@ export function makeVariants(catalogue, registry) {
     const drop = new Set(list.map(norm));
     e.aliases = e.aliases.filter(a => !drop.has(norm(a)));
   }
-  for (const [key, list] of Object.entries(ALIAS)) {
+  // Aliases for bases now; those a source gives a variant once the variant exists (below).
+  const aliasLists = [ALIAS, ...SOURCES.map(s => s.ALIAS ?? {})];
+  for (const list of aliasLists) for (const [key, names] of Object.entries(list)) {
+    if (key.includes('--')) continue;
     const e = byKey.get(key); if (!e) { errors.push(`ALIAS names ${key}, not in the catalogue`); continue; }
-    for (const a of list) if (!e.aliases.some(x => norm(x) === norm(a))) e.aliases.push(a);
+    for (const a of names) if (!e.aliases.some(x => norm(x) === norm(a))) e.aliases.push(a.toLowerCase());
   }
   // The variants, each after its base (and the base's earlier variants), in source order.
   const all = [...REGISTRY_VARIANTS, ...SOURCES.flatMap(s => s.VARIANTS)];
@@ -52,6 +55,18 @@ export function makeVariants(catalogue, registry) {
     after.get(base.key).push(entry);
   }
   const out = bases.flatMap(e => [e, ...(after.get(e.key) ?? [])]);
+  const outByKey = new Map(out.map(e => [e.key, e]));
+  for (const list of aliasLists) for (const [key, names] of Object.entries(list)) {
+    if (!key.includes('--')) continue;
+    const e = outByKey.get(key); if (!e) { errors.push(`ALIAS names ${key}, not a variant`); continue; }
+    for (const a of names) if (!e.aliases.some(x => norm(x) === norm(a))) e.aliases.push(a.toLowerCase());
+  }
+  // No name or alias held by two exercises, aliases from every source included.
+  const holder = new Map();
+  for (const e of out) for (const n of new Set([e.name, e.fr, ...e.aliases].map(norm))) {
+    if (holder.has(n) && holder.get(n) !== e.key) errors.push(`"${n}" names both ${holder.get(n)} and ${e.key}`);
+    holder.set(n, e.key);
+  }
   // The registry's ids: each movement's id, and the id of each of its techniques, to the movement's catalogue key.
   const target = new Map(FOLD);
   const legacy = {};

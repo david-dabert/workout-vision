@@ -16,11 +16,11 @@ async function openGuide(page, expect, lang) {
   await openChoice(page, expect, lang);
   await page.getByTestId('choice-find-exercise').click();
   await expect(page.locator('#guide-search')).toBeVisible({ timeout: 20000 });
-  await expect(page.locator('.guide-screen .list .item')).toHaveCount(384, { timeout: 20000 });
+  await expect(page.locator('.guide-screen .list .item')).toHaveCount(701, { timeout: 20000 });
 }
 
 export default function exercisesTests(test, expect) {
-  test('all 384 guide exercises live behind Trouver un exercice, with search first and the six Beta lifts pinned on top', async ({ page }) => {
+  test('all 701 guide exercises (384 exercises and 317 variants) live behind Trouver un exercice, with search first and the six Beta lifts pinned on top', async ({ page }) => {
     await openGuide(page, expect, 'en');
     const search = await page.locator('#guide-search').boundingBox();
     const list = await page.locator('.guide-screen .list').boundingBox();
@@ -39,7 +39,7 @@ export default function exercisesTests(test, expect) {
     await expect(page.locator('.guide-screen [data-exercise="squat"]')).toBeVisible();
     await expect(page.locator('.guide-screen [data-exercise="bicep_curl"]')).toHaveCount(0);
     await page.fill('#guide-search', '');
-    await expect(page.locator('.guide-screen .list .item')).toHaveCount(384);
+    await expect(page.locator('.guide-screen .list .item')).toHaveCount(701);
   });
 
   test('the search finds an exercise by its French or English name, and says when none matches', async ({ page }) => {

@@ -14,6 +14,11 @@ import { isGuideKey } from '../guide-keys';
 import { liftDefinition } from '../counting/core';
 import { signalProfile } from '../counting/bodyCheck';
 import { makeVariants } from '../../../scripts/make-variants.mjs';
+import svgKeys from '../../components/experience/guide-svg-keys.json';
+import { hasGuideFigure } from '../../components/experience/guide-figure';
+// The nine card lifts' scenes (lift-scenes.js hasFigure, which needs a document): their poses' keys.
+import liftPoses from '../../components/experience/lift-poses.json';
+import { getGuideExercise } from '../exerciseGuide';
 
 const variants = catalogue.filter(e => e.key.includes('--'));
 const byKey = new Map(catalogue.map(e => [e.key, e]));
@@ -58,6 +63,15 @@ describe('the variants of the catalogue', () => {
     expect(tierOf('squat--box')).toBe('experimental');
     // A variant of a base the app does not offer is not offered.
     expect(isOffered('walking_lunge--barbell')).toBe(false);
+  });
+
+  it('each show a pictograph: their own figure and still, else their base\'s', () => {
+    for (const v of variants) {
+      // The guide's animated figure, or the card scene of a card lift's variant, or the base's drawings (similar).
+      expect(hasGuideFigure(v.key) || Object.hasOwn(liftPoses, baseKey(v.key)) || getGuideExercise(v.key).frames.length > 0, v.key).toBe(true);
+      if (!hasGuideFigure(v.key)) expect(getGuideExercise(v.key).similar, v.key).toBe(true);
+      expect(svgKeys.includes(v.key) || svgKeys.includes(baseKey(v.key)), v.key).toBe(true);
+    }
   });
 
   it('carry no name another exercise holds', () => {

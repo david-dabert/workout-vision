@@ -129,7 +129,7 @@ export const UNALIAS = {
   leg_curl: ['standing leg curl', 'leg curl debout'],
   bench_press: ['cambered bar bench press', 'wide grip bench press', 'close grip bench press', 'developpe couche prise large', 'developpe barre cambree'],
   overhead_press: ['seated barbell press', 'developpe assis barre', 'dumbbell shoulder press'],
-  lat_pulldown: ['neutral grip lat pulldown', 'tirage vertical prise neutre', 'reverse grip lat pulldown', 'tirage vertical prise inversee', 'single arm lat pulldown', 'tirage vertical unilateral'],
+  lat_pulldown: ['neutral grip lat pulldown', 'tirage vertical prise neutre', 'reverse grip lat pulldown', 'tirage vertical prise inversee', 'single arm lat pulldown', 'tirage vertical unilateral', 'tirage nuque'],
   tricep_pushdown: ['triceps corde', 'triceps barre', 'straight bar pushdown', 'poussee triceps barre droite', 'tricep rope pushdown', 'skull crusher', 'lying triceps extension', 'barre au front'],
   captains_chair_knee_raise: ['captains chair leg raise', 'chaise romaine releve de jambes'],
   seated_dumbbell_press: ['developpe militaire assis'],
