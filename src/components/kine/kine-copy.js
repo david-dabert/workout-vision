@@ -4,7 +4,8 @@
 export const KINE = {
   fr: {
     eyebrow: 'Espace kiné',
-    title: 'Vos patients, suivis entre deux séances',
+    // Panel audit of 18 November 2026 (regulatory seat): the workspace sends programmes; it follows no patient.
+    title: 'Vos programmes d’exercices, envoyés en un lien',
     // Think tank of 16 November 2026 (physiotherapy and regulation lens): the workspace sends programmes; it does not
     // judge a patient's movement in production (buildFlags.js, kineJudged).
     sub: 'Composez un programme d’exercices et envoyez-le par lien, QR code ou fiche PDF. Votre patient retrouve vos vidéos et vos consignes sur son téléphone. Aucune donnée ne passe par un serveur.',
@@ -85,10 +86,10 @@ export const KINE = {
     pHistory: 'Vos essais',
     pHistoryHint: 'Les essais faits sur ce téléphone, du plus récent au plus ancien. Chaque rapport se prépare en PDF, sans les images de la vidéo, qui reste sur votre téléphone.',
     pReportMake: 'Rapport (PDF)',
-    pDeep: 'Analyse approfondie',
-    pDeepHint: 'Votre bras n’est pas assez visible dans cette vidéo pour un avis. L’appli peut la relire avec un modèle plus précis\u00A0: environ trois fois plus long, et un téléchargement de 30\u00A0Mo la première fois (le Wi-Fi est conseillé).',
+    pDeep: 'Relire la vidéo',
+    pDeepHint: 'Votre bras n’est pas assez visible pour placer les deux vidéos côte à côte. L’appli peut la relire avec un modèle plus précis\u00A0: environ trois fois plus long, et un téléchargement de 30\u00A0Mo la première fois (le Wi-Fi est conseillé).',
     pDeepReading: 'Analyse approfondie de votre vidéo…',
-    pDeepDone: 'Avis donné après une analyse approfondie de votre vidéo.',
+    pDeepDone: 'Vidéo relue avec le modèle plus précis.',
     pDeepStill: 'Même relue avec le modèle plus précis, votre vidéo ne montre pas assez le bras. Posez le téléphone un peu en hauteur, derrière votre tête, le corps entier dans l’image, puis filmez un nouvel essai.',
     // The AI commentary (Elorian Glimpse, lib/kine/glimpse.js). French pending David's approval (R10).
     pAiTitle: 'Avis détaillé (IA)',
@@ -114,7 +115,8 @@ export const KINE = {
     pSend: 'Envoyer le résultat à mon kiné',
     pSendText: (ex, verdict) => `Mon exercice «\u00A0${ex}\u00A0»\u00A0: ${verdict}.`,
     pBad: 'Ce lien de programme ne s’ouvre pas. Demandez à votre kiné de vous le renvoyer.',
-    pNoCompare: 'Pour cet exercice, l’appli montre la vidéo mais ne compare pas encore votre geste.',
+    pNoCompare: 'Pour cet exercice, l’appli montre la vidéo seule.',
+    pNoMedia: 'Pas encore de vidéo pour cet exercice\u00A0: suivez les étapes ci-dessus.',
     side: 'Côté traité',
     sides: { left: 'Gauche', right: 'Droit' },
     pSide: (side, shown) => `Côté à travailler : ${side === 'left' ? 'gauche' : 'droit'}. La vidéo montre le côté ${shown === 'left' ? 'gauche' : 'droit'} : faites le même geste de l’autre côté, comme dans un miroir.`,
@@ -223,7 +225,7 @@ export const KINE = {
   },
   en: {
     eyebrow: 'Physio workspace',
-    title: 'Your exercises, followed between sessions',
+    title: 'Your exercise programmes, sent in one link',
     sub: 'Build an exercise programme and send it as a link, a QR code or a PDF sheet. Your patient finds your videos and your instructions on their phone. Nothing goes through a server.',
     tabs: { programme: 'Programme', specialties: 'Pessac Clinics', followup: 'Follow-up', calibration: 'Calibration', library: 'Exercises', invoice: 'Invoice', compare: 'Compare', profile: 'My practice' },
     cabinetDetails: 'Details',
@@ -301,10 +303,10 @@ export const KINE = {
     pHistory: 'Your attempts',
     pHistoryHint: 'The attempts made on this phone, newest first. Each report is prepared as a PDF, without the video’s frames: the video stays on your phone.',
     pReportMake: 'Report (PDF)',
-    pDeep: 'Deeper analysis',
-    pDeepHint: 'Your arm is not visible enough in this video for a verdict. The app can read it again with a more precise model: about three times as long, and a 30 MB download the first time (Wi-Fi advised).',
+    pDeep: 'Read the video again',
+    pDeepHint: 'Your arm is not visible enough to place the two videos side by side. The app can read it again with a more precise model: about three times as long, and a 30 MB download the first time (Wi-Fi advised).',
     pDeepReading: 'Deeper analysis of your video…',
-    pDeepDone: 'Verdict given after a deeper analysis of your video.',
+    pDeepDone: 'Video read again with the more precise model.',
     pDeepStill: 'Even read with the more precise model, your video does not show the arm enough. Set the phone a little higher, behind your head, the whole body in the picture, then film a new attempt.',
     pAiTitle: 'Detailed opinion (AI)',
     pAiHint: 'An outside AI, Elorian’s Glimpse, watches your video and describes it: repetitions, holds, compensations, setup. For this your video leaves the phone: it is sent to our server, then to Elorian, which may keep it under its privacy policy. Our server deletes it as soon as the answer arrives. This opinion is neither a measure of the app nor your physiotherapist’s.',
@@ -329,7 +331,8 @@ export const KINE = {
     pSend: 'Send the result to my physio',
     pSendText: (ex, verdict) => `My attempt at “${ex}”: ${verdict}.`,
     pBad: 'This programme link does not open. Ask your physio to send it again.',
-    pNoCompare: 'For this exercise, the app shows the video but does not compare your movement yet.',
+    pNoCompare: 'For this exercise, the app shows the video only.',
+    pNoMedia: 'No video for this exercise yet: follow the steps above.',
     side: 'Treated side',
     sides: { left: 'Left', right: 'Right' },
     pSide: (side, shown) => `Side to work: ${side}. The video shows the ${shown} side: do the same movement on the other side, as in a mirror.`,

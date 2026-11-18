@@ -231,7 +231,7 @@ export default function KinePatient({ onClose }) {
                 {it.note && <p className="kn-note">{it.note}</p>}
                 {ex.side && it.side && it.side !== ex.side && <p className="kn-note" data-testid={`kn-side-note-${it.id}`}>{k.pSide(it.side, ex.side)}</p>}
                 {ex.compare && hasMedia() ? <Attempt ex={ex} programme={programme} programmeId={programmeId} fr={fr} k={k} onLogged={refresh} mirror={!!(ex.side && it.side && it.side !== ex.side)} dosage={{ reps: it.reps, sets: it.sets }} />
-                  : <p className="sc-caption">{ex.compare ? k.noMedia : k.pNoCompare}</p>}
+                  : <p className="sc-caption">{ex.compare ? k.noMedia : mediaUrl(ex, 'mp4') ? k.pNoCompare : k.pNoMedia}</p>}
               </section>;
             })}
             <PastAttempts log={log} fr={fr} k={k} />
