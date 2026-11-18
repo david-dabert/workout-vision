@@ -16,7 +16,8 @@ import './Report.css';
 import './Pro.css';
 
 const ExerciseList = lazy(() => import('./ExerciseList'));
-const CoachSuite = lazy(() => import('../coaches/CoachSuite'));
+// Card 049: imported only in the extended build, where the coach's office is offered (scripts/check-ship-less.mjs).
+const CoachSuite = import.meta.env.VITE_EXTENDED_ROUTES === '1' ? lazy(() => import('../coaches/CoachSuite')) : null;
 const Programme = lazyScreen(() => import('./Programme.jsx'));
 
 // The programme's PDF (jsPDF and the app's fonts) loads apart, once, as the report's does (Report.jsx), and is warmed

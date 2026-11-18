@@ -33,8 +33,8 @@ test('a visit sends the expected events, with only their fields, and nothing els
   const response = await page.goto(APP);
   // The policy lets the page reach the events server, and no other events server...
   const csp = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');
-  // ...and Open Food Facts, for the office's barcode lookup (src/lib/openFoodFacts.js), which this visit never uses.
-  expect(csp).toContain("connect-src 'self' blob: https://world.openfoodfacts.org https://events.invalid;");
+  // Open Food Facts joins only the extended build's policy (card 049, vite.config.js lookupCspPlugin).
+  expect(csp).toContain("connect-src 'self' blob: https://events.invalid;");
   expect(response.ok()).toBe(true);
   // The choice says what is counted, and offers to stop it.
   await expect(page.getByTestId('usage-note')).toContainText('Pour s’améliorer, l’appli mesure l’usage de ses écrans et de ses analyses, avec un identifiant tiré au hasard sur ce téléphone : ni nom, ni vidéo, ni mouvement.');

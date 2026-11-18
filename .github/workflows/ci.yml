@@ -132,6 +132,9 @@ jobs:
       - run: npm run check:entry-budget
       - name: Check production dist has no events URL (D6)
         run: node scripts/check-dist-events.mjs dist
+      # Card 049: no chunk of a route switched off in production, no Blob upload client, no lookup origin in the policy.
+      - name: Production dist ships only what its pages use (card 049)
+        run: node scripts/check-ship-less.mjs dist
       - name: Check build with events URL sets connect-src and notice host across all pages (Task 12, PRIV-3)
         env:
           VITE_EVENTS_URL: https://events.invalid/event
