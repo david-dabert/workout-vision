@@ -376,10 +376,20 @@ export const KINEMATIC_ALIASES: Readonly<Record<string, string>> = Object.freeze
   hyperextension: 'back_extension',
 });
 
+// A variant whose movement is not its base's (18 November 2026, panel audit, biomechanics lens): counted by the definition
+// named here rather than its base's. bicep_curl--alternating is one arm at a time, so the base's one-side count read
+// half the reps; bicep_curl_alternating joins both arms (bothSides). Measured on the 14 synthetic alternating sets
+// (test/real-phone/occlusion/sets, truth 10 each): as its base 2 exact, 9 off by 3+, 2 refused; as
+// bicep_curl_alternating 4 exact, 3 off by 3+, 7 refused (TRIED.md, 18 November). Status: experimental.
+export const VARIANT_COUNT_AS: Readonly<Record<string, string>> = Object.freeze({
+  'bicep_curl--alternating': 'bicep_curl_alternating',
+});
+
 /** The definition an exercise is counted by: its LIFTS entry, else its parent's (COUNT_AS), else its guide pattern (PATTERNS), else its kinematic alias (KINEMATIC_ALIASES); null if it has none. */
 export function liftDefinition(key: string): LiftDefinition | null {
   // A variant ("bicep_curl--cable", variant-key.js) is counted by its base's definition, as COUNT_AS counts a key by its
   // parent's. Source: convention (a variant is its base's movement done with other equipment, grip or stance). Status: experimental.
+  if (Object.hasOwn(VARIANT_COUNT_AS, key)) return liftDefinition(VARIANT_COUNT_AS[key]);
   if (isVariantKey(key)) return liftDefinition(baseKey(key));
   if (Object.hasOwn(LIFTS, key)) return LIFTS[key as Lift];
   if (Object.hasOwn(COUNT_AS, key)) return liftDefinition(COUNT_AS[key]);
