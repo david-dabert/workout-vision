@@ -163,16 +163,26 @@ jobs:
       - name: Install Playwright browsers and dependencies
         run: |
           installed=0
+          # An attempt killed mid-install left its apt-get running and holding the dpkg lock, and the unbounded lock wait
+          # then ran out the job's time (18 November 2026, log 134689964138: 213 waits over about 10 minutes). So each
+          # attempt gets time to finish, the lock wait is bounded (about 3 minutes), and a failed attempt's leftover
+          # apt-get or dpkg is stopped and dpkg repaired before the next.
           for attempt in 1 2 3 4; do
-            while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1; do
-              echo "Waiting for apt/dpkg lock..."
+            for wait in $(seq 60); do
+              sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1 || break
+              echo "Waiting for apt/dpkg lock ($wait/60)..."
               sleep 3
             done
-            if timeout 240 npx playwright install --with-deps chromium webkit; then
+            if timeout 480 npx playwright install --with-deps chromium webkit; then
               installed=1
               break
             fi
-            echo "Playwright install attempt $attempt failed; waiting 15s for system updates..."
+            echo "Playwright install attempt $attempt failed; stopping leftover apt/dpkg and retrying in 15s..."
+            sudo pkill -x apt-get || true
+            sudo pkill -x apt || true
+            sudo pkill -x dpkg || true
+            sleep 5
+            sudo dpkg --configure -a || true
             sleep 15
           done
           if [ "$installed" -ne 1 ]; then
@@ -230,16 +240,26 @@ jobs:
       - name: Install Playwright WebKit and dependencies
         run: |
           installed=0
+          # An attempt killed mid-install left its apt-get running and holding the dpkg lock, and the unbounded lock wait
+          # then ran out the job's time (18 November 2026, log 134689964138: 213 waits over about 10 minutes). So each
+          # attempt gets time to finish, the lock wait is bounded (about 3 minutes), and a failed attempt's leftover
+          # apt-get or dpkg is stopped and dpkg repaired before the next.
           for attempt in 1 2 3 4; do
-            while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1; do
-              echo "Waiting for apt/dpkg lock..."
+            for wait in $(seq 60); do
+              sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1 || break
+              echo "Waiting for apt/dpkg lock ($wait/60)..."
               sleep 3
             done
-            if timeout 240 npx playwright install --with-deps webkit; then
+            if timeout 480 npx playwright install --with-deps webkit; then
               installed=1
               break
             fi
-            echo "Playwright install attempt $attempt failed; waiting 15s for system updates..."
+            echo "Playwright install attempt $attempt failed; stopping leftover apt/dpkg and retrying in 15s..."
+            sudo pkill -x apt-get || true
+            sudo pkill -x apt || true
+            sudo pkill -x dpkg || true
+            sleep 5
+            sudo dpkg --configure -a || true
             sleep 15
           done
           if [ "$installed" -ne 1 ]; then
