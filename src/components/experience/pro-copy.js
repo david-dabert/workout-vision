@@ -52,6 +52,9 @@ export const PRO = {
     privacy: 'Rien n’est envoyé : vos programmes restent sur ce téléphone jusqu’à ce que vous les partagiez.',
     storageOff: 'Ce téléphone ne garde pas les brouillons (navigation privée ?) : partagez le programme avant de quitter.',
     newProgramme: 'Nouveau programme',
+    // David, 18 November 2026: the coach's own video beside the client's (ReferenceCompare.jsx, audience 'coach').
+    compareRow: 'Comparer avec votre vidéo',
+    compareRowSub: 'Votre geste filmé à côté de celui de votre client, au même rythme',
     templatesHead: 'Exemples à adapter',
     templatesNote: `Points de départ à ajuster selon chaque personne${NB}: non issus d’une étude clinique.`,
     previewClient: 'Aperçu côté client',
@@ -265,6 +268,8 @@ export const PRO = {
     privacy: 'Nothing is sent: your programmes stay on this phone until you share them.',
     storageOff: 'This phone does not keep drafts (private browsing?): share the programme before you leave.',
     newProgramme: 'New programme',
+    compareRow: 'Compare with your video',
+    compareRowSub: 'Your filmed movement beside your client’s, at the same pace',
     templatesHead: 'Examples to adapt',
     templatesNote: 'Starting points to adjust for each client: not from a clinical study.',
     previewClient: 'Preview client view',

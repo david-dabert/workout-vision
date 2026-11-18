@@ -23,3 +23,9 @@ export const showUnmeasuredRoutes = () => import.meta.env.VITE_EXTENDED_ROUTES =
  * device. Without it the patient sees the two videos side by side. Status: validated (IntelliRehabDS), for the off.
  */
 export const kineJudged = () => showUnmeasuredRoutes();
+/**
+ * True when Espace pro offers the coach's comparison (their own video beside their client's, Pro.jsx). Built at David's
+ * request of 18 November 2026; the board of that day kept it off in production under THE FREEZE (an element added to a
+ * screen) until Phase 1's gate passes or David amends PLAN.md. ci.yml's e2e build sets VITE_COACH_COMPARE=1 to test it.
+ */
+export const coachCompareShown = () => import.meta.env.VITE_COACH_COMPARE === '1' || showUnmeasuredRoutes();
