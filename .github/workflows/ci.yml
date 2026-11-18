@@ -160,21 +160,45 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright --version
+      # The system packages Playwright needs (185, 139 MB on ubuntu-26.04) kept between runs: on 18 November 2026 the
+      # runners' mirror served them at about 50 KB/s (log 134732085350: 3.7 MB in 74 s), about 45 minutes a job.
+      - name: Restore the cached system packages for Playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ci-apt-archives
+          key: apt-playwright-chromium-webkit-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: apt-playwright-chromium-webkit-${{ runner.os }}-
       - name: Install Playwright browsers and dependencies
         run: |
           installed=0
+          # An attempt killed mid-install left its apt-get running and holding the dpkg lock, and the unbounded lock wait
+          # then ran out the job's time (18 November 2026, log 134689964138: 213 waits over about 10 minutes). So apt keeps
+          # what it downloads (the cache above holds it for the next run, and a retried attempt resumes from it), gives up a
+          # stalled download after 20 s and retries, each attempt has 10 minutes, the lock wait is bounded (about 3
+          # minutes), and a failed attempt's leftover apt-get or dpkg is stopped and dpkg repaired before the next.
+          printf 'Acquire::http::Timeout "20";\nAcquire::https::Timeout "20";\nAcquire::Retries "3";\nAPT::Keep-Downloaded-Packages "true";\nBinary::apt::APT::Keep-Downloaded-Packages "true";\n' | sudo tee /etc/apt/apt.conf.d/99ci-apt >/dev/null
+          sudo rm -f /etc/apt/apt.conf.d/docker-clean
+          if [ -d ~/.cache/ci-apt-archives ]; then sudo cp ~/.cache/ci-apt-archives/*.deb /var/cache/apt/archives/ 2>/dev/null || true; fi
           for attempt in 1 2 3 4; do
-            while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1; do
-              echo "Waiting for apt/dpkg lock..."
+            for wait in $(seq 60); do
+              sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1 || break
+              echo "Waiting for apt/dpkg lock ($wait/60)..."
               sleep 3
             done
-            if timeout 240 npx playwright install --with-deps chromium webkit; then
+            if timeout -k 10 600 npx playwright install --with-deps chromium webkit; then
               installed=1
               break
             fi
-            echo "Playwright install attempt $attempt failed; waiting 15s for system updates..."
+            echo "Playwright install attempt $attempt failed; stopping leftover apt/dpkg and retrying in 15s..."
+            sudo pkill -x apt-get || true
+            sudo pkill -x apt || true
+            sudo pkill -x dpkg || true
+            sleep 5
+            sudo dpkg --configure -a || true
             sleep 15
           done
+          mkdir -p ~/.cache/ci-apt-archives
+          cp /var/cache/apt/archives/*.deb ~/.cache/ci-apt-archives/ 2>/dev/null || true
           if [ "$installed" -ne 1 ]; then
             echo "Failed to install Playwright browsers after 4 attempts"
             exit 1
@@ -227,21 +251,45 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # The system packages Playwright needs (185, 139 MB on ubuntu-26.04) kept between runs: on 18 November 2026 the
+      # runners' mirror served them at about 50 KB/s (log 134732085350: 3.7 MB in 74 s), about 45 minutes a job.
+      - name: Restore the cached system packages for Playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ci-apt-archives
+          key: apt-playwright-webkit-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: apt-playwright-webkit-${{ runner.os }}-
       - name: Install Playwright WebKit and dependencies
         run: |
           installed=0
+          # An attempt killed mid-install left its apt-get running and holding the dpkg lock, and the unbounded lock wait
+          # then ran out the job's time (18 November 2026, log 134689964138: 213 waits over about 10 minutes). So apt keeps
+          # what it downloads (the cache above holds it for the next run, and a retried attempt resumes from it), gives up a
+          # stalled download after 20 s and retries, each attempt has 10 minutes, the lock wait is bounded (about 3
+          # minutes), and a failed attempt's leftover apt-get or dpkg is stopped and dpkg repaired before the next.
+          printf 'Acquire::http::Timeout "20";\nAcquire::https::Timeout "20";\nAcquire::Retries "3";\nAPT::Keep-Downloaded-Packages "true";\nBinary::apt::APT::Keep-Downloaded-Packages "true";\n' | sudo tee /etc/apt/apt.conf.d/99ci-apt >/dev/null
+          sudo rm -f /etc/apt/apt.conf.d/docker-clean
+          if [ -d ~/.cache/ci-apt-archives ]; then sudo cp ~/.cache/ci-apt-archives/*.deb /var/cache/apt/archives/ 2>/dev/null || true; fi
           for attempt in 1 2 3 4; do
-            while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1; do
-              echo "Waiting for apt/dpkg lock..."
+            for wait in $(seq 60); do
+              sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1 || break
+              echo "Waiting for apt/dpkg lock ($wait/60)..."
               sleep 3
             done
-            if timeout 240 npx playwright install --with-deps webkit; then
+            if timeout -k 10 600 npx playwright install --with-deps webkit; then
               installed=1
               break
             fi
-            echo "Playwright install attempt $attempt failed; waiting 15s for system updates..."
+            echo "Playwright install attempt $attempt failed; stopping leftover apt/dpkg and retrying in 15s..."
+            sudo pkill -x apt-get || true
+            sudo pkill -x apt || true
+            sudo pkill -x dpkg || true
+            sleep 5
+            sudo dpkg --configure -a || true
             sleep 15
           done
+          mkdir -p ~/.cache/ci-apt-archives
+          cp /var/cache/apt/archives/*.deb ~/.cache/ci-apt-archives/ 2>/dev/null || true
           if [ "$installed" -ne 1 ]; then
             echo "Failed to install Playwright WebKit after 4 attempts"
             exit 1
