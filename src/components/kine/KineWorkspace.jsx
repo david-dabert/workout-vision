@@ -171,7 +171,9 @@ function ProgrammeTab({ fr, k, profile }) {
       </div>
     </section>
 
-    {MOBILITY_SCREENS?.length > 0 && <section className="sc-section" data-testid="kn-mobility-screens-section">
+    {/* The mobility screens name diagnostic tests and have no video: extended build only (panel audit of 18 November
+        2026, regulatory seat; THE FREEZE allows a claim withdrawn). */}
+    {showUnmeasuredRoutes() && MOBILITY_SCREENS?.length > 0 && <section className="sc-section" data-testid="kn-mobility-screens-section">
       <GroupHead title={k.mobilityScreens || (fr ? 'Bilans de mobilité et tests fonctionnels' : 'Mobility screens and functional tests')} />
       <div className="kn-cards">
         {MOBILITY_SCREENS.map(ex => <ExerciseCard key={ex.id} ex={ex} fr={fr} k={k}

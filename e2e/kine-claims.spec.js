@@ -29,3 +29,19 @@ test('a first-time patient opens the programme link on the programme, with nothi
   const text = await page.locator('body').innerText();
   for (const judged of ['Conforme', 'À revoir', 'Envoyer le résultat', 'Proche de la référence']) expect(text).not.toContain(judged);
 });
+
+// Panel audit of 18 November 2026 (regulatory and navigation seats): the workspace claims no monitoring and no opinion,
+// shows no named diagnostic test, and says « Vidéo seule » only where a video exists.
+test('the physiotherapist workspace claims no follow-up, no opinion and no video it does not have', async ({ page }) => {
+  await page.addInitScript(() => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', 'fr'); });
+  await page.goto('/workout-vision/#kine');
+  await expect(page.locator('[data-testid^="kn-"]').first()).toBeVisible({ timeout: 20_000 });
+  const text = await page.locator('body').innerText();
+  for (const claim of ['suivis entre', 'Trendelenburg', 'Conflit', 'pour un avis']) expect(text).not.toContain(claim);
+  await expect(page.getByTestId('kn-mobility-screens-section')).toHaveCount(0);
+  const cards = page.locator('article.kn-card');
+  for (let i = 0; i < await cards.count(); i++) {
+    const card = cards.nth(i);
+    if (await card.locator('video').count() === 0) await expect(card.locator('.kn-card-meta')).not.toContainText(/Vidéo seule|Vidéo côte à côte/);
+  }
+});

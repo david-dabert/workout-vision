@@ -43,7 +43,8 @@ export default function ExerciseCard({ ex, fr, k, action, open: startOpen = fals
       <div className="kn-card-head">
         <div>
           <h3 className="kn-card-title">{t.title}</h3>
-          <p className="kn-card-meta">{k.dosage(ex.dosage.reps, ex.dosage.sets)} · <span className={ex.compare ? 'kn-on' : 'kn-off'}>{ex.compare ? k.compareOn : k.compareOff}</span></p>
+          {/* « Vidéo seule » / « Vidéo côte à côte » only where a video exists (panel audit of 18 November 2026, R8). */}
+          <p className="kn-card-meta">{k.dosage(ex.dosage.reps, ex.dosage.sets)}{video && <> · <span className={ex.compare ? 'kn-on' : 'kn-off'}>{ex.compare ? k.compareOn : k.compareOff}</span></>}</p>
         </div>
         {action}
       </div>
