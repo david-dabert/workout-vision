@@ -10,6 +10,9 @@ export function getGuideExercise(key) {
   // extension lies face down) has no frames, and its screens say the movement in words instead (`how`).
   if (!entry) return null;
   if (entry.noDrawing) return { ...entry, similar: false, frames: [] };
+  // An exercise added after the guide (figureOnly, 18 November 2026: David, "we are missing hundreds of exercises") has no
+  // drawing of the guide: its animated figure and still SVG (make-guide-figures.mjs, make-guide-svgs.mjs) stand in for them.
+  if (entry.figureOnly) return { ...entry, similar: false, frames: [] };
   return { ...entry, similar: !!entry.drawing, frames: [1, 2, 3].map(i => getFrameUrl(entry.drawing ?? entry.slug, i)) };
 }
 export function getExerciseFrames(key) { return getGuideExercise(key); }

@@ -1,0 +1,21 @@
+{
+ "key": "overhead_squat",
+ "source": "convention: overhead squat, snatch-width grip locked out over the mid-foot, the trunk upright; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 14,
+  "shoulderFlex": 170,
+  "shoulderAbd": 35,
+  "elbow": 5
+ },
+ "end": {
+  "trunk": 15,
+  "hipFlex": 100,
+  "hipAbd": 18,
+  "knee": 130,
+  "ankle": -35,
+  "shoulderFlex": 175,
+  "shoulderAbd": 35,
+  "elbow": 5
+ }
+}

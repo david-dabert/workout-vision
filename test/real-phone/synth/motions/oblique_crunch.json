@@ -1,0 +1,35 @@
+{
+ "key": "oblique_crunch",
+ "source": "convention: oblique crunch, the shoulder curled towards the opposite knee, one side then the other; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": 50,
+  "knee": 100,
+  "ankle": 40,
+  "hipAbd": 8,
+  "shoulderFlex": 0,
+  "shoulderAbd": 120,
+  "humRot": 90,
+  "elbow": 125
+ },
+ "end": {
+  "pitch": -90,
+  "hipFlex": 50,
+  "knee": 100,
+  "ankle": 40,
+  "hipAbd": 8,
+  "shoulderFlex": 0,
+  "shoulderAbd": 120,
+  "humRot": 90,
+  "elbow": 125,
+  "trunk": 30,
+  "trunkTwist": 30,
+  "neck": 10
+ },
+ "alternate": "mirror"
+}

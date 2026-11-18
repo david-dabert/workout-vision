@@ -1,0 +1,30 @@
+{
+ "key": "jefferson_curl",
+ "source": "convention: Jefferson curl, a light load, the chin tucked first, the spine rounded slowly down to the toes and back; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "knee": 5,
+  "shoulderFlex": 0,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 30,
+  "trunk": 60,
+  "neck": 30,
+  "hipFlex": 30,
+  "knee": 5,
+  "ankle": -10,
+  "shoulderFlex": 90,
+  "elbow": 5
+ },
+ "tempo": {
+  "out": [
+   2.5,
+   3.5
+  ],
+  "back": [
+   2.5,
+   3.5
+  ]
+ }
+}

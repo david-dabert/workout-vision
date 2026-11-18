@@ -1857,5 +1857,240 @@
   "butterfly_stretch": {
     "joint": null,
     "why": "The catalogue identifies a stretch or mobility drill rather than a loaded repetition."
+  },
+  "power_clean": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The bar travels from straight arms to the front rack once per rep, so the elbow closes once and opens as the bar returns. Follows the curl pattern; to be confirmed on its own build set."
+  },
+  "hang_clean": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "From the hang, the bar travels from straight arms to the front rack once per rep: the elbow closes once. Follows the curl pattern; to be confirmed on its own build set."
+  },
+  "clean_and_jerk": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Each rep starts from the floor with the hip closed and ends standing under the bar; the jerk's dip bends the hip far less. Follows the deadlift pattern; to be confirmed on its own build set."
+  },
+  "push_jerk": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "why": "The jerk rests at lockout between reps and the bar comes down to the shoulders first, as the push press. Follows overhead_press; to be confirmed on its own build set."
+  },
+  "power_snatch": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Each rep starts from the floor with the hip closed and ends standing with the bar overhead. Follows the deadlift pattern; to be confirmed on its own build set."
+  },
+  "hang_snatch": {
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "From the hang, the arms rise from the thighs to straight overhead once per rep: the shoulder opens once. Follows the raise pattern; to be confirmed on its own build set."
+  },
+  "thruster": {
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Front squat then press in one movement: the arms go from the front rack to straight overhead once per rep (the squat comes before the press). To be confirmed on its own build set."
+  },
+  "kettlebell_clean": {
+    "joint": null,
+    "why": "A ballistic lift whose start varies from rep to rep, as the kettlebell swing: no reliable single phase convention. Guide only until a labelled set shows a joint that cycles once per rep."
+  },
+  "kettlebell_snatch": {
+    "joint": null,
+    "why": "A ballistic lift whose start varies from rep to rep, as the kettlebell swing: no reliable single phase convention. Guide only until a labelled set shows a joint that cycles once per rep."
+  },
+  "kettlebell_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "why": "The press rests at lockout between reps and the bell comes down first, as the overhead press. One limb at a time: each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
+  },
+  "kettlebell_windmill": {
+    "joint": null,
+    "why": "The trunk bends sideways and hinges under a straight arm: no reliable isolated tracked joint cycle, as the side bend. Guide only."
+  },
+  "box_jump": {
+    "joint": null,
+    "why": "The jumping or airborne phase falls outside controlled joint-cycle counting, as the jump squat. Guide only."
+  },
+  "tuck_jump": {
+    "joint": null,
+    "why": "The jumping or airborne phase falls outside controlled joint-cycle counting, as the jump squat. Guide only."
+  },
+  "split_jump": {
+    "joint": null,
+    "why": "The jumping or airborne phase falls outside controlled joint-cycle counting, as the jump squat. Guide only."
+  },
+  "renegade_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "From a high plank on the dumbbells, one elbow flexes to row. One limb at a time: each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
+    "eitherSide": true
+  },
+  "dumbbell_pullover": {
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Lying on the bench, the straight arms lower from above the chest to behind the head, opening hip-shoulder-elbow, then return."
+  },
+  "barbell_pullover": {
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Lying on the bench, the arms lower from above the chest to behind the head, opening hip-shoulder-elbow, then return."
+  },
+  "zottman_curl": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Biceps or brachialis flex the extended elbow to lift the dumbbells; the hands turn over at the top for the lowering."
+  },
+  "jm_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "From straight arms above the chest, the elbows bend and travel forward to bring the bar towards the throat; triceps extend it back."
+  },
+  "tate_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "why": "From straight arms above the chest, the elbows flare out and bend to bring the dumbbells to the chest; triceps extend them back."
+  },
+  "floor_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Lying on the floor, elbow flexion lowers the load until the upper arms touch the floor; triceps extend it back."
+  },
+  "landmine_row": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "The back-and-biceps pull flexes the elbow from the extended-arm start."
+  },
+  "z_press": {
+    "joint": "elbow",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "front",
+    "why": "Seated on the floor, the press rests at lockout between reps and the load comes down first, as the overhead press."
+  },
+  "bradford_press": {
+    "joint": null,
+    "why": "The bar passes over the head from the front to behind the neck and back: two half presses per rep, no single joint closes once per rep. Guide only."
+  },
+  "cuban_press": {
+    "joint": "shoulder",
+    "rest": "low",
+    "first": "concentric",
+    "view": "front",
+    "why": "Upright row, external rotation, then press: the arms go from the thighs to straight overhead once per rep, opening hip-shoulder-elbow."
+  },
+  "snatch_grip_deadlift": {
+    "joint": "hip",
+    "rest": "low",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hip extension lifts the load from the flexed deadlift start; the wide grip starts the hip lower."
+  },
+  "overhead_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the body under the bar held overhead; quadriceps extend it back."
+  },
+  "pause_squat": {
+    "joint": "knee",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "Knee flexion lowers the load from standing; a still pause at the bottom, then the quadriceps extend it back. The pause holds the knee, it does not open it, so the rep is one cycle."
+  },
+  "lateral_step_up": {
+    "joint": "knee",
+    "rest": "low",
+    "first": "concentric",
+    "view": "front",
+    "why": "Standing beside the step with the near foot on it and the knee bent; extension raises the body. Filmed from the front, where the step is side on."
+  },
+  "tibialis_raise": {
+    "joint": null,
+    "why": "Ankle dorsiflexion moves the ankle, which is outside the four tracked joints, as the calf raise. Guide only."
+  },
+  "toes_to_bar": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hip flexion closes shoulder-hip-knee as the legs rise from the hang to the bar."
+  },
+  "sit_up": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "concentric",
+    "view": "side",
+    "why": "Hip flexion closes shoulder-hip-knee as the trunk rises from the floor to the thighs."
+  },
+  "oblique_crunch": {
+    "joint": null,
+    "why": "Abdominal spinal flexion with a twist does not give a reliable hip-angle cycle, as the crunch. Guide only."
+  },
+  "muscle_up": {
+    "joint": "shoulder",
+    "rest": "high",
+    "first": "concentric",
+    "view": "front",
+    "why": "From a dead hang to straight arms above the bar: the arms go from overhead to beside the trunk once per rep, closing hip-shoulder-elbow; the elbow bends and straightens on the way, so it does not count once."
+  },
+  "clap_push_up": {
+    "joint": null,
+    "why": "The hands leave the floor at the top of each rep: the airborne phase falls outside controlled joint-cycle counting. Guide only."
+  },
+  "medicine_ball_slam": {
+    "joint": null,
+    "why": "A ballistic lift whose start varies from rep to rep, as the kettlebell swing: no reliable single phase convention. Guide only until a labelled set shows a joint that cycles once per rep."
+  },
+  "jefferson_curl": {
+    "joint": "hip",
+    "rest": "high",
+    "first": "eccentric",
+    "view": "side",
+    "why": "The spine rolls down one vertebra at a time with the hips following; shoulder-hip-knee closes while lowering the load."
+  },
+  "glute_ham_raise": {
+    "joint": "knee",
+    "rest": "low",
+    "first": "eccentric",
+    "view": "side",
+    "why": "From kneeling upright on the pad, the knee opens as the body lowers forward, then the hamstrings pull it back up, as the Nordic curl."
   }
 }

@@ -1,0 +1,32 @@
+{
+ "key": "kettlebell_windmill",
+ "source": "convention: windmill, bell locked out overhead, the hips pushed out and the trunk lowered sideways to the opposite foot; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 14,
+  "left": {
+   "shoulderAbd": 170,
+   "elbow": 5
+  },
+  "right": {
+   "shoulderAbd": 10,
+   "elbow": 5
+  }
+ },
+ "end": {
+  "hipAbd": 14,
+  "pitch": 15,
+  "hipFlex": 25,
+  "trunkSide": -45,
+  "left": {
+   "shoulderAbd": 165,
+   "elbow": 5
+  },
+  "right": {
+   "shoulderAbd": 5,
+   "shoulderFlex": 15,
+   "elbow": 5
+  }
+ },
+ "view": 0
+}

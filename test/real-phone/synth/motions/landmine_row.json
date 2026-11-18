@@ -1,0 +1,27 @@
+{
+ "key": "landmine_row",
+ "source": "convention: landmine row astride the bar, hips hinged, the bar end pulled to the chest with a close grip; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 45,
+  "trunk": 10,
+  "hipFlex": 60,
+  "hipAbd": 14,
+  "knee": 25,
+  "ankle": -10,
+  "shoulderFlex": 55,
+  "shoulderAbd": 5,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 45,
+  "trunk": 10,
+  "hipFlex": 60,
+  "hipAbd": 14,
+  "knee": 25,
+  "ankle": -10,
+  "shoulderFlex": -30,
+  "shoulderAbd": 12,
+  "elbow": 105
+ }
+}

@@ -1,0 +1,33 @@
+{
+ "key": "renegade_row",
+ "source": "convention: renegade row, high plank on two dumbbells, feet wide, rowing one side then the other without turning the hips; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "pitch": 68,
+  "hipAbd": 10,
+  "shoulderFlex": 70,
+  "shoulderAbd": 0,
+  "elbow": 5,
+  "ankle": 30
+ },
+ "end": {
+  "pitch": 68,
+  "hipAbd": 10,
+  "ankle": 30,
+  "left": {
+   "shoulderFlex": -25,
+   "shoulderAbd": 10,
+   "elbow": 95
+  },
+  "right": {
+   "shoulderFlex": 70,
+   "shoulderAbd": 0,
+   "elbow": 5
+  }
+ },
+ "alternate": "mirror"
+}

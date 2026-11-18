@@ -1,0 +1,41 @@
+{
+ "key": "hang_snatch",
+ "source": "convention: hang snatch, wide grip, bar at mid-thigh, hinge and drive, caught overhead; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 12,
+  "knee": 5,
+  "shoulderFlex": 0,
+  "shoulderAbd": 30,
+  "elbow": 5
+ },
+ "mid": {
+  "pitch": 25,
+  "hipFlex": 35,
+  "hipAbd": 12,
+  "knee": 25,
+  "ankle": -10,
+  "shoulderFlex": 25,
+  "shoulderAbd": 30,
+  "elbow": 5
+ },
+ "end": {
+  "hipAbd": 14,
+  "hipFlex": 25,
+  "knee": 35,
+  "ankle": -15,
+  "shoulderFlex": 170,
+  "shoulderAbd": 40,
+  "elbow": 5
+ },
+ "tempo": {
+  "out": [
+   0.6,
+   1
+  ],
+  "back": [
+   1,
+   1.8
+  ]
+ }
+}

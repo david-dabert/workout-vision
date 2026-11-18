@@ -1,0 +1,41 @@
+{
+ "key": "hang_clean",
+ "source": "convention: hang clean, bar at mid-thigh, hip hinge then drive, caught in the front rack; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 8,
+  "knee": 5,
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 5
+ },
+ "mid": {
+  "pitch": 25,
+  "hipFlex": 35,
+  "hipAbd": 8,
+  "knee": 25,
+  "ankle": -10,
+  "shoulderFlex": 25,
+  "shoulderAbd": 10,
+  "elbow": 5
+ },
+ "end": {
+  "hipAbd": 10,
+  "hipFlex": 20,
+  "knee": 30,
+  "ankle": -15,
+  "shoulderFlex": 95,
+  "shoulderAbd": 15,
+  "elbow": 150
+ },
+ "tempo": {
+  "out": [
+   0.6,
+   1
+  ],
+  "back": [
+   1,
+   1.8
+  ]
+ }
+}

@@ -1,0 +1,48 @@
+{
+ "key": "clean_and_jerk",
+ "source": "convention: clean to the front rack, then split jerk to straight arms overhead; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 45,
+  "trunk": 10,
+  "hipFlex": 105,
+  "hipAbd": 8,
+  "knee": 75,
+  "ankle": -15,
+  "shoulderFlex": 55,
+  "shoulderAbd": 10,
+  "elbow": 5
+ },
+ "mid": {
+  "hipAbd": 10,
+  "knee": 10,
+  "shoulderFlex": 95,
+  "shoulderAbd": 15,
+  "elbow": 150
+ },
+ "end": {
+  "shoulderFlex": 175,
+  "shoulderAbd": 15,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 35,
+   "knee": 30,
+   "ankle": -15
+  },
+  "right": {
+   "hipFlex": -25,
+   "knee": 25,
+   "ankle": 30
+  }
+ },
+ "tempo": {
+  "out": [
+   1.6,
+   2.4
+  ],
+  "back": [
+   1.2,
+   2
+  ]
+ }
+}

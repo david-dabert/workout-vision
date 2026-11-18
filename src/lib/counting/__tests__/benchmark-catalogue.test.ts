@@ -134,9 +134,9 @@ const SCENARIOS: Scenario[] = [
 const KNOWN: Record<string, Record<string, string>> = {};
 
 describe('the whole catalogue on synthetic sets', () => {
-  it('holds 309 exercises: 190 countable, 119 without a joint', () => {
-    expect(COUNTABLE).toHaveLength(190);
-    expect(NOT_COUNTABLE).toHaveLength(119);
+  it('holds 347 exercises: 217 countable, 130 without a joint', () => {
+    expect(COUNTABLE).toHaveLength(217);
+    expect(NOT_COUNTABLE).toHaveLength(130);
   });
 
   const failures: string[] = [];

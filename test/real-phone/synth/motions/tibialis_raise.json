@@ -1,0 +1,21 @@
+{
+ "key": "tibialis_raise",
+ "source": "convention: tibialis raise, back against a wall, heels forward of the hips, the toes lifted towards the shins; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": -10,
+  "hipFlex": -10,
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 8,
+  "ankle": 0
+ },
+ "end": {
+  "pitch": -10,
+  "hipFlex": -10,
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 8,
+  "ankle": -25
+ }
+}

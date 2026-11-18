@@ -1,0 +1,44 @@
+{
+ "key": "power_snatch",
+ "source": "convention: power snatch, wide grip, bar pulled from the floor and caught on straight arms overhead above parallel; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 45,
+  "trunk": 10,
+  "hipFlex": 105,
+  "hipAbd": 12,
+  "knee": 75,
+  "ankle": -15,
+  "shoulderFlex": 55,
+  "shoulderAbd": 35,
+  "elbow": 5
+ },
+ "mid": {
+  "hipAbd": 12,
+  "knee": 10,
+  "ankle": 20,
+  "shrug": 15,
+  "shoulderFlex": 20,
+  "shoulderAbd": 40,
+  "elbow": 40
+ },
+ "end": {
+  "hipAbd": 14,
+  "hipFlex": 25,
+  "knee": 35,
+  "ankle": -15,
+  "shoulderFlex": 170,
+  "shoulderAbd": 40,
+  "elbow": 5
+ },
+ "tempo": {
+  "out": [
+   0.6,
+   1
+  ],
+  "back": [
+   1.2,
+   2
+  ]
+ }
+}

@@ -1,0 +1,44 @@
+{
+ "key": "power_clean",
+ "source": "convention: power clean, bar pulled from the floor with a flat back and caught in the front rack above parallel, elbows high; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 45,
+  "trunk": 10,
+  "hipFlex": 105,
+  "hipAbd": 8,
+  "knee": 75,
+  "ankle": -15,
+  "shoulderFlex": 55,
+  "shoulderAbd": 10,
+  "elbow": 5
+ },
+ "mid": {
+  "hipAbd": 8,
+  "knee": 10,
+  "ankle": 20,
+  "shrug": 15,
+  "shoulderFlex": 10,
+  "shoulderAbd": 15,
+  "elbow": 30
+ },
+ "end": {
+  "hipAbd": 10,
+  "hipFlex": 20,
+  "knee": 30,
+  "ankle": -15,
+  "shoulderFlex": 95,
+  "shoulderAbd": 15,
+  "elbow": 150
+ },
+ "tempo": {
+  "out": [
+   0.6,
+   1
+  ],
+  "back": [
+   1,
+   1.8
+  ]
+ }
+}

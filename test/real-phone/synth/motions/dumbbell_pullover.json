@@ -1,0 +1,29 @@
+{
+ "key": "dumbbell_pullover",
+ "source": "convention: dumbbell pullover lying on a flat bench, elbows softly bent, lowered until the arms are in line with the trunk; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": 90,
+  "shoulderAbd": 5,
+  "elbow": 20
+ },
+ "end": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": 165,
+  "shoulderAbd": 8,
+  "elbow": 30
+ }
+}

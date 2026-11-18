@@ -1,0 +1,19 @@
+{
+ "key": "tuck_jump",
+ "source": "convention: tuck jump, knees driven up to the chest at the top of the jump; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 10,
+  "shoulderAbd": 8,
+  "elbow": 15
+ },
+ "end": {
+  "hipFlex": 100,
+  "hipAbd": 8,
+  "knee": 120,
+  "ankle": 20,
+  "shoulderFlex": 60,
+  "shoulderAbd": 10,
+  "elbow": 90
+ }
+}

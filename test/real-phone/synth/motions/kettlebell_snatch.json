@@ -1,0 +1,26 @@
+{
+ "key": "kettlebell_snatch",
+ "source": "convention: one-arm kettlebell snatch, from the backswing to a straight arm overhead in one pull; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 45,
+  "hipFlex": 65,
+  "hipAbd": 14,
+  "knee": 25,
+  "ankle": -5,
+  "left": {
+   "shoulderFlex": 25,
+   "shoulderAbd": -6,
+   "elbow": 5
+  }
+ },
+ "end": {
+  "hipAbd": 14,
+  "left": {
+   "shoulderFlex": 175,
+   "shoulderAbd": 10,
+   "elbow": 5
+  }
+ },
+ "view": 90
+}

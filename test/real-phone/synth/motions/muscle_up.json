@@ -1,0 +1,41 @@
+{
+ "key": "muscle_up",
+ "source": "convention: bar muscle-up, pull to the chest, the wrists turned over the bar, pressed to straight arms; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 165,
+  "elbow": 5,
+  "hipFlex": 10,
+  "knee": 20
+ },
+ "mid": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 55,
+  "humRot": 90,
+  "elbow": 125,
+  "hipFlex": 25,
+  "knee": 25
+ },
+ "end": {
+  "shoulderFlex": -10,
+  "shoulderAbd": 15,
+  "elbow": 10,
+  "hipFlex": 20,
+  "knee": 15
+ },
+ "tempo": {
+  "out": [
+   1,
+   1.6
+  ],
+  "back": [
+   1.2,
+   2
+  ]
+ }
+}

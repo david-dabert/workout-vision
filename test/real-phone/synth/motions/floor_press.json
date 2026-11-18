@@ -1,0 +1,29 @@
+{
+ "key": "floor_press",
+ "source": "convention: floor press, knees bent, the bar lowered until the upper arms rest on the floor; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": 50,
+  "knee": 90,
+  "ankle": 30,
+  "hipAbd": 10,
+  "shoulderFlex": 90,
+  "shoulderAbd": 0,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -90,
+  "hipFlex": 50,
+  "knee": 90,
+  "ankle": 30,
+  "hipAbd": 10,
+  "shoulderFlex": 0,
+  "shoulderAbd": 55,
+  "elbow": 90
+ }
+}
