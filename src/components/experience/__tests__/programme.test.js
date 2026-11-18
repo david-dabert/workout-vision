@@ -723,8 +723,8 @@ describe('the exercise sheet’s model', () => {
     expect(['plank', 'side_plank', 'running', 'childs_pose'].every(guideOnly)).toBe(true);
     expect(['squat', 'dead_bug', 'machine_seated_back_extension', 'lunge', 'no_such_lift'].some(guideOnly)).toBe(false);
     expect(catalogue.every(e => knownExercise(e.key))).toBe(true);
-    // 119 of the guide's 309 have never been counted (14 October 2026).
-    expect(catalogue.filter(e => guideOnly(e.key))).toHaveLength(119);
+    // 119 of the guide's 309 have never been counted (14 October 2026); 130 of 347 with batch 1 (18 November 2026).
+    expect(catalogue.filter(e => guideOnly(e.key))).toHaveLength(130);
     // Filmed: an exercise the app counts, set in reps.
     expect([{ key: 'squat' }, { key: 'squat', holdSec: 30 }, { key: 'plank' }, { key: 'dead_bug' }].map(filmable)).toEqual([true, false, false, false]);
     // The programme keeps them all.

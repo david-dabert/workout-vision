@@ -1,0 +1,33 @@
+{
+ "key": "push_jerk",
+ "source": "convention: push jerk, dip and drive from the front rack, caught overhead in a quarter squat; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 175,
+  "shoulderAbd": 15,
+  "elbow": 5
+ },
+ "mid": {
+  "shoulderFlex": 45,
+  "shoulderAbd": 20,
+  "elbow": 135,
+  "hipFlex": 15,
+  "knee": 30,
+  "ankle": -15
+ },
+ "end": {
+  "shoulderFlex": 45,
+  "shoulderAbd": 20,
+  "elbow": 135
+ },
+ "tempo": {
+  "out": [
+   0.8,
+   1.4
+  ],
+  "back": [
+   0.6,
+   1.2
+  ]
+ }
+}

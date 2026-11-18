@@ -1,0 +1,22 @@
+{
+ "key": "cuban_press",
+ "source": "convention: Cuban press, upright row to the elbows at shoulder height, forearms rotated up, then pressed overhead; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 5,
+  "shoulderAbd": 10,
+  "humRot": -60,
+  "elbow": 15
+ },
+ "mid": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 85,
+  "humRot": 80,
+  "elbow": 90
+ },
+ "end": {
+  "shoulderFlex": 10,
+  "shoulderAbd": 165,
+  "elbow": 10
+ }
+}

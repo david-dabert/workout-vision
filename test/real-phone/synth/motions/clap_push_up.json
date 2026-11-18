@@ -1,0 +1,23 @@
+{
+ "key": "clap_push_up",
+ "source": "convention: plyometric push-up, the press driven hard enough to clap the hands before landing; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.08
+ },
+ "start": {
+  "pitch": 68,
+  "shoulderFlex": 70,
+  "shoulderAbd": 0,
+  "elbow": 5,
+  "ankle": 30
+ },
+ "end": {
+  "pitch": 82,
+  "shoulderFlex": 0,
+  "shoulderAbd": 50,
+  "elbow": 95,
+  "ankle": 40
+ }
+}

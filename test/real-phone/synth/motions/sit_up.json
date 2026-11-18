@@ -1,0 +1,33 @@
+{
+ "key": "sit_up",
+ "source": "convention: full sit-up on the floor, knees bent, feet flat, the trunk raised to upright; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "lowest",
+  "y": 0.1
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": 50,
+  "knee": 100,
+  "ankle": 40,
+  "hipAbd": 8,
+  "shoulderFlex": 0,
+  "shoulderAbd": 120,
+  "humRot": 90,
+  "elbow": 125
+ },
+ "end": {
+  "pitch": -10,
+  "trunk": 15,
+  "neck": 10,
+  "hipFlex": 130,
+  "knee": 100,
+  "ankle": 40,
+  "hipAbd": 8,
+  "shoulderFlex": 0,
+  "shoulderAbd": 120,
+  "humRot": 90,
+  "elbow": 125
+ }
+}

@@ -1,0 +1,45 @@
+{
+ "key": "lateral_step_up",
+ "source": "convention: lateral step-up, side on to the box, the far leg follows without pushing off the floor; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "pin": "feet",
+  "planted": "left"
+ },
+ "start": {
+  "trunk": 10,
+  "shoulderFlex": 15,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 70,
+   "hipAbd": 20,
+   "knee": 90,
+   "ankle": -10
+  },
+  "right": {
+   "hipFlex": -5,
+   "hipAbd": 4,
+   "knee": 5,
+   "ankle": -10
+  }
+ },
+ "end": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 0,
+   "hipAbd": 10,
+   "knee": 0,
+   "ankle": 0
+  },
+  "right": {
+   "hipFlex": 5,
+   "hipAbd": 10,
+   "knee": 20,
+   "ankle": 10
+  }
+ },
+ "view": 0
+}

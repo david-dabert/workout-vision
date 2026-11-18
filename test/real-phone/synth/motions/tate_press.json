@@ -1,0 +1,32 @@
+{
+ "key": "tate_press",
+ "source": "convention: Tate press lying on a bench, dumbbell ends touching, the elbows flared out as they bend; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": 90,
+  "shoulderAbd": 10,
+  "humRot": -60,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": 80,
+  "shoulderAbd": 70,
+  "humRot": -60,
+  "elbow": 115
+ },
+ "view": 0
+}

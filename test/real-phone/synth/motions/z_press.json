@@ -1,0 +1,27 @@
+{
+ "key": "z_press",
+ "source": "convention: Z press, seated on the floor legs straight and apart, strict press with no back support; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.1
+ },
+ "start": {
+  "hipFlex": 90,
+  "hipAbd": 20,
+  "knee": 5,
+  "ankle": 10,
+  "shoulderFlex": 175,
+  "shoulderAbd": 15,
+  "elbow": 5
+ },
+ "end": {
+  "hipFlex": 90,
+  "hipAbd": 20,
+  "knee": 5,
+  "ankle": 10,
+  "shoulderFlex": 40,
+  "shoulderAbd": 22,
+  "elbow": 132
+ }
+}

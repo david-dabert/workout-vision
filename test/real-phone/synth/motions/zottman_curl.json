@@ -1,0 +1,17 @@
+{
+ "key": "zottman_curl",
+ "source": "convention: Zottman curl, palms up on the way up, turned down at the top, lowered palms down; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 3,
+  "shoulderAbd": 8,
+  "elbow": 10,
+  "pronation": -80
+ },
+ "end": {
+  "shoulderFlex": 12,
+  "shoulderAbd": 8,
+  "elbow": 140,
+  "pronation": 80
+ }
+}

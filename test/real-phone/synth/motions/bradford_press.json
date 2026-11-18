@@ -1,0 +1,15 @@
+{
+ "key": "bradford_press",
+ "source": "convention: Bradford press, the bar pressed just above the head from the front to behind the neck and back; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 45,
+  "shoulderAbd": 25,
+  "elbow": 135
+ },
+ "end": {
+  "shoulderFlex": 150,
+  "shoulderAbd": 35,
+  "elbow": 60
+ }
+}

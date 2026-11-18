@@ -1,0 +1,29 @@
+{
+ "key": "barbell_pullover",
+ "source": "convention: barbell pullover lying on a flat bench, shoulder-width grip, elbows a little bent; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": 90,
+  "shoulderAbd": 15,
+  "elbow": 25
+ },
+ "end": {
+  "pitch": -90,
+  "hipFlex": -20,
+  "knee": 90,
+  "ankle": -20,
+  "hipAbd": 15,
+  "shoulderFlex": 160,
+  "shoulderAbd": 18,
+  "elbow": 40
+ }
+}

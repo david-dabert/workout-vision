@@ -1,0 +1,37 @@
+{
+ "key": "thruster",
+ "source": "convention: front squat to below parallel, the drive up carried into a press to lockout; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 10,
+  "shoulderFlex": 95,
+  "shoulderAbd": 15,
+  "elbow": 150
+ },
+ "mid": {
+  "trunk": 18,
+  "hipFlex": 105,
+  "hipAbd": 14,
+  "knee": 130,
+  "ankle": -30,
+  "shoulderFlex": 110,
+  "shoulderAbd": 15,
+  "elbow": 150
+ },
+ "end": {
+  "hipAbd": 10,
+  "shoulderFlex": 175,
+  "shoulderAbd": 15,
+  "elbow": 5
+ },
+ "tempo": {
+  "out": [
+   1.2,
+   2
+  ],
+  "back": [
+   0.8,
+   1.4
+  ]
+ }
+}

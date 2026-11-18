@@ -1,0 +1,22 @@
+{
+ "key": "kettlebell_press",
+ "source": "convention: one-arm strict press from the rack, the bell outside the forearm; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "left": {
+   "shoulderFlex": 175,
+   "shoulderAbd": 15,
+   "elbow": 5
+  }
+ },
+ "end": {
+  "left": {
+   "shoulderFlex": 40,
+   "shoulderAbd": 22,
+   "humRot": -20,
+   "elbow": 132
+  }
+ },
+ "side": "left",
+ "view": 0
+}

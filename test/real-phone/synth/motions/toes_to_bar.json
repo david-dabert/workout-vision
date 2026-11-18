@@ -1,0 +1,24 @@
+{
+ "key": "toes_to_bar",
+ "source": "convention: toes to bar, from a dead hang, the feet brought to touch the bar between the hands; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hands",
+  "y": 2.15
+ },
+ "start": {
+  "shoulderFlex": 175,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "hipFlex": 0,
+  "knee": 5
+ },
+ "end": {
+  "shoulderFlex": 155,
+  "shoulderAbd": 10,
+  "elbow": 5,
+  "hipFlex": 150,
+  "knee": 15,
+  "ankle": 20
+ }
+}

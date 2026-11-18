@@ -1,0 +1,23 @@
+{
+ "key": "snatch_grip_deadlift",
+ "source": "convention: deadlift with a snatch-width grip, the hips set lower than for the conventional pull; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 45,
+  "trunk": 10,
+  "hipFlex": 110,
+  "hipAbd": 8,
+  "knee": 85,
+  "ankle": -15,
+  "shoulderFlex": 55,
+  "shoulderAbd": 35,
+  "elbow": 5
+ },
+ "end": {
+  "hipAbd": 8,
+  "knee": 2,
+  "shoulderFlex": 0,
+  "shoulderAbd": 30,
+  "elbow": 5
+ }
+}

@@ -1,0 +1,22 @@
+{
+ "key": "medicine_ball_slam",
+ "source": "convention: ball slam, raised overhead on the toes, thrown into the floor with the whole trunk; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 170,
+  "shoulderAbd": 15,
+  "elbow": 15,
+  "ankle": 10
+ },
+ "end": {
+  "pitch": 40,
+  "trunk": 15,
+  "hipFlex": 60,
+  "hipAbd": 12,
+  "knee": 50,
+  "ankle": -20,
+  "shoulderFlex": 60,
+  "shoulderAbd": 15,
+  "elbow": 15
+ }
+}

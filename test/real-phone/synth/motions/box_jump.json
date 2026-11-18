@@ -1,0 +1,20 @@
+{
+ "key": "box_jump",
+ "source": "convention: box jump, countermovement with an arm swing, landing soft on the box; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 10,
+  "shoulderAbd": 8,
+  "elbow": 15
+ },
+ "end": {
+  "trunk": 35,
+  "hipFlex": 80,
+  "hipAbd": 10,
+  "knee": 100,
+  "ankle": -25,
+  "shoulderFlex": -35,
+  "shoulderAbd": 10,
+  "elbow": 10
+ }
+}

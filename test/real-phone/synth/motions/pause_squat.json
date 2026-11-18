@@ -1,0 +1,32 @@
+{
+ "key": "pause_squat",
+ "source": "convention: back squat with a two-second pause in the bottom position; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 0,
+  "shoulderAbd": 50,
+  "humRot": 90,
+  "elbow": 150
+ },
+ "end": {
+  "trunk": 40,
+  "hipFlex": 90,
+  "hipAbd": 12,
+  "knee": 130,
+  "ankle": -40,
+  "shoulderFlex": 0,
+  "shoulderAbd": 50,
+  "humRot": 90,
+  "elbow": 150
+ },
+ "tempo": {
+  "out": [
+   2.5,
+   3.5
+  ],
+  "back": [
+   0.8,
+   1.4
+  ]
+ }
+}
