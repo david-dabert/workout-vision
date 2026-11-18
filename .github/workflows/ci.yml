@@ -164,16 +164,19 @@ jobs:
         run: |
           installed=0
           # An attempt killed mid-install left its apt-get running and holding the dpkg lock, and the unbounded lock wait
-          # then ran out the job's time (18 November 2026, log 134689964138: 213 waits over about 10 minutes). So each
-          # attempt gets time to finish, the lock wait is bounded (about 3 minutes), and a failed attempt's leftover
-          # apt-get or dpkg is stopped and dpkg repaired before the next.
+          # then ran out the job's time (18 November 2026, log 134689964138: 213 waits over about 10 minutes); and on a slow
+          # runner apt's downloads stall without failing (the tour of 57fee5cb: 27 minutes to install, against 1 when
+          # healthy). So apt gives up a stalled download after 20 s and retries; each attempt has 3 minutes (a healthy
+          # install takes 1); the lock wait is bounded (about 3 minutes); and a failed attempt's leftover apt-get or dpkg
+          # is stopped and dpkg repaired before the next.
+          printf 'Acquire::http::Timeout "20";\nAcquire::https::Timeout "20";\nAcquire::Retries "3";\n' | sudo tee /etc/apt/apt.conf.d/99ci-timeouts >/dev/null
           for attempt in 1 2 3 4; do
             for wait in $(seq 60); do
               sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1 || break
               echo "Waiting for apt/dpkg lock ($wait/60)..."
               sleep 3
             done
-            if timeout 480 npx playwright install --with-deps chromium webkit; then
+            if timeout -k 10 180 npx playwright install --with-deps chromium webkit; then
               installed=1
               break
             fi
@@ -241,16 +244,19 @@ jobs:
         run: |
           installed=0
           # An attempt killed mid-install left its apt-get running and holding the dpkg lock, and the unbounded lock wait
-          # then ran out the job's time (18 November 2026, log 134689964138: 213 waits over about 10 minutes). So each
-          # attempt gets time to finish, the lock wait is bounded (about 3 minutes), and a failed attempt's leftover
-          # apt-get or dpkg is stopped and dpkg repaired before the next.
+          # then ran out the job's time (18 November 2026, log 134689964138: 213 waits over about 10 minutes); and on a slow
+          # runner apt's downloads stall without failing (the tour of 57fee5cb: 27 minutes to install, against 1 when
+          # healthy). So apt gives up a stalled download after 20 s and retries; each attempt has 3 minutes (a healthy
+          # install takes 1); the lock wait is bounded (about 3 minutes); and a failed attempt's leftover apt-get or dpkg
+          # is stopped and dpkg repaired before the next.
+          printf 'Acquire::http::Timeout "20";\nAcquire::https::Timeout "20";\nAcquire::Retries "3";\n' | sudo tee /etc/apt/apt.conf.d/99ci-timeouts >/dev/null
           for attempt in 1 2 3 4; do
             for wait in $(seq 60); do
               sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/lib/apt/lists/lock >/dev/null 2>&1 || break
               echo "Waiting for apt/dpkg lock ($wait/60)..."
               sleep 3
             done
-            if timeout 480 npx playwright install --with-deps webkit; then
+            if timeout -k 10 180 npx playwright install --with-deps webkit; then
               installed=1
               break
             fi
