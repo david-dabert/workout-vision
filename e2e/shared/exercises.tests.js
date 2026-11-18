@@ -16,7 +16,7 @@ async function openGuide(page, expect, lang) {
   await openChoice(page, expect, lang);
   await page.getByTestId('choice-find-exercise').click();
   await expect(page.locator('#guide-search')).toBeVisible({ timeout: 20000 });
-  await expect(page.locator('.guide-screen .list .item')).toHaveCount(309, { timeout: 20000 });
+  await expect(page.locator('.guide-screen .list .item')).toHaveCount(347, { timeout: 20000 });
 }
 
 export default function exercisesTests(test, expect) {
