@@ -153,3 +153,21 @@ describe('the 3D angle and bar path trajectory on screen', () => {
     expect(trail.length).toBeGreaterThanOrEqual(1);
   });
 });
+
+describe('repsDone', () => {
+  it('counts a rep once it ends, as a coach counts (18 November 2026)', async () => {
+    const { repsDone } = await import('../replay-track');
+    const reps = [{ startTime: 1, endTime: 3 }, { startTime: 4, endTime: 6 }];
+    expect(repsDone(reps, 0.5)).toBe(0);
+    expect(repsDone(reps, 1.2)).toBe(0); // the first rep has begun, not ended
+    expect(repsDone(reps, 2.96)).toBe(1); // within one frame of its end
+    expect(repsDone(reps, 4.5)).toBe(1);
+    expect(repsDone(reps, 6)).toBe(2);
+  });
+
+  it('shows the full count at the end of the video, even a hair before the last rep ends', async () => {
+    const { repsDone } = await import('../replay-track');
+    const reps = [{ startTime: 1, endTime: 3 }, { startTime: 4, endTime: 6.2 }];
+    expect(repsDone(reps, 6.17, 6.2)).toBe(2);
+  });
+});
