@@ -20,3 +20,14 @@ test('Espace pro opens the comparison of the coach\'s video with the client\'s, 
   await page.getByTestId('reference-back-btn').click();
   await expect(page.getByTestId('pro-screen')).toBeVisible();
 });
+
+// The board of 18 November 2026 (THE FREEZE): off in production until Phase 1's gate passes or David amends PLAN.md.
+// The production build (port 4176, as deploy.yml: VITE_COACH_COMPARE unset) shows no row.
+test('the production build does not offer the coach comparison yet', async ({ page }) => {
+  await page.addInitScript(() => { localStorage.setItem('wv_seen_entry', 'true'); localStorage.setItem('wv_lang', 'fr'); });
+  await page.goto('http://localhost:4176/workout-vision/');
+  await page.getByTestId('choice-pro').click();
+  await expect(page.getByTestId('pro-screen')).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByTestId('pro-compare')).toHaveCount(0);
+  expect(await page.locator('body').innerText()).not.toContain('Comparer avec votre vidéo');
+});

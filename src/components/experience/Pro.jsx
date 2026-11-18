@@ -9,7 +9,7 @@ import {
 } from './programme';
 import { MAX_DRAFTS, isEmptyDraft, loadDrafts, saveDraft, removeDraft, newDraft, newItem, createFromTemplate } from './programme-store';
 import { useCondensingTopbar } from './topbar';
-import { showUnmeasuredRoutes } from '../../lib/buildFlags';
+import { coachCompareShown, showUnmeasuredRoutes } from '../../lib/buildFlags';
 import { lazyScreen } from '../../lib/lazyScreen';
 // The form's fields are the report's (Report.css: .field), so the two forms read alike.
 import './Report.css';
@@ -188,10 +188,10 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, on
               <span>{c.newProgramme}</span>
             </button>
           </div>
-          <button type="button" className="pro-template-card press" onClick={onCompare} data-testid="pro-compare" data-reveal style={{ '--i': 2.2 }}>
+          {coachCompareShown() && <button type="button" className="pro-template-card press" onClick={onCompare} data-testid="pro-compare" data-reveal style={{ '--i': 2.2 }}>
             <span className="row-txt"><b>{c.compareRow}</b><small>{c.compareRowSub}</small></span>
             <Arrow />
-          </button>
+          </button>}
           <div className="pro-templates" data-reveal style={{ '--i': 2.5 }}>
             <h2 className="section-head">{c.templatesHead}</h2>
             <p className="pro-templates-note" data-testid="pro-templates-note">{c.templatesNote}</p>
