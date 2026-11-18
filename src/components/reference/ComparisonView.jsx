@@ -70,10 +70,12 @@ function Timeline({ result, names, c, refNow, onSeekRef }) {
 // `keep`: { report, title } where the person may keep the attempt's report and video (KinePatient.jsx, AttemptKeep.jsx).
 // `judged`: false shows the two videos side by side and nothing judged: no verdict, no share, no angle, no colouring
 // out of tolerance, no tempo, no position held, no curve (buildFlags.js, kineJudged; off in production).
-export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onResult, measures, mirror = false, keep = null, judged = kineJudged() }) {
+// audience 'coach': the coach's words (reference-copy.js COPY.*.coach) over the physiotherapist's.
+export default function ComparisonView({ refPose, attPose, refUrl, attUrl, onResult, measures, mirror = false, keep = null, judged = kineJudged(), audience = 'kine' }) {
   const { lang } = useT();
   const fr = lang === 'fr';
-  const c = COPY[fr ? 'fr' : 'en'];
+  const base = COPY[fr ? 'fr' : 'en'];
+  const c = audience === 'coach' ? { ...base, ...base.coach } : base;
   const names = JOINT_NAMES[fr ? 'fr' : 'en'];
   const rootRef = useRef(null);
   const reference = useMemo(() => (refPose ? buildReference(refPose.imageLandmarks, refPose.timestamps, { ...measures, aspect: refPose.aspect }) : null), [refPose, measures]);

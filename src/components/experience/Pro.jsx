@@ -19,6 +19,7 @@ const ExerciseList = lazy(() => import('./ExerciseList'));
 // Card 049: imported only in the extended build, where the coach's office is offered (scripts/check-ship-less.mjs).
 const CoachSuite = import.meta.env.VITE_EXTENDED_ROUTES === '1' ? lazy(() => import('../coaches/CoachSuite')) : null;
 const Programme = lazyScreen(() => import('./Programme.jsx'));
+const ReferenceCompare = lazyScreen(() => import('../reference/ReferenceCompare.jsx'));
 
 // The programme's PDF (jsPDF and the app's fonts) loads apart, once, as the report's does (Report.jsx), and is warmed
 // as soon as a programme is open, so the share happens within the tap.
@@ -71,6 +72,7 @@ export default function Pro({ onClose, start = null }) {
   // place (excellence hunt, 9 October 2026).
   const [kept, setKept] = useState(start ? start.kept : true);
   const [proTab, setProTab] = useState('programmes'); // 'programmes' | 'business'
+  const [comparing, setComparing] = useState(false);
   // The programme the strengthening tab's "Ajouter au programme" opened in this visit (handleAddPhysio).
   const physioDraftId = useRef(null);
   const update = draft => {
@@ -133,11 +135,12 @@ export default function Pro({ onClose, start = null }) {
     setOpenId(d.id);
   };
 
+  if (comparing) return <ReferenceCompare audience="coach" onClose={() => setComparing(false)} />;
   if (open) return <Editor key={open.id} c={c} fr={fr} lang={lang} draft={open} kept={kept} rebuilt={open.id === rebuiltId} focusWho={focusWho} onChange={update} onPick={() => { setFocusWho(false); setPicking(true); }} onPreview={() => setPreviewing(true)} onBack={back} onDuplicate={duplicate} onDelete={() => remove(open.id)} />;
-  return <List c={c} fr={fr} drafts={drafts.filter(d => !isEmptyDraft(d))} onClose={onClose} onCreate={create} onTemplate={createTemplate} onOpen={show} proTab={proTab} onSetProTab={setProTab} onAddPhysio={handleAddPhysio} />;
+  return <List c={c} fr={fr} drafts={drafts.filter(d => !isEmptyDraft(d))} onClose={onClose} onCreate={create} onTemplate={createTemplate} onOpen={show} proTab={proTab} onSetProTab={setProTab} onAddPhysio={handleAddPhysio} onCompare={() => setComparing(true)} />;
 }
 
-function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, onSetProTab, onAddPhysio }) {
+function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, onSetProTab, onAddPhysio, onCompare }) {
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [fr, proTab]);
   return <div className="wv-experience">
@@ -185,6 +188,10 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, on
               <span>{c.newProgramme}</span>
             </button>
           </div>
+          <button type="button" className="pro-template-card press" onClick={onCompare} data-testid="pro-compare" data-reveal style={{ '--i': 2.2 }}>
+            <span className="row-txt"><b>{c.compareRow}</b><small>{c.compareRowSub}</small></span>
+            <Arrow />
+          </button>
           <div className="pro-templates" data-reveal style={{ '--i': 2.5 }}>
             <h2 className="section-head">{c.templatesHead}</h2>
             <p className="pro-templates-note" data-testid="pro-templates-note">{c.templatesNote}</p>

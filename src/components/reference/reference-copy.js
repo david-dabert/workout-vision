@@ -34,6 +34,19 @@ export const JOINT_NAMES = {
 
 export const COPY = {
   fr: {
+    // The coach's comparison (David, 18 November 2026: coaches who film themselves compare their client's set with
+    // their own execution). Same view, side by side at the same pace, no verdict.
+    coach: {
+      eyebrow: 'Espace pro',
+      title: 'Votre geste à côté de celui de votre client',
+      subPlain: 'Votre vidéo sert de modèle. Celle de votre client défile à côté, au même rythme. Les deux vidéos restent sur ce téléphone.',
+      refLabel: 'Votre vidéo',
+      refHint: 'Vous, en train de faire le mouvement',
+      attLabel: 'La vidéo de votre client',
+      attHint: 'Filmée sous le même angle que la vôtre',
+      plainNote: 'Les deux vidéos défilent au même rythme, le squelette de votre vidéo en pointillés. L’appli ne juge pas le geste\u00A0: c’est votre rôle de coach.',
+      refusedWhy: names => `${names} ${names.includes(',') ? 'ne sont' : 'n’est'} pas assez visible${names.includes(',') ? 's' : ''} dans la vidéo de votre client. Filmez sous le même angle que la vôtre, le corps entier dans l’image.`,
+    },
     eyebrow: 'Rééducation',
     title: 'Reproduire le geste de référence',
     sub: 'La vidéo du kiné sert de modèle. Celle du patient est comparée instant par instant : amplitude, positions tenues, tempo. Tout reste sur ce téléphone.',
@@ -122,6 +135,17 @@ export const COPY = {
     plainNote: 'Les deux vidéos défilent au même rythme, le squelette de la référence en pointillés. L’appli ne juge pas le geste\u00A0: c’est le rôle du kinésithérapeute. WorkoutVision n’est pas un dispositif médical.',
   },
   en: {
+    coach: {
+      eyebrow: 'Pro space',
+      title: 'Your movement beside your client’s',
+      subPlain: 'Your video is the model. Your client’s plays beside it, at the same pace. Both videos stay on this phone.',
+      refLabel: 'Your video',
+      refHint: 'You, doing the movement',
+      attLabel: 'Your client’s video',
+      attHint: 'Filmed from the same angle as yours',
+      plainNote: 'The two videos play at the same pace, your video’s skeleton dotted. The app does not judge the movement: that is your role as the coach.',
+      refusedWhy: names => `${names}: not visible enough in your client’s video. Film from your video’s angle, the whole body in the picture.`,
+    },
     eyebrow: 'Rehabilitation',
     title: 'Repeat the reference movement',
     sub: 'The physiotherapist’s video is the model. The patient’s is compared moment by moment: range, holds, tempo. Everything stays on this phone.',

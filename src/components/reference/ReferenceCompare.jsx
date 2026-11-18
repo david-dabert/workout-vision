@@ -14,10 +14,14 @@ import './ReferenceCompare.css';
 // Two videos chosen on the phone, a reference and an attempt, compared (ComparisonView.jsx). The physiotherapist's
 // workspace (KineWorkspace.jsx) opens it for any exercise outside the built-in library. Both videos stay on the phone.
 
-export default function ReferenceCompare({ onClose, embedded = false }) {
+// audience 'coach' (Pro.jsx): the coach's own video beside the client's, in the coach's words, no healthy-side mode and
+// no verdict whatever the build (David, 18 November 2026).
+export default function ReferenceCompare({ onClose, embedded = false, audience = 'kine' }) {
   const { lang } = useT();
   const fr = lang === 'fr';
-  const c = COPY[fr ? 'fr' : 'en'];
+  const coach = audience === 'coach';
+  const base = COPY[fr ? 'fr' : 'en'];
+  const c = coach ? { ...base, ...base.coach } : base;
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [lang]);
 
@@ -68,10 +72,10 @@ export default function ReferenceCompare({ onClose, embedded = false }) {
 
   const content = <>
     <div className="sc-section rc-picks">
-      <div className="sc-chips" role="group" aria-label={c.modeLabel}>
+      {!coach && <div className="sc-chips" role="group" aria-label={c.modeLabel}>
         <button type="button" className="sc-chip press" aria-pressed={!healthy} onClick={() => pickMode('kine')} data-testid="rc-mode-kine">{c.modeKine}</button>
         <button type="button" className="sc-chip press" aria-pressed={healthy} onClick={() => pickMode('healthy')} data-testid="rc-mode-healthy">{c.modeHealthy}</button>
-      </div>
+      </div>}
       {healthy && <p className="sc-caption" data-testid="rc-healthy-note">{c.healthyNote}</p>}
       <FilePick label={healthy ? c.healthyRefLabel : c.refLabel} hint={healthy ? c.healthyRefHint : c.refHint} file={refFile} onFile={pickRef} c={c} testId="rc-ref" />
       <FilePick label={healthy ? c.healthyAttLabel : c.attLabel} hint={healthy ? c.healthyAttHint : c.attHint} file={attFile} onFile={pickAtt} c={c} testId="rc-att" />
@@ -85,19 +89,19 @@ export default function ReferenceCompare({ onClose, embedded = false }) {
     </div>
     {phase === 'done' && <>
       {healthy && kineJudged() && <p className="sc-caption" data-testid="rc-healthy-read">{c.healthyRead}</p>}
-      <ComparisonView refPose={refPose} attPose={attPose} refUrl={refUrl} attUrl={attUrl} mirror={healthy} />
+      <ComparisonView refPose={refPose} attPose={attPose} refUrl={refUrl} attUrl={attUrl} mirror={healthy} judged={coach ? false : kineJudged()} audience={audience} />
       <button type="button" className="rc-btn is-wide press" onClick={() => { hapticLight(); setAttFile(null); setAttPose(null); setPhase('pick'); }} data-testid="rc-new">{c.newAttempt}</button>
     </>}
   </>;
   if (embedded) return content;
   return (
     <div className="wv-experience">
-      <section ref={screenRef} className="screen is-active sc-screen rc-screen" data-testid="reference-screen">
+      <section ref={screenRef} className="screen is-active sc-screen rc-screen" data-testid={coach ? 'coach-compare-screen' : 'reference-screen'}>
         <div className="wrap">
           <Topbar fr={fr} backTestId="reference-back-btn" onBack={onClose || (() => { window.location.hash = ''; })} />
           <p className="eyebrow">{c.eyebrow}</p>
           <h1 className="title">{c.title}</h1>
-          <p className="sub">{kineJudged() ? c.sub : c.subPlain}</p>
+          <p className="sub">{!coach && kineJudged() ? c.sub : c.subPlain}</p>
           {content}
         </div>
       </section>
