@@ -1,0 +1,24 @@
+{
+ "key": "kettlebell_high_pull",
+ "source": "convention: sumo high pull, wide stance, the bell pulled up the body to the chin with the elbows above the hands; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "pitch": 30,
+  "hipFlex": 45,
+  "hipAbd": 25,
+  "knee": 45,
+  "ankle": -15,
+  "shoulderFlex": 30,
+  "shoulderAbd": 10,
+  "humRot": -60,
+  "elbow": 5
+ },
+ "end": {
+  "hipAbd": 25,
+  "shoulderFlex": 20,
+  "shoulderAbd": 75,
+  "humRot": -40,
+  "elbow": 140,
+  "shrug": 15
+ }
+}

@@ -16,10 +16,10 @@ import { isTest } from '../../../lib/fitness-tests';
 import { guideExercise } from '../exercise-info';
 
 describe('the list of every counted exercise', () => {
-  it('holds the 210 offered exercises, each with its guide entry, and no fitness test', () => {
+  it('holds the 233 offered exercises, each with its guide entry, and no fitness test', () => {
     // The same rows as ExerciseList.jsx's ENTRIES.
     const exercises = OFFERED.filter(k => !isTest(k));
-    expect(exercises).toHaveLength(210);
-    expect(exercises.map(guideExercise).filter(Boolean)).toHaveLength(210);
+    expect(exercises).toHaveLength(233);
+    expect(exercises.map(guideExercise).filter(Boolean)).toHaveLength(233);
   });
 });

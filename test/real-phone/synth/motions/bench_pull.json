@@ -1,0 +1,25 @@
+{
+ "key": "bench_pull",
+ "source": "convention: bench pull, lying face down on a high bench, the bar pulled from straight arms to the bench; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.8
+ },
+ "start": {
+  "pitch": 90,
+  "hipAbd": 6,
+  "ankle": 20,
+  "shoulderFlex": 90,
+  "shoulderAbd": 15,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": 90,
+  "hipAbd": 6,
+  "ankle": 20,
+  "shoulderFlex": -10,
+  "shoulderAbd": 35,
+  "elbow": 105
+ }
+}

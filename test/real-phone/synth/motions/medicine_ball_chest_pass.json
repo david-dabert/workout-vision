@@ -1,0 +1,33 @@
+{
+ "key": "medicine_ball_chest_pass",
+ "source": "convention: chest pass, the ball thrown from the chest against a wall with a step forward; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 40,
+  "shoulderAbd": 10,
+  "humRot": -70,
+  "elbow": 135,
+  "left": {
+   "hipFlex": 5
+  },
+  "right": {
+   "hipFlex": -5
+  }
+ },
+ "end": {
+  "shoulderFlex": 90,
+  "shoulderAbd": 10,
+  "humRot": -70,
+  "elbow": 5,
+  "left": {
+   "hipFlex": 25,
+   "knee": 15,
+   "ankle": -10
+  },
+  "right": {
+   "hipFlex": -15,
+   "knee": 10,
+   "ankle": 20
+  }
+ }
+}

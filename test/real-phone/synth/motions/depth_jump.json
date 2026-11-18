@@ -1,0 +1,20 @@
+{
+ "key": "depth_jump",
+ "source": "convention: depth jump, stepped off a box, the landing absorbed and turned straight into a jump; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderFlex": 10,
+  "shoulderAbd": 8,
+  "elbow": 15
+ },
+ "end": {
+  "trunk": 30,
+  "hipFlex": 65,
+  "hipAbd": 10,
+  "knee": 85,
+  "ankle": -25,
+  "shoulderFlex": -30,
+  "shoulderAbd": 10,
+  "elbow": 10
+ }
+}

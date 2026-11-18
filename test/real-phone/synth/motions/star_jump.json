@@ -1,0 +1,23 @@
+{
+ "key": "star_jump",
+ "source": "convention: star jump, from a crouch, arms and legs spread wide at the top of the jump; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "trunk": 20,
+  "hipFlex": 60,
+  "hipAbd": 8,
+  "knee": 70,
+  "ankle": -20,
+  "shoulderFlex": 10,
+  "shoulderAbd": 15,
+  "elbow": 15
+ },
+ "end": {
+  "hipAbd": 30,
+  "ankle": 20,
+  "shoulderFlex": 0,
+  "shoulderAbd": 160,
+  "elbow": 5
+ },
+ "view": 0
+}

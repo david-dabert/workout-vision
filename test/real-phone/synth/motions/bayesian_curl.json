@@ -1,0 +1,38 @@
+{
+ "key": "bayesian_curl",
+ "source": "convention: Bayesian curl, a staggered stance facing away from the low pulley, the upper arm held behind the trunk; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "trunk": 5,
+  "left": {
+   "shoulderFlex": -30,
+   "shoulderAbd": 8,
+   "elbow": 10,
+   "hipFlex": 15,
+   "knee": 10
+  },
+  "right": {
+   "shoulderAbd": 8,
+   "elbow": 10,
+   "hipFlex": -10,
+   "knee": 10
+  }
+ },
+ "end": {
+  "trunk": 5,
+  "left": {
+   "shoulderFlex": -20,
+   "shoulderAbd": 8,
+   "elbow": 130,
+   "hipFlex": 15,
+   "knee": 10
+  },
+  "right": {
+   "shoulderAbd": 8,
+   "elbow": 10,
+   "hipFlex": -10,
+   "knee": 10
+  }
+ },
+ "side": "left"
+}

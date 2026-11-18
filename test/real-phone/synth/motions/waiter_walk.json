@@ -1,0 +1,40 @@
+{
+ "key": "waiter_walk",
+ "source": "convention: waiter walk, one bell locked out overhead, walked with the ribs down; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "left": {
+   "hipFlex": 18,
+   "knee": 5,
+   "ankle": -10,
+   "shoulderFlex": 175,
+   "shoulderAbd": 10,
+   "elbow": 5
+  },
+  "right": {
+   "hipFlex": -10,
+   "knee": 12,
+   "ankle": 12,
+   "shoulderAbd": 14,
+   "elbow": 3
+  }
+ },
+ "end": {
+  "left": {
+   "hipFlex": -10,
+   "knee": 12,
+   "ankle": 12,
+   "shoulderFlex": 175,
+   "shoulderAbd": 10,
+   "elbow": 5
+  },
+  "right": {
+   "hipFlex": 18,
+   "knee": 5,
+   "ankle": -10,
+   "shoulderAbd": 14,
+   "elbow": 3
+  }
+ },
+ "noReps": true
+}

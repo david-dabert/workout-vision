@@ -16,17 +16,17 @@ import { filmView } from '../../components/experience/exercise-info';
 // and since 3 October 179, without the four floor exercises counted on both sides in profile (offer.js, WITHDRAWN, third audit C21);
 // 181 the same day with the behind-the-neck press and the wall ball (the barbell jump squat is in the guide but not yet counted, NOT_YET_COUNTED;
 // the sandbag lunge, a walking lunge, is not offered); 182 on 5 October with the machine seated back extension; 183
-// on 12 October with the prone Y raise offered; 210 on 18 November with the 27 countable exercises of batch 1;
+// on 12 October with the prone Y raise offered; 210 on 18 November with the 27 countable exercises of batch 1; 233 the same day with the 23 of batch 2;
 // Beta marks the exercises with evidence and Experimental all the others, so that the label stays true.
 describe('the exercises the app offers', () => {
   // David's decision of 29 September: the walking lunge is not offered, since the lifter walks out of a fixed frame; nor, since 3 October, the sandbag lunge.
-  it('are the countable exercises of the guide but the walking and sandbag lunges and the four withdrawn and the jump squat, 210, the lifts of LIFT TIERS among them', () => {
+  it('are the countable exercises of the guide but the walking and sandbag lunges and the four withdrawn and the jump squat, 233, the lifts of LIFT TIERS among them', () => {
     const countable = catalogue.map(e => e.key).filter(k => families[k].joint);
-    expect(countable).toHaveLength(217);
+    expect(countable).toHaveLength(240);
     // With the two fitness tests of 2 October (fitness-tests.js), Experimental like every exercise without evidence.
     expect(Object.keys(WITHDRAWN).sort()).toEqual(['banded_dead_bug', 'bird_dog', 'dead_bug', 'glute_bridge_march']);
     expect([...OFFERED].sort()).toEqual([...countable.filter(k => k !== 'walking_lunge' && k !== 'sandbag_lunge' && !Object.hasOwn(WITHDRAWN, k) && !Object.hasOwn(NOT_YET_COUNTED, k)), 'chair_stand_test', 'arm_curl_test'].sort());
-    expect(OFFERED).toHaveLength(212);
+    expect(OFFERED).toHaveLength(235);
     expect(isOffered('prone_y_raise')).toBe(true);
     for (const key of ['power_clean', 'thruster', 'overhead_squat', 'sit_up', 'toes_to_bar', 'glute_ham_raise']) expect(isOffered(key), key).toBe(true);
     for (const key of ['box_jump', 'kettlebell_clean', 'medicine_ball_slam', 'tibialis_raise']) expect(isOffered(key), key).toBe(false); // batch 1, guide only (no joint)

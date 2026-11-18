@@ -125,7 +125,7 @@ try {
   await between('t09-to-guide');
   await settle();
   await expect(page.locator('.guide-screen')).toBeVisible({ timeout: 10000 });
-  await expect(page.locator('.guide-screen .list .item')).toHaveCount(347, { timeout: 10000 });
+  await expect(page.locator('.guide-screen .list .item')).toHaveCount(385, { timeout: 10000 });
   await shot('09-guide');
   await inView('09-guide', page.locator('#guide-search'));
   await page.locator('.guide-screen .list').scrollIntoViewIfNeeded();
@@ -149,7 +149,7 @@ try {
   // The list exercise with the longest name, whose title wraps the most: its filming screen, and back.
   await page.locator('[data-testid="choice-find-exercise"]').click();
   await settle();
-  await expect(page.locator('.guide-screen .list .item')).toHaveCount(347, { timeout: 10000 });
+  await expect(page.locator('.guide-screen .list .item')).toHaveCount(385, { timeout: 10000 });
   const longest = await page.$$eval('.guide-screen .list [data-exercise]', els => els
     .map(e => ({ key: e.dataset.exercise, len: e.querySelector('.item-name').textContent.length }))
     .sort((a, b) => b.len - a.len)[0].key);

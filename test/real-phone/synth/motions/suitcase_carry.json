@@ -1,0 +1,34 @@
+{
+ "key": "suitcase_carry",
+ "source": "convention: suitcase carry, one heavy bell at one side, walked tall without leaning; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "shoulderAbd": 14,
+  "elbow": 3,
+  "left": {
+   "hipFlex": 18,
+   "knee": 5,
+   "ankle": -10
+  },
+  "right": {
+   "hipFlex": -10,
+   "knee": 12,
+   "ankle": 12
+  }
+ },
+ "end": {
+  "shoulderAbd": 14,
+  "elbow": 3,
+  "left": {
+   "hipFlex": -10,
+   "knee": 12,
+   "ankle": 12
+  },
+  "right": {
+   "hipFlex": 18,
+   "knee": 5,
+   "ankle": -10
+  }
+ },
+ "noReps": true
+}

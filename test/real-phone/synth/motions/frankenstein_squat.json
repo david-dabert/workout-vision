@@ -1,0 +1,21 @@
+{
+ "key": "frankenstein_squat",
+ "source": "convention: Frankenstein squat, the bar resting on the front of the shoulders, no hands under it, arms straight ahead, trunk upright; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "hipAbd": 12,
+  "shoulderFlex": 90,
+  "shoulderAbd": 8,
+  "elbow": 5
+ },
+ "end": {
+  "trunk": 10,
+  "hipFlex": 100,
+  "hipAbd": 14,
+  "knee": 130,
+  "ankle": -32,
+  "shoulderFlex": 100,
+  "shoulderAbd": 8,
+  "elbow": 5
+ }
+}

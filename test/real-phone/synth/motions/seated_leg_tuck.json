@@ -1,0 +1,29 @@
+{
+ "key": "seated_leg_tuck",
+ "source": "convention: seated leg tuck on the end of a bench, the trunk leaning back, legs straightened out and drawn back to the chest; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "pitch": -35,
+  "hipFlex": 25,
+  "knee": 10,
+  "ankle": 20,
+  "hipAbd": 5,
+  "shoulderFlex": -40,
+  "shoulderAbd": 15,
+  "elbow": 5
+ },
+ "end": {
+  "pitch": -35,
+  "hipFlex": 110,
+  "knee": 120,
+  "ankle": 20,
+  "hipAbd": 5,
+  "shoulderFlex": -40,
+  "shoulderAbd": 15,
+  "elbow": 5
+ }
+}

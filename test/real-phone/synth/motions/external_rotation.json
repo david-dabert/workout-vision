@@ -1,0 +1,29 @@
+{
+ "key": "external_rotation",
+ "source": "convention: external rotation with a band, the elbow bent to 90 degrees at the side, the forearm turned out; angles UNSOURCED",
+ "status": "experimental",
+ "start": {
+  "left": {
+   "shoulderAbd": 8,
+   "humRot": -50,
+   "elbow": 90
+  },
+  "right": {
+   "shoulderAbd": 8,
+   "elbow": 8
+  }
+ },
+ "end": {
+  "left": {
+   "shoulderAbd": 8,
+   "humRot": 45,
+   "elbow": 90
+  },
+  "right": {
+   "shoulderAbd": 8,
+   "elbow": 8
+  }
+ },
+ "side": "left",
+ "view": 0
+}

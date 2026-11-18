@@ -1,0 +1,28 @@
+{
+ "key": "seated_good_morning",
+ "source": "convention: seated good morning on a bench, feet wide, the flat back hinged forward towards the bench; angles UNSOURCED",
+ "status": "experimental",
+ "support": {
+  "anchor": "hips",
+  "y": 0.5
+ },
+ "start": {
+  "hipFlex": 90,
+  "knee": 90,
+  "hipAbd": 25,
+  "shoulderFlex": 0,
+  "shoulderAbd": 50,
+  "humRot": 90,
+  "elbow": 150
+ },
+ "end": {
+  "pitch": 50,
+  "hipFlex": 140,
+  "knee": 90,
+  "hipAbd": 25,
+  "shoulderFlex": 0,
+  "shoulderAbd": 50,
+  "humRot": 90,
+  "elbow": 150
+ }
+}
