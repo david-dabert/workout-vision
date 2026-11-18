@@ -36,9 +36,4 @@ export function overlayLines({ begun, total, detected, saved, fr }) {
   return lines;
 }
 
-/**
- * The shared video's caption, at its foot: the skeleton drawn is the app's estimate, not a measure of the body (honesty
- * pass, second round, 14 October 2026: the video drew the gold joint and its trail with no word, away from the replay's
- * legend). The report names no app (David, 29 September), so neither does this. Awaiting David's approval (R10).
- */
-export const skeletonCaption = fr => (fr ? 'Squelette estimé par l’appli' : 'Skeleton estimated by the app');
+// The shared video's caption « Squelette estimé par l'appli » was removed at David's request (18 November 2026).

@@ -142,13 +142,13 @@ describe('the exported overlay after a correction', () => {
     video.dispatchEvent(new Event('ended'));
     return text;
   };
-  // Every frame says what the drawing is, at its foot (replay-labels.js skeletonCaption; honesty pass, 14 October 2026).
+  // No caption at the foot of the frame (David, 18 November 2026: « Squelette estimé par l'appli » removed).
   it('draws both counts when the user saved another count', () => {
-    expect(drawn(8)).toEqual(['Skeleton estimated by the app', '7 / 7', 'The app detected 7 reps. You saved 8.']);
+    expect(drawn(8)).toEqual(['7 / 7', 'The app detected 7 reps. You saved 8.']);
   });
   it('draws the count alone when the user kept the app\'s', () => {
-    expect(drawn(7)).toEqual(['Skeleton estimated by the app', '7 / 7']);
-    expect(drawn(null)).toEqual(['Skeleton estimated by the app', '7 / 7']);
+    expect(drawn(7)).toEqual(['7 / 7']);
+    expect(drawn(null)).toEqual(['7 / 7']);
   });
   it('draws zero text or caption when clean is true for organic social export', () => {
     const text = [];
