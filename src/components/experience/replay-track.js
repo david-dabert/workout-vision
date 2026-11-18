@@ -35,6 +35,16 @@ export function poseAt(frames, times, t) {
   });
 }
 
+// The reps completed at t, as a coach counts them: a rep counts once it has ended, not when it begins (David,
+// 18 November 2026: the number rose at the start of each rep, before the movement was done). A rep ending within
+// DONE_SLACK of t counts, so the last frame, sampled a hair before the last rep's end, shows the full count; at or
+// past `end` (the video's length) every rep counts. Status: convention (counting at the rep's end is how a coach counts).
+export const DONE_SLACK = 0.05;
+export function repsDone(reps, t, end = Infinity) {
+  if (t >= end - DONE_SLACK) return reps.length;
+  return reps.filter(r => r.endTime <= t + DONE_SLACK).length;
+}
+
 // The rep on screen at t (the latest begun, when two overlap), or −1.
 export function repAt(reps, t) {
   let at = -1;

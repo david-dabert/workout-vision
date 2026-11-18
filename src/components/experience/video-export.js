@@ -4,7 +4,7 @@
 // Safari on iPhone offers from iOS 14.5, in MP4 with H.264). Nothing is sent anywhere: the file goes
 // to the share sheet only when the user taps it there.
 import { liftDefinition } from '../../lib/counting/core';
-import { poseAt } from './replay-track';
+import { poseAt, repsDone } from './replay-track';
 import { drawSkeleton, litSides, trailPoints, LAMP } from './replay-draw';
 import { steadyFrames, trailAt } from './replay-smooth';
 import { overlayLines, skeletonCaption } from './replay-labels';
@@ -80,9 +80,9 @@ function setVideo({ file, result, lift, fr, saved, clean = false, onProgress, si
     if (!clean) {
       drawCaption(ctx, W, H, u);
       if (reps.length) {
-        // The reps begun so far, as the replay's chip shows them: "3 / 8"; after a correction, a second
-        // line says both counts, so the video explains itself away from the app (replay-labels.js).
-        const begun = reps.filter(r => r.startTime <= t).length, pad = 16 * u;
+        // The reps completed so far, as the replay's chip shows them (repsDone): "3 / 8"; after a correction, a
+        // second line says both counts, so the video explains itself away from the app (replay-labels.js).
+        const begun = repsDone(reps, t, times[times.length - 1] ?? Infinity), pad = 16 * u;
         const [label, note] = overlayLines({ begun, total: reps.length, detected: result.count, saved, fr });
         ctx.font = `${Math.round(30 * u)}px Georgia, serif`;
         ctx.textBaseline = 'top';
