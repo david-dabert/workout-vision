@@ -125,9 +125,9 @@ const undefinedNow = Object.fromEntries(Object.entries(read)
 // Read undefined on main on 7 November 2026 (commit affd274a), each with the files that read it.
 const KNOWN = {
   '--fs-sub': ['Report.css'],
-  '--green': ['DataPortability.jsx', 'Profile.jsx'],
+  '--green': ['Profile.jsx'],
   '--hair-1': ['MovementOptimization.css'],
-  '--primary': ['DataPortability.jsx', 'Profile.module.css'],
+  '--primary': ['Profile.module.css'],
   '--r-full': ['Live.css', 'MovementOptimization.css'],
   '--r-md': ['MovementOptimization.css'],
   '--shade': ['InvestorShowcaseModal.css'],
