@@ -54,13 +54,14 @@ try {
     console.log(`  track ${s.id}: frames ${at[0]}-${at.at(-1)}, cover ${(100 * s.cover).toFixed(0)}%, motion ${s.motion.toFixed(1)} deg${s.id === lifter?.id ? '  <- lifter' : ''}`);
   }
   // The chosen track's world landmarks on the harness's own timeline (nearest recorded frame, same timestamps).
-  const byT = new Map(frames.map((f, i) => [Math.round(f.t), i]));
-  const world = all.ts.map(t => { const i = byT.get(Math.round(t)); const k = i == null ? undefined : tracks[lifter.id].at.get(i); return k == null ? null : frames[i].world[k]; });
-  const matched = all.ts.filter(t => byT.has(Math.round(t))).length;
+  // The hook records one frame per whole-frame detect, in sample order (its t is the worker's clock, not video time).
+  if (frames.length !== all.ts.length) throw new Error(`frames ${frames.length} != samples ${all.ts.length}`);
+  const world = all.ts.map((_, i) => { const k = tracks[lifter.id].at.get(i); return k == null ? null : frames[i].world[k]; });
+  const matched = frames.length;
   const page = await browser.newPage();
   await page.goto(`${BASE}test/real-phone/harness.html`, { timeout: 300000 });
   const c = await page.evaluate(async ({ world, ts, lift, core }) => { const { summarizeCount } = await import(core); const c = summarizeCount(world, ts, lift); return c.refused ? 'refused' : c.count; }, { world, ts: all.ts, lift, core: `${BASE}src/lib/coreAnalysis.js` });
-  console.log(`  first pose with three asked: count ${all.count}; lifter track: pose in ${world.filter(Boolean).length}/${all.ts.length} samples (${matched} timestamps matched); count ${c} for ${label}`);
+  console.log(`  first pose with three asked: count ${all.count}; lifter track: pose in ${world.filter(Boolean).length}/${all.ts.length} samples (${matched} frames); count ${c} for ${label}`);
   if (process.env.TRACK_DUMP) writeFileSync(process.env.TRACK_DUMP, JSON.stringify({ ts: all.ts, frames }));
   await browser.close();
 } finally { try { process.kill(-server.pid); } catch { /* already gone */ } }
