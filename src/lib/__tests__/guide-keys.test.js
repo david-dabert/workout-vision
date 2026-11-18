@@ -7,7 +7,7 @@ import { isGuideKey } from '../guide-keys';
 
 describe('the guide’s keys', () => {
   it('are the catalogue’s keys, sorted, each once', () => {
-    expect(keys).toEqual([...new Set(catalogue.map(e => e.key))].sort());
+    expect(keys).toEqual([...new Set(catalogue.map(e => e.key).filter(k => !k.includes('--')))].sort());
     expect(new Set(keys).size).toBe(keys.length);
   });
   it('name catalogue entries only: no alias, nothing of an object’s own', () => {

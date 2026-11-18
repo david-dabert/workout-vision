@@ -102,7 +102,8 @@ describe('the sheet’s drawings', () => {
   });
 
   it('never pushes a programme’s own frames out while warming it', async () => {
-    const keys = catalogue.filter(e => !e.noDrawing && !e.drawing).map(e => e.key);
+    // Exercises with drawings of the guide (figureOnly entries, variants among them, have none).
+    const keys = catalogue.filter(e => !e.noDrawing && !e.drawing && !e.figureOnly).map(e => e.key);
     const cache = drawingCache({ load: async () => FAKE });
     // Other programmes first, more than the cache keeps.
     await cache.warm(keys.slice(100, 160));

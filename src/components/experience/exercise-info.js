@@ -7,6 +7,7 @@ import { getGuideExercise } from '../../lib/exerciseGuide';
 import { META } from './lift-meta';
 import { hasFigure, liftView } from './lift-scenes';
 import { FITNESS_TESTS } from '../../lib/fitness-tests';
+import { baseKey } from '../../lib/variant-key';
 
 const byKey = new Map(catalogue.map(e => [e.key, e]));
 
@@ -20,7 +21,8 @@ export function exerciseName(key, lang) {
 }
 
 /** 'side' or 'front': the card's reference set, else the guide's view of the exercise. */
-export const filmView = key => (FITNESS_TESTS[key] ? FITNESS_TESTS[key].view : hasFigure(key) ? liftView(key) : families[key]?.view === 'front' ? 'front' : 'side');
+// A variant (variant-key.js) is filmed as its base is: the base's card figure or family view.
+export const filmView = key => (FITNESS_TESTS[key] ? FITNESS_TESTS[key].view : hasFigure(baseKey(key)) ? liftView(baseKey(key)) : families[baseKey(key)]?.view === 'front' ? 'front' : 'side');
 
 /** The guide's entry with its three drawings, or null. */
 // A fitness test is drawn with its movement's drawings (fitness-tests.js).

@@ -22,12 +22,50 @@
       "dc",
       "developpe couche barre",
       "barbell bench press",
-      "cambered bar bench press",
-      "wide grip bench press",
-      "close grip bench press",
-      "developpe couche prise large",
-      "developpe barre cambree"
+      "flat barbell bench press",
+      "flat bench press"
     ]
+  },
+  {
+    "key": "bench_press--wide_grip",
+    "name": "Wide-Grip Bench Press",
+    "slug": "bench-press-wide-grip",
+    "category": "chest",
+    "equipment": "Barbell",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Shoulders"
+    ],
+    "fr": "Développé couché prise large",
+    "aliases": [
+      "wide-grip bench press",
+      "développé couché prise large",
+      "wide grip bench press",
+      "developpe couche prise large"
+    ],
+    "base": "bench_press",
+    "figureOnly": true
+  },
+  {
+    "key": "bench_press--cambered_bar",
+    "name": "Cambered Bar Bench Press",
+    "slug": "bench-press-cambered-bar",
+    "category": "chest",
+    "equipment": "Barbell",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Shoulders"
+    ],
+    "fr": "Développé couché barre cambrée",
+    "aliases": [
+      "cambered bar bench press",
+      "développé couché barre cambrée",
+      "developpe barre cambree"
+    ],
+    "base": "bench_press",
+    "figureOnly": true
   },
   {
     "key": "incline_bench_press",
@@ -48,7 +86,8 @@
       "developpe incline",
       "di",
       "incline bench",
-      "developpe incline barre"
+      "developpe incline barre",
+      "incline barbell bench press"
     ]
   },
   {
@@ -84,8 +123,31 @@
     "aliases": [
       "dumbbell bench press",
       "développé couché haltères",
-      "dumbbell bench press"
+      "dumbbell bench press",
+      "flat dumbbell bench press"
     ]
+  },
+  {
+    "key": "dumbbell_bench_press--neutral_grip",
+    "name": "Neutral-Grip Dumbbell Press",
+    "slug": "dumbbell-bench-press-neutral-grip",
+    "category": "chest",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Chest",
+      "Triceps",
+      "Shoulders"
+    ],
+    "fr": "Développé couché haltères prise neutre",
+    "aliases": [
+      "neutral-grip dumbbell press",
+      "développé couché haltères prise neutre",
+      "neutral grip dumbbell press",
+      "hammer grip dumbbell press",
+      "developpe halteres prise neutre"
+    ],
+    "base": "dumbbell_bench_press",
+    "figureOnly": true
   },
   {
     "key": "decline_bench_press",
@@ -106,7 +168,8 @@
       "developpe decline",
       "dd",
       "decline bench",
-      "developpe decline barre"
+      "developpe decline barre",
+      "decline barbell bench press"
     ]
   },
   {
@@ -242,11 +305,50 @@
       "ohp",
       "developpe militaire",
       "developpe barre epaules",
-      "standing overhead press",
-      "seated barbell press",
-      "developpe assis barre",
-      "dumbbell shoulder press"
+      "standing overhead press"
     ]
+  },
+  {
+    "key": "overhead_press--seated",
+    "name": "Seated Barbell Overhead Press",
+    "slug": "overhead-press-seated",
+    "category": "shoulders",
+    "equipment": "Barbell",
+    "muscles": [
+      "Shoulders",
+      "Triceps"
+    ],
+    "fr": "Développé militaire assis",
+    "aliases": [
+      "seated barbell overhead press",
+      "développé militaire assis",
+      "seated barbell press",
+      "seated overhead press",
+      "developpe assis barre",
+      "developpe militaire assis"
+    ],
+    "base": "overhead_press",
+    "figureOnly": true
+  },
+  {
+    "key": "overhead_press--smith",
+    "name": "Smith Machine Shoulder Press",
+    "slug": "overhead-press-smith",
+    "category": "shoulders",
+    "equipment": "Machine",
+    "muscles": [
+      "Shoulders",
+      "Triceps"
+    ],
+    "fr": "Développé épaules à la Smith",
+    "aliases": [
+      "smith machine shoulder press",
+      "développé épaules à la smith",
+      "smith overhead press",
+      "developpe epaules guide"
+    ],
+    "base": "overhead_press",
+    "figureOnly": true
   },
   {
     "key": "seated_dumbbell_press",
@@ -264,8 +366,8 @@
       "développé épaules assis haltères",
       "seated dumbbell press",
       "developpe epaules assis",
-      "developpe militaire assis",
-      "seated overhead dumbbell"
+      "seated overhead dumbbell",
+      "seated dumbbell shoulder press"
     ]
   },
   {
@@ -314,6 +416,26 @@
     ]
   },
   {
+    "key": "lateral_raise--seated",
+    "name": "Seated Lateral Raise",
+    "slug": "lateral-raise-seated",
+    "category": "shoulders",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Shoulders",
+      "Upper Back"
+    ],
+    "fr": "Élévations latérales assis",
+    "aliases": [
+      "seated lateral raise",
+      "élévations latérales assis",
+      "seated dumbbell lateral raise",
+      "elevations laterales assis"
+    ],
+    "base": "lateral_raise",
+    "figureOnly": true
+  },
+  {
     "key": "cable_lateral_raise",
     "name": "Cable Lateral Raise",
     "slug": "cable-lateral-raise",
@@ -332,6 +454,26 @@
       "elevation laterale a la poulie",
       "cable lateral raises"
     ]
+  },
+  {
+    "key": "cable_lateral_raise--behind_back",
+    "name": "Behind-the-Back Cable Lateral Raise",
+    "slug": "cable-lateral-raise-behind-back",
+    "category": "shoulders",
+    "equipment": "Cable",
+    "muscles": [
+      "Shoulders",
+      "Upper Back"
+    ],
+    "fr": "Élévations latérales à la poulie derrière le dos",
+    "aliases": [
+      "behind-the-back cable lateral raise",
+      "élévations latérales à la poulie derrière le dos",
+      "behind the back cable lateral raise",
+      "behind back lateral raise"
+    ],
+    "base": "cable_lateral_raise",
+    "figureOnly": true
   },
   {
     "key": "front_raise",
@@ -372,7 +514,8 @@
       "oiseau halteres",
       "deltoides posterieurs",
       "arriere depaule",
-      "rear delt flyes"
+      "rear delt flyes",
+      "dumbbell rear delt fly"
     ]
   },
   {
@@ -393,7 +536,8 @@
       "oiseau machine",
       "reverse fly",
       "arriere depaule machine",
-      "oiseau deltoides"
+      "oiseau deltoides",
+      "reverse pec deck fly"
     ]
   },
   {
@@ -415,7 +559,8 @@
       "facepull",
       "tirage visage",
       "face pull poulie",
-      "facepulls"
+      "facepulls",
+      "cable face pull"
     ]
   },
   {
@@ -455,10 +600,69 @@
       "soulevé de terre",
       "deadlift",
       "conventional deadlift",
-      "souleve de terre traditionnel",
-      "deficit deadlift",
-      "souleve de terre en deficit"
+      "souleve de terre traditionnel"
     ]
+  },
+  {
+    "key": "deadlift--deficit",
+    "name": "Deficit Deadlift",
+    "slug": "deadlift-deficit",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Posterior Chain",
+      "Back",
+      "Grip"
+    ],
+    "fr": "Soulevé de terre en déficit",
+    "aliases": [
+      "deficit deadlift",
+      "soulevé de terre en déficit",
+      "souleve de terre en deficit",
+      "deficit pull"
+    ],
+    "base": "deadlift",
+    "figureOnly": true
+  },
+  {
+    "key": "deadlift--dumbbell",
+    "name": "Dumbbell Deadlift",
+    "slug": "deadlift-dumbbell",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Posterior Chain",
+      "Back",
+      "Grip"
+    ],
+    "fr": "Soulevé de terre aux haltères",
+    "aliases": [
+      "dumbbell deadlift",
+      "soulevé de terre aux haltères",
+      "souleve de terre halteres"
+    ],
+    "base": "deadlift",
+    "figureOnly": true
+  },
+  {
+    "key": "deadlift--kettlebell",
+    "name": "Kettlebell Deadlift",
+    "slug": "deadlift-kettlebell",
+    "category": "legs",
+    "equipment": "Kettlebell",
+    "muscles": [
+      "Posterior Chain",
+      "Back",
+      "Grip"
+    ],
+    "fr": "Soulevé de terre au kettlebell",
+    "aliases": [
+      "kettlebell deadlift",
+      "soulevé de terre au kettlebell",
+      "souleve de terre kettlebell"
+    ],
+    "base": "deadlift",
+    "figureOnly": true
   },
   {
     "key": "romanian_deadlift",
@@ -478,13 +682,33 @@
       "romanian deadlift",
       "sdt roumain",
       "rdl",
-      "stiff leg deadlift",
-      "stiff-legged deadlift",
-      "jambes tendues",
-      "souleve de terre jambes tendues",
-      "souleve jambes tendues",
-      "romanian dead lift"
+      "romanian dead lift",
+      "barbell romanian deadlift"
     ]
+  },
+  {
+    "key": "romanian_deadlift--stiff_leg",
+    "name": "Stiff-Legged Deadlift",
+    "slug": "romanian-deadlift-stiff-leg",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Hamstrings",
+      "Glutes",
+      "Lower Back"
+    ],
+    "fr": "Soulevé de terre jambes tendues",
+    "aliases": [
+      "stiff-legged deadlift",
+      "soulevé de terre jambes tendues",
+      "stiff legged deadlift",
+      "stiff leg deadlift",
+      "souleve de terre jambes tendues",
+      "jambes tendues",
+      "sldl"
+    ],
+    "base": "romanian_deadlift",
+    "figureOnly": true
   },
   {
     "key": "barbell_row",
@@ -524,7 +748,9 @@
       "rowing t-bar",
       "t bar row",
       "rowing barre t",
-      "tbar row"
+      "tbar row",
+      "machine t bar row",
+      "t bar row machine"
     ]
   },
   {
@@ -543,8 +769,6 @@
       "dumbbell bent over row",
       "rowing buste penché haltères",
       "dumbbell bent over row",
-      "rowing bucheron",
-      "bucheron",
       "rowing deux halteres",
       "rowing halteres"
     ]
@@ -596,6 +820,27 @@
     ]
   },
   {
+    "key": "chest_supported_row--incline_dumbbell",
+    "name": "Incline Dumbbell Row",
+    "slug": "chest-supported-row-incline-dumbbell",
+    "category": "back",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Back",
+      "Biceps",
+      "Rear Delts"
+    ],
+    "fr": "Rowing haltères sur banc incliné",
+    "aliases": [
+      "incline dumbbell row",
+      "rowing haltères sur banc incliné",
+      "chest supported dumbbell row",
+      "rowing banc incline"
+    ],
+    "base": "chest_supported_row",
+    "figureOnly": true
+  },
+  {
     "key": "seated_row",
     "name": "Seated Cable Row",
     "slug": "seated-row",
@@ -636,7 +881,8 @@
       "machine row",
       "rowing machine",
       "tirage horizontal machine",
-      "machine dos rowing"
+      "machine dos rowing",
+      "chest supported machine row"
     ]
   },
   {
@@ -659,14 +905,92 @@
       "tirage nuque",
       "tirage dos",
       "poulie haute",
-      "tirage poulie haute",
-      "neutral grip lat pulldown",
-      "tirage vertical prise neutre",
-      "reverse grip lat pulldown",
-      "tirage vertical prise inversee",
-      "single arm lat pulldown",
-      "tirage vertical unilateral"
+      "tirage poulie haute"
     ]
+  },
+  {
+    "key": "lat_pulldown--neutral_grip",
+    "name": "Neutral-Grip Lat Pulldown",
+    "slug": "lat-pulldown-neutral-grip",
+    "category": "back",
+    "equipment": "Cable",
+    "muscles": [
+      "Lats",
+      "Biceps"
+    ],
+    "fr": "Tirage vertical prise neutre",
+    "aliases": [
+      "neutral-grip lat pulldown",
+      "tirage vertical prise neutre",
+      "neutral grip lat pulldown",
+      "v bar pulldown"
+    ],
+    "base": "lat_pulldown",
+    "figureOnly": true
+  },
+  {
+    "key": "lat_pulldown--reverse_grip",
+    "name": "Reverse-Grip Lat Pulldown",
+    "slug": "lat-pulldown-reverse-grip",
+    "category": "back",
+    "equipment": "Cable",
+    "muscles": [
+      "Lats",
+      "Biceps"
+    ],
+    "fr": "Tirage vertical prise inversée",
+    "aliases": [
+      "reverse-grip lat pulldown",
+      "tirage vertical prise inversée",
+      "reverse grip lat pulldown",
+      "underhand pulldown",
+      "tirage vertical prise inversee",
+      "tirage supination"
+    ],
+    "base": "lat_pulldown",
+    "figureOnly": true
+  },
+  {
+    "key": "lat_pulldown--single_arm",
+    "name": "Single-Arm Lat Pulldown",
+    "slug": "lat-pulldown-single-arm",
+    "category": "back",
+    "equipment": "Cable",
+    "muscles": [
+      "Lats",
+      "Biceps"
+    ],
+    "fr": "Tirage vertical unilatéral",
+    "aliases": [
+      "single-arm lat pulldown",
+      "tirage vertical unilatéral",
+      "single arm lat pulldown",
+      "one arm pulldown",
+      "tirage vertical unilateral"
+    ],
+    "base": "lat_pulldown",
+    "figureOnly": true
+  },
+  {
+    "key": "lat_pulldown--plate_loaded",
+    "name": "Plate-Loaded Lat Pulldown",
+    "slug": "lat-pulldown-plate-loaded",
+    "category": "back",
+    "equipment": "Machine",
+    "muscles": [
+      "Lats",
+      "Biceps"
+    ],
+    "fr": "Tirage vertical convergent",
+    "aliases": [
+      "plate-loaded lat pulldown",
+      "tirage vertical convergent",
+      "plate loaded lat pulldown",
+      "iso lateral pulldown",
+      "tirage vertical machine convergente"
+    ],
+    "base": "lat_pulldown",
+    "figureOnly": true
   },
   {
     "key": "close_grip_lat_pulldown",
@@ -703,9 +1027,6 @@
       "straight-arm pulldown",
       "tirage bras tendus à la poulie",
       "straight arm pulldown",
-      "pullover",
-      "pull over",
-      "pull-over",
       "pullover poulie",
       "pull over poulie",
       "tirage bras tendus"
@@ -732,8 +1053,31 @@
       "traction prise pronation",
       "traction dos",
       "pullup",
-      "pullups"
+      "pullups",
+      "overhand pull up"
     ]
+  },
+  {
+    "key": "pull_up--wide_grip",
+    "name": "Wide-Grip Pull-Up",
+    "slug": "pull-up-wide-grip",
+    "category": "back",
+    "equipment": "Pull-up Bar",
+    "muscles": [
+      "Lats",
+      "Biceps",
+      "Core"
+    ],
+    "fr": "Tractions prise large",
+    "aliases": [
+      "wide-grip pull-up",
+      "tractions prise large",
+      "wide grip pull up",
+      "traction prise large",
+      "tractions larges"
+    ],
+    "base": "pull_up",
+    "figureOnly": true
   },
   {
     "key": "assisted_pull_up",
@@ -749,7 +1093,8 @@
     "aliases": [
       "assisted pull-up",
       "tractions assistées",
-      "assisted pull up"
+      "assisted pull up",
+      "assisted pull up machine"
     ]
   },
   {
@@ -788,7 +1133,8 @@
       "traction prise supination",
       "traction biceps",
       "chinup",
-      "chinups"
+      "chinups",
+      "underhand chin up"
     ]
   },
   {
@@ -830,14 +1176,116 @@
       "back squat",
       "barbell squat",
       "barbell back squat",
-      "safety bar squat",
-      "box squat",
-      "belt squat",
       "low bar squat",
       "high bar squat",
       "squat barre basse",
       "squat barre haute"
     ]
+  },
+  {
+    "key": "squat--safety_bar",
+    "name": "Safety Bar Squat",
+    "slug": "squat-safety-bar",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Core"
+    ],
+    "fr": "Squat à la safety bar",
+    "aliases": [
+      "safety bar squat",
+      "squat à la safety bar",
+      "ssb squat",
+      "squat barre de securite"
+    ],
+    "base": "squat",
+    "figureOnly": true
+  },
+  {
+    "key": "squat--box",
+    "name": "Box Squat",
+    "slug": "squat-box",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Core"
+    ],
+    "fr": "Squat sur box",
+    "aliases": [
+      "box squat",
+      "squat sur box",
+      "squat sur boite"
+    ],
+    "base": "squat",
+    "figureOnly": true
+  },
+  {
+    "key": "squat--heel_elevated",
+    "name": "Heel-Elevated Barbell Squat",
+    "slug": "squat-heel-elevated",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Core"
+    ],
+    "fr": "Squat barre talons surélevés",
+    "aliases": [
+      "heel-elevated barbell squat",
+      "squat barre talons surélevés",
+      "heel elevated squat",
+      "heel elevated barbell squat",
+      "squat barre talons sureleves"
+    ],
+    "base": "squat",
+    "figureOnly": true
+  },
+  {
+    "key": "squat--dumbbell",
+    "name": "Dumbbell Squat",
+    "slug": "squat-dumbbell",
+    "category": "legs",
+    "equipment": "Dumbbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Core"
+    ],
+    "fr": "Squat aux haltères",
+    "aliases": [
+      "dumbbell squat",
+      "squat aux haltères",
+      "squat halteres",
+      "squat aux halteres"
+    ],
+    "base": "squat",
+    "figureOnly": true
+  },
+  {
+    "key": "squat--cable",
+    "name": "Cable Squat",
+    "slug": "squat-cable",
+    "category": "legs",
+    "equipment": "Cable",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Core"
+    ],
+    "fr": "Squat à la poulie",
+    "aliases": [
+      "cable squat",
+      "squat à la poulie",
+      "squat poulie",
+      "squat a la poulie"
+    ],
+    "base": "squat",
+    "figureOnly": true
   },
   {
     "key": "front_squat",
@@ -858,6 +1306,27 @@
     ]
   },
   {
+    "key": "front_squat--kettlebell",
+    "name": "Kettlebell Front Squat",
+    "slug": "front-squat-kettlebell",
+    "category": "legs",
+    "equipment": "Kettlebell",
+    "muscles": [
+      "Quads",
+      "Core",
+      "Glutes"
+    ],
+    "fr": "Squat avant aux kettlebells",
+    "aliases": [
+      "kettlebell front squat",
+      "squat avant aux kettlebells",
+      "double kettlebell front squat",
+      "squat kettlebell au rack"
+    ],
+    "base": "front_squat",
+    "figureOnly": true
+  },
+  {
     "key": "hack_squat",
     "name": "Hack Squat",
     "slug": "hack-squat",
@@ -875,11 +1344,85 @@
       "hacksquat",
       "squat hack",
       "machine hack squat",
-      "pendulum squat",
-      "squat pendulaire",
-      "pendulum",
       "hack squat machine"
     ]
+  },
+  {
+    "key": "hack_squat--pendulum",
+    "name": "Pendulum Squat",
+    "slug": "hack-squat-pendulum",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Quads",
+      "Glutes"
+    ],
+    "fr": "Squat pendulaire",
+    "aliases": [
+      "pendulum squat",
+      "squat pendulaire",
+      "pendulum"
+    ],
+    "base": "hack_squat",
+    "figureOnly": true
+  },
+  {
+    "key": "hack_squat--barbell",
+    "name": "Barbell Hack Squat",
+    "slug": "hack-squat-barbell",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Quads",
+      "Glutes"
+    ],
+    "fr": "Hack squat à la barre",
+    "aliases": [
+      "barbell hack squat",
+      "hack squat à la barre",
+      "hack squat barre"
+    ],
+    "base": "hack_squat",
+    "figureOnly": true
+  },
+  {
+    "key": "hack_squat--smith",
+    "name": "Smith Machine Hack Squat",
+    "slug": "hack-squat-smith",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Quads",
+      "Glutes"
+    ],
+    "fr": "Hack squat à la Smith",
+    "aliases": [
+      "smith machine hack squat",
+      "hack squat à la smith",
+      "hack squat guide",
+      "smith hack squat"
+    ],
+    "base": "hack_squat",
+    "figureOnly": true
+  },
+  {
+    "key": "hack_squat--reverse",
+    "name": "Reverse Hack Squat",
+    "slug": "hack-squat-reverse",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Quads",
+      "Glutes"
+    ],
+    "fr": "Hack squat inversé",
+    "aliases": [
+      "reverse hack squat",
+      "hack squat inversé",
+      "hack squat inverse"
+    ],
+    "base": "hack_squat",
+    "figureOnly": true
   },
   {
     "key": "leg_press",
@@ -902,11 +1445,116 @@
       "presse cuisses",
       "legpress",
       "presse 45",
-      "horizontal leg press",
-      "vertical leg press",
-      "presse a cuisses horizontale",
-      "presse a cuisses verticale"
+      "45 degree leg press",
+      "presse a cuisses 45"
     ]
+  },
+  {
+    "key": "leg_press--horizontal",
+    "name": "Horizontal Leg Press",
+    "slug": "leg-press-horizontal",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings"
+    ],
+    "fr": "Presse à cuisses horizontale",
+    "aliases": [
+      "horizontal leg press",
+      "presse à cuisses horizontale",
+      "presse a cuisses horizontale",
+      "seated leg press"
+    ],
+    "base": "leg_press",
+    "figureOnly": true
+  },
+  {
+    "key": "leg_press--vertical",
+    "name": "Vertical Leg Press",
+    "slug": "leg-press-vertical",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings"
+    ],
+    "fr": "Presse à cuisses verticale",
+    "aliases": [
+      "vertical leg press",
+      "presse à cuisses verticale",
+      "presse a cuisses verticale"
+    ],
+    "base": "leg_press",
+    "figureOnly": true
+  },
+  {
+    "key": "leg_press--single_leg",
+    "name": "Single-Leg Leg Press",
+    "slug": "leg-press-single-leg",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings"
+    ],
+    "fr": "Presse à cuisses unilatérale",
+    "aliases": [
+      "single-leg leg press",
+      "presse à cuisses unilatérale",
+      "single leg leg press",
+      "one leg press",
+      "presse unilaterale"
+    ],
+    "base": "leg_press",
+    "figureOnly": true
+  },
+  {
+    "key": "leg_press--high_feet",
+    "name": "High-Foot Leg Press",
+    "slug": "leg-press-high-feet",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings"
+    ],
+    "fr": "Presse à cuisses pieds hauts",
+    "aliases": [
+      "high-foot leg press",
+      "presse à cuisses pieds hauts",
+      "high foot leg press",
+      "feet high leg press",
+      "presse pieds hauts"
+    ],
+    "base": "leg_press",
+    "figureOnly": true
+  },
+  {
+    "key": "leg_press--narrow_stance",
+    "name": "Narrow-Stance Leg Press",
+    "slug": "leg-press-narrow-stance",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings"
+    ],
+    "fr": "Presse à cuisses pieds serrés",
+    "aliases": [
+      "narrow-stance leg press",
+      "presse à cuisses pieds serrés",
+      "narrow stance leg press",
+      "close stance leg press",
+      "presse pieds serres"
+    ],
+    "base": "leg_press",
+    "figureOnly": true
   },
   {
     "key": "bulgarian_split_squat",
@@ -947,6 +1595,26 @@
       "fente marchée",
       "walking lunge"
     ]
+  },
+  {
+    "key": "walking_lunge--barbell",
+    "name": "Barbell Walking Lunge",
+    "slug": "walking-lunge-barbell",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings"
+    ],
+    "fr": "Fente marchée à la barre",
+    "aliases": [
+      "barbell walking lunge",
+      "fente marchée à la barre",
+      "fentes marchees barre"
+    ],
+    "base": "walking_lunge",
+    "figureOnly": true
   },
   {
     "key": "sandbag_lunge",
@@ -1024,10 +1692,47 @@
       "curl de jambe machine",
       "leg curl",
       "ischios machine",
-      "curl jambes",
-      "standing leg curl",
-      "leg curl debout"
+      "curl jambes"
     ]
+  },
+  {
+    "key": "leg_curl--standing",
+    "name": "Standing Leg Curl",
+    "slug": "leg-curl-standing",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Hamstrings",
+      "Calves"
+    ],
+    "fr": "Leg curl debout",
+    "aliases": [
+      "standing leg curl",
+      "leg curl debout",
+      "single leg standing curl"
+    ],
+    "base": "leg_curl",
+    "figureOnly": true
+  },
+  {
+    "key": "leg_curl--cable",
+    "name": "Cable Leg Curl",
+    "slug": "leg-curl-cable",
+    "category": "legs",
+    "equipment": "Cable",
+    "muscles": [
+      "Hamstrings",
+      "Calves"
+    ],
+    "fr": "Leg curl à la poulie",
+    "aliases": [
+      "cable leg curl",
+      "leg curl à la poulie",
+      "leg curl poulie",
+      "cable hamstring curl"
+    ],
+    "base": "leg_curl",
+    "figureOnly": true
   },
   {
     "key": "seated_leg_curl",
@@ -1065,13 +1770,51 @@
       "hip thrust",
       "pont de hanches chargé",
       "barbell hip thrust",
-      "releve de bassin",
       "hip thrust barre",
-      "hip thrust machine",
       "poussee de hanche",
-      "thrust fessier",
-      "machine hip thrust"
+      "thrust fessier"
     ]
+  },
+  {
+    "key": "hip_thrust--machine",
+    "name": "Machine Hip Thrust",
+    "slug": "hip-thrust-machine",
+    "category": "legs",
+    "equipment": "Machine",
+    "muscles": [
+      "Glutes",
+      "Hamstrings"
+    ],
+    "fr": "Hip thrust à la machine",
+    "aliases": [
+      "machine hip thrust",
+      "hip thrust à la machine",
+      "hip thrust machine",
+      "glute drive"
+    ],
+    "base": "hip_thrust",
+    "figureOnly": true
+  },
+  {
+    "key": "hip_thrust--single_leg",
+    "name": "Single-Leg Hip Thrust",
+    "slug": "hip-thrust-single-leg",
+    "category": "legs",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Glutes",
+      "Hamstrings"
+    ],
+    "fr": "Hip thrust unilatéral",
+    "aliases": [
+      "single-leg hip thrust",
+      "hip thrust unilatéral",
+      "single leg hip thrust",
+      "one leg hip thrust",
+      "hip thrust unilateral"
+    ],
+    "base": "hip_thrust",
+    "figureOnly": true
   },
   {
     "key": "glute_bridge",
@@ -1172,6 +1915,27 @@
     ]
   },
   {
+    "key": "bicep_curl--machine",
+    "name": "Machine Biceps Curl",
+    "slug": "bicep-curl-machine",
+    "category": "arms",
+    "equipment": "Machine",
+    "muscles": [
+      "Biceps",
+      "Forearms"
+    ],
+    "fr": "Curl biceps à la machine",
+    "aliases": [
+      "machine biceps curl",
+      "curl biceps à la machine",
+      "machine bicep curl",
+      "curl machine",
+      "biceps machine"
+    ],
+    "base": "bicep_curl",
+    "figureOnly": true
+  },
+  {
     "key": "hammer_curl",
     "name": "Hammer Curl",
     "slug": "hammer-curl",
@@ -1229,7 +1993,9 @@
     "aliases": [
       "cable curl",
       "curl poulie",
-      "cable curl"
+      "cable curl",
+      "cable bicep curl",
+      "curl poulie basse"
     ]
   },
   {
@@ -1286,16 +2052,71 @@
       "pushdown",
       "tirage triceps",
       "extension poulie",
-      "triceps corde",
-      "triceps barre",
-      "straight bar pushdown",
-      "triceps pushdown",
-      "poussee triceps barre droite",
-      "tricep rope pushdown",
-      "skull crusher",
-      "lying triceps extension",
-      "barre au front"
+      "triceps pushdown"
     ]
+  },
+  {
+    "key": "tricep_pushdown--straight_bar",
+    "name": "Straight-Bar Pushdown",
+    "slug": "tricep-pushdown-straight-bar",
+    "category": "arms",
+    "equipment": "Cable",
+    "muscles": [
+      "Triceps",
+      "Shoulders"
+    ],
+    "fr": "Extension triceps à la barre droite",
+    "aliases": [
+      "straight-bar pushdown",
+      "extension triceps à la barre droite",
+      "straight bar pushdown",
+      "poussee triceps barre droite",
+      "triceps barre"
+    ],
+    "base": "tricep_pushdown",
+    "figureOnly": true
+  },
+  {
+    "key": "tricep_pushdown--v_bar",
+    "name": "V-Bar Pushdown",
+    "slug": "tricep-pushdown-v-bar",
+    "category": "arms",
+    "equipment": "Cable",
+    "muscles": [
+      "Triceps",
+      "Shoulders"
+    ],
+    "fr": "Extension triceps à la barre en V",
+    "aliases": [
+      "v-bar pushdown",
+      "extension triceps à la barre en v",
+      "v bar pushdown",
+      "v bar tricep pushdown",
+      "triceps barre en v"
+    ],
+    "base": "tricep_pushdown",
+    "figureOnly": true
+  },
+  {
+    "key": "tricep_pushdown--single_arm",
+    "name": "Single-Arm Cable Pushdown",
+    "slug": "tricep-pushdown-single-arm",
+    "category": "arms",
+    "equipment": "Cable",
+    "muscles": [
+      "Triceps",
+      "Shoulders"
+    ],
+    "fr": "Extension triceps unilatérale à la poulie",
+    "aliases": [
+      "single-arm cable pushdown",
+      "extension triceps unilatérale à la poulie",
+      "single arm cable pushdown",
+      "one arm pushdown",
+      "extension triceps unilaterale"
+    ],
+    "base": "tricep_pushdown",
+    "figureOnly": true
   },
   {
     "key": "overhead_tricep_extension",
@@ -1316,7 +2137,9 @@
       "extension nuque",
       "triceps nuque",
       "extension triceps nuque",
-      "triceps au dessus de la tete"
+      "triceps au dessus de la tete",
+      "overhead cable triceps extension",
+      "extension triceps nuque a la poulie"
     ]
   },
   {
@@ -1337,7 +2160,8 @@
       "barre au front",
       "skullcrusher",
       "casse-crane",
-      "french press barre"
+      "french press barre",
+      "lying triceps extension"
     ]
   },
   {
@@ -1378,10 +2202,52 @@
       "dip",
       "dips",
       "dip",
-      "barres paralleles",
-      "dips triceps",
-      "dips pectoraux"
+      "barres paralleles"
     ]
+  },
+  {
+    "key": "dip--upright",
+    "name": "Triceps-Focused Dip",
+    "slug": "dip-upright",
+    "category": "chest",
+    "equipment": "Bodyweight",
+    "muscles": [
+      "Triceps",
+      "Chest",
+      "Shoulders"
+    ],
+    "fr": "Dips buste droit",
+    "aliases": [
+      "triceps-focused dip",
+      "dips buste droit",
+      "tricep focused dip",
+      "triceps dip",
+      "upright dip",
+      "dips triceps"
+    ],
+    "base": "dip",
+    "figureOnly": true
+  },
+  {
+    "key": "dip--seated_machine",
+    "name": "Seated Dip Machine",
+    "slug": "dip-seated-machine",
+    "category": "chest",
+    "equipment": "Machine",
+    "muscles": [
+      "Triceps",
+      "Chest",
+      "Shoulders"
+    ],
+    "fr": "Dips à la machine assise",
+    "aliases": [
+      "seated dip machine",
+      "dips à la machine assise",
+      "dip machine",
+      "machine a dips"
+    ],
+    "base": "dip",
+    "figureOnly": true
   },
   {
     "key": "assisted_dip",
@@ -1397,7 +2263,8 @@
     "aliases": [
       "assisted dip",
       "dips assistés",
-      "assisted dip"
+      "assisted dip",
+      "assisted dip machine"
     ]
   },
   {
@@ -1479,7 +2346,8 @@
       "crunch poulie",
       "crunch a la poulie",
       "crunch a genoux",
-      "abdos poulie"
+      "abdos poulie",
+      "cable kneeling crunch"
     ]
   },
   {
@@ -1699,7 +2567,9 @@
       "chest dip",
       "dips pecs",
       "dips buste penche",
-      "dips pectoraux"
+      "dips pectoraux",
+      "chest focused dip",
+      "dips focus pectoraux"
     ]
   },
   {
@@ -1758,7 +2628,8 @@
       "standing dumbbell press",
       "developpe debout halteres",
       "developpe epaules debout",
-      "dumbbell ohp"
+      "dumbbell ohp",
+      "standing dumbbell shoulder press"
     ]
   },
   {
@@ -2069,8 +2940,33 @@
       "extensions lombaires",
       "lombaires",
       "hyperextensions",
-      "lower back extension"
+      "lower back extension",
+      "back extension 45",
+      "45 degree hyperextension",
+      "banc a lombaires 45"
     ]
+  },
+  {
+    "key": "back_extension--horizontal",
+    "name": "90-Degree Back Extension",
+    "slug": "back-extension-horizontal",
+    "category": "back",
+    "equipment": "Machine",
+    "muscles": [
+      "Lower Back",
+      "Glutes",
+      "Hamstrings"
+    ],
+    "fr": "Extension lombaire à 90°",
+    "aliases": [
+      "90-degree back extension",
+      "extension lombaire à 90°",
+      "90 degree back extension",
+      "horizontal back extension",
+      "banc lombaire horizontal"
+    ],
+    "base": "back_extension",
+    "figureOnly": true
   },
   {
     "key": "dumbbell_shrug",
@@ -2268,6 +3164,26 @@
       "fentes arrieres",
       "reverse lunges"
     ]
+  },
+  {
+    "key": "reverse_lunge--barbell",
+    "name": "Barbell Reverse Lunge",
+    "slug": "reverse-lunge-barbell",
+    "category": "legs",
+    "equipment": "Barbell",
+    "muscles": [
+      "Quads",
+      "Glutes",
+      "Hamstrings"
+    ],
+    "fr": "Fente arrière à la barre",
+    "aliases": [
+      "barbell reverse lunge",
+      "fente arrière à la barre",
+      "fente arriere barre"
+    ],
+    "base": "reverse_lunge",
+    "figureOnly": true
   },
   {
     "key": "split_squat",
@@ -2862,8 +3778,6 @@
       "extension lombaire assise",
       "machine à lombaires",
       "machine lombaires",
-      "banc lombaire",
-      "banc a lombaires",
       "lombaires machine",
       "hyperextension machine"
     ],
@@ -3075,7 +3989,6 @@
     "fr": "Curl barre allongé",
     "aliases": [
       "lying barbell curl",
-      "lying curl",
       "curl barre allongé",
       "curl allongé"
     ]
@@ -3154,7 +4067,8 @@
       "triceps corde",
       "extension corde",
       "pushdown corde",
-      "corde triceps"
+      "corde triceps",
+      "tricep rope pushdown"
     ]
   },
   {
@@ -3209,10 +4123,10 @@
       "dumbbell overhead tricep extension",
       "extension triceps au-dessus de la tête avec haltère",
       "dumbbell overhead tricep extension",
-      "french press",
       "extension nuque haltere",
       "triceps nuque haltere",
-      "french press haltere"
+      "french press haltere",
+      "overhead dumbbell triceps extension"
     ]
   },
   {
@@ -3319,6 +4233,26 @@
       "crunch",
       "crunch"
     ]
+  },
+  {
+    "key": "crunch--machine",
+    "name": "Ab Crunch Machine",
+    "slug": "crunch-machine",
+    "category": "core",
+    "equipment": "Machine",
+    "muscles": [
+      "Core"
+    ],
+    "fr": "Crunch à la machine",
+    "aliases": [
+      "ab crunch machine",
+      "crunch à la machine",
+      "abdominal crunch machine",
+      "machine a abdominaux",
+      "crunch machine"
+    ],
+    "base": "crunch",
+    "figureOnly": true
   },
   {
     "key": "reverse_crunch",
@@ -3545,10 +4479,29 @@
       "chaise romaine",
       "chaise romaine abdos",
       "releve genoux chaise romaine",
-      "captains chair leg raise",
-      "chaise romaine releve de jambes",
       "captains chair"
     ]
+  },
+  {
+    "key": "captains_chair_knee_raise--straight_legs",
+    "name": "Captain’s Chair Leg Raise",
+    "slug": "captains-chair-knee-raise-straight-legs",
+    "category": "core",
+    "equipment": "Machine",
+    "muscles": [
+      "Core",
+      "Shoulders"
+    ],
+    "fr": "Relevé de jambes tendues à la chaise romaine",
+    "aliases": [
+      "captain’s chair leg raise",
+      "relevé de jambes tendues à la chaise romaine",
+      "captains chair leg raise",
+      "chaise romaine releve de jambes",
+      "releve de jambes chaise romaine"
+    ],
+    "base": "captains_chair_knee_raise",
+    "figureOnly": true
   },
   {
     "key": "decline_sit_up",
@@ -4256,8 +5209,7 @@
       "dead hang",
       "suspension",
       "suspension barre",
-      "deadhang",
-      "suspension active"
+      "deadhang"
     ]
   },
   {
@@ -4390,7 +5342,9 @@
     "aliases": [
       "bodyweight squat",
       "squat au poids du corps",
-      "bodyweight squat"
+      "bodyweight squat",
+      "air squat",
+      "squat au poids de corps"
     ]
   },
   {
@@ -4531,7 +5485,8 @@
     "aliases": [
       "lateral lunge",
       "fente latérale",
-      "lateral lunge"
+      "lateral lunge",
+      "side lunge"
     ]
   },
   {
@@ -4627,7 +5582,6 @@
     "fr": "Extension des mollets",
     "aliases": [
       "calf raise",
-      "mollets debout",
       "calf raise"
     ]
   },

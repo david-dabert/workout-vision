@@ -11,11 +11,12 @@ import { FITNESS_TESTS } from '../../lib/fitness-tests';
 import families from '../../lib/counting/guide-families.json';
 import { filmView } from './exercise-info';
 import { hasFigure } from './lift-scenes';
+import { baseKey } from '../../lib/variant-key';
 
 const ownView = k => (
   Object.hasOwn(FITNESS_TESTS, k) ? filmView(k)
-  : hasFigure(k) ? filmView(k)
-  : Object.hasOwn(families, k) ? filmView(k)
+  : hasFigure(baseKey(k)) ? filmView(k)
+  : Object.hasOwn(families, baseKey(k)) ? filmView(k)
   : null
 );
 

@@ -26,6 +26,7 @@ import { signalBank, corrAt, FS } from './psc.js';
 import { W_CAP, sideSignals } from './sgc.js';
 import { liftDefinition } from './core';
 import PROFILES from './spec-profiles.json';
+import { baseKey } from '../variant-key.js';
 
 /** Flagged below this agreement. Source: the critic's sgcx/rsc.ts (TAU, fixed before its first run, 8 October 2026;
  * anatomy-8oct.md). Status: experimental (calibrated after the fact on the official sets: body-check.txt). */
@@ -42,7 +43,9 @@ export const MIN_OVERLAP = 2 * FS;
  * See sgc.js specGuidedCount and scripts/make-spec-profiles.mjs.
  */
 export function signalProfile(lift) {
-  const e = Object.hasOwn(PROFILES.profiles, lift) ? PROFILES.profiles[lift] : null;
+  // A variant without a spec of its own is checked by its base's profile (variant-key.js).
+  const own = Object.hasOwn(PROFILES.profiles, lift) ? lift : baseKey(lift);
+  const e = Object.hasOwn(PROFILES.profiles, own) ? PROFILES.profiles[own] : null;
   if (!e) return null;
   return { mode: e.mode, first: e.first, signals: e.signals.map(([name, delta, strength]) => ({ name, delta, strength })) };
 }

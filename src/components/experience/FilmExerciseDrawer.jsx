@@ -1,6 +1,12 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useT } from '../../lib/LanguageContext';
+// The guide's one catalogue (David, 18 November 2026: "we need just one exercises list not two"), through the exercise
+// details of src/lib/exercises (each row a catalogue key, a variant's included; no training technique listed as an exercise).
 import { searchExercises, getAllExercises } from '../../lib/exercises/index';
+import { getGuideExercise } from '../../lib/exerciseGuide';
+import { isOffered, tierOf } from '../../lib/offer';
+import { tierTag } from '../../lib/liftTiers';
+import { EQUIPMENT, Thumb } from './Guide';
 import './FilmExerciseDrawer.css';
 
 const ARCHETYPE_FILTERS = [
@@ -15,13 +21,14 @@ const ARCHETYPE_FILTERS = [
 
 const ZONE_FILTERS = [
   { id: 'all', labelEn: 'All Zones', labelFr: 'Toutes zones', muscles: [] },
+  // The registry's anatomical names and the catalogue's muscle names (lower snake case) both.
   { id: 'glutes', labelEn: 'Glutes & Curves', labelFr: 'Fessiers & Galbe', muscles: ['glutes', 'hamstrings'] },
-  { id: 'chest', labelEn: 'Chest', labelFr: 'Pectoraux', muscles: ['pectoralis_major'] },
-  { id: 'back', labelEn: 'Back', labelFr: 'Dos', muscles: ['latissimus_dorsi', 'erector_spinae'] },
-  { id: 'shoulders', labelEn: 'Shoulders', labelFr: 'Épaules', muscles: ['anterior_deltoid', 'lateral_deltoid', 'rear_deltoid'] },
-  { id: 'arms', labelEn: 'Arms', labelFr: 'Bras', muscles: ['biceps_brachii', 'triceps_brachii'] },
-  { id: 'legs', labelEn: 'Legs', labelFr: 'Jambes', muscles: ['quadriceps', 'hamstrings', 'glutes', 'calves'] },
-  { id: 'core', labelEn: 'Core', labelFr: 'Abdos / Tronc', muscles: ['rectus_abdominis', 'erector_spinae'] },
+  { id: 'chest', labelEn: 'Chest', labelFr: 'Pectoraux', muscles: ['pectoralis_major', 'chest'] },
+  { id: 'back', labelEn: 'Back', labelFr: 'Dos', muscles: ['latissimus_dorsi', 'erector_spinae', 'back', 'lats', 'upper_back', 'lower_back'] },
+  { id: 'shoulders', labelEn: 'Shoulders', labelFr: 'Épaules', muscles: ['anterior_deltoid', 'lateral_deltoid', 'rear_deltoid', 'shoulders', 'rear_delts'] },
+  { id: 'arms', labelEn: 'Arms', labelFr: 'Bras', muscles: ['biceps_brachii', 'triceps_brachii', 'biceps', 'triceps', 'forearms'] },
+  { id: 'legs', labelEn: 'Legs', labelFr: 'Jambes', muscles: ['quadriceps', 'hamstrings', 'glutes', 'calves', 'quads', 'legs', 'adductors', 'posterior_chain'] },
+  { id: 'core', labelEn: 'Core', labelFr: 'Abdos / Tronc', muscles: ['rectus_abdominis', 'erector_spinae', 'core'] },
 ];
 
 const EQUIPMENT_FILTERS = [
@@ -166,7 +173,7 @@ export default function FilmExerciseDrawer({
         );
       }
     } else {
-      list = query.trim() ? searchExercises(query, fr ? 'fr' : 'en', 120) : allItems.slice(0, 120);
+      list = query.trim() ? searchExercises(query, fr ? 'fr' : 'en', allItems.length) : allItems;
       if (archetype !== 'all') {
         list = list.filter(item => item.archetype === archetype);
       }
@@ -206,7 +213,7 @@ export default function FilmExerciseDrawer({
                 {fr ? 'Catalogue d’exercices' : 'Exercise Catalog'}
               </h3>
               <span className="film-drawer-count">
-                {fr ? '1\u00A0200+ variantes' : '1,200+ variations'}
+                {allItems.length} {fr ? 'exercices' : 'exercises'}
               </span>
             </div>
           </div>
@@ -274,7 +281,7 @@ export default function FilmExerciseDrawer({
               </button>
             )}
             <span className="film-search-badge" role="status">
-              {results.length} {fr ? 'variantes' : 'variations'}
+              {results.length} {fr ? 'exercices' : 'exercises'}
             </span>
           </div>
         </div>
@@ -346,9 +353,12 @@ export default function FilmExerciseDrawer({
                         data-testid={`exercise-item-${item.id}`}
                       >
                         <div className="film-drawer-item-leading" aria-hidden="true">
-                          <div className={`film-glyph-box film-glyph-${item.archetype}`}>
-                            <ArchetypeGlyph archetype={item.archetype} />
-                          </div>
+                          {/* The exercise's own pictograph (its figure's still, or its base's for a variant), as in the guide. */}
+                          {getGuideExercise(item.id) ? <Thumb exercise={getGuideExercise(item.id)} /> : (
+                            <div className={`film-glyph-box film-glyph-${item.archetype}`}>
+                              <ArchetypeGlyph archetype={item.archetype} />
+                            </div>
+                          )}
                         </div>
 
                         <div className="film-drawer-item-info">
@@ -358,7 +368,7 @@ export default function FilmExerciseDrawer({
                           <span className="film-drawer-item-meta">
                             <span className="film-drawer-item-sub">{subName}</span>
                             <span className="film-drawer-meta-divider" aria-hidden="true">•</span>
-                            <span className="film-drawer-item-eq">{item.equipment}</span>
+                            <span className="film-drawer-item-eq">{fr ? EQUIPMENT[item.equipment] || item.equipment : item.equipment}</span>
                             {primaryMuscle && (
                               <>
                                 <span className="film-drawer-meta-divider" aria-hidden="true">•</span>
@@ -369,9 +379,8 @@ export default function FilmExerciseDrawer({
                         </div>
 
                         <div className="film-drawer-item-actions">
-                          <span className="film-drawer-item-archetype">
-                            {item.archetype}
-                          </span>
+                          {/* Counted or not, as the guide says it (R8): the tier of a counted exercise, else "Non compté". */}
+                          <span className={`tag${isOffered(item.id) ? ' on' : ''}`} data-testid={`exercise-tier-${item.id}`}>{isOffered(item.id) ? tierTag(tierOf(item.id) || 'experimental', fr) : (fr ? 'Non compté' : 'Not counted')}</span>
                           {cues?.length > 0 && (
                             <button
                               type="button"

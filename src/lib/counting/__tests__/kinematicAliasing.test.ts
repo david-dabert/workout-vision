@@ -196,17 +196,24 @@ describe('Kinematic Aliasing Registry & Catalog Expansion', () => {
       searchWords([e.fr, e.name, ...e.aliases, e.equipment].join(' ')),
     ]));
 
+    // Since the registry was folded into the catalogue (18 November 2026, scripts/make-variants.mjs), a variant the
+    // registry named is found as its own entry ("hack_squat--pendulum"), no longer as an alias of its base, and a name
+    // that belongs to another exercise ("skull crusher") no longer finds the pushdown.
     const queries = [
-      { q: 'pendulum squat', expectedKey: 'hack_squat' },
-      { q: 'safety bar', expectedKey: 'squat' },
-      { q: 'box squat', expectedKey: 'squat' },
-      { q: 'cambered bar', expectedKey: 'bench_press' },
-      { q: 'neutral grip', expectedKey: 'lat_pulldown' },
-      { q: 'skull crusher', expectedKey: 'tricep_pushdown' },
+      { q: 'pendulum squat', expectedKey: 'hack_squat--pendulum' },
+      { q: 'safety bar', expectedKey: 'squat--safety_bar' },
+      { q: 'box squat', expectedKey: 'squat--box' },
+      { q: 'cambered bar', expectedKey: 'bench_press--cambered_bar' },
+      { q: 'neutral grip', expectedKey: 'lat_pulldown--neutral_grip' },
+      { q: 'skull crusher', expectedKey: 'skull_crusher' },
       { q: 'hyperextension', expectedKey: 'back_extension' },
-      { q: 'dips triceps', expectedKey: 'dip' },
-      { q: 'presse a cuisses horizontale', expectedKey: 'leg_press' },
+      { q: 'dips triceps', expectedKey: 'dip--upright' },
+      { q: 'presse a cuisses horizontale', expectedKey: 'leg_press--horizontal' },
     ];
+
+    it.each([['skull crusher', 'tricep_pushdown'], ['pendulum squat', 'hack_squat'], ['box squat', 'squat']])('search query "%s" no longer finds "%s" by a borrowed name', (q, key) => {
+      expect(searchMatch(exerciseWords.get(key), q)).toBe(false);
+    });
 
     it.each(queries)('search query "$q" finds exercise "$expectedKey"', ({ q, expectedKey }) => {
       const words = exerciseWords.get(expectedKey);

@@ -52,6 +52,7 @@
  */
 
 import guidePatterns from './guide-patterns.json';
+import { baseKey, isVariantKey } from '../variant-key.js';
 import {
   zWeight, zAllViews, sideShare, depthShare, interpolateOn, fillOn, fillMinR, FILL_MIN_PAIRS, fitLine,
   shapeOn, shapeSlack, shapePart, SHAPE_POINTS, SHAPE_BAND, SHAPE_MIN_REPS, resample, dtw, medianSeries, altDiffOn, altMaxR,
@@ -377,6 +378,9 @@ export const KINEMATIC_ALIASES: Readonly<Record<string, string>> = Object.freeze
 
 /** The definition an exercise is counted by: its LIFTS entry, else its parent's (COUNT_AS), else its guide pattern (PATTERNS), else its kinematic alias (KINEMATIC_ALIASES); null if it has none. */
 export function liftDefinition(key: string): LiftDefinition | null {
+  // A variant ("bicep_curl--cable", variant-key.js) is counted by its base's definition, as COUNT_AS counts a key by its
+  // parent's. Source: convention (a variant is its base's movement done with other equipment, grip or stance). Status: experimental.
+  if (isVariantKey(key)) return liftDefinition(baseKey(key));
   if (Object.hasOwn(LIFTS, key)) return LIFTS[key as Lift];
   if (Object.hasOwn(COUNT_AS, key)) return liftDefinition(COUNT_AS[key]);
   if (Object.hasOwn(PATTERNS, key)) {

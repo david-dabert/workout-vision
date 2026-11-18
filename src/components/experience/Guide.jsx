@@ -13,6 +13,7 @@ import { hasGuideFigure } from './guide-figure';
 import stillKeys from './guide-svg-keys.json';
 import { GuideFigure } from './GuideFigure';
 import { filmingGuideFor } from './filming-guide';
+import { baseKey } from '../../lib/variant-key';
 
 function FilmingPlacement({ exerciseKey, fr }) {
   const info = filmingGuideFor(exerciseKey, fr);
@@ -71,8 +72,10 @@ function BodyMap() {
 // 19 October 2026), tinted through a mask so it takes the theme's colour; the others keep the guide's drawing.
 const FIG_BASE = `${import.meta.env.BASE_URL || '/'}guide-svg/`;
 const STILLS = new Set(stillKeys);
+// A variant without a still of its own shows its base's (variant-key.js).
+const stillOf = key => (STILLS.has(key) ? key : STILLS.has(baseKey(key)) ? baseKey(key) : null);
 export function Thumb({ exercise }) {
-  if (STILLS.has(exercise.key)) return <span className="thumb"><i className="thumb-fig" style={{ '--fig': `url("${FIG_BASE}${exercise.key}.svg")` }} aria-hidden="true" /></span>;
+  if (stillOf(exercise.key)) return <span className="thumb"><i className="thumb-fig" style={{ '--fig': `url("${FIG_BASE}${stillOf(exercise.key)}.svg")` }} aria-hidden="true" /></span>;
   return <span className="thumb">{exercise.frames[0] ? <img src={exercise.frames[0]} loading="lazy" width="56" height="56" alt="" /> : <i className="thumb-none" aria-hidden="true" />}</span>;
 }
 export function GuideFrames({ exercise, fr }) {

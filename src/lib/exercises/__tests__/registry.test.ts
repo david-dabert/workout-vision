@@ -1,4 +1,8 @@
+// The exercise details read from the one catalogue (18 November 2026): the former registry's 1,296 ids (144 movements x
+// 9 training techniques) each name their movement's catalogue exercise, and the catalogue's own keys and variants read
+// directly.
 import { describe, it, expect } from 'vitest';
+import catalogue from '../../guide-catalog.json';
 import {
   getExercise,
   getExerciseByCountingKey,
@@ -8,102 +12,70 @@ import {
   getExerciseCount,
 } from '../index';
 
-describe('Exercise Catalog & Biomechanical Aliasing Registry', () => {
-  it('contains over 1,000 movement variations in local bundle', () => {
-    const count = getExerciseCount();
-    expect(count).toBeGreaterThanOrEqual(1000);
-    const all = getAllExercises();
-    expect(all.length).toBe(count);
+describe('exercise details from the one catalogue', () => {
+  it('hold every catalogue exercise, variants included, and no technique as an exercise', () => {
+    expect(getExerciseCount()).toBe(catalogue.length);
+    expect(getAllExercises().map(e => e.id)).toEqual(catalogue.map(e => e.key));
+    expect(getAllExercises().some(e => /drop set|rest-pause|tempo/i.test(e.name))).toBe(false);
   });
 
-  it('maps key exercise variations to correct kinematic archetypes and counting keys', () => {
-    const testCases = [
-      { id: 'barbell_back_squat', expectedArchetype: 'squat', expectedCounting: 'squat' },
-      { id: 'pendulum_squat', expectedArchetype: 'squat', expectedCounting: 'hack_squat' },
-      { id: 'machine_hack_squat', expectedArchetype: 'squat', expectedCounting: 'hack_squat' },
-      { id: '45_degree_leg_press', expectedArchetype: 'squat', expectedCounting: 'leg_press' },
-      { id: 'conventional_deadlift', expectedArchetype: 'hinge', expectedCounting: 'deadlift' },
-      { id: 'barbell_romanian_deadlift', expectedArchetype: 'hinge', expectedCounting: 'romanian_deadlift' },
-      { id: 'barbell_hip_thrust', expectedArchetype: 'hinge', expectedCounting: 'hip_thrust' },
-      { id: 'seated_leg_curl', expectedArchetype: 'isolation', expectedCounting: 'leg_curl' },
-      { id: 'flat_barbell_bench_press', expectedArchetype: 'push', expectedCounting: 'bench_press' },
-      { id: 'incline_dumbbell_press', expectedArchetype: 'push', expectedCounting: 'bench_press' },
-      { id: 'standing_barbell_overhead_press', expectedArchetype: 'push', expectedCounting: 'overhead_press' },
-      { id: 'bodyweight_dip', expectedArchetype: 'push', expectedCounting: 'dip' },
-      { id: 'overhand_pull_up', expectedArchetype: 'pull', expectedCounting: 'pull_up' },
-      { id: 'wide_grip_lat_pulldown', expectedArchetype: 'pull', expectedCounting: 'lat_pulldown' },
-      { id: 'seated_cable_row', expectedArchetype: 'pull', expectedCounting: 'seated_row' },
-      { id: 'standing_barbell_curl', expectedArchetype: 'isolation', expectedCounting: 'bicep_curl' },
-      { id: 'tricep_rope_pushdown', expectedArchetype: 'isolation', expectedCounting: 'triceps_pushdown' },
-      { id: 'skull_crusher', expectedArchetype: 'isolation', expectedCounting: 'triceps_pushdown' },
-      { id: 'dumbbell_lateral_raise', expectedArchetype: 'isolation', expectedCounting: 'lateral_raise' },
-      { id: 'captains_chair_knee_raise', expectedArchetype: 'isolation', expectedCounting: 'captains_chair_knee_raise' },
-      { id: '45_degree_hyperextension', expectedArchetype: 'hinge', expectedCounting: 'back_extension' },
+  it('read a former registry id as its movement\'s exercise, counted by that exercise', () => {
+    const cases = [
+      ['barbell_back_squat', 'squat', 'squat', 'squat'],
+      ['pendulum_squat', 'hack_squat--pendulum', 'squat', 'hack_squat'],
+      ['machine_hack_squat', 'hack_squat', 'squat', 'hack_squat'],
+      ['45_degree_leg_press', 'leg_press', 'squat', 'leg_press'],
+      ['conventional_deadlift', 'deadlift', 'hinge', 'deadlift'],
+      ['barbell_hip_thrust', 'hip_thrust', 'hinge', 'hip_thrust'],
+      ['flat_barbell_bench_press', 'bench_press', 'push', 'bench_press'],
+      ['incline_dumbbell_press', 'incline_dumbbell_press', 'push', 'incline_dumbbell_press'],
+      ['overhand_pull_up', 'pull_up', 'pull', 'pull_up'],
+      ['seated_cable_row', 'seated_row', 'pull', 'seated_row'],
+      ['skull_crusher', 'skull_crusher', 'isolation', 'skull_crusher'],
+      ['45_degree_hyperextension', 'back_extension', 'hinge', 'back_extension'],
     ];
-
-    for (const tc of testCases) {
-      const ex = getExercise(tc.id);
-      expect(ex, `Exercise ${tc.id} should exist`).not.toBeNull();
-      expect(ex!.archetype).toBe(tc.expectedArchetype);
-      expect(ex!.counting_key).toBe(tc.expectedCounting);
-      expect(ex!.primary_muscles.length).toBeGreaterThan(0);
-      expect(ex!.execution_cues_en.length).toBeGreaterThan(0);
-      expect(ex!.execution_cues_fr.length).toBeGreaterThan(0);
-      expect(ex!.hypertrophy_tips_en.length).toBeGreaterThanOrEqual(2);
-      expect(ex!.hypertrophy_tips_fr.length).toBeGreaterThanOrEqual(2);
+    for (const [id, key, archetype, counting] of cases) {
+      const ex = getExercise(id);
+      expect(ex, id).not.toBeNull();
+      expect(ex!.id, id).toBe(key);
+      expect(ex!.archetype, id).toBe(archetype);
+      expect(ex!.counting_key, id).toBe(counting);
+      expect(ex!.execution_cues_en.length, id).toBeGreaterThan(0);
+      expect(ex!.execution_cues_fr.length, id).toBeGreaterThan(0);
     }
   });
 
-  it('determines kinematic archetypes for any key or slug', () => {
+  it('read a technique\'s id as its movement, with the technique\'s cue added', () => {
+    const plain = getExercise('barbell_back_squat')!, drop = getExercise('barbell_back_squat_drop_set')!;
+    expect(drop.id).toBe('squat');
+    expect(drop.modifier).toBe('drop_set');
+    expect(drop.execution_cues_en.length).toBe(plain.execution_cues_en.length + 1);
+  });
+
+  it('read a variant as itself, counted by its base, with its base\'s cues', () => {
+    const v = getExercise('squat--box')!;
+    expect(v.name).toBe('Box Squat');
+    expect(v.counting_key).toBe('squat');
+    expect(v.archetype).toBe('squat');
+    expect(v.execution_cues_en).toEqual(getExercise('squat')!.execution_cues_en);
+    expect(getExercise('no_such_exercise')).toBeNull();
+  });
+
+  it('determines kinematic archetypes for any key', () => {
     expect(getKinematicArchetype('squat')).toBe('squat');
     expect(getKinematicArchetype('pendulum_squat')).toBe('squat');
     expect(getKinematicArchetype('deadlift')).toBe('hinge');
-    expect(getKinematicArchetype('romanian_deadlift')).toBe('hinge');
     expect(getKinematicArchetype('bench_press')).toBe('push');
-    expect(getKinematicArchetype('overhead_press')).toBe('push');
-    expect(getKinematicArchetype('pull_up')).toBe('pull');
     expect(getKinematicArchetype('lat_pulldown')).toBe('pull');
     expect(getKinematicArchetype('bicep_curl')).toBe('isolation');
-    expect(getKinematicArchetype('lateral_raise')).toBe('isolation');
+    expect(getExerciseByCountingKey('bench_press')!.archetype).toBe('push');
   });
 
-  it('retrieves exercise by counting key', () => {
-    const squatEx = getExerciseByCountingKey('squat');
-    expect(squatEx).not.toBeNull();
-    expect(squatEx!.archetype).toBe('squat');
-
-    const benchEx = getExerciseByCountingKey('bench_press');
-    expect(benchEx).not.toBeNull();
-    expect(benchEx!.archetype).toBe('push');
-  });
-
-  describe('Search functionality', () => {
-    it('finds exercises by English keywords', () => {
-      const results = searchExercises('pendulum squat', 'en');
-      expect(results.length).toBeGreaterThan(0);
-      expect(results[0].name.toLowerCase()).toContain('pendulum squat');
-
-      const safetyResults = searchExercises('safety bar', 'en');
-      expect(safetyResults.length).toBeGreaterThan(0);
-      expect(safetyResults[0].name.toLowerCase()).toContain('safety bar');
-    });
-
-    it('finds exercises by French keywords', () => {
-      const frResults = searchExercises('pendulaire', 'fr');
-      expect(frResults.length).toBeGreaterThan(0);
-      expect(frResults[0].name_fr.toLowerCase()).toContain('pendulaire');
-
-      const rdlResults = searchExercises('roumain', 'fr');
-      expect(rdlResults.length).toBeGreaterThan(0);
-      expect(rdlResults[0].name_fr.toLowerCase()).toContain('roumain');
-    });
-
-    it('handles empty query and respects search limit', () => {
-      expect(searchExercises('')).toEqual([]);
-      expect(searchExercises('   ')).toEqual([]);
-
-      const limited = searchExercises('squat', 'en', 5);
-      expect(limited.length).toBe(5);
-    });
+  it('search the catalogue in English and French, variants included', () => {
+    expect(searchExercises('pendulum squat').map(e => e.id)).toContain('hack_squat--pendulum');
+    expect(searchExercises('pendulaire', 'fr').map(e => e.id)).toContain('hack_squat--pendulum');
+    expect(searchExercises('roumain', 'fr').some(e => e.name_fr.toLowerCase().includes('roumain'))).toBe(true);
+    expect(searchExercises('')).toEqual([]);
+    expect(searchExercises('squat', 'en', 5)).toHaveLength(5);
   });
 });

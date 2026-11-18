@@ -21,7 +21,8 @@ import { filmView } from '../../components/experience/exercise-info';
 describe('the exercises the app offers', () => {
   // David's decision of 29 September: the walking lunge is not offered, since the lifter walks out of a fixed frame; nor, since 3 October, the sandbag lunge.
   it('are the countable exercises of the guide but the walking and sandbag lunges and the four withdrawn and the jump squat, 232, the lifts of LIFT TIERS among them', () => {
-    const countable = catalogue.map(e => e.key).filter(k => families[k].joint);
+    // The bases: a variant ("bicep_curl--cable") has no family and is offered with its base (variant-key.js).
+    const countable = catalogue.map(e => e.key).filter(k => !k.includes('--')).filter(k => families[k].joint);
     expect(countable).toHaveLength(239);
     // With the two fitness tests of 2 October (fitness-tests.js), Experimental like every exercise without evidence.
     expect(Object.keys(WITHDRAWN).sort()).toEqual(['banded_dead_bug', 'bird_dog', 'dead_bug', 'glute_bridge_march']);

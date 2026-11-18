@@ -10,6 +10,7 @@ const NOT_FILMABLE = new Set(['walking_lunge', 'sandbag_lunge']);
 import patterns from './counting/guide-patterns.json';
 import { GUIDE_TIERS, TIERS } from './liftTiers';
 import { FITNESS_TESTS } from './fitness-test-list';
+import { baseKey, isVariantKey } from './variant-key';
 
 // Withdrawn on 3 October 2026 (third audit, C21): the floor exercises counted on both sides
 // (guide-patterns.json 'both') that the Film screen tells the user to film in profile (guide-families.json
@@ -43,10 +44,12 @@ export const OFFERED = [...new Set([...Object.keys(TIERS), ...Object.keys(patter
   .filter(key => !NOT_FILMABLE.has(key) && !Object.hasOwn(WITHDRAWN, key) && !Object.hasOwn(NOT_YET_COUNTED, key));
 const offered = new Set(OFFERED);
 
-export const isOffered = key => offered.has(key);
+// A variant (variant-key.js) is offered when its base is, and is experimental whatever its base's tier.
+export const isOffered = key => offered.has(key) || (isVariantKey(key) && offered.has(baseKey(key)));
 // Every exercise the app knows, offered or not: a programme kept on a client's phone, or a coach's link sent before an
 // exercise was withdrawn, still names it (programme.js, knownExercise). So a key once offered stays in WITHDRAWN,
 // NOT_YET_COUNTED or NOT_FILMABLE when it leaves the offer, never deleted (live-app audit, 10 October 2026).
-export const isKnownExercise = key => offered.has(key) || Object.hasOwn(WITHDRAWN, key) || Object.hasOwn(NOT_YET_COUNTED, key) || NOT_FILMABLE.has(key);
+const knownBase = key => offered.has(key) || Object.hasOwn(WITHDRAWN, key) || Object.hasOwn(NOT_YET_COUNTED, key) || NOT_FILMABLE.has(key);
+export const isKnownExercise = key => knownBase(key) || (isVariantKey(key) && knownBase(baseKey(key)));
 /** 'beta', 'experimental', or null for an exercise the app does not count. */
-export const tierOf = key => TIERS[key] || (offered.has(key) ? GUIDE_TIERS[key] || 'experimental' : null);
+export const tierOf = key => (isVariantKey(key) ? (isOffered(key) ? 'experimental' : null) : TIERS[key] || (offered.has(key) ? GUIDE_TIERS[key] || 'experimental' : null));

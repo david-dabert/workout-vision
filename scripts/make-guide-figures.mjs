@@ -111,7 +111,8 @@ export function posture(loop3, view) {
 }
 
 export function figureView(key, spec, loop3) {
-  let view = spec.view ?? (families[key]?.view === 'front' ? 0 : 90);
+  // A variant with a spec of its own takes its base's view unless the spec names one (src/lib/variant-key.js).
+  let view = spec.view ?? ((families[key] ?? families[key.split('--')[0]])?.view === 'front' ? 0 : 90);
   if (view === 0 && Math.abs(specAt(spec, 'pitch', null, 0)) > 45) view = 90;
   // A movement mostly across the line of sight (a prone Y raise, a fire hydrant, a clamshell seen from the side) is
   // drawn from where it shows: the other view or the three-quarter one, when it shows half again as much of it.

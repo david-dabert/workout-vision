@@ -53,7 +53,8 @@ export const programmable = key => typeof key === 'string' && /^[a-z0-9_]{1,64}$
  * 10 October 2026), or any other exercise of the guide (the exercise sheet, 14 October 2026: the plank, a stretch).
  * One the app does not count is shown, not filmed, and leaves the day's count (progressOf, filmable).
  */
-export const knownExercise = key => typeof key === 'string' && /^[a-z0-9_]{1,64}$/.test(key) && (isKnownExercise(key) || isGuideKey(key)) && !isTest(key);
+// A variant's key carries its base and a suffix ("bicep_curl--cable", src/lib/variant-key.js).
+export const knownExercise = key => typeof key === 'string' && key.length <= 64 && /^[a-z0-9_]+(--[a-z0-9_]+)?$/.test(key) && (isKnownExercise(key) || isGuideKey(key)) && !isTest(key);
 /** An exercise of the guide the app has never counted: on a sheet, done without filming. */
 export const guideOnly = key => knownExercise(key) && !isKnownExercise(key);
 
