@@ -83,6 +83,24 @@ export function kineMediaOrigin(url) {
 }
 
 /**
+ * Vite plugin (card 049, 18 November 2026): Open Food Facts, which only the extended build's coach office reaches for its
+ * barcode lookup (src/lib/openFoodFacts.js, CoachSuite), joins the app page's connect-src only when the build is
+ * extended (VITE_EXTENDED_ROUTES=1). A production build's policy reaches no server it does not use.
+ */
+export const LOOKUP_ORIGIN = 'https://world.openfoodfacts.org';
+export function lookupCspPlugin(fixed) {
+  let on = false;
+  return {
+    name: 'lookup-csp',
+    configResolved(config) { on = (fixed ?? config.env.VITE_EXTENDED_ROUTES) === '1'; },
+    transformIndexHtml(html, ctx) {
+      if (!on || !/(^|\/)index\.html$/.test(ctx?.path || ctx?.filename || '')) return html;
+      return html.replace(/(connect-src [^;"]*)/, `$1 ${LOOKUP_ORIGIN}`);
+    },
+  };
+}
+
+/**
  * Vite plugin: the pages' Content-Security-Policy lets them reach the proxy of the AI commentary and Vercel Blob's
  * upload address, when the build names the proxy (VITE_GLIMPSE_URL, src/lib/kine/glimpse.js), and no other. Without it
  * the policy is left as written and the commentary is not offered. https only (http for localhost).
@@ -121,7 +139,7 @@ export default defineConfig({
   // The analysed demo videos ship again since 14 October 2026 (David): shown as previews of where the app is going,
   // labelled « Aperçu », never as measured (SportsBiomechanics.jsx, Equine.jsx). scripts/omit-painted-demos.js still
   // names them (isPaintedDemo) for tests.
-  plugins: [react(), copyModelsPlugin(), eventsCspPlugin(), kineMediaCspPlugin(), glimpseCspPlugin()],
+  plugins: [react(), copyModelsPlugin(), lookupCspPlugin(), eventsCspPlugin(), kineMediaCspPlugin(), glimpseCspPlugin()],
   // jsPDF's optional modules, used only by doc.html() and addSvgAsImage(), which the app never calls: stubbed
   // (src/lib/jspdf-optional-stub.js, C9 of the design review of 7 October 2026).
   resolve: {

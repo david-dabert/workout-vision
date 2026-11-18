@@ -49,20 +49,24 @@ const Pro = lazyScreen(() => import('./components/experience/Pro'));
 const Programme = lazyScreen(() => import('./components/experience/Programme.jsx'));
 // A client's results, opened on the coach's phone from the link the client sent (#resultats=…, 9 October).
 const Results = lazyScreen(() => import('./components/experience/Results'));
-const Equine = lazyScreen(() => import('./components/equine/Equine.jsx'));
-const SportsBiomechanics = lazyScreen(() => import('./components/sports/SportsBiomechanics.jsx'));
-const CoachFinder = lazyScreen(() => import('./components/coaches/CoachFinder.jsx'));
-const GymBuddy = lazyScreen(() => import('./components/buddies/GymBuddy.jsx'));
-const Ergonomics = lazyScreen(() => import('./components/ergonomics/Ergonomics.jsx'));
+// Card 049 (18 November 2026): the screens of the extended build are imported only when the build is extended. The
+// condition is the build-time constant Vite writes in place of import.meta.env, so a production build drops these
+// imports and never emits their chunks (scripts/check-ship-less.mjs); showUnmeasuredRoutes() gates their routes as before.
+const EXTENDED = import.meta.env.VITE_EXTENDED_ROUTES === '1';
+const Equine = EXTENDED ? lazyScreen(() => import('./components/equine/Equine.jsx')) : null;
+const SportsBiomechanics = EXTENDED ? lazyScreen(() => import('./components/sports/SportsBiomechanics.jsx')) : null;
+const CoachFinder = EXTENDED ? lazyScreen(() => import('./components/coaches/CoachFinder.jsx')) : null;
+const GymBuddy = EXTENDED ? lazyScreen(() => import('./components/buddies/GymBuddy.jsx')) : null;
+const Ergonomics = EXTENDED ? lazyScreen(() => import('./components/ergonomics/Ergonomics.jsx')) : null;
 // The physiotherapist's workspace (#kine), the patient's programme from its link (#kine-p=) and a patient's result on
 // the physiotherapist's phone (#kine-r=), 15 October 2026 (components/kine/).
 const KineWorkspace = lazyScreen(() => import('./components/kine/KineWorkspace.jsx'));
 const KinePatient = lazyScreen(() => import('./components/kine/KinePatient.jsx'));
 const KineResult = lazyScreen(() => import('./components/kine/KineResult.jsx'));
-const Chat = lazyScreen(() => import('./components/chat/Chat.jsx'));
+const Chat = EXTENDED ? lazyScreen(() => import('./components/chat/Chat.jsx')) : null;
 // The activity engine's screen (docs/VISION.md): volleyball on synthetic jumps, opened from the sports rail.
-const Activity = lazyScreen(() => import('./components/activity/ActivityScreen.jsx'));
-const InvestorShowcase = lazyScreen(() => import('./components/experience/InvestorShowcaseModal.jsx'));
+const Activity = EXTENDED ? lazyScreen(() => import('./components/activity/ActivityScreen.jsx')) : null;
+const InvestorShowcase = EXTENDED ? lazyScreen(() => import('./components/experience/InvestorShowcaseModal.jsx')) : null;
 const CollectGuide = lazyScreen(() => import('./components/experience/CollectGuide.jsx'));
 const LAZY = {
   film: ExperienceFilm,
