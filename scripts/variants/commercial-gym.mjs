@@ -43,7 +43,7 @@ export const VARIANTS = [
   ['machine_shoulder_press--plate_loaded', 'Plate-Loaded Shoulder Press', 'Développé épaules convergent', 'Machine', ['plate loaded shoulder press', 'hammer strength shoulder press']],
   ['cable_lateral_raise--y_raise', 'Cable Y-Raise', 'Élévation en Y à la poulie', 'Cable', ['cable y raise', 'cable y raises']],
   ['cable_lateral_raise--cross_body', 'Cross-Body Cable Lateral Raise', 'Élévation latérale croisée à la poulie', 'Cable', ['cross body cable lateral raise', 'cable lateral raise across body']],
-  ['lateral_raise--leaning', 'Leaning Dumbbell Lateral Raise', 'Élévation latérale penché sur le côté', 'Dumbbell', ['leaning lateral raise', 'lean away lateral raise']],
+  ['lateral_raise--leaning', 'Leaning Dumbbell Lateral Raise', 'Élévation latérale en appui', 'Dumbbell', ['leaning lateral raise', 'lean away lateral raise', 'élévation latérale penché sur le côté']],
   ['face_pull--kneeling', 'Kneeling Face Pull', 'Face pull à genoux', 'Cable', ['kneeling face pull', 'half kneeling face pull']],
   ['upright_row--ez_bar', 'EZ-Bar Upright Row', 'Rowing menton à la barre EZ', 'Barbell', ['ez bar upright row']],
   ['arnold_press--seated', 'Seated Arnold Press', 'Développé Arnold assis', 'Dumbbell', ['seated arnold press']],

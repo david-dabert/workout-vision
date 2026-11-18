@@ -60,7 +60,7 @@ export const VARIANTS = [
   ['standing_dumbbell_press--neutral_grip', 'Neutral-Grip Dumbbell Shoulder Press', 'Développé épaules haltères prise neutre', 'Dumbbell', ['standing palms in dumbbell press', 'neutral grip shoulder press']],
   ['upright_row--dumbbell', 'Dumbbell Upright Row', 'Rowing menton aux haltères', 'Dumbbell', ['standing dumbbell upright row', 'dumbbell one arm upright row', 'dumbbell upright row']],
   ['lateral_raise--single_arm', 'Single-Arm Lateral Raise', 'Élévation latérale à un bras', 'Dumbbell', ['one arm side laterals', 'one arm incline lateral raise', 'single arm lateral raise']],
-  ['lateral_raise--lying', 'Lying Lateral Raise', 'Élévation latérale allongé sur le côté', 'Dumbbell', ['lying one arm lateral raise', 'side lying lateral raise']],
+  ['lateral_raise--lying', 'Lying Lateral Raise', 'Élévation latérale sur le flanc', 'Dumbbell', ['lying one arm lateral raise', 'side lying lateral raise', 'élévation latérale allongé sur le côté']],
   ['lateral_raise--to_front', 'Lateral to Front Raise', 'Élévation latérale puis frontale', 'Dumbbell', ['side laterals to front raise', 'lateral front raise']],
   ['front_raise--incline', 'Incline Front Raise', 'Élévations frontales sur banc incliné', 'Dumbbell', ['front incline dumbbell raise', 'incline front raise']],
   ['front_raise--single_dumbbell', 'Single-Dumbbell Front Raise', 'Élévation frontale avec un haltère', 'Dumbbell', ['single dumbbell raise', 'two hand dumbbell front raise']],

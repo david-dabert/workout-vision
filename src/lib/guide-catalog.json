@@ -1095,12 +1095,13 @@
       "Shoulders",
       "Upper Back"
     ],
-    "fr": "Élévation latérale allongé sur le côté",
+    "fr": "Élévation latérale sur le flanc",
     "aliases": [
       "lying lateral raise",
-      "élévation latérale allongé sur le côté",
+      "élévation latérale sur le flanc",
       "lying one arm lateral raise",
-      "side lying lateral raise"
+      "side lying lateral raise",
+      "élévation latérale allongé sur le côté"
     ],
     "base": "lateral_raise",
     "figureOnly": true
@@ -1154,12 +1155,13 @@
       "Shoulders",
       "Upper Back"
     ],
-    "fr": "Élévation latérale penché sur le côté",
+    "fr": "Élévation latérale en appui",
     "aliases": [
       "leaning dumbbell lateral raise",
-      "élévation latérale penché sur le côté",
+      "élévation latérale en appui",
       "leaning lateral raise",
-      "lean away lateral raise"
+      "lean away lateral raise",
+      "élévation latérale penché sur le côté"
     ],
     "base": "lateral_raise",
     "figureOnly": true

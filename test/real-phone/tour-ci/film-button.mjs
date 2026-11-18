@@ -18,12 +18,13 @@ const { defaultBrowserType, ...iphone } = devices['iPhone 14'];
 void defaultBrowserType;
 
 // The variants ("squat--box", src/lib/variant-key.js; 18 November 2026): a variant's filming screen is its base's (same
-// view, figure and controls) with its own name, so only a longer title can move its button. The VARIANTS_CHECKED variants
+// view, figure and controls) with its own name and the Experimental label, so its title and that label move its button. The VARIANTS_CHECKED variants
 // with the longest French names are opened, at the first size only, the smallest gated height in CI (WV_SIZES
 // 390x664,390x745), where a longer title pushes the button furthest. No variant's name is longer than the longest
 // exercise's (51 characters), and every exercise is opened at every size. Opening all 252 counted variants ran the
 // tour past its job's 30 minutes on CI's WebKit (5707ece8), as the list each screen returns to holds 701 rows.
-const VARIANTS_CHECKED = 30;
+// WV_VARIANTS=<n> opens more (all 252 locally, on Chromium, before a change to the filming screen).
+const VARIANTS_CHECKED = Number(process.env.WV_VARIANTS || 30);
 async function sweep([W, H], withVariants) {
   const browser = await launchBrowser();
   try {
