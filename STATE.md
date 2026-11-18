@@ -58,7 +58,7 @@ The lesson both agents must keep: a green CI proves that code runs, not that wha
 | The kiné comparison runs and is unproven. | Card 001: same exercise by the same person must score closer than different exercises, on the public sets; then David's four videos. |
 | The replay is loved and slow to share. | Card 004: one tap, the wait cut, the app's name on the video. |
 | Nothing brings a person back on the second day. | Card 011: today's set against the person's own best set, with the comparison engine that already exists (`src/lib/reference/compare.js`). |
-| The first minute offers 232 exercises when 7 are solid. | Card 005. |
+| The first minute offers 484 exercises (232 and 252 variants) when 7 are solid. | Card 005. |
 | Two agents, one memory. | AGENTS.md "Start here", this file, METHOD.md, `cards/`. An agent that follows them needs nothing else. `ANTIGRAVITY.md` is the prompt to paste into Antigravity. |
 
 ### Where to look for a solution that does not exist yet
@@ -78,7 +78,7 @@ David's recorded words (DIRECTIVES.md Part 1, docs/VISION.md, R16), held against
 | Whether the execution held up | Partly | Tempo and range per rep are measured and shown; every reading of form is off (gate 7) |
 | What to do next | Not kept | No advice rests on a validated reading |
 | The physiotherapist compares a patient to a reference | Built, unproven | Runs on a real video (David, 11 November); never tested for repeatability (card 001) |
-| A tool for every exercise | Offered, unproven | 232 exercises, 7 Beta, none has passed an exam |
+| A tool for every exercise | Offered, unproven | 484 exercises (232 and 252 variants), 7 Beta, none has passed an exam |
 | Beautiful, one system of design | Partly | Replay and kiné workspace cleaned on 11 November; no screen approved on the iPhone since |
 | A video people share | Built, slow | The replay exports after a wait (card 004) |
 
@@ -171,7 +171,7 @@ Open on 11 November:
 
 ## Product & Governance State (8 November 2026)
 
-- **Offered**: 232 exercises (27 added in batch 1 and 22 in batch 2 on 18 November 2026, experimental). Tiers (`src/lib/liftTiers.js`): Beta: biceps curl, lat pulldown, squat, hip thrust, Romanian deadlift, leg press, machine seated back extension. Experimental: lateral raise, bench press, overhead press, and all other lifts. None has passed an exam.
+- **Offered**: 484 exercises: 232 (27 added in batch 1 and 22 in batch 2 on 18 November 2026) and 252 variants of them (same day, src/lib/variant-key.js), all but the Beta lifts experimental; every variant is experimental. Tiers (`src/lib/liftTiers.js`): Beta: biceps curl, lat pulldown, squat, hip thrust, Romanian deadlift, leg press, machine seated back extension. Experimental: lateral raise, bench press, overhead press, and all other lifts. None has passed an exam.
 - **Experimental Markers**: Kinetic Forced Aligner trajectory matching in `MovementOptimizationCard.jsx` is marked experimental (its template in `KineticForcedAligner.ts` is hand-written, R9); since 11 November the card is not rendered (#368).
 - **French register and naming**: The screens use `"vous"`. The brand is `"WorkoutVision"`, and in French the app is referred to as `"l’appli"`.
 - **Sub-agents**: `wv-reviewer`, `wv-verifier` and `wv-control` (`.claude/agents/`).

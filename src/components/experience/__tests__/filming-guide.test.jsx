@@ -127,7 +127,8 @@ describe('a catalogue variant of the « Changer » drawer (review of card 042, 1
     expect(collectedView(42)).toBe('side');
 
     const all = getAllExercises();
-    expect(all.length).toBeGreaterThan(1000);
+    // The one catalogue, its variants included (18 November 2026; the former registry's 1,296 rows were 144 movements x 9 techniques).
+    expect(all.length).toBeGreaterThan(400);
     for (const entry of all) {
       const cat = getExercise(entry.id);
       const shown = filmingGuideFor(entry.id, true, cat.counting_key);

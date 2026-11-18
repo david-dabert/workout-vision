@@ -5,7 +5,8 @@ import familiesJson from '../guide-families.json';
 import * as core from '../core';
 
 const families = familiesJson as Record<string, Record<string, unknown>>;
-const catalogueKeys = catalogue.map(exercise => exercise.key);
+// Variants ("bicep_curl--cable", src/lib/variant-key.js) have no family of their own: their base's counts them.
+const catalogueKeys = catalogue.map(exercise => exercise.key).filter(k => !k.includes('--'));
 
 // Angle choices use the catalogue's equipment, category and muscles together.
 // Anatomical reference: Neumann, Kinesiology of the Musculoskeletal System,

@@ -58,7 +58,8 @@ describe('FilmExerciseDrawer', () => {
   it('renders drawer header, search input, and filter chips in French', () => {
     const html = renderDrawer({}, 'fr');
     expect(html).toContain('Catalogue d’exercices');
-    expect(html).toContain('1 200+ variantes');
+    expect(html).not.toContain('200+');
+    expect(html).toMatch(/\d{3,4} exercices/);
     expect(html).toContain('data-testid="drawer-search-input"');
     expect(html).toContain('data-testid="filter-chip-squat"');
     expect(html).toContain('data-testid="filter-chip-hinge"');
@@ -88,14 +89,18 @@ describe('FilmExerciseDrawer', () => {
   it('renders drawer header and search input in English', () => {
     const html = renderDrawer({}, 'en');
     expect(html).toContain('Exercise Catalog');
-    expect(html).toContain('1,200+ variations');
+    // The real number of the one catalogue (18 November 2026), never the former "1,200+ variations" (144 movements x 9 techniques).
+    expect(html).not.toContain('1,200+');
+    expect(html).toMatch(/\d{3,4} exercises/);
     expect(html).toContain('data-testid="filter-chip-squat"');
   });
 
   it('lists initial exercises with their equipment and archetype badge', () => {
     const html = renderDrawer({}, 'en');
     expect(html).toContain('data-testid="drawer-exercise-list"');
-    expect(html).toContain('film-drawer-item-archetype');
+    // Each row says whether the app counts it (R8), and a variant is listed in the one list.
+    expect(html).toContain('data-testid="exercise-tier-squat"');
+    expect(html).toContain('data-testid="exercise-item-squat--box"');
     expect(html).toContain('film-drawer-item-title');
   });
 });

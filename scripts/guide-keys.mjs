@@ -5,6 +5,8 @@
 import { readFile, writeFile } from 'node:fs/promises';
 
 const catalogue = JSON.parse(await readFile(new URL('../src/lib/guide-catalog.json', import.meta.url), 'utf8'));
-const keys = [...new Set(catalogue.map(e => e.key))].sort();
+// Variants ("bicep_curl--cable", src/lib/variant-key.js) are left out: isGuideKey reads a variant's base from its key,
+// so the first screen's list stays the size of the bases'.
+const keys = [...new Set(catalogue.map(e => e.key).filter(k => !k.includes('--')))].sort();
 await writeFile(new URL('../src/lib/guide-keys.json', import.meta.url), `${JSON.stringify(keys, null, 1)}\n`);
 console.log(JSON.stringify({ keys: keys.length }));

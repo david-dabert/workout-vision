@@ -12,7 +12,12 @@ export function getGuideExercise(key) {
   if (entry.noDrawing) return { ...entry, similar: false, frames: [] };
   // An exercise added after the guide (figureOnly, 18 November 2026: David, "we are missing hundreds of exercises") has no
   // drawing of the guide: its animated figure and still SVG (make-guide-figures.mjs, make-guide-svgs.mjs) stand in for them.
-  if (entry.figureOnly) return { ...entry, similar: false, frames: [] };
+  // A variant (base, variant-key.js) whose base has drawings of the guide shows its base's, said to be of a similar movement.
+  if (entry.figureOnly) {
+    const b = entry.base ? byKey.get(entry.base) : null;
+    if (b && !b.figureOnly && !b.noDrawing) return { ...entry, similar: true, frames: [1, 2, 3].map(i => getFrameUrl(b.drawing ?? b.slug, i)) };
+    return { ...entry, similar: false, frames: [] };
+  }
   return { ...entry, similar: !!entry.drawing, frames: [1, 2, 3].map(i => getFrameUrl(entry.drawing ?? entry.slug, i)) };
 }
 export function getExerciseFrames(key) { return getGuideExercise(key); }

@@ -39,8 +39,12 @@
    caption, steps), measured from the top of the page, so the top safe area is in it already
    (review 06); 472 px, the card lifts' rest, holds until the first measure. 8 px and the bottom safe
    area keep the button off the screen's edge. At 548 px some exercises still need a short scroll
-   (test/real-phone/tour-ci/film-button.mjs writes film-button-after.txt). */
-.wv-experience .frame { width: max(88px, min(46%, 178px, calc((100svh - var(--rest-h, 472px) - 8px - env(safe-area-inset-bottom, 0px)) * var(--ar, 0.5625)))); }
+   (test/real-phone/tour-ci/film-button.mjs writes film-button-after.txt).
+   The floor is 80 px (88 px until 18 November 2026): a variant of a card lift ("romanian_deadlift--trap_bar",
+   src/lib/variant-key.js) draws its base's scene under a two-line name and the Experimental label, and at 88 px that
+   scene's frame overran the room left by 3 to 4 px, the button ending at 667 of 664 on CI's WebKit (tour of
+   #480, run 44303852248). */
+.wv-experience .frame { width: max(80px, min(46%, 178px, calc((100svh - var(--rest-h, 472px) - 8px - env(safe-area-inset-bottom, 0px)) * var(--ar, 0.5625)))); }
 /* The guide's animated figure (GuideFigure.jsx) stands in a frame taller than the square drawings it replaced: at its
    smallest the frame keeps their 88 px height (68 px wide at 770 / 1000), so the action stays in view on a short screen
    (fitness-tests.spec.js at 390 x 664). */

@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { createLiftScene, hasFigure, restBox } from './lift-scenes';
+import { baseKey } from '../../lib/variant-key';
 import { liftDefinition } from '../../lib/counting/core';
 import { tierLabel } from '../../lib/liftTiers';
 import { tierOf } from '../../lib/offer';
@@ -56,9 +57,11 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
   const test = Object.hasOwn(FITNESS_TESTS, activeLift) ? FITNESS_TESTS[activeLift] : null;
   // The nine card lifts show the framing of their reference set; every other exercise, the guide's drawings.
   // An exercise of the guide with an animated figure of the app (GuideFigure.jsx) shows it in place of the drawings.
-  const figure = hasFigure(activeLift), guide = figure ? null : (guideExercise(activeLift) || guideExercise(countingLiftKey)), animated = !figure && hasGuideFigure(guide?.key);
+  // A variant of a card lift ("bench_press--wide_grip", variant-key.js) is drawn by its base's card scene.
+  const sceneLift = hasFigure(activeLift) ? activeLift : hasFigure(baseKey(activeLift)) ? baseKey(activeLift) : activeLift;
+  const figure = hasFigure(sceneLift), guide = figure ? null : (guideExercise(activeLift) || guideExercise(countingLiftKey)), animated = !figure && hasGuideFigure(guide?.key);
   const tier = tierOf(activeLift);
-  const [bw, bh] = figure ? restBox(activeLift) : animated ? GUIDE_BOX : [1, 1];
+  const [bw, bh] = figure ? restBox(sceneLift) : animated ? GUIDE_BOX : [1, 1];
 
   // The frame takes the height left once everything else on the screen down to "Filmer ma série" is
   // laid out: a long name wraps to three lines, the guide's credit to three more (review 05 of step 2,
@@ -90,7 +93,7 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
 
   useEffect(() => {
     if (!canvas.current || !figure) return;
-    return createLiftScene(canvas.current, activeLift, 'rest');
+    return createLiftScene(canvas.current, sceneLift, 'rest');
   }, [activeLift, figure]);
 
   function handleFile(e) {

@@ -9,7 +9,8 @@ import svgKeys from '../../components/experience/guide-svg-keys.json';
 import { getGuideExercise } from '../exerciseGuide';
 import { sheetFrames } from '../../components/experience/sheet-drawings';
 
-const added = catalogue.filter(e => e.figureOnly);
+// The bases added after the guide; the variants ("bicep_curl--cable") are tested in variants.test.js.
+const added = catalogue.filter(e => e.figureOnly && !e.key.includes('--'));
 const at = p => new URL(`../../../${p}`, import.meta.url);
 
 describe('the exercises added after the guide', () => {
