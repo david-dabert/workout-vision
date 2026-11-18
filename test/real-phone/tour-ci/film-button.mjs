@@ -17,7 +17,11 @@ const launchBrowser = () => process.env.WV_BROWSER === 'chromium'
 const { defaultBrowserType, ...iphone } = devices['iPhone 14'];
 void defaultBrowserType;
 
-async function sweep([W, H]) {
+// The variants ("squat--box", src/lib/variant-key.js; 18 November 2026) are opened at the first size only, the smallest
+// gated height in CI (WV_SIZES 390x664,390x745): a variant's filming screen is its base's with its own, sometimes longer,
+// name, so its button is checked where a longer title would push it furthest; at both sizes the 484 screens ran past
+// the job's 30 minutes.
+async function sweep([W, H], withVariants) {
   const browser = await launchBrowser();
   try {
     let context = await browser.newContext({ ...iphone, viewport: { width: W, height: H }, locale: 'fr-FR', serviceWorkers: 'block', reducedMotion: 'reduce' });
@@ -26,7 +30,7 @@ async function sweep([W, H]) {
     await page.locator('.enter').click();
     await page.locator('[data-testid="choice-find-exercise"]').click();
     await page.locator('.guide-screen [data-exercise]').first().waitFor();
-    const keys = await page.$$eval('.guide-screen .list [data-exercise]:has(.tag.on)', els => els.map(e => e.dataset.exercise));
+    const keys = (await page.$$eval('.guide-screen .list [data-exercise]:has(.tag.on)', els => els.map(e => e.dataset.exercise))).filter(k => withVariants || !k.includes('--'));
     const lines = [];
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
@@ -66,8 +70,8 @@ async function sweep([W, H]) {
 }
 
 const all = [];
-for (const size of sizes) {
-  all.push(...await sweep(size));
+for (const [i, size] of sizes.entries()) {
+  all.push(...await sweep(size, i === 0));
 }
 const browserName = process.env.WV_BROWSER === 'chromium' ? 'Chromium' : 'WebKit';
 const text = `# ${browserName}, iPhone 14 profile, fr-FR, Reduce Motion\n` + all.map(l => `${l.key} ${l.W}x${l.H} title ${l.titleH} button bottom ${l.bottom} of ${l.H}`).join('\n') + '\n';
@@ -79,7 +83,8 @@ const summary = sizes.map(([W, H]) => `${W}x${H}: ${all.filter(l => l.W === W &&
 console.log(summary.join('\n'));
 // Every offered exercise was opened at every size: the list holds 232 since batches 1 and 2 of 18 November 2026; 182 (the machine seated back extension added on 5 October); before it 181: 181 since the walking lunge left it, the two barbell curls of 2 October,
 // less the four floor exercises withdrawn on 3 October (offer.js, WITHDRAWN), and two of the three added the same day (the barbell jump squat is not yet counted, offer.js NOT_YET_COUNTED).
-const EXPECTED = 232;
-const short = sizes.filter(([W, H]) => all.filter(l => l.W === W && l.H === H).length !== EXPECTED);
-if (short.length) { console.log(`not ${EXPECTED} exercises at:`, short.map(s => s.join('x')).join(', ')); process.exit(1); }
+const EXPECTED = 232, EXPECTED_VARIANTS = 252;
+const at = ([W, H]) => all.filter(l => l.W === W && l.H === H);
+const short = sizes.filter((size, i) => at(size).filter(l => !l.key.includes('--')).length !== EXPECTED || at(size).filter(l => l.key.includes('--')).length !== (i === 0 ? EXPECTED_VARIANTS : 0));
+if (short.length) { console.log(`not ${EXPECTED} exercises (and ${EXPECTED_VARIANTS} variants at the first size) at:`, short.map(s => s.join('x')).join(', ')); process.exit(1); }
 if (gate.length) { console.log('below the fold at 664 px or taller:', gate.map(l => `${l.key} ${l.W}x${l.H} ${l.bottom}`).join(', ')); process.exit(1); }
