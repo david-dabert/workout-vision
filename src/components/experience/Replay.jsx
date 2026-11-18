@@ -4,7 +4,7 @@ import { exerciseName } from './exercise-info';
 import { liftDefinition } from '../../lib/counting/core';
 import { decimal } from './report-sheet';
 import { partialIn } from './tempo';
-import { poseAt, repAt, phaseAt, into, keyedTime, angleAt } from './replay-track';
+import { poseAt, repAt, phaseAt, into, keyedTime, angleAt, repsDone } from './replay-track';
 import { drawSkeleton, litSides, trailPoints } from './replay-draw';
 import { steadyFrames, trailAt } from './replay-smooth';
 import { canExport, exportSetVideo } from './video-export';
@@ -284,7 +284,8 @@ export default function Replay({ file, result, lift, saved = null, leaving, onBa
 
   const NB = ' ', sec = x => `${decimal(x, fr)}${NB}s`;
   const current = repAt(reps, now);
-  const begun = reps.filter(r => r.startTime <= now).length;
+  // The number rises when a rep ends, as a coach counts (repsDone, replay-track.js; 18 November 2026).
+  const begun = repsDone(reps, now, length);
   // The rep's measures (its range, times, phase and angle) are shown with the measures (measures.js), and for a set the
   // body check flagged only once its count is saved (saved: the person answered), as its result, report, history and
   // export show them (saved-set.js keepsMeasures, R8); before that, each rep's number alone (honesty pass, second round,

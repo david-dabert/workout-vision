@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useT } from '../../lib/LanguageContext';
 import { loadDemoTelemetry, LAB_CLIPS, LEAD_LAB_CLIP } from './demo-telemetry-data';
-import { poseAt, repAt, phaseAt, into, angleAt } from './replay-track';
+import { poseAt, repAt, phaseAt, into, angleAt, repsDone } from './replay-track';
 import { drawSkeleton, litSides, trailPoints } from './replay-draw';
 import { steadyFrames, trailAt } from './replay-smooth';
 import { liftDefinition } from '../../lib/counting/core';
@@ -64,7 +64,7 @@ export default function DemoInteractiveLab({ clip = LEAD_LAB_CLIP, onClose, onSt
 
   const reps = data?.reps || [];
   const currentRep = repAt(reps, now);
-  const begunCount = reps.filter(r => r.startTime <= now).length;
+  const begunCount = repsDone(reps, now, data?.timestamps?.at(-1) ?? Infinity);
 
   let phaseWord = '';
   if (currentRep >= 0) {

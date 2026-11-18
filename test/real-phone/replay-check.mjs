@@ -22,7 +22,7 @@
 import { webkit, devices } from '@playwright/test';
 import { writeFileSync, readFileSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { poseAt, SEEN } from '../../src/components/experience/replay-track.js';
+import { poseAt, SEEN, repsDone } from '../../src/components/experience/replay-track.js';
 
 const base = process.env.WV_BASE || 'http://127.0.0.1:4175/workout-vision/';
 const out = resolve('test/real-phone/round7');
@@ -89,7 +89,8 @@ async function check([lift, clip, name, points, first]) {
       const seenAt = at => { const pose = poseAt(result.imageLandmarks, result.timestamps, at); return !!pose && sides.some(s => points[s].every(i => pose[i].visibility >= SEEN)); };
       const seen = seenAt(t), edge = seen !== seenAt(t - 1 / 30);
       const counter = Number(await page.locator('.rp-n').textContent());
-      const begun = result.reps.filter(x => x.startTime <= t).length;
+      // The replay counts a rep once it ends (repsDone, 18 November 2026).
+      const begun = repsDone(result.reps, t, result.timestamps.at(-1));
       await page.locator('.rp-frame').screenshot({ path: `${out}/frames/${lift}-rep${k + 1}.png` });
       reps.push({ rep: k + 1, time: +t.toFixed(3), jointSeen: seen, edge, litPixels: lamp, counter, expectedCounter: begun });
       if (!edge && seen !== lamp > 20) failures.push(`rep ${k + 1}: joint ${seen ? 'seen' : 'not seen'} by the tracking, ${lamp} lit pixels`);
