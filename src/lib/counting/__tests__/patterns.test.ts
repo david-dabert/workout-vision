@@ -30,8 +30,8 @@ const angles = (f: Family) => {
 const median = (v: number[]) => [...v].sort((a, b) => a - b)[Math.floor(v.length / 2)];
 
 describe('every countable exercise is counted by its pattern', () => {
-  it('holds the 27 patterns of the 240 countable exercises, each with an exercise outside LIFTS', () => {
-    expect(Object.values(families).filter(f => f.joint).length).toBe(240);
+  it('holds the 27 patterns of the 239 countable exercises, each with an exercise outside LIFTS', () => {
+    expect(Object.values(families).filter(f => f.joint).length).toBe(239);
     expect(combos.size).toBe(27);
   });
 

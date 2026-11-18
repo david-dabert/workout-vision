@@ -831,7 +831,6 @@
       "barbell squat",
       "barbell back squat",
       "safety bar squat",
-      "zercher squat",
       "box squat",
       "belt squat",
       "low bar squat",
@@ -5442,7 +5441,10 @@
     "aliases": [
       "seated knee tuck",
       "relevé de genoux assis",
-      "seated knee tuck"
+      "seated knee tuck",
+      "seated leg tuck",
+      "leg pull in",
+      "knee tuck"
     ]
   },
   {
@@ -6942,27 +6944,6 @@
       "kb row",
       "one arm kettlebell row",
       "rowing kettlebell"
-    ],
-    "figureOnly": true
-  },
-  {
-    "key": "seated_leg_tuck",
-    "name": "Seated Leg Tuck",
-    "slug": "seated-leg-tuck",
-    "category": "core",
-    "equipment": "Bench",
-    "muscles": [
-      "Core",
-      "Hips"
-    ],
-    "fr": "Relevé de genoux assis",
-    "aliases": [
-      "seated leg tuck",
-      "relevé de genoux assis",
-      "seated knee tuck",
-      "knee tuck",
-      "releve de genoux assis",
-      "leg pull in"
     ],
     "figureOnly": true
   },

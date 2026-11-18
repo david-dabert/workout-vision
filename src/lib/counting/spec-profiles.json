@@ -175,7 +175,6 @@
   "seated_good_morning": {"mode":"both","first":"eccentric","signals":[["noseY",1,15.4138],["trunk",1,12.5],["hipL",-1,11.2521],["hipR",-1,11.2521],["wristYL",1,9.96465],["wristYR",1,9.96465],["elbowYL",1,5.60094],["elbowYR",1,5.60094]]},
   "seated_knee_tuck": {"mode":"both","first":"concentric","signals":[["kneeL",-1,28.75],["kneeR",-1,28.75],["hipL",-1,17.1129],["hipR",-1,17.1129],["kneeYL",-1,16.294],["kneeYR",-1,16.294]]},
   "seated_leg_curl": {"mode":"both","first":"concentric","signals":[["kneeL",-1,27.5],["kneeR",-1,27.5],["ankleYL",1,22.1799],["ankleYR",1,22.1799],["hipHeight",1,22.1799]]},
-  "seated_leg_tuck": {"mode":"both","first":"concentric","signals":[["kneeYL",-1,27.5968],["kneeYR",-1,27.5968],["kneeL",-1,27.5],["kneeR",-1,27.5],["ankleYL",-1,22.0562],["ankleYR",-1,22.0562],["hipHeight",-1,22.0562],["hipL",-1,20.34],["hipR",-1,20.34]]},
   "seated_row": {"mode":"both","first":"concentric","signals":[["elbowL",-1,26.25],["elbowR",-1,26.25],["wristHipL",-1,22.5146],["wristHipR",-1,22.5146],["wristShoulderL",-1,11.6528],["wristShoulderR",-1,11.6528],["shoulderL",-1,9.959],["shoulderR",-1,9.959]]},
   "shrimp_squat": {"mode":"both","first":"eccentric","signals":[["kneeL",-1,32.5],["hipL",-1,27.9885],["ankleYL",-1,24.8477],["kneeYL",-1,19.0823],["ankleAnkle",-1,14.3064],["hipHeight",-1,13.9441],["noseY",1,12.5857]]},
   "side_lying_hip_abduction": {"mode":"side","first":"concentric","signals":[["ankleAnkle",1,28.3141],["ankleYL",-1,26.9971],["kneeYL",-1,13.4985],["hipHeight",-1,13.4985],["hipL",-1,10]]},

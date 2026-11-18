@@ -2169,13 +2169,6 @@
     "why": "The back-and-biceps pull flexes the elbow from the extended-arm start, the free hand braced on the knee. One limb at a time: each side is counted and the one with more reps kept, so a better-seen idle limb does not take the count (one-limb.test.ts). Status: experimental; no labelled set holds this exercise.",
     "eitherSide": true
   },
-  "seated_leg_tuck": {
-    "joint": "hip",
-    "rest": "high",
-    "first": "concentric",
-    "view": "side",
-    "why": "Seated and leaning back on the hands, the knees come to the chest: hip flexion closes shoulder-hip-knee."
-  },
   "external_rotation": {
     "joint": null,
     "why": "Rotation of the upper arm about its own axis, the elbow held at the side: hip-shoulder-elbow and the elbow angle stay still. Guide only."

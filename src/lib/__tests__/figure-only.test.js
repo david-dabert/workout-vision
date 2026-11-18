@@ -13,8 +13,8 @@ const added = catalogue.filter(e => e.figureOnly);
 const at = p => new URL(`../../../${p}`, import.meta.url);
 
 describe('the exercises added after the guide', () => {
-  it('are 76 (38 in batch 1, 38 in batch 2), each with a French name, a family, a motion spec, an animated figure and a still SVG', () => {
-    expect(added).toHaveLength(76);
+  it('are 75 (38 in batch 1, 37 in batch 2), each with a French name, a family, a motion spec, an animated figure and a still SVG', () => {
+    expect(added).toHaveLength(75);
     for (const e of added) {
       expect(e.fr, e.key).toBeTruthy();
       expect(families[e.key], e.key).toBeTruthy();

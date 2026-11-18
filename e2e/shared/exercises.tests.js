@@ -1,6 +1,6 @@
 // Step 2 (PLAN.md, GROWTH): every countable exercise of the guide but the walking lunge, 183 in all (181, and the standing and lying barbell curls since 2 October), 179 since 3 October
 // (the four floor exercises counted on both sides in profile withdrawn, src/lib/offer.js WITHDRAWN, third audit C21), 181 with the two (the barbell jump squat not yet counted) of the three
-// added the same day (behind-the-neck press, barbell jump squat, wall ball), 182 with the machine seated back extension of 5 October, 183 with the prone Y raise of 8 October, 210 with batch 1 and 233 with batch 2 of 18 November, in a searchable list
+// added the same day (behind-the-neck press, barbell jump squat, wall ball), 182 with the machine seated back extension of 5 October, 183 with the prone Y raise of 8 October, 210 with batch 1 and 232 with batch 2 of 18 November, in a searchable list
 // below the nine cards, each labelled Beta or Experimental; a tap opens its filming screen, which
 // names it, labels it and shows how to film it. Run in Chromium (exercises.spec.js) and in WebKit
 // with the iPhone profile (exercises.webkit.spec.js).
@@ -16,11 +16,11 @@ async function openGuide(page, expect, lang) {
   await openChoice(page, expect, lang);
   await page.getByTestId('choice-find-exercise').click();
   await expect(page.locator('#guide-search')).toBeVisible({ timeout: 20000 });
-  await expect(page.locator('.guide-screen .list .item')).toHaveCount(385, { timeout: 20000 });
+  await expect(page.locator('.guide-screen .list .item')).toHaveCount(384, { timeout: 20000 });
 }
 
 export default function exercisesTests(test, expect) {
-  test('all 385 guide exercises live behind Trouver un exercice, with search first and the six Beta lifts pinned on top', async ({ page }) => {
+  test('all 384 guide exercises live behind Trouver un exercice, with search first and the six Beta lifts pinned on top', async ({ page }) => {
     await openGuide(page, expect, 'en');
     const search = await page.locator('#guide-search').boundingBox();
     const list = await page.locator('.guide-screen .list').boundingBox();
@@ -39,7 +39,7 @@ export default function exercisesTests(test, expect) {
     await expect(page.locator('.guide-screen [data-exercise="squat"]')).toBeVisible();
     await expect(page.locator('.guide-screen [data-exercise="bicep_curl"]')).toHaveCount(0);
     await page.fill('#guide-search', '');
-    await expect(page.locator('.guide-screen .list .item')).toHaveCount(385);
+    await expect(page.locator('.guide-screen .list .item')).toHaveCount(384);
   });
 
   test('the search finds an exercise by its French or English name, and says when none matches', async ({ page }) => {
