@@ -168,6 +168,15 @@ jobs:
           path: ~/.cache/ci-apt-archives
           key: apt-playwright-chromium-webkit-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
           restore-keys: apt-playwright-chromium-webkit-${{ runner.os }}-
+      # The Playwright browser binaries kept between runs, keyed on package-lock.json: on 19 November 2026 run
+      # 44521852387 failed four times in the install step, so a run that restores them skips the browser download.
+      # Not verified until the next run shows a cache hit in its log.
+      - name: Restore the cached Playwright browser binaries
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: ms-playwright-${{ runner.os }}-
       - name: Install Playwright browsers and dependencies
         run: |
           installed=0
