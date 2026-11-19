@@ -1,0 +1,24 @@
+# Card 056 (fit.mjs, plan.md): logistic check fitted on public half A (434 counted sets), 5 folds by video
+threshold 0.4605 (NO threshold kept every set off by 3+ out on half A; the share condition alone)
+public half A, out of fold (chooses the threshold; decides nothing): counted 434; today sure 313 (72.1 %), exact 59.1 %, off by 3+ 0; model sure 271 (62.4 %), exact 70.1 %, off by 3+ 5; exact +11.0 points, sure share -9.7 points: FAIL by the card's rule
+public half B (judged once): counted 400; today sure 294 (73.5 %), exact 65.6 %, off by 3+ 4; model sure 249 (62.3 %), exact 76.3 %, off by 3+ 2; exact +10.7 points, sure share -11.2 points: FAIL by the card's rule
+RepCount-A build (judged once): counted 59; today sure 39 (66.1 %), exact 53.8 %, off by 3+ 4; model sure 35 (59.3 %), exact 34.3 %, off by 3+ 7; exact -19.6 points, sure share -6.8 points: FAIL by the card's rule
+David's sets (judged once): counted 15; today sure 11 (73.3 %), exact 81.8 %, off by 3+ 0; model sure 9 (60.0 %), exact 77.8 %, off by 3+ 0; exact -4.0 points, sure share -13.3 points: FAIL by the card's rule
+
+weights on standardized features (intercept first):
+intercept 0.251
+shipped 0.050
+tail -0.318
+whole 0.636
+spread -0.281
+recountRefused 0.000
+agree 0.371
+agreeMissing 0.104
+loopBoth 0.148
+loopSame -0.476
+loopRatio 0.165
+pscSame 0.059
+pscConfirm 0.035
+learnedGap -0.348
+learnedMissing -0.411
+logCount 0.602
