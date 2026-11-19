@@ -274,3 +274,15 @@ Written 2 October 2026, after two proposals in one hour repeated closed work.
 - **Variants in the one catalogue, and the drawer's registry folded in** (18 November 2026; David: "How many exercises and variations that people do in a commercial gyms add them in the exercises list and we need just one exercises list not two"). Not a counting change: a variant's key carries its base ("bicep_curl--cable", `src/lib/variant-key.js`), and `liftDefinition` and `signalProfile` read the base's definition and profile, as COUNT_AS already did for a parent. A variant never earns its base's tier (Beta is evidence on that exercise only). The filming drawer's registry (#267) was 144 movements times 9 training techniques shown as "1,200+ variations"; its movements are catalogue exercises or variants now (`scripts/variants/registry-fold.mjs`), its 1,296 ids map to them (`src/lib/exercises/legacy-ids.json`), and 21 names the catalogue gave the wrong exercise were moved to the right one ("skull crusher" no longer finds the pushdown). The first screen stays at 146.0 of 150 kB gzipped whatever the number of variants.
   Chosen on: the base's own family for each variant (guide-families.json), and the registry's own movement-to-counting mapping.
   Confirmed on: npm run scoreboard (David's labelled sets, none moved), the 96 synthetic sets of npm run synth (none moved) and npm run scoreboard:public (no public set names a variant).
+
+- **Card 063, track C: the kiné comparison on planted faults, synthetic bodies** (19 November 2026, Claude; pre-registration 4963fe84, `test/real-phone/kine-labels/faults/`). Not a counting change. Michelle and Soldier (three.js examples), four exercises, front and 30 degrees, 16 cells; per cell a reference, two correct attempts and one per planted fault, every frame through the app's pose detection; `compareAttempt` with its default options. Failed on every bar of plan.md:
+  - false « À revoir » on correct attempts: 2 of 30 judged, 7 % (bar at most 5 %); both on Soldier's squat from the front, from the arm joints, which do not move in a squat;
+  - range at 70 %: found on 13 of 15 (87 %, bar 90 %); 11 of 11 on curl, lateral raise and press, 2 of 4 on the squat;
+  - right side 0.5 s late: 8 of 15 (53 %);
+  - trunk leaning 20 degrees: 10 of 15 (67 %);
+  - each repetition held 2 s longer: 1 of 15 (7 %). Unseen by design: the comparison aligns time by subsequence DTW, which absorbs a hold.
+  - 6 attempts refused, all in one cell (Soldier, overhead press, 30 degrees: reference-unseen).
+  Two errata in analyse.mjs were found on its first outputs and fixed before this result (plan.md, Errata): role names, and timestamps divided by 1000 (each set reached the comparison as about one sample). No bar, render or option changed.
+  Chosen on: none (the bars were fixed in plan.md before any render was read).
+  Confirmed on: nothing (a lab result on synthetic bodies; it says nothing of a physiotherapist's agreement, which track A measures).
+  Lead, not a fix: on the arm exercises the range fault is found every time; the misses are timing (lateness, holds), the trunk alone, and the squat read through arm joints.

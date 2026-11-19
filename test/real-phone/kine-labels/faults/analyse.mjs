@@ -8,7 +8,7 @@ import { buildReference, compareAttempt } from '../../../../src/lib/reference/co
 
 const HERE = dirname(fileURLToPath(import.meta.url)), DIR = process.argv[2];
 const read = id => JSON.parse(gunzipSync(readFileSync(resolve(DIR, `${id}.json.gz`))).toString());
-const sec = ts => ts.map(t => t / 1000);
+const sec = ts => ts; // erratum: the renders' timestamps are already in seconds (synth.js); dividing by 1000 gave compare.js about one sample per set
 const ids = readdirSync(DIR).filter(f => f.endsWith('.json.gz')).map(f => f.replace('.json.gz', ''));
 const rows = [];
 for (const refId of ids.filter(i => i.endsWith('-reference'))) {
@@ -16,7 +16,7 @@ for (const refId of ids.filter(i => i.endsWith('-reference'))) {
   const reference = buildReference(ref.worldLandmarks, sec(ref.timestamps));
   for (const id of ids.filter(i => i.startsWith(cell + '-') && i !== refId)) {
     const a = read(id), r = compareAttempt(reference, a.worldLandmarks, sec(a.timestamps));
-    const role = id.slice(cell.length + 1).replace(/\d+$/, '');
+    const role = id.slice(cell.length + 1).replace(/^correct\d+$/, 'correct'); // erratum: the fault names range70 and lean20 keep their digits
     rows.push({ cell, exercise: cell.split('-')[1], view: cell.split('-')[2], role, verdict: r.verdict, reasons: (r.reasons ?? []).join(' ') });
   }
 }

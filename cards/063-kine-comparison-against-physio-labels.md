@@ -1,5 +1,5 @@
 # 063. The kiné comparison says « Conforme » or « À revoir » as physiotherapists do
-Status: ready (track A now; track B on the authors' written permission; track C now)
+Status: ready (track A now; track B on the authors' written permission); track C failed, 19 November 2026 (result.txt, TRIED.md)
 Executor: careful (Claude)
 Phase: 1 lab (no screen); it decides whether Phase 5 measures anything
 Claim: on repetitions a physiotherapist labelled correct or incorrect, the app's comparison against a correct repetition of the same exercise agrees with the physiotherapist at least as often as the published agreement between two clinicians, or the comparison is not offered as a verdict.

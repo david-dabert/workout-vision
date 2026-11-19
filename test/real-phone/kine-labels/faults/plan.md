@@ -27,3 +27,8 @@ Does the kiné comparison (`src/lib/reference/compare.js`, as the app ships it) 
 - Synthetic bodies are not people and these faults are cartoons of real ones.
 - A pass shows that the comparison sees faults of these sizes in clean conditions; it says nothing of a physiotherapist's agreement, which track A measures.
 - A fault the comparison does not read by design (the trunk alone, when no measured joint moves with it) failing is a result, not an error.
+
+## Errata, found on the first outputs of analyse.mjs (19 November 2026); no bar, render or option changed
+1. The role of each attempt dropped trailing digits, so `range70` and `lean20` were filed as `range` and `lean` and left out of the summary. Now only `correct1` and `correct2` lose theirs.
+2. The renders' timestamps are already in seconds (synth.js); analyse.mjs divided them by 1000, so compare.js resampled each set of about 11 s to about one sample, and every verdict of the first two outputs was void. The timestamps are now passed unchanged.
+Both outputs before the fixes are discarded; result.txt is the first output with both fixed.
