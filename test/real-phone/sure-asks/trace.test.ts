@@ -1,3 +1,4 @@
+// Card 065's diagnosis: the smoothed angle and counted reps of one public build set (TRACE=<name>, TRACE_OUT=<file>). Bench only, decides nothing.
 import { test } from 'vitest';
 import { appendFileSync } from 'node:fs';
 const log = (...a: any[]) => appendFileSync(process.env.TRACE_OUT!, a.join(' ') + '\n');
