@@ -1,3 +1,29 @@
+DECISION OF 19 NOVEMBER 2026 (David, after his call with his partner Christophe; relayed to Claude by the parent session that day, not posted by David on #190)
+- His words: "Narrow the proposition: 701 exercises analysed with accuracy every time, and a tool for physiotherapists, online coaches and physical coaches. Reliability, usability, easy to adopt for the beginner, the intermediate and the professional athlete, so simple a five-year-old could navigate it."
+- Precedence: under David's rule of 30 September 2026 in this file ("When two lines of PLAN.md conflict, my latest order prevails; record the choice in PLAN.md and continue"), this decision prevails over the older lines below where they conflict, and only there.
+
+Priorities that follow from it, in this order:
+1. Reliability per exercise, measured. One table built from the scoreboard, the public datasets, the synthetic sets and David's phone files: exercise, labelled sets, exact share, status. The most-used gym exercises first, until each passes on labelled data; then wider. The app shows an exercise as reliable only when its row passes (R8).
+2. Usability. One obvious path per user: film, count, see the result; for the professional, send a programme and see the patient's or client's videos. Cuts of screens and steps that do not serve that path are proposed to David; none is made without his yes.
+3. The professional tool: coach and physiotherapist on the same simple base.
+
+David's commitments of 19 November 2026 to the client-zero physiotherapist (free use in exchange for his expertise), after the lifter work (card B):
+- The physiotherapist space as a complete tool, end to end, for one physiotherapist: a comparison reliable enough to give a verdict (card 063); an exercise library covering every part of the body, each exercise with a reference video and clear instructions; programmes sent to the patient by a link, the patient's videos followed up.
+- The « Espace kiné » row stays on the home (src/components/experience/Choice.jsx, restored in #498). Nothing David can see is removed.
+
+What this decision displaces:
+- Decision 1 of the board of 18 November 2026 and the line of 16 November 2026 that take the « Espace kiné » row off the home: the row stays (docs/OPERATING-LOOP.md, F7). Card 043 keeps its other parts.
+- The phase order that puts coach work in Phase 4 and physiotherapist work in Phase 5: both are now part of the offer. Physiotherapist work is built after card B, in the order of cards/README.md; coach screens follow on the same base once it is built, under THE FREEZE below.
+- THE FREEZE, for the physiotherapist space, its exercise library and programmes by link only. Programmes by link is built as the one base the coach shares (priority 3). It still holds for every other new screen or element until Phase 1's gate passes, coach screens included: decision 2 of 18 November 2026 stands, and the coach comparison (#487) stays behind `coachCompareShown`, off in production.
+- docs/OPERATING-LOOP.md, order of work, item 3 ("after Phase 1's gate"), for the same three pieces.
+
+What still holds, unchanged:
+- R8, R13 and the lift rule. "701 exercises analysed with accuracy every time" is the goal, not today's state: today the guide lists 701 and the counter offers 484, seven as Beta and the rest as Experimental, each labelled so; 217 are marked « Non compté »; no exercise has yet passed the exam this file requires (README.md). 701 is never shown on a screen or in a public text as a result.
+- THE DATA: sealed sets stay sealed; tuning data proves nothing.
+- Phase 5's line that a written regulatory opinion comes before any clinical claim: a « Conforme » or « À revoir » verdict reaches a patient or a physiotherapist only once card 063 passes and that opinion is on file.
+- Card 063's order, chosen by Claude on 19 November 2026 under this decision and written in the card: first a track A read on a new clinician-scored dataset (KIMORE, Capecci et al. 2019), its licence checked in writing first, run once through the nested leave-one-person-out pipeline frozen at 951e21c, its bars fixed in a committed plan.md before the first read; then track C on new, pre-registered renders; then the library coverage and programmes by link, each as working code held by the browser tests.
+- Card B (the lifter chosen by motion, #504) stays first: following the right person is the first of the three goals of docs/OPERATING-LOOP.md.
+
 Fresh start. This message is PLAN.md. It overrides every earlier plan, the council document, your memory notes and any plan pasted from another model. Reread PLAN.md at the start of every session and after every compaction. If a later message conflicts with it, ask David whether to amend PLAN.md before acting.
 
 AMENDMENT OF 15 NOVEMBER 2026 (David: "adopt"; then "Plan MD signed, governance approved")
