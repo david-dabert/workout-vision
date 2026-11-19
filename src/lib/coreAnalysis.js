@@ -120,6 +120,8 @@ export const PROPOSAL_MAX_SAMPLES = 3 * 60 * TARGET_FPS;
  * videos are stored as 1-pose reads, so R2 cannot yet be measured for the app's default (TRIED.md, 19 November 2026).
  * On David's seated row (IMG_4186, label 10) the phone's file counts 9 on the first pose and 10 on the lifter
  * (test/real-phone/phone-poses/). Status: experimental.
+ * The default changes here, in one line (true unless ?lifter=0), once phone-poses.test.ts's "default decision" holds on
+ * a batch of David's labelled videos read with ?lifter=1&poses=1 (listed in test/real-phone/phone-poses/README.md).
  */
 export function lifterAsked() {
   try { return typeof location !== 'undefined' && new URLSearchParams(location.search).get('lifter') === '1'; } catch { return false; }
