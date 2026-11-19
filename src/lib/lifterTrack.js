@@ -184,6 +184,11 @@ export function motionScore(world, timestamps, lift) {
 export function chooseLifter(frames, lift, { aspect = 1, locate } = {}) {
   const timestamps = frames.map(f => f.t);
   const none = () => frames.map(() => null);
+  // A read with one pose per sample has no choice to make: it is returned as it is. Dropping its samples by place
+  // alone lost an exact count on the synthetic bench (michelle curl side 6 -> refused, TRIED.md 19 November 2026).
+  if (!frames.some(f => (f.poses?.length ?? 0) > 1)) {
+    return { image: frames.map(f => f.poses?.[0]?.image ?? null), world: frames.map(f => f.poses?.[0]?.world ?? null), timestamps, people: [], chosen: -1, single: true };
+  }
   const { tracklets, unit } = linkTracklets(frames, { aspect, locate });
   if (!tracklets.length) return { image: none(), world: none(), timestamps, people: [], chosen: -1 };
   const people = groupPeople(tracklets, unit).map(p => {

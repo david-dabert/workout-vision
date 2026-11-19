@@ -71,12 +71,21 @@ describe('lifterTrack.js', () => {
     expect(count(first.world, ts, first.image).count).not.toBe(8);
   });
 
-  it('drops the samples where the only pose found is another person doing reps elsewhere (the seated row of 19 November)', () => {
+  it('a read with one pose per sample is returned as it is: there is nothing to choose between', () => {
+    const ts = times(10 * 2.8 + 0.8);
+    const frames = ts.map(t => ({ t, poses: [t > 12.1 && t < 14.5 ? body(curl(t, 1.4), 0.15, 0.4) : body(curl(t), 0.55, 0.5)] }));
+    const r = chooseLifter(frames, LIFT);
+    expect(r.single).toBe(true);
+    r.world.forEach((w, i) => expect(w).toBe(frames[i].poses[0].world));
+  });
+
+  it('drops the samples where the pose found is another person doing reps elsewhere, once the read keeps several (the seated row of 19 November)', () => {
     const ts = times(10 * 2.8 + 0.8); // 10 reps; from 12.1 to 14.5 s the model returns a man at the left instead
     const frames = ts.map(t => {
       const s = t;
       const away = s > 12.1 && s < 14.5;
-      return { t, poses: [away ? body(curl(s, 1.4), 0.15, 0.4) : body(curl(s), 0.55, 0.5)] };
+      // A still third person far right keeps the read multi-pose, as a gym read with every pose kept is.
+      return { t, poses: [away ? body(curl(s, 1.4), 0.15, 0.4) : body(curl(s), 0.55, 0.5), body(170, 0.92, 0.5)] };
     });
     const r = chooseLifter(frames, LIFT);
     expect(r.people.length).toBeGreaterThanOrEqual(2);
@@ -88,12 +97,12 @@ describe('lifterTrack.js', () => {
 
   it('a lifter whose skeleton jumps away for a few samples keeps those samples: a fragment is not another person', () => {
     const ts = times(10);
-    const frames = ts.map((t, i) => ({ t, poses: [body(curl(t), i >= 40 && i < 43 ? 0.9 : 0.5, 0.5)] }));
+    const frames = ts.map((t, i) => ({ t, poses: [body(curl(t), i >= 40 && i < 43 ? 0.8 : 0.5, 0.5), body(170, 0.1, 0.5)] }));
     const { tracklets, unit } = linkTracklets(frames);
     // The jump starts a tracklet of its own; the lifter's tracklet, idle under LINK_GAP_SEC, takes the pose back.
-    expect(tracklets).toHaveLength(2);
+    expect(tracklets).toHaveLength(3);
     const people = groupPeople(tracklets, unit);
-    expect(people).toHaveLength(2);
+    expect(people).toHaveLength(3);
     const r = chooseLifter(frames, LIFT);
     expect(r.fromFragments).toBe(3);
     r.world.forEach((w, i) => expect(w).toBe(frames[i].poses[0].world));
@@ -103,13 +112,13 @@ describe('lifterTrack.js', () => {
     const ts = times(10);
     const frames = ts.map(t => ({ t, poses: [body(curl(t), 0.5, 0.5)] }));
     const r = chooseLifter(frames, LIFT);
-    expect(r.people).toHaveLength(1);
     r.world.forEach((w, i) => expect(w).toBe(frames[i].poses[0].world));
   });
 
   it('no pose anywhere gives null on every sample', () => {
     const r = chooseLifter(times(2).map(t => ({ t, poses: [] })), LIFT);
     expect(r.chosen).toBe(-1);
+    expect(r.world).toHaveLength(times(2).length);
     expect(r.world.every(w => w === null)).toBe(true);
   });
 
