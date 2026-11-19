@@ -14,7 +14,7 @@ export const FEATURES = ['shipped', 'tail', 'whole', 'spread', 'recountRefused',
 export function features(r) {
   const b = x => (x ? 1 : 0);
   return [b(r.shipped), b(r.tail), b(r.whole), r.spread ?? 0, b(r.recountRefused), r.agree ?? 0, b(r.agree === null), b(r.loopSame && r.loopSure), b(r.loopSame),
-    r.loopRatio === null ? 0 : Math.log1p(Math.max(0, r.loopRatio)), b(r.pscSame), b(r.pscConfirm), r.learnedGap === null ? 0 : Math.abs(r.learnedGap), b(r.learnedGap === null), Math.log(r.count)];
+    r.loopRatio === null ? 0 : Math.log1p(Math.max(0, r.loopRatio)), b(r.pscSame), b(r.pscConfirm), r.learnedGap === null ? 0 : Math.abs(r.learnedGap), b(r.learnedGap === null), Math.log1p(r.count)];
 }
 
 /** Means and deviations of each column (a constant column keeps deviation 1). */

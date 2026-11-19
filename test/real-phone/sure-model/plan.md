@@ -28,7 +28,7 @@ Can one check, combining signals that were each measured alone, say "sure" more 
   12. `pscConfirm` (0/1);
   13. `|learnedGap|` (0 when absent);
   14. `learnedMissing` (0/1);
-  15. `log(count)`.
+  15. `log(1 + count)`. Erratum before any result was read: the first run stopped on `log(0)`, a public whole clip shown with a count but none of its reps inside the labelled window; `log(count)` became `log(1 + count)`, nothing else changed.
 - Cross-validation on half A by video (`video` field), 5 folds, folds assigned by a hash of the video id.
 
 ## The threshold, fixed now
