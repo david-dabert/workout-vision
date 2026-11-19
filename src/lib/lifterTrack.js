@@ -5,6 +5,7 @@
  * Input: every pose the phone saw on every sample (coreAnalysis.js ?poses=1 records them). Output: one pose per sample,
  * the lifter's, or null where the lifter was not found. Three steps, all on the finished read (no frame ahead is needed
  * because the set is analysed after it is filmed):
+ *   0. Duplicates: two poses of one sample at the same place (DUPLICATE_TORSOS) are one body; the first is kept.
  *   1. Tracklets: poses linked from sample to sample by torso continuity (the torso centre, the mean of shoulders and
  *      hips in the picture, moves less than LINK_TORSOS torso lengths since the tracklet's last pose, within
  *      LINK_GAP_SEC). The torso length is the set's median (TRIED.md, 7 October: a per-frame torso length reads
@@ -24,6 +25,10 @@
 import { liftDefinition, sideAngles } from './counting/core';
 
 export const LINK_TORSOS = 1.0;
+/** Two poses of one sample whose torso centres are closer than this (torso lengths) are one person found twice: the
+ * model can return the same body as two poses (seen on the synthetic bystander sets, 19 November 2026); the first it
+ * lists is kept. */
+export const DUPLICATE_TORSOS = 0.5;
 export const LINK_GAP_SEC = 1.0;
 export const GROUP_TORSOS = 1.5;
 /** Another person must be seen without a break for this long before a sample is taken from the lifter on his account:
@@ -64,6 +69,12 @@ export function linkTracklets(frames, { aspect = 1, scale, locate } = {}) {
   const unit = scale ?? median(torsos.flat().filter(Boolean).map(c => c.length).filter(l => l > 0));
   const tracklets = [];
   if (!(unit > 0)) return { tracklets, unit: NaN, torsos };
+  // Step 0: a pose standing where an earlier pose of the same sample stands is the same body found twice.
+  for (const row of torsos) {
+    for (let k = 1; k < row.length; k++) {
+      if (row[k] && row.slice(0, k).some(c => c && Math.hypot(c.x - row[k].x, c.y - row[k].y) < DUPLICATE_TORSOS * unit)) row[k] = null;
+    }
+  }
   const active = [];
   frames.forEach((fr, f) => {
     const t = fr.t;
