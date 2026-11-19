@@ -392,6 +392,13 @@ if (O) {
 const GRAY_SIDE = 128, gw = Math.round(W * GRAY_SIDE / H), gh = GRAY_SIDE;
 const small = document.createElement('canvas'); small.width = gw; small.height = gh;
 const sctx = small.getContext('2d', { willReadFrequently: true });
+// Whether a pose is the lifter: its hips nearer the lifter's projected hips than the bystander's (the onTarget rule).
+const isLifter = lm => {
+  const img = q => { const pr = q.clone().project(camera); return [(pr.x + 1) / 2, (1 - pr.y) / 2]; };
+  const mx = (lm[23].x + lm[24].x) / 2, my = (lm[23].y + lm[24].y) / 2;
+  const dist = ([x, y]) => Math.hypot((mx - x) * W / H, my - y);
+  return dist(img(wp(B.Hips))) <= dist(img(bystander));
+};
 const recordOcclusion = got => {
   sctx.imageSmoothingEnabled = true; sctx.imageSmoothingQuality = 'high';
   sctx.drawImage(flat, 0, 0, gw, gh);
@@ -406,12 +413,7 @@ const recordOcclusion = got => {
       const xs = vis.map(p => p.x), ys = vis.map(p => p.y);
       box = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)].map(z => Math.round(z * 1000) / 1000);
     }
-    if (bystander) {
-      const img = q => { const pr = q.clone().project(camera); return [(pr.x + 1) / 2, (1 - pr.y) / 2]; };
-      const mx = (lm[23].x + lm[24].x) / 2, my = (lm[23].y + lm[24].y) / 2;
-      const dist = ([x, y]) => Math.hypot((mx - x) * W / H, my - y);
-      on = dist(img(wp(B.Hips))) <= dist(img(bystander));
-    }
+    if (bystander) on = isLifter(lm);
   }
   occ.boxes.push(box); occ.onTarget.push(on);
 };
@@ -439,6 +441,11 @@ if (P.noCrop) globalThis.__WV_BENCH_NO_CROP__ = true;
 if (P.lock) globalThis.__WV_BENCH_LOCK__ = true;
 // P.gate: the pose path with the continuity gate (jumpGate.js; off in the app), 7 October, run.mjs SYNTH_GATE=1.
 if (P.gate) globalThis.__WV_BENCH_GATE__ = true;
+// P.allPoses: every pose the model finds (up to 4, as the app's ?poses=1 asks), kept per sample with whether each is
+// the lifter (the onTarget rule), for the lifter chosen by motion (src/lib/lifterTrack.js; card B, 19 November 2026,
+// run.mjs SYNTH_ALLPOSES=1). The first pose goes on through the pose path as with one asked.
+if (P.allPoses) globalThis.__WV_ALL_POSES__ = true;
+const allPoses = [];
 const model = P.video ? null : await getImageLandmarker();
 // P.lostPose: a second pose model (run.mjs, LOST_POSE, e.g. MediaPipe's heavy model) run on the whole frame of the
 // frames still without a pose after the app's own path, to measure it (7 October). Bench only; the app has none.
@@ -536,6 +543,7 @@ for (let i = 0; i < n; i++) {
     if (r2?.worldLandmarks?.[0]) got = { ...r2, source: 'lost-model' };
   }
   if (O) recordOcclusion(got, time);
+  if (P.allPoses) allPoses.push((globalThis.__WV_LAST_ALL_POSES__ ?? []).map(q => ({ image: round(q.image), world: q.world ? round(q.world) : null, ...(bystander ? { onTarget: isLifter(q.image) } : {}) })));
   frames.push(got ? round(got.worldLandmarks[0]) : null);
   sources.push(got ? (got.source ?? 'full') : null);
   truth.push(truthAngles());
@@ -543,5 +551,5 @@ for (let i = 0; i < n; i++) {
   if (i === Math.floor(n / 3) && P.shot) window.SHOT = flat.toDataURL('image/jpeg', 0.8);
 }
 window.JPEGS = jpegs;
-window.RESULT = { params: P, sides: S, reps: reps.map(r => ({ start: r.start, top: r.top, hold: r.hold, end: r.end })), score, worldLandmarks: frames, poseSources: sources, detectMs, truth, timestamps: ts, size: [W, H] };
+window.RESULT = { params: P, sides: S, reps: reps.map(r => ({ start: r.start, top: r.top, hold: r.hold, end: r.end })), score, worldLandmarks: frames, poseSources: sources, detectMs, truth, timestamps: ts, size: [W, H], ...(P.allPoses ? { allPoses } : {}) };
 if (O && !P.video) window.RESULT.occlusion = occlusionResult();

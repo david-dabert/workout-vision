@@ -10,6 +10,7 @@ import { specGuidedCount } from './counting/sgc';
 import { TARGET_FPS, MAX_LONG_SIDE, MAX_FRAMES } from './extractionConfig';
 
 import { OFFERED, isOffered } from './offer';
+import { chooseLifter } from './lifterTrack';
 
 // Every offered exercise: the lifts of LIFT TIERS and every countable exercise of the guide (offer.js).
 export const APPROVED_LIFTS = OFFERED;
@@ -112,16 +113,30 @@ export const PROPOSAL_MAX_SAMPLES = 3 * 60 * TARGET_FPS;
  * the phone's own read (the desktop read of the same video does not jump). The count reads the first pose, as always.
  * Diagnosis only: never on without the address flag.
  */
+/**
+ * ?lifter=1 in the page's address (card B, 19 November 2026): every person is read on every sample (as ?poses=1) and
+ * the count reads the lifter chosen over the whole set by motion (lifterTrack.js) instead of the first pose. Off
+ * without the flag: asking 4 poses moves the first pose itself on 336 of 4,555 synthetic samples, and David's labelled
+ * videos are stored as 1-pose reads, so R2 cannot yet be measured for the app's default (TRIED.md, 19 November 2026).
+ * On David's seated row (IMG_4186, label 10) the phone's file counts 9 on the first pose and 10 on the lifter
+ * (test/real-phone/phone-poses/). Status: experimental.
+ */
+export function lifterAsked() {
+  try { return typeof location !== 'undefined' && new URLSearchParams(location.search).get('lifter') === '1'; } catch { return false; }
+}
 export function allPosesAsked() {
   try { return typeof location !== 'undefined' && new URLSearchParams(location.search).get('poses') === '1'; } catch { return false; }
 }
 const r4 = v => Math.round(v * 1e4) / 1e4;
-function saveAllPoses(file, frames) {
+// The file also carries the lift chosen and the count this read gives (summarizeCount on the samples the app counts,
+// before any read error is raised), so a stored file needs nothing from memory (test/real-phone/phone-poses/).
+function saveAllPoses(file, frames, lift, counted) {
   try {
-    const slim = frames.map(f => ({ t: f.t, poses: f.poses.map(p => ({
+    const one = p => ({
       image: p.image?.map(q => [r4(q.x), r4(q.y), r4(q.visibility ?? 0)]) ?? null,
-      world: p.world?.map(q => [r4(q.x), r4(q.y), r4(q.z)]) ?? null })) }));
-    const blob = new Blob([JSON.stringify({ name: file?.name ?? null, userAgent: navigator.userAgent, frames: slim })], { type: 'application/json' });
+      world: p.world?.map(q => [r4(q.x), r4(q.y), r4(q.z)]) ?? null });
+    const slim = frames.map(f => ({ t: f.t, poses: f.poses.map(one), ...(f.crop ? { crop: one(f.crop) } : {}) }));
+    const blob = new Blob([JSON.stringify({ name: file?.name ?? null, userAgent: navigator.userAgent, lift: lift ?? null, count: counted ?? null, frames: slim })], { type: 'application/json' });
     // A visible button, tapped by David: Safari on iPhone downloads only on a tap (#499's automatic download did not).
     const name = `poses-${(file?.name ?? 'set').replace(/\.[^.]+$/, '')}.json`;
     document.getElementById('wv-save-poses')?.remove();
@@ -391,7 +406,8 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     // its speed and landmarks on a phone; the app reads on the CPU.
     // model 'heavy': MediaPipe's larger pose model, for a physiotherapy attempt the patient asked to analyse again
     // (lib/reference/readPose.js); every count reads with the app's model.
-    const allPoses = allPosesAsked();
+    const lifterOn = lifterAsked();
+    const allPoses = allPosesAsked() || lifterOn;
     const allFrames = [];
     const init = await send({ type: 'init', videoMode: poseMode === 'video', ...(allPoses ? { allPoses: true } : {}), ...(benchModel ? { benchModel } : {}), ...(delegate === 'GPU' ? { delegate: 'GPU' } : {}), ...(model === 'heavy' ? { model: 'heavy' } : {}) });
     // The model's time per sample, as the worker measured it: kept in metadata.pose for the check page, read by no count.
@@ -414,7 +430,9 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       imageLandmarks.push(result.image);
       worldLandmarks.push(result.world);
       timestamps.push(timestamp);
-      if (allPoses) allFrames.push({ t: timestamp, poses: result.all ?? [] });
+      // A sample with no pose on the whole frame may still be counted from the crop retry's pose: kept as `crop`, so
+      // the file holds the very pose the count read.
+      if (allPoses) allFrames.push({ t: timestamp, poses: result.all ?? [], crop: !(result.all?.length) && result.image ? { image: result.image, world: result.world } : null });
       onLandmarks(result.image, width, height);
     };
     // Pipelining (speed investigation, 7 October): the next sample is decoded, drawn and read on this thread while the
@@ -450,7 +468,12 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       ...(onDecoder ? { onPath: onDecoder } : {}), ...(onSource ? { onSource } : {}) });
     await drain();
     signal?.throwIfAborted();
-    if (allPoses) saveAllPoses(file, allFrames);
+    // The file is offered only when asked (?poses=1), not for ?lifter=1 alone.
+    if (allPosesAsked()) {
+      let counted = null;
+      try { const c = summarizeCount(worldLandmarks, timestamps, lift, undefined, imageLandmarks); counted = c.refused ? 'refused' : c.count; } catch { /* the file is saved without it */ }
+      saveAllPoses(file, allFrames, lift, counted);
+    }
     // Samples in time order, each after the last: a read that repeats or goes back is not whole either.
     // The real number of samples is kept beside the flag, so the screen never says "NaN %" (third audit, C08).
     const ordered = timestamps.every((t, i) => i === 0 || t > timestamps[i - 1]);
@@ -478,6 +501,12 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     const sorted = [...poseMs].sort((a, b) => a - b), at = q => (sorted.length ? Math.round(sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] * 10) / 10 : null);
     const pose = { delegate: init?.delegate ?? null, renderer: init?.renderer ?? null, msMedian: at(0.5), msP90: at(0.9), samples: sorted.length };
 
+    // ?lifter=1: the lifter's pose on each sample replaces the first pose, for the count and the replay alike.
+    if (lifterOn && allFrames.length === worldLandmarks.length) {
+      const frames = allFrames.map(f => ({ t: f.t, poses: f.poses.length ? f.poses : f.crop ? [f.crop] : [] }));
+      const sel = chooseLifter(frames, lift);
+      if (!sel.single) sel.world.forEach((w, i) => { worldLandmarks[i] = w; imageLandmarks[i] = sel.image[i]; });
+    }
     const countSummary = summarizeCount(worldLandmarks, timestamps, lift, undefined, imageLandmarks);
     // The engines wired here on 11-13 October 2026 are no longer run on a set (honesty audit of 14 October 2026): the
     // bilateral symmetry score and trunk shift (asymmetryCoaching.js), consistency, SPARC and the form checks

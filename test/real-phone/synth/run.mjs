@@ -18,6 +18,8 @@ const LOST = process.env.LOST_POSE ? readFileSync(process.env.LOST_POSE) : null;
 const LOCK = !!process.env.SYNTH_LOCK;
 // SYNTH_GATE=1: the pose path with the continuity gate on (synth.js, P.gate; src/lib/jumpGate.js).
 const GATE = !!process.env.SYNTH_GATE;
+// SYNTH_ALLPOSES=1: every pose found kept per sample (synth.js, P.allPoses; src/lib/lifterTrack.js, card B).
+const ALLPOSES = !!process.env.SYNTH_ALLPOSES;
 // SYNTH_MODELS=name=<glb>,name=<glb>: a body per set, by its matrix entry's `model` (the motion library, library.mjs).
 const MODELS = Object.fromEntries((process.env.SYNTH_MODELS ?? '').split(',').filter(Boolean).map(x => { const [k, f] = x.split('='); return [k, readFileSync(f)]; }));
 if (!OUT || (!MODEL && !Object.keys(MODELS).length)) throw new Error('SYNTH_OUT and SYNTH_MODEL (or SYNTH_MODELS) are required');
@@ -39,7 +41,7 @@ try {
     await page.route('**/synth-model.glb', r => r.fulfill({ body: MODELS[p.model] ?? glb, contentType: 'model/gltf-binary' }));
     if (BENCH) await page.route('**/bench-pose.task', r => r.fulfill({ body: BENCH, contentType: 'application/octet-stream' }));
     if (LOST) await page.route('**/lost-pose.task', r => r.fulfill({ body: LOST, contentType: 'application/octet-stream' }));
-    await page.addInitScript(x => { window.SYNTH = x; }, { ...p, ...(BENCH ? { benchPose: true } : {}), ...(LOST ? { lostPose: true } : {}), ...(LOCK ? { lock: true } : {}), ...(GATE ? { gate: true } : {}) });
+    await page.addInitScript(x => { window.SYNTH = x; }, { ...p, ...(BENCH ? { benchPose: true } : {}), ...(LOST ? { lostPose: true } : {}), ...(LOCK ? { lock: true } : {}), ...(GATE ? { gate: true } : {}), ...(ALLPOSES ? { allPoses: true } : {}) });
     const t0 = Date.now();
     await page.goto(URL, { timeout: 300000 }); // the dev server's first load pre-bundles three.js
     await page.waitForFunction(() => window.RESULT, null, { timeout: 900000 });
