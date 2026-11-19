@@ -56,7 +56,7 @@ Any change that can affect a rep count is run through npm run scoreboard before 
 **R3. Prove before you claim.**
 Never write "fixed", "passing", "working" or "deployed" without pasting the command output that proves it. "Build passes" proves the code compiles, nothing more. Any change visible to users is confirmed by David on his iPhone before it is called done.
 
-**R4. One agent, one branch, one task per session.**
+**R4. One agent, one branch, one task at a time.**
 No parallel agents writing to the working tree. Every task starts on a new branch named after it.
 
 **R5. Destructive commands need David's explicit approval.**
@@ -82,6 +82,7 @@ French is written as a French coach speaks in a gym, never translated word for w
 **R11. Session hygiene.**
 Keep sessions short and focused on one step. After any context compaction, re-read STATE.md before acting. End every session with the report format in Part 5.
 Amended 15 October 2026 (David): one task per session; when the task is done, the session ends with its report and the next task starts a fresh session (the weekly token budget).
+Amended 19 November 2026 (David: "Drop R11"): a session no longer ends when its task is done; it reports the task on #190 and takes the next ready card in the same session. After any compaction it still re-reads STATE.md. R4's "one task per session" reads "one task at a time".
 
 **R12. Stop conditions.**
 Stop and report to David if: a task would break a rule; a gate fails twice; a label seems wrong; the work drifts outside the current phase; a fix requires deleting data.
