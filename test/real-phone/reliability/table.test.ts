@@ -48,12 +48,15 @@ const appPath = (lift: string, wl: any[], ts: number[], il: any[] | null) => {
 
 test.skipIf(!process.env.RELIABILITY)('reliability per exercise', () => {
   const rows = new Map<string, Row>();
-  const add = (lift: string, source: string, label: number, now: Outcome, sure?: { err: number | null; flagged: boolean } | null, name = '') => {
+  const add = (lift: string, source: string, label: number, now: Outcome, sure?: { err: number | null; flagged: boolean; moved: boolean; tail?: boolean } | null, name = '') => {
     const r = rows.get(lift) ?? blank();
     r.n++; r.sources.add(source);
     if (now === 'refused') r.refused++;
     else { const e = Math.abs(now - label); if (e === 0) r.exact++; if (e >= 3) r.bad++; }
-    if (sure && sure.err !== null && !sure.flagged) { r.sure++; if (sure.err === 0) r.sureExact++; if (sure.err >= 3) { r.sureBad++; r.badSets.push({ name: `${source}: ${name}`, label, count: now as number }); } }
+    // Shown as sure as the app ships on every phone (sure.ts sureLine, its middle figure): neither the body check nor the
+    // sensitivity check, a refused head rep or pose doubt asks. Until 19 November 2026 (card 064's first run) this read
+    // the body check alone, so 8 sets the app asks on were listed as shown as sure (card 065).
+    if (sure && sure.err !== null && !sure.flagged && !sure.moved) { r.sure++; if (sure.err === 0) r.sureExact++; if (sure.err >= 3) { r.sureBad++; r.badSets.push({ name: `${source}: ${name}${sure.tail ? ' (the open last rise asks on David\'s #collecte phone only)' : ''}`, label, count: now as number }); } }
     rows.set(lift, r);
   };
 

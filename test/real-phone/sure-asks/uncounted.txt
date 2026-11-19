@@ -1,0 +1,62 @@
+Card 065, run of 2026-11-19. Counted sets that decide, per suite: as the app ships, then with the uncounted cycles (>= 2) asking too.
+
+David: 15 counted. As the app ships: 11 shown as sure, 9 exact (81.8 %), 0 off by 3 or more. With the rule: 11 shown as sure, 9 exact (81.8 %), 0 off by 3 or more. Turned to asked: 0 (0 exact, 0 off by 3 or more).
+David video: 15 counted. As the app ships: 8 shown as sure, 8 exact (100.0 %), 0 off by 3 or more. With the rule: 5 shown as sure, 5 exact (100.0 %), 0 off by 3 or more. Turned to asked: 3 (3 exact, 0 off by 3 or more).
+  asked now: sets-07oct-video/lying_biceps_curl_11.json.gz, off by 0
+  asked now: sets-07oct-video/machine_seated_back_extension_18.json.gz, off by 0
+  asked now: sets-07oct-video/sissy_squat_7_5006.json.gz, off by 0
+public build: 489 counted. As the app ships: 373 shown as sure, 243 exact (65.1 %), 3 off by 3 or more. With the rule: 360 shown as sure, 239 exact (66.4 %), 0 off by 3 or more. Turned to asked: 13 (4 exact, 3 off by 3 or more).
+  asked now: public/countix/build/04s5S8V2Rx0_000004_0.json.gz, off by 1
+  asked now: public/countix/build/07eq1ZyNg_U_000018_0.json.gz, off by 6
+  asked now: public/countix/build/0cie4Dag5NM_000005_0.json.gz, off by 2
+  asked now: public/countix/build/0zJGjSfj7e8_000028_0.json.gz, off by 1
+  asked now: public/countix/build/JWPJRoehLxg_000043_0.json.gz, off by 1
+  asked now: public/countix/build/Jbc4UdG6NIQ_000005_467.json.gz, off by 1
+  asked now: public/countix/build/QTe-0a-Tr64_000007_0.json.gz, off by 2
+  asked now: public/countix/build/TgFU_Q8M3cE_000066_0.json.gz, off by 0
+  asked now: public/countix/build/Z70mhrz9LIc_000008_0.json.gz, off by 0
+  asked now: public/countix/build/_yG3rt8mN2c_000000_0.json.gz, off by 0
+  asked now: public/countix/build/h1tTCxkRRpY_000000_0.json.gz, off by 0
+  asked now: public/mmfit/build/w13-dumbbell_rows-31581-31942.json.gz, off by 4
+  asked now: public/mmfit/build/w13-dumbbell_rows-34932-35258.json.gz, off by 3
+public build, Countix whole clips: 345 counted. As the app ships: 234 shown as sure, 135 exact (57.7 %), 1 off by 3 or more. With the rule: 224 shown as sure, 132 exact (58.9 %), 0 off by 3 or more. Turned to asked: 10 (3 exact, 1 off by 3 or more).
+  asked now: public/countix-whole/build/04s5S8V2Rx0_000004_0.json.gz, off by 1
+  asked now: public/countix-whole/build/07eq1ZyNg_U_000018_0.json.gz, off by 6
+  asked now: public/countix-whole/build/0cie4Dag5NM_000005_0.json.gz, off by 2
+  asked now: public/countix-whole/build/JWPJRoehLxg_000043_0.json.gz, off by 1
+  asked now: public/countix-whole/build/QTe-0a-Tr64_000007_0.json.gz, off by 2
+  asked now: public/countix-whole/build/SB5cHBrvR_k_000024_0.json.gz, off by 0
+  asked now: public/countix-whole/build/_yG3rt8mN2c_000000_0.json.gz, off by 0
+  asked now: public/countix-whole/build/d4G4-HxLnXY_000003_2269.json.gz, off by 1
+  asked now: public/countix-whole/build/efQJ44Mk6BM_000002_1568.json.gz, off by 1
+  asked now: public/countix-whole/build/h1tTCxkRRpY_000000_0.json.gz, off by 0
+RepCount-A build (confirmation): 59 counted. As the app ships: 39 shown as sure, 21 exact (53.8 %), 4 off by 3 or more. With the rule: 35 shown as sure, 20 exact (57.1 %), 1 off by 3 or more. Turned to asked: 4 (1 exact, 3 off by 3 or more).
+  asked now: public/repcount/build/stu10_24.json.gz, off by 6
+  asked now: public/repcount/build/stu3_39.json.gz, off by 4
+  asked now: public/repcount/build/stu4_63.json.gz, off by 0
+  asked now: public/repcount/build/stu5_68.json.gz, off by 10
+  still sure: public/repcount/build/train990.json.gz, off by 3
+public, as the scoreboard reads it (card 065 criterion): 834 counted. As the app ships: 607 shown as sure, 378 exact (62.3 %), 4 off by 3 or more. With the rule: 584 shown as sure, 371 exact (63.5 %), 0 off by 3 or more. Turned to asked: 23 (7 exact, 4 off by 3 or more).
+  asked now: public/countix/build/04s5S8V2Rx0_000004_0.json.gz, off by 1
+  asked now: public/countix/build/07eq1ZyNg_U_000018_0.json.gz, off by 6
+  asked now: public/countix/build/0cie4Dag5NM_000005_0.json.gz, off by 2
+  asked now: public/countix/build/0zJGjSfj7e8_000028_0.json.gz, off by 1
+  asked now: public/countix/build/JWPJRoehLxg_000043_0.json.gz, off by 1
+  asked now: public/countix/build/Jbc4UdG6NIQ_000005_467.json.gz, off by 1
+  asked now: public/countix/build/QTe-0a-Tr64_000007_0.json.gz, off by 2
+  asked now: public/countix/build/TgFU_Q8M3cE_000066_0.json.gz, off by 0
+  asked now: public/countix/build/Z70mhrz9LIc_000008_0.json.gz, off by 0
+  asked now: public/countix/build/_yG3rt8mN2c_000000_0.json.gz, off by 0
+  asked now: public/countix/build/h1tTCxkRRpY_000000_0.json.gz, off by 0
+  asked now: public/countix-whole/build/04s5S8V2Rx0_000004_0.json.gz, off by 1
+  asked now: public/countix-whole/build/07eq1ZyNg_U_000018_0.json.gz, off by 6
+  asked now: public/countix-whole/build/0cie4Dag5NM_000005_0.json.gz, off by 2
+  asked now: public/countix-whole/build/JWPJRoehLxg_000043_0.json.gz, off by 1
+  asked now: public/countix-whole/build/QTe-0a-Tr64_000007_0.json.gz, off by 2
+  asked now: public/countix-whole/build/SB5cHBrvR_k_000024_0.json.gz, off by 0
+  asked now: public/countix-whole/build/_yG3rt8mN2c_000000_0.json.gz, off by 0
+  asked now: public/countix-whole/build/d4G4-HxLnXY_000003_2269.json.gz, off by 1
+  asked now: public/countix-whole/build/efQJ44Mk6BM_000002_1568.json.gz, off by 1
+  asked now: public/countix-whole/build/h1tTCxkRRpY_000000_0.json.gz, off by 0
+  asked now: public/mmfit/build/w13-dumbbell_rows-31581-31942.json.gz, off by 4
+  asked now: public/mmfit/build/w13-dumbbell_rows-34932-35258.json.gz, off by 3
