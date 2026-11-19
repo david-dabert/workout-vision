@@ -122,11 +122,23 @@ function saveAllPoses(file, frames) {
       image: p.image?.map(q => [r4(q.x), r4(q.y), r4(q.visibility ?? 0)]) ?? null,
       world: p.world?.map(q => [r4(q.x), r4(q.y), r4(q.z)]) ?? null })) }));
     const blob = new Blob([JSON.stringify({ name: file?.name ?? null, userAgent: navigator.userAgent, frames: slim })], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `poses-${(file?.name ?? 'set').replace(/\.[^.]+$/, '')}.json`;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+    // A visible button, tapped by David: Safari on iPhone downloads only on a tap (#499's automatic download did not).
+    const name = `poses-${(file?.name ?? 'set').replace(/\.[^.]+$/, '')}.json`;
+    document.getElementById('wv-save-poses')?.remove();
+    const b = document.createElement('button');
+    b.id = 'wv-save-poses';
+    b.textContent = 'Enregistrer les poses';
+    b.style.cssText = 'position:fixed;left:16px;right:16px;bottom:24px;z-index:99999;padding:16px;border-radius:12px;border:0;background:#e8c48a;color:#111;font:600 17px system-ui';
+    b.onclick = async () => {
+      const f = new File([blob], name, { type: 'application/json' });
+      try { if (navigator.canShare?.({ files: [f] })) { await navigator.share({ files: [f] }); b.remove(); return; } } catch { /* fall back to a link */ }
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+      b.remove();
+    };
+    document.body.appendChild(b);
   } catch (e) { console.warn('[allPoses] not saved', e); }
 }
 
