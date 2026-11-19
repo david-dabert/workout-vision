@@ -1,0 +1,4 @@
+{
+  "about": "Pose files saved on David's iPhone with ?poses=1 (« Enregistrer les poses »), one line per file in files/. lift: the key David chose in the app; label: his count (R1, David only); phoneCount: the count the phone showed on that read; recorded: the date. Tuning data (docs/OPERATING-LOOP.md F12). Read by phone-poses.test.ts.",
+  "sets": {}
+}

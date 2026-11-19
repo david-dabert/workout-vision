@@ -1,0 +1,26 @@
+Card B, the lifter chosen over the whole set by motion (src/lib/lifterTrack.js), on the stored reads, 2026-11-19.
+
+David's stored sets (scoreboard, first section): 20 sets (20 with picture points; without them every pose stands at the hips' origin and nothing is dropped); exact 13 -> 13; counts moved 0; newly off by 3+ 0; newly refused 0.
+
+David's whole videos, IMAGE mode (scoreboard, real video): 17 sets (17 with picture points; without them every pose stands at the hips' origin and nothing is dropped); exact 12 -> 13; counts moved 1; newly off by 3+ 0; newly refused 0.
+-> sets-07oct-video/behind_neck_chin_up_5.json.gz  label 5  before 6 (near)  now 5 (exact)  dropped 23 of 181  people 3
+
+David's blind counts: 0 sets (0 with picture points; without them every pose stands at the hips' origin and nothing is dropped); exact 0 -> 0; counts moved 0; newly off by 3+ 0; newly refused 0.
+
+Testers' blind counts: 0 sets (0 with picture points; without them every pose stands at the hips' origin and nothing is dropped); exact 0 -> 0; counts moved 0; newly off by 3+ 0; newly refused 0.
+
+Occlusion bench (synthetic, test/real-phone/occlusion/sets): count before -> now against the truth; for the sets with a bystander, samples on him before -> after, lifter samples dropped.
+-> michelle-bicep_curl-v90-person  truth 6  before 6  now refused  people 2  bystander samples 167 -> 8, lifter samples dropped 8
+   michelle-bicep_curl_alternating-v0-person  truth 10  before 10  now 10  people 1  bystander samples 0 -> 0, lifter samples dropped 0
+   michelle-overhead_press-v0-person  truth 6  before 6  now 6  people 1  bystander samples 0 -> 0, lifter samples dropped 0
+   michelle-overhead_press-v90-person  truth 6  before 6  now 6  people 1  bystander samples 114 -> 114, lifter samples dropped 0
+   michelle-squat-v0-person  truth 6  before 0  now 0  people 1  bystander samples 0 -> 0, lifter samples dropped 0
+   michelle-squat-v90-gym  truth 6  before refused  now refused  people 6  bystander samples 19 -> 19, lifter samples dropped 0
+-> michelle-squat-v90-person  truth 6  before 0  now refused  people 3  bystander samples 160 -> 4, lifter samples dropped 8
+   soldier-bicep_curl-v90-person  truth 6  before 7  now 7  people 1  bystander samples 0 -> 0, lifter samples dropped 0
+   soldier-bicep_curl_alternating-v0-person  truth 10  before 19  now 19  people 1  bystander samples 0 -> 0, lifter samples dropped 0
+   soldier-overhead_press-v0-person  truth 6  before 6  now 6  people 1  bystander samples 0 -> 0, lifter samples dropped 0
+   soldier-overhead_press-v90-person  truth 6  before 12  now 12  people 2  bystander samples 4 -> 4, lifter samples dropped 0
+   soldier-squat-v0-person  truth 6  before 0  now 0  people 1  bystander samples 0 -> 0, lifter samples dropped 0
+   soldier-squat-v90-gym  truth 6  before refused  now refused  people 2  bystander samples 5 -> 5, lifter samples dropped 0
+   soldier-squat-v90-person  truth 6  before 9  now 9  people 1  bystander samples 0 -> 0, lifter samples dropped 0
