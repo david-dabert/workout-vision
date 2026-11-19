@@ -1,5 +1,5 @@
 # 065. The result screen asks when the counted joint made full cycles the counter left out
-Status: pre-registered, 19 November 2026 (rule and eval fixed in this commit, before any measured run of the rule)
+Status: failed, 19 November 2026 (rule and eval fixed in 9cd9e62b before the first run; run once; does not ship; TRIED.md)
 Executor: careful (Claude)
 Phase: 1 (Phase 1 gate 3: none shown as sure off by 3 or more). Card 064's next change; bound by the avoidance rule of docs/metacognition-log.md (19 November 2026).
 Claim: a set whose counted joint angle makes two or more full cycles outside every counted rep is asked to confirm, not shown as sure. No count changes.
@@ -34,3 +34,11 @@ Bench: `test/real-phone/sure-asks/uncounted.test.ts` (`SURE_ASKS=1`), on each su
 Scope: `src/lib/coreAnalysis.js` (the cycles, a new field on the result), `Result.jsx` (asks), `test/real-phone/accuracy/sure.ts` (models it), the bench, card 064's table fix, TRIED.md, STATE.md. Not `src/lib/counting/`, not the scoreboard's gates.
 Stop: if the eval fails, no second rule on these sets in this card.
 Needs from David: nothing. The open last rise everywhere stays his choice (card 039).
+
+## Result (19 November 2026, run once; `test/real-phone/sure-asks/uncounted.txt`)
+- Public, as the scoreboard reads it (chosen on): off by 3 or more while sure 4 -> 0; exact among the sure 378 of 607 (62.3 %) -> 371 of 584 (63.5 %); shown as sure -3.8 %. Passes. The 23 sets turned to asked: 7 exact, 12 off by 1 or 2, 4 off by 3 or more.
+- RepCount-A build (confirmation): off by 3 or more while sure 4 -> 1; exact share 53.8 % -> 57.1 %; shown as sure 39 -> 35, -10.3 % against the limit of 10 %. Fails, by less than one set.
+- David's stored sets: 0 of 11 sure sets turned to asked. David's videos: 3 of 8 sure sets turned to asked, all exact (lying biceps curl, machine seated back extension, sissy squat), against the limit of 1. Fails. They are the three sets card 039 found with movements before the set on the set's beat.
+- No count changed: `npm run scoreboard` (13 of 15 exact before and after), `scoreboard:public` (470 of 949 before and after, 0 became off by 3 or more) and `synth` identical before and after; the rule was never wired into the app (`src/` unchanged; the function lives in the bench, `uncounted.js`).
+- Verdict: fails the card's eval on two of its three suites. Not shipped. No second rule on these sets (the card's stop).
+- What it showed: on public video the rule finds what it was built for (all 4 errors of 3 or more shown as sure, at 3.8 % of the sure), and on RepCount-A it removes 3 of 4. On David's own videos, filmed rest to rest by one person with a phone, it costs most: his movements before a set come on the set's beat in the counted joint itself. The same wall as cards 018 and 039: what separates an error on public clips is what David does before and after every set.
