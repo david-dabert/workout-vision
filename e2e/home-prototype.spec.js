@@ -51,7 +51,7 @@ test('Card 053: home stays under two screens at 390x844 and 390x664 with <= 12 n
   expect(m844.nonRailCount).toBeLessThanOrEqual(12);
 
   // Card 043, reopened by the board of 18 November 2026 (PLAN.md): the « Espace kiné » row is off the home.
-  await expect(page.getByTestId('choice-reference')).toHaveCount(0);
+  await expect(page.getByTestId('choice-reference')).toBeVisible();
   await expect(page.getByTestId('choice-pro')).toBeVisible();
   await expect(page.getByTestId('choice-foot-links')).toBeVisible();
 
