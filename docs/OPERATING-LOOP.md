@@ -52,6 +52,11 @@ The seated row of 19 November (IMG_4186, label 10, David's count) is its first m
 Added 19 November 2026 on David's word; the board's refusal of the same day is overruled.
 `.claude/agents/wv-metacognition.md`, read-only, runs at the start of each task and before each report: (a) does the work fix one of the three problems or avoid it; (b) which of F1 to F12 it shows, with evidence; (c) the most effective next action Claude takes, never a question to David; (d) GO or FIX FIRST.
 A FIX FIRST is acted on before the work continues, and each #190 REPORT carries the verdict line.
+Made independent of Claude on 19 November 2026 (David: "Yes, because I trust you not"), three rules:
+1. No framing. Claude calls it with the moment (`start` or `report`), the task, the branch and, for `report`, the commit range (for `start`, the planned files); nothing else. Anything more is ignored by the agent and marked `FRAMED: yes` in its line.
+2. A log. Each run ends with one line, appended verbatim to `docs/metacognition-log.md`; each month Claude counts the failure modes and the share of tasks that fixed one of the three problems. A start check not run is logged as such.
+3. Avoidance has a limit. After two logged tasks in a row that fix none of the three problems, the next one changes a count, a person detection or the kiné verdict, or its card says in writing why it cannot; otherwise the verdict is FIX FIRST. The rule binds the task that meets it, never only the one after.
+What it cannot do: it is the same model as Claude (F9), so it catches errors of text, arithmetic and process, not a wrong method both find plausible; the proof stays David's phone and the stored data.
 David's standing expectation: an elegant solution to a simple problem; attack it, never cut corners, never remove what he can see, never ask what the goal already answers.
 
 ## Order of work (board, 19 November 2026)
