@@ -33,7 +33,10 @@ test('every stored pose file has its line in sets.json, and every line its file'
 
 for (const f of files) {
   test(`${f}: the first pose of each sample gives the phone's count; the lifter by motion is measured`, () => {
-    const e = sets[f], frames = framesFromPoseFile(read(f));
+    const e = sets[f], file = read(f), frames = framesFromPoseFile(file);
+    // A file saved since 19 November 2026 names its lift and the count its read gave: they must match its line.
+    if (file.lift != null) expect(file.lift).toBe(e.lift);
+    if (file.count != null) expect(file.count).toBe(e.phoneCount);
     const ts = frames.map(fr => fr.t);
     const first = summarizeCount(frames.map(fr => fr.poses[0]?.world ?? null), ts, e.lift, undefined, frames.map(fr => fr.poses[0]?.image ?? null));
     expect(outcome(first)).toBe(e.phoneCount);

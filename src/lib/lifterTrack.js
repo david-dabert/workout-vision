@@ -213,12 +213,11 @@ export function chooseLifter(frames, lift, { aspect = 1, locate } = {}) {
 /** A pose file saved by ?poses=1 (coreAnalysis.js saveAllPoses) as frames for chooseLifter. World points take the
  * visibility of the same picture point (the file keeps it on the picture points only; MediaPipe gives both the same). */
 export function framesFromPoseFile(file) {
-  return file.frames.map(fr => ({
-    t: fr.t,
-    poses: fr.poses.map(p => {
-      const image = p.image?.map(([x, y, v]) => ({ x, y, z: 0, visibility: v })) ?? null;
-      const world = p.world?.map(([x, y, z], i) => ({ x, y, z, visibility: image?.[i]?.visibility ?? 0 })) ?? null;
-      return { image, world };
-    }),
-  }));
+  const one = p => {
+    const image = p.image?.map(([x, y, v]) => ({ x, y, z: 0, visibility: v })) ?? null;
+    const world = p.world?.map(([x, y, z], i) => ({ x, y, z, visibility: image?.[i]?.visibility ?? 0 })) ?? null;
+    return { image, world };
+  };
+  // A sample with no pose on the whole frame whose crop retry found one (`crop`) reads that pose, as the app's count did.
+  return file.frames.map(fr => ({ t: fr.t, poses: fr.poses.length ? fr.poses.map(one) : fr.crop ? [one(fr.crop)] : [] }));
 }

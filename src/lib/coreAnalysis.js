@@ -116,12 +116,15 @@ export function allPosesAsked() {
   try { return typeof location !== 'undefined' && new URLSearchParams(location.search).get('poses') === '1'; } catch { return false; }
 }
 const r4 = v => Math.round(v * 1e4) / 1e4;
-function saveAllPoses(file, frames) {
+// The file also carries the lift chosen and the count this read gives (summarizeCount on the samples the app counts,
+// before any read error is raised), so a stored file needs nothing from memory (test/real-phone/phone-poses/).
+function saveAllPoses(file, frames, lift, counted) {
   try {
-    const slim = frames.map(f => ({ t: f.t, poses: f.poses.map(p => ({
+    const one = p => ({
       image: p.image?.map(q => [r4(q.x), r4(q.y), r4(q.visibility ?? 0)]) ?? null,
-      world: p.world?.map(q => [r4(q.x), r4(q.y), r4(q.z)]) ?? null })) }));
-    const blob = new Blob([JSON.stringify({ name: file?.name ?? null, userAgent: navigator.userAgent, frames: slim })], { type: 'application/json' });
+      world: p.world?.map(q => [r4(q.x), r4(q.y), r4(q.z)]) ?? null });
+    const slim = frames.map(f => ({ t: f.t, poses: f.poses.map(one), ...(f.crop ? { crop: one(f.crop) } : {}) }));
+    const blob = new Blob([JSON.stringify({ name: file?.name ?? null, userAgent: navigator.userAgent, lift: lift ?? null, count: counted ?? null, frames: slim })], { type: 'application/json' });
     // A visible button, tapped by David: Safari on iPhone downloads only on a tap (#499's automatic download did not).
     const name = `poses-${(file?.name ?? 'set').replace(/\.[^.]+$/, '')}.json`;
     document.getElementById('wv-save-poses')?.remove();
@@ -414,7 +417,9 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       imageLandmarks.push(result.image);
       worldLandmarks.push(result.world);
       timestamps.push(timestamp);
-      if (allPoses) allFrames.push({ t: timestamp, poses: result.all ?? [] });
+      // A sample with no pose on the whole frame may still be counted from the crop retry's pose: kept as `crop`, so
+      // the file holds the very pose the count read.
+      if (allPoses) allFrames.push({ t: timestamp, poses: result.all ?? [], crop: !(result.all?.length) && result.image ? { image: result.image, world: result.world } : null });
       onLandmarks(result.image, width, height);
     };
     // Pipelining (speed investigation, 7 October): the next sample is decoded, drawn and read on this thread while the
@@ -450,7 +455,11 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       ...(onDecoder ? { onPath: onDecoder } : {}), ...(onSource ? { onSource } : {}) });
     await drain();
     signal?.throwIfAborted();
-    if (allPoses) saveAllPoses(file, allFrames);
+    if (allPoses) {
+      let counted = null;
+      try { const c = summarizeCount(worldLandmarks, timestamps, lift, undefined, imageLandmarks); counted = c.refused ? 'refused' : c.count; } catch { /* the file is saved without it */ }
+      saveAllPoses(file, allFrames, lift, counted);
+    }
     // Samples in time order, each after the last: a read that repeats or goes back is not whole either.
     // The real number of samples is kept beside the flag, so the screen never says "NaN %" (third audit, C08).
     const ordered = timestamps.every((t, i) => i === 0 || t > timestamps[i - 1]);

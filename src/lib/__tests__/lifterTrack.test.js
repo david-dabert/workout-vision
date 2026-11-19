@@ -117,5 +117,7 @@ describe('lifterTrack.js', () => {
     const fr = framesFromPoseFile({ frames: [{ t: 0, poses: [{ image: [[0.1, 0.2, 0.7]], world: [[1, 2, 3]] }] }] });
     expect(fr[0].poses[0].image[0]).toEqual({ x: 0.1, y: 0.2, z: 0, visibility: 0.7 });
     expect(fr[0].poses[0].world[0]).toEqual({ x: 1, y: 2, z: 3, visibility: 0.7 });
+    const crop = framesFromPoseFile({ frames: [{ t: 0, poses: [], crop: { image: [[0.3, 0.4, 0.9]], world: [[4, 5, 6]] } }] });
+    expect(crop[0].poses[0].world[0]).toEqual({ x: 4, y: 5, z: 6, visibility: 0.9 });
   });
 });
