@@ -1,5 +1,5 @@
 # 056. One calibrated check decides "sure", from signals never used together
-Status: ready (lab lane; ships only through the sealed exam)
+Status: closed, 19 November 2026 (failed on every build suite; TRIED.md; test/real-phone/sure-model/report.txt). The sealed halves were not opened.
 Executor: careful (Claude)
 Phase: 1 lab, 2 product
 Claim: the app says it is sure less often when it is wrong, without changing any count.
