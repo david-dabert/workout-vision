@@ -1,5 +1,5 @@
 # 064. Each offered exercise has one row saying how reliably it is counted, measured
-Status: in progress
+Status: measured, 19 November 2026 (`test/real-phone/reliability/reliability.md`); open: the next change below
 Executor: careful (Claude)
 Phase: 1 (measurement only; no screen, no count). It serves David's product decision of 19 November 2026 (PLAN.md, top section), priority 1.
 Claim: David, a coach or a physiotherapist can read, for every exercise the app offers, how many labelled sets it was measured on, how often its count was exact, and whether it passes; the app may later call an exercise reliable only where its row passes (R8).
@@ -10,8 +10,10 @@ Status rule, fixed here before the table's first run (the thresholds of Phase 1'
 - too few: fewer than 20 labelled sets that decide (a press set decides nothing, PLAN.md);
 - fails: among the sets shown as sure, fewer than 9 in 10 exact, or any shown as sure off by 3 or more;
 - passes on tuning data, exam pending: otherwise. No row reads "reliable": every set read here is tuning data (PLAN.md, THE DATA), and the lift rule asks for sets never seen. A row turns reliable only through the exam of sealed sets.
-Baseline: never run.
+Baseline: first run, 19 November 2026: 232 exercises offered (base keys, without the two fitness tests; the 484 of README.md count variants); 25 of them have a labelled set, 207 are not measured. Of the 29 rows (4 of them a public dataset's own key: lunge, triceps pushdown, alternating curl, dumbbell row): 0 pass on tuning data; 8 fail (squat, Beta in the app, among them: 96 sets, 75 % exact [65, 83], 79 shown as sure of which 1 off by 3 or more); 19 have too few sets; 2 are presses, deciding nothing.
 Scope: a new bench under `test/real-phone/reliability/`, one script in package.json, this card, cards/README.md, STATE.md. Not `src/`, not the tiers, not the scoreboard's gates.
 Stop: the table is the deliverable whatever it shows; no threshold is moved after the first run.
 Loop (docs/OPERATING-LOOP.md): the defect does not live on David's phone (it is a missing measure); stored data only; nothing phone-facing.
+Next change (the table's own finding, R16): 11 sets shown as sure are off by 3 or more, all undercounts on public build sets (squat 1, CFRep; push-up 3 and pull-up 3, Countix; dumbbell row 4, MM-Fit), listed by name in reliability.md. Find why the sure check did not ask on each, squat first since it is Beta, and change the check so it asks, under R2 (`npm run scoreboard` before and after: no exact count of David's lost, none newly off by 3 or more). Aim: none shown as sure off by 3 or more. The check is chosen on these sets, so it is confirmed on other data (PLAN.md, THE DATA).
+Note: for David's videos the sure flags come from the app's path on the stored landmarks, the error from the built app's own count.
 Needs from David: nothing for the table. More rows pass only with more labelled sets: his and the testers' blind counts, and the sealed sets of Phase 1's gate.
