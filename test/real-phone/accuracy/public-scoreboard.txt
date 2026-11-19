@@ -1,37 +1,37 @@
-Public scoreboard 2026-11-17: 1064 build sets, 542 exact (51%). Of the 949 in the baseline that decide, 480 exact now, 480 before; 0 became off by 3 or more. The 115 bench and overhead press sets are measured and decide nothing (PLAN.md).
+Public scoreboard 2026-11-18: 1064 build sets, 519 exact (49%). Of the 949 in the baseline that decide, 470 exact now, 470 before; 0 became off by 3 or more. The 115 bench and overhead press sets are measured and decide nothing (PLAN.md).
 Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 949 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; Countix's two readings of a clip counted as two sets, as in the headline; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
-Pose doubt (counting/doubt.js, experimental, decides nothing): of 946 counted sets, 145 flagged: 52 exact (36%), 18 off by 3+ (12%); 801 not flagged: 490 exact (61%), 22 off by 3+ (3%). Sets off by 3+ flagged: 18 of 40.
-Right when sure (R16, sure.ts; measured, decides nothing): of 949 sets that decide, 843 counted. With the body check alone (before 19 October 2026), shown as sure 765: 445 exact (58%), 299 off by 1 or 2, 21 off by 3+; asked to confirm 78: 35 exact (45%), 39 off by 1 or 2, 4 off by 3+. As the app ships, the sensitivity check, a refused head rep and pose doubt asking too: shown as sure 609: 383 exact (63%), 221 off by 1 or 2, 5 off by 3+; asked to confirm 234: 97 exact (41%), 117 off by 1 or 2, 20 off by 3+. With the open last rise asking too (card 039, David's #collecte phone only): shown as sure 512: 361 exact (71%), 148 off by 1 or 2, 3 off by 3+; asked to confirm 331: 119 exact (36%), 190 off by 1 or 2, 22 off by 3+.
+Pose doubt (counting/doubt.js, experimental, decides nothing): of 946 counted sets, 146 flagged: 49 exact (34%), 18 off by 3+ (12%); 800 not flagged: 470 exact (59%), 24 off by 3+ (3%). Sets off by 3+ flagged: 18 of 42.
+Right when sure (R16, sure.ts; measured, decides nothing): of 949 sets that decide, 834 counted. With the body check alone (before 19 October 2026), shown as sure 758: 435 exact (57%), 305 off by 1 or 2, 18 off by 3+; asked to confirm 76: 35 exact (46%), 37 off by 1 or 2, 4 off by 3+. As the app ships, the sensitivity check, a refused head rep and pose doubt asking too: shown as sure 607: 378 exact (62%), 225 off by 1 or 2, 4 off by 3+; asked to confirm 227: 92 exact (41%), 117 off by 1 or 2, 18 off by 3+. With the open last rise asking too (card 039, David's #collecte phone only): shown as sure 502: 351 exact (70%), 149 off by 1 or 2, 2 off by 3+; asked to confirm 332: 119 exact (36%), 193 off by 1 or 2, 20 off by 3+.
 
 Per dataset, each counted by sets, press sets included as in the headline; 95% Wilson interval for the exact share; rep error = total |count - label| over the labelled reps of the counted sets:
-- cfrep: 12 sets, 7 exact (58%, 95% Wilson 32-81%), 0 refused, rep error 8 of 141 reps (5.7%).
-- countix: 447 sets, 213 exact (48%, 95% Wilson 43-52%), 53 refused, rep error 282 of 1412 reps (20.0%).
-- countix-whole: 447 sets, 194 exact (43%, 95% Wilson 39-48%), 65 refused, rep error 299 of 1386 reps (21.6%).
-- mmfit: 158 sets, 128 exact (81%, 95% Wilson 74-86%), 0 refused, rep error 47 of 1583 reps (3.0%).
-Countix by distinct clip: 447 labelled clips from 435 YouTube videos, each read twice (cut and whole): both readings 178 exact (40%, 95% Wilson 35-44%); either reading 229 exact (51%, 95% Wilson 47-56%).
+- cfrep: 12 sets, 8 exact (67%, 95% Wilson 39-86%), 0 refused, rep error 7 of 141 reps (5.0%).
+- countix: 447 sets, 206 exact (46%, 95% Wilson 42-51%), 53 refused, rep error 296 of 1412 reps (21.0%).
+- countix-whole: 447 sets, 188 exact (42%, 95% Wilson 38-47%), 65 refused, rep error 314 of 1386 reps (22.7%).
+- mmfit: 158 sets, 117 exact (74%, 95% Wilson 67-80%), 0 refused, rep error 58 of 1583 reps (3.7%).
+Countix by distinct clip: 447 labelled clips from 435 YouTube videos, each read twice (cut and whole): both readings 172 exact (38%, 95% Wilson 34-43%); either reading 222 exact (50%, 95% Wilson 45-54%).
 
 | Dataset, lift | Sets | Exact | Off by 1 | Off by 3+ | Refused |
 |---|---:|---:|---:|---:|---:|
-| cfrep deadlift | 6 | 2 | 3 | 0 | 0 |
+| cfrep deadlift | 6 | 3 | 2 | 0 | 0 |
 | cfrep squat | 6 | 5 | 0 | 1 | 0 |
-| countix bench_press (press: measured, decides nothing, PLAN.md) | 38 | 14 | 4 | 6 | 11 |
+| countix bench_press (press: measured, decides nothing, PLAN.md) | 38 | 13 | 5 | 6 | 11 |
 | countix front_raise | 75 | 45 | 22 | 1 | 5 |
 | countix lunge | 78 | 37 | 25 | 0 | 7 |
 | countix pull_up | 60 | 19 | 27 | 3 | 7 |
-| countix push_up | 77 | 39 | 15 | 6 | 8 |
-| countix squat | 46 | 24 | 10 | 1 | 9 |
-| countix triceps_pushdown | 73 | 35 | 25 | 0 | 6 |
-| countix-whole bench_press (press: measured, decides nothing, PLAN.md) | 38 | 12 | 8 | 5 | 11 |
-| countix-whole front_raise | 75 | 40 | 22 | 1 | 8 |
+| countix push_up | 77 | 38 | 14 | 6 | 8 |
+| countix squat | 46 | 23 | 10 | 1 | 9 |
+| countix triceps_pushdown | 73 | 31 | 29 | 0 | 6 |
+| countix-whole bench_press (press: measured, decides nothing, PLAN.md) | 38 | 11 | 9 | 5 | 11 |
+| countix-whole front_raise | 75 | 39 | 23 | 1 | 8 |
 | countix-whole lunge | 78 | 38 | 22 | 0 | 7 |
-| countix-whole pull_up | 60 | 19 | 21 | 3 | 11 |
-| countix-whole push_up | 77 | 35 | 17 | 6 | 9 |
-| countix-whole squat | 46 | 23 | 8 | 2 | 11 |
-| countix-whole triceps_pushdown | 73 | 27 | 27 | 1 | 8 |
+| countix-whole pull_up | 60 | 19 | 21 | 4 | 11 |
+| countix-whole push_up | 77 | 33 | 18 | 7 | 9 |
+| countix-whole squat | 46 | 22 | 8 | 2 | 11 |
+| countix-whole triceps_pushdown | 73 | 26 | 28 | 1 | 8 |
 | mmfit bicep_curl_alternating | 31 | 24 | 6 | 0 | 0 |
 | mmfit dumbbell_row | 19 | 8 | 6 | 4 | 0 |
 | mmfit lateral_raise | 29 | 20 | 3 | 0 | 0 |
-| mmfit overhead_press (press: measured, decides nothing, PLAN.md) | 39 | 36 | 3 | 0 | 0 |
+| mmfit overhead_press (press: measured, decides nothing, PLAN.md) | 39 | 25 | 14 | 0 | 0 |
 | mmfit squat | 40 | 40 | 0 | 0 | 0 |
 
 
@@ -5311,7 +5311,7 @@ public/mmfit/build/w20-tricep_extensions-56904-57640.json.gz: not admitted: wris
 public/mmfit/build/w20-tricep_extensions-60225-60934.json.gz: not admitted: wrists and ankles seen together in 62% of samples
 public/mmfit/build/w20-tricep_extensions-62285-62960.json.gz: not admitted: wrists and ankles seen together in 59% of samples
 
-RepCount-A (Hugging Face lmms-lab-eval/repcounta-lance, test and validation splits; build half; benchmark only, decides nothing): 124 build sets of 9 classes; 17 held out, unread; 5 failed or left out. Core on the 79 sets of classes with a counter: 26 exact (33%). Off by 3+ counts refusals.
+RepCount-A (Hugging Face lmms-lab-eval/repcounta-lance, test and validation splits; build half; benchmark only, decides nothing): 124 build sets of 9 classes; 17 held out, unread; 5 failed or left out. Core on the 79 sets of classes with a counter: 27 exact (34%). Off by 3+ counts refusals.
 | Class | Catalogue key | Sets | Exact | Off by 1 | Off by 3+ | Refused |
 |---|---|---:|---:|---:|---:|---:|
 | battle_rope | no counter | 3 | - | - | - | - |
@@ -5319,7 +5319,7 @@ RepCount-A (Hugging Face lmms-lab-eval/repcounta-lance, test and validation spli
 | front_raise | front_raise | 14 | 4 | 6 | 2 | 0 |
 | jump_jack | no counter | 14 | - | - | - | - |
 | pommelhorse | no counter | 12 | - | - | - | - |
-| pull_up | pull_up | 14 | 4 | 5 | 4 | 0 |
+| pull_up | pull_up | 14 | 5 | 3 | 3 | 0 |
 | push_up | push_up | 15 | 5 | 4 | 3 | 0 |
 | situp | no counter | 16 | - | - | - | - |
 | squat | squat | 18 | 9 | 6 | 3 | 2 |
