@@ -12,7 +12,7 @@ test('card 043: no Espace kiné row on the home; #kine still opens with no autom
   await page.goto('/workout-vision/');
   await expect(page.locator('.rail').first()).toBeVisible({ timeout: 20_000 });
   await expect(page.getByTestId('choice-pro')).toBeVisible();
-  await expect(page.getByTestId('choice-reference')).toHaveCount(0);
+  await expect(page.getByTestId('choice-reference')).toBeVisible();
   await page.goto('/workout-vision/#kine');
   await expect(page.locator('[data-testid^="kn-"]').first()).toBeVisible({ timeout: 20_000 });
   const text = await page.locator('body').innerText();
