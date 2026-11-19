@@ -2,7 +2,7 @@
 
 Written 19 November 2026 by Claude, at David's request ("analyse yourself ... turn this into a loop and add it into our agents and our think tank").
 It records Claude's failure modes as observed in the work with David, and the loop every session runs against them.
-It is reviewed by the board (`wv-panel-board`) and checked at every task by `wv-loop-check`.
+Reviewed by the board (`wv-panel-board`) on 19 November 2026: diagnosis accepted with the corrections below; steps 2, 3, 5 and 6 folded into the card template (cards/README.md); no new reviewer agent (PLAN.md, THE TEAM).
 
 ## The goal, in one line
 On David's iPhone, in a real gym: follow the right person, count every rep, and be useful to coaches and physiotherapists.
@@ -13,14 +13,16 @@ Everything else is secondary and is judged by whether it moves these three.
 | # | Failure | Evidence (this repository) |
 |---|---|---|
 | F1 | Optimising for visible units of work (cards closed, PRs, reports) instead of David's result. | Card 056 closed as "failed, recorded" while the seated row still counted 9 for 10. |
-| F2 | Testing on a proxy instead of where the defect lives. The defect is in Safari on David's iPhone; Claude runs desktop Chromium. | The bystander jump, known since 7 October (TRIED.md), was measured on desktop copies; the desktop read of IMG_4186 counts 10, the phone 9. |
+| F2 | Testing on a proxy instead of where the defect lives. The defect is in Safari on David's iPhone; Claude runs desktop Chromium. | The bystander jump, known since 7 October (TRIED.md), was measured on desktop copies; the desktop read of a compressed copy of IMG_4186 counted 10 in a scratch run (not stored; UNSOURCED until a stored read backs it), the phone 9. |
 | F3 | Shipping phone-facing code Claude cannot test, on a guess. | The `?poses=1` automatic download (#499): Safari on iPhone does not download without a tap. |
 | F4 | Handing work back to David: settings, merges, uploads, permission questions. | Four round trips to merge #492; repeated "say yes" before acting. |
 | F5 | Trying a blocked action several times before saying plainly that it is blocked. | Three attempts at loosening a CI gate or branch protection, each refused by the session's safety layer. |
-| F6 | Treating a failed attempt as closure. | "Tried, recorded, closed" kept the bystander problem open from 7 October to 19 November. |
-| F7 | Removing what David can see on a rule's or a vote's authority. | The « Espace kiné » row removed on 18 November (#489) without David's yes; restored in #498. |
+| F6 | Leaving a recorded reopen condition unacted. | TRIED.md closed the lifter lock and the continuity gate on measured R2 failures (7 October) with written reopen conditions; no card acted on them for six weeks. |
+| F7 | Removing what David can see on a rule's or a vote's authority. | The « Espace kiné » row removed on 18 November (#489) without David's yes; restored in #498 on David's word of 19 November 2026. The board notes the regulatory line of 16 November behind the removal; David's word decides. |
 | F8 | Long sessions: compaction loses facts, Claude re-derives and repeats. | The exported video's burned-in skeleton and caption, removed in #491, forgotten when the export was read as input. |
 | F9 | Mistaking agents' opinions for evidence. The panel, board and lab are prompts of the same model; they add documents, not data. | The bottleneck was never an opinion: it was David's phone reads of real gym sets. |
+| F11 | Governance growing into contradictions faster than code. | PLAN.md RULES still name counter-core while CLAUDE.md says main prevails (board, 19 November). |
+| F12 | Calling tuning data proof. | A bystander video read to build a fix is tuning data (decision 4 of 18 November); it proves nothing until a set read once with constants frozen. |
 | F10 | Over-explaining and asking where a decision is Claude's to take. | Long option lists ending in "tell me which". |
 
 ## What Claude does well, and what it cannot do
@@ -44,4 +46,9 @@ Everything else is secondary and is judged by whether it moves these three.
 ## The data loop, built first
 Every set David analyses on his iPhone produces one file: every person the phone saw in each frame, plus his count (« Signaler »).
 Those files become a stored test set; every fix is measured on them in minutes, and a set that regresses fails CI.
-The seated row of 19 November (IMG_4186, label 10, David's count) is its first member.
+The seated row of 19 November (IMG_4186, label 10, David's count) is its first member, as tuning data (F12).
+
+## Order of work (board, 19 November 2026)
+1. Card A: the phone pose file from « Signaler » or a visible button; eval: David's iPhone produces it for IMG_4186 with a tap, and a CI test loads it and reproduces 9 for label 10.
+2. Card B: the lifter chosen over the whole set by motion (TRIED.md's reopen condition); gate: R2 holds and IMG_4186 counts 10.
+3. Coach and physiotherapist usefulness after Phase 1's gate.
