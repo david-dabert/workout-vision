@@ -106,6 +106,30 @@ export const PROPOSAL_MAX_SAMPLES = 3 * 60 * TARGET_FPS;
  * An alternating lift (bothSides: one rep per side) gets no proposal: PSC proposed 7 of the 14 occlusion alternating
  * curls at half their count (5 for 10), one cycle per left-right pair (TRIED.md, 8 October; delegated decision, 8 October).
  */
+/**
+ * ?poses=1 in the page's address (David, 19 November 2026): the phone records every person it sees on every sample,
+ * up to 4, and offers the file to save when the read ends, so a skeleton that jumps to a bystander can be studied on
+ * the phone's own read (the desktop read of the same video does not jump). The count reads the first pose, as always.
+ * Diagnosis only: never on without the address flag.
+ */
+export function allPosesAsked() {
+  try { return typeof location !== 'undefined' && new URLSearchParams(location.search).get('poses') === '1'; } catch { return false; }
+}
+const r4 = v => Math.round(v * 1e4) / 1e4;
+function saveAllPoses(file, frames) {
+  try {
+    const slim = frames.map(f => ({ t: f.t, poses: f.poses.map(p => ({
+      image: p.image?.map(q => [r4(q.x), r4(q.y), r4(q.visibility ?? 0)]) ?? null,
+      world: p.world?.map(q => [r4(q.x), r4(q.y), r4(q.z)]) ?? null })) }));
+    const blob = new Blob([JSON.stringify({ name: file?.name ?? null, userAgent: navigator.userAgent, frames: slim })], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `poses-${(file?.name ?? 'set').replace(/\.[^.]+$/, '')}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+  } catch (e) { console.warn('[allPoses] not saved', e); }
+}
+
 export function withProposal(result, lift) {
   const needsProposal = !!result?.refused || result?.count === 0;
   if (!needsProposal || isTest(lift) || liftDefinition(lift)?.bothSides || !(result.timestamps?.length <= PROPOSAL_MAX_SAMPLES)) return result;
@@ -355,7 +379,9 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     // its speed and landmarks on a phone; the app reads on the CPU.
     // model 'heavy': MediaPipe's larger pose model, for a physiotherapy attempt the patient asked to analyse again
     // (lib/reference/readPose.js); every count reads with the app's model.
-    const init = await send({ type: 'init', videoMode: poseMode === 'video', ...(benchModel ? { benchModel } : {}), ...(delegate === 'GPU' ? { delegate: 'GPU' } : {}), ...(model === 'heavy' ? { model: 'heavy' } : {}) });
+    const allPoses = allPosesAsked();
+    const allFrames = [];
+    const init = await send({ type: 'init', videoMode: poseMode === 'video', ...(allPoses ? { allPoses: true } : {}), ...(benchModel ? { benchModel } : {}), ...(delegate === 'GPU' ? { delegate: 'GPU' } : {}), ...(model === 'heavy' ? { model: 'heavy' } : {}) });
     // The model's time per sample, as the worker measured it: kept in metadata.pose for the check page, read by no count.
     const poseMs = [];
     onPhase('extracting');
@@ -376,6 +402,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       imageLandmarks.push(result.image);
       worldLandmarks.push(result.world);
       timestamps.push(timestamp);
+      if (allPoses) allFrames.push({ t: timestamp, poses: result.all ?? [] });
       onLandmarks(result.image, width, height);
     };
     // Pipelining (speed investigation, 7 October): the next sample is decoded, drawn and read on this thread while the
@@ -411,6 +438,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       ...(onDecoder ? { onPath: onDecoder } : {}), ...(onSource ? { onSource } : {}) });
     await drain();
     signal?.throwIfAborted();
+    if (allPoses) saveAllPoses(file, allFrames);
     // Samples in time order, each after the last: a read that repeats or goes back is not whole either.
     // The real number of samples is kept beside the flag, so the screen never says "NaN %" (third audit, C08).
     const ordered = timestamps.every((t, i) => i === 0 || t > timestamps[i - 1]);

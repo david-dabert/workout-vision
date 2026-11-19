@@ -248,7 +248,9 @@ async function createLandmarker({ forceCPU = false, useImageMode = false, delega
         runningMode,
         // Lifter lock (lifterLock.js): two poses asked in IMAGE mode, so a bystander ranked first no longer hides
         // the lifter; detectPoseImage keeps one. Off unless LIFTER_LOCK or the bench hook (__WV_BENCH_LOCK__).
-        numPoses: useImageMode && _lockOn() ? LIFTER_POSES : 1,
+        // allPoses (?poses=1 on David's phone, 19 November 2026): up to 4 poses asked, to record every person the phone
+        // sees; detectPoseImage still keeps the first, as the app does. Diagnosis only, read by no count.
+        numPoses: useImageMode && _lockOn() ? LIFTER_POSES : (globalThis.__WV_ALL_POSES__ ? 4 : 1),
         // Detection 0.35 and presence 0.4: below MediaPipe's defaults of 0.5, UNSOURCED, experimental. Tracking 0.5:
         // MediaPipe's default, convention; it acts in VIDEO mode only (IMAGE mode runs the person detector on every
         // image), where it decides whether a half-hidden body is followed or searched for again. The app reads in
@@ -524,6 +526,14 @@ export function detectPoseImage(landmarker, source, timestamp, { rethrow = false
     if (_landmarkerIsImageMode) {
       result = landmarker.detect(source);
       const now = timestamp != null ? timestamp : performance.now();
+      // allPoses: every pose found is kept apart for the diagnosis file, then the first alone goes on, as with one asked.
+      let allPoses = null;
+      globalThis.__WV_LAST_ALL_POSES__ = null;
+      if (globalThis.__WV_ALL_POSES__ && !_lockOn()) {
+        allPoses = (result?.landmarks ?? []).map((lm, k) => ({ image: lm, world: result.worldLandmarks?.[k] ?? null }));
+        globalThis.__WV_LAST_ALL_POSES__ = allPoses;
+        if (allPoses.length > 1) result = { ...result, landmarks: result.landmarks.slice(0, 1), worldLandmarks: result.worldLandmarks.slice(0, 1) };
+      }
       if (_lockOn()) result = _keepLifter(result, source, now);
       const backOn = backfill && _backOn();
       const gateOn = _gateOn();

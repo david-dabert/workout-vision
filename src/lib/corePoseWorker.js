@@ -35,6 +35,8 @@ self.onmessage = async ({ data }) => {
       if (data.benchModel instanceof ArrayBuffer) globalThis.__WV_BENCH_POSE_MODEL__ = data.benchModel;
       // model: 'heavy' for a physiotherapy attempt the patient asked to analyse again (readPose.js); else the app's.
       setPoseModel(data.model);
+      // allPoses: ?poses=1 (coreAnalysis.js): record every person seen, for David's diagnosis file. Read by no count.
+      if (data.allPoses) globalThis.__WV_ALL_POSES__ = true;
       // delegate: 'GPU' from the check page only (?delegate=gpu, pillar 4: measured, never the app's); IMAGE mode.
       model = data.videoMode ? await getVideoModeLandmarker() : data.delegate === 'GPU' ? await getImageLandmarkerOn('GPU') : await getImageLandmarker();
       if (!model) throw new Error('Pose model could not load');
@@ -61,7 +63,7 @@ self.onmessage = async ({ data }) => {
     // back: earlier samples (by the timestamp they were sent with) that had no pose and now have one, read on a crop
     // around this pose (the backward pass, poseCrop.js BACK_PASS); the caller puts them in place.
     const back = (result?.backfill || []).map(b => ({ timestamp: b.timestamp, image: b.landmarks[0] || null, world: b.worldLandmarks[0] || null, source: 'back' }));
-    self.postMessage({ id: data.id, image: result?.landmarks?.[0] || null, world: result?.worldLandmarks?.[0] || null, source: result?.landmarks?.[0] ? (result.source ?? 'full') : null, back, ms });
+    self.postMessage({ id: data.id, image: result?.landmarks?.[0] || null, world: result?.worldLandmarks?.[0] || null, source: result?.landmarks?.[0] ? (result.source ?? 'full') : null, back, ms, ...(globalThis.__WV_ALL_POSES__ ? { all: globalThis.__WV_LAST_ALL_POSES__ ?? [] } : {}) });
   } catch (error) {
     self.postMessage({ id: data.id, error: error.message });
   }
