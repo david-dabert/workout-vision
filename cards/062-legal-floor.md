@@ -1,5 +1,5 @@
 # 062. The legal floor before the first euro
-Status: ready (drafts; a lawyer's check before use)
+Status: drafted, 19 November 2026 (`docs/sell/legal-floor.md`); no source yet checked at its official text (Légifrance and EUR-Lex refused by the session's network); waits on David's entity facts and a lawyer
 Executor: Claude drafts (`docs/sell/legal-floor.md`), David supplies the entity's facts
 Phase: 3 prepared now (no code)
 Claim: before any payment, the app has its mentions légales, terms of sale, online cancellation in three clicks, the EU withdrawal button and the buyer's express waiver of the 14-day right for immediate access.
