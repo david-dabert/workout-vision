@@ -20,6 +20,15 @@ Reordered by Claude on 15 November 2026, nightly run: no card was ready (028 was
 
 Reordered by Claude on 15 November 2026, on David's decision of that day ("adopt"; "Plan MD signed, governance approved"): the order follows the phases of PLAN.md's amendment of 15 November 2026, the only roadmap. Each card names its phase. A card's number is reserved on issue #190 before work starts. Until Phase 1's gate passes, no card adds a screen or an element on a screen (PLAN.md, THE FREEZE). Done since the last order: 030, 031, 032, 033, 034, 037, 039, 040, 041.
 
+Reordered by Claude on 19 November 2026, on David's product decision of that day (PLAN.md, top section; relayed by the parent session). This order comes first; the lists below keep their status lines. A new card's number is reserved on issue #190 before work starts.
+1. Card B, the lifter chosen over the whole set by motion (#504, `?lifter=1`): the default waits on David's 17 labelled videos read again with `?lifter=1&poses=1` (`test/real-phone/phone-poses/README.md`); switched only if R2 holds.
+2. 063, track A on a new clinician-scored dataset (KIMORE): licence checked in writing first; plan.md with its bars committed before the first read; one read through the pipeline frozen at 951e21c.
+3. The per-exercise reliability table: exercise, labelled sets, exact share, status, from the scoreboard, the public and synthetic sets and David's phone files; the most-used gym exercises first. The app calls an exercise reliable only when its row passes (R8).
+4. 063, track C on new, pre-registered renders (the renders already read are tuning data).
+5. The physiotherapist's exercise library covering every part of the body, each exercise with a reference video and clear instructions: working code held by the browser tests.
+6. Programmes sent to the patient by a link, the patient's videos followed up: working code held by the browser tests.
+7. Usability: one obvious path per user; cuts proposed to David, none made without his yes.
+
 Phase 1, trust on the iPhone (open):
 1. The iPhone's read beside the computer's (card 037's table): blocked on David's run of check.html's 15 clips on his iPhone, its copied result sent.
 2. The hip thrust, 1 for 12 on the iPhone: blocked on its original file.
@@ -31,7 +40,7 @@ Phase 1 cards of 16 November 2026, from the review panel of that day (David: "No
 6. 044 (Antigravity), the sample video is marked « Exemple » and never saved or collected as the person's set. Same reason.
 7. 046 (Antigravity), the iPhone's read of the bundled clips beside the computer's, in one committed table: the tool now, the table when David's run arrives.
 8. 047 (Antigravity), the saved-load browser test passes on its first run, every run.
-9. 043 (Claude), the physiotherapist's screens show no dossier under a clinic's name, no target without a source, and no « Espace kiné » row on the home until a written regulatory opinion exists.
+9. 043 (Claude), the physiotherapist's screens show no dossier under a clinic's name, and no target without a source. The « Espace kiné » row stays on the home (David, 19 November 2026; PLAN.md, top section).
 
 Phase 1 cards of 16 November 2026, decided by the board (David: "Bring in the agents and think tank to answer to your questions damn it and execute accordingly"), after 047:
 10. 048 (Antigravity), Espace pro offers only the coach's own programmes, no unsourced templates.
