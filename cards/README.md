@@ -88,6 +88,7 @@ Eval: the command, the data, the threshold. Fixed before any code.
 Baseline: the eval's result today, or "never run".
 Scope: what may change. What may not.
 Stop: when to give up and record the failure.
+Loop (docs/OPERATING-LOOP.md, board of 19 November 2026): where does the defect live? If only on David's phone, the first deliverable captures the phone's own data. Reproduce on stored data CI reads before claiming a fix. Phone-facing code ships with a visible fallback, never a guessed automatic action, and stays under Not verified until David's run. One blocked attempt, then say so in one line. A failed attempt names its reopen condition and the next card that acts on it.
 Needs from David: nothing, or the exact thing.
 ```
 
