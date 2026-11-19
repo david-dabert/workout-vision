@@ -8,7 +8,7 @@
       "phoneCount": 9,
       "recorded": "2026-11-19",
       "lifterCount": 10,
-      "lifterNote": "lifterTrack.js read this file once with its constants frozen at 6ed8b65f, committed before the file arrived; it counted 10. One set: not an exam (F12)."
+      "lifterNote": "lifterTrack.js read this file once with its constants frozen at 6ed8b65f, committed before the file arrived; it counted 10. One set: not an exam (F12). The simpler rule, the pose nearest the previous sample's torso, also counts 10 on this file (parent session, 19 November 2026): this set cannot tell the two apart."
     }
   }
 }
