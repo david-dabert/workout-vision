@@ -48,6 +48,12 @@ Every set David analyses on his iPhone produces one file: every person the phone
 Those files become a stored test set; every fix is measured on them in minutes, and a set that regresses fails CI.
 The seated row of 19 November (IMG_4186, label 10, David's count) is its first member, as tuning data (F12).
 
+## The metacognition check (wv-metacognition)
+Added 19 November 2026 on David's word; the board's refusal of the same day is overruled.
+`.claude/agents/wv-metacognition.md`, read-only, runs at the start of each task and before each report: (a) does the work fix one of the three problems or avoid it; (b) which of F1 to F12 it shows, with evidence; (c) the most effective next action Claude takes, never a question to David; (d) GO or FIX FIRST.
+A FIX FIRST is acted on before the work continues, and each #190 REPORT carries the verdict line.
+David's standing expectation: an elegant solution to a simple problem; attack it, never cut corners, never remove what he can see, never ask what the goal already answers.
+
 ## Order of work (board, 19 November 2026)
 1. Card A: the phone pose file from « Signaler » or a visible button; eval: David's iPhone produces it for IMG_4186 with a tap, and a CI test loads it and reproduces 9 for label 10.
 2. Card B: the lifter chosen over the whole set by motion (TRIED.md's reopen condition); gate: R2 holds and IMG_4186 counts 10.
