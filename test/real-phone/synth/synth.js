@@ -243,8 +243,10 @@ const reps = [];
 let t = P.startRest ?? 1.0;
 for (let i = 0; i < P.reps; i++) {
   const out = jit(P.outSec ?? 1.1, 0.25), back = jit(P.backSec ?? 1.4, 0.25), hold = jit(0.15, 0.5), gap = jit(0.35, 0.5);
-  reps.push({ start: t, top: t + out, hold: t + out + hold, end: t + out + hold + back, j: jit(1, P.ampJit ?? 0.04) });
-  t += out + hold + back + gap;
+  // P.pauseSec (card 063, track C, a planted fault): each rep held at its working end that much longer. Off by default.
+  const held = hold + (P.pauseSec ?? 0);
+  reps.push({ start: t, top: t + out, hold: t + out + held, end: t + out + held + back, j: jit(1, P.ampJit ?? 0.04) });
+  t += out + held + back + gap;
 }
 // P.endUp: the last rep stops at its working end and holds it to the end of the video (a 30-second test
 // whose time runs out with the person standing or the arm curled).
@@ -481,7 +483,11 @@ const poseAt = time => {
   const busy = P.alternate || P.spec?.alternate ? (repAt(time) % 2 === 0 ? 'left' : 'right') : null;
   // A spec set: the rep's amplitude jitter scales the progress (a rep 4 % short or past the working end).
   if (P.spec) { applySpec(...specSides(u * j, busy)); if (O) placeOccluders(); return; }
-  for (const side of ['left', 'right']) POSE[P.exercise](side, busy && side !== busy ? 0 : u, (side === 'left' ? P.peakL : P.peakR) * j);
+  // P.lagR (card 063, track C, a planted fault): the right side moves that many seconds after the left. Off by default.
+  const uR = P.lagR ? progress(time - P.lagR).u : u;
+  for (const side of ['left', 'right']) POSE[P.exercise](side, busy && side !== busy ? 0 : side === 'right' ? uR : u, (side === 'left' ? P.peakL : P.peakR) * j);
+  // P.leanDeg (card 063, track C, a planted fault): the trunk leans that many degrees about the shoulders' axis. Off by default.
+  if (P.leanDeg) { body.updateMatrixWorld(true); turn(B.Spine, wp(B.LeftArm).sub(wp(B.RightArm)).normalize(), P.leanDeg); }
   // A squat lowers the hips so the feet stay on the floor.
   // The drop is set in world space and taken back through the Hips' parent, which in these models is scaled
   // and turned (review, 2 October: dividing by the body's scale left the feet 0.3 m off the floor).
