@@ -1,7 +1,7 @@
 PLAN.md on main prevails over this file (David, 15 November 2026: "adopt"; the branch counter-core is historical).
 # WorkoutVision Standing Rules
 
-Source: DIRECTIVES.md Part 2, Version 1, 24 September 2026; amended 15 October 2026 by David (R1, R8, R11, R14, R15); R16 added 18 October 2026 by David; R10 and R15 amended 20 October 2026 by David; R1 amended 25 October 2026 by David; R6 amended 13 November 2026 by David; R5, R6 and R15 amended 14 November 2026 by David; precedence moved from PLAN.md on counter-core to PLAN.md on main 15 November 2026 by David ("adopt").
+Source: DIRECTIVES.md Part 2, Version 1, 24 September 2026; amended 15 October 2026 by David (R1, R8, R11, R14, R15); R16 added 18 October 2026 by David; R10 and R15 amended 20 October 2026 by David; R1 amended 25 October 2026 by David; R6 amended 13 November 2026 by David; R5, R6 and R15 amended 14 November 2026 by David; precedence moved from PLAN.md on counter-core to PLAN.md on main 15 November 2026 by David ("adopt"); R4 and R11 amended 19 November 2026 by David ("Drop R11").
 Every session starts by reading CLAUDE.md, DIRECTIVES.md and STATE.md, and the latest comments of issue #190 (R15).
 
 **R1. Ground truth is sacred.**
@@ -16,7 +16,7 @@ Built (status of 2 October 2026): npm run scoreboard counts every labelled set o
 **R3. Prove before you claim.**
 Never write "fixed", "passing", "working" or "deployed" without pasting the command output that proves it. "Build passes" proves the code compiles, nothing more. Any change visible to users is confirmed by David on his iPhone before it is called done.
 
-**R4. One agent, one branch, one task per session.**
+**R4. One agent, one branch, one task at a time.**
 No parallel agents writing to the working tree. Every task starts on a new branch named after it.
 
 **R5. Destructive commands need David's explicit approval.**
@@ -46,6 +46,7 @@ Amended 20 October 2026 (David: "There are millions, if not billions, of French 
 **R11. Session hygiene.**
 Keep sessions short and focused on one step. After any context compaction, re-read STATE.md before acting. End every session with the report format in DIRECTIVES.md Part 5.
 Amended 15 October 2026 (David): one task per session; when the task is done, the session ends with its report and the next task starts a fresh session (the weekly token budget).
+Amended 19 November 2026 (David: "Drop R11"): a session no longer ends when its task is done; it reports the task on #190 and takes the next ready card in the same session. After any compaction it still re-reads STATE.md. R4's "one task per session" reads "one task at a time".
 
 **R12. Stop conditions.**
 Stop and report to David if: a task would break a rule; a gate fails twice; a label seems wrong; the work drifts outside the current phase; a fix requires deleting data.
