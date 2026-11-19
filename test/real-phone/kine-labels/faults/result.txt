@@ -1,0 +1,104 @@
+# Card 063, track C (analyse.mjs, plan.md): 96 attempts in 16 cells
+correct: 32 attempts, 2 refused; « À revoir » on 2 of 30 judged (7 %): FAIL (false alarms at most 5 %); by exercise bicep_curl 0/8, lateral_raise 0/8, overhead_press 0/6, squat 2/8; by view v0 2/16, v30 0/14
+range70: 16 attempts, 1 refused; « À revoir » on 13 of 15 judged (87 %): FAIL (found on at least 90 %); by exercise bicep_curl 4/4, lateral_raise 4/4, overhead_press 3/3, squat 2/4; by view v0 7/8, v30 6/7
+lateRight: 16 attempts, 1 refused; « À revoir » on 8 of 15 judged (53 %): FAIL (found on at least 90 %); by exercise bicep_curl 3/4, lateral_raise 2/4, overhead_press 2/3, squat 1/4; by view v0 6/8, v30 2/7
+lean20: 16 attempts, 1 refused; « À revoir » on 10 of 15 judged (67 %): FAIL (found on at least 90 %); by exercise bicep_curl 4/4, lateral_raise 1/4, overhead_press 3/3, squat 2/4; by view v0 6/8, v30 4/7
+pause2s: 16 attempts, 1 refused; « À revoir » on 1 of 15 judged (7 %): FAIL (found on at least 90 %); by exercise bicep_curl 0/4, lateral_raise 0/4, overhead_press 0/3, squat 1/4; by view v0 1/8, v30 0/7
+Track C: FAIL by plan.md's bars.
+
+michelle-bicep_curl-v0 correct: match
+michelle-bicep_curl-v0 correct: match
+michelle-bicep_curl-v0 lateRight: revise (off:leftElbow off:rightElbow)
+michelle-bicep_curl-v0 lean20: revise (off:leftElbow range:leftElbow off:rightElbow range:rightElbow)
+michelle-bicep_curl-v0 pause2s: match
+michelle-bicep_curl-v0 range70: revise (off:leftElbow range:leftElbow off:rightElbow range:rightElbow)
+michelle-bicep_curl-v30 correct: match
+michelle-bicep_curl-v30 correct: match
+michelle-bicep_curl-v30 lateRight: match
+michelle-bicep_curl-v30 lean20: revise (off:leftElbow)
+michelle-bicep_curl-v30 pause2s: match
+michelle-bicep_curl-v30 range70: revise (off:leftElbow range:leftElbow)
+michelle-lateral_raise-v0 correct: match
+michelle-lateral_raise-v0 correct: match
+michelle-lateral_raise-v0 lateRight: revise (off:leftShoulder off:rightShoulder)
+michelle-lateral_raise-v0 lean20: revise (off:leftElbow)
+michelle-lateral_raise-v0 pause2s: match
+michelle-lateral_raise-v0 range70: revise (off:leftShoulder range:leftShoulder off:rightShoulder range:rightShoulder)
+michelle-lateral_raise-v30 correct: match
+michelle-lateral_raise-v30 correct: match
+michelle-lateral_raise-v30 lateRight: match
+michelle-lateral_raise-v30 lean20: match
+michelle-lateral_raise-v30 pause2s: match
+michelle-lateral_raise-v30 range70: revise (off:leftShoulder range:leftShoulder)
+michelle-overhead_press-v0 correct: match
+michelle-overhead_press-v0 correct: match
+michelle-overhead_press-v0 lateRight: revise (off:rightShoulder off:rightElbow)
+michelle-overhead_press-v0 lean20: revise (range:leftShoulder range:leftElbow range:rightElbow)
+michelle-overhead_press-v0 pause2s: match
+michelle-overhead_press-v0 range70: revise (off:leftShoulder range:leftShoulder off:rightShoulder range:rightShoulder off:leftElbow range:leftElbow off:rightElbow range:rightElbow)
+michelle-overhead_press-v30 correct: match
+michelle-overhead_press-v30 correct: match
+michelle-overhead_press-v30 lateRight: revise (off:leftShoulder off:leftElbow)
+michelle-overhead_press-v30 lean20: revise (off:rightElbow)
+michelle-overhead_press-v30 pause2s: match
+michelle-overhead_press-v30 range70: revise (range:leftShoulder off:rightShoulder range:rightShoulder range:leftElbow off:rightElbow range:rightElbow)
+michelle-squat-v0 correct: match
+michelle-squat-v0 correct: match
+michelle-squat-v0 lateRight: match
+michelle-squat-v0 lean20: match
+michelle-squat-v0 pause2s: match
+michelle-squat-v0 range70: match
+michelle-squat-v30 correct: match
+michelle-squat-v30 correct: match
+michelle-squat-v30 lateRight: match
+michelle-squat-v30 lean20: match
+michelle-squat-v30 pause2s: match
+michelle-squat-v30 range70: match
+soldier-bicep_curl-v0 correct: match
+soldier-bicep_curl-v0 correct: match
+soldier-bicep_curl-v0 lateRight: revise (off:leftShoulder off:rightShoulder range:leftElbow off:rightElbow)
+soldier-bicep_curl-v0 lean20: revise (range:leftShoulder off:rightShoulder range:rightShoulder off:leftElbow off:rightElbow)
+soldier-bicep_curl-v0 pause2s: match
+soldier-bicep_curl-v0 range70: revise (off:leftShoulder range:leftShoulder off:rightShoulder off:leftElbow range:leftElbow off:rightElbow range:rightElbow)
+soldier-bicep_curl-v30 correct: match
+soldier-bicep_curl-v30 correct: match
+soldier-bicep_curl-v30 lateRight: revise (off:leftElbow off:rightElbow)
+soldier-bicep_curl-v30 lean20: revise (range:rightShoulder)
+soldier-bicep_curl-v30 pause2s: match
+soldier-bicep_curl-v30 range70: revise (off:rightShoulder off:leftElbow range:leftElbow off:rightElbow range:rightElbow)
+soldier-lateral_raise-v0 correct: match
+soldier-lateral_raise-v0 correct: match
+soldier-lateral_raise-v0 lateRight: revise (off:rightShoulder)
+soldier-lateral_raise-v0 lean20: match
+soldier-lateral_raise-v0 pause2s: match
+soldier-lateral_raise-v0 range70: revise (off:leftShoulder range:leftShoulder off:rightShoulder range:rightShoulder)
+soldier-lateral_raise-v30 correct: match
+soldier-lateral_raise-v30 correct: match
+soldier-lateral_raise-v30 lateRight: match
+soldier-lateral_raise-v30 lean20: match
+soldier-lateral_raise-v30 pause2s: match
+soldier-lateral_raise-v30 range70: revise (off:leftShoulder range:leftShoulder)
+soldier-overhead_press-v0 correct: match
+soldier-overhead_press-v0 correct: match
+soldier-overhead_press-v0 lateRight: match
+soldier-overhead_press-v0 lean20: revise (range:leftShoulder off:rightShoulder range:rightShoulder range:leftElbow off:rightElbow range:rightElbow)
+soldier-overhead_press-v0 pause2s: match
+soldier-overhead_press-v0 range70: revise (off:leftShoulder range:leftShoulder off:rightShoulder range:rightShoulder off:leftElbow range:leftElbow off:rightElbow range:rightElbow)
+soldier-overhead_press-v30 correct: refused (reference-unseen)
+soldier-overhead_press-v30 correct: refused (reference-unseen)
+soldier-overhead_press-v30 lateRight: refused (reference-unseen)
+soldier-overhead_press-v30 lean20: refused (reference-unseen)
+soldier-overhead_press-v30 pause2s: refused (reference-unseen)
+soldier-overhead_press-v30 range70: refused (reference-unseen)
+soldier-squat-v0 correct: revise (range:rightShoulder off:leftElbow off:rightElbow range:rightElbow)
+soldier-squat-v0 correct: revise (off:leftShoulder off:rightElbow)
+soldier-squat-v0 lateRight: revise (off:leftElbow off:rightElbow)
+soldier-squat-v0 lean20: revise (off:leftShoulder range:leftShoulder off:rightShoulder range:rightShoulder off:leftElbow range:leftElbow off:rightElbow range:rightElbow)
+soldier-squat-v0 pause2s: revise (off:leftShoulder off:leftElbow)
+soldier-squat-v0 range70: revise (off:leftElbow)
+soldier-squat-v30 correct: match
+soldier-squat-v30 correct: match
+soldier-squat-v30 lateRight: match
+soldier-squat-v30 lean20: revise (off:leftElbow range:leftElbow)
+soldier-squat-v30 pause2s: match
+soldier-squat-v30 range70: revise (off:leftElbow)

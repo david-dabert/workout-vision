@@ -1,5 +1,5 @@
 # 063. The kiné comparison says « Conforme » or « À revoir » as physiotherapists do
-Status: ready (track A now; track B on the authors' written permission; track C now)
+Status: track A failed, 16 November 2026 (fd53533: judged half kappa 0.68 [0.11, 0.80]; 951e21c: nested leave-one-person-out kappa 0.62 [0.33, 0.75]; both under the 0.40 bound; TRIED.md); track C failed, 19 November 2026 (result.txt, TRIED.md); track B blocked on the authors' written permission. IntelliRehabDS is spent as a judged set: every one of its 30 people has been read.
 Executor: careful (Claude)
 Phase: 1 lab (no screen); it decides whether Phase 5 measures anything
 Claim: on repetitions a physiotherapist labelled correct or incorrect, the app's comparison against a correct repetition of the same exercise agrees with the physiotherapist at least as often as the published agreement between two clinicians, or the comparison is not offered as a verdict.
