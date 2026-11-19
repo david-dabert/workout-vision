@@ -4,8 +4,8 @@
 // (the label, R1: from David only), and the count the phone showed. Two checks per file:
 //   1. The first pose of each sample, counted as the app counts, gives the phone's own count: the file is the phone's
 //      read, and the defect it shows is reproduced here, on stored data CI reads.
-//   2. The lifter chosen over the whole set by motion (src/lib/lifterTrack.js, card B) is counted and printed beside
-//      it. It decides nothing yet: these files are tuning data (docs/OPERATING-LOOP.md F12), and a file read to build
+//   2. The lifter chosen over the whole set by motion (src/lib/lifterTrack.js, card B) is counted, printed, and held
+//      to its pinned count where sets.json records one (lifterCount). It is no exam: these files are tuning data (docs/OPERATING-LOOP.md F12), and a file read to build
 //      a fix proves nothing about it. A gain is claimed only on a file read once with the constants frozen.
 // No file yet: the test checks only that sets.json and files/ agree.
 import { expect, test } from 'vitest';
@@ -16,7 +16,7 @@ import { chooseLifter, framesFromPoseFile } from '../../../src/lib/lifterTrack.j
 import { summarizeCount } from '../../../src/lib/coreAnalysis';
 
 const DIR = resolve(__dirname, 'files');
-type Entry = { lift: string; label: number; labelSource: string; phoneCount: number | 'refused'; recorded: string };
+type Entry = { lift: string; label: number; labelSource: string; phoneCount: number | 'refused'; recorded: string; lifterCount?: number | 'refused' };
 const sets: Record<string, Entry> = JSON.parse(readFileSync(resolve(__dirname, 'sets.json'), 'utf8')).sets;
 const files = existsSync(DIR) ? readdirSync(DIR).filter(f => /\.json(\.gz)?$/.test(f)).sort() : [];
 const read = (f: string) => JSON.parse((f.endsWith('.gz') ? gunzipSync(readFileSync(resolve(DIR, f))) : readFileSync(resolve(DIR, f))).toString());
@@ -42,6 +42,8 @@ for (const f of files) {
     expect(outcome(first)).toBe(e.phoneCount);
     const sel = chooseLifter(frames, e.lift);
     const lifter = summarizeCount(sel.world, ts, e.lift, undefined, sel.image);
+    // Pinned once read with frozen constants (sets.json lifterNote): a change to lifterTrack.js that moves it fails here.
+    if (e.lifterCount !== undefined) expect(outcome(lifter)).toBe(e.lifterCount);
     console.log(`${f}  label ${e.label}  phone ${e.phoneCount}  first pose ${outcome(first)}  lifter by motion ${outcome(lifter)}  people ${sel.people.length}  samples ${frames.length}, with more than one pose ${frames.filter(fr => fr.poses.length > 1).length}`);
   });
 }
