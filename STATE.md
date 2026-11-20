@@ -74,7 +74,7 @@ David's recorded words (DIRECTIVES.md Part 1, docs/VISION.md, R16), held against
 | Promise | Status | Evidence |
 |---|---|---|
 | The video never leaves the phone, no server, free to run | Kept | No upload path; GitHub Pages; anonymous usage counts only |
-| The rep count is right, or the app says it is not sure | Partly | David's sets 13 of 15 and 12 of 16; public sets 468 of 949; right when sure 60.2 % on public sets (408 of 678, 7 off by 3 or more), measured on the gate that ships, set by set (card 016, 13 November 2026) |
+| The rep count is right, or the app says it is not sure | Partly | David's sets 13 of 15 and 12 of 17 (scoreboard.txt, 2026-11-18); public sets 468 of 949; right when sure 60.2 % on public sets (408 of 678, 7 off by 3 or more), measured on the gate that ships, set by set (card 016, 13 November 2026) |
 | Whether the execution held up | Partly | Tempo and range per rep are measured and shown; every reading of form is off (gate 7) |
 | What to do next | Not kept | No advice rests on a validated reading |
 | The physiotherapist compares a patient to a reference | Built, unproven | Runs on a real video (David, 11 November); never tested for repeatability (card 001) |
@@ -162,7 +162,7 @@ Open on 11 November:
 ## Scoreboards (8 November 2026)
 
 - **Real-phone scoreboard (David's 15 labelled phone sets, the R2 gate)**: **13 of 15 exact**, 2 off by 1 (`reverse_curl_10` counted 9 for 10 on collector landmarks, `lateral_raise_9` counted 8 for 9), **0 off by 3 or more**, 0 refused (`npm run scoreboard`; `test/real-phone/accuracy/scoreboard.txt`). The 5 bench and overhead press sets are measured and decide nothing (PLAN.md).
-- **David's videos read whole by the built app (`test/real-phone/sets-07oct-video/` and `sets-18oct-video/`, 16 sets)**: **12 of 16 exact**, 2 off by 1 (`behind_neck_chin_up_5` counted 6 for 5, `lat_pulldown_11_back` 10 for 11), 2 refused (`sissy_squat_7_5008`, `standing_barbell_curl_8`), and **0 known errors of 3 or more** (`test/real-phone/accuracy/scoreboard.txt`).
+- **David's videos read whole by the built app (the 17 sets of the video baseline, `sets-07oct-video/`, `sets-14nov-video/` and the others)**: **12 of 17 exact** (`test/real-phone/accuracy/scoreboard.txt`, run dated 2026-11-18), 2 refused (`sissy_squat_7_5008`, `standing_barbell_curl_8`), and **1 known error of 3 or more** (`sets-14nov-video/dumbbell_bench_press_9_angle`, label 9, counted 16, shown as known and gated on growth).
 - **Public build scoreboard (`npm run scoreboard:public`, 949 deciding sets across Countix, MM-Fit, CFRep)**:
   - Deciding exact: **468 of 949 deciding exact (49%)**, 1064 build sets total, 517 exact (49%), 0 newly off by 3 or more.
   - Per dataset (counted by sets, press included as in headline): MM-Fit 117 of 158 (74%), Countix cut 204 of 447 (46%), Countix whole 188 of 447 (42%), CFRep 8 of 12 (67%). Countix distinct clips: both readings exact on 172 of 447 (38%), either reading on 220 (49%).
@@ -198,6 +198,6 @@ Open on 11 November:
 ## Not Verified (Expunged from Documentation)
 
 - Real-phone stored sets: claims of 14/15 or 15/15 exact are unverified; measured proof is **13 of 15 exact**.
-- Real videos: claims of 13/16 or 14/16 exact are unverified; measured proof is **12 of 16 exact**.
+- Real videos: claims of 13/16 or 14/16 exact are unverified; measured proof is **12 of 17 exact** (scoreboard.txt, 2026-11-18), with one known error of 3 or more.
 - External tester blind sets: 0 recorded sets exist to date.
 - Any legal or regulatory certification claim (HDS, GDPR compliance seal).
