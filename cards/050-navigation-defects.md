@@ -1,5 +1,5 @@
 # 050. An unknown address says so, and the level is set in one place
-Status: ready
+Status: done
 Executor: fast (Antigravity)
 Phase: 1 (defects)
 Claim: a person following a broken link is told the page does not exist before reaching the home; the training level is no longer changed from inside the history.
