@@ -2,8 +2,8 @@
 // Usage: node scripts/check-ship-less.mjs [dist]. Fails when dist/ holds a chunk of a route switched off in production
 // (showUnmeasuredRoutes, buildFlags.js), the Vercel Blob upload client (upload is off in production, attemptStorage.js),
 // or Open Food Facts in a page's connect-src (only the extended CoachSuite looks foods up, openFoodFacts.js).
-// Prints what it found, one line each. The MediaPipe WASM files are listed, not judged: one leaves only after a network
-// log on Chromium and WebKit shows it is never requested (the card's condition).
+// Prints what it found, one line each. The MediaPipe WASM files: unused module assets fail the check;
+// the active SIMD and no-SIMD runtime files are listed.
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -28,6 +28,12 @@ export async function shippedOff(dir) {
     const html = await readFile(join(dir, f), 'utf8');
     for (const m of html.matchAll(/connect-src [^;"]*/g)) if (m[0].includes(LOOKUP)) out.push({ kind: 'connect-src lookup', what: `${f}: ${LOOKUP}` });
   }
+  try {
+    const mediapipe = await readdir(join(dir, 'mediapipe'));
+    for (const dead of ['vision_wasm_module_internal.wasm', 'vision_wasm_module_internal.js']) {
+      if (mediapipe.includes(dead)) out.push({ kind: 'unused MediaPipe module asset', what: `mediapipe/${dead}` });
+    }
+  } catch { /* none */ }
   return out;
 }
 
@@ -36,10 +42,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const found = await shippedOff(dir);
   let wasm = [];
   try { wasm = (await readdir(join(dir, 'mediapipe'))).filter(f => f.endsWith('.wasm')); } catch { /* none */ }
-  console.log(`MediaPipe WASM in ${dir}/mediapipe (listed, not judged): ${wasm.join(', ') || 'none'}`);
+  console.log(`MediaPipe WASM in ${dir}/mediapipe: ${wasm.join(', ') || 'none'}`);
   if (found.length) {
     console.log(`${dir}/ ships what production switched off:\n${found.map(x => `  ${x.kind}: ${x.what}`).join('\n')}`);
     process.exit(1);
   }
-  console.log(`${dir}/: no extended chunk, no Blob upload client, no lookup origin in any connect-src.`);
+  console.log(`${dir}/: no extended chunk, no Blob upload client, no lookup origin in any connect-src, no unused MediaPipe module asset.`);
 }
