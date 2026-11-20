@@ -2,6 +2,7 @@
 // programmes a client received under wv_programmes. Every read and write is guarded: a private window, a full or
 // refused storage leaves the screens working, with nothing kept (the screens say so where it matters).
 import { DEFAULT_HOLD, DEFAULT_ITEM, LIMITS, cleanText, fromCompact, compact, programmeId } from './programme';
+import { showUnmeasuredRoutes } from '../../lib/buildFlags';
 
 const DRAFTS = 'wv_pro_drafts', RECEIVED = 'wv_programmes';
 // At most this many of each are kept. Received programmes: the oldest go first (a list on one phone, not an archive).
@@ -28,8 +29,9 @@ export const HOLD_START = new Set(['plank', 'side_plank', 'wall_sit', 'farmer_ca
 /** A new item of a draft, at the default target: a hold of DEFAULT_HOLD for the holds of HOLD_START. */
 export const newItem = key => ({ key, ...DEFAULT_ITEM, ...(HOLD_START.has(key) ? { holdSec: DEFAULT_HOLD } : {}) });
 
-/** Creates a pre-populated draft from a biomechanically balanced template. */
+/** Creates a pre-populated draft from a biomechanically balanced template (extended routes only). */
 export const createFromTemplate = (templateId, now = Date.now()) => {
+  if (!showUnmeasuredRoutes()) return null;
   if (templateId === 'posture') {
     return {
       ...newDraft(now),
