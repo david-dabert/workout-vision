@@ -25,11 +25,15 @@
 
 import { existsSync, mkdirSync, cpSync, readdirSync, writeFileSync, readFileSync, rmSync } from 'fs';
 import { createHash } from 'node:crypto';
-import { join, dirname, basename } from 'path';
+import path, { join, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
+
+export function isKeptMediaPipeAsset(srcPath) {
+  return !basename(srcPath).startsWith('vision_wasm_module_internal');
+}
 
 const COPIES = [
   {
@@ -56,89 +60,97 @@ function verifyModel(buffer) {
   console.log(`[copy-models] Model SHA-256 verified: ${actual}`);
 }
 
-let exitCode = 0;
+export async function copyModels() {
+  let exitCode = 0;
 
-for (const { name, src, dest } of COPIES) {
-  if (!existsSync(src)) {
-    console.warn(`[copy-models] WARN: ${name} source not found at ${src}`);
-    console.warn(`[copy-models]       Run 'npm install' and try again.`);
-    exitCode = 1; // missing runtime assets must fail the build
-    continue;
-  }
-
-  mkdirSync(dest, { recursive: true });
-
-  try {
-    // Card 049: omit vision_wasm_module_internal (11.15 MB WASM + 315 kB JS) which MediaPipe never requests in browser runtime
-    cpSync(src, dest, {
-      recursive: true,
-      filter: (srcPath) => !basename(srcPath).startsWith('vision_wasm_module_internal'),
-    });
-    for (const dead of ['vision_wasm_module_internal.wasm', 'vision_wasm_module_internal.js']) {
-      const deadPath = join(dest, dead);
-      if (existsSync(deadPath)) rmSync(deadPath, { force: true });
+  for (const { name, src, dest } of COPIES) {
+    if (!existsSync(src)) {
+      console.warn(`[copy-models] WARN: ${name} source not found at ${src}`);
+      console.warn(`[copy-models]       Run 'npm install' and try again.`);
+      exitCode = 1; // missing runtime assets must fail the build
+      continue;
     }
-    const files = readdirSync(dest);
-    console.log(`[copy-models] OK: ${name} -> ${dest} (${files.length} files)`);
-  } catch (err) {
-    console.error(`[copy-models] ERROR copying ${name}: ${err.message}`);
-    exitCode = 1;
-  }
-}
 
-// Download the pose landmarker model if not already present.
-// The model is not in node_modules; it must be fetched from Google Storage.
-// This runs both locally and in CI (Node 18+ provides global fetch).
-const modelDest = join(ROOT, 'public', 'mediapipe', 'pose_landmarker_full.task');
-if (!existsSync(modelDest)) {
-  mkdirSync(dirname(modelDest), { recursive: true });
-  console.log(`[copy-models] Downloading pose_landmarker_full.task ...`);
-  try {
-    const resp = await fetch(MODEL_URL);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
-    const buffer = Buffer.from(await resp.arrayBuffer());
-    verifyModel(buffer);
-    writeFileSync(modelDest, buffer);
-    console.log(`[copy-models] OK: pose_landmarker_full.task (${buffer.length} bytes)`);
-  } catch (err) {
-    console.error(`[copy-models] ERROR downloading model: ${err.message}`);
-    exitCode = 1;
-  }
-} else {
-  try {
-    verifyModel(readFileSync(modelDest));
-    console.log(`[copy-models] OK: pose_landmarker_full.task already present`);
-  } catch (err) {
-    console.error(`[copy-models] ${err.message}`);
-    exitCode = 1;
-  }
-}
+    mkdirSync(dest, { recursive: true });
 
-// The heavy pose model (float16/1), for the physiotherapy module's deeper analysis only (KinePatient.jsx): fetched by
-// the phone when the patient asks for it, never precached by the service worker. Checked like the full model.
-const HEAVY_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task';
-const HEAVY_SHA256 = JSON.parse(readFileSync(new URL('../src/lib/model-hash.json', import.meta.url), 'utf8')).heavySha256;
-const heavyDest = join(ROOT, 'public', 'mediapipe', 'pose_landmarker_heavy.task');
-const verifyHeavy = buffer => {
-  const actual = createHash('sha256').update(buffer).digest('hex');
-  if (actual !== HEAVY_SHA256) throw new Error(`Heavy model SHA-256 mismatch: expected ${HEAVY_SHA256}, received ${actual}`);
-};
-try {
-  if (!existsSync(heavyDest)) {
-    console.log('[copy-models] Downloading pose_landmarker_heavy.task ...');
-    const resp = await fetch(HEAVY_URL);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
-    const buffer = Buffer.from(await resp.arrayBuffer());
-    verifyHeavy(buffer);
-    writeFileSync(heavyDest, buffer);
-    console.log(`[copy-models] OK: pose_landmarker_heavy.task (${buffer.length} bytes)`);
+    try {
+      // Card 049: omit vision_wasm_module_internal (11.15 MB WASM + 315 kB JS) which MediaPipe never requests in browser runtime
+      cpSync(src, dest, {
+        recursive: true,
+        filter: isKeptMediaPipeAsset,
+      });
+      for (const dead of ['vision_wasm_module_internal.wasm', 'vision_wasm_module_internal.js']) {
+        const deadPath = join(dest, dead);
+        if (existsSync(deadPath)) rmSync(deadPath, { force: true });
+      }
+      const files = readdirSync(dest);
+      console.log(`[copy-models] OK: ${name} -> ${dest} (${files.length} files)`);
+    } catch (err) {
+      console.error(`[copy-models] ERROR copying ${name}: ${err.message}`);
+      exitCode = 1;
+    }
+  }
+
+  // Download the pose landmarker model if not already present.
+  // The model is not in node_modules; it must be fetched from Google Storage.
+  // This runs both locally and in CI (Node 18+ provides global fetch).
+  const modelDest = join(ROOT, 'public', 'mediapipe', 'pose_landmarker_full.task');
+  if (!existsSync(modelDest)) {
+    mkdirSync(dirname(modelDest), { recursive: true });
+    console.log(`[copy-models] Downloading pose_landmarker_full.task ...`);
+    try {
+      const resp = await fetch(MODEL_URL);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
+      const buffer = Buffer.from(await resp.arrayBuffer());
+      verifyModel(buffer);
+      writeFileSync(modelDest, buffer);
+      console.log(`[copy-models] OK: pose_landmarker_full.task (${buffer.length} bytes)`);
+    } catch (err) {
+      console.error(`[copy-models] ERROR downloading model: ${err.message}`);
+      exitCode = 1;
+    }
   } else {
-    verifyHeavy(readFileSync(heavyDest));
-    console.log('[copy-models] OK: pose_landmarker_heavy.task already present');
+    try {
+      verifyModel(readFileSync(modelDest));
+      console.log(`[copy-models] OK: pose_landmarker_full.task already present`);
+    } catch (err) {
+      console.error(`[copy-models] ${err.message}`);
+      exitCode = 1;
+    }
   }
-} catch (err) {
-  console.error(`[copy-models] ERROR heavy model: ${err.message}`);
-  exitCode = 1;
+
+  // The heavy pose model (float16/1), for the physiotherapy module's deeper analysis only (KinePatient.jsx): fetched by
+  // the phone when the patient asks for it, never precached by the service worker. Checked like the full model.
+  const HEAVY_URL = 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task';
+  const HEAVY_SHA256 = JSON.parse(readFileSync(new URL('../src/lib/model-hash.json', import.meta.url), 'utf8')).heavySha256;
+  const heavyDest = join(ROOT, 'public', 'mediapipe', 'pose_landmarker_heavy.task');
+  const verifyHeavy = buffer => {
+    const actual = createHash('sha256').update(buffer).digest('hex');
+    if (actual !== HEAVY_SHA256) throw new Error(`Heavy model SHA-256 mismatch: expected ${HEAVY_SHA256}, received ${actual}`);
+  };
+  try {
+    if (!existsSync(heavyDest)) {
+      console.log('[copy-models] Downloading pose_landmarker_heavy.task ...');
+      const resp = await fetch(HEAVY_URL);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
+      const buffer = Buffer.from(await resp.arrayBuffer());
+      verifyHeavy(buffer);
+      writeFileSync(heavyDest, buffer);
+      console.log(`[copy-models] OK: pose_landmarker_heavy.task (${buffer.length} bytes)`);
+    } else {
+      verifyHeavy(readFileSync(heavyDest));
+      console.log('[copy-models] OK: pose_landmarker_heavy.task already present');
+    }
+  } catch (err) {
+    console.error(`[copy-models] ERROR heavy model: ${err.message}`);
+    exitCode = 1;
+  }
+
+  return exitCode;
 }
 
-process.exit(exitCode);
+const isCLI = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isCLI) {
+  const code = await copyModels();
+  process.exit(code);
+}
