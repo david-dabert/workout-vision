@@ -23,7 +23,7 @@
  *        with: npm install @ffmpeg/core@0.12.6
  */
 
-import { existsSync, mkdirSync, cpSync, readdirSync, writeFileSync, readFileSync } from 'fs';
+import { existsSync, mkdirSync, cpSync, readdirSync, writeFileSync, readFileSync, rmSync } from 'fs';
 import { createHash } from 'node:crypto';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -69,7 +69,15 @@ for (const { name, src, dest } of COPIES) {
   mkdirSync(dest, { recursive: true });
 
   try {
-    cpSync(src, dest, { recursive: true });
+    // Card 049: omit vision_wasm_module_internal (11.15 MB WASM + 315 kB JS) which MediaPipe never requests in browser runtime
+    cpSync(src, dest, {
+      recursive: true,
+      filter: (srcPath) => !srcPath.includes('vision_wasm_module_internal'),
+    });
+    for (const dead of ['vision_wasm_module_internal.wasm', 'vision_wasm_module_internal.js']) {
+      const deadPath = join(dest, dead);
+      if (existsSync(deadPath)) rmSync(deadPath, { force: true });
+    }
     const files = readdirSync(dest);
     console.log(`[copy-models] OK: ${name} -> ${dest} (${files.length} files)`);
   } catch (err) {
