@@ -22,7 +22,7 @@ function getValidPages() {
 }
 
 function readHash() {
-  const raw = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+  const raw = typeof window === 'undefined' ? '' : (window.location?.hash || '').replace(/^#\/?/, '').toLowerCase();
   if (!raw) return 'dashboard';
   // A coach's programme opens from its link, #programme=<payload> (programme.js): the page is the programme's.
   if (raw.startsWith('programme=')) return 'programme';
@@ -39,7 +39,7 @@ let unknownNotice = null;
 const unknownListeners = new Set();
 
 function checkUnknownHash() {
-  const raw = typeof window === 'undefined' ? '' : window.location.hash.replace(/^#\/?/, '').toLowerCase();
+  const raw = typeof window === 'undefined' ? '' : (window.location?.hash || '').replace(/^#\/?/, '').toLowerCase();
   if (!raw || raw === 'collecte' || raw === 'collecte-off') return false;
   if (raw.startsWith('programme=') || raw.startsWith('resultats=') || raw.startsWith('kine-p=') || raw.startsWith('kine-r=')) return false;
   return !getValidPages().has(raw);
@@ -52,7 +52,7 @@ function checkUnknownHash() {
 export function unknownAddressAtLoad() {
   if (unknownNotice === null) {
     unknownNotice = checkUnknownHash();
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
       window.addEventListener('hashchange', () => {
         const now = checkUnknownHash();
         unknownNotice = now;
