@@ -14,7 +14,7 @@ vi.mock('../entry-scene', () => ({ Body: class {}, mapPose: () => null, DPR: 1, 
 vi.mock('../stage-loop', () => ({ addLayer: () => () => {}, presence: () => 0, holdStage: () => {} }));
 vi.mock('../sets', () => ({ useSets: () => [] }));
 
-afterEach(() => { vi.unstubAllGlobals(); vi.resetModules(); });
+afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.resetModules(); });
 
 function stubs(lang) {
   const m = new Map([['wv_lang', lang]]);
@@ -41,10 +41,26 @@ const sampleDraft = {
   ],
 };
 
-describe('Espace pro examples and client preview (Task 5)', () => {
+describe('Espace pro examples and client preview (Task 5 & Card 048)', () => {
   for (const lang of ['fr', 'en']) {
-    it(`labels starter examples as adaptable (not recommended) in ${lang}`, async () => {
+    it(`renders no unsourced starter templates in production build (${lang}, Card 048)`, async () => {
       stubs(lang);
+      const { LanguageProvider } = await import('../../../lib/LanguageContext');
+      const { default: Pro } = await import('../Pro.jsx');
+      const html = renderToStaticMarkup(<LanguageProvider><Pro onClose={() => {}} /></LanguageProvider>);
+      expect(html).not.toContain('pro-templates');
+      expect(html).not.toContain(PRO[lang].templatesHead);
+      expect(html).not.toContain('data-testid="pro-templates-note"');
+      expect(html).not.toContain('data-testid="template-posture"');
+      expect(html).not.toContain('data-testid="template-shoulder"');
+      expect(html).not.toContain('data-testid="template-conditioning"');
+      expect(html).not.toMatch(/Modèles recommandés|Recommended templates/);
+      expect(html).toContain('data-testid="pro-new"');
+    });
+
+    it(`renders adaptable templates behind showUnmeasuredRoutes in extended build (${lang})`, async () => {
+      stubs(lang);
+      vi.stubEnv('VITE_EXTENDED_ROUTES', '1');
       const { LanguageProvider } = await import('../../../lib/LanguageContext');
       const { default: Pro } = await import('../Pro.jsx');
       const html = renderToStaticMarkup(<LanguageProvider><Pro onClose={() => {}} /></LanguageProvider>);
@@ -79,4 +95,18 @@ describe('Espace pro examples and client preview (Task 5)', () => {
       for (const s of allStrings(lang)) expect(s).not.toContain('\u2014');
     });
   }
+
+  it('returns null for templates in production build, and template drafts in extended build (Card 048)', async () => {
+    const { createFromTemplate } = await import('../programme-store');
+    expect(createFromTemplate('posture')).toBeNull();
+    expect(createFromTemplate('shoulder')).toBeNull();
+    expect(createFromTemplate('conditioning')).toBeNull();
+
+    vi.stubEnv('VITE_EXTENDED_ROUTES', '1');
+    const { createFromTemplate: createExtended } = await import('../programme-store');
+    const posture = createExtended('posture');
+    expect(posture).not.toBeNull();
+    expect(posture.title).toBe('Posturologie & Mobilité');
+    expect(posture.items.length).toBe(3);
+  });
 });

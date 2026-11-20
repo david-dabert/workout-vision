@@ -473,13 +473,18 @@ for (const viewport of [{ width: 390, height: 664 }, { width: 320, height: 568 }
     const errors = await prepare(page, viewport);
     await page.goto('/workout-vision/#pro');
     await expect(page.getByTestId('pro-screen')).toBeVisible({ timeout: 20000 });
-    await expect(page.locator('.pro-templates h2.section-head')).toHaveText(c.templatesHead);
-    await expect(page.getByTestId('pro-templates-note')).toHaveText(c.templatesNote);
+    // Card 048: Espace pro offers only the coach's own programmes, no unsourced templates in production build
+    await expect(page.locator('.pro-templates')).toHaveCount(0);
     await expect(page.getByTestId('pro-screen')).not.toContainText('Modèles recommandés');
+    await expect(page.getByTestId('pro-screen')).not.toContainText(c.templatesHead);
 
-    await page.getByTestId('template-conditioning').click();
+    await page.getByTestId('pro-new').click();
     await expect(page.getByTestId('pro-editor')).toBeVisible();
+    await page.locator('#pTitle').fill('Renforcement & Équilibre');
     await page.locator('#pWho').fill('Camille');
+    await pick(page, 'squat', 'squat');
+    await pick(page, 'push_up', 'pompes');
+    await pick(page, 'bicep_curl', 'curl');
     await page.getByTestId('pro-preview').click();
 
     const preview = page.getByTestId('programme-screen');
@@ -525,8 +530,10 @@ test('task 5: failed preview chunk load stays in Editor without losing draft; sl
     await route.continue();
   });
   await page.goto('/workout-vision/#pro');
-  await page.getByTestId('template-conditioning').click();
+  await page.getByTestId('pro-new').click();
   await expect(page.getByTestId('pro-editor')).toBeVisible({ timeout: 20000 });
+  await page.locator('#pTitle').fill('Conditioning');
+  await pick(page, 'squat', 'squat');
   await page.getByTestId('pro-preview').click();
   await page.locator('#pTitle').fill('');
   releaseChunk();
@@ -549,9 +556,11 @@ test('task 5: failed preview chunk load stays in Editor without losing draft; sl
   });
   await offline.route('**/assets/Programme-*.js', r => r.abort());
   await offline.goto('/workout-vision/#pro');
-  await offline.getByTestId('template-conditioning').click();
+  await offline.getByTestId('pro-new').click();
   await expect(offline.getByTestId('pro-editor')).toBeVisible({ timeout: 20000 });
+  await offline.locator('#pTitle').fill('Conditioning');
   await offline.locator('#pWho').fill('Camille');
+  await pick(offline, 'squat', 'squat');
   await offline.getByTestId('pro-preview').click();
   await expect(offline.locator('.pro-status')).toHaveText(c.previewError, { timeout: 10000 });
   await expect(offline.getByTestId('pro-editor')).toBeVisible();

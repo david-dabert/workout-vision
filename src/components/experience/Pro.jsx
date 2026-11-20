@@ -90,6 +90,7 @@ export default function Pro({ onClose, start = null }) {
   const create = () => { const d = newDraft(); setDrafts(list => [d, ...list]); setKept(true); setPreviewing(false); setFocusWho(false); setOpenId(d.id); };
   const createTemplate = templateId => {
     const d = createFromTemplate(templateId);
+    if (!d) return;
     setDrafts(list => [d, ...list]);
     setKept(saveDraft(d));
     setPreviewing(false);
@@ -192,7 +193,9 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, on
             <span className="row-txt"><b>{c.compareRow}</b><small>{c.compareRowSub}</small></span>
             <Arrow />
           </button>}
-          <div className="pro-templates" data-reveal style={{ '--i': 2.5 }}>
+          {/* Card 048: unsourced templates only in the extended build (showUnmeasuredRoutes()). In production,
+              the coach sees only the programmes they made. */}
+          {showUnmeasuredRoutes() && <div className="pro-templates" data-reveal style={{ '--i': 2.5 }}>
             <h2 className="section-head">{c.templatesHead}</h2>
             <p className="pro-templates-note" data-testid="pro-templates-note">{c.templatesNote}</p>
             <div className="pro-template-grid">
@@ -209,7 +212,7 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, on
                 <Arrow />
               </button>
             </div>
-          </div>
+          </div>}
           {drafts.length > 0 && <div data-reveal style={{ '--i': 3 }}>
             <h2 className="section-head">{c.draftsHead}</h2>
             <ul className="pro-drafts">{drafts.map(d => <li key={d.id}>
