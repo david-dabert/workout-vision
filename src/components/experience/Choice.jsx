@@ -16,6 +16,7 @@ import { InstallRow } from './Install';
 import { pendingIncident, dismissIncident } from '../../lib/crashLog';
 import { CRASH, crashLine } from './crash-copy';
 import { showUnmeasuredRoutes } from '../../lib/buildFlags';
+import { unknownAddressAtLoad, unknownAddressSeen, onUnknownAddress } from '../../lib/useHashRouter';
 import './Choice.css';
 
 const PRO_ROW = {
@@ -172,6 +173,7 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
           </span>
           <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
         </div>
+        <UnknownAddressNote fr={fr} />
         <CrashNote fr={fr} />
         {last && <div className="welcome">
           <p className="welcome-l1">{fr ? 'Bon retour.' : 'Welcome back.'}</p>
@@ -335,6 +337,15 @@ function CrashNote({ fr }) {
       <button type="button" className="text-btn press" onClick={dismiss} aria-label={c.dismissLabel} data-testid="crash-dismiss">{c.dismiss}</button>
     </div>
   </div>;
+}
+
+// One line after the app was opened at an unknown address (#nimporte-quoi; Card 050), on that visit to the choice only.
+function UnknownAddressNote({ fr }) {
+  const [shown, setShown] = useState(unknownAddressAtLoad);
+  useEffect(() => { if (shown) unknownAddressSeen(); }, [shown]);
+  useEffect(() => onUnknownAddress(setShown), []);
+  if (!shown) return null;
+  return <p className="foot" role="status" data-testid="unknown-address">{fr ? 'Cette page n’existe pas.' : 'This page does not exist.'}</p>;
 }
 
 // One line after the app was opened at #collecte or #collecte-off (phoneCollect.js), on that visit to the choice only.

@@ -23,6 +23,7 @@ function getValidPages() {
 
 function readHash() {
   const raw = window.location.hash.replace(/^#\/?/, '').toLowerCase();
+  if (!raw) return 'dashboard';
   // A coach's programme opens from its link, #programme=<payload> (programme.js): the page is the programme's.
   if (raw.startsWith('programme=')) return 'programme';
   // A client's results open on the coach's phone from their link, #resultats=<payload> (programme.js, 9 October).
@@ -32,6 +33,41 @@ function readHash() {
   if (raw.startsWith('kine-p=')) return 'kinep';
   if (raw.startsWith('kine-r=')) return 'kiner';
   return getValidPages().has(raw) ? raw : 'dashboard';
+}
+
+let unknownNotice = null;
+const unknownListeners = new Set();
+
+function checkUnknownHash() {
+  const raw = typeof window === 'undefined' ? '' : window.location.hash.replace(/^#\/?/, '').toLowerCase();
+  if (!raw || raw === 'collecte' || raw === 'collecte-off') return false;
+  if (raw.startsWith('programme=') || raw.startsWith('resultats=') || raw.startsWith('kine-p=') || raw.startsWith('kine-r=')) return false;
+  return !getValidPages().has(raw);
+}
+
+/**
+ * True when the address opened or changed to an unknown hash (#nimporte-quoi, Card 050).
+ * Shown on the home screen alongside the choice of lift; cleared once seen or when a valid page opens.
+ */
+export function unknownAddressAtLoad() {
+  if (unknownNotice === null) {
+    unknownNotice = checkUnknownHash();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('hashchange', () => {
+        const now = checkUnknownHash();
+        unknownNotice = now;
+        unknownListeners.forEach(f => f(now));
+      });
+    }
+  }
+  return Boolean(unknownNotice);
+}
+
+export function unknownAddressSeen() { unknownNotice = false; }
+
+export function onUnknownAddress(fn) {
+  unknownListeners.add(fn);
+  return () => unknownListeners.delete(fn);
 }
 
 /**
@@ -46,7 +82,6 @@ function readHash() {
 export default function useHashRouter() {
   const [page, setPageState] = useState(readHash);
   const current = useRef(page);
-  current.current = page;
   // The last page the app set or the browser announced. The browser changes the address at once
   // and announces it later (hashchange); until then the address differs from this.
   const known = useRef(page);
@@ -55,6 +90,8 @@ export default function useHashRouter() {
   // Every announced change renders the app again, even to the same page: a second results or programme link opened
   // over the first changes only the address, which the screens read (excellence hunt, 9 October 2026).
   const [, setChanges] = useState(0);
+
+  useEffect(() => { current.current = page; }, [page]);
 
   // Sync hash -> state when the user presses back/forward. Safari animates
   // its own back swipe, so the app marks the change and skips its crossfade.

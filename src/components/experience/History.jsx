@@ -14,8 +14,6 @@ import CollectHistory from './CollectHistory';
 import { collectOn } from '../../lib/phoneCollect';
 import { contributeBuild } from '../../lib/buildFlags';
 import { contributions, forgetContributions, readChoice } from '../../lib/contribute';
-import LevelPick from './LevelPick';
-import { readLevel, writeLevel } from './level';
 import { useCondensingTopbar } from './topbar';
 import { track } from '../../lib/events';
 import './History.css';
@@ -41,7 +39,6 @@ export default function History({ onClose }) {
   const [confirm, setConfirm] = useState(null); // the set whose deletion waits for a second tap
   const [report, setReport] = useState(null);
   const [leaving, setLeaving] = useState(false);
-  const [level, setLevel] = useState(readLevel);
   const timers = useRef({});
   const rowRefs = useRef({});
   // The title condenses into the topbar as the sets scroll under it (section 3, change 1).
@@ -151,10 +148,6 @@ export default function History({ onClose }) {
         </div>
         <h1 className="title" data-reveal style={{ '--i': 0 }}>{fr ? 'Vos séries.' : 'Your sets.'}</h1>
         <p className="sub" data-reveal style={{ '--i': 1 }}>{fr ? 'Enregistrées sur ce téléphone, elles n’en sortent que si vous les partagez.' : 'Saved on this phone, they leave it only if you share them.'}{sets?.length ? (fr ? ' Touchez une série pour préparer son rapport.' : ' Tap a set to make its report.') : ''}</p>
-        {/* The level, changeable here at any time: it sets how much the result screen shows (level.js). */}
-        <div data-reveal style={{ '--i': 2 }} data-testid="history-level">
-          <LevelPick id="hist-level" label={fr ? 'Votre niveau' : 'Your level'} value={level} onChange={l => { if (writeLevel(l)) setLevel(l); }} fr={fr} />
-        </div>
         {problem && <p className="hist-error" role="alert">{problem}</p>}
         {sets && !sets.length && !problem && <div className="hist-empty" data-reveal style={{ '--i': 2 }}>
           <p>{fr ? 'Aucune série enregistrée pour l’instant.' : 'No set saved yet.'}</p>

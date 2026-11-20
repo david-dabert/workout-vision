@@ -1148,7 +1148,7 @@ export default function Result({ result, lift, videoFile = null, covered, onClos
             <LevelPick id="level-ask-label" quiet label={fr ? 'Pour adapter l’écran, quel est votre niveau ?' : 'To fit the screen to you, what is your level?'} value={chosen} onChange={chooseLevel} fr={fr} />
             {chosen && <p className="level-note" role="status">{levelLost
               ? (fr ? 'Votre niveau n’a pas pu être enregistré sur ce téléphone.' : 'Your level could not be saved on this phone.')
-              : (fr ? 'C’est noté. L’écran s’adapte dès la prochaine série. Vous pouvez le changer dans Vos séries.' : 'Noted. The screen adapts from your next set. You can change it in Your sets.')}</p>}
+              : (fr ? 'C’est noté. L’écran s’adapte dès la prochaine série.' : 'Noted. The screen adapts from your next set.')}</p>}
           </div>}
           {/* Card 010: after a saved set, the goal and what bothers the person, then one true word about the set (never stacked under another active question). */}
           {!result.refused && count > 0 && (savedQuestion === 'first-word' || (savedQuestion === 'none' && Boolean(readFirstWordState()?.bother))) && <FirstWord reps={reps} fr={fr} />}
