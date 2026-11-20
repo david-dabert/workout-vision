@@ -150,6 +150,10 @@ Decisions applied on 11 November (David's orders of that day, PRs #366 to #370):
 
 Scoreboards on 11 November: unchanged, CI passed them against the baselines of 7 November on each of those PRs (13 of 15, 12 of 16, 468 of 949).
 
+Cards completed on 20 November 2026:
+- Card 050 (PR #513): unknown address displays explicit notice, and the level is configured centrally (`src/lib/coachLevels.js`).
+- Card 049 (PR #514): production build ships only active assets. Automated network logging (`scripts/verify-wasm-network.mjs`) on Chromium and WebKit (iPhone profile) proved `vision_wasm_module_internal.*` is never loaded. Omitted unused module WASM/JS (11.46 MB payload saved), preserved SIMD and non-SIMD runtime files, and enforced via `scripts/check-ship-less.mjs`.
+
 Open on 11 November:
 - None of PRs #366 to #370 has been confirmed by David on his iPhone (R3).
 - The tour step "Keep Filmer ma série in view for every exercise" timed out twice on CI's WebKit (#369, then main at `44e47a35`), on the click that opens the 35th filming screen of one page. The sweep now takes a fresh page every 20 screens. The cause, a page that slows as filming screens are opened and closed, is not found: it may be a leak in the filming screen, and no WebKit was available to measure it.

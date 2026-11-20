@@ -2,8 +2,8 @@
 // Usage: node scripts/check-ship-less.mjs [dist]. Fails when dist/ holds a chunk of a route switched off in production
 // (showUnmeasuredRoutes, buildFlags.js), the Vercel Blob upload client (upload is off in production, attemptStorage.js),
 // or Open Food Facts in a page's connect-src (only the extended CoachSuite looks foods up, openFoodFacts.js).
-// Prints what it found, one line each. The MediaPipe WASM files are listed, not judged: one leaves only after a network
-// log on Chromium and WebKit shows it is never requested (the card's condition).
+// Prints what it found, one line each. The MediaPipe WASM files: unused module assets fail the check;
+// the active SIMD and no-SIMD runtime files are listed.
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 

@@ -25,7 +25,7 @@
 
 import { existsSync, mkdirSync, cpSync, readdirSync, writeFileSync, readFileSync, rmSync } from 'fs';
 import { createHash } from 'node:crypto';
-import { join, dirname } from 'path';
+import { join, dirname, basename } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -72,7 +72,7 @@ for (const { name, src, dest } of COPIES) {
     // Card 049: omit vision_wasm_module_internal (11.15 MB WASM + 315 kB JS) which MediaPipe never requests in browser runtime
     cpSync(src, dest, {
       recursive: true,
-      filter: (srcPath) => !srcPath.includes('vision_wasm_module_internal'),
+      filter: (srcPath) => !basename(srcPath).startsWith('vision_wasm_module_internal'),
     });
     for (const dead of ['vision_wasm_module_internal.wasm', 'vision_wasm_module_internal.js']) {
       const deadPath = join(dest, dead);

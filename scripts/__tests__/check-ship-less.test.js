@@ -17,8 +17,17 @@ function dist(files) {
 }
 
 describe('check-ship-less', () => {
-  it('passes a build that ships only production code', async () => {
-    const dir = dist({ 'index.html': `<meta content="connect-src 'self' blob:; img-src 'self'">`, 'assets/index-AbCdEf12.js': 'x', 'assets/Pro-AbCdEf12.js': 'y' });
+  it('passes a build that ships only production code including legitimate MediaPipe runtime assets', async () => {
+    const dir = dist({
+      'index.html': `<meta content="connect-src 'self' blob:; img-src 'self'">`,
+      'assets/index-AbCdEf12.js': 'x',
+      'assets/Pro-AbCdEf12.js': 'y',
+      'mediapipe/pose_landmarker_full.task': 'model',
+      'mediapipe/vision_wasm_internal.js': 'js',
+      'mediapipe/vision_wasm_internal.wasm': 'wasm',
+      'mediapipe/vision_wasm_nosimd_internal.js': 'js',
+      'mediapipe/vision_wasm_nosimd_internal.wasm': 'wasm',
+    });
     expect(await shippedOff(dir)).toEqual([]);
   });
 
@@ -38,13 +47,16 @@ describe('check-ship-less', () => {
     ]);
   });
 
-  it('names an unused MediaPipe module asset', async () => {
+  it('names an unused MediaPipe module asset (both wasm and js)', async () => {
     const dir = dist({
       'index.html': `<meta content="connect-src 'self' blob:; img-src 'self'">`,
-      'mediapipe/vision_wasm_module_internal.wasm': 'x',
+      'mediapipe/vision_wasm_module_internal.wasm': 'wasm',
+      'mediapipe/vision_wasm_module_internal.js': 'js',
     });
-    expect(await shippedOff(dir)).toEqual([
-      { kind: 'unused MediaPipe module asset', what: 'mediapipe/vision_wasm_module_internal.wasm' },
+    const kinds = (await shippedOff(dir)).map(x => `${x.kind}: ${x.what}`).sort();
+    expect(kinds).toEqual([
+      'unused MediaPipe module asset: mediapipe/vision_wasm_module_internal.js',
+      'unused MediaPipe module asset: mediapipe/vision_wasm_module_internal.wasm',
     ]);
   });
 });
