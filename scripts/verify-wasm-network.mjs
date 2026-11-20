@@ -54,28 +54,53 @@ function startServer() {
     // HTTP 206 Partial Content support for video files (WebKit / iOS requirement)
     const range = req.headers.range;
     if (range) {
-      const parts = range.replace(/bytes=/, '').split('-');
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : stat.size - 1;
-      const chunksize = (end - start) + 1;
-      const fileStream = fs.createReadStream(filePath, { start, end });
-      res.writeHead(206, {
-        'Content-Range': `bytes ${start}-${end}/${stat.size}`,
-        'Accept-Ranges': 'bytes',
-        'Content-Length': chunksize,
-        'Content-Type': contentType,
-        'Access-Control-Allow-Origin': '*',
-      });
-      fileStream.pipe(res);
-    } else {
-      res.writeHead(200, {
-        'Content-Length': stat.size,
-        'Content-Type': contentType,
-        'Accept-Ranges': 'bytes',
-        'Access-Control-Allow-Origin': '*',
-      });
-      fs.createReadStream(filePath).pipe(res);
+      const match = /^bytes=(\d*)-(\d*)$/.exec(range.trim());
+      if (match) {
+        let start = match[1] ? parseInt(match[1], 10) : undefined;
+        let end = match[2] ? parseInt(match[2], 10) : undefined;
+
+        if (start === undefined && end !== undefined) {
+          // Suffix range: bytes=-500 (last 500 bytes)
+          start = Math.max(0, stat.size - end);
+          end = stat.size - 1;
+        } else if (start !== undefined && end === undefined) {
+          // Open range: bytes=500-
+          end = stat.size - 1;
+        } else if (start === undefined && end === undefined) {
+          start = 0;
+          end = stat.size - 1;
+        }
+
+        if (isNaN(start) || isNaN(end) || start > end || start >= stat.size) {
+          res.writeHead(416, {
+            'Content-Range': `bytes */${stat.size}`,
+          });
+          res.end();
+          return;
+        }
+
+        end = Math.min(end, stat.size - 1);
+        const chunksize = (end - start) + 1;
+        const fileStream = fs.createReadStream(filePath, { start, end });
+        res.writeHead(206, {
+          'Content-Range': `bytes ${start}-${end}/${stat.size}`,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': chunksize,
+          'Content-Type': contentType,
+          'Access-Control-Allow-Origin': '*',
+        });
+        fileStream.pipe(res);
+        return;
+      }
     }
+
+    res.writeHead(200, {
+      'Content-Length': stat.size,
+      'Content-Type': contentType,
+      'Accept-Ranges': 'bytes',
+      'Access-Control-Allow-Origin': '*',
+    });
+    fs.createReadStream(filePath).pipe(res);
   });
 
   return new Promise((resolve) => {
@@ -106,8 +131,20 @@ async function inspectEngine(engineName, engineType, contextOptions = {}) {
       failedRequests.push(`${req.method()} ${req.url()}: ${req.failure()?.errorText || 'failed'}`);
     });
 
+    page.on('response', (resp) => {
+      if (resp.status() >= 400) {
+        failedRequests.push(`HTTP ${resp.status()} ${resp.request().method()} ${resp.url()}`);
+      }
+    });
+
     page.on('pageerror', (err) => {
       pageErrors.push(err.message);
+    });
+
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        pageErrors.push(`Console error: ${msg.text()}`);
+      }
     });
 
     console.log(`[${engineName}] Navigating to check.html...`);
@@ -166,33 +203,35 @@ async function main() {
     const moduleRequested = allRequests.some(f => f.includes('vision_wasm_module_internal'));
     console.log('\nWas vision_wasm_module_internal ever requested?:', moduleRequested);
 
-    // Hard assertions
+    // Hard per-engine assertions
     let errors = 0;
-    if (moduleRequested) {
-      console.error('FAIL: vision_wasm_module_internal was requested by at least one engine.');
-      errors++;
-    }
+    for (const [engineName, res] of [['Chromium', chromiumResult], ['WebKit', webkitResult]]) {
+      if (res.requests.some(f => f.includes('vision_wasm_module_internal'))) {
+        console.error(`FAIL: vision_wasm_module_internal was requested on ${engineName}.`);
+        errors++;
+      }
 
-    const hasSimdOrNoSimd = allRequests.some(f => f.includes('vision_wasm_internal.wasm') || f.includes('vision_wasm_nosimd_internal.wasm'));
-    if (!hasSimdOrNoSimd) {
-      console.error('FAIL: Neither vision_wasm_internal.wasm nor vision_wasm_nosimd_internal.wasm was requested.');
-      errors++;
-    }
+      const hasSimdOrNoSimd = res.requests.some(f => f.includes('vision_wasm_internal.wasm') || f.includes('vision_wasm_nosimd_internal.wasm'));
+      if (!hasSimdOrNoSimd) {
+        console.error(`FAIL: Neither vision_wasm_internal.wasm nor vision_wasm_nosimd_internal.wasm was requested on ${engineName}.`);
+        errors++;
+      }
 
-    const hasModel = allRequests.some(f => f.includes('pose_landmarker_full.task'));
-    if (!hasModel) {
-      console.error('FAIL: pose_landmarker_full.task was not requested.');
-      errors++;
-    }
+      const hasModel = res.requests.some(f => f.includes('pose_landmarker_full.task'));
+      if (!hasModel) {
+        console.error(`FAIL: pose_landmarker_full.task was not requested on ${engineName}.`);
+        errors++;
+      }
 
-    if (chromiumResult.failedRequests.length > 0 || webkitResult.failedRequests.length > 0) {
-      console.error('FAIL: Network requests failed during analysis.');
-      errors++;
-    }
+      if (res.failedRequests.length > 0) {
+        console.error(`FAIL: Network requests failed during analysis on ${engineName}:`, res.failedRequests);
+        errors++;
+      }
 
-    if (chromiumResult.pageErrors.length > 0 || webkitResult.pageErrors.length > 0) {
-      console.error('FAIL: Unhandled page errors occurred during analysis.');
-      errors++;
+      if (res.pageErrors.length > 0) {
+        console.error(`FAIL: Page errors occurred during analysis on ${engineName}:`, res.pageErrors);
+        errors++;
+      }
     }
 
     if (errors > 0) {
