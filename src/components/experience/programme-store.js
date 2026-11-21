@@ -29,42 +29,41 @@ export const HOLD_START = new Set(['plank', 'side_plank', 'wall_sit', 'farmer_ca
 /** A new item of a draft, at the default target: a hold of DEFAULT_HOLD for the holds of HOLD_START. */
 export const newItem = key => ({ key, ...DEFAULT_ITEM, ...(HOLD_START.has(key) ? { holdSec: DEFAULT_HOLD } : {}) });
 
-/** Creates a pre-populated draft from a biomechanically balanced template (extended routes only). */
+/** Creates a pre-populated draft from a biomechanically balanced template. */
 export const createFromTemplate = (templateId, now = Date.now()) => {
-  if (!showUnmeasuredRoutes()) return null;
   if (templateId === 'posture') {
     return {
       ...newDraft(now),
-      title: 'Posturologie & Mobilité',
+      title: 'Renforcement & Posture',
       note: 'Contrôle lent, tempo 3-1-1, respiration fluide.',
       items: [
-        { ...newItem('doorway_row'), sets: 3, reps: 12, rest: 60, note: 'Rapprochement des omoplates, dos droit' },
-        { ...newItem('glute_bridge'), sets: 3, reps: 15, rest: 60, note: 'Alignement genoux-bassin' },
+        { ...newItem('squat'), sets: 3, reps: 10, rest: 90, note: 'Descendre à la parallèle' },
         { ...newItem('romanian_deadlift'), sets: 3, reps: 10, rest: 90, note: 'Dos neutre, flexion hanches' },
+        { ...newItem('doorway_row'), sets: 3, reps: 12, rest: 60, note: 'Rapprochement des omoplates, dos droit' },
       ],
     };
   }
   if (templateId === 'shoulder') {
     return {
       ...newDraft(now),
-      title: 'Épaule & Fixateurs d’omoplate',
+      title: 'Épaule & Mobilité',
       note: 'Épaules basses, sans hausser les trapèzes, tempo contrôlé.',
       items: [
-        { ...newItem('banded_face_pull'), sets: 3, reps: 12, rest: 60, note: 'Tirage haut, rotation externe' },
-        { ...newItem('wall_push_up'), sets: 3, reps: 10, rest: 60, note: 'Pousser le mur au sommet, contrôle scapulaire' },
         { ...newItem('lateral_raise'), sets: 3, reps: 10, rest: 60, note: 'Plan scapulaire, monter à hauteur d’épaule' },
+        { ...newItem('bicep_curl'), sets: 3, reps: 12, rest: 60, note: 'Sans élan du buste, coudes fixes' },
+        { ...newItem('banded_face_pull'), sets: 3, reps: 12, rest: 60, note: 'Tirage haut, rotation externe' },
       ],
     };
   }
   if (templateId === 'conditioning') {
     return {
       ...newDraft(now),
-      title: 'Renforcement & Équilibre',
+      title: 'Conditioning & Renforcement général',
       note: 'Échauffement articulaire 5 min au préalable.',
       items: [
-        { ...newItem('squat'), sets: 3, reps: 10, rest: 90, note: 'Descendre à la parallèle' },
+        { ...newItem('squat'), sets: 3, reps: 12, rest: 60, note: 'Rythme régulier et contrôlé' },
         { ...newItem('push_up'), sets: 3, reps: 10, rest: 60, note: 'Corps gainé' },
-        { ...newItem('bicep_curl'), sets: 3, reps: 12, rest: 60, note: 'Sans élan du buste' },
+        { ...newItem('glute_bridge'), sets: 3, reps: 15, rest: 60, note: 'Extension complète' },
       ],
     };
   }

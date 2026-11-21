@@ -109,6 +109,10 @@ export default function Programme({ payload = (typeof window !== 'undefined' ? p
     .then(() => { setCopyShown(false); setCopyNote(c.copied); }, () => { setCopyShown(true); setCopyNote(c.copyFailed); });
   function sendResults() {
     if (!resultsUrl) return;
+    try {
+      const payloadObj = resultsOf(p, sent, past || now);
+      import('../../lib/coachStorage').then(m => m.recordReceivedResults(payloadObj)).catch(() => {});
+    } catch { /* ignore */ }
     const copy = () => (navigator.clipboard?.writeText(resultsUrl) ?? Promise.reject(new Error('no clipboard')))
       .then(() => { setResultsShown(false); setNote(c.resultsCopied); }, () => { setResultsShown(true); setNote(c.copyFailed); });
     if (!navigator.share) { copy(); return; }

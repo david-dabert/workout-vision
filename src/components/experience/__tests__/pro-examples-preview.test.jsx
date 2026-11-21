@@ -41,32 +41,22 @@ const sampleDraft = {
   ],
 };
 
-describe('Espace pro examples and client preview (Task 5 & Card 048)', () => {
+describe('Espace pro ready-to-use templates and client hub (David directive for coaches)', () => {
   for (const lang of ['fr', 'en']) {
-    it(`renders no unsourced starter templates in production build (${lang}, Card 048)`, async () => {
+    it(`renders ready-to-use templates and compare row in production build (${lang})`, async () => {
       stubs(lang);
       const { LanguageProvider } = await import('../../../lib/LanguageContext');
       const { default: Pro } = await import('../Pro.jsx');
       const html = renderToStaticMarkup(<LanguageProvider><Pro onClose={() => {}} /></LanguageProvider>);
-      expect(html).not.toContain('pro-templates');
-      expect(html).not.toContain(PRO[lang].templatesHead);
-      expect(html).not.toContain('data-testid="pro-templates-note"');
-      expect(html).not.toContain('data-testid="template-posture"');
-      expect(html).not.toContain('data-testid="template-shoulder"');
-      expect(html).not.toContain('data-testid="template-conditioning"');
-      expect(html).not.toMatch(/Modèles recommandés|Recommended templates/);
-      expect(html).toContain('data-testid="pro-new"');
-    });
-
-    it(`renders adaptable templates behind showUnmeasuredRoutes in extended build (${lang})`, async () => {
-      stubs(lang);
-      vi.stubEnv('VITE_EXTENDED_ROUTES', '1');
-      const { LanguageProvider } = await import('../../../lib/LanguageContext');
-      const { default: Pro } = await import('../Pro.jsx');
-      const html = renderToStaticMarkup(<LanguageProvider><Pro onClose={() => {}} /></LanguageProvider>);
+      expect(html).toContain('pro-templates');
       expect(html).toContain(PRO[lang].templatesHead);
       expect(html).toContain('data-testid="pro-templates-note"');
-      expect(html).not.toMatch(/Modèles recommandés|Recommended templates/);
+      expect(html).toContain('data-testid="template-posture"');
+      expect(html).toContain('data-testid="template-shoulder"');
+      expect(html).toContain('data-testid="template-conditioning"');
+      expect(html).toContain('data-testid="pro-compare"');
+      expect(html).toContain('data-testid="tab-pro-clients"');
+      expect(html).toContain('data-testid="pro-new"');
     });
 
     it(`exposes client preview button in the editor and renders read-only Programme preview in ${lang}`, async () => {
@@ -96,17 +86,21 @@ describe('Espace pro examples and client preview (Task 5 & Card 048)', () => {
     });
   }
 
-  it('returns null for templates in production build, and template drafts in extended build (Card 048)', async () => {
+  it('returns clean balanced template drafts in production build', async () => {
     const { createFromTemplate } = await import('../programme-store');
-    expect(createFromTemplate('posture')).toBeNull();
-    expect(createFromTemplate('shoulder')).toBeNull();
-    expect(createFromTemplate('conditioning')).toBeNull();
-
-    vi.stubEnv('VITE_EXTENDED_ROUTES', '1');
-    const { createFromTemplate: createExtended } = await import('../programme-store');
-    const posture = createExtended('posture');
+    const posture = createFromTemplate('posture');
     expect(posture).not.toBeNull();
-    expect(posture.title).toBe('Posturologie & Mobilité');
+    expect(posture.title).toBe('Renforcement & Posture');
     expect(posture.items.length).toBe(3);
+
+    const shoulder = createFromTemplate('shoulder');
+    expect(shoulder).not.toBeNull();
+    expect(shoulder.title).toBe('Épaule & Mobilité');
+    expect(shoulder.items.length).toBe(3);
+
+    const conditioning = createFromTemplate('conditioning');
+    expect(conditioning).not.toBeNull();
+    expect(conditioning.title).toBe('Conditioning & Renforcement général');
+    expect(conditioning.items.length).toBe(3);
   });
 });

@@ -26,7 +26,14 @@ export default function Results({ payload = (typeof window !== 'undefined' ? res
 
   useEffect(() => {
     let live = true;
-    decodeResults(payload).then(r => { if (live) setState(r.ok ? { kind: 'results', results: r.results } : { kind: 'error', error: r.error }); });
+    decodeResults(payload).then(r => {
+      if (live) {
+        setState(r.ok ? { kind: 'results', results: r.results } : { kind: 'error', error: r.error });
+        if (r.ok && r.results) {
+          import('../../lib/coachStorage').then(m => m.recordReceivedResults(r.results)).catch(() => {});
+        }
+      }
+    });
     return () => { live = false; };
   }, [payload]);
 

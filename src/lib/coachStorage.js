@@ -179,6 +179,87 @@ export async function getClientCarnet(clientId) {
   return c && Number(c.totalPurchased) > 0 ? c : null;
 }
 
+/**
+ * Records a client session received from "Envoyer les résultats au coach" or a #resultats link.
+ * Finds or creates the client by name (results.who), then logs the session with reps, load, RPE, and pain level.
+ * @param {{ title: string, who?: string, day: string, time?: string, items: Array<object> }} results
+ */
+export async function recordReceivedResults(results) {
+  if (!results || !Array.isArray(results.items)) return null;
+  const clientName = (results.who && String(results.who).trim()) || 'Client invité';
+  const all = await getAllClients();
+  let client = all.find(c => c.name && c.name.trim().toLowerCase() === clientName.toLowerCase());
+  if (!client) {
+    client = await saveClient({
+      name: clientName,
+      goals: results.title ? `Programme : ${results.title}` : '',
+      notes: 'Ajouté automatiquement via retour séance',
+    });
+  }
+  const existingSessions = await getClientSessions(client.id);
+  const duplicate = existingSessions.find(s => s.date === results.day && s.time === results.time && s.title === results.title);
+  if (duplicate) return { client, session: duplicate };
+
+  const session = await logClientSession(client.id, {
+    date: results.day,
+    time: results.time || '',
+    title: results.title || 'Séance',
+    type: 'Programme reçu',
+    durationMin: 45,
+    items: results.items,
+  });
+  return { client, session };
+}
+
+/**
+ * Seeds demo clients (Lucas Botcazou, Baptiste, Hugo Blondel) with realistic filmed sessions (reps, load, RPE, pain).
+ */
+export async function seedSampleClients() {
+  const c1 = await saveClient({
+    name: 'Lucas Botcazou',
+    goals: 'Prise de muscle & renforcement',
+    notes: 'LBTZ Coaching. Travail sur la profondeur du squat.',
+  });
+  await logClientSession(c1.id, {
+    date: '2026-11-20',
+    time: '18:30',
+    title: 'Renforcement & Posture',
+    type: 'Programme reçu',
+    durationMin: 50,
+    items: [
+      { key: 'squat', sets: 3, reps: 10, done: [10, 10, 10], loads: [80, 80, 80], efforts: [8, 8, 8.5], pains: [null, null, null] },
+      { key: 'romanian_deadlift', sets: 3, reps: 10, done: [10, 10, 10], loads: [70, 70, 70], efforts: [7, 7.5, 8], pains: [null, null, null] },
+      { key: 'doorway_row', sets: 3, reps: 12, done: [12, 12, 12], loads: [null, null, null], efforts: [7, 7, 7], pains: [null, null, null] },
+    ],
+  });
+
+  const c2 = await saveClient({
+    name: 'Baptiste',
+    goals: 'BodyConcept. Mobilité & renforcement scapulaire',
+    notes: 'Surveiller l’alignement des épaules et tempo excentrique.',
+  });
+  await logClientSession(c2.id, {
+    date: '2026-11-21',
+    time: '09:15',
+    title: 'Épaule & Mobilité',
+    type: 'Programme reçu',
+    durationMin: 40,
+    items: [
+      { key: 'lateral_raise', sets: 3, reps: 10, done: [10, 10, 10], loads: [8, 8, 8], efforts: [7, 7, 7], pains: [null, null, null] },
+      { key: 'bicep_curl', sets: 3, reps: 12, done: [12, 12, 12], loads: [12, 12, 12], efforts: [8, 8, 8], pains: [null, null, null] },
+      { key: 'banded_face_pull', sets: 3, reps: 12, done: [12, 12, 12], loads: [15, 15, 15], efforts: [7, 7, 8], pains: [null, 'Légère tension fin de série', null] },
+    ],
+  });
+
+  const c3 = await saveClient({
+    name: 'Hugo Blondel',
+    goals: 'Spartan Coaching. Préparation physique & conditioning',
+    notes: 'Nouveau client prêt pour un programme.',
+  });
+
+  return [c1, c2, c3];
+}
+
 // ---------------------------------------------------------------------------
 // Client Nutrition & Meal Logging
 // ---------------------------------------------------------------------------
