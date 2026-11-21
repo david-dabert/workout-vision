@@ -53,3 +53,8 @@ export const CLINICAL_TREND_SHOWN = false;
 // Card 058 (cards/058-coach-results-load-effort.md): whether the coach's programme and results loop shows load, effort
 // (RPE 0-10) and client pain notes. Off in production until Phase 1 gate. Status: experimental.
 export const COACH_LOOP_SHOWN = false;
+
+// Card 057 (cards/057-capture-at-rest.md): whether live capture enforces rest-bounded recording (3 s countdown,
+// 2 s stillness required before rep 1, auto-stop after 2 s of stillness). Off in production. Status: experimental.
+export const CAPTURE_AT_REST = false;
+

@@ -13,6 +13,8 @@ import { GuideFigure } from './GuideFigure';
 import { FITNESS_TESTS } from '../../lib/fitness-tests';
 import { canOpenCamera, readFilmMode, writeFilmMode } from '../../lib/liveCamera';
 import { liveBuild } from '../../lib/buildFlags';
+import { CAPTURE_AT_REST } from './measures';
+import { StillnessDetector } from '../../lib/stillnessDetector';
 import { getExercise } from '../../lib/exercises/index';
 import FilmExerciseDrawer from './FilmExerciseDrawer';
 import './Film.css';
@@ -112,6 +114,14 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
     onChangeLift?.(newLift);
     setDrawerOpen(false);
   }
+
+  // Card 057: rest-bounded capture detector when feature flag active
+  const stillnessDetectorRef = useRef(null);
+  useEffect(() => {
+    if (CAPTURE_AT_REST) {
+      stillnessDetectorRef.current = new StillnessDetector({ requiredDurationSec: 2.0 });
+    }
+  }, []);
 
   const [sampleLoading, setSampleLoading] = useState(false);
   const [sampleError, setSampleError] = useState(false);
@@ -245,6 +255,12 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
               ? (fr ? `Angle caméra\u00A0: ${deviceTilt}° · Aligné` : `Camera tilt: ${deviceTilt}° · Aligned`)
               : (fr ? `Angle caméra\u00A0: ${deviceTilt}° · Redressez le téléphone` : `Camera tilt: ${deviceTilt}° · Tilt phone upright`)}
           </span>
+        </div>
+      )}
+      {CAPTURE_AT_REST && (
+        <div className="film-rest-pill" data-testid="film-capture-at-rest">
+          <span className="film-tilt-dot" aria-hidden="true" />
+          <span>{fr ? 'Capture calée au repos\u00A0: départ et fin immobiles' : 'Rest-bounded capture: stationary start and end'}</span>
         </div>
       )}
       {/* A fitness test is filmed as its protocol says (fitness-tests.js): its own three steps. */}
