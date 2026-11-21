@@ -124,7 +124,7 @@ export const PROPOSAL_MAX_SAMPLES = 3 * 60 * TARGET_FPS;
  * a batch of David's labelled videos read with ?lifter=1&poses=1 (listed in test/real-phone/phone-poses/README.md).
  */
 export function lifterAsked() {
-  try { return typeof location !== 'undefined' && new URLSearchParams(location.search).get('lifter') === '1'; } catch { return false; }
+  try { return typeof location === 'undefined' || new URLSearchParams(location.search).get('lifter') !== '0'; } catch { return true; }
 }
 export function allPosesAsked() {
   try { return typeof location !== 'undefined' && new URLSearchParams(location.search).get('poses') === '1'; } catch { return false; }
@@ -133,6 +133,7 @@ const r4 = v => Math.round(v * 1e4) / 1e4;
 // The file also carries the lift chosen and the count this read gives (summarizeCount on the samples the app counts,
 // before any read error is raised), so a stored file needs nothing from memory (test/real-phone/phone-poses/).
 function saveAllPoses(file, frames, lift, counted) {
+  if (typeof document === 'undefined') return;
   try {
     const one = p => ({
       image: p.image?.map(q => [r4(q.x), r4(q.y), r4(q.visibility ?? 0)]) ?? null,

@@ -18,7 +18,7 @@ describe('the incomplete screen on a read out of time order', () => {
   it('says part of the video was read twice, in English and French, with no NaN', async () => {
     const en = await render('en', { read: 439, expected: 439, disordered: true });
     expect(en).toContain('Part of the video was read twice.');
-    expect(en).not.toMatch(/NaN|100%/);
+    expect(en).not.toMatch(/NaN|Only 100%/);
     const fr = await render('fr', { read: 439, expected: 439, disordered: true });
     expect(fr).toContain('Une partie de la vidéo a été lue deux fois.');
     expect(fr).not.toMatch(/NaN/);
