@@ -452,7 +452,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       // second one missed (audit FINDING-002: 30 then 409 of 439 added up to a "whole" read).
       if (index === 0) {
         await drain();
-        if (timestamps.length) { imageLandmarks.length = 0; worldLandmarks.length = 0; timestamps.length = 0; sampleAt.clear(); }
+        if (timestamps.length) { imageLandmarks.length = 0; worldLandmarks.length = 0; timestamps.length = 0; allFrames.length = 0; sampleAt.clear(); }
       }
       // The pixels the extractor already read for its frozen-read check (one readback per sample, not two).
       const pixels = (read ?? canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height)).data.buffer;
@@ -507,7 +507,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     if (lifterOn && allFrames.length === worldLandmarks.length) {
       const frames = allFrames.map(f => ({ t: f.t, poses: f.poses.length ? f.poses : f.crop ? [f.crop] : [] }));
       const sel = chooseLifter(frames, lift);
-      if (!sel.single) sel.world.forEach((w, i) => { worldLandmarks[i] = w; imageLandmarks[i] = sel.image[i]; });
+      if (!sel.single && sel.chosen >= 0 && sel.world) sel.world.forEach((w, i) => { worldLandmarks[i] = w; imageLandmarks[i] = sel.image[i]; });
     }
     const countSummary = summarizeCount(worldLandmarks, timestamps, lift, undefined, imageLandmarks);
     // The engines wired here on 11-13 October 2026 are no longer run on a set (honesty audit of 14 October 2026): the

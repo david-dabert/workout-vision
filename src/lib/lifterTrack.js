@@ -190,12 +190,17 @@ export function chooseLifter(frames, lift, { aspect = 1, locate } = {}) {
     return { image: frames.map(f => f.poses?.[0]?.image ?? null), world: frames.map(f => f.poses?.[0]?.world ?? null), timestamps, people: [], chosen: -1, single: true };
   }
   const { tracklets, unit } = linkTracklets(frames, { aspect, locate });
-  if (!tracklets.length) return { image: none(), world: none(), timestamps, people: [], chosen: -1 };
+  if (!tracklets.length) {
+    return { image: frames.map(f => f.poses?.[0]?.image ?? null), world: frames.map(f => f.poses?.[0]?.world ?? null), timestamps, people: [], chosen: -1, single: true };
+  }
   const people = groupPeople(tracklets, unit).map(p => {
     const world = none(), image = none();
     for (const { f, k } of p.items) { world[f] = frames[f].poses[k].world ?? null; image[f] = frames[f].poses[k].image ?? null; }
     return { ...p, world, image, ...motionScore(world, timestamps, lift) };
   });
+  if (!people.length) {
+    return { image: frames.map(f => f.poses?.[0]?.image ?? null), world: frames.map(f => f.poses?.[0]?.world ?? null), timestamps, people: [], chosen: -1, single: true };
+  }
   let chosen = 0;
   people.forEach((p, i) => { if (p.score > people[chosen].score || (p.score === people[chosen].score && p.seen > people[chosen].seen)) chosen = i; });
   const lifter = people[chosen];
@@ -211,6 +216,10 @@ export function chooseLifter(frames, lift, { aspect = 1, locate } = {}) {
       if (!best || d < best.d) best = { d, p };
     }
     if (best) { world[f] = best.p.world[f]; image[f] = best.p.image[f]; fromFragments++; }
+    else if (fr.poses?.length === 1 && fr.poses[0]?.world) {
+      world[f] = fr.poses[0].world;
+      image[f] = fr.poses[0].image ?? null;
+    }
   });
   return { image, world, timestamps, people, chosen, fromFragments };
 }
