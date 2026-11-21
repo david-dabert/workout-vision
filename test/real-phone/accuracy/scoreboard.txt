@@ -22,7 +22,7 @@ Right when sure (R16, sure.ts; measured, decides nothing): of 15 sets that decid
    landmarks/bicep_curl_7_side_mufhf3wy.json.gz  label 7  before 7 (exact)  now 7 (exact)
    landmarks/lat_pulldown_10_front_mufhlh4o.json.gz  label 10  before 10 (exact)  now 10 (exact)
    landmarks/lateral_raise_10_front_mufhhbun.json.gz  label 10  before 10 (exact)  now 10 (exact)
--> landmarks/overhead_press_10_front_mufhjkku.json.gz  label 10  before 9 (off -1)  now 10 (exact)  (press: measured, decides nothing, PLAN.md)
+   landmarks/overhead_press_10_front_mufhjkku.json.gz  label 10  before 10 (exact)  now 10 (exact)  (press: measured, decides nothing, PLAN.md)
 
 Real video, 7 October (label: David's count, R1; the built app's own read of each whole video): of the 17 sets in the baseline, 12 exact now, 12 before; 0 newly catastrophic, 1 known catastrophic (shown, gated on growth), 0 newly refused; 2 refused of 17.
 Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 17 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].

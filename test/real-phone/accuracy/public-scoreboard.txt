@@ -1,5 +1,5 @@
-Public scoreboard 2026-11-21: 1064 build sets, 534 exact (50%). Of the 949 in the baseline that decide, 482 exact now, 481 before; 0 became off by 3 or more. The 115 bench and overhead press sets are measured and decide nothing (PLAN.md).
-Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 949 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; Countix's two readings of a clip counted as two sets, as in the headline; measured, decides nothing): 1 gained, 0 lost, McNemar p = 1.00; exact-rate change +0.1 points, 95 % interval [0.0, +0.3].
+Public scoreboard 2026-11-21: 1064 build sets, 534 exact (50%). Of the 949 in the baseline that decide, 482 exact now, 482 before; 0 became off by 3 or more. The 115 bench and overhead press sets are measured and decide nothing (PLAN.md).
+Paired (paired.ts: exact McNemar test, McNemar 1947; percentile bootstrap of the 949 sets, 10000 resamples, seed 1, Efron and Tibshirani 1993; Countix's two readings of a clip counted as two sets, as in the headline; measured, decides nothing): 0 gained, 0 lost, McNemar p = 1.00; exact-rate change 0.0 points, 95 % interval [0.0, 0.0].
 Pose doubt (counting/doubt.js, experimental, decides nothing): of 946 counted sets, 146 flagged: 50 exact (34%), 17 off by 3+ (12%); 800 not flagged: 484 exact (61%), 22 off by 3+ (3%). Sets off by 3+ flagged: 17 of 39.
 Right when sure (R16, sure.ts; measured, decides nothing): of 949 sets that decide, 834 counted. With the body check alone (before 19 October 2026), shown as sure 758: 444 exact (59%), 297 off by 1 or 2, 17 off by 3+; asked to confirm 76: 38 exact (50%), 35 off by 1 or 2, 3 off by 3+. As the app ships, the sensitivity check, a refused head rep and pose doubt asking too: shown as sure 603: 385 exact (64%), 214 off by 1 or 2, 4 off by 3+; asked to confirm 231: 97 exact (42%), 118 off by 1 or 2, 16 off by 3+. With the open last rise asking too (card 039, David's #collecte phone only): shown as sure 506: 359 exact (71%), 145 off by 1 or 2, 2 off by 3+; asked to confirm 328: 123 exact (38%), 187 off by 1 or 2, 18 off by 3+.
 
@@ -34,8 +34,6 @@ Countix by distinct clip: 447 labelled clips from 435 YouTube videos, each read 
 | mmfit overhead_press (press: measured, decides nothing, PLAN.md) | 39 | 25 | 14 | 0 | 0 |
 | mmfit squat | 40 | 40 | 0 | 0 | 0 |
 
--> public/countix/build/G1E_vGTK4PI_000011_733.json.gz  label 5  before 3  now 4
--> public/countix/build/Py0A9wWkWao_000198_0.json.gz  label 5  before 4  now 5
 
 Not scored (5274), each with its reason:
 public/countix/APkos_Kqa3M_000017_0: left out: battle rope training is not a lift the app counts

@@ -1,7 +1,7 @@
 # Card 051: Rep duration against RepCount-A build boundaries
 Date: 2026-11-21
 Sets read: 79 mapped build sets (of 124 RepCount-A build sets)
-Matched reps: 601
+Matched reps: 604
 
 ## Thresholds (proposed in Card 051, UNSOURCED)
 - Proposed median threshold: <= 0.15 s
@@ -9,7 +9,7 @@ Matched reps: 601
 
 ## Overall Results
 - Median absolute error: 0.500 s (FAIL)
-- 90th percentile absolute error: 1.126 s (FAIL)
+- 90th percentile absolute error: 1.118 s (FAIL)
 - Signed median error: -0.466 s (app under-measures rep duration)
 - Verdict against proposed thresholds: FAIL
 
@@ -17,5 +17,5 @@ Matched reps: 601
 - bench_press (71 matched reps): median 0.901 s, 90th percentile 1.935 s
 - front_raise (77 matched reps): median 0.667 s, 90th percentile 1.209 s
 - pull_up (129 matched reps): median 0.401 s, 90th percentile 1.043 s
-- push_up (162 matched reps): median 0.510 s, 90th percentile 0.967 s
+- push_up (165 matched reps): median 0.500 s, 90th percentile 0.967 s
 - squat (162 matched reps): median 0.447 s, 90th percentile 0.901 s

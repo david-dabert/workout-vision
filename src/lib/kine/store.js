@@ -1,16 +1,109 @@
-// What stays on the physiotherapist's and the patient's phones (localStorage): the practitioner's identity for the
-// documents, the next invoice number, the patient's attempts, and the results the physiotherapist received (the
-// follow-up). Every read and write survives a blocked storage
-// (private browsing): the screens work, and simply forget. Status: convention.
+// What stays on the physiotherapist's and the patient's phones (IndexedDB kineStore via storage.js, Card 059): the
+// practitioner's identity for documents, invoice number, attempts, and received results. Synchronous in-memory cache
+// backs instant UI access without blocking renders; writes persist to IndexedDB; legacy localStorage migrated and cleared.
 import { cleanResult } from './links';
+import { kineStore } from '../storage';
 
 const PROFILE = 'wv_kine_profile', INVOICE_SEQ = 'wv_kine_invoice_seq', ATTEMPTS = 'wv_kine_attempts', RESULTS = 'wv_kine_results', LABELS = 'wv_kine_labels';
 
-const read = (key, fallback) => {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
+const KEY_MAP = {
+  [PROFILE]: 'profile',
+  [INVOICE_SEQ]: 'invoice_seq',
+  [ATTEMPTS]: 'attempts',
+  [RESULTS]: 'results',
+  [LABELS]: 'labels',
 };
-/** Writes a value; false when the storage is blocked or full. */
-const write = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch { return false; } };
+
+// In-memory cache holding current values for synchronous screen access
+export const memoryCache = new Map();
+
+export function syncKineCache(key, value) {
+  const storeKey = KEY_MAP[key] || key;
+  memoryCache.set(storeKey, value);
+}
+
+// Helper to asynchronously sync memoryCache with kineStore and migrate from localStorage if present
+let initPromise = null;
+export async function initKineStore(force = false) {
+  if (initPromise && !force) return initPromise;
+  return (initPromise = (async () => {
+    // 1. Check legacy localStorage keys and migrate into kineStore
+    if (typeof localStorage !== 'undefined') {
+      for (const [lsKey, storeKey] of Object.entries(KEY_MAP)) {
+        try {
+          const item = localStorage.getItem(lsKey);
+          if (item) {
+            const parsed = JSON.parse(item);
+            await kineStore.setItem(storeKey, parsed);
+            memoryCache.set(storeKey, parsed);
+            localStorage.removeItem(lsKey);
+          }
+        } catch { /* ignore */ }
+      }
+    }
+    // 2. Load whatever is in kineStore into memoryCache
+    for (const storeKey of Object.values(KEY_MAP)) {
+      try {
+        const val = await kineStore.getItem(storeKey);
+        if (val !== null && val !== undefined) {
+          memoryCache.set(storeKey, val);
+        }
+      } catch { /* ignore */ }
+    }
+  })());
+}
+
+// Eagerly initiate store synchronization
+if (typeof window !== 'undefined' || typeof globalThis !== 'undefined') {
+  initKineStore().catch(() => {});
+}
+
+const read = (key, fallback) => {
+  const storeKey = KEY_MAP[key] || key;
+  if (memoryCache.has(storeKey)) {
+    return memoryCache.get(storeKey);
+  }
+  // If memory cache is cold, check localStorage for backward compatibility or during migration
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const v = localStorage.getItem(key);
+      if (v) {
+        const parsed = JSON.parse(v);
+        memoryCache.set(storeKey, parsed);
+        kineStore.setItem(storeKey, parsed).catch(() => {});
+        localStorage.removeItem(key);
+        return parsed;
+      }
+    }
+  } catch { /* ignore */ }
+  return fallback;
+};
+
+/** Writes a value; persists to memoryCache synchronously and kineStore in IndexedDB asynchronously. */
+const write = (key, value) => {
+  const storeKey = KEY_MAP[key] || key;
+  try {
+    // Check if storage is blocked or full (e.g. QuotaExceededError or private browsing)
+    if (typeof localStorage !== 'undefined' && typeof localStorage.setItem === 'function') {
+      try {
+        localStorage.setItem('__wv_storage_check__', '1');
+        localStorage.removeItem('__wv_storage_check__');
+      } catch {
+        return false;
+      }
+    }
+    memoryCache.set(storeKey, value);
+    kineStore.setItem(storeKey, value).catch(e => {
+      console.warn('[KineStore] Failed to persist to IndexedDB:', storeKey, e);
+    });
+    if (typeof localStorage !== 'undefined') {
+      try { localStorage.removeItem(key); } catch { /* ignore */ }
+    }
+    return true;
+  } catch {
+    return false;
+  }
+};
 
 export const EMPTY_PROFILE = Object.freeze({ name: '', title: 'Masseur-kinésithérapeute', address: '', phone: '', email: '', rpps: '', siret: '', fee: 0 });
 export const readProfile = () => ({ ...EMPTY_PROFILE, ...read(PROFILE, {}) });

@@ -319,6 +319,10 @@ export interface WorkoutRecord {
   effort?: number | null;
   /** Client sensation / verbatim pain note (Card 058). */
   pain?: string | null;
+  /** Compressed body points / landmarks (Card 059), gzip of JSON via fflate in base64. */
+  bodyPoints?: string | null;
+  /** Raw or decompressed landmarks { worldLandmarks, timestamps } if unpacked in memory. */
+  landmarks?: unknown;
 }
 
 export interface RepCounterDiagnostics {
