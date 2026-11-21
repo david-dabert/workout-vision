@@ -125,7 +125,7 @@ function LiftCard({ children, onClick, label, describedBy, cardRef }) {
 }
 
 export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, onProgramme, onManifesto, onEquine, onSports, onCoaches, onBuddies, onErgonomics, onReference, onChat, onUsage, held = null }) {
-  const { lang, setLang, tExercise } = useT(), fr = lang === 'fr';
+  const { lang, tExercise } = useT(), fr = lang === 'fr';
   const railRef = useRef(null), dotsRef = useRef(null), cards = useRef([]);
   // The guide's names load after the choice; until then a set of an exercise without a card is not
   // named, so the welcome never shows an internal key (review of 29 September).
@@ -171,17 +171,6 @@ export default function Choice({ onChoose, onGuide, onHistory, onAbout, onPro, o
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
             <span>{fr ? '100\u00A0% local · La vidéo reste sur votre téléphone' : '100% On-Device · Video stays on your phone'}</span>
           </span>
-          {setLang && (
-            <button
-              type="button"
-              className="pill press choice-lang-btn"
-              onClick={() => setLang(fr ? 'en' : 'fr')}
-              aria-label={fr ? 'Passer en anglais' : 'Passer en français'}
-              data-testid="choice-lang-toggle"
-            >
-              {fr ? 'EN' : 'FR'}
-            </button>
-          )}
           <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
         </div>
         <UnknownAddressNote fr={fr} />

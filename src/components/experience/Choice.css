@@ -122,13 +122,3 @@
   .wv-experience .rail { margin-top: 10px; }
   .wv-experience .altar-name { font-size: var(--fs-altar-xs); }
 }
-
-.wv-experience .choice-lang-btn {
-  background: transparent;
-  border: 1px solid var(--hair-2);
-  color: var(--c-fg);
-  font-family: var(--mono);
-  font-size: var(--fs-label);
-  padding: 4px 10px;
-  cursor: pointer;
-}

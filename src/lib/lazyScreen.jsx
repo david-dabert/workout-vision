@@ -12,31 +12,9 @@ import { lazy, useRef } from 'react';
 // after an error, and a download started there would loop instead of reaching the error screen (CI, e2e/history.spec.js).
 const screens = new Set();
 
-function isChunkLoadError(err) {
-  const msg = String(err?.message || err || '').toLowerCase();
-  return (
-    msg.includes('failed to fetch dynamically imported module') ||
-    msg.includes('loading chunk') ||
-    msg.includes('error loading dynamically imported module')
-  );
-}
-
 export function lazyScreen(load) {
   let Mod = null, pending = null, failed = false, Lazy = null;
-  const attempt = () => (pending ||= load().then(m => { Mod = m.default; return m; }, err => {
-    failed = true;
-    if (typeof window !== 'undefined' && isChunkLoadError(err)) {
-      try {
-        const key = 'wv_chunk_reload';
-        if (sessionStorage.getItem(key) !== window.location.href) {
-          sessionStorage.setItem(key, window.location.href);
-          window.location.reload();
-          return new Promise(() => {}); // hold pending while page reloads
-        }
-      } catch { /* storage blocked */ }
-    }
-    throw err;
-  }));
+  const attempt = () => (pending ||= load().then(m => { Mod = m.default; return m; }, err => { failed = true; throw err; }));
   const make = () => lazy(() => attempt().catch(err => {
     console.error('[Lazy load failed]', err);
     return { default: () => { throw err; } };
