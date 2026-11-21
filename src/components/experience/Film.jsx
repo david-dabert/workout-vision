@@ -14,6 +14,7 @@ import { FITNESS_TESTS } from '../../lib/fitness-tests';
 import { canOpenCamera, readFilmMode, writeFilmMode } from '../../lib/liveCamera';
 import { liveBuild } from '../../lib/buildFlags';
 import { CAPTURE_AT_REST } from './measures';
+import { StillnessDetector } from '../../lib/stillnessDetector';
 import { getExercise } from '../../lib/exercises/index';
 import FilmExerciseDrawer from './FilmExerciseDrawer';
 import './Film.css';
@@ -113,6 +114,14 @@ export default function Film({ lift, onBack, onFile, onLive, onChangeLift, hero:
     onChangeLift?.(newLift);
     setDrawerOpen(false);
   }
+
+  // Card 057: rest-bounded capture detector when feature flag active
+  const stillnessDetectorRef = useRef(null);
+  useEffect(() => {
+    if (CAPTURE_AT_REST) {
+      stillnessDetectorRef.current = new StillnessDetector({ requiredDurationSec: 2.0 });
+    }
+  }, []);
 
   const [sampleLoading, setSampleLoading] = useState(false);
   const [sampleError, setSampleError] = useState(false);
