@@ -452,3 +452,119 @@ export function createDeviceStabilityStateMachine(): FiniteStateMachine<DeviceSt
     },
   });
 }
+
+// ============================================================================
+// 4. COACH FEEDBACK & CLIENT RESULT LOOP MACHINE (Card 058)
+// ============================================================================
+
+export type CoachFeedbackState =
+  | 'AWAITING_INPUT'
+  | 'LOGGING_LOAD'
+  | 'SCALING_RPE'
+  | 'NOTING_PAIN'
+  | 'SERIALIZING'
+  | 'DISPATCHED'
+  | 'ERROR';
+
+export type CoachFeedbackEvent =
+  | 'START_FEEDBACK'
+  | 'SET_LOAD'
+  | 'SET_RPE'
+  | 'SET_PAIN'
+  | 'SUBMIT'
+  | 'PACK_SUCCESS'
+  | 'FAIL'
+  | 'RESET';
+
+export interface CoachFeedbackContext {
+  exerciseKey: string;
+  setIndex: number;
+  plannedLoadKg?: number;
+  actualLoadKg?: number;
+  rpe?: number; // 0 to 10
+  painNote?: string; // <= 140 chars verbatim client words
+  errorReason?: string;
+  serializedPayload?: string;
+}
+
+export function createCoachFeedbackStateMachine(
+  exerciseKey = '',
+  setIndex = 0,
+  plannedLoadKg?: number
+): FiniteStateMachine<CoachFeedbackState, CoachFeedbackEvent, CoachFeedbackContext> {
+  return new FiniteStateMachine<CoachFeedbackState, CoachFeedbackEvent, CoachFeedbackContext>({
+    id: 'CoachFeedbackLoop',
+    initial: 'AWAITING_INPUT',
+    context: {
+      exerciseKey,
+      setIndex,
+      plannedLoadKg,
+      actualLoadKg: plannedLoadKg,
+      rpe: undefined,
+      painNote: undefined,
+      errorReason: undefined,
+      serializedPayload: undefined,
+    },
+    states: {
+      AWAITING_INPUT: {
+        on: {
+          START_FEEDBACK: () => ({ nextState: 'LOGGING_LOAD' }),
+          SET_LOAD: (ctx, kg: number) => ({
+            nextState: 'SCALING_RPE',
+            context: { actualLoadKg: Math.max(0, Math.min(500, Math.round(kg))) },
+          }),
+        },
+      },
+      LOGGING_LOAD: {
+        on: {
+          SET_LOAD: (ctx, kg: number) => ({
+            nextState: 'SCALING_RPE',
+            context: { actualLoadKg: Math.max(0, Math.min(500, Math.round(kg))) },
+          }),
+          FAIL: (ctx, err: string) => ({ nextState: 'ERROR', context: { errorReason: err } }),
+        },
+      },
+      SCALING_RPE: {
+        on: {
+          SET_RPE: (ctx, rpe: number) => ({
+            nextState: 'NOTING_PAIN',
+            context: { rpe: Math.max(0, Math.min(10, Math.round(rpe))) },
+          }),
+          FAIL: (ctx, err: string) => ({ nextState: 'ERROR', context: { errorReason: err } }),
+        },
+      },
+      NOTING_PAIN: {
+        on: {
+          SET_PAIN: (ctx, note: string) => ({
+            nextState: 'SERIALIZING',
+            context: { painNote: String(note || '').slice(0, 140).trim() },
+          }),
+          SUBMIT: () => ({ nextState: 'SERIALIZING' }),
+          FAIL: (ctx, err: string) => ({ nextState: 'ERROR', context: { errorReason: err } }),
+        },
+      },
+      SERIALIZING: {
+        on: {
+          PACK_SUCCESS: (ctx, payload: string) => ({
+            nextState: 'DISPATCHED',
+            context: { serializedPayload: payload },
+          }),
+          FAIL: (ctx, err: string) => ({ nextState: 'ERROR', context: { errorReason: err } }),
+        },
+      },
+      DISPATCHED: {
+        on: {
+          RESET: () => ({
+            nextState: 'AWAITING_INPUT',
+            context: { actualLoadKg: undefined, rpe: undefined, painNote: undefined, serializedPayload: undefined },
+          }),
+        },
+      },
+      ERROR: {
+        on: {
+          RESET: () => ({ nextState: 'AWAITING_INPUT', context: { errorReason: undefined } }),
+        },
+      },
+    },
+  });
+}

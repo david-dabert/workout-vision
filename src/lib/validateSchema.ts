@@ -52,6 +52,8 @@ export const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   // Partial repetitions of sets saved on 13-14 October 2026 (core.ts detectPartialReps): kept as stored, read by no
   // screen (honesty audit of 14 October 2026: unmeasured, and the hypertrophy claim shown with them was unsourced).
   'partialCount', 'partials',
+  // Client feedback on a programme set: effort (RPE 0-10) and verbatim pain note (Card 058).
+  'effort', 'pain',
 ];
 
 const DEFAULTS: Partial<WorkoutRecord> = {

@@ -71,6 +71,25 @@ export async function updateSetLoad(id, kg) {
   return updated ?? null;
 }
 
+/** Stores or clears load, effort (0-10) and pain on a saved set (Card 058). */
+export async function updateSetFeedback(id, { load, effort, pain } = {}) {
+  if (!id) return null;
+  const patch = {};
+  if (load !== undefined) patch.weight = typeof load === 'number' && Number.isFinite(load) && load > 0 ? load : undefined;
+  if (effort !== undefined) patch.effort = typeof effort === 'number' && Number.isFinite(effort) && effort >= 0 ? Math.min(10, Math.round(effort)) : undefined;
+  if (pain !== undefined) patch.pain = typeof pain === 'string' && pain.trim() ? pain.trim().slice(0, 140) : undefined;
+  const { updateWorkout } = await import('../../lib/storage');
+  const updated = await updateWorkout(id, patch);
+  tellOthers();
+  if (known) {
+    known = known.map(w => (w.id === id ? (updated || { ...w, ...patch }) : w));
+    pending = Promise.resolve(known);
+  } else {
+    pending = null;
+  }
+  return updated ?? null;
+}
+
 export const setTime = w => new Date(w.createdAt ?? w.date).getTime();
 
 /**

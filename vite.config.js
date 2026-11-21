@@ -167,8 +167,8 @@ export default defineConfig({
     __GIT_HASH__: JSON.stringify((() => { try { return execSync('git rev-parse --short HEAD').toString().trim(); } catch { return 'dev'; } })()),
   },
   test: {
-    // Agents' worktrees (.claude/) hold other checkouts: a local run tests this one only, as CI does (audit of 3 October).
-    exclude: ['e2e/**', 'node_modules/**', '**/node_modules/**', 'workout-vision-edit/**', '.claude/**', '.git/**'],
+    // Agents' worktrees (.claude/, .worktrees/) hold other checkouts: a local run tests this one only, as CI does (audit of 3 October).
+    exclude: ['e2e/**', 'node_modules/**', '**/node_modules/**', 'workout-vision-edit/**', '.claude/**', '.worktrees/**', '.git/**'],
   },
   build: {
     assetsInlineLimit: 0, // Fonts remain same-origin files under font-src 'self'.

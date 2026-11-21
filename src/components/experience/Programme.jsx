@@ -9,6 +9,7 @@ import {
 } from './programme';
 import { onHomeScreen } from '../../lib/keep-sets';
 import { inAppBrowser } from '../../lib/install';
+import { COACH_LOOP_SHOWN } from './measures';
 import SetCells from './SetCells';
 import { keepReceived, loadReceived, openReceived, removeReceived } from './programme-store';
 import { useSets } from './sets';
@@ -130,7 +131,7 @@ export default function Programme({ payload = (typeof window !== 'undefined' ? p
       <ol className="programme-list" data-reveal style={{ '--i': 2 }}>{p.items.map((item, i) => {
         const name = exerciseName(item.key, lang), e = guideExercise(item.key), got = progress.items[i];
         // The target as the coach set it: sets × reps or sets × the hold, the side when one is set, the rest.
-        const target = c.targetLine(item.sets, item.reps, item.rest, holdOf(item), sideOf(item));
+        const target = c.targetLine(item.sets, item.reps, item.rest, holdOf(item), sideOf(item), COACH_LOOP_SHOWN ? item.load : 0);
         // An exercise the client does not film (programme.js, filmable): one the app no longer counts (withdrawn after
         // the coach sent the programme), one of the guide only, or a hold. Shown with its drawing, not filmed.
         if (!got.counted) return <li key={`${item.key}-${i}`} className="programme-item" data-testid="programme-item">

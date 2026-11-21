@@ -16,7 +16,7 @@ import {
   programmeLink, programmeId, plannedOf, progressOf, toBase64url, targetText, cleanText,
   resultsOf, encodeResults, decodeResults, plainResultsPayload, resultsLink, resultsPayloadOf, RESULT_LIMITS,
   keptLetter, lastDayOf, dayWords, timeWords, RESULTS_DAYS_BACK,
-  SIDES, DEFAULT_HOLD, holdOf, sideOf, frequencyOf, filmable, guideOnly, knownExercise, programmable, fixItem, fixHold, fixTimes,
+  SIDES, DEFAULT_HOLD, holdOf, sideOf, frequencyOf, filmable, guideOnly, knownExercise, programmable, fixItem, fixHold, fixTimes, fixLoad,
   withKind, withSide, resultsSummary, fromBase64url, SHEET_VERSION,
 } from '../programme';
 import { programmePdf, programmeSheet, programmeFileName, programmeQr, packNow, QR_MAX_VERSION, QR_SIDE, QR_BLOCK_MAX, QR_MODULE_MIN } from '../programme-pdf';
@@ -933,5 +933,122 @@ describe('the exercise sheet’s PDF', () => {
     const cued = await drawn(() => programmePdf(long, { lang: 'fr', date, drawings: all, link: linkOf(long) }));
     expect(cued.pages).toBeLessThanOrEqual(7);
     expect(cued.flat).toContain('OUVRIRLEPROGRAMME');
+  });
+});
+
+describe('Card 058: client results carrying load, effort and pain back to coach', () => {
+  const now = new Date(2026, 9, 9, 18, 30);
+  const pWithLoad = {
+    title: 'Force & Hypertrophie', who: 'Alex', note: 'Séance lourde',
+    items: [
+      { key: 'squat', sets: 3, reps: 10, rest: 120, load: 60, note: '' },
+      { key: 'bench_press', sets: 3, reps: 8, rest: 90, load: 50, note: '' },
+    ],
+  };
+
+  it('encodes and decodes planned load in programme link', async () => {
+    const payload = await encodeProgramme(pWithLoad);
+    const decoded = await decodeProgramme(payload);
+    expect(decoded.ok).toBe(true);
+    expect(decoded.programme.items[0].load).toBe(60);
+    expect(decoded.programme.items[1].load).toBe(50);
+    expect(targetText(plannedOf('p1', 0, decoded.programme.items[0]))).toBe(`3${NBSP}×${NBSP}10${NBSP}@${NBSP}60${NBSP}kg`);
+  });
+
+  it('brings typed load in builder into bounds (fixLoad)', () => {
+    expect(fixLoad('')).toBe(0);
+    expect(fixLoad(null)).toBe(0);
+    expect(fixLoad('60')).toBe(60);
+    expect(fixLoad('600')).toBe(LIMITS.load[1]);
+    expect(fixLoad('-10')).toBe(0);
+  });
+
+  it('roundtrips results with actual loads, effort (RPE 0-10) and client pain notes', async () => {
+    const id = programmeId(pWithLoad);
+    const sets = [
+      { exercise: 'squat', reps: 10, weight: 60, effort: 7, pain: 'Légère gêne au genou droit', createdAt: new Date(2026, 9, 9, 18, 10).getTime(), planned: plannedOf(id, 0, pWithLoad.items[0]) },
+      { exercise: 'squat', reps: 10, weight: 60, effort: 8, pain: '', createdAt: new Date(2026, 9, 9, 18, 15).getTime(), planned: plannedOf(id, 0, pWithLoad.items[0]) },
+      { exercise: 'squat', reps: 10, weight: 62.5, effort: 9, pain: '', createdAt: new Date(2026, 9, 9, 18, 20).getTime(), planned: plannedOf(id, 0, pWithLoad.items[0]) },
+    ];
+    const progress = progressOf(pWithLoad, id, sets, now);
+    expect(progress.items[0].loads).toEqual([60, 60, 62.5]);
+    expect(progress.items[0].efforts).toEqual([7, 8, 9]);
+    expect(progress.items[0].pains).toEqual(['Légère gêne au genou droit', '', '']);
+
+    const res = resultsOf(pWithLoad, progress, now);
+    expect(res.items[0].loads).toEqual([60, 60, 63]); // rounded
+    expect(res.items[0].efforts).toEqual([7, 8, 9]);
+    expect(res.items[0].pains).toEqual(['Légère gêne au genou droit', '', '']);
+
+    for (const gzip of [true, false]) {
+      const payload = await encodeResults(res, { gzip });
+      const decoded = await decodeResults(payload);
+      expect(decoded.ok).toBe(true);
+      expect(decoded.results.items[0].loads).toEqual([60, 60, 63]);
+      expect(decoded.results.items[0].efforts).toEqual([7, 8, 9]);
+      expect(decoded.results.items[0].pains).toEqual(['Légère gêne au genou droit', '', '']);
+    }
+  });
+
+  it('keeps the payload strictly under MAX_PAYLOAD at maximum boundary limits', async () => {
+    const maxItems = Array.from({ length: LIMITS.items }, (_, i) => ({
+      key: i % 2 === 0 ? 'squat' : 'deadlift',
+      sets: 10,
+      reps: 100,
+      rest: 600,
+      load: LIMITS.load[1],
+      note: 'Note',
+    }));
+    const maxProg = {
+      title: 'T'.repeat(LIMITS.title),
+      who: 'W'.repeat(LIMITS.who),
+      note: 'N'.repeat(LIMITS.note),
+      items: maxItems,
+    };
+    const maxResults = {
+      title: maxProg.title,
+      who: maxProg.who,
+      day: '2026-11-21',
+      time: '18:30',
+      items: maxItems.map(item => ({
+        key: item.key,
+        sets: item.sets,
+        reps: item.reps,
+        load: item.load,
+        done: Array(RESULT_LIMITS.done).fill(100),
+        kinds: Array(RESULT_LIMITS.done).fill('a'),
+        loads: Array(RESULT_LIMITS.done).fill(LIMITS.load[1]),
+        efforts: Array(RESULT_LIMITS.done).fill(10),
+        pains: Array(RESULT_LIMITS.done).fill('Gêne musculaire quadri '.repeat(7).slice(0, RESULT_LIMITS.pain)),
+      })),
+    };
+
+    const packed = await encodeResults(maxResults, { gzip: true });
+    expect(packed[0]).toBe('z');
+    expect(packed.length).toBeLessThanOrEqual(MAX_PAYLOAD);
+
+    const decoded = await decodeResults(packed);
+    expect(decoded.ok).toBe(true);
+    expect(decoded.results.items.length).toBe(LIMITS.items);
+    expect(decoded.results.items[0].loads.length).toBe(RESULT_LIMITS.done);
+    expect(decoded.results.items[0].loads[0]).toBe(500);
+    expect(decoded.results.items[0].efforts[0]).toBe(10);
+    expect(decoded.results.items[0].pains[0].length).toBeLessThanOrEqual(RESULT_LIMITS.pain);
+  });
+
+  it('preserves backward compatibility: results without load/effort/pain parse cleanly', async () => {
+    const legacyRaw = {
+      v: 1,
+      t: 'Ancien programme',
+      d: '2026-10-09',
+      x: [['squat', 3, 10, [10, 10, 10]]],
+      k: ['aaa'],
+    };
+    const payload = 'j' + toBase64url(new TextEncoder().encode(JSON.stringify(legacyRaw)));
+    const decoded = await decodeResults(payload);
+    expect(decoded.ok).toBe(true);
+    expect(decoded.results.items[0].loads).toBeUndefined();
+    expect(decoded.results.items[0].efforts).toBeUndefined();
+    expect(decoded.results.items[0].pains).toBeUndefined();
   });
 });

@@ -4,9 +4,10 @@ import { PRO } from './pro-copy';
 import { exerciseName, guideExercise } from './exercise-info';
 import { Thumb } from './Guide';
 import {
-  LIMITS, MAX_PAYLOAD, SIDES, encodeProgramme, plainPayload, programmeLink, programmeOf, fixItem, fixHold, fixTimes, programmable,
+  LIMITS, MAX_PAYLOAD, SIDES, encodeProgramme, plainPayload, programmeLink, programmeOf, fixItem, fixHold, fixTimes, fixLoad, programmable,
   filmable, guideOnly, holdOf, sideOf, withKind, withSide,
 } from './programme';
+import { COACH_LOOP_SHOWN } from './measures';
 import { MAX_DRAFTS, isEmptyDraft, loadDrafts, saveDraft, removeDraft, newDraft, newItem, createFromTemplate } from './programme-store';
 import { useCondensingTopbar } from './topbar';
 import { coachCompareShown, showUnmeasuredRoutes } from '../../lib/buildFlags';
@@ -469,6 +470,7 @@ function Editor({ c, fr, lang, draft, kept, rebuilt = false, focusWho = false, o
               ? <NumField key="hold" id={`p${i}h`} label={c.hold} longLabel={c.holdLong} value={hold} onCommit={text => setItem(i, { holdSec: fixHold(text) })} />
               : <NumField key="reps" id={`p${i}r`} label={c.reps} longLabel={c.repsLong} value={item.reps} onCommit={commit('reps')} />}
             <NumField id={`p${i}t`} label={c.rest} longLabel={c.restLong} value={item.rest} onCommit={commit('rest')} />
+            {COACH_LOOP_SHOWN && <NumField id={`p${i}l`} label={c.load} longLabel={c.loadLong} value={item.load || ''} onCommit={text => setItem(i, { load: fixLoad(text) })} />}
           </div>
           <div className="pro-opts">
             <Choice id={`p${i}k`} label={c.kindLabel} value={hold ? 'hold' : 'reps'} onChange={kind => setItem(i, withKind(item, kind))}

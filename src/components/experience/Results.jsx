@@ -4,6 +4,7 @@ import { PRO } from './pro-copy';
 import { exerciseName, guideExercise } from './exercise-info';
 import { Thumb } from './Guide';
 import { dayWords, decodeResults, guideOnly, holdOf, resultsSummary, targetText, timeWords, resultsPayloadOf } from './programme';
+import { COACH_LOOP_SHOWN } from './measures';
 import SetCells from './SetCells';
 import { useCondensingTopbar } from './topbar';
 import './Pro.css';
@@ -90,6 +91,17 @@ export default function Results({ payload = (typeof window !== 'undefined' ? res
             </span>
           </div>
           <SetCells name={name} sets={item.sets} reps={item.reps} done={item.done} kinds={item.kinds} c={c} testId="results-sets" />
+          {COACH_LOOP_SHOWN && (item.loads || item.efforts || item.pains) && (
+            <div className="results-feedback" data-testid="results-feedback">
+              {item.done.map((_, j) => {
+                const load = item.loads?.[j] ? `${item.loads[j]} kg` : (item.load ? `${item.load} kg` : null);
+                const effort = typeof item.efforts?.[j] === 'number' ? `RPE ${item.efforts[j]}` : null;
+                const pain = item.pains?.[j] ? `« ${item.pains[j]} »` : null;
+                const text = [load, effort, pain].filter(Boolean).join(' · ');
+                return text ? <div key={j} className="results-feedback-row mono" data-testid="results-feedback-row">{`S${j + 1} : ${text}`}</div> : null;
+              })}
+            </div>
+          )}
         </li>;
       })}</ol>
       {/* From the results to the programme: the coach's own draft of it, or one made from the results (excellence hunt,

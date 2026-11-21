@@ -315,6 +315,10 @@ export interface WorkoutRecord {
   vbt?: unknown;
   partialCount?: number;
   partials?: unknown[];
+  /** Perceived exertion / effort (0-10, Card 058). */
+  effort?: number | null;
+  /** Client sensation / verbatim pain note (Card 058). */
+  pain?: string | null;
 }
 
 export interface RepCounterDiagnostics {
