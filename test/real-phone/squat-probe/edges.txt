@@ -1,0 +1,7 @@
+public/countix/build/AfPkXoJM2sY_000004_0.json.gz label 3 window undefined clip 0.00..9.88 all 2 inWin 2 reps 0.00-1.80 2.87-7.01
+public/countix/build/DSdox52D3XY_000004_2970.json.gz label 3 window undefined clip 0.00..6.95 all 2 inWin 2 reps 0.20-2.00 3.14-5.08
+public/countix/build/QQPv17nfR_E_000003_0.json.gz label 6 window undefined clip 0.00..6.13 all 5 inWin 5 reps 0.47-1.07 1.07-2.27 2.33-3.20 3.33-4.33 4.60-5.40
+public/countix/build/VCPKdt3u1vs_000005_0.json.gz label 3 window undefined clip 0.00..9.88 all 2 inWin 2 reps 0.33-2.87 3.94-6.61
+public/countix/build/Wu3MSbqdrbU_000095_0.json.gz label 2 window undefined clip 0.00..3.40 all 1 inWin 1 reps 0.88-3.08
+public/countix/build/dptApZvEt5Y_000003_0.json.gz label 6 window undefined clip 0.00..9.88 all 7 inWin 7 reps 0.20-1.07 1.40-2.07 2.54-4.00 5.41-6.14 6.41-7.27 7.67-8.47 9.01-9.88
+public/countix/build/gV3dgCS0hWU_000009_0.json.gz label 3 window undefined clip 0.00..9.88 all 2 inWin 2 reps 3.54-5.94 8.68-9.88
