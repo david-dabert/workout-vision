@@ -168,7 +168,7 @@ export function compressBodyPoints(worldLandmarks, timestamps) {
   try {
     const json = JSON.stringify({ worldLandmarks, timestamps });
     const bytes = new TextEncoder().encode(json);
-    const gzipped = gzipSync(bytes, { level: 9 });
+    const gzipped = gzipSync(bytes, { level: 9, mtime: 0 });
     if (typeof Buffer !== 'undefined') {
       return Buffer.from(gzipped).toString('base64');
     }

@@ -115,11 +115,13 @@ describe('Card 059: Stored body points compression & recounting', () => {
     };
     const kept = savedSet({ result: fullResult, lift: 'seated_row', n: coreResult.count, corrected: false });
     expect(kept.bodyPoints).toBe(compressed);
+    expect(storage.decompressBodyPoints(kept.bodyPoints)).toEqual(decompressed);
 
     const savedId = await storage.saveWorkout(kept);
     const loaded = await storage.getWorkout(savedId);
 
     expect(loaded.bodyPoints).toBe(compressed);
+    expect(storage.decompressBodyPoints(loaded.bodyPoints)).toEqual(decompressed);
 
     // Recount from stored record using today's core
     const recounted = storage.recountWorkout(loaded);
