@@ -1,5 +1,5 @@
 # 045. A catalogue variant is told the angle of the lift it counts as, and saved with that view
-Status: ready
+Status: done (found done on main, 21 November 2026, nightly run: `exerciseView` in `filming-guide.js` is the one source Film and `Result.jsx:185` read; the card's eval is `filming-guide.test.jsx`, 8 of 8 passed on main at c2b50ff). No code changed by this run.
 Executor: careful (Antigravity; Claude reviews before merge)
 Phase: 1 (a defect; allowed by PLAN.md, THE FREEZE)
 Claim: a person who picks a variant in « Changer » (for example « Développé militaire debout barre », `standing_barbell_overhead_press`) is told to film from the angle of the lift it counts as (« De face » for an overhead press), and a #collecte set filmed that way is saved with that same view.

@@ -1,5 +1,5 @@
 # 049. The production build ships only what its pages use
-Status: in review (PR #514, Antigravity)
+Status: done (#514, merged as 2992d28)
 Nightly run, 18 November 2026 (Claude): `node scripts/check-ship-less.mjs dist` found 16 extended-route files (8 screens) and Open Food Facts in index.html's connect-src, and no Blob client (already gone); after the change, none. The extended build keeps all of them. Chromium's run of check.html's 15 bundled clips requested only `vision_wasm_internal.wasm` (`vision_wasm_module_internal.wasm` and `vision_wasm_nosimd_internal.wasm` never), with no failed request; WebKit is not installed in the agent's container, so both stay until a WebKit log (iOS Safari may need the no-SIMD file).
 
 Run 20 November 2026 (Antigravity):
