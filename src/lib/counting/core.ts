@@ -536,7 +536,7 @@ const TOGETHER_MIN_CORRELATION = param('TOGETHER_MIN_CORRELATION', 0.3);
 // off by 3. They had also been read once for 0.5, the first pick, before the full test suite showed it breaks
 // edges.test.ts (TRIED.md); the exclusion of 0.5 and 0.6 rests on that synthetic test alone. Sweep in TRIED.md. Status: experimental; UNSOURCED (no published rule for a rep cut
 // by the recording).
-const CUT_RETURN_SHARE = param('CUT_RETURN_SHARE', 0.7);
+const CUT_RETURN_SHARE = param('CUT_RETURN_SHARE', 0.6);
 // A last rep the video stops at its working end (David, 18 October 2026: a rep the video shows reaching its working
 // end counts, even when the recording cuts it; his lat pulldown of 11 counts the pull the video ends on). It counts,
 // marked cut, when every one of these holds (detectReps):
@@ -554,7 +554,7 @@ const CUT_RETURN_SHARE = param('CUT_RETURN_SHARE', 0.7);
 // of 0.85 loses the row; hold 1.0 instead of 1.5 would also read set01 hip thrust 6, by 0.1 s, a fit to one clip.
 // Source: UNSOURCED (no published rule for a rep cut by the recording). Status: experimental.
 const TAIL_AT_WORK_SEC = param('TAIL_AT_WORK_SEC', 0.6);
-const TAIL_HOLD_MAX_SEC = param('TAIL_HOLD_MAX_SEC', 1.5);
+const TAIL_HOLD_MAX_SEC = param('TAIL_HOLD_MAX_SEC', 2.0);
 const TAIL_DEPTH_SHARE = param('TAIL_DEPTH_SHARE', 0.85);
 const TAIL_REST_MAX_SEC = param('TAIL_REST_MAX_SEC', 4.0);   // a candidate cut rep must begin within 4.0 s of the previous cycle completing (post-set rest + exit is not a rep). Source: UNSOURCED. Status: experimental
 // How many accepted reps the depth is read from (their median). Two until 20 October 2026: a clip of two or three
