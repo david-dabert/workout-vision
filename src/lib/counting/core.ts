@@ -272,8 +272,8 @@ const PATTERNS = guidePatterns as Record<string, string>;
 // Source: UNSOURCED. Status: experimental.
 // sissy_squat (25 October 2026): fixed-footplate apparatus squat with shallow knee angle excursion in side view
 // (minRepRomDeg 15 deg). Source: UNSOURCED. Status: experimental.
-const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'minRepRomDeg' | 'minRangeDeg' | 'together' | 'eitherSide' | 'togetherMinCorrelation' | 'minRepSec' | 'noSplit' | 'fixedFeet' | 'clampFootplateInversion'>> = {
-  push_up: { thresholdMargin: 0.25, minRepRomDeg: 15 },
+export const DETECTION: Record<string, Pick<LiftDefinition, 'thresholdMargin' | 'workMargin' | 'minRepRomDeg' | 'minRangeDeg' | 'together' | 'eitherSide' | 'togetherMinCorrelation' | 'minRepSec' | 'noSplit' | 'fixedFeet' | 'clampFootplateInversion'>> = {
+  push_up: { thresholdMargin: 0.25, workMargin: 0.280, minRepRomDeg: 15 },
   // tricep_pushdown (17 November 2026, Task 10): guide key alias matching LIFTS.triceps_pushdown above.
   // Source: UNSOURCED. Status: experimental.
   tricep_pushdown: { minRepRomDeg: 15, minRangeDeg: 15 },
