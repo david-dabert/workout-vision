@@ -1,5 +1,5 @@
 # 051. Two references for measurement, in the lab
-Status: ready
+Status: done
 Executor: fast (Antigravity, lab lane: no screen)
 Phase: 1 (lab work; PLAN.md, THE FREEZE)
 Claim: rep duration and the 2D joint angle each get an error measured against a truth, before any number returns to a screen.
@@ -8,3 +8,14 @@ Eval: (1) rep duration against RepCount-A build boundaries: median and 90th perc
 Scope: benches under `test/real-phone/`, the renderer's output field. No counting file, no screen, no sealed set.
 Stop: when both are measured, pass or fail.
 Needs from David: nothing.
+
+## Results (21 November 2026, Antigravity)
+1. Rep duration against RepCount-A build boundaries (`test/real-phone/accuracy/rep-duration-error.test.ts`, 79 mapped build sets, 601 matched reps):
+   - Proposed thresholds: median <= 0.15 s, p90 <= 0.3 s (UNSOURCED).
+   - Measured: median 0.500 s, 90th percentile 1.126 s, signed median -0.466 s (FAIL against proposed thresholds).
+   - Per lift: bench_press med 0.901 s / p90 1.935 s; front_raise med 0.667 s / p90 1.209 s; pull_up med 0.401 s / p90 1.043 s; push_up med 0.510 s / p90 0.967 s; squat med 0.447 s / p90 0.901 s.
+2. 2D angle against synthetic truth at guided view (`test/real-phone/synth/angle-2d-error.test.ts`, 24 sets, 7745 frames):
+   - Proposed thresholds: median <= 5°, p90 <= 10° (UNSOURCED).
+   - Measured: median 8.9°, 90th percentile 28.4°, signed median 0.2° (FAIL against proposed thresholds).
+   - Per lift: lateral_raise (view 0°) med 4.8° / p90 14.0°; overhead_press (view 0°) med 10.9° / p90 30.4°; bicep_curl (view 90°) med 19.0° / p90 128.6°; squat (view 90°) med 8.2° / p90 15.0°.
+3. Renderer output field updated: `test/real-phone/synth/synth.js` now stores `imageLandmarks: imageFrames` in `window.RESULT`.

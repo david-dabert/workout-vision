@@ -48,7 +48,7 @@ Phase 1 cards of 16 November 2026, decided by the board (David: "Bring in the ag
 12. 050 (Antigravity), an unknown address says so, and the level is set in one place. Done (#513).
 13. 049 (Antigravity), the production build ships only what its pages use. Done (#514).
 14. 052 (Antigravity, careful: Claude reviews before merge), one analysis configuration, checked by the type checker.
-15. 051 (Antigravity, lab lane), two references for measurement: rep duration against human boundaries, 2D angle against synthetic truth.
+15. 051 (Antigravity, lab lane), two references for measurement: rep duration against human boundaries, 2D angle against synthetic truth. Done (21 November 2026).
 16. 054 (Claude), the reverts #441 and #442, under the board's written condition (PLAN.md, decisions of 16 November 2026).
 
 The path to a sellable product, cards of 16 November 2026 from the review panel (David: tasks to execute, not a summary):
