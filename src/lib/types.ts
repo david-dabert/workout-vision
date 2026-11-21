@@ -292,7 +292,7 @@ export interface WorkoutRecord {
   /** Where the body went unseen during the set (counting/doubt.js), numbers only; read by no screen yet. */
   doubt?: unknown;
   /** The coach's target, for a set filmed from a programme (components/experience/programme.js, plannedOf). */
-  planned?: { programme: string; item: number; key?: string; sets: number; reps: number; rest: number } | null;
+  planned?: { programme: string; item: number; key?: string; sets: number; reps: number; rest: number; load?: number } | null;
   /** The app's proposal on a refused set, confirmed or changed by the person (saved-set.js): the core's ('psc') or,
    * for an exercise the core does not offer, the universal engine's (universalProposal.js). */
   proposal?: { reps: number; by: 'psc' | 'universal' } | null;

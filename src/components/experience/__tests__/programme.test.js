@@ -1051,4 +1051,12 @@ describe('Card 058: client results carrying load, effort and pain back to coach'
     expect(decoded.results.items[0].efforts).toBeUndefined();
     expect(decoded.results.items[0].pains).toBeUndefined();
   });
+
+  it('bumps version v to SHEET_VERSION when programme specifies load (Defect 5)', () => {
+    const p = {
+      title: 'Force',
+      items: [{ key: 'squat', sets: 3, reps: 10, rest: 90, load: 60, note: '' }],
+    };
+    expect(compact(p).v).toBe(SHEET_VERSION);
+  });
 });

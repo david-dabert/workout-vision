@@ -77,7 +77,7 @@ export default function Results({ payload = (typeof window !== 'undefined' ? res
             {e ? <Thumb exercise={e} /> : <span className="thumb" />}
             <span className="programme-body">
               <span className="programme-name">{name}</span>
-              <span className="programme-target mono">{hold ? c.holdTarget(item.sets, hold) : targetText(item)}</span>
+              <span className="programme-target mono">{hold ? c.holdTarget(item.sets, hold) : targetText(COACH_LOOP_SHOWN ? item : { ...item, load: 0 })}</span>
               <span className="programme-cue" data-testid="results-not-counted">{c.notCountedTag}</span>
             </span>
           </div>
@@ -87,14 +87,14 @@ export default function Results({ payload = (typeof window !== 'undefined' ? res
             {e ? <Thumb exercise={e} /> : <span className="thumb" />}
             <span className="programme-body">
               <span className="programme-name">{name}</span>
-              <span className="programme-target mono">{targetText(item)}</span>
+              <span className="programme-target mono">{targetText(COACH_LOOP_SHOWN ? item : { ...item, load: 0 })}</span>
             </span>
           </div>
           <SetCells name={name} sets={item.sets} reps={item.reps} done={item.done} kinds={item.kinds} c={c} testId="results-sets" />
           {COACH_LOOP_SHOWN && (item.loads || item.efforts || item.pains) && (
             <div className="results-feedback" data-testid="results-feedback">
               {item.done.map((_, j) => {
-                const load = item.loads?.[j] ? `${item.loads[j]} kg` : (item.load ? `${item.load} kg` : null);
+                const load = typeof item.loads?.[j] === 'number' ? `${item.loads[j]} kg` : (typeof item.load === 'number' ? `${item.load} kg` : null);
                 const effort = typeof item.efforts?.[j] === 'number' ? `RPE ${item.efforts[j]}` : null;
                 const pain = item.pains?.[j] ? `« ${item.pains[j]} »` : null;
                 const text = [load, effort, pain].filter(Boolean).join(' · ');

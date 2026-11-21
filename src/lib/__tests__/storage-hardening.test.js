@@ -111,4 +111,35 @@ describe('a recounted set read back', () => {
     expect(validateWorkout({ ...set, recount: { tuning: { marginScale: 1.1 } } }).sanitized.recount).toEqual({ tuning: { marginScale: 1.1 } });
     for (const recount of [7, 'x', { tuning: null }, { tuning: 2 }]) expect('recount' in validateWorkout({ ...set, recount }).sanitized).toBe(false);
   });
+
+  it('validates and clamps effort, pain, and planned.load (Card 058 Defect 4)', async () => {
+    const { validateWorkout } = await import('../validateSchema');
+    const bad = {
+      id: 'w1', date: '2026-11-21', exercise: 'squat', reps: 10,
+      effort: -10,
+      pain: 'X'.repeat(500),
+      planned: { programme: 'p1', item: 0, sets: 3, reps: 10, rest: 90, load: -50 },
+    };
+    const res = validateWorkout(bad);
+    expect(res.valid).toBe(false);
+    expect(res.errors).toContain('invalid effort');
+    expect(res.errors).toContain('invalid pain');
+    expect(res.errors).toContain('invalid planned');
+    expect(res.sanitized.effort).toBeUndefined();
+    expect(res.sanitized.pain.length).toBe(140);
+    expect(res.sanitized.planned.load).toBeUndefined();
+
+    // Valid values pass cleanly
+    const good = {
+      id: 'w2', date: '2026-11-21', exercise: 'squat', reps: 10,
+      effort: 7,
+      pain: 'Légère gêne',
+      planned: { programme: 'p1', item: 0, sets: 3, reps: 10, rest: 90, load: 60 },
+    };
+    const resGood = validateWorkout(good);
+    expect(resGood.valid).toBe(true);
+    expect(resGood.sanitized.effort).toBe(7);
+    expect(resGood.sanitized.pain).toBe('Légère gêne');
+    expect(resGood.sanitized.planned.load).toBe(60);
+  });
 });

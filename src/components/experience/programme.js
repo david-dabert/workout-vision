@@ -136,8 +136,8 @@ export function programmeOf(draft) {
  */
 export const SHEET_VERSION = 2;
 export function compact(p) {
-  const holds = p.items.some(i => holdOf(i) > 0), sides = p.items.some(i => sideOf(i) !== 'both');
-  const out = { v: holds || sides ? SHEET_VERSION : 1, t: p.title };
+  const holds = p.items.some(i => holdOf(i) > 0), sides = p.items.some(i => sideOf(i) !== 'both'), loads = p.items.some(i => typeof i.load === 'number' && i.load > 0);
+  const out = { v: holds || sides || loads ? SHEET_VERSION : 1, t: p.title };
   if (p.who) out.w = p.who;
   if (p.note) out.n = p.note;
   out.x = p.items.map(i => (i.note ? [i.key, i.sets, i.reps, i.rest, i.note] : [i.key, i.sets, i.reps, i.rest]));

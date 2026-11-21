@@ -4,6 +4,7 @@
 // Pain is the client's own words, never turned into advice (physiotherapist lens).
 import { test, expect } from '@playwright/test';
 import { PRO } from '../src/components/experience/pro-copy.js';
+import { COACH_LOOP_SHOWN } from '../src/components/experience/measures.js';
 
 if (process.env.PW_CHROMIUM) test.use({ launchOptions: { executablePath: process.env.PW_CHROMIUM } });
 test.use({ serviceWorkers: 'block' });
@@ -96,9 +97,14 @@ test('Card 058 coach loop: 3 x 10 @ 60 kg programme sent, client saves with effo
   await expect(resultsScreen).toBeVisible({ timeout: 15000 });
   await expect(resultsScreen.locator('h1.title')).toHaveText('Force Bas du corps');
 
-  // Target reflects 3 x 10 @ 60 kg
+  // Target reflects 3 x 10 (@ 60 kg only if COACH_LOOP_SHOWN = true; otherwise hidden under THE FREEZE)
   const targetText = await coach.getByTestId('results-item').first().locator('.programme-target').textContent();
-  expect(targetText).toMatch(/3\s*×\s*10\s*@\s*60\s*kg/);
+  if (COACH_LOOP_SHOWN) {
+    expect(targetText).toMatch(/3\s*×\s*10\s*@\s*60\s*kg/);
+  } else {
+    expect(targetText).toMatch(/3\s*×\s*10/);
+    expect(targetText).not.toContain('@');
+  }
 
   // Set cells indicate 10 reps done
   const cells = coach.getByTestId('results-sets').first().locator('li');
