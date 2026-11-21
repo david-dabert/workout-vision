@@ -216,8 +216,8 @@
 .wv-experience .pro-badge {
   font-size: var(--fs-label); padding: 2px 8px; border-radius: var(--r-pill); display: inline-block;
 }
-.wv-experience .pro-badge-reps { background: rgba(232, 189, 126, 0.12); border: 1px solid var(--lamp-line); color: var(--lamp-hi); }
-.wv-experience .pro-badge-load { background: rgba(255, 255, 255, 0.06); border: 1px solid var(--hair-2); color: var(--bone-2); }
-.wv-experience .pro-badge-rpe { background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); color: #93c5fd; }
-.wv-experience .pro-badge-pain { background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; font-style: italic; }
+.wv-experience .pro-badge-reps { background: var(--well); border: 1px solid var(--lamp-line); color: var(--lamp-hi); }
+.wv-experience .pro-badge-load { background: var(--basalt); border: 1px solid var(--hair-2); color: var(--bone-2); }
+.wv-experience .pro-badge-rpe { background: var(--well); border: 1px solid var(--hair-2); color: var(--c-fg); }
+.wv-experience .pro-badge-pain { background: var(--basalt); border: 1px solid var(--hair-2); color: var(--lamp-hi); font-style: italic; }
 

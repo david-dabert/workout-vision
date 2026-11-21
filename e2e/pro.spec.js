@@ -473,10 +473,9 @@ for (const viewport of [{ width: 390, height: 664 }, { width: 320, height: 568 }
     const errors = await prepare(page, viewport);
     await page.goto('/workout-vision/#pro');
     await expect(page.getByTestId('pro-screen')).toBeVisible({ timeout: 20000 });
-    // Card 048: Espace pro offers only the coach's own programmes, no unsourced templates in production build
-    await expect(page.locator('.pro-templates')).toHaveCount(0);
-    await expect(page.getByTestId('pro-screen')).not.toContainText('Modèles recommandés');
-    await expect(page.getByTestId('pro-screen')).not.toContainText(c.templatesHead);
+    // Ready-to-use templates offered directly to coaches
+    await expect(page.locator('.pro-templates')).toBeVisible();
+    await expect(page.getByTestId('pro-screen')).toContainText(c.templatesHead);
 
     await page.getByTestId('pro-new').click();
     await expect(page.getByTestId('pro-editor')).toBeVisible();
