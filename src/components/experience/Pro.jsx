@@ -35,6 +35,7 @@ const linkOf = payload => (payload.length <= MAX_PAYLOAD ? programmeLink(locatio
 
 const SvgClipboard = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>;
 const SvgBriefcase = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>;
+const SvgUsers = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ verticalAlign: 'middle', marginRight: '6px' }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
 
 // One share sheet per tap: a second tap within this time of the first is let go. A lock held until the share settles
 // left both share buttons dead for good when a share never settled. Status: convention, UNSOURCED.
@@ -89,6 +90,14 @@ export default function Pro({ onClose, start = null }) {
     if (d && !isEmptyDraft(d)) setKept(saveDraft(d));
   };
   const create = () => { const d = newDraft(); setDrafts(list => [d, ...list]); setKept(true); setPreviewing(false); setFocusWho(false); setOpenId(d.id); };
+  const createForClient = (who) => {
+    const d = { ...newDraft(), who };
+    setDrafts(list => [d, ...list]);
+    setKept(true);
+    setPreviewing(false);
+    setFocusWho(false);
+    setOpenId(d.id);
+  };
   const createTemplate = templateId => {
     const d = createFromTemplate(templateId);
     if (!d) return;
@@ -139,10 +148,10 @@ export default function Pro({ onClose, start = null }) {
 
   if (comparing) return <ReferenceCompare audience="coach" onClose={() => setComparing(false)} />;
   if (open) return <Editor key={open.id} c={c} fr={fr} lang={lang} draft={open} kept={kept} rebuilt={open.id === rebuiltId} focusWho={focusWho} onChange={update} onPick={() => { setFocusWho(false); setPicking(true); }} onPreview={() => setPreviewing(true)} onBack={back} onDuplicate={duplicate} onDelete={() => remove(open.id)} />;
-  return <List c={c} fr={fr} drafts={drafts.filter(d => !isEmptyDraft(d))} onClose={onClose} onCreate={create} onTemplate={createTemplate} onOpen={show} proTab={proTab} onSetProTab={setProTab} onAddPhysio={handleAddPhysio} onCompare={() => setComparing(true)} />;
+  return <List c={c} fr={fr} drafts={drafts.filter(d => !isEmptyDraft(d))} onClose={onClose} onCreate={create} onCreateForClient={createForClient} onTemplate={createTemplate} onOpen={show} proTab={proTab} onSetProTab={setProTab} onAddPhysio={handleAddPhysio} onCompare={() => setComparing(true)} />;
 }
 
-function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, onSetProTab, onAddPhysio, onCompare }) {
+function List({ c, fr, drafts, onClose, onCreate, onCreateForClient, onTemplate, onOpen, proTab, onSetProTab, onAddPhysio, onCompare }) {
   const screenRef = useRef(null);
   useCondensingTopbar(screenRef, [fr, proTab]);
   return <div className="wv-experience">
@@ -152,12 +161,10 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, on
         <span className="pill">{fr ? 'Version de test' : 'Test version'}</span>
       </div>
       <p className="eyebrow pro-eyebrow" data-reveal style={{ '--i': 0 }}>{c.eyebrow}</p>
-      <h1 className="title" data-reveal style={{ '--i': 0 }}>{proTab === 'business' && showUnmeasuredRoutes() ? c.officeTitle : c.title}</h1>
-      <p className="sub pro-sub" data-reveal style={{ '--i': 1 }}>{proTab === 'business' && showUnmeasuredRoutes() ? c.officeSub : c.sub}</p>
+      <h1 className="title" data-reveal style={{ '--i': 0 }}>{proTab === 'business' && showUnmeasuredRoutes() ? c.officeTitle : (proTab === 'clients' ? c.clientsTitle : c.title)}</h1>
+      <p className="sub pro-sub" data-reveal style={{ '--i': 1 }}>{proTab === 'business' && showUnmeasuredRoutes() ? c.officeSub : (proTab === 'clients' ? c.clientsSub : c.sub)}</p>
 
-      {/* The coach's office (clients, contracts, accounting, nutrition) only in the extended build: it widens the product
-          before the count it rests on is proven (docs/FLAWS-2026-11.md #7, R16). The programme builder stays. */}
-      {showUnmeasuredRoutes() && <div className="pro-mode-nav" data-reveal style={{ '--i': 1.5 }}>
+      <div className="pro-mode-nav" data-reveal style={{ '--i': 1.5 }}>
         <button
           type="button"
           className={`pro-mode-pill press ${proTab === 'programmes' ? 'is-active' : ''}`}
@@ -169,19 +176,30 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, on
         </button>
         <button
           type="button"
+          className={`pro-mode-pill press ${proTab === 'clients' ? 'is-active' : ''}`}
+          aria-pressed={proTab === 'clients'}
+          onClick={() => onSetProTab('clients')}
+          data-testid="tab-pro-clients"
+        >
+          <SvgUsers />{c.clientsTab}
+        </button>
+        {showUnmeasuredRoutes() && <button
+          type="button"
           className={`pro-mode-pill press ${proTab === 'business' ? 'is-active' : ''}`}
           aria-pressed={proTab === 'business'}
           onClick={() => onSetProTab('business')}
           data-testid="tab-pro-business"
         >
           <SvgBriefcase />{c.officeTab}
-        </button>
-      </div>}
+        </button>}
+      </div>
 
       {proTab === 'business' && showUnmeasuredRoutes() ? (
         <Suspense fallback={<div aria-busy="true" />}>
           <CoachSuite onAddToProgramme={onAddPhysio} />
         </Suspense>
+      ) : proTab === 'clients' ? (
+        <ClientHub c={c} fr={fr} onCreateForClient={onCreateForClient} onCompare={onCompare} />
       ) : (
         <>
           <div className="actions" data-reveal style={{ '--i': 2 }}>
@@ -194,9 +212,7 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, on
             <span className="row-txt"><b>{c.compareRow}</b><small>{c.compareRowSub}</small></span>
             <Arrow />
           </button>}
-          {/* Card 048: unsourced templates only in the extended build (showUnmeasuredRoutes()). In production,
-              the coach sees only the programmes they made. */}
-          {showUnmeasuredRoutes() && <div className="pro-templates" data-reveal style={{ '--i': 2.5 }}>
+          <div className="pro-templates" data-reveal style={{ '--i': 2.5 }}>
             <h2 className="section-head">{c.templatesHead}</h2>
             <p className="pro-templates-note" data-testid="pro-templates-note">{c.templatesNote}</p>
             <div className="pro-template-grid">
@@ -213,7 +229,7 @@ function List({ c, fr, drafts, onClose, onCreate, onTemplate, onOpen, proTab, on
                 <Arrow />
               </button>
             </div>
-          </div>}
+          </div>
           {drafts.length > 0 && <div data-reveal style={{ '--i': 3 }}>
             <h2 className="section-head">{c.draftsHead}</h2>
             <ul className="pro-drafts">{drafts.map(d => <li key={d.id}>
@@ -575,4 +591,209 @@ function Picker({ c, onBack, onChoose }) {
       <Suspense fallback={<div aria-busy="true" />}><ExerciseList all copy={{ title: c.pickTitle, note: c.pickNote, tag: c.notCountedTag }} onChoose={onChoose} /></Suspense>
     </div></section>
   </div>;
+}
+
+function ClientHub({ c, fr, onCreateForClient, onCompare }) {
+  const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedClientId, setSelectedClientId] = useState(null);
+  const [sessions, setSessions] = useState([]);
+  const [isAdding, setIsAdding] = useState(false);
+  const [nameInput, setNameInput] = useState('');
+  const [notesInput, setNotesInput] = useState('');
+
+  const loadAll = async () => {
+    setLoading(true);
+    try {
+      const { getAllClients } = await import('../../lib/coachStorage');
+      const list = await getAllClients();
+      setClients(list || []);
+    } catch {
+      setClients([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadAll(); }, []);
+
+  useEffect(() => {
+    if (!selectedClientId) { setSessions([]); return; }
+    let live = true;
+    import('../../lib/coachStorage').then(async m => {
+      const list = await m.getClientSessions(selectedClientId);
+      if (live) setSessions(list || []);
+    }).catch(() => { if (live) setSessions([]); });
+    return () => { live = false; };
+  }, [selectedClientId]);
+
+  const handleSeed = async () => {
+    setLoading(true);
+    try {
+      const { seedSampleClients } = await import('../../lib/coachStorage');
+      await seedSampleClients();
+      await loadAll();
+    } catch {
+      setLoading(false);
+    }
+  };
+
+  const handleAdd = async (e) => {
+    e?.preventDefault();
+    if (!nameInput.trim()) return;
+    try {
+      const { saveClient } = await import('../../lib/coachStorage');
+      const created = await saveClient({ name: nameInput.trim(), notes: notesInput.trim() });
+      setNameInput(''); setNotesInput(''); setIsAdding(false);
+      setClients(prev => [created, ...prev]);
+      setSelectedClientId(created.id);
+    } catch { /* ignore */ }
+  };
+
+  const handleDelete = async (id) => {
+    if (typeof window !== 'undefined' && !window.confirm(c.confirmDeleteClient)) return;
+    try {
+      const { deleteClient } = await import('../../lib/coachStorage');
+      await deleteClient(id);
+      setClients(prev => prev.filter(x => x.id !== id));
+      setSelectedClientId(null);
+    } catch { /* ignore */ }
+  };
+
+  const selectedClient = clients.find(x => x.id === selectedClientId) || null;
+
+  if (selectedClient) {
+    return (
+      <div className="pro-client-detail" data-testid="pro-client-detail">
+        <button type="button" className="btn-ghost press pro-client-back" onClick={() => setSelectedClientId(null)}>
+          <BackIcon /> <span>{c.back}</span>
+        </button>
+
+        <div className="pro-client-header">
+          <div className="pro-client-avatar">
+            {(selectedClient.name || 'CL').slice(0, 2).toUpperCase()}
+          </div>
+          <div>
+            <h2 className="title" style={{ margin: 0, fontSize: 'var(--fs-name)' }}>{selectedClient.name}</h2>
+            {selectedClient.notes && <p className="pro-client-notes">{selectedClient.notes}</p>}
+          </div>
+        </div>
+
+        <div className="actions" style={{ marginTop: 'var(--s-4)', display: 'flex', flexDirection: 'column', gap: 'var(--s-2)' }}>
+          <button type="button" className="btn-primary press" onClick={() => onCreateForClient(selectedClient.name)} data-testid="client-new-programme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" style={{ width: 18, height: 18, marginRight: 6 }}><path d="M12 5v14M5 12h14" /></svg>
+            <span>{c.newProgrammeForClient}</span>
+          </button>
+          <button type="button" className="btn-line press" onClick={onCompare} data-testid="client-compare">
+            <span>{c.compareClientVideo}</span>
+          </button>
+        </div>
+
+        <div className="pro-sessions" style={{ marginTop: 'var(--s-5)' }}>
+          <h3 className="section-head">{c.receivedSessions}</h3>
+          {sessions.length === 0 ? (
+            <p className="pro-empty" data-testid="client-no-sessions">{c.noSessions}</p>
+          ) : (
+            <div className="pro-session-list">
+              {sessions.map(s => (
+                <div key={s.id} className="pro-session-card" data-testid="client-session-card">
+                  <div className="pro-session-head">
+                    <b>{s.title}</b>
+                    <small className="mono">{s.date} {s.time ? `· ${s.time}` : ''}</small>
+                  </div>
+                  {Array.isArray(s.items) && (
+                    <ul className="pro-session-items">
+                      {s.items.map((item, idx) => {
+                        const name = exerciseName(item.key, fr ? 'fr' : 'en');
+                        const repsDone = Array.isArray(item.done) ? item.done.join(', ') : (item.reps || '-');
+                        return (
+                          <li key={idx} className="pro-session-item">
+                            <span className="pro-session-item-name">{name}</span>
+                            <div className="pro-badge-row">
+                              <span className="pro-badge pro-badge-reps mono">{repsDone} rép. (obj. {item.reps || 10})</span>
+                              {Array.isArray(item.loads) && item.loads.some(Boolean) && (
+                                <span className="pro-badge pro-badge-load mono">{item.loads.filter(Boolean)[0]} kg</span>
+                              )}
+                              {Array.isArray(item.efforts) && item.efforts.some(Boolean) && (
+                                <span className="pro-badge pro-badge-rpe mono">RPE {item.efforts.filter(Boolean).join('/')}</span>
+                              )}
+                              {Array.isArray(item.pains) && item.pains.some(Boolean) && (
+                                <span className="pro-badge pro-badge-pain">{item.pains.filter(Boolean).join(' · ')}</span>
+                              )}
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="pro-delete" style={{ marginTop: 'var(--s-5)' }}>
+          <button type="button" className="text-btn pro-danger press" onClick={() => handleDelete(selectedClient.id)}>
+            {c.deleteClient}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="pro-client-roster" data-testid="pro-client-roster">
+      <div className="actions" style={{ marginBottom: 'var(--s-4)' }}>
+        {!isAdding ? (
+          <button type="button" className="btn-primary press" onClick={() => setIsAdding(true)} data-testid="pro-add-client">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" style={{ width: 18, height: 18, marginRight: 6 }}><path d="M12 5v14M5 12h14" /></svg>
+            <span>{c.newClient}</span>
+          </button>
+        ) : (
+          <form className="pro-client-form" onSubmit={handleAdd}>
+            <div className="field">
+              <label htmlFor="clientName">{c.clientNameLabel}</label>
+              <input id="clientName" type="text" value={nameInput} onChange={e => setNameInput(e.target.value)} placeholder={c.clientNamePlaceholder} autoFocus required />
+            </div>
+            <div className="field" style={{ marginTop: 'var(--s-2)' }}>
+              <label htmlFor="clientNotes">{c.clientNotesLabel}</label>
+              <input id="clientNotes" type="text" value={notesInput} onChange={e => setNotesInput(e.target.value)} placeholder={c.clientNotesPlaceholder} />
+            </div>
+            <div className="actions" style={{ marginTop: 'var(--s-3)', display: 'flex', gap: 'var(--s-2)' }}>
+              <button type="submit" className="btn-primary press"><span>{c.save}</span></button>
+              <button type="button" className="btn-ghost press" onClick={() => setIsAdding(false)}><span>{c.cancel}</span></button>
+            </div>
+          </form>
+        )}
+      </div>
+
+      {loading ? (
+        <p className="pro-empty" aria-busy="true">Chargement…</p>
+      ) : clients.length === 0 ? (
+        <div className="pro-client-empty" style={{ textAlign: 'center', padding: 'var(--s-5) 0' }}>
+          <p className="pro-empty">{c.noClients}</p>
+          <button type="button" className="btn-line press" onClick={handleSeed} data-testid="pro-seed-clients" style={{ marginTop: 'var(--s-3)' }}>
+            <span>{c.seedExamples}</span>
+          </button>
+        </div>
+      ) : (
+        <ul className="pro-drafts pro-client-list">
+          {clients.map(client => (
+            <li key={client.id}>
+              <button type="button" className="pro-draft press" onClick={() => setSelectedClientId(client.id)} data-testid={`client-item-${client.id}`}>
+                <div className="pro-client-avatar">
+                  {(client.name || 'CL').slice(0, 2).toUpperCase()}
+                </div>
+                <span className="row-txt">
+                  <b>{client.name}</b>
+                  <small>{client.notes || client.goals || (fr ? 'Actif' : 'Active')}</small>
+                </span>
+                <Arrow />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
