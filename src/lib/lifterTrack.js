@@ -216,6 +216,10 @@ export function chooseLifter(frames, lift, { aspect = 1, locate } = {}) {
       if (!best || d < best.d) best = { d, p };
     }
     if (best) { world[f] = best.p.world[f]; image[f] = best.p.image[f]; fromFragments++; }
+    else if (fr.poses?.length === 1 && fr.poses[0]?.world) {
+      world[f] = fr.poses[0].world;
+      image[f] = fr.poses[0].image ?? null;
+    }
   });
   return { image, world, timestamps, people, chosen, fromFragments };
 }

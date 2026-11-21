@@ -452,7 +452,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
       // second one missed (audit FINDING-002: 30 then 409 of 439 added up to a "whole" read).
       if (index === 0) {
         await drain();
-        if (timestamps.length) { imageLandmarks.length = 0; worldLandmarks.length = 0; timestamps.length = 0; sampleAt.clear(); }
+        if (timestamps.length) { imageLandmarks.length = 0; worldLandmarks.length = 0; timestamps.length = 0; allFrames.length = 0; sampleAt.clear(); }
       }
       // The pixels the extractor already read for its frozen-read check (one readback per sample, not two).
       const pixels = (read ?? canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height)).data.buffer;

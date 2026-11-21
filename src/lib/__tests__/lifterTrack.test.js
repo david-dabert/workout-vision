@@ -145,4 +145,23 @@ describe('lifterTrack.js', () => {
     expect(sel.single).toBe(true);
     expect(sel.world[0]).toBe(noHipsPose.world);
   });
+
+  it('retains single-person pose when torso drops out after opening frame', () => {
+    const chinUpPose = {
+      image: Array(33).fill(null).map((_, i) => ([11, 12, 13, 14, 15, 16].includes(i) ? { x: 0.5, y: 0.2, visibility: 0.9 } : null)),
+      world: Array(33).fill(null).map((_, i) => ([11, 12, 13, 14, 15, 16].includes(i) ? { x: 0, y: 0.2, z: 0, visibility: 0.9 } : null))
+    };
+    const fullTorsoPose = {
+      image: Array(33).fill(null).map((_, i) => ([11, 12, 23, 24].includes(i) ? { x: 0.5, y: i > 20 ? 0.6 : 0.4, visibility: 0.9 } : null)),
+      world: Array(33).fill(null).map((_, i) => ([11, 12, 23, 24].includes(i) ? { x: 0, y: i > 20 ? 0.6 : 0.4, z: 0, visibility: 0.9 } : null))
+    };
+    const frames = [
+      { t: 0.0, poses: [fullTorsoPose, fullTorsoPose] },
+      { t: 0.1, poses: [chinUpPose] },
+      { t: 0.2, poses: [chinUpPose] }
+    ];
+    const sel = chooseLifter(frames, 'chin_up');
+    expect(sel.world[1]).toBe(chinUpPose.world);
+    expect(sel.world[2]).toBe(chinUpPose.world);
+  });
 });
