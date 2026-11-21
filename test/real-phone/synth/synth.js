@@ -455,7 +455,7 @@ if (P.lostPose && !P.video) {
   const bytes = new Uint8Array(await (await fetch('lost-pose.task')).arrayBuffer());
   lostModel = await mpVision.PoseLandmarker.createFromOptions(vision, { baseOptions: { modelAssetBuffer: bytes, delegate: 'CPU' }, runningMode: 'IMAGE', numPoses: 1, minPoseDetectionConfidence: 0.35, minPosePresenceConfidence: 0.4, minTrackingConfidence: 0.5 });
 }
-const frames = [], truth = [], ts = [], sources = [];
+const frames = [], imageFrames = [], truth = [], ts = [], sources = [];
 const sampleAt = new Map(); // detection timestamp -> frame index, for the backward pass
 const round = w => w.map(p => ({ x: +p.x.toFixed(4), y: +p.y.toFixed(4), z: +p.z.toFixed(4), visibility: +(p.visibility ?? 1).toFixed(3) }));
 // P.back / P.noBack: the pose path with or without its backward pass (poseAnalysis.js bench hooks; BACK_PASS is off in
@@ -532,7 +532,11 @@ for (let i = 0; i < n; i++) {
   // Backward pass (poseCrop.js), as the app applies it: earlier frames without a pose, now read on a crop.
   for (const b of res?.backfill || []) {
     const k = sampleAt.get(b.timestamp);
-    if (k != null && !frames[k] && b.worldLandmarks[0]) { frames[k] = round(b.worldLandmarks[0]); sources[k] = 'back'; }
+    if (k != null && !frames[k] && b.worldLandmarks[0]) {
+      frames[k] = round(b.worldLandmarks[0]);
+      if (b.landmarks?.[0]) imageFrames[k] = round(b.landmarks[0]);
+      sources[k] = 'back';
+    }
   }
   sampleAt.set(time * 1000, frames.length);
   let got = res?.worldLandmarks?.[0] ? res : null;
@@ -545,11 +549,12 @@ for (let i = 0; i < n; i++) {
   if (O) recordOcclusion(got, time);
   if (P.allPoses) allPoses.push((globalThis.__WV_LAST_ALL_POSES__ ?? []).map(q => ({ image: round(q.image), world: q.world ? round(q.world) : null, ...(bystander ? { onTarget: isLifter(q.image) } : {}) })));
   frames.push(got ? round(got.worldLandmarks[0]) : null);
+  imageFrames.push(got?.landmarks?.[0] ? round(got.landmarks[0]) : null);
   sources.push(got ? (got.source ?? 'full') : null);
   truth.push(truthAngles());
   ts.push(time);
   if (i === Math.floor(n / 3) && P.shot) window.SHOT = flat.toDataURL('image/jpeg', 0.8);
 }
 window.JPEGS = jpegs;
-window.RESULT = { params: P, sides: S, reps: reps.map(r => ({ start: r.start, top: r.top, hold: r.hold, end: r.end })), score, worldLandmarks: frames, poseSources: sources, detectMs, truth, timestamps: ts, size: [W, H], ...(P.allPoses ? { allPoses } : {}) };
+window.RESULT = { params: P, sides: S, reps: reps.map(r => ({ start: r.start, top: r.top, hold: r.hold, end: r.end })), score, worldLandmarks: frames, imageLandmarks: imageFrames, poseSources: sources, detectMs, truth, timestamps: ts, size: [W, H], ...(P.allPoses ? { allPoses } : {}) };
 if (O && !P.video) window.RESULT.occlusion = occlusionResult();
