@@ -44,17 +44,17 @@ Phase 1 cards of 16 November 2026, from the review panel of that day (David: "No
 
 Phase 1 cards of 16 November 2026, decided by the board (David: "Bring in the agents and think tank to answer to your questions damn it and execute accordingly"), after 047:
 10. 048 (Antigravity), Espace pro offers only the coach's own programmes, no unsourced templates. Done (#515).
-11. 053 (Antigravity, after 044), the home is the approved prototype plus two rows; one question per saved set (WP5.1 moved to Phase 1: it only removes).
+11. 053 (Antigravity, after 044), the home is the approved prototype plus two rows; one question per saved set. Done (verified by e2e/home-prototype.spec.js).
 12. 050 (Antigravity), an unknown address says so, and the level is set in one place. Done (#513).
 13. 049 (Antigravity), the production build ships only what its pages use. Done (#514).
-14. 052 (Antigravity, careful: Claude reviews before merge), one analysis configuration, checked by the type checker.
-15. 051 (Antigravity, lab lane), two references for measurement: rep duration against human boundaries, 2D angle against synthetic truth. Done (21 November 2026).
+14. 052 (Antigravity, careful: Claude reviews before merge), one analysis configuration, checked by the type checker. Done.
+15. 051 (Antigravity, lab lane), two references for measurement: rep duration against human boundaries, 2D angle against synthetic truth. Done (#518, 21 November 2026).
 16. 054 (Claude), the reverts #441 and #442, under the board's written condition (PLAN.md, decisions of 16 November 2026).
 
 The path to a sellable product, cards of 16 November 2026 from the review panel (David: tasks to execute, not a summary):
 - Now, no code, David sends: 060 (ten coaches at a named price, `docs/sell/coach-offer.md`), 061 (ten testers, thirty blind sets, `docs/sell/tester-kit.md`).
 - Phase 1, Claude: 055 (every sealed set scored on the phone's read and the computer's), after 043 and 054.
-- Phase 1, Antigravity: 059 (one data store keeping body points; careful, Claude reviews), after 051.
+- Phase 1, Antigravity: 059 (one data store keeping body points; careful, Claude reviews), after 051. Done (21 November 2026).
 - Lab now, product in Phase 2: 056 (Claude, one calibrated "sure" check), 057 (Antigravity, filming starts and ends at rest), 058 (Antigravity, a client's results carry load, effort and pain; done 21 November 2026, off behind COACH_LOOP_SHOWN).
 - Phase 3 prepared now: 062 (Claude drafts the legal floor; David gives the entity's facts; a lawyer checks).
 

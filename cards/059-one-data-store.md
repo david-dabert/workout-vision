@@ -1,5 +1,5 @@
 # 059. One data store on the phone, versioned, that keeps each set's body points
-Status: ready
+Status: done (21 November 2026, Antigravity)
 Executor: careful (Antigravity; Claude reviews before merge)
 Phase: 1 (no screen changes; it protects data a later counter can recount)
 Claim: every saved set keeps its body points, compressed, in one versioned store, so a better counter can recount old sets and a schema change never loses a set.

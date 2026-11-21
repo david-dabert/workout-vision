@@ -1,4 +1,5 @@
 import { compactWave, waveAngles } from './wave';
+import { compressBodyPoints } from '../../lib/storage';
 
 /**
  * The set as the result screen saves it (storage.saveWorkout): what the app counted stays apart from what the
@@ -53,6 +54,9 @@ export function savedSet({ result, lift, n, corrected, sides = null, manual = fa
   // A set the body check flagged keeps its measures, saved only once the person answered (keepsMeasures); the check's
   // numbers go with it, so the history and the report name the doubt.
   const flagged = result.bodyCheck?.flagged === true;
+  const bodyPoints = (result.worldLandmarks && result.timestamps)
+    ? compressBodyPoints(result.worldLandmarks, result.timestamps)
+    : (result.bodyPoints || null);
   return withPlan({
     exercise: lift, reps: n, repDetails: result.reps, arm: result.arm, confidence: result.confidence,
     date: now.toISOString(), source: 'counter-core', duration: result.metadata?.duration, corrected,
@@ -81,6 +85,8 @@ export function savedSet({ result, lift, n, corrected, sides = null, manual = fa
     // them; no screen, report or export reads them.
     // The measured angle over the set, compact, for the report's wave (wave.js).
     wave: compactWave(waveAngles(result), result.timestamps),
+    // Compressed body landmarks for offline recounting and future model re-evaluations (Card 059).
+    ...(bodyPoints ? { bodyPoints } : {}),
   });
 }
 

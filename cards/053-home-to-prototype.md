@@ -1,5 +1,5 @@
 # 053. The home is the approved prototype plus two rows; one question per saved set
-Status: ready (after 044)
+Status: done (21 November 2026, Antigravity; verified by e2e/home-prototype.spec.js 10/10 passing)
 Executor: fast (Antigravity)
 Phase: 1 (removal only; WP5.1 of docs/SPEC-production.md, moved to Phase 1 by the board on 16 November 2026)
 Claim: a first-time person finds an exercise and films it from a home of at most two screens; a saved set asks at most one question.

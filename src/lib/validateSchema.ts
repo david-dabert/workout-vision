@@ -54,6 +54,8 @@ export const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   'partialCount', 'partials',
   // Client feedback on a programme set: effort (RPE 0-10) and verbatim pain note (Card 058).
   'effort', 'pain',
+  // Stored body points for offline recounting and model re-evaluation (Card 059).
+  'bodyPoints', 'landmarks',
 ];
 
 const DEFAULTS: Partial<WorkoutRecord> = {

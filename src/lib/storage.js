@@ -4,8 +4,10 @@
  */
 
 import localforage from 'localforage';
+import { gzipSync, gunzipSync } from 'fflate';
 import { calculateBMR, ACTIVITY_MULTIPLIERS } from './nutrition';
 import { validateWorkout } from './validateSchema';
+import { summarizeCount } from './coreAnalysis';
 
 const profileStore = localforage.createInstance({ name: 'workoutVision', storeName: 'profile' });
 const workoutStore = localforage.createInstance({ name: 'workoutVision', storeName: 'workouts' });
@@ -13,6 +15,7 @@ const medicalStore = localforage.createInstance({ name: 'workoutVision', storeNa
 const foodStore = localforage.createInstance({ name: 'workoutVision', storeName: 'food' });
 const milestoneStore = localforage.createInstance({ name: 'workoutVision', storeName: 'milestones' });
 const metaStore = localforage.createInstance({ name: 'workoutVision', storeName: 'meta' });
+export const kineStore = localforage.createInstance({ name: 'workoutVision', storeName: 'kine' });
 
 /** A stored record the app can read: an object, not null, not a list. */
 export const isRecord = v => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -31,8 +34,8 @@ function eachRecord(store, fn) {
   });
 }
 
-/** Current schema version. Increment when workout record shape changes. */
-export const SCHEMA_VERSION = 1;
+/** Current schema version. Increment when workout record shape changes (Card 059: v2 for body points & unified store). */
+export const SCHEMA_VERSION = 2;
 
 let runningMigration = null;
 
@@ -54,6 +57,9 @@ export async function checkAndMigrateSchema() {
       // Run migrations in order
       if (!storedVersion || storedVersion < 1) {
         await _migrateToV1();
+      }
+      if (!storedVersion || storedVersion < 2) {
+        await _migrateToV2();
       }
 
       await metaStore.setItem('schemaVersion', SCHEMA_VERSION);
@@ -111,6 +117,109 @@ async function _migrateToV1() {
       await workoutStore.setItem(key, value);
     }
   }
+}
+
+/**
+ * Migration to v2 (Card 059): migrates legacy kiné records from localStorage into IndexedDB (kineStore),
+ * and advances the meta store schemaVersion to 2 while keeping 100% of existing workout records intact.
+ */
+async function _migrateToV2() {
+  await migrateKineFromLocalStorage();
+}
+
+/**
+ * Migrates legacy kiné records from plain localStorage into IndexedDB kineStore (Card 059).
+ * Safe to call repeatedly; removes localStorage keys once migrated into IndexedDB.
+ */
+export async function migrateKineFromLocalStorage() {
+  if (typeof localStorage === 'undefined') return;
+  const kineKeys = [
+    { ls: 'wv_kine_profile', kine: 'profile' },
+    { ls: 'wv_kine_invoice_seq', kine: 'invoice_seq' },
+    { ls: 'wv_kine_attempts', kine: 'attempts' },
+    { ls: 'wv_kine_results', kine: 'results' },
+    { ls: 'wv_kine_labels', kine: 'labels' },
+  ];
+  for (const { ls, kine } of kineKeys) {
+    try {
+      const raw = localStorage.getItem(ls);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const existing = await kineStore.getItem(kine);
+        if (!existing) {
+          await kineStore.setItem(kine, parsed);
+        }
+        localStorage.removeItem(ls);
+      }
+    } catch (e) {
+      console.warn('[Storage] Failed to migrate kiné key:', ls, e);
+    }
+  }
+}
+
+/**
+ * Compress body landmark points and timestamps into a compact base64 string using gzip (Card 059).
+ * @param {Array} worldLandmarks Array of frame landmarks
+ * @param {number[]} timestamps Array of timestamps (seconds)
+ * @returns {string|null} base64 gzip payload or null
+ */
+export function compressBodyPoints(worldLandmarks, timestamps) {
+  if (!Array.isArray(worldLandmarks) || !Array.isArray(timestamps) || worldLandmarks.length === 0) return null;
+  try {
+    const json = JSON.stringify({ worldLandmarks, timestamps });
+    const bytes = new TextEncoder().encode(json);
+    const gzipped = gzipSync(bytes, { level: 9 });
+    if (typeof Buffer !== 'undefined') {
+      return Buffer.from(gzipped).toString('base64');
+    }
+    let binary = '';
+    const len = gzipped.byteLength;
+    for (let i = 0; i < len; i++) binary += String.fromCharCode(gzipped[i]);
+    return btoa(binary);
+  } catch (e) {
+    console.warn('[Storage] Failed to compress body points:', e);
+    return null;
+  }
+}
+
+/**
+ * Decompress a base64 gzip payload into { worldLandmarks, timestamps } (Card 059).
+ * @param {string} compressed
+ * @returns {{ worldLandmarks: Array, timestamps: number[] }|null}
+ */
+export function decompressBodyPoints(compressed) {
+  if (typeof compressed !== 'string' || !compressed) return null;
+  try {
+    let bytes;
+    if (typeof Buffer !== 'undefined') {
+      bytes = new Uint8Array(Buffer.from(compressed, 'base64'));
+    } else {
+      const binary = atob(compressed);
+      bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    }
+    const unzipped = gunzipSync(bytes);
+    const text = new TextDecoder().decode(unzipped);
+    return JSON.parse(text);
+  } catch (e) {
+    console.warn('[Storage] Failed to decompress body points:', e);
+    return null;
+  }
+}
+
+/**
+ * Recounts a workout from its stored compressed body points using the current counting engine (Card 059).
+ * @param {Object} workout A stored workout record
+ * @returns {Object|null} Recount summary or null if no body points
+ */
+export function recountWorkout(workout) {
+  const points = workout?.bodyPoints
+    ? decompressBodyPoints(workout.bodyPoints)
+    : (workout?.worldLandmarks && workout?.timestamps ? { worldLandmarks: workout.worldLandmarks, timestamps: workout.timestamps } : null);
+  if (!points || !points.worldLandmarks || !points.timestamps) return null;
+  const lift = workout.exercise || workout.exerciseKey;
+  if (!lift) return null;
+  return summarizeCount(points.worldLandmarks, points.timestamps, lift);
 }
 
 /**
@@ -511,7 +620,7 @@ export async function exportAllData() {
     getProfile(),
   ]);
   return {
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
     profile,
     workouts,
@@ -524,7 +633,7 @@ export async function exportAllData() {
  * @returns {{ profileImported: boolean, workoutsImported: number }}
  */
 export async function importData(data) {
-  if (!data || data.version !== 1) throw new Error('Invalid export format');
+  if (!data || (data.version !== 1 && data.version !== 2)) throw new Error('Invalid export format');
   if (data.profile) await saveProfile(data.profile);
   if (data.workouts && Array.isArray(data.workouts)) {
     for (const w of data.workouts) {
