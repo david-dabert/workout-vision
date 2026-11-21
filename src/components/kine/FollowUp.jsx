@@ -91,7 +91,7 @@ export default function FollowUp({ fr, k, profile, initial = null }) {
   const [open, setOpen] = useState(initial);
   const [paste, setPaste] = useState('');
   const [note, setNote] = useState('');
-  const [pessacSpecialty, setPessacSpecialty] = useState('epaule');
+  const [pessacSpecialty, setPessacSpecialty] = useState('shoulder');
   const refresh = () => setPatients(followUp());
 
   const add = () => {

@@ -203,11 +203,15 @@ export function takeFollowUpRequest() {
   } catch { return null; }
 }
 
-export const readResults = () => read(RESULTS, []).map(cleanResult).filter(Boolean);
+export const readResults = () => {
+  const list = read(RESULTS, []);
+  return (Array.isArray(list) ? list : []).map(cleanResult).filter(Boolean);
+};
 
 /** Removes one patient's results from this phone. */
 export function forgetPatient(key) {
-  write(RESULTS, read(RESULTS, []).filter(r => patientKey(r) !== key));
+  const list = read(RESULTS, []);
+  write(RESULTS, (Array.isArray(list) ? list : []).filter(r => patientKey(r) !== key));
 }
 
 /**
