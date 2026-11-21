@@ -129,4 +129,20 @@ describe('lifterTrack.js', () => {
     const crop = framesFromPoseFile({ frames: [{ t: 0, poses: [], crop: { image: [[0.3, 0.4, 0.9]], world: [[4, 5, 6]] } }] });
     expect(crop[0].poses[0].world[0]).toEqual({ x: 4, y: 5, z: 6, visibility: 0.9 });
   });
+
+  it('chooseLifter falls back to single: true without nulling landmarks when no tracklets can be linked (e.g. torso occluded)', () => {
+    // 2 poses in one frame (e.g. background reflection), but hips/torso absent
+    const emptyPose = { image: Array(33).fill({ x: 0.5, y: 0.5, visibility: 0.9 }), world: Array(33).fill({ x: 0, y: 0, z: 0 }) };
+    const noHipsPose = {
+      image: Array(33).fill(null).map((_, i) => (i === 11 || i === 12 ? { x: 0.5, y: 0.2, visibility: 0.9 } : null)),
+      world: Array(33).fill(null).map((_, i) => (i === 11 || i === 12 ? { x: 0, y: 0.2, z: 0 } : null))
+    };
+    const frames = [
+      { t: 0.0, poses: [noHipsPose, emptyPose] },
+      { t: 0.1, poses: [noHipsPose] }
+    ];
+    const sel = chooseLifter(frames, 'chin_up');
+    expect(sel.single).toBe(true);
+    expect(sel.world[0]).toBe(noHipsPose.world);
+  });
 });

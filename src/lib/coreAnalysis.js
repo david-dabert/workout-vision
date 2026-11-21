@@ -507,7 +507,7 @@ export async function analyzeCoreVideo(file, lift, { signal, onProgress = () => 
     if (lifterOn && allFrames.length === worldLandmarks.length) {
       const frames = allFrames.map(f => ({ t: f.t, poses: f.poses.length ? f.poses : f.crop ? [f.crop] : [] }));
       const sel = chooseLifter(frames, lift);
-      if (!sel.single) sel.world.forEach((w, i) => { worldLandmarks[i] = w; imageLandmarks[i] = sel.image[i]; });
+      if (!sel.single && sel.chosen >= 0 && sel.world) sel.world.forEach((w, i) => { worldLandmarks[i] = w; imageLandmarks[i] = sel.image[i]; });
     }
     const countSummary = summarizeCount(worldLandmarks, timestamps, lift, undefined, imageLandmarks);
     // The engines wired here on 11-13 October 2026 are no longer run on a set (honesty audit of 14 October 2026): the
