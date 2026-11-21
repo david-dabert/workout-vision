@@ -52,6 +52,8 @@ export const KNOWN_FIELDS: (keyof WorkoutRecord)[] = [
   // Partial repetitions of sets saved on 13-14 October 2026 (core.ts detectPartialReps): kept as stored, read by no
   // screen (honesty audit of 14 October 2026: unmeasured, and the hypertrophy claim shown with them was unsourced).
   'partialCount', 'partials',
+  // Client feedback on a programme set: effort (RPE 0-10) and verbatim pain note (Card 058).
+  'effort', 'pain',
 ];
 
 const DEFAULTS: Partial<WorkoutRecord> = {
@@ -112,6 +114,25 @@ export function validateWorkout(record: unknown): ValidationResult {
   if (r.repHistory !== undefined && r.repHistory !== null && !Array.isArray(r.repHistory)) {
     errors.push('invalid repHistory');
   }
+  if (r.effort !== undefined && r.effort !== null) {
+    if (typeof r.effort !== 'number' || !Number.isInteger(r.effort) || r.effort < 0 || r.effort > 10) {
+      errors.push('invalid effort');
+    }
+  }
+  if (r.pain !== undefined && r.pain !== null) {
+    if (typeof r.pain !== 'string' || r.pain.length > 140) {
+      errors.push('invalid pain');
+    }
+  }
+  if (r.planned !== undefined && r.planned !== null) {
+    const pl = r.planned as Record<string, unknown>;
+    const wholeVal = (v: unknown) => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 1000;
+    if (typeof pl !== 'object' || typeof pl.programme !== 'string'
+      || !wholeVal(pl.item) || !wholeVal(pl.sets) || !wholeVal(pl.reps) || !wholeVal(pl.rest)
+      || (pl.load !== undefined && (!Number.isInteger(pl.load) || (pl.load as number) < 0 || (pl.load as number) > 500))) {
+      errors.push('invalid planned');
+    }
+  }
 
   // Build sanitized copy: known fields only, defaults for missing optionals
   const sanitized: Partial<WorkoutRecord> = {};
@@ -139,8 +160,29 @@ export function validateWorkout(record: unknown): ValidationResult {
   // programme (a restored backup can hold anything).
   const p = sanitized.planned as Record<string, unknown> | null | undefined;
   const whole = (v: unknown) => Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 1000;
-  if (p != null && !(typeof p === 'object' && typeof p.programme === 'string' && p.programme.length <= 32
-    && whole(p.item) && whole(p.sets) && whole(p.reps) && whole(p.rest))) delete sanitized.planned;
+  if (p != null) {
+    if (!(typeof p === 'object' && typeof p.programme === 'string' && p.programme.length <= 32
+      && whole(p.item) && whole(p.sets) && whole(p.reps) && whole(p.rest))) {
+      delete sanitized.planned;
+    } else if (p.load !== undefined) {
+      if (!Number.isInteger(p.load) || (p.load as number) < 0 || (p.load as number) > 500) {
+        delete p.load;
+      }
+    }
+  }
+  // Client feedback: effort 0-10, pain <= 140 chars.
+  if (sanitized.effort !== undefined && sanitized.effort !== null) {
+    if (typeof sanitized.effort !== 'number' || !Number.isInteger(sanitized.effort) || sanitized.effort < 0 || sanitized.effort > 10) {
+      delete sanitized.effort;
+    }
+  }
+  if (sanitized.pain !== undefined && sanitized.pain !== null) {
+    if (typeof sanitized.pain !== 'string') {
+      delete sanitized.pain;
+    } else if (sanitized.pain.length > 140) {
+      sanitized.pain = sanitized.pain.slice(0, 140);
+    }
+  }
   // A proposal that is not a whole count of one of the app's proposers, and a body check that is not its two numbers,
   // are dropped: the set stays, read as typed by hand or as counted. The proposers: 'psc', the core's proposal on a
   // refused set (8 October 2026), and 'universal', the number read for an exercise the core does not offer

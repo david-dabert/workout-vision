@@ -49,3 +49,7 @@ export const BEST_SET_SHOWN = false;
 // (R9, R16). The follow-up keeps what is measured: each session's share within tolerance and the change from the first
 // dated session to the last. Off in production until the trend has its eval. Status: experimental.
 export const CLINICAL_TREND_SHOWN = false;
+
+// Card 058 (cards/058-coach-results-load-effort.md): whether the coach's programme and results loop shows load, effort
+// (RPE 0-10) and client pain notes. Off in production until Phase 1 gate. Status: experimental.
+export const COACH_LOOP_SHOWN = false;

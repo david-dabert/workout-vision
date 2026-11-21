@@ -137,6 +137,11 @@ export const PRO = {
     freqPerLabel: 'Par jour ou par semaine',
     perOptions: { day: 'fois par jour', week: 'fois par semaine' },
     notCountedTag: 'Non compté',
+    load: 'Charge (kg)',
+    loadLong: 'Charge en kg',
+    loadShort: 'kg',
+    effortLabel: 'Effort ressenti (0 à 10)',
+    sensationsLabel: 'Remarques ou sensations (facultatif)',
     guideOnlyPro: `L’appli ne compte pas cet exercice${NB}: votre client le fera sans le filmer.`,
     // A counted exercise set as a hold (review of 14 October 2026: "les maintiens… le fera" left "le" without its noun).
     holdPro: `L’appli ne chronomètre pas ce maintien${NB}: votre client tiendra la position sans filmer.`,
@@ -182,8 +187,8 @@ export const PRO = {
     frequency: (n, per) => `${n}${NB}fois par ${per === 'day' ? 'jour' : 'semaine'}`,
     holdTarget: (sets, s) => `${sets}${NB}×${NB}${restFr(s)}`,
     // The target line of target(), with a hold and a side when set: the same words as target() without them.
-    targetLine: (sets, reps, rest, holdSec = 0, side = 'both') => [
-      holdSec > 0 ? `${sets}${NB}×${NB}${restFr(holdSec)} de maintien` : `${sets}${NB}×${NB}${reps}`,
+    targetLine: (sets, reps, rest, holdSec = 0, side = 'both', load = 0) => [
+      holdSec > 0 ? `${sets}${NB}×${NB}${restFr(holdSec)} de maintien` : (load > 0 ? `${sets}${NB}×${NB}${reps}${NB}@${NB}${load}${NB}kg` : `${sets}${NB}×${NB}${reps}`),
       ...sideWords(SIDE_FR, side), rest ? `récup. ${restFr(rest)}` : restFr(rest),
     ].join(' · '),
     tapHint: 'Touchez un exercice pour le filmer. Chaque série enregistrée s’affiche ici, comptée, à côté de l’objectif.',
@@ -348,6 +353,11 @@ export const PRO = {
     freqPerLabel: 'A day or a week',
     perOptions: { day: 'times a day', week: 'times a week' },
     notCountedTag: 'Not counted',
+    load: 'Load (kg)',
+    loadLong: 'Load in kg',
+    loadShort: 'kg',
+    effortLabel: 'Perceived effort (0 to 10)',
+    sensationsLabel: 'Feedback or sensations (optional)',
     guideOnlyPro: 'The app does not count this exercise: your client will do it without filming it.',
     holdPro: 'The app does not time this hold: your client will hold the position without filming.',
     pickTitle: 'Every exercise in the guide',
@@ -381,8 +391,8 @@ export const PRO = {
     sideText: SIDE_EN,
     frequency: (n, per) => `${n === 1 ? 'Once' : n === 2 ? 'Twice' : `${n} times`} a ${per === 'day' ? 'day' : 'week'}`,
     holdTarget: (sets, s) => `${sets}${NB}×${NB}${restEn(s)}`,
-    targetLine: (sets, reps, rest, holdSec = 0, side = 'both') => [
-      holdSec > 0 ? `${sets}${NB}×${NB}${restEn(holdSec)} hold` : `${sets}${NB}×${NB}${reps}`,
+    targetLine: (sets, reps, rest, holdSec = 0, side = 'both', load = 0) => [
+      holdSec > 0 ? `${sets}${NB}×${NB}${restEn(holdSec)} hold` : (load > 0 ? `${sets}${NB}×${NB}${reps}${NB}@${NB}${load}${NB}kg` : `${sets}${NB}×${NB}${reps}`),
       ...sideWords(SIDE_EN, side), rest ? `rest ${restEn(rest)}` : restEn(rest),
     ].join(' · '),
     tapHint: 'Tap an exercise to film it. Each set you save shows here, counted, beside the target.',

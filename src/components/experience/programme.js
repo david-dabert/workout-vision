@@ -17,7 +17,7 @@ const NBSP = ' ';
 export const LIMITS = Object.freeze({
   title: 80, who: 60, note: 600, itemNote: 140, items: 24,
   sets: [1, 10], reps: [1, 100], rest: [0, 600],
-  hold: [1, 300], times: [1, 14],
+  hold: [1, 300], times: [1, 14], load: [0, 500],
 });
 // A new exercise starts at three sets of ten with 90 s of rest (convention, UNSOURCED; R9): the coach changes them.
 export const DEFAULT_ITEM = Object.freeze({ sets: 3, reps: 10, rest: 90, note: '' });
@@ -33,6 +33,8 @@ const LETTER_SIDE = Object.freeze({ b: 'both', l: 'left', r: 'right', e: 'each' 
 // would unpack to megabytes is stopped as it unpacks.
 export const MAX_PAYLOAD = 8000;
 export const MAX_JSON = 16384;
+// Results payloads may carry up to 24 exercises with 20 sets of loads, efforts and 140-char pain notes, unpacking to ~85 kB.
+export const MAX_RESULTS_JSON = 131072;
 export const HASH_KEY = 'programme=';
 
 // Text as typed, made safe to keep: Unicode composed, control characters out (a line break kept in notes), spaces
@@ -90,9 +92,13 @@ export function fixItem(item) {
     note: cleanText(item.note).slice(0, LIMITS.itemNote),
   };
   if (typeof item.holdSec === 'number' && item.holdSec > 0) out.holdSec = clampInt(item.holdSec, LIMITS.hold, DEFAULT_HOLD);
+  if (typeof item.load === 'number' && item.load > 0) out.load = clampInt(item.load, LIMITS.load, 0);
   if (sideOf(item) !== 'both') out.side = item.side;
   return out;
 }
+
+/** The load in kg typed in the builder's field, brought into bounds: empty gives 0 (no load). */
+export const fixLoad = text => (text === '' || text == null ? 0 : clampInt(Number(text), LIMITS.load, 0));
 
 /** The hold typed in the builder's field, brought into bounds: empty gives the default. */
 export const fixHold = text => clampInt(text === '' ? NaN : Number(text), LIMITS.hold, DEFAULT_HOLD);
@@ -130,8 +136,8 @@ export function programmeOf(draft) {
  */
 export const SHEET_VERSION = 2;
 export function compact(p) {
-  const holds = p.items.some(i => holdOf(i) > 0), sides = p.items.some(i => sideOf(i) !== 'both');
-  const out = { v: holds || sides ? SHEET_VERSION : 1, t: p.title };
+  const holds = p.items.some(i => holdOf(i) > 0), sides = p.items.some(i => sideOf(i) !== 'both'), loads = p.items.some(i => typeof i.load === 'number' && i.load > 0);
+  const out = { v: holds || sides || loads ? SHEET_VERSION : 1, t: p.title };
   if (p.who) out.w = p.who;
   if (p.note) out.n = p.note;
   out.x = p.items.map(i => (i.note ? [i.key, i.sets, i.reps, i.rest, i.note] : [i.key, i.sets, i.reps, i.rest]));
@@ -139,6 +145,9 @@ export function compact(p) {
   if (f) out.f = [f.times, f.per === 'day' ? 'd' : 'w'];
   if (holds) out.h = p.items.map(holdOf);
   if (sides) out.s = p.items.map(i => SIDE_LETTER[sideOf(i)]).join('');
+  if (p.items.some(i => typeof i.load === 'number' && i.load > 0)) {
+    out.l = p.items.map(i => (typeof i.load === 'number' && i.load > 0 ? Math.round(i.load) : 0));
+  }
   return out;
 }
 
@@ -192,6 +201,14 @@ export function fromCompact(raw) {
     if (!Array.isArray(raw.f) || raw.f.length !== 2 || (raw.f[1] !== 'd' && raw.f[1] !== 'w')) return bad('malformed');
     if (!intIn(raw.f[0], LIMITS.times)) return bad('bad-value');
     frequency = { times: raw.f[0], per: raw.f[1] === 'd' ? 'day' : 'week' };
+  }
+  if (raw.l !== undefined) {
+    if (!Array.isArray(raw.l) || raw.l.length !== items.length) return bad('malformed');
+    for (let i = 0; i < items.length; i++) {
+      const l = raw.l[i];
+      if (!Number.isInteger(l) || l < 0 || l > LIMITS.load[1]) return bad('bad-value');
+      if (l > 0) items[i].load = l;
+    }
   }
   return { ok: true, programme: { title, who, note, items, ...(frequency ? { frequency } : {}) } };
 }
@@ -252,7 +269,7 @@ async function pack(obj, gzipIt = true) {
 
 // A payload back to its JSON, never trusted: { ok: true, raw } or { ok: false, error }, error among 'empty',
 // 'too-long', 'malformed', 'unsupported' (a packed link on a browser that cannot unpack it). Never throws.
-async function unpack(payload) {
+async function unpack(payload, maxJson = MAX_JSON) {
   if (typeof payload !== 'string' || !payload) return { ok: false, error: 'empty' };
   if (payload.length > MAX_PAYLOAD) return { ok: false, error: 'too-long' };
   if (!/^[zj][A-Za-z0-9_-]+$/.test(payload)) return { ok: false, error: 'malformed' };
@@ -260,9 +277,9 @@ async function unpack(payload) {
     let bytes = fromBase64url(payload.slice(1));
     if (payload[0] === 'z') {
       if (!canGunzip()) return { ok: false, error: 'unsupported' };
-      bytes = await gunzip(bytes, MAX_JSON);
+      bytes = await gunzip(bytes, maxJson);
       if (!bytes) return { ok: false, error: 'too-long' };
-    } else if (bytes.length > MAX_JSON) return { ok: false, error: 'too-long' };
+    } else if (bytes.length > maxJson) return { ok: false, error: 'too-long' };
     return { ok: true, raw: JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)) };
   } catch { return { ok: false, error: 'malformed' }; }
 }
@@ -310,12 +327,16 @@ export function programmeId(p) {
  * What a set filmed from a programme keeps (saved-set.js): the programme, the exercise's place in it and its key (so a
  * target never reaches another exercise's set, App.jsx), the target.
  */
-export const plannedOf = (id, index, item) => ({ programme: id, item: index, key: item.key, sets: item.sets, reps: item.reps, rest: item.rest });
+export const plannedOf = (id, index, item) => ({
+  programme: id, item: index, key: item.key, sets: item.sets, reps: item.reps, rest: item.rest,
+  ...(typeof item.load === 'number' && item.load > 0 ? { load: item.load } : {}),
+});
 
-/** "3 × 10": the target as a coach writes it; null for a set saved outside a programme. */
+/** "3 × 10" or "3 × 10 @ 60 kg": the target as a coach writes it; null for a set saved outside a programme. */
 export function targetText(planned) {
   if (!planned || !Number.isInteger(planned.sets) || !Number.isInteger(planned.reps)) return null;
-  return `${planned.sets}${NBSP}×${NBSP}${planned.reps}`;
+  const base = `${planned.sets}${NBSP}×${NBSP}${planned.reps}`;
+  return typeof planned.load === 'number' && planned.load > 0 ? `${base}${NBSP}@${NBSP}${planned.load}${NBSP}kg` : base;
 }
 
 const localDay = d => { const x = new Date(d); return `${x.getFullYear()}-${x.getMonth()}-${x.getDate()}`; };
@@ -358,10 +379,27 @@ export function progressOf(programme, id, sets, now = new Date()) {
   const mine = (sets || []).map(w => ({ w, at: placeOf(programme, ids, w) }))
     .filter(m => m.at >= 0 && localDay(setTimeOf(m.w)) === today)
     .sort((a, b) => setTimeOf(a.w) - setTimeOf(b.w));
+  const hasLoads = mine.some(m => (typeof m.w.weight === 'number' && m.w.weight > 0) || (typeof m.w.load === 'number' && m.w.load > 0)) || programme.items.some(i => typeof i.load === 'number' && i.load > 0);
+  const hasEfforts = mine.some(m => (typeof m.w.effort === 'number' && m.w.effort >= 0) || (typeof m.w.rpe === 'number' && m.w.rpe >= 0));
+  const hasPains = mine.some(m => (typeof m.w.pain === 'string' && m.w.pain.trim()) || (typeof m.w.painNote === 'string' && m.w.painNote.trim()));
+
   const items = programme.items.map((item, index) => {
     const own = mine.filter(m => m.at === index).map(m => m.w);
     const done = own.map(w => w.reps), kinds = own.map(keptLetter);
-    return { index, key: item.key, target: { sets: item.sets, reps: item.reps }, done, kinds, complete: done.length >= item.sets, counted: filmable(item) };
+    const res = {
+      index, key: item.key, target: { sets: item.sets, reps: item.reps, ...(typeof item.load === 'number' && item.load > 0 ? { load: item.load } : {}) },
+      done, kinds, complete: done.length >= item.sets, counted: filmable(item),
+    };
+    if (hasLoads) {
+      res.loads = own.map(w => (typeof w.weight === 'number' && w.weight > 0 ? w.weight : typeof w.load === 'number' && w.load > 0 ? w.load : (typeof item.load === 'number' && item.load > 0 ? item.load : 0)));
+    }
+    if (hasEfforts) {
+      res.efforts = own.map(w => (typeof w.effort === 'number' && w.effort >= 0 ? w.effort : typeof w.rpe === 'number' && w.rpe >= 0 ? w.rpe : null));
+    }
+    if (hasPains) {
+      res.pains = own.map(w => (typeof w.pain === 'string' ? cleanText(w.pain).slice(0, RESULT_LIMITS.pain) : typeof w.painNote === 'string' ? cleanText(w.painNote).slice(0, RESULT_LIMITS.pain) : ''));
+    }
+    return res;
   });
   const last = mine.length ? setTimeOf(mine.at(-1).w) : null;
   // An exercise the app does not count (withdrawn, of the guide only, or set as a hold) is not filmed: the day is
@@ -406,7 +444,7 @@ export function timeWords(hhmm, lang) {
 // programme's. Nothing is uploaded: the client chooses to send it, the coach's phone reads it from the address.
 export const RESULTS_KEY = 'resultats=';
 // A day's sets kept per exercise, at most, and the reps one set may hold: a day's work, not a log. UNSOURCED, convention.
-export const RESULT_LIMITS = Object.freeze({ done: 20, reps: [0, 999] });
+export const RESULT_LIMITS = Object.freeze({ done: 20, reps: [0, 999], load: [0, 500], effort: [0, 10], pain: 140 });
 const dayOf = d => { const x = new Date(d), pad = n => String(n).padStart(2, '0'); return `${x.getFullYear()}-${pad(x.getMonth() + 1)}-${pad(x.getDate())}`; };
 
 const pad2 = n => String(n).padStart(2, '0');
@@ -418,12 +456,35 @@ const hhmm = t => { const x = new Date(t); return `${pad2(x.getHours())}:${pad2(
  * client's programme shows them, and how each was kept (keptLetter).
  */
 export function resultsOf(programme, progress, date = new Date()) {
+  const hasLoads = progress.items.some(i => Array.isArray(i.loads) && i.loads.some(n => n > 0));
+  const hasEfforts = progress.items.some(i => Array.isArray(i.efforts) && i.efforts.some(n => typeof n === 'number'));
+  const hasPains = progress.items.some(i => Array.isArray(i.pains) && i.pains.some(s => typeof s === 'string' && s.trim()));
+
   return {
     title: programme.title, who: programme.who || '', day: dayOf(date), time: progress.last == null ? '' : hhmm(progress.last),
     items: programme.items.map((item, i) => {
       const got = progress.items[i] || {}, done = (got.done || []).slice(0, RESULT_LIMITS.done);
       const hold = holdOf(item);
-      return { key: item.key, sets: item.sets, reps: item.reps, ...(hold ? { holdSec: hold } : {}), done: done.map(n => Math.round(n)), kinds: (got.kinds || []).slice(0, done.length) };
+      const out = {
+        key: item.key, sets: item.sets, reps: item.reps,
+        ...(hold ? { holdSec: hold } : {}),
+        ...(typeof item.load === 'number' && item.load > 0 ? { load: item.load } : {}),
+        done: done.map(n => Math.round(n)),
+        kinds: (got.kinds || []).slice(0, done.length),
+      };
+      if (hasLoads) {
+        out.loads = (got.loads || []).slice(0, done.length).map(n => (typeof n === 'number' && n > 0 ? Math.min(RESULT_LIMITS.load[1], Math.round(n)) : 0));
+        while (out.loads.length < done.length) out.loads.push(0);
+      }
+      if (hasEfforts) {
+        out.efforts = (got.efforts || []).slice(0, done.length).map(n => (typeof n === 'number' && n >= 0 ? Math.min(RESULT_LIMITS.effort[1], Math.round(n)) : null));
+        while (out.efforts.length < done.length) out.efforts.push(null);
+      }
+      if (hasPains) {
+        out.pains = (got.pains || []).slice(0, done.length).map(s => (typeof s === 'string' ? cleanText(s).slice(0, RESULT_LIMITS.pain) : ''));
+        while (out.pains.length < done.length) out.pains.push('');
+      }
+      return out;
     }),
   };
 }
@@ -450,12 +511,31 @@ export function resultsSummary(r) {
 // exercise holds, so the coach reads a hold as a hold and not as reps (R8). With g the version is 2 (SHEET_VERSION), as
 // a programme's link with a hold: a coach's app of before the sheet refuses the link rather than show a hold as reps
 // missed.
-const compactResults = r => ({
-  v: r.items.some(i => holdOf(i) > 0) ? SHEET_VERSION : 1, t: r.title, ...(r.who ? { w: r.who } : {}), d: r.day, ...(r.time ? { h: r.time } : {}),
-  x: r.items.map(i => [i.key, i.sets, i.reps, i.done]),
-  ...(r.items.every(i => Array.isArray(i.kinds) && i.kinds.length === i.done.length) ? { k: r.items.map(i => i.kinds.join('')) } : {}),
-  ...(r.items.some(i => holdOf(i) > 0) ? { g: r.items.map(holdOf) } : {}),
-});
+const compactResults = r => {
+  const hasHold = r.items.some(i => holdOf(i) > 0);
+  const hasPlannedLoad = r.items.some(i => typeof i.load === 'number' && i.load > 0);
+  const hasLoads = r.items.some(i => Array.isArray(i.loads) && i.loads.some(n => n > 0));
+  const hasEffort = r.items.some(i => Array.isArray(i.efforts) && i.efforts.some(n => typeof n === 'number'));
+  const hasPain = r.items.some(i => Array.isArray(i.pains) && i.pains.some(s => typeof s === 'string' && s.trim()));
+  const v = (hasHold || hasPlannedLoad || hasLoads || hasEffort || hasPain) ? SHEET_VERSION : 1;
+  const out = {
+    v,
+    t: r.title,
+    ...(r.who ? { w: r.who } : {}),
+    d: r.day,
+    ...(r.time ? { h: r.time } : {}),
+    x: r.items.map(i => [i.key, i.sets, i.reps, i.done]),
+  };
+  if (r.items.every(i => Array.isArray(i.kinds) && i.kinds.length === i.done.length)) {
+    out.k = r.items.map(i => i.kinds.join(''));
+  }
+  if (hasHold) out.g = r.items.map(holdOf);
+  if (hasPlannedLoad) out.l = r.items.map(i => (typeof i.load === 'number' && i.load > 0 ? Math.round(i.load) : 0));
+  if (hasLoads) out.L = r.items.map(i => (Array.isArray(i.loads) ? i.loads.slice(0, i.done.length).map(n => (typeof n === 'number' && n > 0 ? Math.round(n) : 0)) : Array(i.done.length).fill(0)));
+  if (hasEffort) out.e = r.items.map(i => (Array.isArray(i.efforts) ? i.efforts.slice(0, i.done.length).map(n => (typeof n === 'number' && n >= 0 ? Math.min(10, Math.round(n)) : null)) : Array(i.done.length).fill(null)));
+  if (hasPain) out.p = r.items.map(i => (Array.isArray(i.pains) ? i.pains.slice(0, i.done.length).map(s => (typeof s === 'string' ? cleanText(s).slice(0, RESULT_LIMITS.pain) : '')) : Array(i.done.length).fill('')));
+  return out;
+};
 
 /** The results' plain payload, "j" and the compact JSON in base64url: made at once, so a share stays within the tap. */
 export const plainResultsPayload = r => 'j' + toBase64url(new TextEncoder().encode(JSON.stringify(compactResults(r))));
@@ -506,12 +586,54 @@ export function fromCompactResults(raw) {
       if (g > 0) items[i].holdSec = g;
     }
   }
+  // Planned load, completed load, effort (RPE 0-10) and client sensations/pain notes (Card 058).
+  if (raw.l !== undefined) {
+    if (!Array.isArray(raw.l) || raw.l.length !== items.length) return bad('malformed');
+    for (let i = 0; i < items.length; i++) {
+      const l = raw.l[i];
+      if (!Number.isInteger(l) || l < 0 || l > LIMITS.load[1]) return bad('bad-value');
+      if (l > 0) items[i].load = l;
+    }
+  }
+  if (raw.L !== undefined) {
+    if (!Array.isArray(raw.L) || raw.L.length !== items.length) return bad('malformed');
+    for (let i = 0; i < items.length; i++) {
+      const loads = raw.L[i];
+      if (!Array.isArray(loads) || loads.length !== items[i].done.length) return bad('malformed');
+      for (const n of loads) {
+        if (!Number.isInteger(n) || n < 0 || n > RESULT_LIMITS.load[1]) return bad('bad-value');
+      }
+      items[i].loads = loads;
+    }
+  }
+  if (raw.e !== undefined) {
+    if (!Array.isArray(raw.e) || raw.e.length !== items.length) return bad('malformed');
+    for (let i = 0; i < items.length; i++) {
+      const efforts = raw.e[i];
+      if (!Array.isArray(efforts) || efforts.length !== items[i].done.length) return bad('malformed');
+      for (const ef of efforts) {
+        if (ef !== null && (!Number.isInteger(ef) || ef < RESULT_LIMITS.effort[0] || ef > RESULT_LIMITS.effort[1])) return bad('bad-value');
+      }
+      items[i].efforts = efforts;
+    }
+  }
+  if (raw.p !== undefined) {
+    if (!Array.isArray(raw.p) || raw.p.length !== items.length) return bad('malformed');
+    for (let i = 0; i < items.length; i++) {
+      const pains = raw.p[i];
+      if (!Array.isArray(pains) || pains.length !== items[i].done.length) return bad('malformed');
+      for (const pn of pains) {
+        if (typeof pn !== 'string' || cleanText(pn).length > RESULT_LIMITS.pain) return bad('bad-value');
+      }
+      items[i].pains = pains.map(cleanText);
+    }
+  }
   return { ok: true, results: { title, who, day: raw.d, time: raw.h || '', items } };
 }
 
 /** A results payload read back, never trusted (decodeProgramme's errors). Never throws. */
 export async function decodeResults(payload) {
-  const r = await unpack(payload);
+  const r = await unpack(payload, MAX_RESULTS_JSON);
   return r.ok ? fromCompactResults(r.raw) : r;
 }
 

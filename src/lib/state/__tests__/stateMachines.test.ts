@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   createAnalysisStateMachine,
+  createCoachFeedbackStateMachine,
   createDeviceStabilityStateMachine,
   createKineAttemptStateMachine,
   FiniteStateMachine,
@@ -180,6 +181,63 @@ describe('Universal Canonical State Machine Engine', () => {
 
       fsm.send('USER_TOUCH');
       expect(fsm.state).toBe('HANDHELD_MOTION');
+    });
+  });
+
+  describe('Coach Feedback Loop Machine (Card 058)', () => {
+    it('walks cleanly through feedback entry: AWAITING_INPUT -> LOGGING_LOAD -> SCALING_RPE -> NOTING_PAIN -> SERIALIZING -> DISPATCHED', () => {
+      const fsm = createCoachFeedbackStateMachine('squat', 0, 60);
+      expect(fsm.state).toBe('AWAITING_INPUT');
+      expect(fsm.context.plannedLoadKg).toBe(60);
+      expect(fsm.context.actualLoadKg).toBe(60);
+
+      fsm.send('START_FEEDBACK');
+      expect(fsm.state).toBe('LOGGING_LOAD');
+
+      fsm.send('SET_LOAD', 62.5);
+      expect(fsm.state).toBe('SCALING_RPE');
+      expect(fsm.context.actualLoadKg).toBe(63); // rounded
+
+      fsm.send('SET_RPE', 7.4);
+      expect(fsm.state).toBe('NOTING_PAIN');
+      expect(fsm.context.rpe).toBe(7);
+
+      fsm.send('SET_PAIN', 'Légère gêne au genou droit');
+      expect(fsm.state).toBe('SERIALIZING');
+      expect(fsm.context.painNote).toBe('Légère gêne au genou droit');
+
+      fsm.send('PACK_SUCCESS', 'zPackedPayloadHash123');
+      expect(fsm.state).toBe('DISPATCHED');
+      expect(fsm.context.serializedPayload).toBe('zPackedPayloadHash123');
+
+      fsm.send('RESET');
+      expect(fsm.state).toBe('AWAITING_INPUT');
+      expect(fsm.context.actualLoadKg).toBeUndefined();
+    });
+
+    it('enforces boundaries on inputs: load [0, 500], RPE [0, 10], pain length <= 140', () => {
+      const fsm = createCoachFeedbackStateMachine('bench_press', 1);
+
+      fsm.send('SET_LOAD', 999);
+      expect(fsm.context.actualLoadKg).toBe(500);
+
+      fsm.send('SET_RPE', 15);
+      expect(fsm.context.rpe).toBe(10);
+
+      fsm.send('SET_PAIN', 'Douleur '.repeat(50));
+      expect(fsm.context.painNote?.length).toBeLessThanOrEqual(140);
+    });
+
+    it('transitions to ERROR on failure at any stage and resets cleanly', () => {
+      const fsm = createCoachFeedbackStateMachine('deadlift', 0);
+      fsm.send('START_FEEDBACK');
+      fsm.send('FAIL', 'Network link interrupted');
+      expect(fsm.state).toBe('ERROR');
+      expect(fsm.context.errorReason).toBe('Network link interrupted');
+
+      fsm.send('RESET');
+      expect(fsm.state).toBe('AWAITING_INPUT');
+      expect(fsm.context.errorReason).toBeUndefined();
     });
   });
 });

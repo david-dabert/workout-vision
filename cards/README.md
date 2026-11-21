@@ -55,7 +55,7 @@ The path to a sellable product, cards of 16 November 2026 from the review panel 
 - Now, no code, David sends: 060 (ten coaches at a named price, `docs/sell/coach-offer.md`), 061 (ten testers, thirty blind sets, `docs/sell/tester-kit.md`).
 - Phase 1, Claude: 055 (every sealed set scored on the phone's read and the computer's), after 043 and 054.
 - Phase 1, Antigravity: 059 (one data store keeping body points; careful, Claude reviews), after 051.
-- Lab now, product in Phase 2: 056 (Claude, one calibrated "sure" check), 057 (Antigravity, filming starts and ends at rest), 058 (Antigravity, a client's results carry load, effort and pain).
+- Lab now, product in Phase 2: 056 (Claude, one calibrated "sure" check), 057 (Antigravity, filming starts and ends at rest), 058 (Antigravity, a client's results carry load, effort and pain; done 21 November 2026, off behind COACH_LOOP_SHOWN).
 - Phase 3 prepared now: 062 (Claude drafts the legal floor; David gives the entity's facts; a lawyer checks).
 
 Parked until Phase 1's gate passes:
