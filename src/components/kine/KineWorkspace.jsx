@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Component, useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { useT } from '../../lib/LanguageContext';
 import { hapticLight } from '../../lib/haptics';
@@ -136,14 +136,14 @@ function ProgrammeTab({ fr, k, profile }) {
       {!items.length && <p className="sc-caption">{k.empty}</p>}
       <ol className="kn-items">
         {items.map((it, n) => {
-          const ex = exerciseById(it.id), t = ex[fr ? 'fr' : 'en'];
+          const ex = exerciseById(it.id), t = ex ? ex[fr ? 'fr' : 'en'] : { title: it.id };
           return <li key={it.id} className="kn-item" data-testid={`kn-item-${it.id}`}>
             <div className="kn-item-head"><b>{n + 1}. {t.title}</b><button type="button" className="rc-link press" onClick={() => setItems(list => list.filter(i => i.id !== it.id))}>{k.remove}</button></div>
             <div className="kn-row">
               <NumberField label={k.sets} value={it.sets} onChange={v => set(it.id, { sets: v })} min={1} max={20} />
               <NumberField label={k.reps} value={it.reps} onChange={v => set(it.id, { reps: v })} min={1} max={100} />
             </div>
-            {ex.side && <label className="kn-field"><span>{k.side}</span>
+            {ex?.side && <label className="kn-field"><span>{k.side}</span>
               <select value={it.side ?? ex.side} onChange={e => set(it.id, { side: e.target.value })} data-testid={`kn-side-${it.id}`}>
                 {['left', 'right'].map(s => <option key={s} value={s}>{k.sides[s]}</option>)}
               </select>
@@ -218,17 +218,45 @@ function InvoiceTab({ fr, k, profile, onProfile }) {
 }
 
 function ProfileTab({ k, profile, onSave }) {
-  const [p, setP] = useState(profile);
+  const [p, setP] = useState(() => ({ ...EMPTY_PROFILE, ...(profile || {}) }));
   const [saved, setSaved] = useState(false);
   return <section className="sc-section">
     <p className="sc-caption">{k.profileHint}</p>
     <div className="kn-fields">
       {Object.keys(EMPTY_PROFILE).map(key => <label key={key} className="kn-field"><span>{k.fields[key]}</span>
-        <input value={p[key]} type={key === 'fee' ? 'number' : key === 'email' ? 'email' : key === 'phone' ? 'tel' : 'text'} onChange={e => { setSaved(false); setP({ ...p, [key]: key === 'fee' ? Number(e.target.value) || 0 : e.target.value }); }} data-testid={`kn-profile-${key}`} />
+        <input value={p[key] ?? ''} type={key === 'fee' ? 'number' : key === 'email' ? 'email' : key === 'phone' ? 'tel' : 'text'} onChange={e => { setSaved(false); setP({ ...p, [key]: key === 'fee' ? Number(e.target.value) || 0 : e.target.value }); }} data-testid={`kn-profile-${key}`} />
       </label>)}
       <button type="button" className="rc-btn is-primary is-wide press" onClick={() => { hapticLight(); onSave(p); setSaved(true); }} data-testid="kn-profile-save">{saved ? k.saved : k.save}</button>
     </div>
   </section>;
+}
+
+class KineBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error) {
+    console.error('[KineWorkspace boundary error]', error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="sc-section" style={{ textAlign: 'center', padding: 'var(--s-6) var(--s-3)' }}>
+          <p className="sc-frame-note">
+            {this.props.fr ? 'Une erreur est survenue dans cet affichage.' : 'An error occurred in this view.'}
+          </p>
+          <button type="button" className="rc-btn is-primary press" onClick={() => this.setState({ hasError: false, error: null })}>
+            {this.props.fr ? 'Réessayer' : 'Try again'}
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 export default function KineWorkspace({ onClose }) {
@@ -281,20 +309,22 @@ export default function KineWorkspace({ onClose }) {
               {tabs.map(id => <button key={id} type="button" role="tab" className="sc-chip press" aria-pressed={tab === id} aria-selected={tab === id} onClick={() => { hapticLight(); setTab(id); setFollowUpOf(null); }} data-testid={`kn-tab-${id}`}>{k.tabs[id]}</button>)}
             </div>
           </div>
-          {tab === 'programme' && <ProgrammeTab fr={fr} k={k} profile={profile} />}
-          {judged && tab === 'followup' && <FollowUp fr={fr} k={k} profile={profile} initial={followUpOf} />}
-          {tab === 'compare' && <section className="sc-section"><p className="sc-caption">{k.compareHint}</p><ReferenceCompare embedded /></section>}
-          {tab === 'profile' && <>
-            <div className="sc-section">
-              <div className="sc-rail" role="tablist" aria-label={k.tabs.profile} data-testid="kn-cabinet-sections">
-                {sections.map(id => <button key={id} type="button" role="tab" className="sc-chip press" aria-pressed={section === id} aria-selected={section === id} onClick={() => { hapticLight(); setSection(id); }} data-testid={id === 'profile' ? 'kn-section-profile' : `kn-tab-${id}`}>{id === 'profile' ? k.cabinetDetails : k.tabs[id]}</button>)}
+          <KineBoundary fr={fr}>
+            {tab === 'programme' && <ProgrammeTab fr={fr} k={k} profile={profile} />}
+            {judged && tab === 'followup' && <FollowUp fr={fr} k={k} profile={profile} initial={followUpOf} />}
+            {tab === 'compare' && <section className="sc-section"><p className="sc-caption">{k.compareHint}</p><ReferenceCompare embedded /></section>}
+            {tab === 'profile' && <>
+              <div className="sc-section">
+                <div className="sc-rail" role="tablist" aria-label={k.tabs.profile} data-testid="kn-cabinet-sections">
+                  {sections.map(id => <button key={id} type="button" role="tab" className="sc-chip press" aria-pressed={section === id} aria-selected={section === id} onClick={() => { hapticLight(); setSection(id); }} data-testid={id === 'profile' ? 'kn-section-profile' : `kn-tab-${id}`}>{id === 'profile' ? k.cabinetDetails : k.tabs[id]}</button>)}
+                </div>
               </div>
-            </div>
-            {section === 'profile' && <ProfileTab k={k} profile={profile} onSave={save} />}
-            {section === 'invoice' && <InvoiceTab fr={fr} k={k} profile={profile} onProfile={() => setSection('profile')} />}
-            {judged && section === 'calibration' && <Calibration fr={fr} k={k} />}
-          </>}
-          {extended && tab === 'specialties' && <PessacClinicSpecialtyHub />}
+              {section === 'profile' && <ProfileTab k={k} profile={profile} onSave={save} />}
+              {section === 'invoice' && <InvoiceTab fr={fr} k={k} profile={profile} onProfile={() => setSection('profile')} />}
+              {judged && section === 'calibration' && <Calibration fr={fr} k={k} />}
+            </>}
+            {extended && tab === 'specialties' && <PessacClinicSpecialtyHub />}
+          </KineBoundary>
         </div>
       </section>
     </div>
