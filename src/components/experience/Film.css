@@ -133,6 +133,22 @@
   color: var(--bone);
   background: var(--well);
 }
+.wv-experience .film-rest-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: var(--s-3) auto 0;
+  padding: 6px 14px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--lamp-line);
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.08em;
+  color: var(--lamp-hi);
+  background: var(--bio-glow);
+  text-transform: uppercase;
+}
 .wv-experience .film-tilt-dot {
   width: 6px;
   height: 6px;
