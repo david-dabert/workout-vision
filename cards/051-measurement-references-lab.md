@@ -16,6 +16,6 @@ Needs from David: nothing.
    - Per lift: bench_press med 0.901 s / p90 1.935 s; front_raise med 0.667 s / p90 1.209 s; pull_up med 0.401 s / p90 1.043 s; push_up med 0.510 s / p90 0.967 s; squat med 0.447 s / p90 0.901 s.
 2. 2D angle against synthetic truth at guided view (`test/real-phone/synth/angle-2d-error.test.ts`, 24 sets, 7745 frames):
    - Proposed thresholds: median <= 5°, p90 <= 10° (UNSOURCED).
-   - Measured: median 11.3°, 90th percentile 55.0°, signed median 1.8° (FAIL against proposed thresholds).
-   - Per lift: lateral_raise (view 0°) med 4.8° / p90 14.0°; overhead_press (view 0°) med 10.9° / p90 30.4°; bicep_curl (view 90°) med 20.5° / p90 146.4°; squat (view 90°) med 23.7° / p90 74.9°.
+   - Measured: median 8.9°, 90th percentile 28.4°, signed median 0.2° (FAIL against proposed thresholds).
+   - Per lift: lateral_raise (view 0°) med 4.8° / p90 14.0°; overhead_press (view 0°) med 10.9° / p90 30.4°; bicep_curl (view 90°) med 19.0° / p90 128.6°; squat (view 90°) med 8.2° / p90 15.0°.
 3. Renderer output field updated: `test/real-phone/synth/synth.js` now stores `imageLandmarks: imageFrames` in `window.RESULT`.

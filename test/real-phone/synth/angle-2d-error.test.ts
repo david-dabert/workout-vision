@@ -17,16 +17,16 @@ const JOINT: Record<string, 'shoulder' | 'elbow' | 'knee'> = {
   squat: 'knee',
 };
 
-// 2D angle in plane (u, v): for front view (view 0), camera looks down +Z, so image plane is (X, Y).
-// For side view (view 90), camera looks down +X, so image plane is (Z, Y).
+// 2D angle in camera image plane (x, y): MediaPipe landmarks (both imageLandmarks and worldLandmarks)
+// are in the camera optical frame, where +X is horizontal across the image and +Y is vertical down the image.
+// For any camera view (front 0° or side 90°), the 2D projected pixels on the camera sensor are (x, y).
 function angle2D(
-  a: { x: number; y: number; z: number },
-  b: { x: number; y: number; z: number },
-  c: { x: number; y: number; z: number },
-  plane: 'xy' | 'zy'
+  a: { x: number; y: number; z?: number },
+  b: { x: number; y: number; z?: number },
+  c: { x: number; y: number; z?: number }
 ): number {
-  const [u1, v1] = plane === 'xy' ? [a.x - b.x, a.y - b.y] : [a.z - b.z, a.y - b.y];
-  const [u2, v2] = plane === 'xy' ? [c.x - b.x, c.y - b.y] : [c.z - b.z, c.y - b.y];
+  const u1 = a.x - b.x, v1 = a.y - b.y;
+  const u2 = c.x - b.x, v2 = c.y - b.y;
   const d1 = Math.hypot(u1, v1), d2 = Math.hypot(u2, v2);
   if (d1 < 1e-6 || d2 < 1e-6) return 0;
   const dot = (u1 * u2 + v1 * v2) / (d1 * d2);
@@ -71,16 +71,16 @@ describe('Card 051: 2D joint angle against synthetic truth at guided view', () =
       perLift[lift].setsCount++;
 
       const joint = JOINT[lift];
-      const plane: 'xy' | 'zy' = GUIDED[lift] === 0 ? 'xy' : 'zy';
       // Side evaluated: for lateral raise and overhead press (front view), evaluate left arm;
       // for bicep curl and squat (view 90), the body left side faces camera.
       const side = 'left';
       const [ia, ib, ic] = JOINT_POINTS[joint][side];
 
       for (let i = 0; i < d.timestamps.length; i++) {
-        const wl = d.worldLandmarks[i];
-        if (!wl || !wl[ia] || !wl[ib] || !wl[ic]) continue;
-        const a2d = angle2D(wl[ia], wl[ib], wl[ic], plane);
+        // Read imageLandmarks if stored by renderer (Card 051); fall back to camera-relative worldLandmarks.
+        const pts = d.imageLandmarks?.[i] ?? d.worldLandmarks?.[i];
+        if (!pts || !pts[ia] || !pts[ib] || !pts[ic]) continue;
+        const a2d = angle2D(pts[ia], pts[ib], pts[ic]);
         const truthAng = d.truth[i]?.[joint]?.[side];
         if (typeof truthAng !== 'number') continue;
 

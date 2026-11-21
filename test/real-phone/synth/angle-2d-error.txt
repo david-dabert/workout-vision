@@ -8,13 +8,13 @@ Total evaluated frames: 7745
 - Proposed 90th percentile threshold: <= 10 degrees
 
 ## Overall Results across Guided Views
-- Median absolute error: 11.3 degrees (FAIL)
-- 90th percentile absolute error: 55.0 degrees (FAIL)
-- Signed median error: 1.8 degrees
+- Median absolute error: 8.9 degrees (FAIL)
+- 90th percentile absolute error: 28.4 degrees (FAIL)
+- Signed median error: 0.2 degrees
 - Overall verdict against proposed thresholds: FAIL
 
 ## Per-Lift Results at Guided View
 - lateral_raise (view 0°, 6 sets, 2094 frames): median 4.8°, p90 14.0°, signed median -3.9° (FAIL)
 - overhead_press (view 0°, 6 sets, 2066 frames): median 10.9°, p90 30.4°, signed median 7.9° (FAIL)
-- bicep_curl (view 90°, 6 sets, 1847 frames): median 20.5°, p90 146.4°, signed median -1.7° (FAIL)
-- squat (view 90°, 6 sets, 1738 frames): median 23.7°, p90 74.9°, signed median 23.7° (FAIL)
+- bicep_curl (view 90°, 6 sets, 1847 frames): median 19.0°, p90 128.6°, signed median 13.1° (FAIL)
+- squat (view 90°, 6 sets, 1738 frames): median 8.2°, p90 15.0°, signed median -5.3° (FAIL)
