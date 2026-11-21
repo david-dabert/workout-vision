@@ -1,5 +1,5 @@
 # 048. Espace pro offers only the coach's own programmes, no unsourced templates
-Status: in review (Antigravity)
+Status: done (#515, merged as c2b50ff)
 Executor: fast (Antigravity)
 Phase: 1 (a claim withdrawn; PLAN.md, THE FREEZE)
 Claim: a coach opening Espace pro sees the programmes they made, and no « Modèles recommandés » the app cannot source.
